@@ -28,6 +28,7 @@
 #include <alps/ngs/hdf5.hpp>
 #include <alps/ngs/mcresult.hpp>
 #include <alps/ngs/stacktrace.hpp>
+#include <alps/ngs/numeric/array.hpp>
 #include <alps/ngs/lib/mcresult_impl_base.ipp>
 #include <alps/ngs/lib/mcresult_impl_derived.ipp>
 #include <alps/ngs/alea/accumulator_set.hpp>
@@ -51,7 +52,7 @@ namespace alps {
     //TODO2 & TODO3 wrapper ? realObs or realVecObs -> acc -> mcresult_impl_derived<...>(acc)
     #ifdef ALPS_NGS_USE_NEW_ALEA
     template<typename T>
-    bool has_cast(alps::alea::detail::accumulator_wrapper const & acc_wrapper)
+    bool has_cast(alps::accumulator::detail::accumulator_wrapper const & acc_wrapper)
     { 
         try 
         { 
@@ -64,16 +65,22 @@ namespace alps {
         }
     }
     
-    mcresult::mcresult(alps::alea::detail::accumulator_wrapper const & acc_wrapper)
+    mcresult::mcresult(alps::accumulator::detail::accumulator_wrapper const & acc_wrapper)
     {
+        //------------------- find out value_type  -------------------
         if(has_cast<double>(acc_wrapper))
             impl_ = new detail::mcresult_impl_derived<detail::mcresult_impl_base, double>(acc_wrapper);
         else
         {
             if(has_cast<std::vector<double> >(acc_wrapper))
                 impl_ = new detail::mcresult_impl_derived<detail::mcresult_impl_base, std::vector<double> >(acc_wrapper);
-            else
-                boost::throw_exception(std::runtime_error("type not supported" + ALPS_STACKTRACE));
+            //~ else
+            //~ {
+                //~ if(has_cast<boost::array<double, 3> >(acc_wrapper))
+                    //~ impl_ = new detail::mcresult_impl_derived<detail::mcresult_impl_base, boost::array<double, 3> >(acc_wrapper);
+                else
+                    boost::throw_exception(std::runtime_error("type not supported in mcresult-constructor" + ALPS_STACKTRACE));
+            //~ }
         }
     }
     #endif

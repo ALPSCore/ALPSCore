@@ -38,7 +38,7 @@
 #include <cmath>
 namespace alps
 {
-    namespace alea
+    namespace accumulator
     {
         //=================== error proxy ===================
         //=================== error trait ===================
@@ -112,6 +112,6 @@ namespace alps
                     error_type sum2_;
             };
         } // end namespace detail
-    }//end alea namespace 
+    }//end accumulator namespace 
 }//end alps namespace
 #endif // ALPS_NGS_ALEA_DETAIL_ERROR_IMPLEMENTATION

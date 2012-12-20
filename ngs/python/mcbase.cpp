@@ -86,7 +86,7 @@ namespace alps {
                     return mcbase_ng::params;
                 }
                 #ifdef ALPS_NGS_USE_NEW_ALEA
-                    alea::accumulator_set & get_measurements() {
+                    accumulator::accumulator_set & get_measurements() {
                 #else
                     mcobservables & get_measurements() {
                 #endif

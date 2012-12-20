@@ -59,7 +59,7 @@ namespace alps {
 
         public:
             #ifdef ALPS_NGS_USE_NEW_ALEA
-                typedef alea::accumulator_set observables_type;
+                typedef accumulator::accumulator_set observables_type;
             #else
                 typedef mcobservables observables_type;
             #endif

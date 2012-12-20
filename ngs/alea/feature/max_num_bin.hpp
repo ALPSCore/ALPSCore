@@ -39,7 +39,7 @@
 
 namespace alps
 {
-    namespace alea
+    namespace accumulator
     {
         //=================== max_num_bin proxy ===================
         template<typename value_type>
@@ -138,7 +138,7 @@ namespace alps
                         
                         base_type::operator <<(val);
                         
-                        partial_ = partial_ + val;
+                        partial_ += val;
                         ++pos_in_partial_;
                         
                         if(pos_in_partial_ == elements_in_bin_)
@@ -203,6 +203,6 @@ namespace alps
                     size_type const max_bin_num_;
             };
         } // end namespace detail
-    }//end alea namespace 
+    }//end accumulator namespace 
 }//end alps namespace
 #endif // ALPS_NGS_ALEA_DETAIL_MAX_NUM_BIN_IMPLEMENTATION

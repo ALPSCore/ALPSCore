@@ -32,7 +32,7 @@
 
 namespace alps
 {
-    namespace alea
+    namespace accumulator
     {
         enum error_convergence
         {
@@ -136,6 +136,6 @@ namespace alps
                 private:
             };
         } // end namespace detail
-    }//end alea namespace 
+    }//end accumulator namespace 
 }//end alps namespace
 #endif //ALPS_NGS_ALEA_DETAIL_CONVERGED_IMPLEMENTATION_HEADER

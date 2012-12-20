@@ -39,7 +39,7 @@
 
 namespace alps
 {
-    namespace alea
+    namespace accumulator
     {
         //=================== mean trait ===================
         namespace detail
@@ -116,19 +116,6 @@ namespace alps
         {
             //setting up the dependencies for tag::mean-Implementation isn't neccessary bc has none
             
-            //for vector<T>
-            template<typename T>
-            void init_vector(T & sum, T const & val)
-            {
-                
-            }
-            template<typename T> //TODO: set_size
-            void init_vector(std::vector<T> & sum, std::vector<T> const & val)
-            {
-                if(sum.size() == 0)
-                    sum = std::vector<T>(val.size(),T());
-            }
-            
             template<typename base_type> 
             class Implementation<tag::mean, base_type> : public base_type 
             {
@@ -157,8 +144,10 @@ namespace alps
                     inline ThisType& operator <<(value_type_loc val) 
                     {
                         using alps::ngs::numeric::operator+=;
-
+                        using alps::ngs::numeric::detail::check_size;
                         base_type::operator <<(val);
+                        
+                        check_size(sum_, val);
                         sum_ += val;
                         return *this;
                     }
@@ -178,6 +167,6 @@ namespace alps
                     value_type_loc sum_;
             };
         } // end namespace detail
-    }//end alea namespace 
+    }//end accumulator namespace 
 }//end alps namespace
 #endif // ALPS_NGS_ALEA_DETAIL_MEAN_IMPLEMENTATION

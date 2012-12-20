@@ -35,7 +35,7 @@
 
 namespace alps
 {
-    namespace alea
+    namespace accumulator
     {
         namespace detail
         {
@@ -71,7 +71,7 @@ namespace alps
                     boost::shared_ptr<base_wrapper> base_;
             };
         }//end detail namespace 
-    }//end alea namespace 
+    }//end accumulator namespace 
 }//end alps namespace
 #endif // ALPS_NGS_ALEA_ACCUMULATOR_WRAPPER_FWD_HEADER
 

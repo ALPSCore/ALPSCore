@@ -39,7 +39,7 @@
 
 namespace alps
 {
-    namespace alea
+    namespace accumulator
     {
         //=================== fixed_size_bin proxy ===================
         template<typename value_type>
@@ -136,7 +136,6 @@ namespace alps
                         
                         base_type::operator << (val);
                         
-                        init_vector(partial_, val);
                         partial_ += val;
                         ++partial_count_;
                         
@@ -175,6 +174,6 @@ namespace alps
                     size_type const bin_size_;
             };
         } // end namespace detail
-    }//end alea namespace 
+    }//end accumulator namespace 
 }//end alps namespace
 #endif // ALPS_NGS_ALEA_DETAIL_FIX_SIZE_BIN_IMPLEMENTATION

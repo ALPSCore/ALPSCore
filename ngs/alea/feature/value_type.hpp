@@ -34,7 +34,7 @@
 #include <typeinfo>
 namespace alps
 {
-    namespace alea
+    namespace accumulator
     {
         //=================== value_type trait ===================
         template <typename Accum>
@@ -89,6 +89,6 @@ namespace alps
                     boost::uint64_t count_;
             };
         } // end namespace detail
-    }//end alea namespace 
+    }//end accumulator namespace 
 }//end alps namespace
 #endif // ALPS_NGS_ALEA_DETAIL_VALUE_TYPE_IMPLEMENTATION

@@ -47,8 +47,8 @@ namespace alps
         namespace numeric
         {
             //------------------- operator += -------------------
-            template<typename T, std::size_t N>
-            boost::array<T, N> & operator += (boost::array<T, N> & lhs, boost::array<T, N> const & rhs)
+            template<typename T, typename U, std::size_t N>
+            boost::array<T, N> & operator += (boost::array<T, N> & lhs, boost::array<U, N> const & rhs)
             {
                 if(lhs.size() != rhs.size())
                 {
@@ -63,8 +63,8 @@ namespace alps
                 }
             }
             //------------------- operator + -------------------
-            template<typename T, std::size_t N>
-            boost::array<T, N> operator + (boost::array<T, N> lhs, boost::array<T, N> const & rhs)
+            template<typename T, typename U, std::size_t N>
+            boost::array<T, N> operator + (boost::array<T, N> lhs, boost::array<U, N> const & rhs)
             {
                 if(lhs.size() != rhs.size())
                 {
@@ -79,8 +79,8 @@ namespace alps
                 }
             }
             //------------------- operator - -------------------
-            template<typename T, std::size_t N>
-            boost::array<T, N> operator - (boost::array<T, N> lhs, boost::array<T, N> const & rhs)
+            template<typename T, typename U, std::size_t N>
+            boost::array<T, N> operator - (boost::array<T, N> lhs, boost::array<U, N> const & rhs)
             {
                 if(lhs.size() != rhs.size())
                 {
@@ -95,8 +95,8 @@ namespace alps
                 }
             }
             //------------------- operator * vector-vector-------------------
-            template<typename T, std::size_t N>
-            boost::array<T, N> operator * (boost::array<T, N> lhs, boost::array<T, N> const & rhs)
+            template<typename T, typename U, std::size_t N>
+            boost::array<T, N> operator * (boost::array<T, N> lhs, boost::array<U, N> const & rhs)
             {
                 if(lhs.size() != rhs.size())
                 {
@@ -143,6 +143,5 @@ namespace alps
         }//end namespace numeric
     }//end namespace ngs
 }//end namespace alps
-
 
 #endif //ALPS_NGS_NUMERIC_ARRAY_HEADER

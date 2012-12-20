@@ -32,7 +32,7 @@
 // = = = = = = A C C U M U L A T O R   P R E W R A P P E R = = = = = = = = = = =
 namespace alps
 {
-    namespace alea
+    namespace accumulator
     {
         namespace detail
         {
@@ -47,10 +47,10 @@ namespace alps
 
                     accumulator_prewrapper(Accum const & acc): accum_(acc) 
                     {}
-                //~ protected:
+
                     Accum accum_;
             };
         }
-    }//end alea namespace 
+    }//end accumulator namespace 
 }//end alps namespace
 #endif // ALPS_NGS_ALEA_DETAIL_ACCUM_PREWRAPPER_HEADER

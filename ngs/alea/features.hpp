@@ -29,6 +29,7 @@
 #ifndef ALPS_NGS_ALEA_TYPE_TRAITS_HEADER
 #define ALPS_NGS_ALEA_TYPE_TRAITS_HEADER
 
+#include <alps/ngs/numeric/detail.hpp>
 #include <alps/ngs/numeric/vector.hpp>
 #include <alps/ngs/numeric/array.hpp>
 #include <alps/multi_array.hpp>

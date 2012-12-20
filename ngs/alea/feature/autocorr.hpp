@@ -41,7 +41,7 @@
 
 namespace alps
 {
-    namespace alea
+    namespace accumulator
     {
         //=================== autocorr proxy ===================
         template<typename value_type>
@@ -161,9 +161,7 @@ namespace alps
                         if(base_type::count() == (1 << bin_size_now_))
                         {
                             bin_.push_back(value_type_loc());
-                            init_vector(bin_.back(), val);
                             partial_.push_back(value_type_loc());
-                            init_vector(partial_.back(), val);
                             ++bin_size_now_;
                         }
                         for (unsigned i = 0; i < bin_size_now_; ++i)
@@ -207,6 +205,6 @@ namespace alps
             };
             
         } // end namespace detail
-    }//end alea namespace 
+    }//end accumulator namespace 
 }//end alps namespace
 #endif // ALPS_NGS_ALEA_DETAIL_AUTOCORR_IMPLEMENTATION

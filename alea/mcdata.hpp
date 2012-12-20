@@ -57,7 +57,8 @@
 #include <alps/numeric/vector_valarray_conversion.hpp>
 #include <alps/utility/data.hpp>
 
-#include <alps/ngs/alea/accumulator.hpp>
+#include <alps/ngs/alea/wrapper/accumulator_wrapper.hpp>
+#include <alps/ngs/numeric/array.hpp>
 
 #include <boost/config.hpp>
 #include <boost/functional.hpp>
@@ -229,31 +230,26 @@ namespace alps {
                 //TODO5: impl for acc
                 
                 //------------------- for RealObservable and RealVectorObservable -------------------
-                mcdata(alps::alea::accumulator<T, alea::features<alea::tag::mean, alea::tag::error, alea::tag::fixed_size_binning> > const & acc) //TODO: explicit
+                mcdata(alps::accumulator::detail::result_type_wrapper<T> & acc) //TODO: explicit
                     : count_(acc.count())
-                    , binsize_(acc.fixed_size_bin().bin_size())
-                    //~ , max_bin_number_(acc.fixed_size_bin().bins().size()) TODO
                     , data_is_analyzed_(true)
                     , jacknife_bins_valid_(false)
                     , cannot_rebin_(false)
-                    , mean_(acc.mean())
-                    , error_(acc.error())
                 {
-                    //TODO autocorr, tau, variance...
-                }
-                //------------------- for SimpleRealObservable and SimpleRealVectorObservable -------------------
-                
-                mcdata(alps::alea::accumulator<T, alea::features<alea::tag::mean, alea::tag::error> > const & acc) //TODO: explicit
-                    : count_(acc.count())
-                    , binsize_(0)
-                    //~ , max_bin_number_(acc.fixed_size_bin().bins().size()) TODO
-                    , data_is_analyzed_(true)
-                    , jacknife_bins_valid_(false)
-                    , cannot_rebin_(false)
-                    , mean_(acc.mean())
-                    , error_(acc.error())
-                {
-                    //TODO autocorr, tau, variance...
+                    if(acc.has_mean())
+                        mean_ = acc.mean();
+                    else
+                        mean_ = T();
+                    
+                    if(acc.has_error())
+                        error_ = acc.error();
+                    else
+                        error_ = T();
+                        
+                    if(acc.has_max_num_bin())
+                        binsize_ = acc.max_num_bin().bin_number();
+                    else
+                        binsize_ = 0;
                 }
                 #endif
                 

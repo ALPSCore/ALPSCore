@@ -68,13 +68,13 @@
 */
 namespace alps
 {
-    namespace alea
+    namespace accumulator
     {
         namespace detail
         {
             template <typename value_type> 
             class result_type_wrapper;
-        }
+        }//end namespace detail
         #define IMPLEMENT_FUNCTION(FCT) \
         \
         /* = = = = = = = = = = I N F O   T R A I T = = = = = = = = = = */\
@@ -120,6 +120,10 @@ namespace alps
                 FCT ## _property_impl() {}\
                 FCT ## _property_impl(typename base_type::accum_type const & arg): base_type(arg) {}\
                 \
+                bool has_ ## FCT() const \
+                {\
+                    return true;\
+                }\
                 typename FCT ## _type<typename value_type<typename base_type::accum_type>::type >::type FCT() const \
                 { \
                     return FCT ## _impl(base_type::accum_); \
@@ -133,6 +137,10 @@ namespace alps
                 FCT ## _property_impl() {}\
                 FCT ## _property_impl(typename base_type::accum_type const & arg): base_type(arg) {}\
                 \
+                bool has_ ## FCT() const \
+                {\
+                    return false;\
+                }\
                 typename FCT ## _type<typename value_type<typename base_type::accum_type>::type >::type FCT() const \
                 { \
                     std::stringstream out; \
@@ -162,6 +170,6 @@ namespace alps
                                                             {}\
         };
 
-    }//end alea namespace 
+    }//end accumulator namespace 
 }//end alps namespace
 #endif //ALPS_NGS_ALEA_DETAIL_ACCUM_WRAPPER_MACRO_HEADER

@@ -43,7 +43,7 @@
 
 namespace alps
 {
-    namespace alea
+    namespace accumulator
     {
         namespace detail
         {
@@ -83,21 +83,30 @@ namespace alps
         //= = = = = = = = = = = = = = = = = = R E S U L T   T Y P E   W R A P P E R = = = = = = = = = = = = = = =
         //returns mean and other data that needs the type and therefore can't be implemented in base_wrapper
 
-            template <typename ValueType> 
+            template <typename ValueType>
             class result_type_wrapper: public base_wrapper 
             {
                 public:
                     typedef ValueType value_type;
                     virtual ~result_type_wrapper() {}
-                    virtual typename mean_type<value_type>::type mean() const= 0;
+                    virtual typename mean_type<value_type>::type mean() const = 0;
+                    virtual bool has_mean() const = 0;
                     virtual typename error_type<value_type>::type error() const = 0;
+                    virtual bool has_error() const = 0;
                     virtual typename fixed_size_bin_type<value_type>::type fixed_size_bin() const = 0;
+                    virtual bool has_fixed_size_bin() const = 0;
                     virtual typename max_num_bin_type<value_type>::type max_num_bin() const = 0;
+                    virtual bool has_max_num_bin() const = 0;
                     virtual typename log_bin_type<value_type>::type log_bin() const = 0;
+                    virtual bool has_log_bin() const = 0;
                     virtual typename autocorr_type<value_type>::type autocorr() const = 0;
+                    virtual bool has_autocorr() const = 0;
                     virtual typename converged_type<value_type>::type converged() const = 0;
+                    virtual bool has_converged() const = 0;
                     virtual typename tau_type<value_type>::type tau() const = 0;
+                    virtual bool has_tau() const = 0;
                     virtual typename histogram_type<value_type>::type histogram() const = 0;
+                    virtual bool has_histogram() const = 0;
             };
         //= = = = = = = = = = = = = = = = = = A C C U M U L A T O R   W R A P P E R = = = = = = = = = = = = = = =
         //the effective wrapper
@@ -189,6 +198,6 @@ namespace alps
                     }
             };
         }//end of detail namespace----------------------------------------------
-    }//end alea namespace 
+    }//end accumulator namespace 
 }//end alps namespace
 #endif // ALPS_NGS_ALEA_DETAIL_ACCUM_WRAPPER_HEADER

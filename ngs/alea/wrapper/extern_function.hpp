@@ -33,7 +33,7 @@
 
 namespace alps
 {
-    namespace alea
+    namespace accumulator
     {
         //------------------- for accumulator_wrapper -------------------
         template <typename Accum>
@@ -69,6 +69,6 @@ namespace alps
                 return reset(arg);
             }
         }
-    }//end alea namespace 
+    }//end accumulator namespace 
 }//end alps namespace
 #endif //ALPS_NGS_ALEA_EXTERN_FUNCTION_HEADER

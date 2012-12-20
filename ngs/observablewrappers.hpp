@@ -72,7 +72,7 @@ namespace alps {
         };
 
         #ifdef ALPS_NGS_USE_NEW_ALEA
-            ALPS_DECL alps::alea::accumulator_set & operator<< (alps::alea::accumulator_set & set, RealObservable const & obs);
+            ALPS_DECL alps::accumulator::accumulator_set & operator<< (alps::accumulator::accumulator_set & set, RealObservable const & obs);
         #endif
         ALPS_DECL alps::mcobservables & operator<< (alps::mcobservables & set, RealObservable const & obs);
 
@@ -82,7 +82,7 @@ namespace alps {
         };
 
         #ifdef ALPS_NGS_USE_NEW_ALEA
-            ALPS_DECL alps::alea::accumulator_set & operator<< (alps::alea::accumulator_set & set, RealVectorObservable const & obs);
+            ALPS_DECL alps::accumulator::accumulator_set & operator<< (alps::accumulator::accumulator_set & set, RealVectorObservable const & obs);
         #endif
         ALPS_DECL alps::mcobservables & operator<< (alps::mcobservables & set, RealVectorObservable const & obs);
 
@@ -92,7 +92,7 @@ namespace alps {
         };
         
         #ifdef ALPS_NGS_USE_NEW_ALEA
-            ALPS_DECL alps::alea::accumulator_set & operator<< (alps::alea::accumulator_set & set, SimpleRealObservable const & obs);
+            ALPS_DECL alps::accumulator::accumulator_set & operator<< (alps::accumulator::accumulator_set & set, SimpleRealObservable const & obs);
         #endif
         ALPS_DECL alps::mcobservables & operator<< (alps::mcobservables & set, SimpleRealObservable const & obs);
 
@@ -103,7 +103,7 @@ namespace alps {
         };
 
         #ifdef ALPS_NGS_USE_NEW_ALEA
-            ALPS_DECL alps::alea::accumulator_set & operator<< (alps::alea::accumulator_set & set, SimpleRealVectorObservable const & obs);
+            ALPS_DECL alps::accumulator::accumulator_set & operator<< (alps::accumulator::accumulator_set & set, SimpleRealVectorObservable const & obs);
         #endif
         ALPS_DECL alps::mcobservables & operator<< (alps::mcobservables & set, SimpleRealVectorObservable const & obs);
 

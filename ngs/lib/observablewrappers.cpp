@@ -55,46 +55,46 @@ namespace alps {
         }
 
         #ifdef ALPS_NGS_USE_NEW_ALEA
-            alps::alea::accumulator_set & operator<< (alps::alea::accumulator_set & set, RealObservable const & obs) {
-                using namespace alps::alea::tag;
+            alps::accumulator::accumulator_set & operator<< (alps::accumulator::accumulator_set & set, RealObservable const & obs) {
+                using namespace alps::accumulator::tag;
                 
-                typedef alea::accumulator<double, alea::features<mean, error, fixed_size_binning> > accum_type;
-                typedef alea::detail::accumulator_wrapper wrapper_type;
+                typedef accumulator::accumulator<double, accumulator::features<mean, error, max_num_binning> > accum_type;
+                typedef accumulator::detail::accumulator_wrapper wrapper_type;
                 
-                set.insert(obs.getName(), boost::shared_ptr<wrapper_type>(new wrapper_type(accum_type(alea::bin_num = obs.getBinnum()))));
+                set.insert(obs.getName(), boost::shared_ptr<wrapper_type>(new wrapper_type(accum_type(accumulator::bin_num = obs.getBinnum()))));
 
                 return set;
             }
             
-            alps::alea::accumulator_set & operator<< (alps::alea::accumulator_set & set, RealVectorObservable const & obs) {
-                using namespace alps::alea::tag;
+            alps::accumulator::accumulator_set & operator<< (alps::accumulator::accumulator_set & set, RealVectorObservable const & obs) {
+                using namespace alps::accumulator::tag;
                 
-                typedef alea::accumulator<std::vector<double>, alea::features<mean, error, fixed_size_binning> > accum_type;
-                typedef alea::detail::accumulator_wrapper wrapper_type;
+                typedef accumulator::accumulator<std::vector<double>, accumulator::features<mean, error, max_num_binning> > accum_type;
+                typedef accumulator::detail::accumulator_wrapper wrapper_type;
                 
-                set.insert(obs.getName(), boost::shared_ptr<wrapper_type>(new wrapper_type(accum_type(alea::bin_num = obs.getBinnum()))));
+                set.insert(obs.getName(), boost::shared_ptr<wrapper_type>(new wrapper_type(accum_type(accumulator::bin_num = obs.getBinnum()))));
 
                 return set;
             }
             
-            alps::alea::accumulator_set & operator<< (alps::alea::accumulator_set & set, SimpleRealObservable const & obs) {
-                using namespace alps::alea::tag;
+            alps::accumulator::accumulator_set & operator<< (alps::accumulator::accumulator_set & set, SimpleRealObservable const & obs) {
+                using namespace alps::accumulator::tag;
                 
-                typedef alea::accumulator<double, alea::features<mean, error> > accum_type;
-                typedef alea::detail::accumulator_wrapper wrapper_type;
+                typedef accumulator::accumulator<double, accumulator::features<mean, error> > accum_type;
+                typedef accumulator::detail::accumulator_wrapper wrapper_type;
                 
-                set.insert(obs.getName(), boost::shared_ptr<wrapper_type>(new wrapper_type(accum_type(alea::bin_num = obs.getBinnum()))));
+                set.insert(obs.getName(), boost::shared_ptr<wrapper_type>(new wrapper_type(accum_type(accumulator::bin_num = obs.getBinnum()))));
                 
                 return set;
             }
             
-            alps::alea::accumulator_set & operator<< (alps::alea::accumulator_set & set, SimpleRealVectorObservable const & obs) {
-                using namespace alps::alea::tag;
+            alps::accumulator::accumulator_set & operator<< (alps::accumulator::accumulator_set & set, SimpleRealVectorObservable const & obs) {
+                using namespace alps::accumulator::tag;
                 
-                typedef alea::accumulator<std::vector<double>, alea::features<mean, error> > accum_type;
-                typedef alea::detail::accumulator_wrapper wrapper_type;
+                typedef accumulator::accumulator<std::vector<double>, accumulator::features<mean, error> > accum_type;
+                typedef accumulator::detail::accumulator_wrapper wrapper_type;
                 
-                set.insert(obs.getName(), boost::shared_ptr<wrapper_type>(new wrapper_type(accum_type(alea::bin_num = obs.getBinnum()))));
+                set.insert(obs.getName(), boost::shared_ptr<wrapper_type>(new wrapper_type(accum_type(accumulator::bin_num = obs.getBinnum()))));
                 
                 return set;
             }

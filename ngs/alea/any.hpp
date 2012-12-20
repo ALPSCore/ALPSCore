@@ -100,6 +100,6 @@ namespace alps
 
 
         } // end namespace detail
-    }//end alea namespace 
+    }//end accumulator namespace 
 }//end alps namespace
 #endif //__ANY_HEADER

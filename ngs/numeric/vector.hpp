@@ -47,11 +47,12 @@ namespace alps
         namespace numeric
         {
             //------------------- operator += -------------------
-            template<typename T>
-            std::vector<T> & operator += (std::vector<T> & lhs, std::vector<T> const & rhs)
+            template<typename T, typename U>
+            std::vector<T> & operator += (std::vector<T> & lhs, std::vector<U> const & rhs)
             {
                 //------------------- init -------------------
                 if(lhs.size() == 0)
+                    //~ alps::resize_same_as(lhs, rhs);
                     lhs = std::vector<T>(rhs.size(), T());
                     
                 if(lhs.size() != rhs.size())
@@ -67,8 +68,8 @@ namespace alps
                 }
             }
             //------------------- operator + -------------------
-            template<typename T>
-            std::vector<T> operator + (std::vector<T> const & lhs, std::vector<T> const & rhs)
+            template<typename T, typename U>
+            std::vector<T> operator + (std::vector<T> const & lhs, std::vector<U> const & rhs)
             {
                 if(lhs.size() != rhs.size())
                 {
@@ -82,8 +83,8 @@ namespace alps
                 }
             }
             //------------------- operator - -------------------
-            template<typename T>
-            std::vector<T> operator - (std::vector<T> const & lhs, std::vector<T> const & rhs)
+            template<typename T, typename U>
+            std::vector<T> operator - (std::vector<T> const & lhs, std::vector<U> const & rhs)
             {
                 if(lhs.size() != rhs.size())
                 {
@@ -97,8 +98,8 @@ namespace alps
                 }
             }
             //------------------- operator * vector-vector-------------------
-            template<typename T>
-            std::vector<T> operator * (std::vector<T> const & lhs, std::vector<T> const & rhs)
+            template<typename T, typename U>
+            std::vector<T> operator * (std::vector<T> const & lhs, std::vector<U> const & rhs)
             {
                 if(lhs.size() != rhs.size())
                 {
@@ -126,7 +127,7 @@ namespace alps
                 std::transform(vec.begin(), vec.end(), vec.begin(), static_cast<double (*)(double)>(&sqrt));
                 return vec;
             }
-            
+        
         }//end namespace numeric
     }//end namespace ngs
 }//end namespace alps

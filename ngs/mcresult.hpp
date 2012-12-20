@@ -134,7 +134,7 @@ namespace alps {
             mcresult();
             mcresult(Observable const * obs);
             #ifdef ALPS_NGS_USE_NEW_ALEA
-                mcresult(alps::alea::detail::accumulator_wrapper const & set);
+                mcresult(alps::accumulator::detail::accumulator_wrapper const & acc_wrapper);
             #endif
             mcresult(mcresult const & rhs);
             mcresult(mcobservable const & rhs);

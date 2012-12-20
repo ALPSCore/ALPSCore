@@ -34,7 +34,7 @@
 
 namespace alps
 {
-    namespace alea
+    namespace accumulator
     {
     IMPLEMENT_FUNCTION(mean)
     IMPLEMENT_FUNCTION(error)
@@ -45,6 +45,6 @@ namespace alps
     IMPLEMENT_FUNCTION(tau)
     IMPLEMENT_FUNCTION(converged)
     IMPLEMENT_FUNCTION(histogram)
-    }//end alea namespace 
+    }//end accumulator namespace 
 }//end alps namespace
 #endif // ALPS_NGS_ALEA_DETAIL_PROPERTIES_HEADER

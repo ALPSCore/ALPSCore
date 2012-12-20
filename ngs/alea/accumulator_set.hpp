@@ -36,7 +36,7 @@
 
 namespace alps
 {
-    namespace alea
+    namespace accumulator
     {
         struct make_accumulator
         {
@@ -90,6 +90,6 @@ namespace alps
         private:
             std::map<std::string, boost::shared_ptr<detail::accumulator_wrapper> > storage;
         };
-    } //end namespace alea
+    } //end namespace accumulator
 }//end namespace alps
 #endif //ALPS_NGS_ALEA_ACCUMULATOR_SET_HEADER

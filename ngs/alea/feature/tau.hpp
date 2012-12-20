@@ -40,7 +40,7 @@
 
 namespace alps
 {
-    namespace alea
+    namespace accumulator
     {
         //=================== tau proxy ===================
         //=================== tau trait ===================
@@ -130,6 +130,6 @@ namespace alps
                 private:
             };
         } // end namespace detail
-    }//end alea namespace 
+    }//end accumulator namespace 
 }//end alps namespace
 #endif //ALPS_NGS_ALEA_DETAIL_TAU_IMPLEMENTATION_HEADER

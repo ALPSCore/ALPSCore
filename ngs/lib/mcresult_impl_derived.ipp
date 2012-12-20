@@ -60,15 +60,11 @@ namespace alps {
                 {}
                 
                 #ifdef ALPS_NGS_USE_NEW_ALEA
-                //TODO4 just pass to mcdata<..>..
-                mcresult_impl_derived(alea::detail::accumulator_wrapper const & acc_wrapper)
-                    : alea::mcdata<T>(acc_wrapper.extract<alea::accumulator<T, alea::features<alea::tag::mean, alea::tag::error, alea::tag::fixed_size_binning> > >())
+                //TODO4 just pass the result_type wrapper to mcdata<..>..
+                mcresult_impl_derived(accumulator::detail::accumulator_wrapper const & acc_wrapper)
+                    : alea::mcdata<T>(acc_wrapper.get<T>())
                 {
                 }
-                //mcresult_impl_derived(alea::detail::accumulator_wrapper const & acc_wrapper)
-                //    : alea::mcdata<T>(acc_wrapper.extract<alea::accumulator<T, alea::features<alea::tag::mean, alea::tag::error> > >())
-                //{
-                //}
                 #endif
                 
                 mcresult_impl_derived(alea::mcdata<T> const & data)

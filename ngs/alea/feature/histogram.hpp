@@ -43,7 +43,7 @@
 
 namespace alps
 {
-    namespace alea
+    namespace accumulator
     {
         //=================== histogram proxy ===================
         namespace detail
@@ -278,6 +278,6 @@ namespace alps
                 private:
             };
         } // end namespace detail
-    }//end alea namespace 
+    }//end accumulator namespace 
 }//end alps namespace
 #endif //ALPS_NGS_ALEA_DETAIL_HISTOGRAM_IMPLEMENTATION_HEADER

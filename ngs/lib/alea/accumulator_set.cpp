@@ -27,7 +27,7 @@
 #include <alps/ngs/alea/accumulator_set.hpp>
 
 namespace alps {
-    namespace alea
+    namespace accumulator
     {
         detail::accumulator_wrapper & accumulator_set::operator[](std::string const & name)
         {
@@ -48,7 +48,7 @@ namespace alps {
             return storage.find(name) != storage.end();
         }
         
-        void accumulator_set::insert(std::string const & name, boost::shared_ptr<detail::accumulator_wrapper> ptr)
+        void accumulator_set::insert(std::string const & name, boost::shared_ptr<alps::accumulator::detail::accumulator_wrapper> ptr)
         {
             if (has(name))
                 throw std::out_of_range("There exists alrady an accumulator with the name: " + name + ALPS_STACKTRACE);
@@ -103,5 +103,5 @@ namespace alps {
         {
             storage.clear(); //should be ok b/c shared_ptr
         }
-    } //end namespace alea
+    } //end namespace accumulator
 } //end namespace alps

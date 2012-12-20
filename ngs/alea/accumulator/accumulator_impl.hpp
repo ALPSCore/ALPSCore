@@ -36,7 +36,7 @@
 
 namespace alps
 {
-    namespace alea
+    namespace accumulator
     {
         BOOST_PARAMETER_NAME((bin_size, keywords) _bin_size)
         BOOST_PARAMETER_NAME((bin_num, keywords) _bin_num)
@@ -105,6 +105,6 @@ namespace alps
                     )
                 )
         };
-    }//end alea namespace 
+    }//end accumulator namespace 
 }//end alps namespace
 #endif // ALPS_NGS_ALEA_ACCUMULATOR_IMPL_HEADER

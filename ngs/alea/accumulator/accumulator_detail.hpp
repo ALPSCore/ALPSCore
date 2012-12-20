@@ -45,7 +45,7 @@
 
 namespace alps
 {
-    namespace alea
+    namespace accumulator
     {
         template<typename T> 
         struct ValueType {};
@@ -356,6 +356,6 @@ namespace alps
                 return os;
             }
         } // end namespace detail
-    }//end alea namespace 
+    }//end accumulator namespace 
 }//end alps namespace
 #endif // ALPS_NGS_ALEA_DETAIL_ACCUMULATOR_DETAIL_HEADER

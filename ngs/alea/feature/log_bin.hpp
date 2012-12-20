@@ -41,7 +41,7 @@
 
 namespace alps
 {
-    namespace alea
+    namespace accumulator
     {
         //=================== log_bin proxy ===================
         template<typename value_type>
@@ -173,6 +173,6 @@ namespace alps
                     size_type bin_size_now_;
             };
         } // end namespace detail
-    }//end alea namespace 
+    }//end accumulator namespace 
 }//end alps namespace
 #endif // ALPS_NGS_ALEA_DETAIL_LOG_BIN_IMPLEMENTATION
