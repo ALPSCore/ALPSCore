@@ -291,7 +291,7 @@ void clone_info::save(hdf5::archive & ar) const {
 
 void clone_info::load(hdf5::archive & ar) {
   cid_t cid;
-  ar["clone"] >> clone_id_;
+  ar["clone"] >> cid;
   ar["progress"] >> progress_;
   ar["workerseed"] >> worker_seed_;
   ar["disorderseed"] >> disorder_seed_;
