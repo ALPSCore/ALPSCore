@@ -97,6 +97,7 @@ BOOST_PYTHON_MODULE(pyngsparams_c) {
         "params",
         boost::python::init<boost::python::optional<boost::python::dict> >()
     )
+        .def(boost::python::init<alps::hdf5::archive, boost::python::optional<std::string const &> >())
         .def("__len__", &alps::detail::params_len)
         .def("__deepcopy__", &alps::python::make_copy<alps::params>)
         .def("__getitem__", &alps::detail::params_getitem)
