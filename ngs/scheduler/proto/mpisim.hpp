@@ -51,11 +51,11 @@ namespace alps {
                 throw std::runtime_error("No communicator passed" + ALPS_STACKTRACE);
             }
 
-            mpisim_ng(typename alps::parameters_type<Impl>::type const & p, boost::mpi::communicator const & c, double Tmin = 1, double Tmax = 600)
+            mpisim_ng(typename alps::parameters_type<Impl>::type const & p, boost::mpi::communicator & c, double Tmin = 1, double Tmax = 600)
                 : Impl(p, c.rank())
                 , communicator(c)
                 , binnumber(p["binnumber"] | std::min(128, 2 * c.size()))
-                , suffix("." + cast<std::string>(c.rank()))
+                , rank(c.rank())
                 , fraction(0.)
                 , min_check(Tmin)
                 , max_check(Tmax)
@@ -65,7 +65,7 @@ namespace alps {
                 , last_time_point(boost::chrono::high_resolution_clock::now())
                 , fraction_time_point(boost::chrono::high_resolution_clock::now())
             {
-                MPI_Errhandler_set(communicator, MPI_ERRORS_RETURN);
+                MPI_Comm_set_errhandler(communicator, MPI_ERRORS_RETURN);
             }
 
             double fraction_completed() const {
@@ -174,7 +174,7 @@ namespace alps {
             }
 
             std::string file_suffix() const {
-                return suffix;
+                return "." + cast<std::string>(rank);
             }
 
         protected:
@@ -189,9 +189,9 @@ namespace alps {
                 return this->status() == Impl::interrupted;
             }
 
-            boost::mpi::communicator communicator;
+            boost::mpi::communicator & communicator;
             std::size_t binnumber;
-            std::string suffix;
+            int rank;
             typename Impl::template atomic<double> fraction;
             double min_check;
             double max_check;
