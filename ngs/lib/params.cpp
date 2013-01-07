@@ -145,7 +145,7 @@ namespace alps {
 
     std::ostream & operator<<(std::ostream & os, params const & v) {
         for (params::const_iterator it = v.begin(); it != v.end(); ++it)
-            os << it->first << "\t" << it->second << std::endl;
+            os << it->first << " = " << it->second << std::endl;
         return os;
     }    
 }
