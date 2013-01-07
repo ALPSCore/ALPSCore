@@ -49,41 +49,32 @@ namespace alps {
         construct(obs);
     }
     
-    //TODO2 & TODO3 wrapper ? realObs or realVecObs -> acc -> mcresult_impl_derived<...>(acc)
-    #ifdef ALPS_NGS_USE_NEW_ALEA
-    template<typename T>
-    bool has_cast(alps::accumulator::detail::accumulator_wrapper const & acc_wrapper)
-    { 
-        try 
-        { 
+#ifdef ALPS_NGS_USE_NEW_ALEA
+    template<typename T> bool has_cast(alps::accumulator::detail::accumulator_wrapper const & acc_wrapper) { 
+        try { 
             acc_wrapper.get<T>();
             return true;
-        } 
-        catch(std::bad_cast) 
-        { 
+        }  catch(std::bad_cast)  { 
             return false;
         }
     }
     
-    mcresult::mcresult(alps::accumulator::detail::accumulator_wrapper const & acc_wrapper)
-    {
+    mcresult::mcresult(alps::accumulator::detail::accumulator_wrapper const & acc_wrapper) {
         //------------------- find out value_type  -------------------
         if(has_cast<double>(acc_wrapper))
             impl_ = new detail::mcresult_impl_derived<detail::mcresult_impl_base, double>(acc_wrapper);
+        else if(has_cast<std::vector<double> >(acc_wrapper))
+           impl_ = new detail::mcresult_impl_derived<detail::mcresult_impl_base, std::vector<double> >(acc_wrapper);
+/*
+        else if(has_cast<boost::array<double, 3> >(acc_wrapper))
+            impl_ = new detail::mcresult_impl_derived<detail::mcresult_impl_base, boost::array<double, 3> >(acc_wrapper);
+*/
         else
-        {
-            if(has_cast<std::vector<double> >(acc_wrapper))
-                impl_ = new detail::mcresult_impl_derived<detail::mcresult_impl_base, std::vector<double> >(acc_wrapper);
-            //~ else
-            //~ {
-                //~ if(has_cast<boost::array<double, 3> >(acc_wrapper))
-                    //~ impl_ = new detail::mcresult_impl_derived<detail::mcresult_impl_base, boost::array<double, 3> >(acc_wrapper);
-                else
-                    boost::throw_exception(std::runtime_error("type not supported in mcresult-constructor" + ALPS_STACKTRACE));
-            //~ }
-        }
+            throw std::runtime_error("type not supported in mcresult-constructor" + ALPS_STACKTRACE);
+        ref_cnt_[impl_] = 1;
     }
-    #endif
+#endif
+
     mcresult::mcresult(mcresult const & rhs) {
         ++ref_cnt_[impl_ = rhs.impl_];
     }
@@ -268,12 +259,12 @@ namespace alps {
     }
 
     #define ALPS_NGS_MCRESULT_FREE_OPERATOR_TPL_IMPL(T, OP, NAME)                  \
-        mcresult OP(mcresult const & lhs, T const & rhs) {                           \
+        mcresult OP(mcresult const & lhs, T const & rhs) {                         \
             mcresult res;                                                          \
             res.ref_cnt_[res.impl_ = lhs.impl_-> NAME (rhs)] = 1;                  \
             return res;                                                            \
         }                                                                          \
-        mcresult OP(T const & lhs, mcresult const & rhs) {                           \
+        mcresult OP(T const & lhs, mcresult const & rhs) {                         \
             mcresult res;                                                          \
             res.ref_cnt_[res.impl_ = rhs.impl_-> NAME ## _inverse (lhs)] = 1;      \
             return res;                                                            \

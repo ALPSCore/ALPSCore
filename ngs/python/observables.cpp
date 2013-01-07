@@ -56,6 +56,9 @@ namespace alps {
         }
         BOOST_PYTHON_FUNCTION_OVERLOADS(createRealVectorObservable_overloads, createRealVectorObservable, 2, 3)
 
+        void addObservable(alps::mcobservables & self, boost::python::object obj) {
+            boost::python::call_method<void>(obj.ptr(), "addToObservables", boost::ref(self));
+        }
     }
 }
 
@@ -69,6 +72,7 @@ BOOST_PYTHON_MODULE(pyngsobservables_c) {
         .def("reset", &alps::mcobservables::reset)
         .def("save", &alps::mcobservables::save)
         .def("load", &alps::detail::mcobservables_load)
+        .def("__lshift__", &alps::detail::addObservable)
         .def("createRealObservable", &alps::detail::createRealObservable, alps::detail::createRealObservable_overloads())
         .def("createRealVectorObservable", &alps::detail::createRealVectorObservable, alps::detail::createRealVectorObservable_overloads())
         // TODO: implement!

@@ -83,8 +83,8 @@ namespace alps {
 
 BOOST_PYTHON_MODULE(pyngsobservable_c) {
 
-    boost::python::def("RealObservable", &alps::detail::create_RealObservable_export);
-    boost::python::def("RealVectorObservable", &alps::detail::create_RealVectorObservable_export);
+    boost::python::def("createRealObservable", &alps::detail::create_RealObservable_export);
+    boost::python::def("createRealVectorObservable", &alps::detail::create_RealVectorObservable_export);
 
     boost::python::class_<alps::mcobservable>(
         "observable",
@@ -94,6 +94,7 @@ BOOST_PYTHON_MODULE(pyngsobservable_c) {
         .def("merge", &alps::mcobservable::merge)
         .def("save", &alps::mcobservable::save)
         .def("load", &alps::detail::observable_load)
+        .def("addToObservable", &alps::detail::observable_load)
     ;
 
 }

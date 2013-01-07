@@ -98,12 +98,13 @@ namespace alps {
 
     mcbase::result_names_type mcbase::result_names() const {
         result_names_type names;
+        
         #ifdef ALPS_NGS_USE_NEW_ALEA
-        for(accumulator::accumulator_set::const_iterator it = measurements.begin(); it != measurements.end(); ++it)
+            for(accumulator::accumulator_set::const_iterator it = measurements.begin(); it != measurements.end(); ++it)
         #else
-        for(mcobservables::const_iterator it = measurements.begin(); it != measurements.end(); ++it)
+            for(mcobservables::const_iterator it = measurements.begin(); it != measurements.end(); ++it)
         #endif
-            names.push_back(it->first);
+                names.push_back(it->first);
         return names;
     }
 

@@ -227,10 +227,9 @@ namespace alps {
                 }
                 
                 #ifdef ALPS_NGS_USE_NEW_ALEA
-                //TODO5: impl for acc
                 
                 //------------------- for RealObservable and RealVectorObservable -------------------
-                mcdata(alps::accumulator::detail::result_type_wrapper<T> & acc) //TODO: explicit
+                mcdata(alps::accumulator::detail::result_type_wrapper<T> & acc)
                     : count_(acc.count())
                     , data_is_analyzed_(true)
                     , jacknife_bins_valid_(false)
