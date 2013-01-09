@@ -4,7 +4,7 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2010 - 2012 by Alex Kosenkov <alex.kosenkov@gmail.com>            *
+ * Copyright (C) 2010 - 2013 by Alex Kosenkov <alex.kosenkov@gmail.com>            *
  *                              Andreas Hehn <hehn@phys.ethz.ch>                   *
  *                              Michele Dolfi <dolfim@phys.ethz.ch>                *
  *                              Tim Ewart <timothee.ewart@unige.ch>                *
@@ -124,6 +124,17 @@ namespace alps {
               throw std::runtime_error("Error in GETRI !");
     
             return M;
+        }
+        
+        template <typename Matrix>
+        void copy_block(Matrix const& A, typename Matrix::size_type ai, typename Matrix::size_type aj,
+                        typename Matrix::difference_type m, typename Matrix::difference_type n,
+                        Matrix& B, typename Matrix::size_type bi, typename Matrix::size_type bj)
+        {
+            assert(num_cols(B) >= bj+n);
+            assert(num_rows(B) >= bi+m);
+            for(typename Matrix::difference_type j=0; j<n; ++j)
+                std::copy(A.col(aj+j).first + ai, A.col(aj+j).first + ai + m, B.col(bj+j).first + bi);
         }
 
         template<class Matrix>
