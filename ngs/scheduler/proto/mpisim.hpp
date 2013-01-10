@@ -25,6 +25,11 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*
+ * For a schematic overview on and around check_communication(), refer to:
+ * The bottom of this file.
+ */
+
 #if !defined(ALPS_NGS_SCHEDULER_MPISIM_NG_HPP) && defined(ALPS_HAVE_MPI)
 #define ALPS_NGS_SCHEDULER_MPISIM_NG_HPP
 
@@ -207,3 +212,35 @@ namespace alps {
 }
 
 #endif
+
+/*
+Communication flow for save() and check_communication().
+Same capital letters correspond to matching collectives: collAi matches collAj
+0: is the root node
+k: are all other ranks
+
+save:
+    0:  bcastA3, barrier
+        bcastB2, barrier
+    k:  check_communication
+
+check_communication:
+    if time to check:
+        bcastA1
+        CHECKPOINT:
+            bcastB1
+        FRACTION:
+            0:  reduceC1
+                frac>=1:
+                    bcastD2
+                    bcastA2
+                    break
+                else:
+                    - (print %done)
+            k:  reduceC2
+            bcastD1
+        STOP:
+            -
+        NOOP:
+            -
+*/
