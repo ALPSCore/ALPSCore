@@ -137,8 +137,10 @@ namespace alps {
                                     if (fraction >= 1.) {
                                         tag = STOP_TAG;
                                         // TODO: make root a parameter
+                                        boost::mpi::broadcast(communicator, next_check = 0, 0);
                                         boost::mpi::broadcast(communicator, tag, 0);
                                         this->set_status(Impl::interrupted);
+                                        break;
                                     } else {
                                         double elapsed = boost::chrono::duration_cast<boost::chrono::duration<double> >(now_time_point - start_time_point).count();
                                         // TODO: save first fraction (if loaded from checkpoint ...)
