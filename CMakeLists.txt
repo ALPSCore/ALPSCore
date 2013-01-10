@@ -50,6 +50,8 @@ set(ALPS_SOURCES
     ngs/lib/paramvalue.cpp ngs/lib/paramproxy.cpp ngs/lib/params.cpp
     # scheduler
     ngs/lib/mcbase.cpp
+    # OpenMPI ULFM
+    ngs/lib/ulfm.cpp
 #deprecated, TODO: replace by new alea
     ngs/lib/mcoptions.cpp ngs/lib/observablewrappers.cpp ngs/lib/make_deprecated_parameters.cpp ngs/lib/make_parameters_from_xml.cpp
     ngs/lib/mcresult.cpp ngs/lib/mcresults.cpp ngs/lib/mcobservables.cpp ngs/lib/mcobservable.cpp
