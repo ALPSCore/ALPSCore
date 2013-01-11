@@ -29,7 +29,11 @@
 
 #include <alps/ngs.hpp>
 
+#ifndef ALPS_LINK_BOOST_TEST
 #include <boost/test/included/unit_test.hpp>
+#else
+#include <boost/test/unit_test.hpp>
+#endif
 
 #include "error_archetype.hpp"
  

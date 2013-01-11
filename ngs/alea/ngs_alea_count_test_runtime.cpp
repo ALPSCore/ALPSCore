@@ -29,7 +29,11 @@
 
 #include <alps/ngs.hpp>
 
+#ifndef ALPS_LINK_BOOST_TEST
 #include <boost/test/included/unit_test.hpp>
+#else
+#include <boost/test/unit_test.hpp>
+#endif
 
 BOOST_AUTO_TEST_CASE(test_count_in_modular_accum)
 {

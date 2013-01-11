@@ -29,7 +29,11 @@
 // atm vli only works with GCC
 #if defined(__GNUG__) && !defined(__ICC) && !defined(__FCC_VERSION)
 #define BOOST_TEST_MODULE vli_cpu
+#ifndef ALPS_LINK_BOOST_TEST
 #include <boost/test/included/unit_test.hpp>
+#else
+#include <boost/test/unit_test.hpp>
+#endif
 #include <boost/mpl/list.hpp>
 
 #include <boost/random/mersenne_twister.hpp>
