@@ -29,6 +29,13 @@
 #ifndef ALPS_NGS_HPP
 #define ALPS_NGS_HPP
 
+#include <alps/ngs/hdf5.hpp>
+#include <alps/ngs/hdf5/map.hpp>
+#include <alps/ngs/hdf5/pair.hpp>
+#include <alps/ngs/hdf5/vector.hpp>
+#include <alps/ngs/hdf5/pointer.hpp>
+#include <alps/ngs/hdf5/complex.hpp>
+
 #include <alps/ngs/api.hpp>
 #include <alps/ngs/cast.hpp>
 #include <alps/ngs/sleep.hpp>

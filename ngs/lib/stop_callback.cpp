@@ -28,16 +28,16 @@
 #include <alps/ngs/signal.hpp>
 #include <alps/ngs/scheduler/stop_callback.hpp>
 
-#include <boost/date_time/gregorian/gregorian.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-
 namespace alps {
 
-    bool stop_callback(int time_limit) {
-        static alps::ngs::signal signals;
-        static boost::posix_time::ptime start_time = boost::posix_time::second_clock::local_time();
+    stop_callback::stop_callback(std::size_t timelimit)
+        : limit(timelimit)
+        , start(boost::chrono::high_resolution_clock::now())
+    {}
+
+    bool stop_callback::operator()() {
         return !signals.empty() 
-            || (time_limit > 0 && boost::posix_time::second_clock::local_time() > start_time + boost::posix_time::seconds(time_limit));
+            || (limit.count() > 0 && boost::chrono::high_resolution_clock::now() > start + limit);
     }
 
 }

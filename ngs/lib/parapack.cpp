@@ -380,7 +380,7 @@ int run_sequential(int argc, char **argv) {
     boost::shared_ptr<alps::ngs_parapack::abstract_worker>
       worker = alps::ngs_parapack::worker_factory::make_worker(p);
     while (worker->fraction_completed() < 1.0) {
-      worker->run(boost::bind(&stop_callback, 0), boost::function<void (double)>());
+      worker->run(stop_callback(0), boost::function<void (double)>());
     }
     std::cerr << "[speed]\nelapsed time = " << tm.elapsed() << " sec\n";
     // std::cout << "[results]\n" << collect_results(*worker);
@@ -672,7 +672,7 @@ int start_sgl(int argc, char** argv) {
         if (clone_ptr) {
 
           // work some
-          clone_ptr->run(boost::bind(&stop_callback, 0), boost::function<void (double)>());
+          clone_ptr->run(stop_callback(0), boost::function<void (double)>());
 
         } else {
 
@@ -749,7 +749,7 @@ int run_sequential_mpi(int argc, char** argv) {
     boost::shared_ptr<alps::ngs_parapack::abstract_worker>
       worker = parallel_worker_factory::make_worker(world, p);
     while (worker->fraction_completed() < 1.0) {
-      worker->run(boost::bind(&stop_callback, 0), boost::function<void (double)>());
+      worker->run(stop_callback(0), boost::function<void (double)>());
     }
     world.barrier();
     if (world.rank() == 0) {
@@ -1104,7 +1104,7 @@ int start_mpi(int argc, char** argv) {
         if (clone_ptr) {
 
           // work some
-          clone_ptr->run(boost::bind(&stop_callback, 0), boost::function<void (double)>());
+          clone_ptr->run(stop_callback(0), boost::function<void (double)>());
           if (world.rank() != 0 && clone_ptr->halted()) {
             delete clone_ptr;
             clone_ptr = 0;

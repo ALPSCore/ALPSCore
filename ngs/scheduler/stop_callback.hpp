@@ -29,11 +29,21 @@
 #define ALPS_NGS_CALLBACK_HPP
 
 #include <alps/ngs/config.hpp>
+#include <alps/ngs/signal.hpp>
+
+#include <boost/chrono.hpp>
 
 namespace alps {
 
-    ALPS_DECL bool stop_callback(int time_limit = 0);
-
+	class ALPS_DECL stop_callback {
+		public:
+		    stop_callback(std::size_t timelimit);
+		    bool operator()();
+		private:
+		    boost::chrono::duration<std::size_t> limit;
+		    alps::ngs::signal signals;
+		    boost::chrono::high_resolution_clock::time_point start;
+	};
 }
 
 #endif
