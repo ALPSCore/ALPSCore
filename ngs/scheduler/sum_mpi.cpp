@@ -87,7 +87,7 @@ int main(int argc, char *argv[]) {
     broadcast(c, params); // send parameters to all clones
 
     alps::mcmpisim<my_sim_type> my_sim(params, c); // creat a simulation
-    my_sim.run(boost::bind(&alps::stop_callback, options.time_limit)); // run the simulation
+    my_sim.run(alps::stop_callback(options.time_limit)); // run the simulation
 
     alps::results_type<alps::mcmpisim<my_sim_type> >::type results = collect_results(my_sim); // collect the results
 
