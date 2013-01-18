@@ -4,8 +4,8 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2010 - 2011 by Lukas Gamper <gamperl@gmail.com>                   *
- *                           Matthias Troyer <troyer@comp-phys.org>                *
+ * Copyright (C) 2010 - 2013 by Lukas Gamper <gamperl@gmail.com>                   *
+ *                              Matthias Troyer <troyer@comp-phys.org>             *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -26,41 +26,22 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_HPP
-#define ALPS_NGS_HPP
+#define PY_ARRAY_UNIQUE_SYMBOL pyngsrandom_PyArrayHandle
 
-#include <alps/ngs/hdf5.hpp>
-#include <alps/ngs/hdf5/map.hpp>
-#include <alps/ngs/hdf5/pair.hpp>
-#include <alps/ngs/hdf5/vector.hpp>
-#include <alps/ngs/hdf5/pointer.hpp>
-#include <alps/ngs/hdf5/complex.hpp>
-
-#include <alps/ngs/api.hpp>
-#include <alps/ngs/cast.hpp>
-#include <alps/ngs/sleep.hpp>
-#include <alps/ngs/signal.hpp>
 #include <alps/ngs/random01.hpp>
-#include <alps/ngs/boost_mpi.hpp>
-#include <alps/ngs/short_print.hpp>
-#include <alps/ngs/thread_exceptions.hpp>
-#include <alps/ngs/observablewrappers.hpp> // TODO: remove these:
+#include <alps/ngs/boost_python.hpp>
 
-#include <alps/ngs/alea.hpp>
+#include <alps/python/make_copy.hpp>
 
-// TODO: remove these:
-#include <alps/ngs/scheduler/mcbase.hpp>
-#include <alps/ngs/scheduler/mpimcsim.hpp>
-#include <alps/ngs/scheduler/stop_callback.hpp>
-#include <alps/ngs/scheduler/progress_callback.hpp>
-//#include <alps/ngs/scheduler/mpiparallelsim.hpp>
-//#include <alps/ngs/scheduler/multithreadedsim.hpp>
+BOOST_PYTHON_MODULE(pyngsrandom01_c) {
 
-// TODO: remove these deprecated headers:
-#include <alps/ngs/mcresult.hpp>
-#include <alps/ngs/mcresults.hpp>
-#include <alps/ngs/mcoptions.hpp>
-#include <alps/ngs/mcobservable.hpp>
-#include <alps/ngs/mcobservables.hpp> // TODO: rethink this!
-
-#endif
+    boost::python::class_<alps::random01>(
+        "random01",
+        boost::python::init<boost::python::optional<int> >()
+    )
+        .def("__deepcopy__",  &alps::python::make_copy<alps::random01>)
+        .def("__call__", static_cast<alps::random01::result_type(alps::random01::*)()>(&alps::random01::operator()))
+        .def("save", &alps::random01::save)
+        .def("load", &alps::random01::load)
+    ;
+}
