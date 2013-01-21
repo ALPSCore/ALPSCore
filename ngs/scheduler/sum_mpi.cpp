@@ -26,6 +26,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <alps/ngs.hpp>
+#include <alps/ngs/scheduler/mpi_adapter.hpp>
 
 #include <boost/lambda/lambda.hpp>
 
@@ -79,17 +80,17 @@ int main(int argc, char *argv[]) {
     boost::mpi::environment env(argc, argv);
     boost::mpi::communicator c;
 
-    alps::parameters_type<alps::mcmpisim<my_sim_type> >::type params;
+    alps::parameters_type<alps::mpi_adapter<my_sim_type> >::type params;
     if (c.rank() == 0) { // read parameters only in master
         alps::hdf5::archive ar(options.input_file);
         ar["/parameters"] >> params;
     }
     broadcast(c, params); // send parameters to all clones
 
-    alps::mcmpisim<my_sim_type> my_sim(params, c); // creat a simulation
+    alps::mpi_adapter<my_sim_type> my_sim(params, c); // creat a simulation
     my_sim.run(alps::stop_callback(options.time_limit)); // run the simulation
 
-    alps::results_type<alps::mcmpisim<my_sim_type> >::type results = collect_results(my_sim); // collect the results
+    alps::results_type<alps::mpi_adapter<my_sim_type> >::type results = collect_results(my_sim); // collect the results
 
     if (c.rank() == 0) { // print the results and save it to hdf5
         std::cout << "e^(-x*x): " << results["Value"] << std::endl;
