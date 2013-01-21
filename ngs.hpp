@@ -44,15 +44,15 @@
 #include <alps/ngs/boost_mpi.hpp>
 #include <alps/ngs/short_print.hpp>
 #include <alps/ngs/thread_exceptions.hpp>
-#include <alps/ngs/observablewrappers.hpp> // TODO: remove these:
+#include <alps/ngs/observablewrappers.hpp> // TODO: remove!
 
 #include <alps/ngs/alea.hpp>
 
-// TODO: remove these:
 #include <alps/ngs/scheduler/mcbase.hpp>
-#include <alps/ngs/scheduler/mpimcsim.hpp>
+//#include <alps/ngs/scheduler/mpimcsim.hpp>
+#include <alps/ngs/scheduler/parseargs.hpp>
 #include <alps/ngs/scheduler/stop_callback.hpp>
-#include <alps/ngs/scheduler/progress_callback.hpp>
+#include <alps/ngs/scheduler/progress_callback.hpp> // TODO: remove this file!
 //#include <alps/ngs/scheduler/mpiparallelsim.hpp>
 //#include <alps/ngs/scheduler/multithreadedsim.hpp>
 

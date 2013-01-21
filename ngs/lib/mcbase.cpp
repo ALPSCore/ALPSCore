@@ -4,7 +4,7 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2010 - 2011 by Lukas Gamper <gamperl@gmail.com>                   *
+ * Copyright (C) 2010 - 2013 by Lukas Gamper <gamperl@gmail.com>                   *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -25,86 +25,43 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <alps/ngs/api.hpp>
-#include <alps/ngs/hdf5.hpp>
 #include <alps/ngs/signal.hpp>
 #include <alps/ngs/scheduler/mcbase.hpp>
 
 namespace alps {
-    
-    mcbase::mcbase(parameters_type const & p, std::size_t seed_offset)
-        : params(p)
-          // TODO: this ist not the best solution - any idea?
-        , random(boost::mt19937((p["SEED"] | 42) + seed_offset), boost::uniform_real<>())
+
+    mcbase::mcbase(parameters_type const & parms, std::size_t seed_offset)
+        : parameters(parms)
+        , params(parameters) // TODO: remove, deprecated!
+        , random((parameters["SEED"] | 42) + seed_offset)
     {
         alps::ngs::signal::listen();
     }
 
-    void mcbase::lock_data() {
-        // TODO: set locked variable ...
-    }
-
-    void mcbase::unlock_data() {
-        // TODO: set locked variable ...
-    }
-
-    void mcbase::lock_results() {
-        // TODO: set locked variable ...
-    }
-
-    void mcbase::unlock_results() {
-        // TODO: set locked variable ...
-    }
-
     void mcbase::save(boost::filesystem::path const & filename) const {
-        hdf5::archive ar(filename, "w");
-        ar["/checkpoint"] << *this;
+        alps::hdf5::archive ar(filename, "w");
+        ar << *this;
     }
 
     void mcbase::load(boost::filesystem::path const & filename) {
-        hdf5::archive ar(filename);
-        ar["/checkpoint"] >> *this;
-    }
-
-    void mcbase::save(alps::hdf5::archive & ar) const {
-        ar["/parameters"] << params;
-        ar["/simulation/realizations/0/clones/0/results"] << measurements;
-    }
-
-    void mcbase::load(alps::hdf5::archive & ar) {
-        ar["/simulation/realizations/0/clones/0/results"] >> measurements;
+        alps::hdf5::archive ar(filename);
+        ar >> *this;
     }
 
     bool mcbase::run(boost::function<bool ()> const & stop_callback) {
+        bool stopped = false;
         do {
-            lock_data();
             update();
-            unlock_data();
-
-            lock_results();
-            lock_data();
             measure();
-            unlock_data();
-            unlock_results();
-        } while(!stop_callback() && fraction_completed() < 1.);
-        return !stop_callback();
+        } while(!(stopped = stop_callback()) && fraction_completed() < 1.);
+        return !stopped;
     }
 
-    #ifdef ALPS_HAVE_PYTHON
-        bool mcbase::run(boost::python::object stop_callback) {
-            return run(boost::bind(callback_wrapper, stop_callback));
-        }
-    #endif
-
+    // implement a nice keys(m) function
     mcbase::result_names_type mcbase::result_names() const {
         result_names_type names;
-        
-        #ifdef ALPS_NGS_USE_NEW_ALEA
-            for(accumulator::accumulator_set::const_iterator it = measurements.begin(); it != measurements.end(); ++it)
-        #else
-            for(mcobservables::const_iterator it = measurements.begin(); it != measurements.end(); ++it)
-        #endif
-                names.push_back(it->first);
+        for(observable_collection_type::const_iterator it = measurements.begin(); it != measurements.end(); ++it)
+            names.push_back(it->first);
         return names;
     }
 
@@ -118,28 +75,22 @@ namespace alps {
 
     mcbase::results_type mcbase::collect_results(result_names_type const & names) const {
         results_type partial_results;
-        
         for(result_names_type::const_iterator it = names.begin(); it != names.end(); ++it)
-            partial_results.insert(*it, mcresult(measurements[*it]));
-        
+            // TODO: this is ugly make measurements[*it]
+            partial_results.insert(*it, alps::mcresult(measurements[*it]));
         return partial_results;
     }
 
-    mcbase::parameters_type & mcbase::get_params() {
-        return params;
-    }
-    
-    mcbase::observables_type & mcbase::get_measurements() {
-        return measurements;
-    }
-    
-    double mcbase::get_random() {
-        return random();
+    void mcbase::save(alps::hdf5::archive & ar) const {
+        ar["/parameters"] << parameters;
+        ar["/simulation/realizations/0/clones/0/measurements"] << measurements;
+        ar["/simulation/realizations/0/clones/0/checkpoint/engine"] << random;
     }
 
-    #ifdef ALPS_HAVE_PYTHON
-        bool mcbase::callback_wrapper(boost::python::object stop_callback) {
-           return boost::python::call<bool>(stop_callback.ptr());
-        }
-    #endif
+    void mcbase::load(alps::hdf5::archive & ar) {
+        ar["/parameters"] >> parameters;
+        ar["/simulation/realizations/0/clones/0/measurements"] >> measurements;
+        ar["/simulation/realizations/0/clones/0/checkpoint/engine"] >> random;
+    }
+
 }

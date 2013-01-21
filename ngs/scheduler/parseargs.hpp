@@ -5,7 +5,6 @@
  * ALPS Libraries                                                                  *
  *                                                                                 *
  * Copyright (C) 2010 - 2013 by Lukas Gamper <gamperl@gmail.com>                   *
- *                              Matthias Troyer <troyer@comp-phys.org>             *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -26,32 +25,28 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <alps/ngs/hdf5.hpp>
+#ifndef ALPS_NGS_SCHEDULER_PARSEARGS_HPP
+#define ALPS_NGS_SCHEDULER_PARSEARGS_HPP
 
-#include <boost/random.hpp>
+#include <alps/ngs/config.hpp>
 
 #include <string>
-#include <sstream>
 
 namespace alps {
 
-    struct random01 : public boost::variate_generator<boost::mt19937, boost::uniform_01<double> > {
-        random01(int seed = 0)
-            : boost::variate_generator<boost::mt19937, boost::uniform_01<double> >(boost::mt19937(seed), boost::uniform_01<double>())
-        {}
+	struct ALPS_DECL parseargs {
+	    parseargs(int argc, char *argv[]);
 
-        void save(alps::hdf5::archive & ar) const { // TODO: move this to hdf5 archive!
-            std::ostringstream os;
-            os << this->engine();
-            ar["engine"] << os.str();
-        }
+	    bool resume;
 
-        void load(alps::hdf5::archive & ar) { // TODO: move this to hdf5 archive!
-            std::string state;
-            ar["engine"] >> state;
-            std::istringstream is(state);
-            is >> this->engine();
-        }
-    };
+	    std::size_t timelimit;
+	    std::size_t tmin;
+	    std::size_t tmax;
+
+	    std::string input_file;
+	    std::string output_file;
+	};
 
 }
+
+#endif

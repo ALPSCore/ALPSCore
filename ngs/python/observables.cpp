@@ -36,30 +36,25 @@
 #include <alps/ngs/boost_python.hpp>
 #include <boost/python/suite/indexing/map_indexing_suite.hpp>
 
-namespace alps {
-    namespace detail {
+void mcobservables_load(alps::mcobservables & self, alps::hdf5::archive & ar, std::string const & path) {
+    std::string current = ar.get_context();
+    ar.set_context(path);
+    self.load(ar);
+    ar.set_context(current);
+}
 
-        void mcobservables_load(alps::mcobservables & self, alps::hdf5::archive & ar, std::string const & path) {
-            std::string current = ar.get_context();
-            ar.set_context(path);
-            self.load(ar);
-            ar.set_context(current);
-        }
+void createRealObservable(alps::mcobservables & self, std::string const & name, uint32_t binnum = 0) {
+    self << alps::ngs::RealObservable(name, binnum);
+}
+BOOST_PYTHON_FUNCTION_OVERLOADS(createRealObservable_overloads, createRealObservable, 2, 3)
 
-        void createRealObservable(alps::mcobservables & self, std::string const & name, uint32_t binnum = 0) {
-            self << alps::ngs::RealObservable(name, binnum);
-        }
-        BOOST_PYTHON_FUNCTION_OVERLOADS(createRealObservable_overloads, createRealObservable, 2, 3)
+void createRealVectorObservable(alps::mcobservables & self, std::string const & name, uint32_t binnum = 0) {
+    self << alps::ngs::RealVectorObservable(name, binnum);
+}
+BOOST_PYTHON_FUNCTION_OVERLOADS(createRealVectorObservable_overloads, createRealVectorObservable, 2, 3)
 
-        void createRealVectorObservable(alps::mcobservables & self, std::string const & name, uint32_t binnum = 0) {
-            self << alps::ngs::RealVectorObservable(name, binnum);
-        }
-        BOOST_PYTHON_FUNCTION_OVERLOADS(createRealVectorObservable_overloads, createRealVectorObservable, 2, 3)
-
-        void addObservable(alps::mcobservables & self, boost::python::object obj) {
-            boost::python::call_method<void>(obj.ptr(), "addToObservables", boost::ref(self));
-        }
-    }
+void addObservable(alps::mcobservables & self, boost::python::object obj) {
+    boost::python::call_method<void>(obj.ptr(), "addToObservables", boost::ref(self));
 }
 
 BOOST_PYTHON_MODULE(pyngsobservables_c) {
@@ -71,10 +66,10 @@ BOOST_PYTHON_MODULE(pyngsobservables_c) {
         .def(boost::python::map_indexing_suite<alps::mcobservables>())
         .def("reset", &alps::mcobservables::reset)
         .def("save", &alps::mcobservables::save)
-        .def("load", &alps::detail::mcobservables_load)
-        .def("__lshift__", &alps::detail::addObservable)
-        .def("createRealObservable", &alps::detail::createRealObservable, alps::detail::createRealObservable_overloads())
-        .def("createRealVectorObservable", &alps::detail::createRealVectorObservable, alps::detail::createRealVectorObservable_overloads())
+        .def("load", &mcobservables_load)
+        .def("__lshift__", &addObservable)
+        .def("createRealObservable", &createRealObservable, createRealObservable_overloads())
+        .def("createRealVectorObservable", &createRealVectorObservable, createRealVectorObservable_overloads())
         // TODO: implement!
 /*
         .def("createRealVectorObservable", &alps::mcobservables::create_RealVectorObservable)
