@@ -128,8 +128,8 @@ namespace alps {
         
         template <typename Matrix>
         void copy_block(Matrix const& A, typename Matrix::size_type ai, typename Matrix::size_type aj,
-                        typename Matrix::difference_type m, typename Matrix::difference_type n,
-                        Matrix& B, typename Matrix::size_type bi, typename Matrix::size_type bj)
+                        Matrix& B, typename Matrix::size_type bi, typename Matrix::size_type bj,
+                        typename Matrix::difference_type m, typename Matrix::difference_type n)
         {
             assert(num_cols(B) >= bj+n);
             assert(num_rows(B) >= bi+m);
