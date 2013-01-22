@@ -135,11 +135,14 @@ namespace alps {
         assert(columns.size() > 0);
 
         size_type const reserve_rows = distance(columns.front().first, columns.front().second);
-        this->resize(reserve_rows, columns.size() );
+        values_.reserve(reserve_rows*columns.size());
         for(std::size_t i=0; i < columns.size(); ++i) {
             assert(distance(columns[i].first,columns[i].second) == reserve_rows);
-            copy(columns[i].first, columns[i].second, col_element_iterator(&values_[i*reserved_size1_]));
+            copy(columns[i].first, columns[i].second, std::back_inserter(values_));
         }
+        reserved_size1_ = reserve_rows;
+        size1_ = reserve_rows;
+        size2_ = columns.size();
     }
 
     template <typename T, typename MemoryBlock>
