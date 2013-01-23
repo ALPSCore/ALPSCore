@@ -33,7 +33,7 @@
 #include <alps/ngs/boost_mpi.hpp>
 #include <boost/function.hpp>
 
-#include "/opt/openmpi-ft/include/mpi-ext.h"
+#include "mpi-ext.h"
 // TODO: mpi-ext.h should go into ALPS
 // TODO: c++11 implementation of repeat_if_ranks_fail
 
