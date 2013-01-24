@@ -201,6 +201,12 @@ namespace alps
                     ) {
                         accum_.collective_merge(comm, root);
                     }
+                    void collective_merge(
+                          boost::mpi::communicator const & comm
+                        , int root
+                    ) const {
+                        accum_.collective_merge(comm, root);
+                    }
 #endif
 
                 protected:
@@ -213,7 +219,7 @@ namespace alps
                             info != typeid(value_type)
                         #endif
                          )
-                            boost::throw_exception(std::runtime_error("wrong type added in accumulator_wrapper::add_value" + ALPS_STACKTRACE));
+                            throw std::runtime_error("wrong type added in accumulator_wrapper::add_value" + ALPS_STACKTRACE);
                         accum_ << *static_cast<value_type const *>(value);
                     }
             };

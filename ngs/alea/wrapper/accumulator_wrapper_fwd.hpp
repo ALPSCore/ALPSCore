@@ -76,6 +76,10 @@ namespace alps
                           boost::mpi::communicator const & comm
                         , int root
                     );
+                    inline void collective_merge(
+                          boost::mpi::communicator const & comm
+                        , int root
+                    ) const;
 #endif
                 private:
                     boost::shared_ptr<base_wrapper> base_;

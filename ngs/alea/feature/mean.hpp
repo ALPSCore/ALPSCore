@@ -180,6 +180,21 @@ namespace alps
                         if (comm.rank() == root)
                             boost::mpi::reduce(comm, sum_, sum_, std::plus<value_type_loc>(), root);
                         else
+                            const_cast<ThisType const *>(this)->collective_merge(comm, root);
+                        */
+                    }
+                    void collective_merge(
+                          boost::mpi::communicator const & comm
+                        , int root
+                    ) const {
+                        base_type::collective_merge(comm, root);
+                        // TODO: make alps::mpi::reduce
+                        // TODO: use std::plus<alps::element_type<...> >
+                        /*
+                        if (comm.rank() == root)
+                            throw std::runtime_error("this object is const" + ALPS_STACKTRACE);
+
+                        else
                             boost::mpi::reduce(comm, sum_, std::plus<value_type_loc>(), root);
                         */
                     }

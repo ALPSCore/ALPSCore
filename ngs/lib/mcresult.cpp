@@ -31,6 +31,7 @@
 #include <alps/ngs/numeric/array.hpp>
 #include <alps/ngs/lib/mcresult_impl_base.ipp>
 #include <alps/ngs/lib/mcresult_impl_derived.ipp>
+
 #include <alps/ngs/alea/accumulator_set.hpp>
 
 #include <alps/alea/observable.h>

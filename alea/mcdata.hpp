@@ -57,7 +57,9 @@
 #include <alps/numeric/vector_valarray_conversion.hpp>
 #include <alps/utility/data.hpp>
 
-#include <alps/ngs/alea/wrapper/accumulator_wrapper.hpp>
+#ifdef ALPS_NGS_USE_NEW_ALEA
+    #include <alps/ngs/alea/wrapper/accumulator_wrapper.hpp>
+#endif
 #include <alps/ngs/numeric/array.hpp>
 
 #include <boost/config.hpp>

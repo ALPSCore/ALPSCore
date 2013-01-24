@@ -31,8 +31,10 @@
 #include <alps/ngs/hdf5.hpp>
 #include <alps/ngs/config.hpp>
 #include <alps/ngs/mcobservable.hpp>
-#include <alps/ngs/alea/accumulator_set.hpp>
 
+#ifdef ALPS_NGS_USE_NEW_ALEA
+    #include <alps/ngs/alea/accumulator_set.hpp>
+#endif
 #include <alps/alea/observable_fwd.hpp>
 #include <alps/type_traits/covariance_type.hpp>
 

@@ -83,6 +83,12 @@ namespace alps
             ) {
                 base_->collective_merge(comm, root);
             }
+            inline void accumulator_wrapper::collective_merge(
+                  boost::mpi::communicator const & comm
+                , int root
+            ) const {
+                base_->collective_merge(comm, root);
+            }
 #endif
 
             inline accumulator_wrapper::accumulator_wrapper(accumulator_wrapper const & arg): base_(arg.base_->clone()) 

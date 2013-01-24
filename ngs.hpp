@@ -46,7 +46,9 @@
 #include <alps/ngs/thread_exceptions.hpp>
 #include <alps/ngs/observablewrappers.hpp> // TODO: remove!
 
-#include <alps/ngs/alea.hpp>
+#ifdef ALPS_NGS_USE_NEW_ALEA
+	#include <alps/ngs/alea.hpp>
+#endif
 
 #include <alps/ngs/scheduler/mcbase.hpp>
 //#include <alps/ngs/scheduler/mpimcsim.hpp>

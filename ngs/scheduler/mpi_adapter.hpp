@@ -30,9 +30,12 @@
 #if !defined(ALPS_NGS_MPI_ADAPTER_HPP) && defined(ALPS_HAVE_MPI)
 #define ALPS_NGS_MPI_ADAPTER_HPP
 
-#include <alps/ngs/alea.hpp>
 #include <alps/ngs/boost_mpi.hpp>
 #include <alps/ngs/scheduler/check_schedule.hpp>
+
+#ifdef ALPS_NGS_USE_NEW_ALEA
+    #include <alps/ngs/alea.hpp>
+#endif
 
 namespace alps {
 

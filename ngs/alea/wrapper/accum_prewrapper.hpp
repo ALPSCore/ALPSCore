@@ -48,7 +48,7 @@ namespace alps
                     accumulator_prewrapper(Accum const & acc): accum_(acc) 
                     {}
 
-                    Accum accum_;
+                    Accum accum_; // TODO: make this private!
             };
         }
     }//end accumulator namespace 
