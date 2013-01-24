@@ -77,7 +77,7 @@ namespace alps {
             typename Base::results_type collect_results(typename Base::result_names_type const & names) const {
                 typename Base::results_type partial_results;
                 for(typename Base::result_names_type::const_iterator it = names.begin(); it != names.end(); ++it) {
-                    alps::mcresult result(this->measurements[*it]);
+                    alps::mcresult result(this->measurements[*it]); // TODO: use Base::collect_results
                     if (result.count())
                         partial_results.insert(*it, result.reduce(communicator, binnumber));
                     else

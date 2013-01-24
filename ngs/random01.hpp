@@ -36,7 +36,7 @@
 namespace alps {
 
     struct random01 : public boost::variate_generator<boost::mt19937, boost::uniform_01<double> > {
-        random01(int seed = 0)
+        random01(int seed = 42)
             : boost::variate_generator<boost::mt19937, boost::uniform_01<double> >(boost::mt19937(seed), boost::uniform_01<double>())
         {}
 
