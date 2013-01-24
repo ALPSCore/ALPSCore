@@ -33,6 +33,10 @@
 #include <boost/cstdint.hpp>
 #include <alps/ngs/alea/accumulator.hpp>
 
+#ifdef ALPS_HAVE_MPI
+    #include <alps/ngs/boost_mpi.hpp>
+#endif
+
 namespace alps
 {
     namespace accumulator
@@ -66,7 +70,13 @@ namespace alps
                     boost::uint64_t count() const;
                     
                     inline void reset();
-                    
+
+#ifdef ALPS_HAVE_MPI
+                    inline void collective_merge(
+                          boost::mpi::communicator const & comm
+                        , int root
+                    );
+#endif
                 private:
                     boost::shared_ptr<base_wrapper> base_;
             };

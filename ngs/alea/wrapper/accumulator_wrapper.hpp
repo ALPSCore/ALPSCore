@@ -57,7 +57,7 @@ namespace alps
             template<typename T>
             result_type_wrapper<T> &accumulator_wrapper::get() const
             {
-                return (*base_).get<T>();
+                return base_->get<T>();
             }
             
             template <typename T>
@@ -68,20 +68,29 @@ namespace alps
 
             inline boost::uint64_t accumulator_wrapper::count() const
             {
-                return (*base_).count();
+                return base_->count();
             }
             
             inline void accumulator_wrapper::reset()
             {
-                (*base_).reset();
+                base_->reset();
             }
-            
+
+#ifdef ALPS_HAVE_MPI
+            inline void accumulator_wrapper::collective_merge(
+                  boost::mpi::communicator const & comm
+                , int root
+            ) {
+                base_->collective_merge(comm, root);
+            }
+#endif
+
             inline accumulator_wrapper::accumulator_wrapper(accumulator_wrapper const & arg): base_(arg.base_->clone()) 
             {}
                 
             inline std::ostream& operator<<(std::ostream &out, const accumulator_wrapper& m)
             {
-                (*(m.base_)).print(out);
+                m.base_->print(out);
                 return out;
             }
         }//end detail namespace 

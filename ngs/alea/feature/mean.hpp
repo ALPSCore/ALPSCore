@@ -37,6 +37,10 @@
 #include <boost/type_traits.hpp>
 #include <boost/static_assert.hpp>
 
+#ifdef ALPS_HAVE_MPI
+    #include <alps/ngs/boost_mpi.hpp>
+#endif
+
 namespace alps
 {
     namespace accumulator
@@ -138,7 +142,7 @@ namespace alps
                     { 
                         using alps::ngs::numeric::operator/;
                         
-                        return mean_type(sum_)/base_type::count();
+                        return mean_type(sum_) / base_type::count();
                     }
             
                     inline ThisType& operator <<(value_type_loc val) 
@@ -163,6 +167,24 @@ namespace alps
                         base_type::reset();
                         sum_ = value_type_loc();
                     }
+
+#ifdef ALPS_HAVE_MPI
+                    void collective_merge(
+                          boost::mpi::communicator const & comm
+                        , int root
+                    ) {
+                        base_type::collective_merge(comm, root);
+                        // TODO: make alps::mpi::reduce
+                        // TODO: use std::plus<alps::element_type<...> >
+                        /*
+                        if (comm.rank() == root)
+                            boost::mpi::reduce(comm, sum_, sum_, std::plus<value_type_loc>(), root);
+                        else
+                            boost::mpi::reduce(comm, sum_, std::plus<value_type_loc>(), root);
+                        */
+                    }
+#endif
+
                 protected:
                     value_type_loc sum_;
             };

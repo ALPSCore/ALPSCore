@@ -497,7 +497,7 @@ namespace alps {
                         using boost::numeric::operators::operator+;
                         alea::mcdata<T>::set_bin_size(boost::mpi::all_reduce(communicator, alea::mcdata<T>::bin_size(), boost::mpi::maximum<std::size_t>()));
                         std::vector<int> buffer(2 * communicator.size()), index(communicator.size());
-                        int data[2] = {communicator.rank(), alea::mcdata<T>::bin_number()};
+                        int data[2] = {communicator.rank(), static_cast<int>(alea::mcdata<T>::bin_number())};
                         boost::mpi::all_gather(communicator, data, 2, buffer);
                         for (std::vector<int>::const_iterator it = buffer.begin(); it != buffer.end(); it += 2)
                             index[*it] = *(it + 1);

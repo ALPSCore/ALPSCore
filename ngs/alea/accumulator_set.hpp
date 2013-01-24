@@ -88,7 +88,7 @@ namespace alps
             void clear();
             
         private:
-            std::map<std::string, boost::shared_ptr<detail::accumulator_wrapper> > storage;
+            map_type storage;
         };
     } //end namespace accumulator
 }//end namespace alps

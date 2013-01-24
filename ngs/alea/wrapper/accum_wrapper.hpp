@@ -36,6 +36,10 @@
 
 #include <alps/ngs/alea/accumulator/properties.hpp>
 
+#ifdef ALPS_HAVE_MPI
+    #include <alps/ngs/boost_mpi.hpp>
+#endif
+
 #include <boost/cstdint.hpp>
 
 #include <typeinfo> //used in add_value
@@ -75,7 +79,14 @@ namespace alps
                     virtual void reset() = 0;
                     virtual base_wrapper* clone() = 0;  //needed for the copy-ctor
                     virtual void print(std::ostream & out) = 0;
-                    
+
+#ifdef ALPS_HAVE_MPI
+                    virtual void collective_merge(
+                          boost::mpi::communicator const & comm
+                        , int root
+                    ) = 0;
+#endif
+
                 protected:
                     virtual void add_value(const void* value, const std::type_info& t_info) = 0; //for operator<<
             };
@@ -183,8 +194,17 @@ namespace alps
                     
                     inline void print(std::ostream & out) {out << accum_;}
                     
+#ifdef ALPS_HAVE_MPI
+                    void collective_merge(
+                          boost::mpi::communicator const & comm
+                        , int root
+                    ) {
+                        accum_.collective_merge(comm, root);
+                    }
+#endif
+
                 protected:
-                    inline void add_value(const void* value, const std::type_info& info) //type-infusion
+                    inline void add_value(void const * value, std::type_info const & info) //type-infusion
                     {
                         if( &info != &typeid(value_type) &&
                         #ifdef BOOST_AUX_ANY_TYPE_ID_NAME
@@ -194,7 +214,7 @@ namespace alps
                         #endif
                          )
                             boost::throw_exception(std::runtime_error("wrong type added in accumulator_wrapper::add_value" + ALPS_STACKTRACE));
-                        accum_ << *static_cast<const value_type*>(value);
+                        accum_ << *static_cast<value_type const *>(value);
                     }
             };
         }//end of detail namespace----------------------------------------------

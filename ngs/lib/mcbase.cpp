@@ -40,12 +40,12 @@ namespace alps {
 
     void mcbase::save(boost::filesystem::path const & filename) const {
         alps::hdf5::archive ar(filename, "w");
-        ar << *this;
+        ar["/"] << *this;
     }
 
     void mcbase::load(boost::filesystem::path const & filename) {
         alps::hdf5::archive ar(filename);
-        ar >> *this;
+        ar["/"] >> *this;
     }
 
     bool mcbase::run(boost::function<bool ()> const & stop_callback) {

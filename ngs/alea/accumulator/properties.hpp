@@ -32,19 +32,35 @@
 #include <alps/ngs/alea/features.hpp>
 #include <alps/ngs/alea/accumulator/accum_property_generator.hpp>
 
+#ifdef ALPS_HAVE_MPI
+    #include <alps/ngs/boost_mpi.hpp>
+#endif
+
 namespace alps
 {
     namespace accumulator
     {
-    IMPLEMENT_FUNCTION(mean)
-    IMPLEMENT_FUNCTION(error)
-    IMPLEMENT_FUNCTION(fixed_size_bin)
-    IMPLEMENT_FUNCTION(max_num_bin)
-    IMPLEMENT_FUNCTION(log_bin)
-    IMPLEMENT_FUNCTION(autocorr)
-    IMPLEMENT_FUNCTION(tau)
-    IMPLEMENT_FUNCTION(converged)
-    IMPLEMENT_FUNCTION(histogram)
+        IMPLEMENT_FUNCTION(mean)
+        IMPLEMENT_FUNCTION(error)
+        IMPLEMENT_FUNCTION(fixed_size_bin)
+        IMPLEMENT_FUNCTION(max_num_bin)
+        IMPLEMENT_FUNCTION(log_bin)
+        IMPLEMENT_FUNCTION(autocorr)
+        IMPLEMENT_FUNCTION(tau)
+        IMPLEMENT_FUNCTION(converged)
+        IMPLEMENT_FUNCTION(histogram)
+
+#ifdef ALPS_HAVE_MPI
+        template <typename T> void collective_merge(
+              boost::mpi::communicator const & comm
+            , T const & acc
+            , int root
+            , bool policy = false
+        ) {
+            acc.collective_merge(comm, root);
+        }
+#endif
+
     }//end accumulator namespace 
 }//end alps namespace
 #endif // ALPS_NGS_ALEA_DETAIL_PROPERTIES_HEADER

@@ -42,27 +42,27 @@ namespace alps
         BOOST_PARAMETER_NAME((bin_num, keywords) _bin_num)
         
           template<
-              typename __0  = void
-            , typename __1  = void
-            , typename __2  = void
-            , typename __3  = void
-            , typename __4  = void
-            , typename __5  = void
-            , typename __6  = void
-            , typename __7  = void
-            , typename __8  = void
+              typename A0  = void
+            , typename A1  = void
+            , typename A2  = void
+            , typename A3  = void
+            , typename A4  = void
+            , typename A5  = void
+            , typename A6  = void
+            , typename A7  = void
+            , typename A8  = void
         >
         struct features
         {
-            typedef __0 _0;
-            typedef __1 _1;
-            typedef __2 _2;
-            typedef __3 _3;
-            typedef __4 _4;
-            typedef __5 _5;
-            typedef __6 _6;
-            typedef __7 _7;
-            typedef __8 _8;
+            typedef A0 _0;
+            typedef A1 _1;
+            typedef A2 _2;
+            typedef A3 _3;
+            typedef A4 _4;
+            typedef A5 _5;
+            typedef A6 _6;
+            typedef A7 _7;
+            typedef A8 _8;
         };
         
         template<

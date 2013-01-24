@@ -32,6 +32,11 @@
 #include <alps/ngs/alea/accumulator/accumulator_impl.hpp>
 #include <boost/cstdint.hpp>
 #include <typeinfo>
+
+#ifdef ALPS_HAVE_MPI
+    #include <alps/ngs/boost_mpi.hpp>
+#endif
+
 namespace alps
 {
     namespace accumulator
@@ -85,6 +90,22 @@ namespace alps
                     {
                         count_ = 0;
                     }
+
+#ifdef ALPS_HAVE_MPI
+                    void collective_merge(
+                          boost::mpi::communicator const & comm
+                        , int root
+                    ) {
+                        // TODO: make alps::mpi::reduce
+                        // TODO: use std::plus<alps::element_type<...> >
+                        /*
+                        if (comm.rank() == root)
+                            boost::mpi::reduce(comm, count_, count_, std::plus<boost::uint64_t>(), root);
+                        else
+                            boost::mpi::reduce(comm, count_, std::plus<boost::uint64_t>(), root);
+                        */
+                    }
+#endif                    
                 private:
                     boost::uint64_t count_;
             };

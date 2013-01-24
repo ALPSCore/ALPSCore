@@ -35,6 +35,10 @@
 #include <alps/ngs/numeric/vector.hpp>
 #include <alps/ngs/numeric/array.hpp>
 
+#ifdef ALPS_HAVE_MPI
+    #include <alps/ngs/boost_mpi.hpp>
+#endif
+
 #include <cmath>
 namespace alps
 {
@@ -108,6 +112,24 @@ namespace alps
                         sum2_ = error_type();
                         base_type::reset();
                     }
+
+#ifdef ALPS_HAVE_MPI
+                    void collective_merge(
+                          boost::mpi::communicator const & comm
+                        , int root
+                    ) {
+                        base_type::collective_merge(comm, root);
+                        // TODO: make alps::mpi::reduce
+                        // TODO: use std::plus<alps::element_type<...> >
+                        /*
+                        if (comm.rank() == root)
+                            boost::mpi::reduce(comm, sum2_, sum2_, std::plus<error_type>(), root);
+                        else
+                            boost::mpi::reduce(comm, sum2_, std::plus<error_type>(), root);
+                        */
+                    }
+#endif
+
                 private:
                     error_type sum2_;
             };

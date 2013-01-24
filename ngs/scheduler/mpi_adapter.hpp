@@ -30,6 +30,7 @@
 #if !defined(ALPS_NGS_MPI_ADAPTER_HPP) && defined(ALPS_HAVE_MPI)
 #define ALPS_NGS_MPI_ADAPTER_HPP
 
+#include <alps/ngs/alea.hpp>
 #include <alps/ngs/boost_mpi.hpp>
 #include <alps/ngs/scheduler/check_schedule.hpp>
 
@@ -77,11 +78,24 @@ namespace alps {
             typename Base::results_type collect_results(typename Base::result_names_type const & names) const {
                 typename Base::results_type partial_results;
                 for(typename Base::result_names_type::const_iterator it = names.begin(); it != names.end(); ++it) {
-                    alps::mcresult result(this->measurements[*it]); // TODO: use Base::collect_results
-                    if (result.count())
-                        partial_results.insert(*it, result.reduce(communicator, binnumber));
-                    else
-                        partial_results.insert(*it, result);
+                    #ifdef ALPS_NGS_USE_NEW_ALEA
+                        if (communicator.rank() == 0) {
+                            if (this->measurements[*it].count()) {
+                                // TODO: make this nicer! Do not use detail types ...
+                                accumulator::detail::accumulator_wrapper merged = this->measurements[*it];
+                                merged.collective_merge(communicator, 0);
+                                partial_results.insert(*it, alps::mcresult(merged));
+                            } else
+                                partial_results.insert(*it, alps::mcresult(this->measurements[*it]));
+                        } else if (this->measurements[*it].count())
+                            this->measurements[*it].collective_merge(communicator, 0);
+                    #else
+                        alps::mcresult result(this->measurements[*it]); // TODO: use Base::collect_results
+                        if (result.count())
+                            partial_results.insert(*it, result.reduce(communicator, binnumber));
+                        else
+                            partial_results.insert(*it, result);
+                    #endif
                 }
                 return partial_results;
             }

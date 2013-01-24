@@ -86,7 +86,7 @@ namespace alps {
 
             boost::python::numeric::array convert(std::vector<std::vector<double> > const & source) {
                 import();
-                npy_intp size[2] = {source.size(), source[0].size() };
+                npy_intp size[2] = {static_cast<npy_intp>(source.size()), static_cast<npy_intp>(source[0].size()) };
                 boost::python::object obj(boost::python::handle<>(PyArray_SimpleNew(2, size, PyArray_DOUBLE)));
                 void * ptr = PyArray_DATA((PyArrayObject*) obj.ptr());
                 for (std::size_t i = 0; i < source.size(); ++i)
@@ -96,7 +96,11 @@ namespace alps {
 
             boost::python::numeric::array convert(std::vector<std::vector<std::vector<double> > > const & source) {
                 import();
-                npy_intp size[3] = {source.size(), source[0].size(), source[0][0].size() };
+                npy_intp size[3] = {
+                      static_cast<npy_intp>(source.size())
+                    , static_cast<npy_intp>(source[0].size())
+                    , static_cast<npy_intp>(source[0][0].size())
+                };
                 boost::python::object obj(boost::python::handle<>(PyArray_SimpleNew(3, size, PyArray_DOUBLE)));
                 void * ptr = PyArray_DATA((PyArrayObject*) obj.ptr());
                 for (std::size_t i = 0; i < source.size(); ++i)

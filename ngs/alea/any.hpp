@@ -2,8 +2,8 @@
 // Date:    24.05.2012 10:06:55 CEST
 // File:    any.hpp
 
-#ifndef __ANY_HEADER
-#define __ANY_HEADER
+#ifndef ALPS_NGS_ALEA_ANY_HPP
+#define ALPS_NGS_ALEA_ANY_HPP
 
 #include <alps/ngs/stacktrace.hpp>
 
@@ -18,9 +18,7 @@ namespace alps
     {
         namespace detail
         {
-        template<typename T>
-        struct type
-        {
+        template<typename T> struct type {
             static void value() {}
         };
         
@@ -34,54 +32,52 @@ namespace alps
         struct is_same<T, T>: public boost::true_type {};
         
         template<typename T>
-        struct make_any
-        {
-            make_any(T & arg): data(arg) {}
-            
-            void * operator()()
-            {
-                return &data;
-            }
-            T & data;
-        };
-        
-        struct weak_type_ptr
-        {
-            template<typename T>
-            weak_type_ptr(T & arg): fct(&type<T>::value), data(&arg) {}
-            
-            template<typename T>
-            T& cast()
-            {
-                if(fct != &type<T>::value)
-                {
-                    std::stringstream out;
-                    out << "bad cast in alps::alea::detail weak_type_ptr.cast<type>()";
-                    boost::throw_exception(std::runtime_error(out.str() + ALPS_STACKTRACE));
+        class make_any {
+            public:
+                make_any(T & arg): data(arg) {}
+                
+                void * operator()() {
+                    return &data;
                 }
-                return *static_cast<T*>(data);
-            }
-            
-            void (*fct)();
-            void * data;
+            private:
+                T & data;
+        };
+        
+        class weak_type_ptr {
+            public:
+                template<typename T>
+                weak_type_ptr(T & arg): fct(&type<T>::value), data(&arg) {}
+                
+                template<typename T> T & cast() {
+                    if(fct != &type<T>::value) {
+                        std::stringstream out;
+                        out << "bad cast in alps::alea::detail weak_type_ptr.cast<type>()";
+                        boost::throw_exception(std::runtime_error(out.str() + ALPS_STACKTRACE));
+                    }
+                    return *static_cast<T*>(data);
+                }
+
+            private:
+                void (*fct)();
+                void * data;
         };
         
         
-        template<typename T>
-        struct make_data
+        template<typename T> class make_data
         {
-            make_data(T const & arg): data(arg) {}
-            weak_type_ptr operator()()
-            {
-                return weak_type_ptr(data);
-            }
+            public:
+                make_data(T const & arg): data(arg) {}
+
+                weak_type_ptr operator()() {
+                    return weak_type_ptr(data);
+                }
+                
+                T & get() {
+                    return data;
+                }
             
-            T& get()
-            {
-                return data;
-            }
-            
-            T data;
+            private:
+                T data;
         };
         
         //~ template<typename T> struct make_any {
@@ -102,4 +98,4 @@ namespace alps
         } // end namespace detail
     }//end accumulator namespace 
 }//end alps namespace
-#endif //__ANY_HEADER
+#endif //ALPS_NGS_ALEA_ANY_HPP
