@@ -26,8 +26,6 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#define PY_ARRAY_UNIQUE_SYMBOL pyngsapi_PyArrayHandle
-
 #include <alps/ngs.hpp>
 #include <alps/ngs/scheduler/mcbase.hpp>
 

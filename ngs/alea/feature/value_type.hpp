@@ -106,7 +106,7 @@ namespace alps
                         , int root
                     ) const {
                         if (comm.rank() == root)
-                            throw std::runtime_error("this object is const" + ALPS_STACKTRACE);
+                            throw std::runtime_error("A const object cannot be root" + ALPS_STACKTRACE);
 
                         else
                             boost::mpi::reduce(comm, count_, std::plus<boost::uint64_t>(), root);

@@ -26,7 +26,9 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <alps/ngs/observablewrappers.hpp>
-#include <alps/ngs/alea.hpp>
+#ifdef ALPS_NGS_USE_NEW_ALEA
+    #include <alps/ngs/alea.hpp>
+#endif
 
 namespace alps {
 

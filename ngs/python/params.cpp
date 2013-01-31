@@ -38,6 +38,7 @@
 #include <boost/python/to_python_converter.hpp>
 
 #include <string>
+#include <sstream>
 
 namespace alps {
     namespace detail {
@@ -83,6 +84,12 @@ namespace alps {
             }
         };
 
+        boost::python::str params_print(alps::params & self) {
+            std::stringstream ss;
+            ss << self;
+            return boost::python::str(ss.str());
+        }
+
     }
 }
 
@@ -107,6 +114,7 @@ BOOST_PYTHON_MODULE(pyngsparams_c) {
         .def("__delitem__", &alps::detail::params_delitem)
         .def("__contains__", &alps::detail::params_contains)
         .def("__iter__", boost::python::iterator<alps::params>())
+        .def("__str__", &alps::detail::params_print)
         .def("valueOrDefault", &alps::detail::value_or_default)
         .def("save", &alps::params::save)
         .def("load", &alps::detail::params_load, alps::detail::params_load_overloads())

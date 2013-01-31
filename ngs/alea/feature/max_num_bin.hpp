@@ -195,6 +195,56 @@ namespace alps
                         elements_in_bin_ = 0;
                         pos_in_partial_ = 0;
                     }
+
+#ifdef ALPS_HAVE_MPI
+                    void collective_merge(
+                          boost::mpi::communicator const & comm
+                        , int root
+                    ) {
+                        base_type::collective_merge(comm, root);
+                        if (comm.rank() == root) {
+/*
+                            using alps::numeric::sq;
+                            using alps::numeric::sqrt;
+                            using boost::numeric::operators::operator*;
+                            using boost::numeric::operators::operator/;
+
+
+                            std::size_t binsize = elements_in_bin_bin_.size(), elementsize = alea::mcdata<T>::mean().size();
+
+
+                            typedef typename element_type<mean_type>::type element_t;
+                            if (bin_.size() > 0) {
+                                std::vector<T> local_bins(max_bin_num_, T(elementsize));
+                                std::size_t binsize = partition_bins(local_bins, comm);
+                                std::size_t binnumber = local_bins.size(); // partition_bins() may reduce binnumber
+                                std::vector<T> global_bins(binnumber);
+
+                                std::vector<element_t> local_raw_bins(binnumber * elementsize), global_raw_bins(binnumber * elementsize);
+                                for (typename std::vector<T>::iterator it = local_bins.begin(); it != local_bins.end(); ++it)
+                                    std::copy(it->begin(), it->end(), local_raw_bins.begin() + ((it - local_bins.begin()) * elementsize));
+                                boost::mpi::reduce(communicator, local_raw_bins, global_raw_bins, std::plus<element_t>(), root);
+                                for (typename std::vector<T>::iterator it = global_bins.begin(); it != global_bins.end(); ++it) {
+                                    it->resize(elementsize);
+                                    std::copy(global_raw_bins.begin() + (it - global_bins.begin()) * elementsize, global_raw_bins.begin() + (it - global_bins.begin() + 1) * elementsize, it->begin());
+                                }
+                            }
+*/                            
+                        } else
+                            const_cast<ThisType const *>(this)->collective_merge(comm, root);
+                    }
+                    void collective_merge(
+                          boost::mpi::communicator const & comm
+                        , int root
+                    ) const {
+                        base_type::collective_merge(comm, root);
+                        if (comm.rank() == root)
+                            throw std::runtime_error("A const object cannot be root" + ALPS_STACKTRACE);
+                        else
+;//                            boost::mpi::reduce(comm, sum_, std::plus<typename element_type<value_type_loc>::type>(), root);
+                    }
+#endif
+
                 private:
                     std::vector<mean_type> bin_;
                     value_type_loc partial_;

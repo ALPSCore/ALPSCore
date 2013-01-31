@@ -29,8 +29,14 @@
 #ifndef ALPS_NGS_ALEA_DETAIL_MEAN_IMPLEMENTATION_HEADER
 #define ALPS_NGS_ALEA_DETAIL_MEAN_IMPLEMENTATION_HEADER
 
-#include <alps/ngs/alea/accumulator/accumulator_impl.hpp>
+#include <alps/ngs/hdf5.hpp>
+#include <alps/ngs/hdf5/vector.hpp>
+#include <alps/ngs/hdf5/multi_array.hpp>
+ 
 #include <alps/ngs/short_print.hpp>
+#include <alps/ngs/alea/accumulator/accumulator_impl.hpp>
+
+#include <alps/type_traits/element_type.hpp>
 
 #include <alps/ngs/alea/features.hpp>
 
@@ -174,29 +180,20 @@ namespace alps
                         , int root
                     ) {
                         base_type::collective_merge(comm, root);
-                        // TODO: make alps::mpi::reduce
-                        // TODO: use std::plus<alps::element_type<...> >
-                        /*
                         if (comm.rank() == root)
-                            boost::mpi::reduce(comm, sum_, sum_, std::plus<value_type_loc>(), root);
+                            boost::mpi::reduce(comm, sum_, sum_, std::plus<typename alps::hdf5::scalar_type<value_type_loc>::type>(), root);
                         else
                             const_cast<ThisType const *>(this)->collective_merge(comm, root);
-                        */
                     }
                     void collective_merge(
                           boost::mpi::communicator const & comm
                         , int root
                     ) const {
                         base_type::collective_merge(comm, root);
-                        // TODO: make alps::mpi::reduce
-                        // TODO: use std::plus<alps::element_type<...> >
-                        /*
                         if (comm.rank() == root)
-                            throw std::runtime_error("this object is const" + ALPS_STACKTRACE);
-
+                            throw std::runtime_error("A const object cannot be root" + ALPS_STACKTRACE);
                         else
-                            boost::mpi::reduce(comm, sum_, std::plus<value_type_loc>(), root);
-                        */
+                            boost::mpi::reduce(comm, sum_, std::plus<typename alps::hdf5::scalar_type<value_type_loc>::type>(), root);
                     }
 #endif
 
