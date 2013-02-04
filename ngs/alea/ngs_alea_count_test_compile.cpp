@@ -39,7 +39,7 @@
 
 BOOST_AUTO_TEST_CASE(test_count_with_mean_archetype)
 {
-    alps::accumulator::accumulator<mean_archetype> acc;
+    alps::accumulator::accumulator<mean_archetype, alps::accumulator::features<> > acc;
     
     for(int i = 0; i < 10; ++i)
         acc << i;
