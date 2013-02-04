@@ -39,6 +39,7 @@
 #include <boost/numeric/bindings/lapack/driver/gesdd.hpp>
 #include <boost/numeric/bindings/lapack/driver/syevd.hpp>
 #include <boost/numeric/bindings/lapack/driver/heevd.hpp>
+#include <boost/numeric/bindings/lapack/driver/geev.hpp>
 #include <boost/numeric/bindings/lapack/computational/geqrf.hpp>
 #include <boost/numeric/bindings/lapack/computational/orgqr.hpp>
 #include <boost/numeric/bindings/lapack/computational/gelqf.hpp>
@@ -313,6 +314,32 @@ namespace alps {
 
         template<typename T, class MemoryBlock>
         matrix<T, MemoryBlock> exp (matrix<T, MemoryBlock> M, T const & alpha=1)
+        {
+            BOOST_STATIC_ASSERT( boost::is_complex<T>::value );
+            assert(num_rows(M) == num_cols(M));
+            std::size_t n = num_cols(M);
+            matrix<T, MemoryBlock> Nr(n, n), Nl(n, n);
+            typename associated_vector<matrix<T, MemoryBlock> >::type Sv(num_rows(M));
+            int info;
+            
+            info = boost::numeric::bindings::lapack::geev('N', 'V', M, Sv, Nl, Nr);
+            if (info != 0)
+              throw std::runtime_error("Error in GEEV !");
+            
+            matrix<T, MemoryBlock> Nrinv = inverse(Nr);
+            
+            typename associated_diagonal_matrix<matrix<T, MemoryBlock> >::type S(Sv);
+            S = exp(alpha*S);
+            
+            alps::numeric::matrix<std::complex<double> > tmp;
+            gemm(Nr, S, tmp);
+            gemm(tmp, Nrinv, M);
+            
+            return M;
+        }
+
+        template<typename T, class MemoryBlock>
+        matrix<T, MemoryBlock> exp_hermitian (matrix<T, MemoryBlock> M, T const & alpha=1)
         {
             matrix<T, MemoryBlock> N, tmp;
             typename associated_real_vector<matrix<T, MemoryBlock> >::type Sv(num_rows(M));
