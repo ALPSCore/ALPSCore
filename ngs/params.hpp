@@ -80,6 +80,7 @@ namespace alps {
 
             #ifdef ALPS_HAVE_PYTHON
                 params(boost::python::dict const & arg);
+                params(boost::python::str const & arg);
             #endif
 
             std::size_t size() const;

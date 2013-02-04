@@ -181,10 +181,10 @@ namespace alps
                     ) {
                         base_type::collective_merge(comm, root);
                         if (comm.rank() == root)
-                            boost::mpi::reduce(comm, sum_, sum_, std::plus<typename alps::hdf5::scalar_type<value_type_loc>::type>(), root);
+                            base_type::template reduce_if<typename alps::hdf5::scalar_type<value_type_loc>::type>(comm, sum_, sum_, std::plus<typename alps::hdf5::scalar_type<value_type_loc>::type>(), root);
                         else
                             const_cast<ThisType const *>(this)->collective_merge(comm, root);
-                    }
+                    }                    
                     void collective_merge(
                           boost::mpi::communicator const & comm
                         , int root
@@ -193,7 +193,7 @@ namespace alps
                         if (comm.rank() == root)
                             throw std::runtime_error("A const object cannot be root" + ALPS_STACKTRACE);
                         else
-                            boost::mpi::reduce(comm, sum_, std::plus<typename alps::hdf5::scalar_type<value_type_loc>::type>(), root);
+                            base_type::template reduce_if<typename alps::hdf5::scalar_type<value_type_loc>::type>(comm, sum_, std::plus<typename alps::hdf5::scalar_type<value_type_loc>::type>(), root);
                     }
 #endif
 

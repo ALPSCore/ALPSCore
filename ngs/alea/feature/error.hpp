@@ -116,7 +116,10 @@ namespace alps
 #ifdef ALPS_HAVE_MPI
                     void collective_merge(
                           boost::mpi::communicator const & comm
-                        , int root
+                        , typename boost::enable_if<
+                              typename boost::is_scalar<typename alps::hdf5::scalar_type<error_type>::type>::type
+                            , int
+                          >::type root
                     ) {
                         base_type::collective_merge(comm, root);
                         if (comm.rank() == root)
@@ -126,7 +129,10 @@ namespace alps
                     }
                     void collective_merge(
                           boost::mpi::communicator const & comm
-                        , int root
+                        , typename boost::enable_if<
+                              typename boost::is_scalar<typename alps::hdf5::scalar_type<error_type>::type>::type
+                            , int
+                          >::type root
                     ) const {
                         base_type::collective_merge(comm, root);
                         if (comm.rank() == root)

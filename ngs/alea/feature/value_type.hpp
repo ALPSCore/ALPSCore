@@ -111,6 +111,24 @@ namespace alps
                         else
                             boost::mpi::reduce(comm, count_, std::plus<boost::uint64_t>(), root);
                     }
+                protected:
+                    template <typename ScalarType, typename ValueType, typename Op> static void reduce_if(
+                          typename boost::enable_if<boost::is_scalar<ScalarType>, boost::mpi::communicator>::type const & comm
+                        , ValueType const & arg
+                        , ValueType & res
+                        , Op op
+                        , int root
+                    ) {
+                        boost::mpi::reduce(comm, arg, res, op, root);
+                    }
+                    template <typename ScalarType, typename ValueType, typename Op> static void reduce_if(
+                          typename boost::enable_if<boost::is_scalar<ScalarType>, boost::mpi::communicator>::type const & comm
+                        , ValueType const & arg
+                        , Op op
+                        , int root
+                    ) {
+                        boost::mpi::reduce(comm, arg, op, root);
+                    }
 #endif                    
                 private:
                     boost::uint64_t count_;

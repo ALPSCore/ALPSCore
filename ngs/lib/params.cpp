@@ -61,6 +61,18 @@ namespace alps {
             for (std::size_t i = 0; i < boost::python::len(dict()); ++i)
                 setter(boost::python::call_method<std::string>(kit.attr("next")().ptr(), "__str__"), vit.attr("next")());
         }
+
+        // TODO: merge with params::params(boost::filesystem::path const & path);
+        params::params(boost::python::str const & arg) {
+            std::string path = boost::python::extract<std::string>(arg)();
+            boost::filesystem::ifstream ifs(path);
+            Parameters par(ifs);
+            for (Parameters::const_iterator it = par.begin(); it != par.end(); ++it) {
+                detail::paramvalue val(it->value());
+                setter(it->key(), val);
+            }
+        }
+
     #endif
 
     std::size_t params::size() const {
