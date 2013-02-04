@@ -116,29 +116,23 @@ namespace alps
 #ifdef ALPS_HAVE_MPI
                     void collective_merge(
                           boost::mpi::communicator const & comm
-                        , typename boost::enable_if<
-                              typename boost::is_scalar<typename alps::hdf5::scalar_type<error_type>::type>::type
-                            , int
-                          >::type root
+                        , int root
                     ) {
                         base_type::collective_merge(comm, root);
                         if (comm.rank() == root)
-                            boost::mpi::reduce(comm, sum2_, sum2_, std::plus<typename alps::hdf5::scalar_type<error_type>::type>(), root);
+                            base_type::reduce_if(comm, sum2_, sum2_, std::plus<typename alps::hdf5::scalar_type<error_type>::type>(), root);
                         else
                             const_cast<ThisType const *>(this)->collective_merge(comm, root);
                     }
                     void collective_merge(
                           boost::mpi::communicator const & comm
-                        , typename boost::enable_if<
-                              typename boost::is_scalar<typename alps::hdf5::scalar_type<error_type>::type>::type
-                            , int
-                          >::type root
+                        , int root
                     ) const {
                         base_type::collective_merge(comm, root);
                         if (comm.rank() == root)
                             throw std::runtime_error("A const object cannot be root" + ALPS_STACKTRACE);
                         else
-                            boost::mpi::reduce(comm, sum2_, std::plus<typename alps::hdf5::scalar_type<error_type>::type>(), root);
+                            base_type::reduce_if(comm, sum2_, std::plus<typename alps::hdf5::scalar_type<error_type>::type>(), root);
                     }
 #endif
 

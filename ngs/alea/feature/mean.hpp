@@ -161,7 +161,7 @@ namespace alps
                         sum_ += val;
                         return *this;
                     }
-            
+
                     template<typename Stream> 
                     inline void print(Stream & os) 
                     {
@@ -181,7 +181,7 @@ namespace alps
                     ) {
                         base_type::collective_merge(comm, root);
                         if (comm.rank() == root)
-                            base_type::template reduce_if<typename alps::hdf5::scalar_type<value_type_loc>::type>(comm, sum_, sum_, std::plus<typename alps::hdf5::scalar_type<value_type_loc>::type>(), root);
+                            base_type::reduce_if(comm, sum_, sum_, std::plus<typename alps::hdf5::scalar_type<value_type_loc>::type>(), root);
                         else
                             const_cast<ThisType const *>(this)->collective_merge(comm, root);
                     }                    
@@ -193,7 +193,7 @@ namespace alps
                         if (comm.rank() == root)
                             throw std::runtime_error("A const object cannot be root" + ALPS_STACKTRACE);
                         else
-                            base_type::template reduce_if<typename alps::hdf5::scalar_type<value_type_loc>::type>(comm, sum_, std::plus<typename alps::hdf5::scalar_type<value_type_loc>::type>(), root);
+                            base_type::reduce_if(comm, sum_, std::plus<typename alps::hdf5::scalar_type<value_type_loc>::type>(), root);
                     }
 #endif
 

@@ -43,7 +43,6 @@
         }
     }
 */
-
     namespace boost {
         namespace mpi {
 

@@ -112,24 +112,43 @@ namespace alps
                             boost::mpi::reduce(comm, count_, std::plus<boost::uint64_t>(), root);
                     }
                 protected:
-                    template <typename ScalarType, typename ValueType, typename Op> static void reduce_if(
-                          typename boost::enable_if<boost::is_scalar<ScalarType>, boost::mpi::communicator>::type const & comm
+                    template <typename ValueType, typename Op> void static reduce_if(
+                          boost::mpi::communicator const & comm
                         , ValueType const & arg
                         , ValueType & res
                         , Op op
-                        , int root
+                        , typename boost::enable_if<typename boost::is_scalar<typename alps::hdf5::scalar_type<ValueType>::type>::type, int>::type root
                     ) {
                         boost::mpi::reduce(comm, arg, res, op, root);
                     }
-                    template <typename ScalarType, typename ValueType, typename Op> static void reduce_if(
-                          typename boost::enable_if<boost::is_scalar<ScalarType>, boost::mpi::communicator>::type const & comm
+                    template <typename ValueType, typename Op> void static reduce_if(
+                          boost::mpi::communicator const &
+                        , ValueType const &
+                        , ValueType &
+                        , Op
+                        , typename boost::disable_if<typename boost::is_scalar<typename alps::hdf5::scalar_type<ValueType>::type>::type, int>::type
+                    ) {
+                        throw std::logic_error("No boost::mpi::reduce available for this type " + std::string(typeid(ValueType).name()) + ALPS_STACKTRACE);
+                    }
+
+                    template <typename ValueType, typename Op> void static reduce_if(
+                          boost::mpi::communicator const & comm
                         , ValueType const & arg
                         , Op op
-                        , int root
+                        , typename boost::enable_if<typename boost::is_scalar<typename alps::hdf5::scalar_type<ValueType>::type>::type, int>::type root
                     ) {
                         boost::mpi::reduce(comm, arg, op, root);
                     }
-#endif                    
+                    template <typename ValueType, typename Op> void static reduce_if(
+                          boost::mpi::communicator const &
+                        , ValueType const &
+                        , Op
+                        , typename boost::disable_if<typename boost::is_scalar<typename alps::hdf5::scalar_type<ValueType>::type>::type, int>::type
+                    ) {
+                        throw std::logic_error("No boost::mpi::reduce available for this type " + std::string(typeid(ValueType).name()) + ALPS_STACKTRACE);
+                    }
+#endif
+
                 private:
                     boost::uint64_t count_;
             };
