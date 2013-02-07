@@ -199,6 +199,28 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Adjoint_inplace_test, T, test_types)
     ValidateHelper<typename T::value_type>::validate(M,Mcopy);
 }
 
+BOOST_AUTO_TEST_CASE_TEMPLATE(Conj_transpose_test, T, test_types)
+{
+    typedef matrix<typename T::value_type> Matrix;
+    Matrix M(T::valuex,T::valuey);
+    InitHelper<typename T::value_type>::init(M);
+
+    Matrix mct = conj(transpose(M));
+    Matrix mtc = transpose(conj(M));
+    ValidateHelper<typename T::value_type>::validate(mct,mtc);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(Adjoint_conj_transpose_test, T, test_types)
+{
+    typedef matrix<typename T::value_type> Matrix;
+    Matrix M(T::valuex,T::valuey);
+    InitHelper<typename T::value_type>::init(M);
+
+    Matrix ma  = adjoint(M);
+    Matrix mtc = transpose(conj(M));
+    ValidateHelper<typename T::value_type>::validate(ma,mtc);
+}
+
 /*--------------------------------------------------------------------------- SVD TESTS */
 BOOST_AUTO_TEST_CASE_TEMPLATE(SVD_test, T, test_types)
 {
