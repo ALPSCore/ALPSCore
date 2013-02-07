@@ -40,18 +40,16 @@ namespace alps { namespace numeric {
 
 
 template <class T>
-T conj (T x)
+typename boost::enable_if<boost::is_fundamental<T>,T>::type conj (T x)
 { 
-  BOOST_STATIC_ASSERT((boost::is_fundamental<T>::value));
   return x;
 }
 
 // if std::complex<T> is used std::conj will be called by argument dependent look-up
 
 template <class T>
-void conj_inplace(T& t)
+typename boost::enable_if<boost::is_fundamental<T>,void>::type conj_inplace(T& t)
 {
-  BOOST_STATIC_ASSERT((boost::is_fundamental<T>::value));
 }
 
 template <class T>

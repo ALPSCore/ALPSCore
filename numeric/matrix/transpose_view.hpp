@@ -163,7 +163,8 @@ ALPS_IMPLEMENT_MATRIX_INTERFACE(transpose_view<Matrix>,<typename Matrix>)
 //
 
 template <typename Matrix1, typename Matrix2>
-struct matrix_matrix_multiply_return_type<Matrix1, transpose_view<Matrix2> > {
+struct matrix_matrix_multiply_return_type<Matrix1, transpose_view<Matrix2> >
+{
     typedef typename matrix_matrix_multiply_return_type<
           typename boost::remove_const<Matrix1>::type
         , typename boost::remove_const<Matrix2>::type
@@ -171,7 +172,8 @@ struct matrix_matrix_multiply_return_type<Matrix1, transpose_view<Matrix2> > {
 };
 
 template <typename Matrix1, typename Matrix2>
-struct matrix_matrix_multiply_return_type<transpose_view<Matrix1>, Matrix2> {
+struct matrix_matrix_multiply_return_type<transpose_view<Matrix1>, Matrix2>
+{
     typedef typename matrix_matrix_multiply_return_type<
           typename boost::remove_const<Matrix1>::type
         , typename boost::remove_const<Matrix2>::type
@@ -179,13 +181,24 @@ struct matrix_matrix_multiply_return_type<transpose_view<Matrix1>, Matrix2> {
 };
 
 template <typename Matrix>
-struct matrix_matrix_multiply_return_type<transpose_view<Matrix>, transpose_view<Matrix> > {
+struct matrix_matrix_multiply_return_type<transpose_view<Matrix>, transpose_view<Matrix> >
+{
     typedef typename boost::remove_const<Matrix>::type type;
 };
+
 template <typename Matrix1, typename Matrix2>
-struct is_matrix_scalar_multiplication<Matrix1,transpose_view<Matrix2> > {
+struct is_matrix_scalar_multiplication<Matrix1,transpose_view<Matrix2> >
+{
     static bool const value = false;
 };
+
+template <typename Matrix>
+Matrix conj(transpose_view<Matrix> const& t)
+{
+    Matrix m(t);
+    conj_inplace(m);
+    return m;
+}
 
 } // end namespace numeric
 } // end namespace alps
