@@ -34,7 +34,7 @@
 #include <typeinfo>
 
 #ifdef ALPS_HAVE_MPI
-    #include <alps/ngs/boost_mpi.hpp>
+    #include <alps/ngs/mpi.hpp>
 #endif
 
 namespace alps
@@ -97,7 +97,7 @@ namespace alps
                         , int root
                     ) {
                         if (comm.rank() == root)
-                            boost::mpi::reduce(comm, count_, count_, std::plus<boost::uint64_t>(), root);
+                            alps::mpi::reduce(comm, count_, count_, std::plus<boost::uint64_t>(), root);
                         else
                             const_cast<ThisType const *>(this)->collective_merge(comm, root);
                     }
@@ -109,7 +109,7 @@ namespace alps
                             throw std::runtime_error("A const object cannot be root" + ALPS_STACKTRACE);
 
                         else
-                            boost::mpi::reduce(comm, count_, std::plus<boost::uint64_t>(), root);
+                            alps::mpi::reduce(comm, count_, std::plus<boost::uint64_t>(), root);
                     }
                 protected:
                     template <typename ValueType, typename Op> void static reduce_if(
@@ -119,7 +119,7 @@ namespace alps
                         , Op op
                         , typename boost::enable_if<typename boost::is_scalar<typename alps::hdf5::scalar_type<ValueType>::type>::type, int>::type root
                     ) {
-                        boost::mpi::reduce(comm, arg, res, op, root);
+                        alps::mpi::reduce(comm, arg, res, op, root);
                     }
                     template <typename ValueType, typename Op> void static reduce_if(
                           boost::mpi::communicator const &
@@ -137,7 +137,7 @@ namespace alps
                         , Op op
                         , typename boost::enable_if<typename boost::is_scalar<typename alps::hdf5::scalar_type<ValueType>::type>::type, int>::type root
                     ) {
-                        boost::mpi::reduce(comm, arg, op, root);
+                        alps::mpi::reduce(comm, arg, op, root);
                     }
                     template <typename ValueType, typename Op> void static reduce_if(
                           boost::mpi::communicator const &

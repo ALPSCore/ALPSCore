@@ -87,6 +87,7 @@ namespace alps {
                                 // TODO: make this nicer! Do not use detail types ...
                                 accumulator::detail::accumulator_wrapper merged = this->measurements[*it];
                                 merged.collective_merge(communicator, 0);
+                                // TODO: create new result object
                                 partial_results.insert(*it, alps::mcresult(merged));
                             } else
                                 partial_results.insert(*it, alps::mcresult(this->measurements[*it]));
