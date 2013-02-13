@@ -4,7 +4,8 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2010 - 2011 by Lukas Gamper <gamperl@gmail.com>                   *
+ * Copyright (C) 2010 - 2012 by Lukas Gamper <gamperl@gmail.com>,                  *
+ *                              Synge Todo <wistaria@comp-phys.org>                *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -32,6 +33,9 @@
 #include <alps/ngs/signal.hpp>
 
 #include <boost/chrono.hpp>
+#ifdef ALPS_HAVE_MPI
+# include <boost/mpi/communicator.hpp>
+#endif
 
 namespace alps {
 
@@ -44,6 +48,19 @@ namespace alps {
 		    alps::ngs::signal signals;
 		    boost::chrono::high_resolution_clock::time_point start;
 	};
+
+#ifdef ALPS_HAVE_MPI
+        class ALPS_DECL stop_callback_mpi {
+        public:
+          stop_callback_mpi(boost::mpi::communicator const& cm, std::size_t timelimit);
+          bool operator()();
+        private:
+          boost::mpi::communicator comm;
+          boost::chrono::duration<std::size_t> limit;
+          alps::ngs::signal signals;
+          boost::chrono::high_resolution_clock::time_point start;
+	};
+#endif
 }
 
 #endif
