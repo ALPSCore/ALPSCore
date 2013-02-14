@@ -358,6 +358,9 @@ namespace alps {
 
         void write_xml(oxstream& ox) const;
 
+        template<typename Archive> 
+        inline void serialize(Archive & ar, const unsigned int version);
+
         MemoryBlock const& get_values() const;
         MemoryBlock & get_values();
 
