@@ -4,13 +4,14 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2010 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 1994-2013 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Beat Ammon <beat.ammon@bluewin.ch>,
 *                            Andreas Laeuchli <laeuchli@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>,
 *                            Andreas Lange <alange@phys.ethz.ch>,
-*                            Ping Nang Ma <pingnang@itp.phys.ethz.ch>
-*                            Lukas Gamper <gamperl@gmail.com>
+*                            Ping Nang Ma <pingnang@itp.phys.ethz.ch>,
+*                            Lukas Gamper <gamperl@gmail.com>,
+*                            Jan Gukelberger <gukelberger@phys.ethz.ch>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -397,6 +398,13 @@ namespace alps {
                 inline void set_bin_number(uint64_t bin_number) {
                     collect_bins(( values_.size() - 1 ) / bin_number + 1 );
                 }
+                
+                void discard_bins(size_type keep_bins=0) {
+                    if( keep_bins > bin_number() )
+                        return;
+                    values_.resize(keep_bins);
+                    jacknife_bins_valid_ = false;
+                }
 
                 void output(std::ostream& out) const {
                     if(count() == 0)
@@ -710,6 +718,8 @@ namespace alps {
                 template <typename X, typename OP> void transform(mcdata<X> const & rhs, OP op, value_type const & error, boost::optional<result_type> variance_opt = boost::none_t()) {
                     if (count() == 0 || rhs.count() == 0)
                         boost::throw_exception(std::runtime_error("both observables need measurements"));
+                    if (rhs.jacknife_bins_valid_ && jacknife_bins_valid_ && rhs.jack_.size() != jack_.size())
+                        boost::throw_exception(std::runtime_error("transform: unequal number of bins"));
                     fill_jack();
                     rhs.fill_jack();
                     data_is_analyzed_ = false;
