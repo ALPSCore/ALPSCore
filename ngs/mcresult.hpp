@@ -169,6 +169,7 @@ namespace alps {
             template <typename T> T const & tau() const;
 
             template <typename T> typename covariance_type<T>::type covariance(mcresult const &) const;
+            template <typename T> typename covariance_type<T>::type accurate_covariance(mcresult const &) const;
 
             #define ALPS_NGS_MCRESULT_ASSIGN_OPERATORS(OP)                                       \
                 template <typename T> mcresult & OP (T const & rhs);                             \

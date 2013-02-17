@@ -105,7 +105,10 @@ namespace alps {
         template<> ALPS_DECL T const & mcresult::tau< T >() const { return impl_->tau< T >(); }                                     \
         template<> ALPS_DECL covariance_type<T>::type mcresult::covariance< T >(mcresult const & arg) const {                       \
             return impl_->covariance< T >(*arg.impl_);                                                                              \
-        }                                                                                                                           \
+        }                                                        \
+        template<> ALPS_DECL covariance_type<T>::type mcresult::accurate_covariance< T >(mcresult const & arg) const {                       \
+            return impl_->accurate_covariance< T >(*arg.impl_);                                                                           \
+        }                                                        \
         template<> ALPS_DECL mcresult & mcresult::operator+=< T >( T const & rhs) { impl_->add_assign(rhs); return *this; }         \
         template<> ALPS_DECL mcresult & mcresult::operator-=< T >( T const & rhs) { impl_->sub_assign(rhs); return *this; }         \
         template<> ALPS_DECL mcresult & mcresult::operator*=< T >( T const & rhs) { impl_->mul_assign(rhs); return *this; }         \

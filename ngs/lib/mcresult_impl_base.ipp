@@ -90,6 +90,12 @@ namespace alps {
                     );
                 }
                 
+                template <typename T> typename covariance_type<T>::type accurate_covariance(mcresult_impl_base const & arg) const {
+                    return dynamic_cast<mcresult_impl_derived<mcresult_impl_base, T> const &>(*this).accurate_covariance(
+                        dynamic_cast<mcresult_impl_derived<mcresult_impl_base, T> const &>(arg)
+                    );
+                }
+                
                 #define ALPS_NGS_MCRESULT_IMPL_BASE_OPERATOR(NAME)                                                                             \
                     template <typename T> typename boost::disable_if<                                                                          \
                         boost::is_same<T, mcresult_impl_base *>                                                                                \

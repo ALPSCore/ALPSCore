@@ -139,6 +139,9 @@ namespace alps {
                     return alea::mcdata<T>::covariance(static_cast<alea::mcdata<T> const &>(arg));
                 }
 
+				typename ::alps::covariance_type<T>::type accurate_covariance(mcresult_impl_derived<B, T> const & arg) const {
+                    return alea::mcdata<T>::accurate_covariance(static_cast<alea::mcdata<T> const &>(arg));
+                }
                 #define ALPS_NGS_MCRESULT_IMPL_DERIVED_OPERATOR(NAME, OP, OP_ASSIGN)                                                           \
                     template <typename U> typename boost::enable_if<                                                                           \
                           typename boost::is_same<T, U >::type                                                                                 \
