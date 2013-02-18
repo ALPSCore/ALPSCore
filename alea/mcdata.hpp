@@ -771,10 +771,10 @@ namespace alps {
                 template <typename X, typename OP> void transform(mcdata<X> const & rhs, OP op, value_type const & error, boost::optional<result_type> variance_opt = boost::none_t()) {
                     if (count() == 0 || rhs.count() == 0)
                         boost::throw_exception(std::runtime_error("both observables need measurements"));
-                    if (rhs.jacknife_bins_valid_ && jacknife_bins_valid_ && rhs.jack_.size() != jack_.size())
-                        boost::throw_exception(std::runtime_error("transform: unequal number of bins"));
                     fill_jack();
                     rhs.fill_jack();
+                    if (rhs.jacknife_bins_valid_ && jacknife_bins_valid_ && rhs.jack_.size() != jack_.size())
+                        boost::throw_exception(std::runtime_error("transform: unequal number of bins"));
                     data_is_analyzed_ = false;
                     cannot_rebin_ = true;
                     mean_ = op(mean_, rhs.mean_);
