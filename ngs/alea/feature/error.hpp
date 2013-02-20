@@ -29,11 +29,15 @@
 #ifndef ALPS_NGS_ALEA_DETAIL_ERROR_IMPLEMENTATION_HEADER
 #define ALPS_NGS_ALEA_DETAIL_ERROR_IMPLEMENTATION_HEADER
 
-#include <alps/ngs/alea/accumulator/accumulator_impl.hpp>
+#include <alps/ngs/alea/feature/mean.hpp>
+#include <alps/ngs/alea/feature/feature_traits.hpp>
+
 #include <alps/ngs/short_print.hpp>
-#include <alps/ngs/alea/features.hpp>
-#include <alps/ngs/numeric/vector.hpp>
 #include <alps/ngs/numeric/array.hpp>
+#include <alps/ngs/numeric/detail.hpp>
+#include <alps/ngs/numeric/vector.hpp>
+
+#include <alps/multi_array.hpp>
 
 #ifdef ALPS_HAVE_MPI
     #include <alps/ngs/boost_mpi.hpp>
@@ -62,17 +66,17 @@ namespace alps
             };
 
             template<typename base_type> 
-            class Implementation<tag::error, base_type> : public base_type 
+            class AccumulatorImplementation<tag::error, base_type> : public base_type 
             {
                 typedef typename base_type::value_type value_type_loc;
                 typedef typename error_type<value_type_loc>::type error_type;
-                typedef Implementation<tag::error, base_type> ThisType;
+                typedef AccumulatorImplementation<tag::error, base_type> ThisType;
                 
                 public:
-                    Implementation<tag::error, base_type>(ThisType const & arg): base_type(arg), sum2_(arg.sum2_) {}
+                    AccumulatorImplementation<tag::error, base_type>(ThisType const & arg): base_type(arg), sum2_(arg.sum2_) {}
                     
                     template<typename ArgumentPack>
-                    Implementation<tag::error, base_type>(ArgumentPack const & args, typename boost::disable_if<
+                    AccumulatorImplementation<tag::error, base_type>(ArgumentPack const & args, typename boost::disable_if<
                                                                                               boost::is_base_of<ThisType, ArgumentPack>
                                                                                             , int
                                                                                             >::type = 0

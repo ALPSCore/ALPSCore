@@ -25,23 +25,10 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#ifndef ALPS_NGS_RESULT_HPP
+#define ALPS_NGS_RESULT_HPP
 
-#ifndef ALPS_NGS_ALEA_FEATURES_HPP
-#define ALPS_NGS_ALEA_FEATURES_HPP
+#include <alps/ngs/result/result.hpp>
+#include <alps/ngs/result/result_set.hpp>
 
-#include <alps/ngs/alea/feature/tags.hpp>
-#include <alps/ngs/alea/feature/features.hpp>
-#include <alps/ngs/alea/feature/feature_traits.hpp>
-
-#include <alps/ngs/alea/feature/tau.hpp>
-#include <alps/ngs/alea/feature/mean.hpp>
-#include <alps/ngs/alea/feature/error.hpp>
-#include <alps/ngs/alea/feature/log_bin.hpp>
-#include <alps/ngs/alea/feature/autocorr.hpp>
-#include <alps/ngs/alea/feature/converged.hpp>
-#include <alps/ngs/alea/feature/histogram.hpp>
-#include <alps/ngs/alea/feature/value_type.hpp>
-#include <alps/ngs/alea/feature/max_num_bin.hpp>
-#include <alps/ngs/alea/feature/fixed_size_bin.hpp>
-
-#endif // ALPS_NGS_ALEA_FEATURES_HPP
+#endif

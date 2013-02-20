@@ -29,8 +29,8 @@
 #ifndef ALPS_NGS_ALEA_DETAIL_LOG_BIN_IMPLEMENTATION_HEADER
 #define ALPS_NGS_ALEA_DETAIL_LOG_BIN_IMPLEMENTATION_HEADER
 
-#include <alps/ngs/alea/accumulator/accumulator_impl.hpp>
-#include <alps/ngs/alea/features.hpp>
+#include <alps/ngs/alea/feature/mean.hpp>
+#include <alps/ngs/alea/feature/feature_traits.hpp>
 
 #include <boost/cstdint.hpp>
 
@@ -94,16 +94,16 @@ namespace alps
             };
 
             template<typename base_type> 
-            class Implementation<tag::log_binning, base_type> : public base_type 
+            class AccumulatorImplementation<tag::log_binning, base_type> : public base_type 
             {
                 typedef typename base_type::value_type value_type_loc;
                 typedef typename log_bin_type<value_type_loc>::type log_bin_type;
                 typedef typename std::vector<value_type_loc>::size_type size_type;
                 typedef typename mean_type<value_type_loc>::type mean_type;
-                typedef Implementation<tag::log_binning, base_type> ThisType;
+                typedef AccumulatorImplementation<tag::log_binning, base_type> ThisType;
           
                 public:    
-                    Implementation<tag::log_binning, base_type>(ThisType const & arg):  base_type(arg)
+                    AccumulatorImplementation<tag::log_binning, base_type>(ThisType const & arg):  base_type(arg)
                                                                     , bin_(arg.bin_)
                                                                     , partial_(arg.partial_)
                                                                     , pos_in_partial_(arg.pos_in_partial_)
@@ -111,7 +111,7 @@ namespace alps
                     {}
                     
                     template<typename ArgumentPack>
-                    Implementation<tag::log_binning, base_type>(ArgumentPack const & args
+                    AccumulatorImplementation<tag::log_binning, base_type>(ArgumentPack const & args
                                          , typename boost::disable_if<
                                                                       boost::is_base_of<ThisType, ArgumentPack>
                                                                     , int

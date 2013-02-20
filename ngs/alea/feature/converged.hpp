@@ -28,7 +28,8 @@
 #ifndef ALPS_NGS_ALEA_DETAIL_CONVERGED_IMPLEMENTATION_HEADER
 #define ALPS_NGS_ALEA_DETAIL_CONVERGED_IMPLEMENTATION_HEADER
 
-#include <alps/ngs/alea/accumulator/accumulator_impl.hpp>
+#include <alps/ngs/alea/feature/mean.hpp>
+#include <alps/ngs/alea/feature/feature_traits.hpp>
 
 namespace alps
 {
@@ -59,19 +60,19 @@ namespace alps
             };
 
             template<typename base_type> 
-            class Implementation<tag::detail::converged, base_type> : public base_type 
+            class AccumulatorImplementation<tag::detail::converged, base_type> : public base_type 
             {
                 typedef typename base_type::value_type value_type_loc;
                 typedef typename converged_type<value_type_loc>::type converged_type;
                 typedef typename mean_type<value_type_loc>::type mean_type;
-                typedef Implementation<tag::detail::converged, base_type> ThisType;
+                typedef AccumulatorImplementation<tag::detail::converged, base_type> ThisType;
                 
                 public:
-                    Implementation<tag::detail::converged, base_type>(ThisType const & arg): base_type(arg)
+                    AccumulatorImplementation<tag::detail::converged, base_type>(ThisType const & arg): base_type(arg)
                     
                     {}
                     template<typename ArgumentPack>
-                    Implementation<tag::detail::converged, base_type>(ArgumentPack const & args
+                    AccumulatorImplementation<tag::detail::converged, base_type>(ArgumentPack const & args
                                                  , typename boost::disable_if<
                                                                               boost::is_base_of<ThisType, ArgumentPack>
                                                                             , int

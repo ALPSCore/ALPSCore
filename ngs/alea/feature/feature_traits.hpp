@@ -30,16 +30,12 @@
 //from what base_types one needs to derive in order to get the 
 //requested feautures
 
+#ifndef ALPS_NGS_ALEA_FEATURES_FEATURE_TRAITS_HPP
+#define ALPS_NGS_ALEA_FEATURES_FEATURE_TRAITS_HPP
 
-#ifndef ALPS_NGS_ALEA_DETAIL_ACCUMULATOR_DETAIL_HEADER
-#define ALPS_NGS_ALEA_DETAIL_ACCUMULATOR_DETAIL_HEADER
-
-#include <alps/ngs/alea/features.hpp>
-
-#include <boost/static_assert.hpp>
-#include <boost/parameter.hpp>
-#include <boost/type_traits.hpp>
 #include <boost/utility.hpp>
+#include <boost/type_traits.hpp>
+#include <boost/static_assert.hpp>
 
 #include <iostream>
 
@@ -263,7 +259,10 @@ namespace alps
         // = = = = = = I M P L E M E N T A T I O N   T Y P E = = = = = = = = = = =
         //every property specializes this template and contains the wanted implementation
             template<typename property, typename base_type>
-            struct Implementation {};
+            struct AccumulatorImplementation {};
+
+            template<typename property, typename base_type>
+            struct ResultImplementation {};
 
         // = = = = = = D E R I V E   F R O M   I M P L E M E N T A T I O N S = = = = = = = = = = =
             template<
@@ -274,88 +273,19 @@ namespace alps
             {
                 typedef typename DeriveProperties<
                                                 typename list::next
-                                                , Implementation<typename list::type, base_type> //the base_type is expanded here
+                                                , AccumulatorImplementation<typename list::type, base_type> //the base_type is expanded here
                                                 >::type type;
             };
             
             template<typename base_type> 
             struct DeriveProperties<ListEnd, base_type> 
             {
-                typedef base_type type; //here base_type will be Implementation<property1, Implementation<property2, ... Implementation<propertyN, UselessBase> > >
+                typedef base_type type; //here base_type will be AccumulatorImplementation<property1, AccumulatorImplementation<property2, ... AccumulatorImplementation<propertyN, UselessBase> > >
             };
 
             struct UselessBase {};
-        // = = = = = = = A C C U M U L A T O R _ I M P L= = = = = = = = = =
-            
-            template<
-                  typename _0  = void
-                , typename _1  = void
-                , typename _2  = void
-                , typename _3  = void
-                , typename _4  = void
-                , typename _5  = void
-                , typename _6  = void
-                , typename _7  = void
-                , typename _8  = void
-                , typename _9  = void
-            > 
-            struct accumulator_impl : public DeriveProperties<
-                                                            typename UniqueList<
-                                                                typename ResolveDependencies<
-                                                                        typename ValueTypeFirst<
-                                                                            typename MakeList<_0, _1, _2, _3, _4, _5, _6, _7, _8, _9>::type
-                                                                                               >::type
-                                                                                             >::type
-                                                                                >::type
-                                                          , UselessBase
-                                                            >::type 
-                {
-                    //typename it for shorter syntax
-                    typedef typename DeriveProperties<
-                                typename UniqueList<
-                                    typename ResolveDependencies<
-                                        typename ValueTypeFirst<
-                                            typename MakeList<_0, _1, _2, _3, _4, _5, _6, _7, _8, _9>::type
-                                            >::type
-                                        >::type
-                                    >::type,UselessBase
-                                >::type base_type;
-                    
-                    //disable_if is required bc of the named parameter. This template shouldn't act as a copy-ctor
-                    template <typename ArgumentPack>
-                    accumulator_impl(
-                                    ArgumentPack const & args
-                                  , typename boost::disable_if<
-                                                              boost::is_base_of<accumulator_impl
-                                                                            , ArgumentPack>
-                                                            , int
-                                                            >::type = 0
-                                    ): base_type(args) {}
-                    
-                    //copy-ctor
-                    accumulator_impl(accumulator_impl const & arg): base_type(arg) {}
-                
-            };
-            
-        // = = = = = = S T R E A M   O P E R A T O R = = = = = = = = = = =
-            template<
-                  typename _0
-                , typename _1
-                , typename _2
-                , typename _3
-                , typename _4
-                , typename _5
-                , typename _6
-                , typename _7
-                , typename _8
-                , typename _9
-            > 
-            inline std::ostream & operator <<(std::ostream & os, accumulator_impl<_0, _1, _2, _3, _4, _5, _6, _7, _8, _9> & a)
-            {
-                a.print(os);
-                return os;
-            }
+
         } // end namespace detail
     }//end accumulator namespace 
 }//end alps namespace
-#endif // ALPS_NGS_ALEA_DETAIL_ACCUMULATOR_DETAIL_HEADER
+#endif // ALPS_NGS_ALEA_FEATURES_FEATURE_TRAITS_HPP

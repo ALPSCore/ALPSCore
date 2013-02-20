@@ -28,17 +28,20 @@
 
 #ifndef ALPS_NGS_ALEA_DETAIL_MEAN_IMPLEMENTATION_HEADER
 #define ALPS_NGS_ALEA_DETAIL_MEAN_IMPLEMENTATION_HEADER
+ 
+#include <alps/ngs/short_print.hpp>
+#include <alps/ngs/numeric/array.hpp>
+#include <alps/ngs/numeric/detail.hpp>
+#include <alps/ngs/numeric/vector.hpp>
 
 #include <alps/ngs/hdf5.hpp>
 #include <alps/ngs/hdf5/vector.hpp>
 #include <alps/ngs/hdf5/multi_array.hpp>
- 
-#include <alps/ngs/short_print.hpp>
-#include <alps/ngs/alea/accumulator/accumulator_impl.hpp>
 
+#include <alps/ngs/alea/feature/feature_traits.hpp>
+
+#include <alps/multi_array.hpp>
 #include <alps/type_traits/element_type.hpp>
-
-#include <alps/ngs/alea/features.hpp>
 
 #include <boost/type_traits.hpp>
 #include <boost/static_assert.hpp>
@@ -78,8 +81,6 @@ namespace alps
                 BOOST_STATIC_ASSERT_MSG(!false_type::value, "mean_type trait failed");
             };
         }
-        
-        //~ using namespace alps::numeric;
         
         template <typename value_type>
         struct mean_type
@@ -127,16 +128,16 @@ namespace alps
             //setting up the dependencies for tag::mean-Implementation isn't neccessary bc has none
             
             template<typename base_type> 
-            class Implementation<tag::mean, base_type> : public base_type 
+            class AccumulatorImplementation<tag::mean, base_type> : public base_type 
             {
                 typedef typename base_type::value_type value_type_loc;
                 typedef typename mean_type<value_type_loc>::type mean_type;
-                typedef Implementation<tag::mean, base_type> ThisType;
+                typedef AccumulatorImplementation<tag::mean, base_type> ThisType;
                 public:
-                    Implementation<tag::mean, base_type>(ThisType const & arg): base_type(arg), sum_(arg.sum_) {}
+                    AccumulatorImplementation<tag::mean, base_type>(ThisType const & arg): base_type(arg), sum_(arg.sum_) {}
                     
                     template<typename ArgumentPack>
-                    Implementation<tag::mean, base_type>(ArgumentPack const & args, typename boost::disable_if<
+                    AccumulatorImplementation<tag::mean, base_type>(ArgumentPack const & args, typename boost::disable_if<
                                                                                           boost::is_base_of<ThisType, ArgumentPack>
                                                                                         , int
                                                                                         >::type = 0
@@ -201,6 +202,6 @@ namespace alps
                     value_type_loc sum_;
             };
         } // end namespace detail
-    }//end accumulator namespace 
-}//end alps namespace
+    } // end accumulator namespace 
+} // end alps namespace
 #endif // ALPS_NGS_ALEA_DETAIL_MEAN_IMPLEMENTATION

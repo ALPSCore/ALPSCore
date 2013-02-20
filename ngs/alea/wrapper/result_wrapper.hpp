@@ -4,7 +4,7 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2011 - 2012 by Mario Koenz <mkoenz@ethz.ch>                       *
+ * Copyright (C) 2013 by Lukas Gamper <gamperl@gmail.ch>                           *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -25,23 +25,11 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#ifndef ALPS_NGS_RESULT_RESULT_WRAPPER_HPP
+#define ALPS_NGS_RESULT_RESULT_WRAPPER_HPP
 
-#ifndef ALPS_NGS_ALEA_FEATURES_HPP
-#define ALPS_NGS_ALEA_FEATURES_HPP
 
-#include <alps/ngs/alea/feature/tags.hpp>
-#include <alps/ngs/alea/feature/features.hpp>
-#include <alps/ngs/alea/feature/feature_traits.hpp>
 
-#include <alps/ngs/alea/feature/tau.hpp>
-#include <alps/ngs/alea/feature/mean.hpp>
-#include <alps/ngs/alea/feature/error.hpp>
-#include <alps/ngs/alea/feature/log_bin.hpp>
-#include <alps/ngs/alea/feature/autocorr.hpp>
-#include <alps/ngs/alea/feature/converged.hpp>
-#include <alps/ngs/alea/feature/histogram.hpp>
-#include <alps/ngs/alea/feature/value_type.hpp>
-#include <alps/ngs/alea/feature/max_num_bin.hpp>
-#include <alps/ngs/alea/feature/fixed_size_bin.hpp>
 
-#endif // ALPS_NGS_ALEA_FEATURES_HPP
+
+#endif

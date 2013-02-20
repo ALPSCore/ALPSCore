@@ -29,8 +29,10 @@
 #ifndef ALPS_NGS_ALEA_DETAIL_FIX_SIZE_BIN_IMPLEMENTATION_HEADER
 #define ALPS_NGS_ALEA_DETAIL_FIX_SIZE_BIN_IMPLEMENTATION_HEADER
 
-#include <alps/ngs/alea/accumulator/accumulator_impl.hpp>
-#include <alps/ngs/alea/features.hpp>
+#include <alps/ngs/alea/feature/mean.hpp>
+#include <alps/ngs/alea/feature/feature_traits.hpp>
+
+#include <alps/ngs/alea/accumulator/arguments.hpp>
 
 #include <vector>
 #include <ostream>
@@ -96,16 +98,16 @@ namespace alps
             };
 
             template<typename base_type> 
-            class Implementation<tag::fixed_size_binning, base_type> : public base_type 
+            class AccumulatorImplementation<tag::fixed_size_binning, base_type> : public base_type 
             {
                 typedef typename base_type::value_type value_type_loc;
                 typedef typename fixed_size_bin_type<value_type_loc>::type fix_bin_type;
                 typedef typename std::vector<value_type_loc>::size_type size_type;
                 typedef typename mean_type<value_type_loc>::type mean_type;
-                typedef Implementation<tag::fixed_size_binning, base_type> ThisType;
+                typedef AccumulatorImplementation<tag::fixed_size_binning, base_type> ThisType;
                     
                 public:
-                    Implementation<tag::fixed_size_binning, base_type>(ThisType const & arg):  base_type(arg)
+                    AccumulatorImplementation<tag::fixed_size_binning, base_type>(ThisType const & arg):  base_type(arg)
                                                                         , bin_(arg.bin_)
                                                                         , partial_(arg.partial_)
                                                                         , partial_count_(arg.partial_count_)
@@ -114,7 +116,7 @@ namespace alps
                     
                     // TODO: set right default value
                     template<typename ArgumentPack>
-                    Implementation<tag::fixed_size_binning, base_type>(ArgumentPack const & args
+                    AccumulatorImplementation<tag::fixed_size_binning, base_type>(ArgumentPack const & args
                                              , typename boost::disable_if<
                                                                           boost::is_base_of<ThisType, ArgumentPack>
                                                                         , int

@@ -4,7 +4,8 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2011 - 2012 by Mario Koenz <mkoenz@ethz.ch>                       *
+ * Copyright (C) 2011 - 2012 by Lukas Gamper <gamperl@gmail.com>                   *
+ *                              Mario Koenz <mkoenz@ethz.ch>                       *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -25,86 +26,77 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_ALEA_ACCUMULATOR_IMPL_HEADER
-#define ALPS_NGS_ALEA_ACCUMULATOR_IMPL_HEADER
+#ifndef ALPS_NGS_ALEA_ACCUMULATOR_ACCUMULATOR_IMPL_HEADER
+#define ALPS_NGS_ALEA_ACCUMULATOR_ACCUMULATOR_IMPL_HEADER
 
-#include <alps/ngs/alea/accumulator/accumulator_detail.hpp>
+#include <alps/ngs/alea/features.hpp>
 
+#include <boost/static_assert.hpp>
 #include <boost/parameter.hpp>
+#include <boost/type_traits.hpp>
+#include <boost/utility.hpp>
 
-// = = = = N A M E D   P A R A M E T E R   C T O R   D E F I N I T I O N = = = =
+#include <iostream>
 
-namespace alps
-{
-    namespace accumulator
-    {
-        BOOST_PARAMETER_NAME((bin_size, keywords) _bin_size)
-        BOOST_PARAMETER_NAME((bin_num, keywords) _bin_num)
-        
-          template<
-              typename A0  = void
-            , typename A1  = void
-            , typename A2  = void
-            , typename A3  = void
-            , typename A4  = void
-            , typename A5  = void
-            , typename A6  = void
-            , typename A7  = void
-            , typename A8  = void
-        >
-        struct features
-        {
-            typedef A0 _0;
-            typedef A1 _1;
-            typedef A2 _2;
-            typedef A3 _3;
-            typedef A4 _4;
-            typedef A5 _5;
-            typedef A6 _6;
-            typedef A7 _7;
-            typedef A8 _8;
-        };
-        
-        template<
-              typename vt  = double
-            , typename features_input = features<tag::mean, tag::error>
-        >
-        class accumulator: public detail::accumulator_impl<ValueType<vt>, typename features_input::_0
-                                                                        , typename features_input::_1
-                                                                        , typename features_input::_2
-                                                                        , typename features_input::_3
-                                                                        , typename features_input::_4
-                                                                        , typename features_input::_5
-                                                                        , typename features_input::_6
-                                                                        , typename features_input::_7
-                                                                        , typename features_input::_8
-                                                                        >
-        {
-            typedef accumulator<vt, features_input> self_type;
-            typedef detail::accumulator_impl<ValueType<vt>,   typename features_input::_0
-                                                            , typename features_input::_1
-                                                            , typename features_input::_2
-                                                            , typename features_input::_3
-                                                            , typename features_input::_4
-                                                            , typename features_input::_5
-                                                            , typename features_input::_6
-                                                            , typename features_input::_7
-                                                            , typename features_input::_8
-                                                            > base_type;
+namespace alps {
+    namespace accumulator {
+        namespace detail {
+
+        // = = = = = = = A C C U M U L A T O R _ I M P L= = = = = = = = = =
             
-            public:
-                accumulator(accumulator const & arg): base_type(static_cast<base_type const &>(arg)) {}
+            template<
+                  typename _0  = void
+                , typename _1  = void
+                , typename _2  = void
+                , typename _3  = void
+                , typename _4  = void
+                , typename _5  = void
+                , typename _6  = void
+                , typename _7  = void
+                , typename _8  = void
+                , typename _9  = void
+            >  struct accumulator_impl : public DeriveProperties<
+                  typename UniqueList<typename ResolveDependencies<typename ValueTypeFirst<typename MakeList<
+                      _0, _1, _2, _3, _4, _5, _6, _7, _8, _9
+                  >::type>::type>::type>::type
+                , UselessBase
+            >::type {
+                //typename it for shorter syntax
+                typedef typename DeriveProperties<
+                      typename UniqueList<typename ResolveDependencies<typename ValueTypeFirst<typename MakeList<
+                          _0, _1, _2, _3, _4, _5, _6, _7, _8, _9
+                      >::type>::type>::type>::type
+                    , UselessBase
+                >::type base_type;
+
+                //disable_if is required bc of the named parameter. This template shouldn't act as a copy-ctor
+                template <typename ArgumentPack> accumulator_impl(
+                      ArgumentPack const & args
+                    , typename boost::disable_if<boost::is_base_of<accumulator_impl, ArgumentPack>, int>::type = 0
+                ): base_type(args) {}
+
+                //copy-ctor
+                accumulator_impl(accumulator_impl const & arg): base_type(arg) {}
+            };
             
-                BOOST_PARAMETER_CONSTRUCTOR(
-                accumulator, 
-                (base_type),
-                keywords,
-                    (optional 
-                        (_bin_size, *)
-                        (_bin_num, *)
-                    )
-                )
-        };
-    }//end accumulator namespace 
-}//end alps namespace
-#endif // ALPS_NGS_ALEA_ACCUMULATOR_IMPL_HEADER
+        // = = = = = = S T R E A M   O P E R A T O R = = = = = = = = = = =
+            template<
+                  typename _0
+                , typename _1
+                , typename _2
+                , typename _3
+                , typename _4
+                , typename _5
+                , typename _6
+                , typename _7
+                , typename _8
+                , typename _9
+            > inline std::ostream & operator <<(std::ostream & os, accumulator_impl<_0, _1, _2, _3, _4, _5, _6, _7, _8, _9> & a) {
+                a.print(os);
+                return os;
+            }
+        } // end namespace detail
+    } // end accumulator namespace 
+} // end alps namespace
+
+#endif // ALPS_NGS_ALEA_ACCUMULATOR_ACCUMULATOR_IMPL_HEADER

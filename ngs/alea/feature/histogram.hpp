@@ -28,9 +28,10 @@
 #ifndef ALPS_NGS_ALEA_DETAIL_HISTOGRAM_IMPLEMENTATION_HEADER
 #define ALPS_NGS_ALEA_DETAIL_HISTOGRAM_IMPLEMENTATION_HEADER
 
-#include <alps/ngs/alea/accumulator/accumulator_impl.hpp>
+#include <alps/ngs/alea/feature/mean.hpp>
+#include <alps/ngs/alea/feature/feature_traits.hpp>
+
 #include <alps/ngs/stacktrace.hpp>
-#include <alps/ngs/alea/features.hpp>
 
 #include <boost/cstdint.hpp>
 #include <boost/utility.hpp>
@@ -233,19 +234,19 @@ namespace alps
             };
 
             template<typename base_type> 
-            class Implementation<tag::histogram, base_type> : public base_type 
+            class AccumulatorImplementation<tag::histogram, base_type> : public base_type 
             {
                 typedef typename base_type::value_type value_type_loc;
                 typedef typename histogram_type<value_type_loc>::type histogram_t;
                 typedef typename mean_type<value_type_loc>::type mean_type;
-                typedef Implementation<tag::histogram, base_type> ThisType;
+                typedef AccumulatorImplementation<tag::histogram, base_type> ThisType;
                 
                 public:
-                    Implementation<tag::histogram, base_type>(ThisType const & arg): base_type(arg)
+                    AccumulatorImplementation<tag::histogram, base_type>(ThisType const & arg): base_type(arg)
                     
                     {}
                     template<typename ArgumentPack>
-                    Implementation<tag::histogram, base_type>(ArgumentPack const & args
+                    AccumulatorImplementation<tag::histogram, base_type>(ArgumentPack const & args
                                                  , typename boost::disable_if<
                                                                               boost::is_base_of<ThisType, ArgumentPack>
                                                                             , int

@@ -29,8 +29,10 @@
 #ifndef ALPS_NGS_ALEA_DETAIL_MAX_NUM_BIN_IMPLEMENTATION_HEADER
 #define ALPS_NGS_ALEA_DETAIL_MAX_NUM_BIN_IMPLEMENTATION_HEADER
 
-#include <alps/ngs/alea/accumulator/accumulator_impl.hpp>
-#include <alps/ngs/alea/features.hpp>
+#include <alps/ngs/alea/feature/mean.hpp>
+#include <alps/ngs/alea/feature/feature_traits.hpp>
+
+#include <alps/ngs/alea/accumulator/arguments.hpp>
 
 #include <vector>
 #include <ostream>
@@ -96,35 +98,35 @@ namespace alps
             };
 
             template<typename base_type> 
-            class Implementation<tag::max_num_binning, base_type> : public base_type 
+            class AccumulatorImplementation<tag::max_num_binning, base_type> : public base_type 
             {
                 typedef typename base_type::value_type value_type_loc;
                 typedef typename max_num_bin_type<value_type_loc>::type num_bin_type;
                 typedef typename std::vector<value_type_loc>::size_type size_type;
                 typedef typename mean_type<value_type_loc>::type mean_type;
-                typedef Implementation<tag::max_num_binning, base_type> ThisType;
+                typedef AccumulatorImplementation<tag::max_num_binning, base_type> ThisType;
 
                 public:
-                    Implementation<tag::max_num_binning, base_type>(ThisType const & arg): base_type(arg)
-                                                                  , bin_(arg.bin_)
-                                                                  , partial_(arg.partial_)
-                                                                  , elements_in_bin_(arg.elements_in_bin_)
-                                                                  , pos_in_partial_(arg.pos_in_partial_)
-                                                                  , max_bin_num_(arg.max_bin_num_) 
+                    AccumulatorImplementation<tag::max_num_binning, base_type>(ThisType const & arg)
+                        : base_type(arg)
+                        , bin_(arg.bin_)
+                        , partial_(arg.partial_)
+                        , elements_in_bin_(arg.elements_in_bin_)
+                        , pos_in_partial_(arg.pos_in_partial_)
+                        , max_bin_num_(arg.max_bin_num_) 
                     {}
                     //TODO: set right default value 
                     
                     template<typename ArgumentPack>
-                    Implementation<tag::max_num_binning, base_type>(ArgumentPack const & args
-                                                , typename boost::disable_if<
-                                                                              boost::is_base_of<ThisType, ArgumentPack>
-                                                                            , int
-                                                                            >::type = 0
-                                               ): base_type(args)
-                                                , partial_()
-                                                , elements_in_bin_(1)
-                                                , pos_in_partial_(0)
-                                                , max_bin_num_(args[bin_num | 128]) //change doc if manipulated
+                    AccumulatorImplementation<tag::max_num_binning, base_type>(
+                          ArgumentPack const & args
+                        , typename boost::disable_if<boost::is_base_of<ThisType, ArgumentPack>, int>::type = 0
+                    )
+                        : base_type(args)
+                        , partial_()
+                        , elements_in_bin_(1)
+                        , pos_in_partial_(0)
+                        , max_bin_num_(args[bin_num | 128]) //change doc if manipulated
                     {}
                     
                     inline num_bin_type const max_num_bin() const 

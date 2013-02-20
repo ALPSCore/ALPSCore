@@ -29,8 +29,14 @@
 #ifndef ALPS_NGS_ALEA_DETAIL_AUTOCORR_IMPLEMENTATION_HEADER
 #define ALPS_NGS_ALEA_DETAIL_AUTOCORR_IMPLEMENTATION_HEADER
 
-#include <alps/ngs/alea/accumulator/accumulator_impl.hpp>
-#include <alps/ngs/alea/features.hpp>
+#include <alps/ngs/alea/feature/mean.hpp>
+#include <alps/ngs/alea/feature/feature_traits.hpp>
+
+#include <alps/ngs/numeric/array.hpp>
+#include <alps/ngs/numeric/detail.hpp>
+#include <alps/ngs/numeric/vector.hpp>
+
+#include <alps/multi_array.hpp>
 
 #include <boost/cstdint.hpp>
 
@@ -116,23 +122,23 @@ namespace alps
             };
 
             template<typename base_type> 
-            class Implementation<tag::autocorrelation, base_type> : public base_type 
+            class AccumulatorImplementation<tag::autocorrelation, base_type> : public base_type 
             {
                 typedef typename base_type::value_type value_type_loc;
                 typedef typename autocorr_type<value_type_loc>::type autocorr_type;
                 typedef typename std::vector<value_type_loc>::size_type size_type;
                 typedef typename mean_type<value_type_loc>::type mean_type;
-                typedef Implementation<tag::autocorrelation, base_type> ThisType;
+                typedef AccumulatorImplementation<tag::autocorrelation, base_type> ThisType;
                 
                 public:
-                    Implementation<tag::autocorrelation, base_type>(ThisType const & arg): base_type(arg)
+                    AccumulatorImplementation<tag::autocorrelation, base_type>(ThisType const & arg): base_type(arg)
                                                                         , bin_(arg.bin_)
                                                                         , partial_(arg.partial_)
                                                                         , bin_size_now_(arg.bin_size_now_)
                     {}
                     
                     template<typename ArgumentPack>
-                    Implementation<tag::autocorrelation, base_type>(ArgumentPack const & args
+                    AccumulatorImplementation<tag::autocorrelation, base_type>(ArgumentPack const & args
                                                  , typename boost::disable_if<
                                                                               boost::is_base_of<ThisType, ArgumentPack>
                                                                             , int

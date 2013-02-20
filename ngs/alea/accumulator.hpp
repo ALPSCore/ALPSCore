@@ -29,7 +29,82 @@
 #ifndef ALPS_NGS_ALEA_ACCUMULATOR_HEADER
 #define ALPS_NGS_ALEA_ACCUMULATOR_HEADER
 
+#include <alps/ngs/alea/result.hpp>
 #include <alps/ngs/alea/features.hpp>
+#include <alps/ngs/alea/accumulator/arguments.hpp>
 #include <alps/ngs/alea/accumulator/accumulator_impl.hpp>
 
+#include <boost/parameter.hpp>
+
+// = = = = N A M E D   P A R A M E T E R   C T O R   D E F I N I T I O N = = = =
+
+namespace alps {
+    namespace accumulator  {
+
+        template<
+              typename vt  = double
+            , typename features_input = features<tag::mean, tag::error>
+        >
+        class accumulator: public detail::accumulator_impl<
+              ValueType<vt>
+            , typename features_input::_0
+            , typename features_input::_1
+            , typename features_input::_2
+            , typename features_input::_3
+            , typename features_input::_4
+            , typename features_input::_5
+            , typename features_input::_6
+            , typename features_input::_7
+            , typename features_input::_8
+        > {
+            typedef accumulator<vt, features_input> self_type;
+
+            typedef detail::accumulator_impl<
+                  ValueType<vt>
+                , typename features_input::_0
+                , typename features_input::_1
+                , typename features_input::_2
+                , typename features_input::_3
+                , typename features_input::_4
+                , typename features_input::_5
+                , typename features_input::_6
+                , typename features_input::_7
+                , typename features_input::_8
+            > base_type;
+
+            typedef result<
+                  ValueType<vt>
+                , typename features_input::_0
+                , typename features_input::_1
+                , typename features_input::_2
+                , typename features_input::_3
+                , typename features_input::_4
+                , typename features_input::_5
+                , typename features_input::_6
+                , typename features_input::_7
+                , typename features_input::_8
+            > result_type;
+            
+            public:
+                accumulator(accumulator const & arg): base_type(static_cast<base_type const &>(arg)) {}
+            
+                BOOST_PARAMETER_CONSTRUCTOR(
+                accumulator, 
+                (base_type),
+                keywords,
+                    (optional 
+                        (_bin_size, *)
+                        (_bin_num, *)
+                    )
+                )
+
+                result_type result() {
+                    result_type result;
+                    // TODO: implement
+//                    base_type::make_result(result);
+                    return result;
+                }
+        };
+    } //end accumulator namespace 
+} //end alps namespace
 #endif // ALPS_NGS_ALEA_ACCUMULATOR_HEADER

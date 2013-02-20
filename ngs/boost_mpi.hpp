@@ -31,8 +31,8 @@
 #ifdef ALPS_HAVE_MPI
 
     #include <boost/mpi.hpp>
-    #include <boost/array.hpp>
-    #include <alps/multi_array.hpp>
+//    #include <boost/array.hpp>
+//    #include <alps/multi_array.hpp>
 
     #include <vector>
 

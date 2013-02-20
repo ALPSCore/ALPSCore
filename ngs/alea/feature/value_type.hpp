@@ -29,8 +29,10 @@
 #ifndef ALPS_NGS_ALEA_DETAIL_VALUE_TYPE_IMPLEMENTATION_HEADER
 #define ALPS_NGS_ALEA_DETAIL_VALUE_TYPE_IMPLEMENTATION_HEADER
 
-#include <alps/ngs/alea/accumulator/accumulator_impl.hpp>
+#include <alps/ngs/alea/feature/feature_traits.hpp>
+
 #include <boost/cstdint.hpp>
+
 #include <typeinfo>
 
 #ifdef ALPS_HAVE_MPI
@@ -53,16 +55,16 @@ namespace alps
             //setting up the dependencies for value_type-Implementation isn't neccessary bc has none
             
             template<typename T, typename base_type> 
-            class Implementation<ValueType<T>, base_type>
+            class AccumulatorImplementation<ValueType<T>, base_type>
             {
-                typedef Implementation<ValueType<T>, base_type> ThisType;
+                typedef AccumulatorImplementation<ValueType<T>, base_type> ThisType;
                 public:
                     typedef T value_type;
                     
-                    Implementation<ValueType<T>, base_type>(ThisType const & arg): count_(arg.count_) {}
+                    AccumulatorImplementation<ValueType<T>, base_type>(ThisType const & arg): count_(arg.count_) {}
                     
                     template <typename ArgumentPack>
-                    Implementation<ValueType<T>, base_type>(ArgumentPack const & args, typename boost::disable_if<
+                    AccumulatorImplementation<ValueType<T>, base_type>(ArgumentPack const & args, typename boost::disable_if<
                                                                                                   boost::is_base_of<ThisType, ArgumentPack>
                                                                                                 , int
                                                                                                 >::type = 0

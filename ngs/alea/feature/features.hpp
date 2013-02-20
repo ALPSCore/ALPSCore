@@ -26,22 +26,37 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-#ifndef ALPS_NGS_ALEA_FEATURES_HPP
-#define ALPS_NGS_ALEA_FEATURES_HPP
+#ifndef ALPS_NGS_ALEA_FEATURES_FEATURES_HPP
+#define ALPS_NGS_ALEA_FEATURES_FEATURES_HPP
 
-#include <alps/ngs/alea/feature/tags.hpp>
-#include <alps/ngs/alea/feature/features.hpp>
-#include <alps/ngs/alea/feature/feature_traits.hpp>
+namespace alps {
+    namespace accumulator  {
 
-#include <alps/ngs/alea/feature/tau.hpp>
-#include <alps/ngs/alea/feature/mean.hpp>
-#include <alps/ngs/alea/feature/error.hpp>
-#include <alps/ngs/alea/feature/log_bin.hpp>
-#include <alps/ngs/alea/feature/autocorr.hpp>
-#include <alps/ngs/alea/feature/converged.hpp>
-#include <alps/ngs/alea/feature/histogram.hpp>
-#include <alps/ngs/alea/feature/value_type.hpp>
-#include <alps/ngs/alea/feature/max_num_bin.hpp>
-#include <alps/ngs/alea/feature/fixed_size_bin.hpp>
+        template<
+              typename A0  = void
+            , typename A1  = void
+            , typename A2  = void
+            , typename A3  = void
+            , typename A4  = void
+            , typename A5  = void
+            , typename A6  = void
+            , typename A7  = void
+            , typename A8  = void
+        >
+        struct features
+        {
+            typedef A0 _0;
+            typedef A1 _1;
+            typedef A2 _2;
+            typedef A3 _3;
+            typedef A4 _4;
+            typedef A5 _5;
+            typedef A6 _6;
+            typedef A7 _7;
+            typedef A8 _8;
+        };
 
-#endif // ALPS_NGS_ALEA_FEATURES_HPP
+    }
+}
+
+#endif // ALPS_NGS_ALEA_FEATURES_FEATURES_HPP
