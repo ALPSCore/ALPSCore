@@ -27,8 +27,8 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <alps/ngs/signal.hpp>
+#include <alps/ngs/boost_mpi.hpp>
 #include <alps/ngs/scheduler/stop_callback.hpp>
-#include <boost/mpi/collectives/broadcast.hpp>
 
 namespace alps {
 
