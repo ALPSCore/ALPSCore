@@ -42,7 +42,7 @@ namespace alps {
             , typename A7  = void
             , typename A8  = void
             , typename A9  = void
-        > struct result {
+        > struct result_impl {
 // TODO: implement ...
         };
     }

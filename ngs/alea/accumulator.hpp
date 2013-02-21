@@ -72,7 +72,7 @@ namespace alps {
                 , typename features_input::_8
             > base_type;
 
-            typedef result<
+            typedef result_impl<
                   ValueType<vt>
                 , typename features_input::_0
                 , typename features_input::_1
