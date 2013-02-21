@@ -29,6 +29,9 @@
 #include <alps/ngs/signal.hpp>
 #include <alps/ngs/boost_mpi.hpp>
 #include <alps/ngs/scheduler/stop_callback.hpp>
+#ifdef ALPS_HAVE_MPI
+#include <boost/mpi/collectives/broadcast.hpp>
+#endif
 
 namespace alps {
 
