@@ -298,11 +298,11 @@ namespace alps {
     class transpose_view<diagonal_matrix<T> > {
       public:
         // typedefs required for a std::container concept
-        typedef typename Matrix::value_type         value_type;       // The type T of the elements of the matrix
-        typedef typename Matrix::reference          reference;        // Reference to value_type
-        typedef typename Matrix::const_reference    const_reference;  // Const reference to value_type
-        typedef typename Matrix::size_type          size_type;        // Unsigned integer type that represents the dimensions of the matrix
-        typedef typename Matrix::difference_type    difference_type;  // Signed integer type to represent the distance of two elements in the memory
+        typedef typename diagonal_matrix<T>::value_type         value_type;       // The type T of the elements of the matrix
+        typedef typename diagonal_matrix<T>::reference          reference;        // Reference to value_type
+        typedef typename diagonal_matrix<T>::const_reference    const_reference;  // Const reference to value_type
+        typedef typename diagonal_matrix<T>::size_type          size_type;        // Unsigned integer type that represents the dimensions of the matrix
+        typedef typename diagonal_matrix<T>::difference_type    difference_type;  // Signed integer type to represent the distance of two elements in the memory
 
         // for compliance with an std::container one would also need
         // -operators == != < > <= >=
