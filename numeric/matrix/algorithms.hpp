@@ -98,7 +98,7 @@ namespace alps {
         template <typename Matrix>
         typename Matrix::value_type trace(Matrix const& m)
         {
-            BOOST_CONCEPT_ASSERT((alps::numeric::Matrix<Matrix>));
+            BOOST_CONCEPT_ASSERT((alps::numeric::DiagonalIteratableMatrix<Matrix>));
             assert(num_rows(m) == num_cols(m));
             using std::accumulate;
             typename Matrix::value_type tr = accumulate(diagonal(m).first,diagonal(m).second,typename Matrix::value_type(0));

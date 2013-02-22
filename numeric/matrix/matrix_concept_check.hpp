@@ -29,6 +29,7 @@
 #define ALPS_MATRIX_CONCEPT_CHECK_HPP
 #include <boost/concept_check.hpp>
 #include <boost/type_traits/remove_const.hpp>
+#include <boost/type_traits/add_const.hpp>
 
 namespace alps {
 namespace numeric {
@@ -44,15 +45,6 @@ struct Matrix : boost::Assignable<X>
         typedef typename X::difference_type                     difference_type;
         BOOST_CONCEPT_ASSERT((boost::SignedInteger<difference_type>));
         
-        // TODO write more restrictive BOOST_CONCEPT_ASSERTs for iterators
-        typedef typename X::row_element_iterator                row_element_iterator;
-        BOOST_CONCEPT_ASSERT((boost::InputIterator<row_element_iterator>));
-        typedef typename X::const_row_element_iterator          const_row_element_iterator;
-        BOOST_CONCEPT_ASSERT((boost::InputIterator<const_row_element_iterator>));
-        typedef typename X::col_element_iterator             col_element_iterator;
-        BOOST_CONCEPT_ASSERT((boost::InputIterator<col_element_iterator>));
-        typedef typename X::const_col_element_iterator       const_col_element_iterator;
-        BOOST_CONCEPT_ASSERT((boost::InputIterator<const_col_element_iterator>));
         
 
     BOOST_CONCEPT_USAGE(Matrix)
@@ -78,11 +70,6 @@ struct Matrix : boost::Assignable<X>
 //        swap_rows(x,0,1);
 //        swap_cols(x,0,1);
         
-        // Iterator functions
-        std::pair<row_element_iterator,row_element_iterator>                    row_range = row(x,0);
-        std::pair<col_element_iterator,col_element_iterator>                    col_range = col(x,0);
-        std::pair<const_row_element_iterator,const_row_element_iterator>        const_row_range = row(y,0);
-        std::pair<const_col_element_iterator,const_col_element_iterator>        const_col_range = col(y,0);
 
         // operators
         z = x;
@@ -106,6 +93,52 @@ struct Matrix : boost::Assignable<X>
     private:
         // Default constructable value_type
         value_type t;
+};
+
+
+template <typename X>
+struct DiagonalIteratableMatrix : Matrix<X>
+{
+    public:
+        // TODO write more restrictive BOOST_CONCEPT_ASSERTs for iterators
+        typedef typename X::diagonal_iterator                diagonal_iterator;
+        BOOST_CONCEPT_ASSERT((boost::InputIterator<diagonal_iterator>));
+        typedef typename X::const_diagonal_iterator          const_diagonal_iterator;
+        BOOST_CONCEPT_ASSERT((boost::InputIterator<const_diagonal_iterator>));
+    BOOST_CONCEPT_USAGE(DiagonalIteratableMatrix)
+    {
+        typename boost::remove_const<X>::type x(1,1);
+        typename boost::add_const<X>::type y(1,1);
+
+        std::pair<diagonal_iterator,diagonal_iterator>              diagonal_range = diagonal(x);
+        std::pair<const_diagonal_iterator,const_diagonal_iterator>  const_diagonal_range = diagonal(y);
+    }
+};
+
+template <typename X>
+struct IteratableMatrix : DiagonalIteratableMatrix<X>
+{
+    public:
+        // TODO write more restrictive BOOST_CONCEPT_ASSERTs for iterators
+        typedef typename X::row_element_iterator                row_element_iterator;
+        BOOST_CONCEPT_ASSERT((boost::InputIterator<row_element_iterator>));
+        typedef typename X::const_row_element_iterator          const_row_element_iterator;
+        BOOST_CONCEPT_ASSERT((boost::InputIterator<const_row_element_iterator>));
+        typedef typename X::col_element_iterator             col_element_iterator;
+        BOOST_CONCEPT_ASSERT((boost::InputIterator<col_element_iterator>));
+        typedef typename X::const_col_element_iterator       const_col_element_iterator;
+        BOOST_CONCEPT_ASSERT((boost::InputIterator<const_col_element_iterator>));
+
+    BOOST_CONCEPT_USAGE(IteratableMatrix)
+    {
+        typename boost::remove_const<X>::type x(1,1);
+        typename boost::add_const<X>::type y(1,1);
+        // Iterator functions
+        std::pair<row_element_iterator,row_element_iterator>                    row_range = row(x,0);
+        std::pair<col_element_iterator,col_element_iterator>                    col_range = col(x,0);
+        std::pair<const_row_element_iterator,const_row_element_iterator>        const_row_range = row(y,0);
+        std::pair<const_col_element_iterator,const_col_element_iterator>        const_col_range = col(y,0);
+    }
 };
 
 } // namespace numeric
