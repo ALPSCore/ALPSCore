@@ -46,16 +46,11 @@ int main() {
 
     alps::Parameters parm;
     unsigned int side_length = 40;
-    
+
     std::ifstream in("../../lib/xml/lattices.xml");
     parm["LATTICE"] = "square lattice";
     parm["L"] = side_length;
     alps::graph_helper<> lattice(in,parm);
-    
-    graph_type lattice_graph(num_vertices(lattice.graph()));
-    boost::graph_traits<alps::graph_helper<>::graph_type>::edge_iterator it, et;
-    for(boost::tie(it, et) = edges(lattice.graph()); it != et; ++it)
-        add_edge(source(*it, lattice.graph()), target(*it, lattice.graph()), lattice_graph);
 
     std::vector<std::pair<graph_type,lc_type> > g;
 
@@ -77,7 +72,7 @@ int main() {
     g.push_back(std::make_pair(graph_type(),6));
     add_edge(0, 1,g.back().first);
     add_edge(0, 2,g.back().first);
-    
+
     //
     //  3---1---0---2
     //
@@ -85,7 +80,7 @@ int main() {
     add_edge(0, 1,g.back().first);
     add_edge(0, 2,g.back().first);
     add_edge(1, 3,g.back().first);
-    
+
     //
     //  1---0---2
     //      |
@@ -114,7 +109,7 @@ int main() {
     //   2       5
     //    \     /
     //     0---1
-    //    /     \ 
+    //    /     \
     //   3       4
     //
     g.push_back(std::make_pair(graph_type(),18));
@@ -220,7 +215,7 @@ int main() {
         {
             lc_type lc = alps::graph::lattice_constant(
                   it->first
-                , lattice_graph
+                , lattice.graph()
                 , lattice.lattice()
                 , side_length * side_length / 2 + side_length / 2 - 1
             );
