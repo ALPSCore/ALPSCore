@@ -76,11 +76,6 @@ namespace alps {
                     }
             };
 
-            // vertex coloring
-            template<typename PropertyMap> struct has_coloring 
-                : public boost::mpl::not_<typename boost::is_same<PropertyMap, boost::no_property>::type>::type 
-            {};
-        
             // printable color list
             template<typename Value> class graph_label_color_vector : public std::vector<Value> {};
 
@@ -109,7 +104,7 @@ namespace alps {
                       // #vertices * (#vertex colors) bits: vertex vs color matrix
                     , graph_label_matrix_type
                       // vertex color list
-                    , graph_label_color_vector<typename boost::vertex_property_type<Graph>::type::value_type>
+                    , graph_label_color_vector<typename has_property<alps::vertex_type_t,Graph>::vertex_property_type>
                 > type;
             };
 
@@ -121,7 +116,7 @@ namespace alps {
                       // #edge * (#edge colors) bits: edge vs color matrix
                     , graph_label_matrix_type
                       // edge color list
-                    , graph_label_color_vector<typename boost::edge_property_type<Graph>::type::value_type>
+                    , graph_label_color_vector<typename has_property<alps::edge_type_t,Graph>::edge_property_type>
                 > type;
             };
 
@@ -133,11 +128,11 @@ namespace alps {
                       // #vertices * (#vertex colors) bits: vertex vs color matrix
                     , graph_label_matrix_type
                       // vertex color list
-                    , graph_label_color_vector<typename boost::vertex_property_type<Graph>::type::value_type>
+                    , graph_label_color_vector<typename has_property<alps::vertex_type_t,Graph>::vertex_property_type>
                       // #edge * (#edge colors) bits: edge vs color matrix
                     , graph_label_matrix_type
                       // edge color list
-                    , graph_label_color_vector<typename boost::edge_property_type<Graph>::type::value_type>
+                    , graph_label_color_vector<typename has_property<alps::edge_type_t,Graph>::edge_property_type>
                 > type;
             };
 
@@ -146,12 +141,11 @@ namespace alps {
         // comparable graph label
         // vertex coloring tag: alps::vertex_type_t
         // edge coloring tag: alps::edge_type_t
-        // TODO: only specialize to vertex_type_t and edge_type_t, not to any properties
         template<typename Graph> struct graph_label {
             typedef typename detail::graph_label_helper<
                   Graph
-                , detail::has_coloring<typename boost::vertex_property_type<Graph>::type>::value
-                , detail::has_coloring<typename boost::edge_property_type<Graph>::type>::value
+                , has_property<alps::vertex_type_t,Graph>::vertex_property
+                , has_property<alps::edge_type_t,Graph>::edge_property
             >::type type;
         };
 
@@ -480,8 +474,8 @@ namespace alps {
                       l
                     , pi
                     , G
-                    , typename detail::has_coloring<typename boost::vertex_property_type<Graph>::type>::type()
-                    , typename detail::has_coloring<typename boost::edge_property_type<Graph>::type>::type()
+                    , boost::mpl::bool_<has_property< alps::vertex_type_t, Graph>::vertex_property>()
+                    , boost::mpl::bool_<has_property< alps::edge_type_t,   Graph>::edge_property>()
                 );
             }
 
@@ -690,7 +684,7 @@ namespace alps {
             // pi = (V1, V2, ..., Vr), Vi = (n1, n2, ..., nk), ni element of G
             // uncolored graphs: pi is a unit partition (pi has only one part)
             // vertex colored graphs: pi has for each color one part
-            detail::initial_partition(G, pi, typename detail::has_coloring<typename boost::vertex_property_type<Graph>::type>::type());
+            detail::initial_partition(G, pi, boost::mpl::bool_<has_property<alps::vertex_type_t, Graph>::vertex_property>());
             // create canonical properties
             return detail::canonical_properties_impl(G, pi);
         }
@@ -706,7 +700,7 @@ namespace alps {
             // pi = (V1, V2, ..., Vr), Vi = (n1, n2, ..., nk), ni element of G
             // uncolored graphs: pi is a unit partition (pi has only one part)
             // vertex colored graphs: pi has for each color one part
-            detail::initial_partition(G, pi, v, typename detail::has_coloring<typename boost::vertex_property_type<Graph>::type>::type());
+            detail::initial_partition(G, pi, v, boost::mpl::bool_<has_property<alps::vertex_type_t, Graph>::vertex_property>());
             // create canonical properties
             return detail::canonical_properties_impl(G, pi);
         }

@@ -342,7 +342,8 @@ namespace alps {
                     , g
                     , S
                     , G
-                    , typename detail::has_coloring<typename boost::vertex_property_type<Graph>::type>::type())
+                    , boost::mpl::bool_<has_property<alps::vertex_type_t, Subgraph>::vertex_property>()
+                    )
                 )
                     return;
                 typename boost::graph_traits<Subgraph>::adjacency_iterator s_ai, s_ae;
@@ -356,7 +357,8 @@ namespace alps {
                             , e
                             , S
                             , G
-                            , typename detail::has_coloring<typename boost::edge_property_type<Graph>::type>::type())
+                            , boost::mpl::bool_<has_property<alps::edge_type_t, Subgraph>::edge_property>()
+                            )
                         )
                             return;
                     }

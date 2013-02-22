@@ -358,8 +358,8 @@ namespace alps {
                 , Graph const & G
                 , boost::mpl::true_
             ) {
-                return get(boost::vertex_name_t(), S)[s] == get(boost::vertex_name_t(), G)[g];
-            } 
+                return get(alps::vertex_type_t(), S)[s] == get(alps::vertex_type_t(), G)[g];
+            }
 
             template<typename Subgraph, typename Graph> bool lattice_constant_edge_equal(
                   typename boost::graph_traits<Subgraph>::edge_descriptor const & s_e
@@ -444,7 +444,7 @@ namespace alps {
                                             , e
                                             , S
                                             , G
-                                            , typename detail::has_coloring<typename boost::edge_property_type<Graph>::type>::type()
+                                            , boost::mpl::bool_<has_property<alps::edge_type_t, Subgraph>::edge_property>()
                                         )
                                         || out_degree(current.first, S) > out_degree(*g_ai, G)
                                         || !lattice_constant_vertex_equal(
@@ -452,7 +452,7 @@ namespace alps {
                                             , *g_ai
                                             , S
                                             , G
-                                            , typename detail::has_coloring<typename boost::vertex_property_type<Graph>::type>::type()
+                                            , boost::mpl::bool_<has_property<alps::vertex_type_t, Subgraph>::vertex_property>()
                                         )
                                     ) {
                                         is_valid = false;
@@ -484,7 +484,7 @@ namespace alps {
                     while (stack.size() > 0 && stack.back().second == g_stack.back())
                         stack.pop_back();
                 } else
-                    lattice_constant_insert<Graph, Subgraph, 20, 2>(
+                    lattice_constant_insert<Subgraph, Graph, 20, 2>(
                           S
                         , G
                         , I
