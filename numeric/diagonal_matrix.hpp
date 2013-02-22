@@ -40,6 +40,11 @@
 namespace alps {
     namespace numeric {
 
+
+    // Forward declaration, template found in alps/numeric/matrix/transpose_view.hpp 
+    template <typename Matrix>
+    class transpose_view;
+
     namespace detail {
 //        struct functor_##name { template<class T> return_type operator() (arg_type t) { return (static_cast<return_type (*) (arg_type)>(name))(t); } };
 
@@ -288,6 +293,49 @@ namespace alps {
     }
 
     ALPS_IMPLEMENT_MATRIX_DIAGONAL_ITERATOR_INTERFACE(diagonal_matrix<T>,<typename T>)
+
+    template <typename T>
+    class transpose_view<diagonal_matrix<T> > {
+      public:
+        // typedefs required for a std::container concept
+        typedef typename Matrix::value_type         value_type;       // The type T of the elements of the matrix
+        typedef typename Matrix::reference          reference;        // Reference to value_type
+        typedef typename Matrix::const_reference    const_reference;  // Const reference to value_type
+        typedef typename Matrix::size_type          size_type;        // Unsigned integer type that represents the dimensions of the matrix
+        typedef typename Matrix::difference_type    difference_type;  // Signed integer type to represent the distance of two elements in the memory
+
+        // for compliance with an std::container one would also need
+        // -operators == != < > <= >=
+        // -size()
+        // -typedefs iterator, const_iterator
+
+        explicit transpose_view(diagonal_matrix<T> const& m)
+        : m_(m){
+        };
+
+        operator diagonal_matrix<T>() const {
+            return m_;
+        }
+
+        inline value_type& operator()(size_type i, size_type j) {
+            return m_(j,i);
+        }
+
+        inline value_type const& operator()(size_type i, size_type j) const {
+            return m_(j,i);
+        }
+
+        inline size_type num_rows() const {
+            return m_.num_cols();
+        }
+
+        inline size_type num_cols() const {
+            return m_.num_rows();
+        }
+
+      private:
+        diagonal_matrix<T> const& m_;
+    };
 
     } // namespace numeric
 } // namespace alps
