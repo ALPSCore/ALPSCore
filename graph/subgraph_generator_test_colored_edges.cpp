@@ -32,21 +32,39 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <iostream>
 
+#include <boost/timer/timer.hpp>
 
 
-enum { test_graph_size = 10 };
+enum { test_graph_size = 7 };
+
+template <typename Graph>
+void reduce_edge_types(Graph& g, std::vector<unsigned int> const& map)
+{
+    BOOST_STATIC_ASSERT((boost::is_same<alps::type_type,unsigned int>::value));
+    typename boost::graph_traits<Graph>::edge_iterator it, end;
+    for(boost::tie(it,end) = edges(g); it != end; ++it)
+    {
+        unsigned int type = get(alps::edge_type_t(),g,*it);
+        put(alps::edge_type_t(),g,*it,map[type]);
+    }
+}
 
 template <typename Graph>
 void subgraph_generator_test(unsigned int order_ )
 {
     std::ifstream in("../../lib/xml/lattices.xml");
     alps::Parameters parm;
-    parm["LATTICE"] = "square lattice";
+    parm["LATTICE"] = "coupled ladders";
     parm["L"] = 2*order_+1;
     alps::graph_helper<> alps_lattice(in,parm);
 
     typedef alps::coordinate_graph_type lattice_graph_type;
-    lattice_graph_type lattice_graph = alps_lattice.graph();
+    lattice_graph_type& lattice_graph = alps_lattice.graph();
+    std::vector<unsigned int> edge_type_map(3,0);
+    edge_type_map[0] = 0;
+    edge_type_map[1] = 1;
+    edge_type_map[2] = 0;
+    reduce_edge_types(lattice_graph,edge_type_map);
 
 
     typedef alps::graph::subgraph_generator<Graph,lattice_graph_type> graph_gen_type;
@@ -59,7 +77,7 @@ void subgraph_generator_test(unsigned int order_ )
 
 int main()
 {
-    typedef boost::adjacency_list<boost::vecS, boost::vecS,boost::undirectedS> graph_type;
+    typedef boost::adjacency_list<boost::vecS, boost::vecS,boost::undirectedS, boost::no_property, boost::property<alps::edge_type_t,alps::type_type> > graph_type;
     subgraph_generator_test<graph_type>(test_graph_size);
     return 0;
 }
