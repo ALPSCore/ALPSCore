@@ -29,6 +29,7 @@
 #define ALPS_GRAPH_SUBGRAPH_GENERATOR_HPP
 #include <alps/lattice.h>
 #include <alps/graph/canonical_properties.hpp>
+#include <alps/graph/utils.hpp>
 #include <boost/static_assert.hpp>
 #include <alps/graph/lattice_constant.hpp>
 #include <vector>
@@ -242,13 +243,7 @@ namespace detail {
                 max_degree_ = (std::max)(max_degree_,degree(*v_it, g));
 
             // Analyse edges
-            edge_color_list_type edge_colors;
-            typename graph_traits<supergraph_type>::edge_iterator e_it, e_end;
-            for(boost::tie(e_it,e_end) = edges(g); e_it != e_end; ++e_it)
-                edge_colors.push_back( get(alps::edge_type_t(), g, *e_it) );
-            sort(edge_colors.begin(),edge_colors.end());
-            edge_colors.erase(unique(edge_colors.begin(),edge_colors.end()),edge_colors.end());
-            swap(edge_colors,edge_colors_);
+            edge_colors_ = get_edge_color_list(g);
         }
 
         void grow_at(std::vector<subgraph_properties_pair_type>& result, iterator const it, typename graph_traits<subgraph_type>::vertex_descriptor v,  typename partition_type<subgraph_type>::type::const_iterator const p_it)
