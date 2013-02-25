@@ -35,7 +35,12 @@
 #include <ostream>
 #include <boost/lambda/lambda.hpp>
 #include <cmath>
+#include <alps/numeric/conj.hpp>
 #include <alps/numeric/matrix/matrix_interface.hpp>
+
+#ifdef HALPS_HAVE_HDF5
+#include <alps/hdf5.hpp>
+#endif
 
 namespace alps {
     namespace numeric {
@@ -55,6 +60,8 @@ namespace alps {
             DEFINE_FUNCTION_OBJECT(exp, T, T const &)
 
         #undef DEFINE_FUNCTION_OBJECT
+
+        struct functor_conj { template<class T> T operator() (T t) {using std::conj; using alps::numeric::conj; return conj(t); } };
 
     }
 
@@ -163,7 +170,24 @@ namespace alps {
             assert(r == c);
             data_.resize(r, v);
         }
+        
+#ifdef ALPS_HAVE_HDF5
+        void save(alps::hdf5::archive & ar) const
+        {
+            ar << alps::make_pvp("", data_);
+        }
 
+        void load(alps::hdf5::archive & ar)
+        {
+            ar >> alps::make_pvp("", data_);
+        }
+#endif
+        
+        friend void swap(diagonal_matrix & x, diagonal_matrix & y)
+        {
+            swap(x.data_, y.data_);
+        }
+        
     private:
         std::vector<T> data_;
     };
@@ -187,6 +211,15 @@ namespace alps {
         for (std::size_t j = 0; j < num_cols(m2); ++j)
             for (std::size_t i = 0; i < num_rows(m1); ++i)
                 m3(i,j) = m1(i,i) * m2(i,j);
+    }
+
+    template<typename T>
+    void gemm(diagonal_matrix<T> const & m1, diagonal_matrix<T> const & m2, diagonal_matrix<T> & m3)
+    {
+        assert(num_cols(m1) == num_rows(m2));
+        resize(m3, num_rows(m1), num_cols(m2));
+        for (std::size_t j = 0; j < num_cols(m2); ++j)
+            m3(j,j) = m1(j,j) * m2(j,j);
     }
 
     template <typename T>
@@ -228,6 +261,14 @@ namespace alps {
     }
 
     template<typename T>
+    const diagonal_matrix<T> operator * (diagonal_matrix<T> const& m1, diagonal_matrix<T> const& m2)
+    {
+        diagonal_matrix<T> m3;
+        gemm(m1, m2, m3);
+        return m3;
+    }
+
+    template<typename T>
     typename diagonal_matrix<T>::size_type num_rows(diagonal_matrix<T> const & m)
     {
         return m.num_rows();
@@ -237,6 +278,13 @@ namespace alps {
     typename diagonal_matrix<T>::size_type num_cols(diagonal_matrix<T> const & m)
     {
         return m.num_cols();
+    }
+
+    template<typename T>
+    void conj_inplace(diagonal_matrix<T> & m)
+    {
+        using std::transform;
+        transform(m.diagonal().first, m.diagonal().second, m.diagonal().first, detail::functor_conj());
     }
 
     template<typename T>
@@ -268,6 +316,17 @@ namespace alps {
     }
 
     template<typename T>
+    typename real_type<T>::type norm_square(diagonal_matrix<T> const & m)
+    {
+        using alps::numeric::conj;
+        using alps::numeric::real;
+        typename real_type<T>::type ret(0);
+        for (std::size_t j = 0; j < num_cols(m); ++j)
+            ret += real(m(j,j) * conj(m(j,j)));
+        return ret;
+    }
+
+    template<typename T>
     std::ostream& operator<<(std::ostream& os, diagonal_matrix<T> const & m)
     {
         std::copy(m.diagonal().first, m.diagonal().second, std::ostream_iterator<T>(os, " "));
@@ -290,6 +349,15 @@ namespace alps {
     void resize(diagonal_matrix<T> & m, std::size_t r, std::size_t c, T v = T())
     {
         m.resize(r, c, v);
+    }
+
+    template<typename T, typename T2>
+    void swap (diagonal_matrix<T> & m1, diagonal_matrix<T> & m2)
+    {
+        
+        diagonal_matrix<T> m3;
+        gemm(m1, m2, m3);
+        return m3;
     }
 
     ALPS_IMPLEMENT_MATRIX_DIAGONAL_ITERATOR_INTERFACE(diagonal_matrix<T>,<typename T>)
