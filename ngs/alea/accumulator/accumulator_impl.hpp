@@ -45,26 +45,26 @@ namespace alps {
         // = = = = = = = A C C U M U L A T O R _ I M P L= = = = = = = = = =
             
             template<
-                  typename _0  = void
-                , typename _1  = void
-                , typename _2  = void
-                , typename _3  = void
-                , typename _4  = void
-                , typename _5  = void
-                , typename _6  = void
-                , typename _7  = void
-                , typename _8  = void
-                , typename _9  = void
+                  typename A0  = void
+                , typename A1  = void
+                , typename A2  = void
+                , typename A3  = void
+                , typename A4  = void
+                , typename A5  = void
+                , typename A6  = void
+                , typename A7  = void
+                , typename A8  = void
+                , typename A9  = void
             >  struct accumulator_impl : public DeriveAccumulatorProperties<
                   typename UniqueList<typename ResolveDependencies<typename ValueTypeFirst<typename MakeList<
-                      _0, _1, _2, _3, _4, _5, _6, _7, _8, _9
+                      A0, A1, A2, A3, A4, A5, A6, A7, A8, A9
                   >::type>::type>::type>::type
                 , UselessBase
             >::type {
                 //typename it for shorter syntax
                 typedef typename DeriveAccumulatorProperties<
                       typename UniqueList<typename ResolveDependencies<typename ValueTypeFirst<typename MakeList<
-                          _0, _1, _2, _3, _4, _5, _6, _7, _8, _9
+                          A0, A1, A2, A3, A4, A5, A6, A7, A8, A9
                       >::type>::type>::type>::type
                     , UselessBase
                 >::type base_type;
@@ -81,17 +81,17 @@ namespace alps {
             
         // = = = = = = S T R E A M   O P E R A T O R = = = = = = = = = = =
             template<
-                  typename _0
-                , typename _1
-                , typename _2
-                , typename _3
-                , typename _4
-                , typename _5
-                , typename _6
-                , typename _7
-                , typename _8
-                , typename _9
-            > inline std::ostream & operator <<(std::ostream & os, accumulator_impl<_0, _1, _2, _3, _4, _5, _6, _7, _8, _9> & a) {
+                  typename A0
+                , typename A1
+                , typename A2
+                , typename A3
+                , typename A4
+                , typename A5
+                , typename A6
+                , typename A7
+                , typename A8
+                , typename A9
+            > inline std::ostream & operator <<(std::ostream & os, accumulator_impl<A0, A1, A2, A3, A4, A5, A6, A7, A8, A9> & a) {
                 a.print(os);
                 return os;
             }

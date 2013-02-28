@@ -26,37 +26,40 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-#ifndef ALPS_NGS_ALEA_FEATURES_FEATURES_HPP
-#define ALPS_NGS_ALEA_FEATURES_FEATURES_HPP
+#ifndef ALPS_NGS_ALEA_ACCUMULATOR_RESULT_TYPE_WRAPPER_HEADER
+#define ALPS_NGS_ALEA_ACCUMULATOR_RESULT_TYPE_WRAPPER_HEADER
+
+#include <alps/ngs/alea/features.hpp>
+#include <alps/ngs/alea/wrapper/base_accumulator_wrapper.hpp>
 
 namespace alps {
-    namespace accumulator  {
+    namespace accumulator {
+        namespace detail {
 
-        template<
-              typename A0  = void
-            , typename A1  = void
-            , typename A2  = void
-            , typename A3  = void
-            , typename A4  = void
-            , typename A5  = void
-            , typename A6  = void
-            , typename A7  = void
-            , typename A8  = void
-        >
-        struct features
-        {
-            typedef A0 T0;
-            typedef A1 T1;
-            typedef A2 T2;
-            typedef A3 T3;
-            typedef A4 T4;
-            typedef A5 T5;
-            typedef A6 T6;
-            typedef A7 T7;
-            typedef A8 T8;
-        };
-
+            template <typename ValueType> class result_type_accumulator_wrapper: public base_accumulator_wrapper {
+                public:
+                    typedef ValueType value_type;
+                    virtual ~result_type_accumulator_wrapper() {}
+                    virtual typename mean_type<value_type>::type mean() const = 0;
+                    virtual bool has_mean() const = 0;
+                    virtual typename error_type<value_type>::type error() const = 0;
+                    virtual bool has_error() const = 0;
+                    virtual typename fixed_size_bin_type<value_type>::type fixed_size_bin() const = 0;
+                    virtual bool has_fixed_size_bin() const = 0;
+                    virtual typename max_num_bin_type<value_type>::type max_num_bin() const = 0;
+                    virtual bool has_max_num_bin() const = 0;
+                    virtual typename log_bin_type<value_type>::type log_bin() const = 0;
+                    virtual bool has_log_bin() const = 0;
+                    virtual typename autocorr_type<value_type>::type autocorr() const = 0;
+                    virtual bool has_autocorr() const = 0;
+                    virtual typename converged_type<value_type>::type converged() const = 0;
+                    virtual bool has_converged() const = 0;
+                    virtual typename tau_type<value_type>::type tau() const = 0;
+                    virtual bool has_tau() const = 0;
+                    virtual typename histogram_type<value_type>::type histogram() const = 0;
+                    virtual bool has_histogram() const = 0;
+            };
+        }
     }
 }
-
-#endif // ALPS_NGS_ALEA_FEATURES_FEATURES_HPP
+#endif

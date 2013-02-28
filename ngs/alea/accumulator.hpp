@@ -47,42 +47,42 @@ namespace alps {
         >
         class accumulator: public detail::accumulator_impl<
               ValueType<vt>
-            , typename features_input::_0
-            , typename features_input::_1
-            , typename features_input::_2
-            , typename features_input::_3
-            , typename features_input::_4
-            , typename features_input::_5
-            , typename features_input::_6
-            , typename features_input::_7
-            , typename features_input::_8
+            , typename features_input::T0
+            , typename features_input::T1
+            , typename features_input::T2
+            , typename features_input::T3
+            , typename features_input::T4
+            , typename features_input::T5
+            , typename features_input::T6
+            , typename features_input::T7
+            , typename features_input::T8
         > {
             typedef accumulator<vt, features_input> self_type;
 
             typedef detail::accumulator_impl<
                   ValueType<vt>
-                , typename features_input::_0
-                , typename features_input::_1
-                , typename features_input::_2
-                , typename features_input::_3
-                , typename features_input::_4
-                , typename features_input::_5
-                , typename features_input::_6
-                , typename features_input::_7
-                , typename features_input::_8
+                , typename features_input::T0
+                , typename features_input::T1
+                , typename features_input::T2
+                , typename features_input::T3
+                , typename features_input::T4
+                , typename features_input::T5
+                , typename features_input::T6
+                , typename features_input::T7
+                , typename features_input::T8
             > base_type;
 
             typedef result<
                   ValueType<vt>
-                , typename features_input::_0
-                , typename features_input::_1
-                , typename features_input::_2
-                , typename features_input::_3
-                , typename features_input::_4
-                , typename features_input::_5
-                , typename features_input::_6
-                , typename features_input::_7
-                , typename features_input::_8
+                , typename features_input::T0
+                , typename features_input::T1
+                , typename features_input::T2
+                , typename features_input::T3
+                , typename features_input::T4
+                , typename features_input::T5
+                , typename features_input::T6
+                , typename features_input::T7
+                , typename features_input::T8
             > result_type;
             
             public:

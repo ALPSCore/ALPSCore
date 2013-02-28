@@ -26,37 +26,62 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-#ifndef ALPS_NGS_ALEA_FEATURES_FEATURES_HPP
-#define ALPS_NGS_ALEA_FEATURES_FEATURES_HPP
+#ifndef ALPS_NGS_ALEA_BASE_ACCUMULATOR_WRAPPER_HEADER
+#define ALPS_NGS_ALEA_BASE_ACCUMULATOR_WRAPPER_HEADER
+
+#ifdef ALPS_HAVE_MPI
+    #include <alps/ngs/boost_mpi.hpp>
+#endif
+
+#include <boost/cstdint.hpp>
+
+#include <typeinfo> //used in add_value
+#include <stdexcept>
 
 namespace alps {
-    namespace accumulator  {
+    namespace accumulator {
+        namespace detail {
 
-        template<
-              typename A0  = void
-            , typename A1  = void
-            , typename A2  = void
-            , typename A3  = void
-            , typename A4  = void
-            , typename A5  = void
-            , typename A6  = void
-            , typename A7  = void
-            , typename A8  = void
-        >
-        struct features
-        {
-            typedef A0 T0;
-            typedef A1 T1;
-            typedef A2 T2;
-            typedef A3 T3;
-            typedef A4 T4;
-            typedef A5 T5;
-            typedef A6 T6;
-            typedef A7 T7;
-            typedef A8 T8;
-        };
+        //= = = = = = = = = = = = = = = = = = W R A P P E R   B A S E = = = = = = = = = = = = = = =
+        //declaration because needed in base_accumulator_wrapper
 
+            template <typename value_type>  class result_type_accumulator_wrapper;
+            
+            //base_type of result_type_accumulator_wrapper. Defines the usable interface
+            class base_accumulator_wrapper {
+                public:
+                    base_accumulator_wrapper() {}
+                    virtual ~base_accumulator_wrapper() {}
+                    
+                    template<typename value_type>
+                    inline void operator<<(value_type& value) 
+                    {
+                        add_value(&value, typeid(value_type));
+                    }
+                    
+                    template<typename value_type>
+                    inline result_type_accumulator_wrapper<value_type> &get() 
+                    {
+                        return dynamic_cast<result_type_accumulator_wrapper<value_type>& >(*this);
+                    }
+                    
+                    virtual boost::uint64_t count() const = 0;
+                    virtual void reset() = 0;
+                    virtual base_accumulator_wrapper* clone() = 0;  //needed for the copy-ctor
+                    virtual void print(std::ostream & out) = 0;
+
+#ifdef ALPS_HAVE_MPI
+                    virtual void collective_merge(
+                          boost::mpi::communicator const & comm
+                        , int root
+                    ) = 0;
+#endif
+
+                protected:
+                    virtual void add_value(const void* value, const std::type_info& t_info) = 0; //for operator<<
+            };
+
+        }
     }
 }
-
-#endif // ALPS_NGS_ALEA_FEATURES_FEATURES_HPP
+#endif

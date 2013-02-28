@@ -44,9 +44,7 @@ namespace alps
     namespace accumulator
     {
         //=================== value_type trait ===================
-        template <typename Accum>
-        struct value_type
-        {
+        template <typename Accum> struct value_type {
             typedef typename Accum::value_type type;
         };
         //=================== value_type implementation ===================
