@@ -137,23 +137,20 @@ namespace alps
                     AccumulatorImplementation<tag::mean, base_type>(ThisType const & arg): base_type(arg), sum_(arg.sum_) {}
                     
                     template<typename ArgumentPack>
-                    AccumulatorImplementation<tag::mean, base_type>(ArgumentPack const & args, typename boost::disable_if<
-                                                                                          boost::is_base_of<ThisType, ArgumentPack>
-                                                                                        , int
-                                                                                        >::type = 0
-                                        ): base_type(args)
-                                         , sum_()
+                    AccumulatorImplementation<tag::mean, base_type>(
+                          ArgumentPack const & args
+                        , typename boost::disable_if<boost::is_base_of<ThisType, ArgumentPack>, int>::type = 0
+                    )
+                        : base_type(args)
+                        , sum_()
                     {}
                     
-                    inline mean_type const  mean() const 
-                    { 
+                    inline mean_type const  mean() const {
                         using alps::ngs::numeric::operator/;
-                        
                         return mean_type(sum_) / base_type::count();
                     }
             
-                    inline ThisType& operator <<(value_type_loc val) 
-                    {
+                    inline ThisType& operator <<(value_type_loc val)  {
                         using alps::ngs::numeric::operator+=;
                         using alps::ngs::numeric::detail::check_size;
                         base_type::operator <<(val);
@@ -163,14 +160,12 @@ namespace alps
                         return *this;
                     }
 
-                    template<typename Stream> 
-                    inline void print(Stream & os) 
-                    {
+                    template<typename Stream>  inline void print(Stream & os) {
                         base_type::print(os);
                         os << "tag::mean: " << alps::short_print(mean()) << " " << std::endl;
                     }
-                    inline void reset()
-                    {
+
+                    inline void reset() {
                         base_type::reset();
                         sum_ = value_type_loc();
                     }
@@ -201,6 +196,26 @@ namespace alps
                 protected:
                     value_type_loc sum_;
             };
+
+            template<typename base_type> class ResultImplementation<tag::mean, base_type> {
+
+                typedef typename mean_type<typename base_type::value_type>::type mean_type;
+
+                public:
+
+                    template<typename Accumulator> ResultImplementation(Accumulator const & accum)
+                        : base_type(accum)
+                        , mean_(accum.mean())
+                    {}
+
+                    inline mean_type const mean() const { 
+                        return mean_;
+                    }
+// TODO: implement!
+                protected:
+                    mean_type mean_;
+            };
+
         } // end namespace detail
     } // end accumulator namespace 
 } // end alps namespace

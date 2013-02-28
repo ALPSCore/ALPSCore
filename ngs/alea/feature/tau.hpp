@@ -126,6 +126,11 @@ namespace alps
                     }
                 private:
             };
+
+            template<typename base_type> class ResultImplementation<tag::detail::tau, base_type> {
+// TODO: implement!
+            };
+
         } // end namespace detail
     }//end accumulator namespace 
 }//end alps namespace

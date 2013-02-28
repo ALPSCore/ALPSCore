@@ -256,33 +256,31 @@ namespace alps
                 typedef ListEnd type;
             };
 
-        // = = = = = = I M P L E M E N T A T I O N   T Y P E = = = = = = = = = = =
-        //every property specializes this template and contains the wanted implementation
-            template<typename property, typename base_type>
-            struct AccumulatorImplementation {};
+        // = = = = = = D E R I V E   F R O M   I M P L E M E N T A T I O N S   F O R   A C C U M U L A T O R = = = = = = = = = = =
+            template<typename property, typename base_type> struct AccumulatorImplementation {};
 
-            template<typename property, typename base_type>
-            struct ResultImplementation {};
-
-        // = = = = = = D E R I V E   F R O M   I M P L E M E N T A T I O N S = = = = = = = = = = =
-            template<
-                      typename list
-                    , typename base_type
-                    > 
-            struct DeriveProperties 
-            {
-                typedef typename DeriveProperties<
-                                                typename list::next
-                                                , AccumulatorImplementation<typename list::type, base_type> //the base_type is expanded here
-                                                >::type type;
+            template<typename list, typename base_type> struct DeriveAccumulatorProperties {
+                typedef typename DeriveAccumulatorProperties<
+                    typename list::next, AccumulatorImplementation<typename list::type, base_type> //the base_type is expanded here
+                >::type type;
             };
-            
-            template<typename base_type> 
-            struct DeriveProperties<ListEnd, base_type> 
-            {
+            template<typename base_type> struct DeriveAccumulatorProperties<ListEnd, base_type> {
                 typedef base_type type; //here base_type will be AccumulatorImplementation<property1, AccumulatorImplementation<property2, ... AccumulatorImplementation<propertyN, UselessBase> > >
             };
 
+        // = = = = = = D E R I V E   F R O M   I M P L E M E N T A T I O N S   F O R   R E S U L T = = = = = = = = = = =
+            template<typename property, typename base_type> struct ResultImplementation {};
+
+            template<typename list, typename base_type> struct DeriveResultProperties {
+                typedef typename DeriveResultProperties<
+                    typename list::next, DeriveResultProperties<typename list::type, base_type> //the base_type is expanded here
+                >::type type;
+            };
+            template<typename base_type> struct DeriveResultProperties<ListEnd, base_type> {
+                typedef base_type type; //here base_type will be DeriveResultProperties<property1, DeriveResultProperties<property2, ... DeriveResultProperties<propertyN, UselessBase> > >
+            };
+
+        // = = = = = = S T A N D A R D   B A S E = = = = = = = = = = =
             struct UselessBase {};
 
         } // end namespace detail

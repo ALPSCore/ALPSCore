@@ -231,8 +231,8 @@ namespace alps
 
                 private:
                     std::size_t partition_bins (boost::mpi::communicator const & comm, std::vector<mean_type> & local_bins) const {
-                        using boost::numeric::operators::operator+;
-                        using boost::numeric::operators::operator/;
+                        using alps::ngs::numeric::operator+;
+                        using alps::ngs::numeric::operator/;
                         boost::uint64_t elements_in_local_bins = boost::mpi::all_reduce(comm, elements_in_bin_, boost::mpi::maximum<boost::uint64_t>());
                         size_type howmany = (elements_in_local_bins - 1) / elements_in_bin_ + 1;
                         if (howmany > 1) {
@@ -255,6 +255,11 @@ namespace alps
                     size_type pos_in_partial_;
                     size_type const max_bin_num_;
             };
+
+            template<typename base_type> class ResultImplementation<tag::max_num_binning, base_type> {
+// TODO: implement!
+            };
+
         } // end namespace detail
     }//end accumulator namespace 
 }//end alps namespace

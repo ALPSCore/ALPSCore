@@ -28,7 +28,56 @@
 #ifndef ALPS_NGS_ALEA_RESULT_SET_HPP
 #define ALPS_NGS_ALEA_RESULT_SET_HPP
 
+#include <alps/ngs/alea/wrapper/result_wrapper.hpp>
+#include <alps/ngs/hdf5.hpp>
 
+#include <map>
+#include <string>
 
+namespace alps {
+    namespace accumulator {
+        
+        class ALPS_DECL result_set {
+/*
+        public: 
+            typedef std::map<std::string, boost::shared_ptr<detail::result_wrapper> > map_type;
+            
+            typedef map_type::iterator iterator;
+            typedef map_type::const_iterator const_iterator;
 
+            detail::result_wrapper & operator[](std::string const & name);
+
+            detail::result_wrapper const & operator[](std::string const & name) const;
+
+            bool has(std::string const & name) const;
+
+            void insert(std::string const & name, boost::shared_ptr<detail::result_wrapper> ptr);
+
+            void save(hdf5::archive & ar) const;
+
+            void load(hdf5::archive & ar);
+
+            void reset();
+
+            result_set & operator<< (make_result const & make_acc) {
+                insert(make_acc.name, boost::shared_ptr<detail::result_wrapper>(new detail::result_wrapper(make_acc.acc_wrapper)));
+                return *this;
+            }
+            
+            void merge(result_set const &);
+
+            void output(std::ostream & os) const;
+            
+            iterator begin();
+            iterator end();
+            const_iterator begin() const;
+            const_iterator end() const;
+            void clear();
+            
+        private:
+            map_type storage;
+        };
+*/
+    }
+}
 #endif

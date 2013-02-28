@@ -4,7 +4,7 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2013 by Lukas Gamper <gamperl@gmail.ch>                           *
+ * Copyright (C) 2011 - 2012 by Lukas Gamper <gamperl@gmail.com>                   *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -25,43 +25,70 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_ALEA_RESULT_HPP
-#define ALPS_NGS_ALEA_RESULT_HPP
+#ifndef ALPS_NGS_ALEA_RESULT_RESULT_IMPL_HEADER
+#define ALPS_NGS_ALEA_RESULT_RESULT_IMPL_HEADER
 
 #include <alps/ngs/alea/features.hpp>
-#include <alps/ngs/alea/accumulator.hpp>
+
+#include <boost/static_assert.hpp>
+#include <boost/type_traits.hpp>
+#include <boost/utility.hpp>
+
+#include <iostream>
 
 namespace alps {
     namespace accumulator {
+        namespace detail {
 
-        template<
-              typename A0  = void
-            , typename A1  = void
-            , typename A2  = void
-            , typename A3  = void
-            , typename A4  = void
-            , typename A5  = void
-            , typename A6  = void
-            , typename A7  = void
-            , typename A8  = void
-            , typename A9  = void
-        > struct result : public detail::DeriveResultProperties<
-              typename detail::UniqueList<typename detail::ResolveDependencies<typename detail::ValueTypeFirst<typename detail::MakeList<
-                  A0, A1, A2, A3, A4, A5, A6, A7, A8, A9
-              >::type>::type>::type>::type
-            , detail::UselessBase
-        >::type {
-            //typename it for shorter syntax
-            typedef typename detail::DeriveResultProperties<
-                  typename detail::UniqueList<typename detail::ResolveDependencies<typename detail::ValueTypeFirst<typename detail::MakeList<
-                      A0, A1, A2, A3, A4, A5, A6, A7, A8, A9
+        // = = = = = = = A C C U M U L A T O R _ I M P L= = = = = = = = = =
+            
+            template<
+                  typename _0  = void
+                , typename _1  = void
+                , typename _2  = void
+                , typename _3  = void
+                , typename _4  = void
+                , typename _5  = void
+                , typename _6  = void
+                , typename _7  = void
+                , typename _8  = void
+                , typename _9  = void
+            >  struct result_impl : public DeriveResultProperties<
+                  typename UniqueList<typename ResolveDependencies<typename ValueTypeFirst<typename MakeList<
+                      _0, _1, _2, _3, _4, _5, _6, _7, _8, _9
                   >::type>::type>::type>::type
-                , detail::UselessBase
-            >::type base_type;
+                , UselessBase
+            >::type {
+                //typename it for shorter syntax
+                typedef typename DeriveResultProperties<
+                      typename UniqueList<typename ResolveDependencies<typename ValueTypeFirst<typename MakeList<
+                          _0, _1, _2, _3, _4, _5, _6, _7, _8, _9
+                      >::type>::type>::type>::type
+                    , UselessBase
+                >::type base_type;
 
-            public:
-                template<typename Accumulator> result(Accumulator const & arg): base_type(arg) {}
-        };
+                result_impl() {}
+                result_impl(result_impl const & arg): base_type(arg) {}
+            };
+            
+        // = = = = = = S T R E A M   O P E R A T O R = = = = = = = = = = =
+            template<
+                  typename _0
+                , typename _1
+                , typename _2
+                , typename _3
+                , typename _4
+                , typename _5
+                , typename _6
+                , typename _7
+                , typename _8
+                , typename _9
+            > inline std::ostream & operator <<(std::ostream & os, result_impl<_0, _1, _2, _3, _4, _5, _6, _7, _8, _9> & a) {
+                a.print(os);
+                return os;
+            }
+        }
     }
 }
+
 #endif

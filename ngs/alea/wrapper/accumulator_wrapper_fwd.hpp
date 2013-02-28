@@ -29,13 +29,14 @@
 #ifndef ALPS_NGS_ALEA_ACCUMULATOR_WRAPPER_FWD_HEADER
 #define ALPS_NGS_ALEA_ACCUMULATOR_WRAPPER_FWD_HEADER
 
-#include <boost/shared_ptr.hpp>
-#include <boost/cstdint.hpp>
 #include <alps/ngs/alea/accumulator.hpp>
 
 #ifdef ALPS_HAVE_MPI
     #include <alps/ngs/boost_mpi.hpp>
 #endif
+
+#include <boost/cstdint.hpp>
+#include <boost/shared_ptr.hpp>
 
 namespace alps
 {
@@ -43,11 +44,10 @@ namespace alps
     {
         namespace detail
         {
-            class base_wrapper;
-            template<typename Accum>
-            class result_type_wrapper;
+            class base_accumulator_wrapper;
+            template<typename Accum> class result_type_accumulator_wrapper;
 
-            //class that holds the base_wrapper pointer
+            //class that holds the base_accumulator_wrapper pointer
             class accumulator_wrapper {
                 public:
                     template<typename T> 
@@ -60,7 +60,7 @@ namespace alps
                         
                     
                     template<typename T>
-                    detail::result_type_wrapper<T> & get() const;//TODO
+                    detail::result_type_accumulator_wrapper<T> & get() const;//TODO
                     
                     friend std::ostream& operator<<(std::ostream &out, const accumulator_wrapper& wrapper);
                     
@@ -82,7 +82,7 @@ namespace alps
                     ) const;
 #endif
                 private:
-                    boost::shared_ptr<base_wrapper> base_;
+                    boost::shared_ptr<base_accumulator_wrapper> base_;
             };
         }//end detail namespace 
     }//end accumulator namespace 

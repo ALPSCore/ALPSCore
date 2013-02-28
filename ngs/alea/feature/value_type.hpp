@@ -53,10 +53,7 @@ namespace alps
         namespace detail
         {
             //setting up the dependencies for value_type-Implementation isn't neccessary bc has none
-            
-            template<typename T, typename base_type> 
-            class AccumulatorImplementation<ValueType<T>, base_type>
-            {
+            template<typename T, typename base_type> class AccumulatorImplementation<ValueType<T>, base_type> {
                 typedef AccumulatorImplementation<ValueType<T>, base_type> ThisType;
                 public:
                     typedef T value_type;
@@ -154,6 +151,29 @@ namespace alps
                 private:
                     boost::uint64_t count_;
             };
+
+            template<typename T, typename base_type> class ResultImplementation<ValueType<T>, base_type> {
+                public:
+
+                    typedef T value_type;
+
+                    template<typename Accumulator> ResultImplementation(Accumulator const & accum)
+                        : count_(accum.count())
+                    {}
+
+                    inline boost::uint64_t const & count() const {
+                        return count_; 
+                    }
+
+                    template<typename Stream> inline void print(Stream & os) {
+                        os << "Count: " << count() << " " << std::endl;
+                    }
+
+// TODO: implement!
+                private:
+                    boost::uint64_t count_;
+            };
+
         } // end namespace detail
     }//end accumulator namespace 
 }//end alps namespace

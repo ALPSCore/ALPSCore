@@ -143,6 +143,26 @@ namespace alps
                 private:
                     error_type sum2_;
             };
+
+            template<typename base_type> class ResultImplementation<tag::error, base_type> {
+
+                typedef typename error_type<typename base_type::value_type>::type error_type;
+
+                public:
+
+                    template<typename Accumulator> ResultImplementation(Accumulator const & accum)
+                        : base_type(accum)
+                        , error_(accum.error())
+                    {}
+
+                    inline error_type const error() const { 
+                        return error_;
+                    }
+// TODO: implement!
+                protected:
+                    error_type error_;
+            };            
+
         } // end namespace detail
     }//end accumulator namespace 
 }//end alps namespace

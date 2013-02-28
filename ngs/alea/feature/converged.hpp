@@ -136,6 +136,11 @@ namespace alps
                     }
                 private:
             };
+
+            template<typename base_type> class ResultImplementation<tag::detail::converged, base_type> {
+// TODO: implement!
+            };
+
         } // end namespace detail
     }//end accumulator namespace 
 }//end alps namespace

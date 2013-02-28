@@ -232,7 +232,7 @@ namespace alps {
                 #ifdef ALPS_NGS_USE_NEW_ALEA
                 
                 //------------------- for RealObservable and RealVectorObservable -------------------
-                mcdata(alps::accumulator::detail::result_type_wrapper<T> & acc)
+                mcdata(alps::accumulator::detail::result_type_accumulator_wrapper<T> & acc) // TODO: do not use a detail class
                     : count_(acc.count())
                     , data_is_analyzed_(true)
                     , jacknife_bins_valid_(false)
@@ -1109,13 +1109,13 @@ namespace alps {
                 using alps::numeric::acos;                                                                                                                 \
                 using std::atan;                                                                                                                           \
                 using alps::numeric::atan;                                                                                                                 \
-/*                using boost::math::asinh;                                                                                                                  \
+/*                using boost::math::asinh;                                                                                                                \
                 using alps::numeric::asinh;                                                                                                                \
                 using boost::math::acosh;                                                                                                                  \
                 using alps::numeric::acosh;                                                                                                                \
                 using boost::math::atanh;                                                                                                                  \
                 using alps::numeric::atanh;                                                                                                                \
-*/                using boost::numeric::operators::operator+;                                                                                                \
+*/                using boost::numeric::operators::operator+;                                                                                              \
                 using boost::numeric::operators::operator-;                                                                                                \
                 using boost::numeric::operators::operator*;                                                                                                \
                 using boost::numeric::operators::operator/;                                                                                                \

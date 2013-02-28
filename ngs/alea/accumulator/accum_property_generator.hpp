@@ -29,9 +29,9 @@
 #ifndef ALPS_NGS_ALEA_DETAIL_ACCUM_WRAPPER_MACRO_HEADER
 #define ALPS_NGS_ALEA_DETAIL_ACCUM_WRAPPER_MACRO_HEADER
 
-#include <alps/ngs/stacktrace.hpp>
-#include <alps/ngs/alea/wrapper/accum_prewrapper.hpp>
+#include <alps/ngs/alea/wrapper/accumulator_wrapper_fwd.hpp>
 
+#include <alps/ngs/stacktrace.hpp>
 
 #include <boost/utility.hpp>
 #include <boost/type_traits.hpp>
@@ -63,18 +63,13 @@
 *       Derives from the right detail::FCT_property_impl (with/without Accum::FCT) and implements the copy-ctor to pass 
 *       up the argumnets
 *   
-* 6. FCT(result_type_wrapper<T>)
+* 6. FCT(result_type_accumulator_wrapper<T>)
 *       Function that just extracts the type other than FCT(Accum)
 */
 namespace alps
 {
     namespace accumulator
     {
-        namespace detail
-        {
-            template <typename value_type> 
-            class result_type_wrapper;
-        }//end namespace detail
         #define IMPLEMENT_FUNCTION(FCT) \
         \
         /* = = = = = = = = = = I N F O   T R A I T = = = = = = = = = = */\

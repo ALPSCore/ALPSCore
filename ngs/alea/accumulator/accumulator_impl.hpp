@@ -55,14 +55,14 @@ namespace alps {
                 , typename _7  = void
                 , typename _8  = void
                 , typename _9  = void
-            >  struct accumulator_impl : public DeriveProperties<
+            >  struct accumulator_impl : public DeriveAccumulatorProperties<
                   typename UniqueList<typename ResolveDependencies<typename ValueTypeFirst<typename MakeList<
                       _0, _1, _2, _3, _4, _5, _6, _7, _8, _9
                   >::type>::type>::type>::type
                 , UselessBase
             >::type {
                 //typename it for shorter syntax
-                typedef typename DeriveProperties<
+                typedef typename DeriveAccumulatorProperties<
                       typename UniqueList<typename ResolveDependencies<typename ValueTypeFirst<typename MakeList<
                           _0, _1, _2, _3, _4, _5, _6, _7, _8, _9
                       >::type>::type>::type>::type

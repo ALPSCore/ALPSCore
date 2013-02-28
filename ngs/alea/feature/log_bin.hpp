@@ -172,6 +172,11 @@ namespace alps
                     size_type pos_in_partial_;
                     size_type bin_size_now_;
             };
+
+            template<typename base_type> class ResultImplementation<tag::log_binning, base_type> {
+// TODO: implement!
+            };
+
         } // end namespace detail
     }//end accumulator namespace 
 }//end alps namespace

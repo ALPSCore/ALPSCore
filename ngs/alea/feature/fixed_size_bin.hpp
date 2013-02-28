@@ -175,6 +175,11 @@ namespace alps
                     size_type partial_count_;
                     size_type const bin_size_;
             };
+
+            template<typename base_type> class ResultImplementation<tag::fixed_size_binning, base_type> {
+// TODO: implement!
+            };
+
         } // end namespace detail
     }//end accumulator namespace 
 }//end alps namespace

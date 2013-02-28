@@ -209,7 +209,11 @@ namespace alps
                     std::vector<value_type_loc> partial_;
                     size_type bin_size_now_;
             };
-            
+
+            template<typename base_type> class ResultImplementation<tag::autocorrelation, base_type> {
+// TODO: implement!
+            };
+
         } // end namespace detail
     }//end accumulator namespace 
 }//end alps namespace

@@ -72,7 +72,7 @@ namespace alps {
                 , typename features_input::_8
             > base_type;
 
-            typedef result_impl<
+            typedef result<
                   ValueType<vt>
                 , typename features_input::_0
                 , typename features_input::_1
@@ -98,11 +98,8 @@ namespace alps {
                     )
                 )
 
-                result_type result() {
-                    result_type result;
-                    // TODO: implement
-//                    base_type::make_result(result);
-                    return result;
+                result_type result() const {
+                    return result(*this);
                 }
         };
     } //end accumulator namespace 
