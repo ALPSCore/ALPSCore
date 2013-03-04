@@ -25,11 +25,12 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_ALEA_DETAIL_ERROR_IMPLEMENTATION_HEADER
-#define ALPS_NGS_ALEA_DETAIL_ERROR_IMPLEMENTATION_HEADER
+#ifndef ALPS_NGS_ALEA_DETAIL_ERROR_HPP
+#define ALPS_NGS_ALEA_DETAIL_ERROR_HPP
 
 #include <alps/ngs/alea/feature/mean.hpp>
 #include <alps/ngs/alea/feature/feature_traits.hpp>
+#include <alps/ngs/alea/feature/generate_property.hpp>
 
 #include <alps/ngs/short_print.hpp>
 #include <alps/ngs/numeric/array.hpp>
@@ -162,7 +163,11 @@ namespace alps
                     error_type error_;
             };            
 
-        } // end namespace detail
-    }//end accumulator namespace 
-}//end alps namespace
-#endif // ALPS_NGS_ALEA_DETAIL_ERROR_IMPLEMENTATION
+        }
+
+        //=================== call GENERATE_PROPERTY macro ===================
+        GEMERATE_PROPERTY(error, tag::error)
+
+    }
+}
+#endif

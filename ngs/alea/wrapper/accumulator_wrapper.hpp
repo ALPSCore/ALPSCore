@@ -30,7 +30,6 @@
 
 #include <alps/ngs/alea/wrapper/derived_accumulator_wrapper.hpp>
 
-
 #include <alps/ngs/stacktrace.hpp>
 #include <alps/ngs/alea/wrapper/extern_function.hpp>
 #include <alps/ngs/alea/wrapper/accumulator_wrapper_fwd.hpp>

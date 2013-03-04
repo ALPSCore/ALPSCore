@@ -248,8 +248,8 @@ namespace alps {
                     else
                         error_ = T();
                         
-                    if(acc.has_max_num_bin())
-                        binsize_ = acc.max_num_bin().bin_number();
+                    if(acc.has_max_num_binning())
+                        binsize_ = acc.max_num_binning().bin_number();
                     else
                         binsize_ = 0;
                 }

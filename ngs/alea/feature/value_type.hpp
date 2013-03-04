@@ -29,6 +29,7 @@
 #define ALPS_NGS_ALEA_DETAIL_VALUE_TYPE_IMPLEMENTATION_HEADER
 
 #include <alps/ngs/alea/feature/feature_traits.hpp>
+#include <alps/ngs/alea/feature/generate_property.hpp>
 
 #include <boost/cstdint.hpp>
 

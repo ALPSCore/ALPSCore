@@ -25,11 +25,12 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_ALEA_DETAIL_AUTOCORR_IMPLEMENTATION_HEADER
-#define ALPS_NGS_ALEA_DETAIL_AUTOCORR_IMPLEMENTATION_HEADER
+#ifndef ALPS_NGS_ALEA_DETAIL_AUTOCORRELATION_IMPLEMENTATION_HEADER
+#define ALPS_NGS_ALEA_DETAIL_AUTOCORRELATION_IMPLEMENTATION_HEADER
 
 #include <alps/ngs/alea/feature/mean.hpp>
 #include <alps/ngs/alea/feature/feature_traits.hpp>
+#include <alps/ngs/alea/feature/generate_property.hpp>
 
 #include <alps/ngs/numeric/array.hpp>
 #include <alps/ngs/numeric/detail.hpp>
@@ -48,17 +49,17 @@ namespace alps
 {
     namespace accumulator
     {
-        //=================== autocorr proxy ===================
+        //=================== autocorrelation proxy ===================
         template<typename value_type>
-        class autocorr_proxy_type
+        class autocorrelation_proxy_type
         {
             typedef typename mean_type<value_type>::type mean_type;
         public:
-            autocorr_proxy_type(): bin2_(std::vector<value_type>())
+            autocorrelation_proxy_type(): bin2_(std::vector<value_type>())
                                 , bin1_(std::vector<value_type>())
                                 , count_(0) 
             {}
-            autocorr_proxy_type(  std::vector<value_type> const & bin2
+            autocorrelation_proxy_type(  std::vector<value_type> const & bin2
                                 , std::vector<value_type> const & bin1
                                 , boost::uint64_t const & count):
                                                                   bin2_(bin2)
@@ -89,7 +90,7 @@ namespace alps
             }
             
             template<typename T>
-            friend std::ostream & operator<<(std::ostream & os, autocorr_proxy_type<T> const & arg);
+            friend std::ostream & operator<<(std::ostream & os, autocorrelation_proxy_type<T> const & arg);
         private:
             std::vector<value_type> const & bin2_;
             std::vector<value_type> const & bin1_;
@@ -97,23 +98,23 @@ namespace alps
         };
         
         template<typename T>
-        inline std::ostream & operator<<(std::ostream & os, autocorr_proxy_type<T> const & arg)
+        inline std::ostream & operator<<(std::ostream & os, autocorrelation_proxy_type<T> const & arg)
         {
-            os << "autocorr_proxy" << std::endl;
+            os << "autocorrelation_proxy" << std::endl;
             return os;
             
         };
-        //=================== autocorr trait ===================
+        //=================== autocorrelation trait ===================
         template <typename T>
-        struct autocorr_type
+        struct autocorrelation_type
         {
-            typedef autocorr_proxy_type<T> type;
+            typedef autocorrelation_proxy_type<T> type;
         };
-        //=================== autocorr implementation ===================
+        //=================== autocorrelation implementation ===================
         namespace detail
         {
 
-        //set up the dependencies for the tag::autocorrelation-Implementation
+        //set up the dependencies for the tag::autocorrelationelation-Implementation
             template<> 
             struct Dependencies<tag::autocorrelation> 
             {
@@ -124,7 +125,7 @@ namespace alps
             class AccumulatorImplementation<tag::autocorrelation, base_type> : public base_type 
             {
                 typedef typename base_type::value_type value_type_loc;
-                typedef typename autocorr_type<value_type_loc>::type autocorr_type;
+                typedef typename autocorrelation_type<value_type_loc>::type autocorrelation_type;
                 typedef typename std::vector<value_type_loc>::size_type size_type;
                 typedef typename mean_type<value_type_loc>::type mean_type;
                 typedef AccumulatorImplementation<tag::autocorrelation, base_type> ThisType;
@@ -146,9 +147,9 @@ namespace alps
                                               , bin_size_now_(0)
                     {}
                     
-                    inline autocorr_type const autocorr() const 
+                    inline autocorrelation_type const autocorrelation() const 
                     { 
-                        return autocorr_proxy_type<value_type_loc>(bin_, partial_, base_type::count());
+                        return autocorrelation_proxy_type<value_type_loc>(bin_, partial_, base_type::count());
                     }
                     
                     inline ThisType& operator <<(value_type_loc const &  val) 
@@ -213,7 +214,11 @@ namespace alps
 // TODO: implement!
             };
 
-        } // end namespace detail
-    }//end accumulator namespace 
-}//end alps namespace
-#endif // ALPS_NGS_ALEA_DETAIL_AUTOCORR_IMPLEMENTATION
+        }
+
+        //=================== call GENERATE_PROPERTY macro ===================
+        GEMERATE_PROPERTY(autocorrelation, tag::autocorrelation)
+
+    }
+}
+#endif

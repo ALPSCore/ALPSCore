@@ -43,9 +43,11 @@ namespace alps {
         template<
               typename vt  = double
             , typename features_input = features<tag::mean, tag::error>
+//            , typename wt = void
         >
         class accumulator: public detail::accumulator_impl<
               ValueType<vt>
+//            , WeightType<wt, features_input>
             , typename features_input::T0
             , typename features_input::T1
             , typename features_input::T2

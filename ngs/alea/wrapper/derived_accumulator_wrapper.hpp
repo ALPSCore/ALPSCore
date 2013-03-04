@@ -66,19 +66,41 @@ namespace alps {
 
             // TODO: move XXX_property to the acording feature
             template <typename Accum> 
-            class derived_accumulator_wrapper: public histogram_property <tau_property <converged_property<autocorr_property<
-                log_bin_property<max_num_bin_property<fixed_size_bin_property<error_property<mean_property<accumulator_prewrapper<
+            class derived_accumulator_wrapper: public 
+// TODO: generate form all_tags ...
+                feature_property<tag::histogram,
+                feature_property<tag::detail::tau,
+                feature_property<tag::detail::converged,
+                feature_property<tag::autocorrelation,
+                feature_property<tag::log_binning,
+                feature_property<tag::max_num_binning,
+                feature_property<tag::fixed_size_binning,
+                feature_property<tag::error,
+                feature_property<tag::mean,
+
+                accumulator_prewrapper<
                     Accum, result_type_accumulator_wrapper<typename value_type<Accum>::type>
-                > > > > > > 
-            > > > > {
+                >
+
+            > > > > > > > > > {
                 //for nicer syntax
                 typedef typename value_type<Accum>::type value_type;
-                typedef histogram_property <
-                    tau_property <converged_property<autocorr_property<log_bin_property<max_num_bin_property<
-                        fixed_size_bin_property<error_property<mean_property<accumulator_prewrapper<
-                            Accum, detail::result_type_accumulator_wrapper<value_type>
-                    > > > > 
-                > > > > > > base_type;
+                typedef 
+// TODO: generate form all_tags ...
+                    feature_property<tag::histogram,
+                    feature_property<tag::detail::tau,
+                    feature_property<tag::detail::converged,
+                    feature_property<tag::autocorrelation,
+                    feature_property<tag::log_binning,
+                    feature_property<tag::max_num_binning,
+                    feature_property<tag::fixed_size_binning,
+                    feature_property<tag::error,
+                    feature_property<tag::mean,
+
+                    accumulator_prewrapper<
+                        Accum, detail::result_type_accumulator_wrapper<value_type>
+                    >
+                > > > > > > > > > base_type;
 
                 public:
                     using accumulator_prewrapper<Accum, result_type_accumulator_wrapper<value_type> >::accum_;

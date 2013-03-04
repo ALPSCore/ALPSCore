@@ -38,6 +38,7 @@
 #include <alps/ngs/hdf5/multi_array.hpp>
 
 #include <alps/ngs/alea/feature/feature_traits.hpp>
+#include <alps/ngs/alea/feature/generate_property.hpp>
 
 #include <alps/multi_array.hpp>
 #include <alps/type_traits/element_type.hpp>
@@ -49,41 +50,29 @@
     #include <alps/ngs/boost_mpi.hpp>
 #endif
 
-namespace alps
-{
-    namespace accumulator
-    {
+namespace alps {
+    namespace accumulator {       
         //=================== mean trait ===================
-        namespace detail
-        {
-            template<unsigned n> struct static_array
-            {
+        namespace detail {
+            template<unsigned n> struct static_array {
                 char type[n];
             };
             
-            template <typename T, int>
-            struct mean_type_impl
-            {
+            template <typename T, int> struct mean_type_impl {
                 typedef T type;
             };
          
-            template <typename T>
-            struct mean_type_impl<T, 2>
-            {
+            template <typename T> struct mean_type_impl<T, 2> {
                 typedef double type;
             };
          
-            template <typename T>
-            struct mean_type_impl<T, 3>
-            {
+            template <typename T> struct mean_type_impl<T, 3> {
                 typedef typename boost::is_same<T, T>::type false_type;
                 BOOST_STATIC_ASSERT_MSG(!false_type::value, "mean_type trait failed");
             };
         }
         
-        template <typename value_type>
-        struct mean_type
-        {
+        template <typename value_type> struct mean_type {
             private:
                 typedef value_type T;
                 static T t;
@@ -94,49 +83,38 @@ namespace alps
                 typedef typename detail::mean_type_impl<T, sizeof(test((t+t)/double(1)))/sizeof(char)>::type type;
         };
 
-        template<>
-        struct mean_type<double>
-        {
+        template<> struct mean_type<double> {
             public:
                 typedef double type;
         };
         
-        template<typename T>
-        struct mean_type<std::vector<T> >
-        {
+        template<typename T> struct mean_type<std::vector<T> > {
             public:
                 typedef std::vector<typename mean_type<T>::type > type;
         };
         
-        template<typename T, std::size_t N>
-        struct mean_type<boost::array<T, N> >
-        {
+        template<typename T, std::size_t N> struct mean_type<boost::array<T, N> > {
             public:
                 typedef boost::array<typename mean_type<T>::type, N> type;
         };
         
-        template<typename T, std::size_t N>
-        struct mean_type<boost::multi_array<T, N> >
-        {
+        template<typename T, std::size_t N> struct mean_type<boost::multi_array<T, N> > {
             public:
                 typedef boost::multi_array<typename mean_type<T>::type, N> type;
         };
+
         //=================== mean implementation ===================
-        namespace detail
-        {
+        namespace detail {
             //setting up the dependencies for tag::mean-Implementation isn't neccessary bc has none
             
-            template<typename base_type> 
-            class AccumulatorImplementation<tag::mean, base_type> : public base_type 
-            {
+            template<typename base_type> class AccumulatorImplementation<tag::mean, base_type> : public base_type {
                 typedef typename base_type::value_type value_type_loc;
                 typedef typename mean_type<value_type_loc>::type mean_type;
                 typedef AccumulatorImplementation<tag::mean, base_type> ThisType;
                 public:
                     AccumulatorImplementation<tag::mean, base_type>(ThisType const & arg): base_type(arg), sum_(arg.sum_) {}
                     
-                    template<typename ArgumentPack>
-                    AccumulatorImplementation<tag::mean, base_type>(
+                    template<typename ArgumentPack> AccumulatorImplementation<tag::mean, base_type>(
                           ArgumentPack const & args
                         , typename boost::disable_if<boost::is_base_of<ThisType, ArgumentPack>, int>::type = 0
                     )
@@ -215,7 +193,12 @@ namespace alps
                     mean_type mean_;
             };
 
-        } // end namespace detail
-    } // end accumulator namespace 
-} // end alps namespace
+        }
+
+        //=================== call GENERATE_PROPERTY macro ===================
+        GEMERATE_PROPERTY(mean, tag::mean)
+
+    }
+}
+
 #endif // ALPS_NGS_ALEA_DETAIL_MEAN_IMPLEMENTATION

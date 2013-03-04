@@ -25,11 +25,12 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
  
-#ifndef ALPS_NGS_ALEA_DETAIL_CONVERGED_IMPLEMENTATION_HEADER
-#define ALPS_NGS_ALEA_DETAIL_CONVERGED_IMPLEMENTATION_HEADER
+#ifndef ALPS_NGS_ALEA_DETAIL_CONVERGED_HPP
+#define ALPS_NGS_ALEA_DETAIL_CONVERGED_HPP
 
 #include <alps/ngs/alea/feature/mean.hpp>
 #include <alps/ngs/alea/feature/feature_traits.hpp>
+#include <alps/ngs/alea/feature/generate_property.hpp>
 
 namespace alps
 {
@@ -141,7 +142,11 @@ namespace alps
 // TODO: implement!
             };
 
-        } // end namespace detail
-    }//end accumulator namespace 
-}//end alps namespace
-#endif //ALPS_NGS_ALEA_DETAIL_CONVERGED_IMPLEMENTATION_HEADER
+        }
+
+        //=================== call GENERATE_PROPERTY macro ===================
+        GEMERATE_PROPERTY(converged, tag::detail::converged)
+
+    }
+}
+#endif

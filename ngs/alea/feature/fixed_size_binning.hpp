@@ -25,13 +25,14 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_ALEA_DETAIL_LOG_BIN_IMPLEMENTATION_HEADER
-#define ALPS_NGS_ALEA_DETAIL_LOG_BIN_IMPLEMENTATION_HEADER
+#ifndef ALPS_NGS_ALEA_DETAIL_FIX_SIZE_BINNING_HPP
+#define ALPS_NGS_ALEA_DETAIL_FIX_SIZE_BINNING_HPP
 
 #include <alps/ngs/alea/feature/mean.hpp>
 #include <alps/ngs/alea/feature/feature_traits.hpp>
+#include <alps/ngs/alea/feature/generate_property.hpp>
 
-#include <boost/cstdint.hpp>
+#include <alps/ngs/alea/accumulator/arguments.hpp>
 
 #include <vector>
 #include <ostream>
@@ -42,114 +43,115 @@ namespace alps
 {
     namespace accumulator
     {
-        //=================== log_bin proxy ===================
+        //=================== fixed_size_binning proxy ===================
         template<typename value_type>
-        class log_bin_proxy_type
+        class fixed_size_binning_proxy_type
         {
             typedef typename mean_type<value_type>::type mean_type;
             typedef typename std::vector<value_type>::size_type size_type;
         public:
-            log_bin_proxy_type(): bin_(std::vector<mean_type>()) {}
-            log_bin_proxy_type(std::vector<mean_type> const & bin): bin_(bin) {}
+            fixed_size_binning_proxy_type(): bin_(std::vector<mean_type>()) {}
+            fixed_size_binning_proxy_type(  std::vector<mean_type> const & bin
+                                      , size_type const & bin_size):
+                                                                  bin_(bin)
+                                                                , bin_size_(bin_size)
+            {}
             
             inline std::vector<mean_type> const & bins() const 
             {
                 return bin_;
             }
             
+            inline size_type const & bin_size() const
+            {
+                return bin_size_;
+            }
+            
             template<typename T>
-            friend std::ostream & operator<<(std::ostream & os, log_bin_proxy_type<T> const & arg);
+            friend std::ostream & operator<<(std::ostream & os, fixed_size_binning_proxy_type<T> const & arg);
         private:
             std::vector<mean_type> const & bin_;
+            size_type bin_size_;
         };
 
-        //~ template<typename value_type>
-        //~ log_bin_proxy_type<value_type> make_log_bin_proxy_type()
-        //~ {
-            //~ return log_bin_proxy_type<value_type>(unused);
-        //~ }
-        
         template<typename T>
-        inline std::ostream & operator<<(std::ostream & os, log_bin_proxy_type<T> const & arg)
+        inline std::ostream & operator<<(std::ostream & os, fixed_size_binning_proxy_type<T> const & arg)
         {
-            os << "log_bin_proxy" << std::endl;
+            os << "fixed_size_binning_proxy" << std::endl;
             return os;
             
         };
-        //=================== log_bin trait ===================
-        template <typename T>
-        struct log_bin_type
-        {
-            typedef log_bin_proxy_type<T> type;
+        //=================== fixed_size_binning trait ===================
+        template <typename T> struct fixed_size_binning_type {
+            typedef fixed_size_binning_proxy_type<T> type;
         };
-        //=================== log_bin implementation ===================
-        namespace detail
-        {
-            //set up the dependencies for the tag::log_binning-Implementation
+        //=================== fixed_size_binning implementation ===================
+        namespace detail {
+            //set up the dependencies for the tag::fixed_size_binning-Implementation
             template<> 
-            struct Dependencies<tag::log_binning> 
+            struct Dependencies<tag::fixed_size_binning> 
             {
                 typedef MakeList<tag::mean, tag::error>::type type;
             };
 
             template<typename base_type> 
-            class AccumulatorImplementation<tag::log_binning, base_type> : public base_type 
+            class AccumulatorImplementation<tag::fixed_size_binning, base_type> : public base_type 
             {
                 typedef typename base_type::value_type value_type_loc;
-                typedef typename log_bin_type<value_type_loc>::type log_bin_type;
+                typedef typename fixed_size_binning_type<value_type_loc>::type fix_bin_type;
                 typedef typename std::vector<value_type_loc>::size_type size_type;
                 typedef typename mean_type<value_type_loc>::type mean_type;
-                typedef AccumulatorImplementation<tag::log_binning, base_type> ThisType;
-          
-                public:    
-                    AccumulatorImplementation<tag::log_binning, base_type>(ThisType const & arg):  base_type(arg)
-                                                                    , bin_(arg.bin_)
-                                                                    , partial_(arg.partial_)
-                                                                    , pos_in_partial_(arg.pos_in_partial_)
-                                                                    , bin_size_now_(arg.bin_size_now_) 
+                typedef AccumulatorImplementation<tag::fixed_size_binning, base_type> ThisType;
+                    
+                public:
+                    AccumulatorImplementation<tag::fixed_size_binning, base_type>(ThisType const & arg):  base_type(arg)
+                                                                        , bin_(arg.bin_)
+                                                                        , partial_(arg.partial_)
+                                                                        , partial_count_(arg.partial_count_)
+                                                                        , bin_size_(arg.bin_size_) 
                     {}
                     
+                    // TODO: set right default value
                     template<typename ArgumentPack>
-                    AccumulatorImplementation<tag::log_binning, base_type>(ArgumentPack const & args
-                                         , typename boost::disable_if<
-                                                                      boost::is_base_of<ThisType, ArgumentPack>
-                                                                    , int
-                                                                    >::type = 0
-                                        ): base_type(args)
-                                         , partial_()
-                                         , pos_in_partial_()
-                                         , bin_size_now_(1)
+                    AccumulatorImplementation<tag::fixed_size_binning, base_type>(ArgumentPack const & args
+                                             , typename boost::disable_if<
+                                                                          boost::is_base_of<ThisType, ArgumentPack>
+                                                                        , int
+                                                                         >::type = 0
+                                            ): base_type(args)
+                                             , partial_()
+                                             , partial_count_(0)
+                                             , bin_size_(args[bin_size | 128]) //change doc if modified
                     {}
                     
-                    inline log_bin_type const log_bin() const 
+                    inline fix_bin_type const fixed_size_binning() const 
                     { 
-                        return log_bin_proxy_type<value_type_loc>(bin_);
+                        return fixed_size_binning_proxy_type<value_type_loc>(bin_, bin_size_); 
                     }
               
                     inline ThisType& operator <<(value_type_loc val) 
                     {
                         using namespace alps::ngs::numeric;
                         
-                        base_type::operator <<(val);
+                        base_type::operator << (val);
                         
                         partial_ += val;
-                        ++pos_in_partial_;
+                        ++partial_count_;
                         
-                        if(pos_in_partial_ == bin_size_now_)
+                        if(partial_count_ == bin_size_)
                         {
-                            bin_.push_back(partial_ / bin_size_now_);
+                            bin_.push_back(partial_ / bin_size_);
+                            partial_count_ = 0;
                             partial_ = value_type_loc();
-                            pos_in_partial_ = 0;
-                            bin_size_now_ *= 2;
                         }
                         return *this;
                     }
               
-                    template<typename Stream>
+                    template<typename Stream> 
                     inline void print(Stream & os) 
                     {
                         base_type::print(os);
-                        os << "Log Binning: " << std::endl;
+                        os << "FixBinSize: BinNumber: " << bin_.size() << " " << std::endl;
                         
                         //~ os << std::endl;
                         //~ for (unsigned int i = 0; i < bin_.size(); ++i)
@@ -162,21 +164,24 @@ namespace alps
                         base_type::reset();
                         bin_.clear();
                         partial_ = value_type_loc();
-                        pos_in_partial_ = 0;
-                        bin_size_now_ = 1;
+                        partial_count_ = 0;
                     }
                 private:
                     std::vector<mean_type> bin_;
                     value_type_loc partial_;
-                    size_type pos_in_partial_;
-                    size_type bin_size_now_;
+                    size_type partial_count_;
+                    size_type const bin_size_;
             };
 
-            template<typename base_type> class ResultImplementation<tag::log_binning, base_type> {
+            template<typename base_type> class ResultImplementation<tag::fixed_size_binning, base_type> {
 // TODO: implement!
             };
 
-        } // end namespace detail
-    }//end accumulator namespace 
-}//end alps namespace
-#endif // ALPS_NGS_ALEA_DETAIL_LOG_BIN_IMPLEMENTATION
+        }
+
+        //=================== call GENERATE_PROPERTY macro ===================
+        GEMERATE_PROPERTY(fixed_size_binning, tag::fixed_size_binning)
+
+    }
+}
+#endif

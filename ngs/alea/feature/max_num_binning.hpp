@@ -25,11 +25,12 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_ALEA_DETAIL_MAX_NUM_BIN_IMPLEMENTATION_HEADER
-#define ALPS_NGS_ALEA_DETAIL_MAX_NUM_BIN_IMPLEMENTATION_HEADER
+#ifndef ALPS_NGS_ALEA_DETAIL_MAX_NUM_BINNING_HPP
+#define ALPS_NGS_ALEA_DETAIL_MAX_NUM_BINNING_HPP
 
 #include <alps/ngs/alea/feature/mean.hpp>
 #include <alps/ngs/alea/feature/feature_traits.hpp>
+#include <alps/ngs/alea/feature/generate_property.hpp>
 
 #include <alps/ngs/alea/accumulator/arguments.hpp>
 
@@ -42,16 +43,16 @@ namespace alps
 {
     namespace accumulator
     {
-        //=================== max_num_bin proxy ===================
+        //=================== max_num_binning proxy ===================
         template<typename value_type>
-        class max_num_bin_proxy_type
+        class max_num_binning_proxy_type
         {
             typedef typename mean_type<value_type>::type mean_type;
             typedef typename std::vector<value_type>::size_type size_type;
         public:
-            max_num_bin_proxy_type(): bin_(std::vector<mean_type>()) {}
+            max_num_binning_proxy_type(): bin_(std::vector<mean_type>()) {}
             
-            max_num_bin_proxy_type(  std::vector<mean_type> const & bin
+            max_num_binning_proxy_type(  std::vector<mean_type> const & bin
                                       , size_type const & bin_number):
                                                                   bin_(bin)
                                                                 , bin_number_(bin_number)
@@ -68,25 +69,25 @@ namespace alps
             }
             
             template<typename T>
-            friend std::ostream & operator<<(std::ostream & os, max_num_bin_proxy_type<T> const & arg);
+            friend std::ostream & operator<<(std::ostream & os, max_num_binning_proxy_type<T> const & arg);
         private:
             std::vector<mean_type> const & bin_;
             size_type bin_number_;
         };
 
         template<typename T>
-        inline std::ostream & operator<<(std::ostream & os, max_num_bin_proxy_type<T> const & arg)
+        inline std::ostream & operator<<(std::ostream & os, max_num_binning_proxy_type<T> const & arg)
         {
-            os << "max_num_bin_proxy" << std::endl;
+            os << "max_num_binning_proxy" << std::endl;
             return os;
         };
-        //=================== max_num_bin trait ===================
+        //=================== max_num_binning trait ===================
         template <typename T>
-        struct max_num_bin_type
+        struct max_num_binning_type
         {
-            typedef max_num_bin_proxy_type<T> type;
+            typedef max_num_binning_proxy_type<T> type;
         };
-        //=================== max_num_bin implementation ===================
+        //=================== max_num_binning implementation ===================
         namespace detail
         {
             //set up the dependencies for the tag::max_num_binning-Implementation
@@ -100,7 +101,7 @@ namespace alps
             class AccumulatorImplementation<tag::max_num_binning, base_type> : public base_type 
             {
                 typedef typename base_type::value_type value_type_loc;
-                typedef typename max_num_bin_type<value_type_loc>::type num_bin_type;
+                typedef typename max_num_binning_type<value_type_loc>::type num_bin_type;
                 typedef typename std::vector<value_type_loc>::size_type size_type;
                 typedef typename mean_type<value_type_loc>::type mean_type;
                 typedef AccumulatorImplementation<tag::max_num_binning, base_type> ThisType;
@@ -128,9 +129,9 @@ namespace alps
                         , max_bin_num_(args[bin_num | 128]) //change doc if manipulated
                     {}
                     
-                    inline num_bin_type const max_num_bin() const 
+                    inline num_bin_type const max_num_binning() const 
                     { 
-                        return max_num_bin_proxy_type<value_type_loc>(bin_, max_bin_num_);
+                        return max_num_binning_proxy_type<value_type_loc>(bin_, max_bin_num_);
                     }
               
                     inline ThisType& operator <<(value_type_loc val)
@@ -259,7 +260,11 @@ namespace alps
 // TODO: implement!
             };
 
-        } // end namespace detail
-    }//end accumulator namespace 
-}//end alps namespace
-#endif // ALPS_NGS_ALEA_DETAIL_MAX_NUM_BIN_IMPLEMENTATION
+        }
+
+        //=================== call GENERATE_PROPERTY macro ===================
+        GEMERATE_PROPERTY(max_num_binning, tag::max_num_binning)
+
+    }
+}
+#endif

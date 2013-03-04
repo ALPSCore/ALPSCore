@@ -30,6 +30,7 @@
 
 #include <alps/ngs/alea/feature/mean.hpp>
 #include <alps/ngs/alea/feature/feature_traits.hpp>
+#include <alps/ngs/alea/feature/generate_property.hpp>
 
 #include <boost/cstdint.hpp>
 
@@ -132,7 +133,11 @@ namespace alps
 // TODO: implement!
             };
 
-        } // end namespace detail
-    }//end accumulator namespace 
-}//end alps namespace
+        }
+
+        //=================== call GENERATE_PROPERTY macro ===================
+        GEMERATE_PROPERTY(tau, tag::detail::tau)
+
+    }
+}
 #endif //ALPS_NGS_ALEA_DETAIL_TAU_IMPLEMENTATION_HEADER
