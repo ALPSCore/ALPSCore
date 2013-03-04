@@ -56,8 +56,8 @@ BOOST_AUTO_TEST_CASE(test_ctor_in_modular_accum)
     BOOST_REQUIRE(count(acc2) == acc.count());
     BOOST_REQUIRE( mean(acc2) == acc.mean());
     BOOST_REQUIRE( error(acc2) == acc.error());
-    BOOST_REQUIRE( fixed_size_bin(acc2).bins() == acc.fixed_size_bin().bins());
-    BOOST_REQUIRE( max_num_bin(acc2).bins() == acc.max_num_bin().bins());
-    BOOST_REQUIRE( autocorr(acc2).bins() == acc.autocorr().bins());
+    BOOST_REQUIRE( fixed_size_binning(acc2).bins() == acc.fixed_size_binning().bins());
+    BOOST_REQUIRE( max_num_binning(acc2).bins() == acc.max_num_binning().bins());
+    BOOST_REQUIRE( autocorrelation(acc2).bins() == acc.autocorrelation().bins());
     
 }

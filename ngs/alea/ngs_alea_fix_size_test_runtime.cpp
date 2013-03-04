@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE(test_fixed_size_bin_in_modular_accum)
     acci << 2;
     acci << 6;
     
-    BOOST_REQUIRE( alps::accumulator::fixed_size_bin(acci).bin_size() == 128);
+    BOOST_REQUIRE( alps::accumulator::fixed_size_binning(acci).bin_size() == 128);
     
     
     alps::accumulator::accumulator<double, alps::accumulator::features<alps::accumulator::tag::fixed_size_binning> > accd(alps::accumulator::bin_size = 10);
@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_CASE(test_fixed_size_bin_in_modular_accum)
     
         
         
-    BOOST_REQUIRE( alps::accumulator::fixed_size_bin(accd).bin_size() == 10);
-    alps::accumulator::fixed_size_bin(accd);
-    accd.fixed_size_bin();
+    BOOST_REQUIRE( alps::accumulator::fixed_size_binning(accd).bin_size() == 10);
+    alps::accumulator::fixed_size_binning(accd);
+    accd.fixed_size_binning();
 }

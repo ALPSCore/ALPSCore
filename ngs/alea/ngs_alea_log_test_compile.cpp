@@ -44,15 +44,15 @@ BOOST_AUTO_TEST_CASE(test_log_bin_with_error_archetype)
     acci << 2;
     acci << 6;
     
-    //~ BOOST_REQUIRE( alps::accumulator::max_num_bin(acci).bin_number() == 128);
+    //~ BOOST_REQUIRE( alps::accumulator::max_num_binning(acci).bin_number() == 128);
     
     alps::accumulator::accumulator<error_archetype, alps::accumulator::features<alps::accumulator::tag::log_binning> > accd;
     
     accd << .2;
     accd << .6;
         
-    //~ BOOST_REQUIRE( alps::accumulator::max_num_bin(accd).bin_number() == 10);
+    //~ BOOST_REQUIRE( alps::accumulator::max_num_binning(accd).bin_number() == 10);
     
-    alps::accumulator::log_bin(accd);
-    accd.log_bin();
+    alps::accumulator::log_binning(accd);
+    accd.log_binning();
 }

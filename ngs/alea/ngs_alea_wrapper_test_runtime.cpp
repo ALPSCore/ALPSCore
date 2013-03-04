@@ -36,9 +36,9 @@
 #endif
 
 template<typename T>
-alps::accumulator::autocorr_proxy_type<T> fct()
+alps::accumulator::autocorrelation_proxy_type<T> fct()
 {
-    return alps::accumulator::autocorr_proxy_type<T>();
+    return alps::accumulator::autocorrelation_proxy_type<T>();
 }
 
 BOOST_AUTO_TEST_CASE(test_wrapper_for_modular_accum)

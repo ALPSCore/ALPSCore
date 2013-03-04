@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE(test_max_num_bin_in_modular_accum)
     acci << 2;
     acci << 6;
     
-    BOOST_REQUIRE( alps::accumulator::max_num_bin(acci).bin_number() == 128);
+    BOOST_REQUIRE( alps::accumulator::max_num_binning(acci).bin_number() == 128);
     
     
     alps::accumulator::accumulator<double, alps::accumulator::features<alps::accumulator::tag::max_num_binning> > accd(alps::accumulator::bin_num = 10);
@@ -55,12 +55,12 @@ BOOST_AUTO_TEST_CASE(test_max_num_bin_in_modular_accum)
     }
     
     std::vector<double> vec;
-    vec = max_num_bin(accd).bins();
+    vec = max_num_binning(accd).bins();
     
     for(int i = 0; i < vec.size(); ++i)
     {
         std::cout << vec[i] << std::endl;
     }
         
-    BOOST_REQUIRE( alps::accumulator::max_num_bin(accd).bin_number() == 10);
+    BOOST_REQUIRE( alps::accumulator::max_num_binning(accd).bin_number() == 10);
 }
