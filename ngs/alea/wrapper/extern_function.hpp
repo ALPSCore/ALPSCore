@@ -25,7 +25,6 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-
 #ifndef ALPS_NGS_ALEA_EXTERN_FUNCTION_HEADER
 #define ALPS_NGS_ALEA_EXTERN_FUNCTION_HEADER
 

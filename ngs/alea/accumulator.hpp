@@ -25,7 +25,6 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-
 #ifndef ALPS_NGS_ALEA_ACCUMULATOR_HEADER
 #define ALPS_NGS_ALEA_ACCUMULATOR_HEADER
 
@@ -97,10 +96,6 @@ namespace alps {
                         (_bin_num, *)
                     )
                 )
-
-                result_type result() const {
-                    return result(*this);
-                }
         };
     } //end accumulator namespace 
 } //end alps namespace

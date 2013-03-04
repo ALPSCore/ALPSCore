@@ -25,7 +25,6 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-
 #ifndef ALPS_NGS_ALEA_DETAIL_ERROR_IMPLEMENTATION_HEADER
 #define ALPS_NGS_ALEA_DETAIL_ERROR_IMPLEMENTATION_HEADER
 

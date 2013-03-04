@@ -25,7 +25,6 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-
 #ifndef ALPS_NGS_ALEA_DETAIL_MEAN_IMPLEMENTATION_HEADER
 #define ALPS_NGS_ALEA_DETAIL_MEAN_IMPLEMENTATION_HEADER
  

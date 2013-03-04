@@ -25,7 +25,6 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-
 #ifndef ALPS_NGS_ALEA_ACCUMULATOR_DERIVED_WRAPPER_HEADER
 #define ALPS_NGS_ALEA_ACCUMULATOR_DERIVED_WRAPPER_HEADER
 

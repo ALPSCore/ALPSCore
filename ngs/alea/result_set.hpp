@@ -76,8 +76,8 @@ namespace alps {
             
         private:
             map_type storage;
-        };
 */
+        };
     }
 }
 #endif

@@ -25,7 +25,6 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-
 #ifndef ALPS_NGS_ALEA_DETAIL_ACCUM_WRAPPER_MACRO_HEADER
 #define ALPS_NGS_ALEA_DETAIL_ACCUM_WRAPPER_MACRO_HEADER
 
@@ -39,8 +38,6 @@
 #include <typeinfo>
 #include <sstream>
 #include <stdexcept>
-
-
 
 /*  this macro generates a set of function templates:
 * 1. has_FCT<Accum>

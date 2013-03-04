@@ -24,6 +24,7 @@
  * DEALINGS IN THE SOFTWARE.                                                       *
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 #ifndef ALPS_NGS_ALEA_DETAIL_TAU_IMPLEMENTATION_HEADER
 #define ALPS_NGS_ALEA_DETAIL_TAU_IMPLEMENTATION_HEADER
 

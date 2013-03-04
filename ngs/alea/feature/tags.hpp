@@ -25,7 +25,6 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-
 #ifndef ALPS_NGS_ALEA_DETAIL_IMPLEMENTATION_FWD_HEADER
 #define ALPS_NGS_ALEA_DETAIL_IMPLEMENTATION_FWD_HEADER
 

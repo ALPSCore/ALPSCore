@@ -25,7 +25,6 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-
 #ifndef ALPS_NGS_ALEA_FEATURES_FEATURES_HPP
 #define ALPS_NGS_ALEA_FEATURES_FEATURES_HPP
 

@@ -25,7 +25,6 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-
 #ifndef ALPS_NGS_ALEA_ACCUMULATOR_WRAPPER_FWD_HEADER
 #define ALPS_NGS_ALEA_ACCUMULATOR_WRAPPER_FWD_HEADER
 
