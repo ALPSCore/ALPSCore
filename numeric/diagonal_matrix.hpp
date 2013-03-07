@@ -351,15 +351,6 @@ namespace alps {
         m.resize(r, c, v);
     }
 
-    template<typename T, typename T2>
-    void swap (diagonal_matrix<T> & m1, diagonal_matrix<T> & m2)
-    {
-        
-        diagonal_matrix<T> m3;
-        gemm(m1, m2, m3);
-        return m3;
-    }
-
     ALPS_IMPLEMENT_MATRIX_DIAGONAL_ITERATOR_INTERFACE(diagonal_matrix<T>,<typename T>)
 
     template <typename T>
