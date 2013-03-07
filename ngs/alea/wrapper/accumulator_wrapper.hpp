@@ -4,7 +4,8 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2011 - 2012 by Mario Koenz <mkoenz@ethz.ch>                       *
+ * Copyright (C) 2011 - 2013 by Mario Koenz <mkoenz@ethz.ch>                       *
+ *                              Lukas Gamper <gamperl@gmail.com>                   *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -25,16 +26,14 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_ALEA_ACCUMULATOR_WRAPPER_HEADER
-#define ALPS_NGS_ALEA_ACCUMULATOR_WRAPPER_HEADER
-
-#include <alps/ngs/alea/wrapper/derived_accumulator_wrapper.hpp>
+#ifndef ALPS_NGS_ALEA_ACCUMULATOR_WRAPPER_HPP
+#define ALPS_NGS_ALEA_ACCUMULATOR_WRAPPER_HPP
 
 #include <alps/ngs/stacktrace.hpp>
-#include <alps/ngs/alea/wrapper/extern_function.hpp>
-#include <alps/ngs/alea/wrapper/accumulator_wrapper_fwd.hpp>
-#include <alps/ngs/alea/wrapper/base_accumulator_wrapper.hpp>
-#include <alps/ngs/alea/wrapper/result_type_accumulator_wrapper.hpp>
+#include <alps/ngs/alea/accumulator.hpp>
+#include <alps/ngs/alea/wrapper/base_wrapper.hpp>
+#include <alps/ngs/alea/wrapper/derived_wrapper.hpp>
+#include <alps/ngs/alea/wrapper/result_type_wrapper.hpp>
  
 #ifdef ALPS_HAVE_MPI
     #include <alps/ngs/boost_mpi.hpp>
@@ -46,68 +45,97 @@
 #include <typeinfo> //used in add_value
 #include <stdexcept>
 
-namespace alps {
-    namespace accumulator {
-        namespace detail {
+namespace alps
+{
+    namespace accumulator
+    {
+        namespace detail
+        {
+            class base_accumulator_wrapper;
+            template<typename Accum> class result_type_accumulator_wrapper;
 
-        //= = = = = = = = = = = = = = = = = = A C C U M U L A T O R   W R A P P E R = = = = = = = = = = = = = = =
-        //class that holds the base_accumulator_wrapper pointer
-            template<typename T> 
-            accumulator_wrapper::accumulator_wrapper(T arg): base_(new derived_accumulator_wrapper<T>(arg))
-            {}
+            // class that holds the base_accumulator_wrapper pointer
+            class accumulator_wrapper {
+                public:
+                    template<typename T> 
+                    accumulator_wrapper(T arg)
+                        : base_(new derived_accumulator_wrapper<T>(arg))
+                    {}
 
-            template<typename T>
-            accumulator_wrapper& accumulator_wrapper::operator<<(const T& value) 
-            {
-                (*base_) << value; return *this;
-            }
+                    accumulator_wrapper(accumulator_wrapper const & arg)
+                        : base_(arg.base_->clone()) 
+                    {}
 
-            template<typename T>
-            result_type_accumulator_wrapper<T> &accumulator_wrapper::get() const
-            {
-                return base_->get<T>();
-            }
-            
-            template <typename T>
-            T & accumulator_wrapper::extract() const
-            {
-                return (dynamic_cast<detail::derived_accumulator_wrapper<T>& >(*base_)).accum_;
-            }
+                    template<typename T> accumulator_wrapper & operator<<(T const & value) {
+                        (*base_) << value; return *this;
+                    }
 
-            inline boost::uint64_t accumulator_wrapper::count() const
-            {
-                return base_->count();
-            }
-            
-            inline void accumulator_wrapper::reset()
-            {
-                base_->reset();
-            }
+                    template<typename T> result_type_accumulator_wrapper<T> & get() const {
+                        return base_->get<T>();
+                    }
+
+                    friend std::ostream& operator<<(std::ostream &out, const accumulator_wrapper& wrapper);
+
+                    template <typename T> T & extract() const {
+                        return (dynamic_cast<detail::derived_accumulator_wrapper<T>& >(*base_)).accum_;
+                    }
+
+                    boost::uint64_t count() const {
+                        return base_->count();
+                    }
+
+                    inline void reset() {
+                        base_->reset();
+                    }                    
 
 #ifdef ALPS_HAVE_MPI
-            inline void accumulator_wrapper::collective_merge(
-                  boost::mpi::communicator const & comm
-                , int root
-            ) {
-                base_->collective_merge(comm, root);
-            }
-            inline void accumulator_wrapper::collective_merge(
-                  boost::mpi::communicator const & comm
-                , int root
-            ) const {
-                base_->collective_merge(comm, root);
-            }
-#endif
+                    inline void collective_merge(
+                          boost::mpi::communicator const & comm
+                        , int root
+                    ) {
+                        base_->collective_merge(comm, root);
+                    }
 
-            inline accumulator_wrapper::accumulator_wrapper(accumulator_wrapper const & arg): base_(arg.base_->clone()) 
-            {}
-                
-            inline std::ostream& operator<<(std::ostream &out, const accumulator_wrapper& m)
-            {
+                    inline void collective_merge(
+                          boost::mpi::communicator const & comm
+                        , int root
+                    ) const {
+                        base_->collective_merge(comm, root);
+                    }
+#endif
+                private:
+                    boost::shared_ptr<base_accumulator_wrapper> base_;
+            };
+
+            inline std::ostream& operator<<(std::ostream &out, const accumulator_wrapper& m) {
                 m.base_->print(out);
                 return out;
             }
-        }//end detail namespace 
-    }//end accumulator namespace 
-}//end alps namespace
-#endif // ALPS_NGS_ALEA_ACCUMULATOR_WRAPPER_HEADER
+        }
+
+        template <typename Accum> Accum & extract(detail::accumulator_wrapper &m) {
+            return m.extract<Accum>();
+        }
+
+        template <typename Accum> inline boost::uint64_t count(Accum const & arg) {
+            return arg.count();
+        }
+
+        template <typename Accum> void reset(Accum & arg) {
+            return arg.reset();
+        }
+
+        namespace detail {
+            //this one is needed, bc of name-collision in accum_wrapper
+            template<typename Accum> boost::uint64_t count_wrap(Accum const & arg) {
+                return count(arg);
+            }
+
+            template<typename Accum> void reset_wrap(Accum & arg) {
+                return reset(arg);
+            }
+        }
+
+    }
+}
+#endif

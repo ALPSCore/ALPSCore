@@ -4,7 +4,8 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2011 - 2012 by Mario Koenz <mkoenz@ethz.ch>                       *
+ * Copyright (C) 2011 - 2013 by Mario Koenz <mkoenz@ethz.ch>                       *
+ *                              Lukas Gamper <gamperl@gmail.com>                   *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -25,15 +26,14 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_ALEA_ACCUMULATOR_DERIVED_WRAPPER_HEADER
-#define ALPS_NGS_ALEA_ACCUMULATOR_DERIVED_WRAPPER_HEADER
+#ifndef ALPS_NGS_ALEA_ACCUMULATOR_DERIVED_WRAPPER_HPP
+#define ALPS_NGS_ALEA_ACCUMULATOR_DERIVED_WRAPPER_HPP
 
 #include <alps/ngs/stacktrace.hpp>
 
 #include <alps/ngs/alea/features.hpp>
-#include <alps/ngs/alea/accumulator/properties.hpp>
-#include <alps/ngs/alea/wrapper/base_accumulator_wrapper.hpp>
-#include <alps/ngs/alea/wrapper/result_type_accumulator_wrapper.hpp> 
+#include <alps/ngs/alea/wrapper/base_wrapper.hpp>
+#include <alps/ngs/alea/wrapper/result_type_wrapper.hpp> 
 
 #ifdef ALPS_HAVE_MPI
     #include <alps/ngs/boost_mpi.hpp>
@@ -49,61 +49,55 @@ namespace alps {
     namespace accumulator {
         namespace detail {
 
-        //= = = = = = = = = = = = = = = = = = P R E   W R A P P E R = = = = = = = = = = = = = = =
-        //this class holds the actual accumulator
-            template <typename Accum, typename result_type_base_type> class accumulator_prewrapper: public result_type_base_type {
+            //this class holds the actual accumulator
+            template <typename Accum, typename base_type> class derived_accumulator_wrapper_base: public base_type {
                 public:
                     typedef Accum accum_type;
 
-                    accumulator_prewrapper(Accum const & acc): accum_(acc)
+                    derived_accumulator_wrapper_base(Accum const & acc): accum_(acc)
                     {}
 
                     Accum accum_; // TODO: make this private!
             };
 
-        //= = = = = = = = = = = = = = = = = = D E R I V E D   W R A P P E R = = = = = = = = = = = = = = =
-        //the effective wrapper
-
-            // TODO: move XXX_property to the acording feature
-            template <typename Accum> 
-            class derived_accumulator_wrapper: public 
+            //the effective wrapper
+            template <typename Accum> class derived_accumulator_wrapper: public 
 // TODO: generate form all_tags ...
-                feature_property<tag::histogram,
-                feature_property<tag::detail::tau,
-                feature_property<tag::detail::converged,
-                feature_property<tag::autocorrelation,
-                feature_property<tag::log_binning,
-                feature_property<tag::max_num_binning,
-                feature_property<tag::fixed_size_binning,
-                feature_property<tag::error,
-                feature_property<tag::mean,
+                feature_accumulator_property<tag::histogram,
+                feature_accumulator_property<tag::detail::tau,
+                feature_accumulator_property<tag::detail::converged,
+                feature_accumulator_property<tag::autocorrelation,
+                feature_accumulator_property<tag::log_binning,
+                feature_accumulator_property<tag::max_num_binning,
+                feature_accumulator_property<tag::fixed_size_binning,
+                feature_accumulator_property<tag::error,
+                feature_accumulator_property<tag::mean,
 
-                accumulator_prewrapper<
+                derived_accumulator_wrapper_base<
                     Accum, result_type_accumulator_wrapper<typename value_type<Accum>::type>
                 >
-
             > > > > > > > > > {
                 //for nicer syntax
                 typedef typename value_type<Accum>::type value_type;
                 typedef 
 // TODO: generate form all_tags ...
-                    feature_property<tag::histogram,
-                    feature_property<tag::detail::tau,
-                    feature_property<tag::detail::converged,
-                    feature_property<tag::autocorrelation,
-                    feature_property<tag::log_binning,
-                    feature_property<tag::max_num_binning,
-                    feature_property<tag::fixed_size_binning,
-                    feature_property<tag::error,
-                    feature_property<tag::mean,
+                    feature_accumulator_property<tag::histogram,
+                    feature_accumulator_property<tag::detail::tau,
+                    feature_accumulator_property<tag::detail::converged,
+                    feature_accumulator_property<tag::autocorrelation,
+                    feature_accumulator_property<tag::log_binning,
+                    feature_accumulator_property<tag::max_num_binning,
+                    feature_accumulator_property<tag::fixed_size_binning,
+                    feature_accumulator_property<tag::error,
+                    feature_accumulator_property<tag::mean,
 
-                    accumulator_prewrapper<
+                    derived_accumulator_wrapper_base<
                         Accum, detail::result_type_accumulator_wrapper<value_type>
                     >
                 > > > > > > > > > base_type;
 
                 public:
-                    using accumulator_prewrapper<Accum, result_type_accumulator_wrapper<value_type> >::accum_;
+                    using derived_accumulator_wrapper_base<Accum, result_type_accumulator_wrapper<value_type> >::accum_;
                     
                     derived_accumulator_wrapper(): base_type() {}
                     
@@ -178,6 +172,70 @@ namespace alps {
                          )
                             throw std::runtime_error("wrong type added in accumulator_wrapper::add_value" + ALPS_STACKTRACE);
                         accum_ << *static_cast<value_type const *>(value);
+                    }
+            };
+
+            //this class holds the actual result
+            template <typename Result, typename base_type> class derived_result_wrapper_base: public base_type {
+                public:
+                    typedef Result result_type;
+
+                    derived_result_wrapper_base(Result const & res): result_(res)
+                    {}
+
+                    Result result_; // TODO: make this private!
+            };
+
+            template <typename Result> class derived_result_wrapper: public 
+// TODO: generate form all_tags ...
+                feature_result_property<tag::histogram,
+                feature_result_property<tag::detail::tau,
+                feature_result_property<tag::detail::converged,
+                feature_result_property<tag::autocorrelation,
+                feature_result_property<tag::log_binning,
+                feature_result_property<tag::max_num_binning,
+                feature_result_property<tag::fixed_size_binning,
+                feature_result_property<tag::error,
+                feature_result_property<tag::mean,
+
+                derived_result_wrapper_base<
+                    Result, result_type_result_wrapper<typename value_type<Result>::type>
+                >
+            > > > > > > > > > {
+                //for nicer syntax
+                typedef typename value_type<Result>::type value_type;
+                typedef 
+// TODO: generate form all_tags ...
+                    feature_result_property<tag::histogram,
+                    feature_result_property<tag::detail::tau,
+                    feature_result_property<tag::detail::converged,
+                    feature_result_property<tag::autocorrelation,
+                    feature_result_property<tag::log_binning,
+                    feature_result_property<tag::max_num_binning,
+                    feature_result_property<tag::fixed_size_binning,
+                    feature_result_property<tag::error,
+                    feature_result_property<tag::mean,
+
+                    derived_result_wrapper_base<
+                        Result, detail::result_type_result_wrapper<value_type>
+                    >
+                > > > > > > > > > base_type;
+
+                public:
+                    using derived_result_wrapper_base<Result, result_type_result_wrapper<value_type> >::result_;
+
+                    derived_result_wrapper(): base_type() {}
+
+                    derived_result_wrapper(Result const & res): base_type(res) {}
+
+                    inline detail::base_result_wrapper* clone() {return new derived_result_wrapper<Result>(result_);}
+
+                    inline boost::uint64_t count() const {
+                        return count_wrap(result_);
+                    }
+
+                    inline void print(std::ostream & out) {
+                        out << result_;
                     }
             };
         }

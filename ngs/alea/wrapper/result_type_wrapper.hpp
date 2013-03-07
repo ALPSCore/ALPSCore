@@ -4,7 +4,8 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2011 - 2012 by Mario Koenz <mkoenz@ethz.ch>                       *
+ * Copyright (C) 2011 - 2013 by Mario Koenz <mkoenz@ethz.ch>                       *
+ *                              Lukas Gamper <gamperl@gmail.com>                   *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -25,11 +26,11 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_ALEA_ACCUMULATOR_RESULT_TYPE_WRAPPER_HEADER
-#define ALPS_NGS_ALEA_ACCUMULATOR_RESULT_TYPE_WRAPPER_HEADER
+#ifndef ALPS_NGS_ALEA_ACCUMULATOR_RESULT_TYPE_WRAPPER_HPP
+#define ALPS_NGS_ALEA_ACCUMULATOR_RESULT_TYPE_WRAPPER_HPP
 
 #include <alps/ngs/alea/features.hpp>
-#include <alps/ngs/alea/wrapper/base_accumulator_wrapper.hpp>
+#include <alps/ngs/alea/wrapper/base_wrapper.hpp>
 
 namespace alps {
     namespace accumulator {
@@ -58,6 +59,18 @@ namespace alps {
                     virtual typename histogram_type<value_type>::type histogram() const = 0;
                     virtual bool has_histogram() const = 0;
             };
+
+            template <typename ValueType> class result_type_result_wrapper: public base_result_wrapper {
+                public:
+                    typedef ValueType value_type;
+                    virtual ~result_type_result_wrapper() {}
+                    virtual typename mean_type<value_type>::type mean() const = 0;
+                    virtual bool has_mean() const = 0;
+                    virtual typename error_type<value_type>::type error() const = 0;
+                    virtual bool has_error() const = 0;
+                    virtual typename tau_type<value_type>::type tau() const = 0;
+                    virtual bool has_tau() const = 0;
+            };            
         }
     }
 }

@@ -43,11 +43,13 @@
 namespace alps {
     namespace accumulator {
 
-        template<typename Accum, typename Tag> struct has_feature {};
-        template <typename base_type, typename Tag> class feature_property {};
+        template<typename T, typename Tag> struct has_feature {};
+        template <typename base_type, typename Tag> class feature_accumulator_property {};
+        template <typename base_type, typename Tag> class feature_result_property {};
 
         namespace detail {
-            template<typename Accum, typename Tag, bool> struct feature_property_impl {};
+            template<typename Accum, typename Tag, bool> struct feature_accumulator_property_impl {};
+            template<typename Result, typename Tag, bool> struct feature_result_property_impl {};
         }
     }
 }
@@ -55,11 +57,11 @@ namespace alps {
 #define GEMERATE_PROPERTY(FNNAME, TAG)                                                                                      \
                                                                                                                             \
     /* = = = = = = = = = = I N F O   T R A I T = = = = = = = = = = */                                                       \
-    template<typename Accum> struct has_feature< TAG , Accum> {                                                             \
+    template<typename T> struct has_feature< TAG , T> {                                                                     \
         template<int i> struct helper { typedef char type; };                                                               \
         template<typename U> static char check(typename helper<sizeof(&U:: FNNAME )>::type);                                \
         template<typename U> static double check(...);                                                                      \
-        enum { value = (sizeof(char) == sizeof(check<Accum>(0))) };                                                         \
+        enum { value = (sizeof(char) == sizeof(check<T>(0))) };                                                             \
     };                                                                                                                      \
                                                                                                                             \
     /* = = = = = = = = = = F C T   V I A   M E M B E R = = = = = = = = = = */                                               \
@@ -80,10 +82,10 @@ namespace alps {
                                                                                                                             \
     /* = = = = = = = = = = P R O P E R T Y   I M P L   W I T H   F C T = = = = = = = = = = */                               \
                                                                                                                             \
-        template <typename base_type> class feature_property_impl< TAG , base_type, true>: public base_type {               \
+        template <typename base_type> class feature_accumulator_property_impl< TAG , base_type, true>: public base_type {   \
             public:                                                                                                         \
-                feature_property_impl() {}                                                                                  \
-                feature_property_impl(typename base_type::accum_type const & arg): base_type(arg) {}                        \
+                feature_accumulator_property_impl() {}                                                                      \
+                feature_accumulator_property_impl(typename base_type::accum_type const & arg): base_type(arg) {}            \
                 bool has_ ## FNNAME () const { return true; }                                                               \
                 typename FNNAME ## _type<                                                                                   \
                     typename value_type<typename base_type::accum_type>::type                                               \
@@ -93,10 +95,10 @@ namespace alps {
         };                                                                                                                  \
                                                                                                                             \
     /* = = = = = = = = = = P R O P E R T Y   I M P L   W I T H O U T   F C T = = = = = = = = = = */                         \
-        template <typename base_type> class feature_property_impl< TAG , base_type, false>: public base_type {              \
+        template <typename base_type> class feature_accumulator_property_impl< TAG , base_type, false>: public base_type {  \
             public:                                                                                                         \
-                feature_property_impl() {}                                                                                  \
-                feature_property_impl(typename base_type::accum_type const & arg): base_type(arg) {}                        \
+                feature_accumulator_property_impl() {}                                                                      \
+                feature_accumulator_property_impl(typename base_type::accum_type const & arg): base_type(arg) {}            \
                 bool has_ ## FNNAME() const { return false; }                                                               \
                 typename FNNAME ## _type<                                                                                   \
                     typename value_type<typename base_type::accum_type>::type                                               \
@@ -111,15 +113,28 @@ namespace alps {
     }                                                                                                                       \
                                                                                                                             \
     /* = = = = = = D E R I V E   F R O M   T H E   R I G H T   F C T   I M P  L  = = = = = = */                             \
-    template <typename base_type> class feature_property< TAG, base_type>                                                   \
-        : public detail::feature_property_impl<TAG, base_type, has_feature<                                                 \
+    template <typename base_type> class feature_accumulator_property< TAG, base_type>                                       \
+        : public detail::feature_accumulator_property_impl<TAG, base_type, has_feature<                                     \
               TAG, typename base_type::accum_type                                                                           \
           >::value>                                                                                                         \
     {                                                                                                                       \
         public:                                                                                                             \
-            feature_property(typename base_type::accum_type const & acc)                                                    \
-                : detail::feature_property_impl< TAG, base_type, has_feature<                                               \
+            feature_accumulator_property(typename base_type::accum_type const & acc)                                        \
+                : detail::feature_accumulator_property_impl< TAG, base_type, has_feature<                                   \
                       TAG, typename base_type::accum_type                                                                   \
+                  >::value>(acc)                                                                                            \
+            {}                                                                                                              \
+    };                                                                                                                      \
+                                                                                                                            \
+    template <typename base_type> class feature_result_property< TAG, base_type>                                            \
+        : public detail::feature_result_property_impl<TAG, base_type, has_feature<                                          \
+              TAG, typename base_type::result_type                                                                          \
+          >::value>                                                                                                         \
+    {                                                                                                                       \
+        public:                                                                                                             \
+            feature_result_property(typename base_type::result_type const & acc)                                            \
+                : detail::feature_result_property_impl< TAG, base_type, has_feature<                                        \
+                      TAG, typename base_type::result_type                                                                  \
                   >::value>(acc)                                                                                            \
             {}                                                                                                              \
     };

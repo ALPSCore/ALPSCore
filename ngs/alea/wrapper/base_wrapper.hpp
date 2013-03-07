@@ -4,7 +4,8 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2011 - 2012 by Mario Koenz <mkoenz@ethz.ch>                       *
+ * Copyright (C) 2011 - 2013 by Mario Koenz <mkoenz@ethz.ch>                       *
+ *                              Lukas Gamper <gamperl@gmail.com>                   *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -25,8 +26,8 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_ALEA_BASE_ACCUMULATOR_WRAPPER_HEADER
-#define ALPS_NGS_ALEA_BASE_ACCUMULATOR_WRAPPER_HEADER
+#ifndef ALPS_NGS_ALEA_BASE_ACCUMULATOR_WRAPPER_HPP
+#define ALPS_NGS_ALEA_BASE_ACCUMULATOR_WRAPPER_HPP
 
 #ifdef ALPS_HAVE_MPI
     #include <alps/ngs/boost_mpi.hpp>
@@ -41,9 +42,7 @@ namespace alps {
     namespace accumulator {
         namespace detail {
 
-        //= = = = = = = = = = = = = = = = = = W R A P P E R   B A S E = = = = = = = = = = = = = = =
-        //declaration because needed in base_accumulator_wrapper
-
+            //declaration because needed in base_accumulator_wrapper
             template <typename value_type>  class result_type_accumulator_wrapper;
             
             //base_type of result_type_accumulator_wrapper. Defines the usable interface
@@ -52,15 +51,11 @@ namespace alps {
                     base_accumulator_wrapper() {}
                     virtual ~base_accumulator_wrapper() {}
                     
-                    template<typename value_type>
-                    inline void operator<<(value_type& value) 
-                    {
+                    template<typename value_type> inline void operator<<(value_type& value) {
                         add_value(&value, typeid(value_type));
                     }
                     
-                    template<typename value_type>
-                    inline result_type_accumulator_wrapper<value_type> &get() 
-                    {
+                    template<typename value_type> inline result_type_accumulator_wrapper<value_type> &get() {
                         return dynamic_cast<result_type_accumulator_wrapper<value_type>& >(*this);
                     }
                     
@@ -70,16 +65,30 @@ namespace alps {
                     virtual void print(std::ostream & out) = 0;
 
 #ifdef ALPS_HAVE_MPI
-                    virtual void collective_merge(
-                          boost::mpi::communicator const & comm
-                        , int root
-                    ) = 0;
+                    virtual void collective_merge(boost::mpi::communicator const & comm, int root) = 0;
 #endif
 
                 protected:
                     virtual void add_value(const void* value, const std::type_info& t_info) = 0; //for operator<<
             };
 
+            //declaration because needed in base_accumulator_wrapper
+            template <typename value_type>  class result_type_result_wrapper;
+            
+            //base_type of result_type_result_wrapper. Defines the usable interface
+            class base_result_wrapper {
+                public:
+                    base_result_wrapper() {}
+                    virtual ~base_result_wrapper() {}
+
+                    template<typename value_type> inline result_type_result_wrapper<value_type> &get()  {
+                        return dynamic_cast<result_type_result_wrapper<value_type>& >(*this);
+                    }
+
+                    virtual boost::uint64_t count() const = 0;
+                    virtual base_result_wrapper* clone() = 0;  //needed for the copy-ctor
+                    virtual void print(std::ostream & out) = 0;
+            };
         }
     }
 }
