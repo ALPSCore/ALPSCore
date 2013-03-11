@@ -214,10 +214,15 @@ namespace alps
                     size_type bin_size_now_;
             };
 
-            template<typename base_type> class ResultImplementation<tag::autocorrelation, base_type> {
+            template<typename base_type> class ResultImplementation<tag::autocorrelation, base_type> : public base_type  {
+
+                public:
+
+                    template<typename Accumulator> ResultImplementation(Accumulator const & accum)
+                        : base_type(accum)
+                    {}
 // TODO: implement!
             };
-
         }
 
         //=================== call GENERATE_PROPERTY macro ===================

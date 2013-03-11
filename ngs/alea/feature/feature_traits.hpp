@@ -50,12 +50,7 @@ namespace alps
         namespace detail
         {
         // = = = = = = M E T A   T E M P A L T E   L I S T = = = = = = = = = = =
-            template<
-                    typename stored_type
-                  , typename next_list_item
-                  > 
-            struct ListItem 
-            {
+            template<typename stored_type, typename next_list_item> struct ListItem {
                 typedef stored_type type;
                 typedef next_list_item next;
             };
@@ -273,7 +268,7 @@ namespace alps
 
             template<typename list, typename base_type> struct DeriveResultProperties {
                 typedef typename DeriveResultProperties<
-                    typename list::next, DeriveResultProperties<typename list::type, base_type> //the base_type is expanded here
+                    typename list::next, ResultImplementation<typename list::type, base_type> //the base_type is expanded here
                 >::type type;
             };
             template<typename base_type> struct DeriveResultProperties<ListEnd, base_type> {

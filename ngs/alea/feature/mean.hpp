@@ -177,7 +177,7 @@ namespace alps {
                     value_type_loc sum_;
             };
 
-            template<typename base_type> class ResultImplementation<tag::mean, base_type> {
+            template<typename base_type> class ResultImplementation<tag::mean, base_type> : public base_type  {
 
                 typedef typename mean_type<typename base_type::value_type>::type mean_type;
 

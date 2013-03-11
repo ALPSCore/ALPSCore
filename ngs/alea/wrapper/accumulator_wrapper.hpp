@@ -32,6 +32,7 @@
 #include <alps/ngs/stacktrace.hpp>
 #include <alps/ngs/alea/accumulator.hpp>
 #include <alps/ngs/alea/wrapper/base_wrapper.hpp>
+#include <alps/ngs/alea/wrapper/result_wrapper.hpp>
 #include <alps/ngs/alea/wrapper/derived_wrapper.hpp>
 #include <alps/ngs/alea/wrapper/result_type_wrapper.hpp>
  
@@ -45,14 +46,9 @@
 #include <typeinfo> //used in add_value
 #include <stdexcept>
 
-namespace alps
-{
-    namespace accumulator
-    {
-        namespace detail
-        {
-            class base_accumulator_wrapper;
-            template<typename Accum> class result_type_accumulator_wrapper;
+namespace alps {
+    namespace accumulator {
+        namespace detail {
 
             // class that holds the base_accumulator_wrapper pointer
             class accumulator_wrapper {
@@ -80,7 +76,7 @@ namespace alps
                     friend std::ostream& operator<<(std::ostream &out, const accumulator_wrapper& wrapper);
 
                     template <typename T> T & extract() const {
-                        return (dynamic_cast<detail::derived_accumulator_wrapper<T>& >(*base_)).accum_;
+                        return (dynamic_cast<derived_accumulator_wrapper<T>& >(*base_)).accum_;
                     }
 
                     boost::uint64_t count() const {
@@ -89,7 +85,11 @@ namespace alps
 
                     inline void reset() {
                         base_->reset();
-                    }                    
+                    }
+
+                    boost::shared_ptr<result_wrapper> result() const {
+                        return boost::shared_ptr<result_wrapper>(new result_wrapper(base_->result()));
+                    }
 
 #ifdef ALPS_HAVE_MPI
                     inline void collective_merge(
@@ -110,13 +110,13 @@ namespace alps
                     boost::shared_ptr<base_accumulator_wrapper> base_;
             };
 
-            inline std::ostream& operator<<(std::ostream &out, const accumulator_wrapper& m) {
+            inline std::ostream & operator<<(std::ostream & out, const accumulator_wrapper & m) {
                 m.base_->print(out);
                 return out;
             }
         }
 
-        template <typename Accum> Accum & extract(detail::accumulator_wrapper &m) {
+        template <typename Accum> Accum & extract(detail::accumulator_wrapper & m) {
             return m.extract<Accum>();
         }
 
@@ -127,9 +127,6 @@ namespace alps
         template <typename Accum> void reset(Accum & arg) {
             return arg.reset();
         }
-
-
-
     }
 }
 #endif

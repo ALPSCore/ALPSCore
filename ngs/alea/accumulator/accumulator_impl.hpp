@@ -91,8 +91,8 @@ namespace alps {
                 , typename A7
                 , typename A8
                 , typename A9
-            > inline std::ostream & operator <<(std::ostream & os, accumulator_impl<A0, A1, A2, A3, A4, A5, A6, A7, A8, A9> & a) {
-                a.print(os);
+            > inline std::ostream & operator <<(std::ostream & os, accumulator_impl<A0, A1, A2, A3, A4, A5, A6, A7, A8, A9> & acc) {
+                acc.print(os);
                 return os;
             }
         } // end namespace detail

@@ -73,20 +73,21 @@ namespace alps {
                 , typename features_input::T8
             > base_type;
 
-            typedef result<
-                  ValueType<vt>
-                , typename features_input::T0
-                , typename features_input::T1
-                , typename features_input::T2
-                , typename features_input::T3
-                , typename features_input::T4
-                , typename features_input::T5
-                , typename features_input::T6
-                , typename features_input::T7
-                , typename features_input::T8
-            > result_type;
-            
             public:
+
+                typedef result<
+                      ValueType<vt>
+                    , typename features_input::T0
+                    , typename features_input::T1
+                    , typename features_input::T2
+                    , typename features_input::T3
+                    , typename features_input::T4
+                    , typename features_input::T5
+                    , typename features_input::T6
+                    , typename features_input::T7
+                    , typename features_input::T8
+                > result_type;
+
                 accumulator(accumulator const & arg): base_type(static_cast<base_type const &>(arg)) {}
             
                 BOOST_PARAMETER_CONSTRUCTOR(
@@ -99,6 +100,6 @@ namespace alps {
                     )
                 )
         };
-    } //end accumulator namespace 
-} //end alps namespace
-#endif // ALPS_NGS_ALEA_ACCUMULATOR_HEADER
+    }
+}
+#endif

@@ -177,9 +177,16 @@ namespace alps
                     size_type const bin_size_;
             };
 
-            template<typename base_type> class ResultImplementation<tag::fixed_size_binning, base_type> {
+            template<typename base_type> class ResultImplementation<tag::fixed_size_binning, base_type> : public base_type  {
+
+                public:
+
+                    template<typename Accumulator> ResultImplementation(Accumulator const & accum)
+                        : base_type(accum)
+                    {}
 // TODO: implement!
             };
+
 
         }
 

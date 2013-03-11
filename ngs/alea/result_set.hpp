@@ -28,56 +28,55 @@
 #ifndef ALPS_NGS_ALEA_RESULT_SET_HPP
 #define ALPS_NGS_ALEA_RESULT_SET_HPP
 
-#include <alps/ngs/alea/wrapper/result_wrapper.hpp>
 #include <alps/ngs/hdf5.hpp>
+#include <alps/ngs/alea/wrapper/result_wrapper.hpp>
 
 #include <map>
 #include <string>
 
 namespace alps {
     namespace accumulator {
-        
+
         class ALPS_DECL result_set {
-/*
-        public: 
-            typedef std::map<std::string, boost::shared_ptr<detail::result_wrapper> > map_type;
-            
-            typedef map_type::iterator iterator;
-            typedef map_type::const_iterator const_iterator;
 
-            detail::result_wrapper & operator[](std::string const & name);
+            public: 
+                typedef std::map<std::string, boost::shared_ptr<detail::result_wrapper> > map_type;
 
-            detail::result_wrapper const & operator[](std::string const & name) const;
+                typedef map_type::iterator iterator;
+                typedef map_type::const_iterator const_iterator;
 
-            bool has(std::string const & name) const;
+                detail::result_wrapper & operator[](std::string const & name);
 
-            void insert(std::string const & name, boost::shared_ptr<detail::result_wrapper> ptr);
+                detail::result_wrapper const & operator[](std::string const & name) const;
 
-            void save(hdf5::archive & ar) const;
+                bool has(std::string const & name) const;
 
-            void load(hdf5::archive & ar);
+                void insert(std::string const & name, boost::shared_ptr<detail::result_wrapper> ptr);
 
-            void reset();
+                void save(hdf5::archive & ar) const;
 
-            result_set & operator<< (make_result const & make_acc) {
-                insert(make_acc.name, boost::shared_ptr<detail::result_wrapper>(new detail::result_wrapper(make_acc.acc_wrapper)));
-                return *this;
-            }
-            
-            void merge(result_set const &);
+                void load(hdf5::archive & ar);
 
-            void output(std::ostream & os) const;
-            
-            iterator begin();
-            iterator end();
-            const_iterator begin() const;
-            const_iterator end() const;
-            void clear();
-            
-        private:
-            map_type storage;
-*/
+                void merge(result_set const &);
+
+                void print(std::ostream & os) const;
+
+                iterator begin();
+                iterator end();
+                const_iterator begin() const;
+                const_iterator end() const;
+                void clear();
+
+            private:
+                map_type storage;
         };
+
+        inline std::ostream & operator<<(std::ostream & out, result_set const & arg) {
+            arg.print(out);
+            return out;
+        }
+
     }
 }
+
 #endif

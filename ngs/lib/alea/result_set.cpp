@@ -4,7 +4,7 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2013 by Lukas Gamper <gamperl@gmail.ch>                           *
+ * Copyright (C) 2011 - 2012 by Mario Koenz <mkoenz@ethz.ch>                       *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -24,59 +24,63 @@
  * DEALINGS IN THE SOFTWARE.                                                       *
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-#ifndef ALPS_NGS_ALEA_RESULT_HPP
-#define ALPS_NGS_ALEA_RESULT_HPP
-
-#include <alps/ngs/alea/features.hpp>
+#include <alps/ngs/alea/result_set.hpp>
 
 namespace alps {
     namespace accumulator {
 
-        template<
-              typename A0  = void
-            , typename A1  = void
-            , typename A2  = void
-            , typename A3  = void
-            , typename A4  = void
-            , typename A5  = void
-            , typename A6  = void
-            , typename A7  = void
-            , typename A8  = void
-            , typename A9  = void
-        > struct result : public detail::DeriveResultProperties<
-              typename detail::UniqueList<typename detail::ResolveDependencies<typename detail::ValueTypeFirst<typename detail::MakeList<
-                  A0, A1, A2, A3, A4, A5, A6, A7, A8, A9
-              >::type>::type>::type>::type
-            , detail::UselessBase
-        >::type {
-            //typename it for shorter syntax
-            typedef typename detail::DeriveResultProperties<
-                  typename detail::UniqueList<typename detail::ResolveDependencies<typename detail::ValueTypeFirst<typename detail::MakeList<
-                      A0, A1, A2, A3, A4, A5, A6, A7, A8, A9
-                  >::type>::type>::type>::type
-                , detail::UselessBase
-            >::type base_type;
+        detail::result_wrapper & result_set::operator[](std::string const & name) {
+            if (!has(name))
+                throw std::out_of_range("No observable found with the name: " + name + ALPS_STACKTRACE);
+            return *(storage.find(name)->second);
+        }
 
-            public:
-                template<typename Accumulator> result(Accumulator const & arg): base_type(arg) {}
-        };
+        detail::result_wrapper const & result_set::operator[](std::string const & name) const {
+            if (!has(name))
+                throw std::out_of_range("No observable found with the name: " + name + ALPS_STACKTRACE);
+            return *(storage.find(name)->second);
+        }
 
-        template<
-              typename A0
-            , typename A1
-            , typename A2
-            , typename A3
-            , typename A4
-            , typename A5
-            , typename A6
-            , typename A7
-            , typename A8
-            , typename A9
-        > inline std::ostream & operator <<(std::ostream & os, result<A0, A1, A2, A3, A4, A5, A6, A7, A8, A9> & res) {
-            res.print(os);
-            return os;
+        bool result_set::has(std::string const & name) const {
+            return storage.find(name) != storage.end();
+        }
+
+        void result_set::insert(std::string const & name, boost::shared_ptr<detail::result_wrapper> ptr) {
+            if (has(name))
+                throw std::out_of_range("There exists alrady a result with the name: " + name + ALPS_STACKTRACE);
+            storage.insert(make_pair(name, ptr));
+        }
+
+        void result_set::save(hdf5::archive & ar) const {}
+
+        void result_set::load(hdf5::archive & ar) {}
+
+        void result_set::merge(result_set const &) {}
+
+        void result_set::print(std::ostream & os) const {
+            for (const_iterator it = begin(); it != end(); ++it)
+                os << it->first << ": " << *(it->second);
+        }
+
+        // map operations
+        result_set::iterator result_set::begin() {
+            return storage.begin();
+        }
+
+        result_set::iterator result_set::end() {
+            return storage.end();
+        }
+
+        result_set::const_iterator result_set::begin() const {
+            return storage.begin();
+        }
+
+        result_set::const_iterator result_set::end() const {
+            return storage.end();
+        }
+
+        void result_set::clear() {
+            storage.clear(); //should be ok b/c shared_ptr
         }
     }
 }
-#endif

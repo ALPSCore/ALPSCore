@@ -73,6 +73,7 @@ namespace alps {
     }                                                                                                                       \
                                                                                                                             \
     namespace detail {                                                                                                      \
+                                                                                                                            \
     /* = = = = = = = = = = A V O I D S   N A M E C O N F L I C T S = = = = = = = = = = */                                   \
                                                                                                                             \
         template<typename Accum>                                                                                            \
@@ -94,7 +95,20 @@ namespace alps {
                 }                                                                                                           \
         };                                                                                                                  \
                                                                                                                             \
+        template <typename base_type> class feature_result_property_impl< TAG , base_type, true>: public base_type {        \
+            public:                                                                                                         \
+                feature_result_property_impl() {}                                                                           \
+                feature_result_property_impl(typename base_type::result_type const & arg): base_type(arg) {}                \
+                bool has_ ## FNNAME () const { return true; }                                                               \
+                typename FNNAME ## _type<                                                                                   \
+                    typename value_type<typename base_type::result_type>::type                                              \
+                >::type FNNAME() const {                                                                                    \
+                    return FNNAME ## _impl(base_type::result_);                                                             \
+                }                                                                                                           \
+        };                                                                                                                  \
+                                                                                                                            \
     /* = = = = = = = = = = P R O P E R T Y   I M P L   W I T H O U T   F C T = = = = = = = = = = */                         \
+                                                                                                                            \
         template <typename base_type> class feature_accumulator_property_impl< TAG , base_type, false>: public base_type {  \
             public:                                                                                                         \
                 feature_accumulator_property_impl() {}                                                                      \
@@ -110,9 +124,26 @@ namespace alps {
                     return typename FNNAME ## _type<typename value_type<typename base_type::accum_type>::type>::type();     \
                 }                                                                                                           \
         };                                                                                                                  \
+                                                                                                                            \
+        template <typename base_type> class feature_result_property_impl< TAG , base_type, false>: public base_type {       \
+            public:                                                                                                         \
+                feature_result_property_impl() {}                                                                           \
+                feature_result_property_impl(typename base_type::result_type const & arg): base_type(arg) {}                \
+                bool has_ ## FNNAME() const { return false; }                                                               \
+                typename FNNAME ## _type<                                                                                   \
+                    typename value_type<typename base_type::result_type>::type                                              \
+                >::type FNNAME () const {                                                                                   \
+                    throw std::runtime_error(                                                                               \
+                        std::string(typeid(typename base_type::result_type).name()) + " has no " + #FNNAME + "-method"      \
+                        + ALPS_STACKTRACE                                                                                   \
+                    );                                                                                                      \
+                    return typename FNNAME ## _type<typename value_type<typename base_type::result_type>::type>::type();    \
+                }                                                                                                           \
+        };                                                                                                                  \
     }                                                                                                                       \
                                                                                                                             \
     /* = = = = = = D E R I V E   F R O M   T H E   R I G H T   F C T   I M P  L  = = = = = = */                             \
+                                                                                                                            \
     template <typename base_type> class feature_accumulator_property< TAG, base_type>                                       \
         : public detail::feature_accumulator_property_impl<TAG, base_type, has_feature<                                     \
               TAG, typename base_type::accum_type                                                                           \
@@ -132,10 +163,10 @@ namespace alps {
           >::value>                                                                                                         \
     {                                                                                                                       \
         public:                                                                                                             \
-            feature_result_property(typename base_type::result_type const & acc)                                            \
+            feature_result_property(typename base_type::result_type const & res)                                            \
                 : detail::feature_result_property_impl< TAG, base_type, has_feature<                                        \
                       TAG, typename base_type::result_type                                                                  \
-                  >::value>(acc)                                                                                            \
+                  >::value>(res)                                                                                            \
             {}                                                                                                              \
     };
 

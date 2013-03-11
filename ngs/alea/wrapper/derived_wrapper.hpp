@@ -26,8 +26,8 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_ALEA_ACCUMULATOR_DERIVED_WRAPPER_HPP
-#define ALPS_NGS_ALEA_ACCUMULATOR_DERIVED_WRAPPER_HPP
+#ifndef ALPS_NGS_ALEA_DERIVED_WRAPPER_HPP
+#define ALPS_NGS_ALEA_DERIVED_WRAPPER_HPP
 
 #include <alps/ngs/stacktrace.hpp>
 
@@ -49,143 +49,13 @@ namespace alps {
     namespace accumulator {
         namespace detail {
 
-            //this class holds the actual accumulator
-            template <typename Accum, typename base_type> class derived_accumulator_wrapper_base: public base_type {
-                public:
-                    typedef Accum accum_type;
+//this class holds the actual result
+            template <typename Result, typename base_type> struct derived_result_wrapper_base: public base_type {
+                typedef Result result_type;
 
-                    derived_accumulator_wrapper_base(Accum const & acc): accum_(acc)
-                    {}
+                derived_result_wrapper_base(Result const & res): result_(res) {}
 
-                    Accum accum_; // TODO: make this private!
-            };
-
-            //the effective wrapper
-            template <typename Accum> class derived_accumulator_wrapper: public 
-// TODO: generate form all_tags ...
-                feature_accumulator_property<tag::weighted,
-                feature_accumulator_property<tag::histogram,
-                feature_accumulator_property<tag::detail::tau,
-                feature_accumulator_property<tag::detail::converged,
-                feature_accumulator_property<tag::autocorrelation,
-                feature_accumulator_property<tag::log_binning,
-                feature_accumulator_property<tag::max_num_binning,
-                feature_accumulator_property<tag::fixed_size_binning,
-                feature_accumulator_property<tag::error,
-                feature_accumulator_property<tag::mean,
-
-                derived_accumulator_wrapper_base<
-                    Accum, result_type_accumulator_wrapper<typename value_type<Accum>::type>
-                >
-            > > > > > > > > > > {
-                //for nicer syntax
-                typedef typename value_type<Accum>::type value_type;
-                typedef 
-// TODO: generate form all_tags ...
-                    feature_accumulator_property<tag::weighted,
-                    feature_accumulator_property<tag::histogram,
-                    feature_accumulator_property<tag::detail::tau,
-                    feature_accumulator_property<tag::detail::converged,
-                    feature_accumulator_property<tag::autocorrelation,
-                    feature_accumulator_property<tag::log_binning,
-                    feature_accumulator_property<tag::max_num_binning,
-                    feature_accumulator_property<tag::fixed_size_binning,
-                    feature_accumulator_property<tag::error,
-                    feature_accumulator_property<tag::mean,
-
-                    derived_accumulator_wrapper_base<
-                        Accum, detail::result_type_accumulator_wrapper<value_type>
-                    >
-                > > > > > > > > > > base_type;
-
-                public:
-                    using derived_accumulator_wrapper_base<Accum, result_type_accumulator_wrapper<value_type> >::accum_;
-                    
-                    derived_accumulator_wrapper(): base_type() {}
-                    
-                    derived_accumulator_wrapper(Accum const & acc): base_type(acc) {}
-                    
-                    inline detail::base_accumulator_wrapper* clone() {return new derived_accumulator_wrapper<Accum>(accum_);}
-                    
-                    inline boost::uint64_t count() const {
-                        return count_wrap(accum_);
-                    }
-
-                    void reset() {
-                        reset_wrap(accum_);
-                    }
-                    
-                    inline void print(std::ostream & out) {
-                        out << accum_;
-                    }
-
-#ifdef ALPS_HAVE_MPI
-                    void collective_merge(
-                          boost::mpi::communicator const & comm
-                        , int root
-                    ) {
-                        collective_merge_impl(comm, root, collective_merge_helper<sizeof(check<Accum>(0))>());
-                    }
-                    void collective_merge(
-                          boost::mpi::communicator const & comm
-                        , int root
-                    ) const {
-                        collective_merge_impl(comm, root, collective_merge_helper<sizeof(check<Accum>(0))>());
-                    }
-                private:
-                    template<int i> struct collective_merge_helper { typedef char type; };
-                    template<typename U> static char check(typename collective_merge_helper<sizeof(&U::collective_merge)>::type);
-                    template<typename U> static double check(...);
-
-                    void collective_merge_impl(
-                          boost::mpi::communicator const & comm
-                        , int root
-                        , collective_merge_helper<sizeof(char)>
-                    ) {
-                        accum_.collective_merge(comm, root);
-                    }
-
-                    void collective_merge_impl(
-                          boost::mpi::communicator const & comm
-                        , int root
-                        , collective_merge_helper<sizeof(char)>
-                    ) const {
-                        accum_.collective_merge(comm, root);
-                    }
-
-                    void collective_merge_impl(
-                          boost::mpi::communicator const & comm
-                        , int root
-                        , collective_merge_helper<sizeof(double)>
-                    ) const {
-                        throw std::logic_error("The Accumulator has no collective_merge function" + ALPS_STACKTRACE);
-                    }
-#endif
-
-                protected:
-                    inline void add_value(void const * value, std::type_info const & info) //type-infusion
-                    {
-                        if( &info != &typeid(value_type) &&
-                        #ifdef BOOST_AUX_ANY_TYPE_ID_NAME
-                            std::strcmp(info.name(), typeid(value_type).name()) != 0
-                        #else
-                            info != typeid(value_type)
-                        #endif
-                         )
-                            throw std::runtime_error("wrong type added in accumulator_wrapper::add_value" + ALPS_STACKTRACE);
-                        accum_ << *static_cast<value_type const *>(value);
-                    }
-            };
-
-            //this class holds the actual result
-            template <typename Result, typename base_type> class derived_result_wrapper_base: public base_type {
-                public:
-                    typedef Result result_type;
-
-                    derived_result_wrapper_base(Result const & res): result_(res)
-                    {}
-
-                    Result result_; // TODO: make this private!
+                result_type result_; // TODO: make this private!
             };
 
             template <typename Result> class derived_result_wrapper: public 
@@ -238,6 +108,147 @@ namespace alps {
 
                     inline void print(std::ostream & out) {
                         out << result_;
+                    }
+            };
+
+            //this class holds the actual accumulator
+            template <typename Accum, typename base_type> struct derived_accumulator_wrapper_base: public base_type {
+                typedef Accum accum_type;
+
+                derived_accumulator_wrapper_base(Accum const & acc): accum_(acc) {}
+
+                accum_type accum_; // TODO: make this private!
+            };
+
+            //the effective wrapper
+            template <typename Accum> class derived_accumulator_wrapper: public 
+// TODO: generate form all_tags ...
+                feature_accumulator_property<tag::weighted,
+                feature_accumulator_property<tag::histogram,
+                feature_accumulator_property<tag::detail::tau,
+                feature_accumulator_property<tag::detail::converged,
+                feature_accumulator_property<tag::autocorrelation,
+                feature_accumulator_property<tag::log_binning,
+                feature_accumulator_property<tag::max_num_binning,
+                feature_accumulator_property<tag::fixed_size_binning,
+                feature_accumulator_property<tag::error,
+                feature_accumulator_property<tag::mean,
+
+                derived_accumulator_wrapper_base<
+                    Accum, result_type_accumulator_wrapper<typename value_type<Accum>::type>
+                >
+            > > > > > > > > > > {
+                //for nicer syntax
+                typedef typename value_type<Accum>::type value_type;
+                typedef 
+// TODO: generate form all_tags ...
+                    feature_accumulator_property<tag::weighted,
+                    feature_accumulator_property<tag::histogram,
+                    feature_accumulator_property<tag::detail::tau,
+                    feature_accumulator_property<tag::detail::converged,
+                    feature_accumulator_property<tag::autocorrelation,
+                    feature_accumulator_property<tag::log_binning,
+                    feature_accumulator_property<tag::max_num_binning,
+                    feature_accumulator_property<tag::fixed_size_binning,
+                    feature_accumulator_property<tag::error,
+                    feature_accumulator_property<tag::mean,
+
+                    derived_accumulator_wrapper_base<
+                        Accum, detail::result_type_accumulator_wrapper<value_type>
+                    >
+                > > > > > > > > > > base_type;
+
+                template<int i> struct check_helper { typedef char type; };
+                template<typename U> static char check_result(typename check_helper<sizeof(U::result_type)>::type);
+                template<typename U> static double check_result(...);
+
+                public:
+                    using derived_accumulator_wrapper_base<Accum, result_type_accumulator_wrapper<value_type> >::accum_;
+                    
+                    derived_accumulator_wrapper(): base_type() {}
+                    
+                    derived_accumulator_wrapper(Accum const & acc): base_type(acc) {}
+                    
+                    inline detail::base_accumulator_wrapper* clone() {return new derived_accumulator_wrapper<Accum>(accum_);}
+                    
+                    inline boost::uint64_t count() const {
+                        return count_wrap(accum_);
+                    }
+
+                    void reset() {
+                        reset_wrap(accum_);
+                    }
+                    
+                    inline void print(std::ostream & out) {
+                        out << accum_;
+                    }
+
+                    boost::shared_ptr<base_result_wrapper> result() const {
+                        return result_impl(check_helper<sizeof(check_collective_merge<Accum>(0))>());
+                    }
+
+#ifdef ALPS_HAVE_MPI
+                    void collective_merge(
+                          boost::mpi::communicator const & comm
+                        , int root
+                    ) {
+                        collective_merge_impl(comm, root, check_helper<sizeof(check_collective_merge<Accum>(0))>());
+                    }
+                    void collective_merge(
+                          boost::mpi::communicator const & comm
+                        , int root
+                    ) const {
+                        collective_merge_impl(comm, root, check_helper<sizeof(check_collective_merge<Accum>(0))>());
+                    }
+                private:
+                    template<typename U> static char check_collective_merge(typename check_helper<sizeof(&U::collective_merge)>::type);
+                    template<typename U> static double check_collective_merge(...);
+
+                    void collective_merge_impl(
+                          boost::mpi::communicator const & comm
+                        , int root
+                        , check_helper<sizeof(char)>
+                    ) {
+                        accum_.collective_merge(comm, root);
+                    }
+
+                    void collective_merge_impl(
+                          boost::mpi::communicator const & comm
+                        , int root
+                        , check_helper<sizeof(char)>
+                    ) const {
+                        accum_.collective_merge(comm, root);
+                    }
+
+                    void collective_merge_impl(
+                          boost::mpi::communicator const & comm
+                        , int root
+                        , check_helper<sizeof(double)>
+                    ) const {
+                        throw std::logic_error("The Accumulator has no collective_merge function" + ALPS_STACKTRACE);
+                    }
+#endif
+
+                protected:
+                    inline void add_value(void const * value, std::type_info const & info) //type-infusion
+                    {
+                        if( &info != &typeid(value_type) &&
+                        #ifdef BOOST_AUX_ANY_TYPE_ID_NAME
+                            std::strcmp(info.name(), typeid(value_type).name()) != 0
+                        #else
+                            info != typeid(value_type)
+                        #endif
+                         )
+                            throw std::runtime_error("wrong type added in accumulator_wrapper::add_value" + ALPS_STACKTRACE);
+                        accum_ << *static_cast<value_type const *>(value);
+                    }
+                private:
+                    boost::shared_ptr<base_result_wrapper> result_impl(check_helper<sizeof(char)>) const {
+                        return boost::shared_ptr<base_result_wrapper>(new derived_result_wrapper<typename Accum::result_type>(typename Accum::result_type(accum_)));
+                    }
+                    boost::shared_ptr<base_result_wrapper> result_impl(check_helper<sizeof(double)>) const {
+                        throw std::logic_error("The Accumulator has no associated result_type" + ALPS_STACKTRACE);
+                        return boost::shared_ptr<base_result_wrapper>((base_result_wrapper *)NULL);
                     }
             };
         }

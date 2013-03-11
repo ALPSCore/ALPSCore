@@ -26,8 +26,8 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_ALEA_BASE_ACCUMULATOR_WRAPPER_HPP
-#define ALPS_NGS_ALEA_BASE_ACCUMULATOR_WRAPPER_HPP
+#ifndef ALPS_NGS_ALEA_BASE_WRAPPER_HPP
+#define ALPS_NGS_ALEA_BASE_WRAPPER_HPP
 
 #ifdef ALPS_HAVE_MPI
     #include <alps/ngs/boost_mpi.hpp>
@@ -54,6 +54,24 @@ namespace alps {
         //~ }
             
             //declaration because needed in base_accumulator_wrapper
+            template <typename value_type>  class result_type_result_wrapper;
+            
+            //base_type of result_type_result_wrapper. Defines the usable interface
+            class base_result_wrapper {
+                public:
+                    base_result_wrapper() {}
+                    virtual ~base_result_wrapper() {}
+
+                    template<typename value_type> inline result_type_result_wrapper<value_type> &get()  {
+                        return dynamic_cast<result_type_result_wrapper<value_type>& >(*this);
+                    }
+
+                    virtual boost::uint64_t count() const = 0;
+                    virtual base_result_wrapper* clone() = 0;  //needed for the copy-ctor
+                    virtual void print(std::ostream & out) = 0;
+            };
+
+            //declaration because needed in base_accumulator_wrapper
             template <typename value_type>  class result_type_accumulator_wrapper;
             
             //base_type of result_type_accumulator_wrapper. Defines the usable interface
@@ -77,31 +95,14 @@ namespace alps {
                     virtual void reset() = 0;
                     virtual base_accumulator_wrapper* clone() = 0;  //needed for the copy-ctor
                     virtual void print(std::ostream & out) = 0;
+                    virtual boost::shared_ptr<base_result_wrapper> result() const = 0;
 
 #ifdef ALPS_HAVE_MPI
                     virtual void collective_merge(boost::mpi::communicator const & comm, int root) = 0;
 #endif
 
                 protected:
-                    virtual void add_value(const void* value, const std::type_info& t_info) = 0; //for operator<<
-            };
-
-            //declaration because needed in base_accumulator_wrapper
-            template <typename value_type>  class result_type_result_wrapper;
-            
-            //base_type of result_type_result_wrapper. Defines the usable interface
-            class base_result_wrapper {
-                public:
-                    base_result_wrapper() {}
-                    virtual ~base_result_wrapper() {}
-
-                    template<typename value_type> inline result_type_result_wrapper<value_type> &get()  {
-                        return dynamic_cast<result_type_result_wrapper<value_type>& >(*this);
-                    }
-
-                    virtual boost::uint64_t count() const = 0;
-                    virtual base_result_wrapper* clone() = 0;  //needed for the copy-ctor
-                    virtual void print(std::ostream & out) = 0;
+                    virtual void add_value(void const * value, std::type_info const & t_info) = 0; //for operator<<
             };
         }
     }

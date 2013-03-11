@@ -260,8 +260,13 @@ namespace alps
                     size_type const max_bin_num_;
             };
 
-            template<typename base_type> class ResultImplementation<tag::max_num_binning, base_type> {
-// TODO: implement!
+            template<typename base_type> class ResultImplementation<tag::max_num_binning, base_type> : public base_type {
+
+                public:
+
+                    template<typename Accumulator> ResultImplementation(Accumulator const & accum)
+                        : base_type(accum)
+                    {}
             };
 
         }

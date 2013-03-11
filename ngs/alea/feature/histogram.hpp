@@ -288,9 +288,16 @@ namespace alps
                 private:
             };
 
-            template<typename base_type> class ResultImplementation<tag::histogram, base_type> {
+            template<typename base_type> class ResultImplementation<tag::histogram, base_type> : public base_type  {
+
+                public:
+
+                    template<typename Accumulator> ResultImplementation(Accumulator const & accum)
+                        : base_type(accum)
+                    {}
 // TODO: implement!
             };
+
 
         }
 

@@ -148,7 +148,7 @@ namespace alps
                     error_type sum2_;
             };
 
-            template<typename base_type> class ResultImplementation<tag::error, base_type> {
+            template<typename base_type> class ResultImplementation<tag::error, base_type> : public base_type {
 
                 typedef typename error_type<typename base_type::value_type>::type error_type;
 

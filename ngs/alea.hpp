@@ -28,8 +28,7 @@
 #ifndef ALPS_NGS_ALEA_HPP
 #define ALPS_NGS_ALEA_HPP
 
-#include <alps/ngs/alea/features.hpp>
-#include <alps/ngs/alea/accumulator.hpp>
-#include <alps/ngs/alea/wrapper/accumulator_wrapper.hpp>
+#include <alps/ngs/alea/result_set.hpp>
+#include <alps/ngs/alea/accumulator_set.hpp>
 
 #endif //ALPS_NGS_ALEA_HPP

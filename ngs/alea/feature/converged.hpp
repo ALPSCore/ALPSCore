@@ -142,10 +142,15 @@ namespace alps
                 private:
             };
 
-            template<typename base_type> class ResultImplementation<tag::detail::converged, base_type> {
+            template<typename base_type> class ResultImplementation<tag::detail::converged, base_type> : public base_type  {
+
+                public:
+
+                    template<typename Accumulator> ResultImplementation(Accumulator const & accum)
+                        : base_type(accum)
+                    {}
 // TODO: implement!
             };
-
         }
 
         //=================== call GENERATE_PROPERTY macro ===================
