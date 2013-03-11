@@ -134,7 +134,7 @@ namespace alps
                         return max_num_binning_proxy_type<value_type_loc>(bin_, max_bin_num_);
                     }
               
-                    inline ThisType& operator <<(value_type_loc val)
+                    inline ThisType& operator()(value_type_loc const & val)
                     {
                         using namespace alps::ngs::numeric;
                         
@@ -175,6 +175,10 @@ namespace alps
                             }
                         }
                         return *this;
+                    }
+                    inline ThisType& operator<<(value_type_loc const & val) 
+                    {
+                        return (*this)(val);
                     }
               
                     template<typename Stream> 
@@ -263,7 +267,7 @@ namespace alps
         }
 
         //=================== call GENERATE_PROPERTY macro ===================
-        GEMERATE_PROPERTY(max_num_binning, tag::max_num_binning)
+        GENERATE_PROPERTY(max_num_binning, tag::max_num_binning)
 
     }
 }

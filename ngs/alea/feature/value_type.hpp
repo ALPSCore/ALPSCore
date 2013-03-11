@@ -66,10 +66,14 @@ namespace alps
                                             ): count_() 
                     {}
                     
-                    inline ThisType& operator <<(value_type val) 
+                    inline ThisType& operator()(value_type const & val) 
                     {
                         ++count_;
                         return *this;
+                    }
+                    inline ThisType& operator<<(value_type const & val) 
+                    {
+                        return (*this)(val);
                     }
                     
                     inline boost::uint64_t const & count() const 

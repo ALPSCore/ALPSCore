@@ -95,7 +95,7 @@ namespace alps
                         return sqrt((sum2_ / base_type::count() - base_type::mean()*base_type::mean()) / ((base_type::count() - 1)));
                     }
                     
-                    inline ThisType& operator <<(value_type_loc val) 
+                    inline ThisType& operator ()(value_type_loc const & val) 
                     {
                         using alps::ngs::numeric::operator+=;
                         using alps::ngs::numeric::operator*;
@@ -103,6 +103,10 @@ namespace alps
                         base_type::operator <<(val);
                         sum2_ += val*val;
                         return *this;
+                    }
+                    inline ThisType& operator <<(value_type_loc const & val) 
+                    {
+                        return (*this)(val);
                     }
                     
                     template<typename Stream> 
@@ -166,7 +170,7 @@ namespace alps
         }
 
         //=================== call GENERATE_PROPERTY macro ===================
-        GEMERATE_PROPERTY(error, tag::error)
+        GENERATE_PROPERTY(error, tag::error)
 
     }
 }

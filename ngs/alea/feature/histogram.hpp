@@ -145,19 +145,27 @@ namespace alps
                                                 , data_(arg.data_) {}
                 
                 //insert a value via stream-operator
-                void operator<<(value_type const & arg)
+                void operator()(value_type const & val)
                 {
                     using namespace alps::ngs::numeric;
-                    data_[get_index(arg)] += weight_type(1);
+                    data_[get_index(val)] += weight_type(1);
                     count_ += weight_type(1);
+                }
+                inline void operator<<(value_type const & val)
+                {
+                    (*this)(val);
                 }
 
                 //insert a pair via stream operator
-                void operator<<(std::pair<value_type, weight_type> p)
+                void operator()(std::pair<value_type, weight_type> p)
                 {
                     using namespace alps::ngs::numeric;
                     data_[get_index(p.first)] += p.second;
                     count_ += p.second;
+                }
+                inline void operator<<(std::pair<value_type, weight_type> p)
+                {
+                    return (*this)(p);
                 }
                 
                 //get the proxy
@@ -287,7 +295,7 @@ namespace alps
         }
 
         //=================== call GENERATE_PROPERTY macro ===================
-        GEMERATE_PROPERTY(histogram, tag::histogram)
+        GENERATE_PROPERTY(histogram, tag::histogram)
 
     }
 }

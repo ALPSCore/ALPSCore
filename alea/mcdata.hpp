@@ -237,17 +237,14 @@ namespace alps {
                     , data_is_analyzed_(true)
                     , jacknife_bins_valid_(false)
                     , cannot_rebin_(false)
+                    //~ , mean_(acc.has_mean() ? acc.mean() : T())
                 {
                     if(acc.has_mean())
                         mean_ = acc.mean();
-                    else
-                        mean_ = T();
                     
                     if(acc.has_error())
                         error_ = acc.error();
-                    else
-                        error_ = T();
-                        
+                    
                     if(acc.has_max_num_binning())
                         binsize_ = acc.max_num_binning().bin_number();
                     else

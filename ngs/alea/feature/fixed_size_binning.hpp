@@ -129,7 +129,7 @@ namespace alps
                         return fixed_size_binning_proxy_type<value_type_loc>(bin_, bin_size_); 
                     }
               
-                    inline ThisType& operator <<(value_type_loc val) 
+                    inline ThisType& operator()(value_type_loc const & val) 
                     {
                         using namespace alps::ngs::numeric;
                         
@@ -146,7 +146,11 @@ namespace alps
                         }
                         return *this;
                     }
-              
+                    inline ThisType& operator<<(value_type_loc const & val) 
+                    {
+                        return (*this)(val);
+                    }
+                    
                     template<typename Stream> 
                     inline void print(Stream & os) 
                     {
@@ -180,7 +184,7 @@ namespace alps
         }
 
         //=================== call GENERATE_PROPERTY macro ===================
-        GEMERATE_PROPERTY(fixed_size_binning, tag::fixed_size_binning)
+        GENERATE_PROPERTY(fixed_size_binning, tag::fixed_size_binning)
 
     }
 }

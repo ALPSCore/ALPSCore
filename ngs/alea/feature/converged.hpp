@@ -119,10 +119,14 @@ namespace alps
                         return maybe;
                     }
                     
-                    inline ThisType& operator <<(value_type_loc val) 
+                    inline ThisType& operator()(value_type_loc const & val) 
                     {
                         base_type::operator<<(val);
                         return *this;
+                    }
+                    inline ThisType& operator<<(value_type_loc const & val) 
+                    {
+                        return (*this)(val);
                     }
                     
                     template<typename Stream> 
@@ -145,7 +149,7 @@ namespace alps
         }
 
         //=================== call GENERATE_PROPERTY macro ===================
-        GEMERATE_PROPERTY(converged, tag::detail::converged)
+        GENERATE_PROPERTY(converged, tag::detail::converged)
 
     }
 }

@@ -50,67 +50,30 @@ namespace alps
             template<typename T, typename U>
             std::vector<T> & operator += (std::vector<T> & lhs, std::vector<U> const & rhs)
             {
-                //------------------- init -------------------
-                if(lhs.size() == 0)
-                    //~ alps::resize_same_as(lhs, rhs);
-                    lhs = std::vector<T>(rhs.size(), T());
-                    
-                if(lhs.size() != rhs.size())
-                {
-                    boost::throw_exception(std::runtime_error("vectors must have the same size!" + ALPS_STACKTRACE));
-                    return lhs; //std::vector<T>() not possible bc ref
-                }
-                else
-                {
-                    using boost::numeric::operators::operator+=;
-                    lhs += rhs;
-                    return lhs;
-                }
+                using boost::numeric::operators::operator+=;
+                lhs += rhs;
+                return lhs;
             }
             //------------------- operator + -------------------
             template<typename T, typename U>
             std::vector<T> operator + (std::vector<T> const & lhs, std::vector<U> const & rhs)
             {
-                if(lhs.size() != rhs.size())
-                {
-                    boost::throw_exception(std::runtime_error("vectors must have the same size!" + ALPS_STACKTRACE));
-                    return lhs;
-                }
-                else
-                {
-                    using boost::numeric::operators::operator+;
-                    return lhs + rhs;
-                }
+                using boost::numeric::operators::operator+;
+                return lhs + rhs;
             }
             //------------------- operator - -------------------
             template<typename T, typename U>
             std::vector<T> operator - (std::vector<T> const & lhs, std::vector<U> const & rhs)
             {
-                if(lhs.size() != rhs.size())
-                {
-                    boost::throw_exception(std::runtime_error("vectors must have the same size!" + ALPS_STACKTRACE));
-                    return std::vector<T>();
-                }
-                else
-                {
-                    using boost::numeric::operators::operator-;
-                    return lhs - rhs;
-                }
+                using boost::numeric::operators::operator-;
+                return lhs - rhs;
             }
             //------------------- operator * vector-vector-------------------
             template<typename T, typename U>
             std::vector<T> operator * (std::vector<T> const & lhs, std::vector<U> const & rhs)
             {
-                if(lhs.size() != rhs.size())
-                {
-                    boost::throw_exception(std::runtime_error("vectors must have the same size!" + ALPS_STACKTRACE));
-                    return lhs;
-                }
-                else
-                {
-                    using boost::numeric::operators::operator*;
-                    return lhs*rhs;
-                }
+                using boost::numeric::operators::operator*;
+                return lhs*rhs;
             }
             //------------------- operator / with scalar -------------------
             template<typename T, typename U>

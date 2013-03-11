@@ -127,7 +127,7 @@ namespace alps {
                         return mean_type(sum_) / base_type::count();
                     }
             
-                    inline ThisType& operator <<(value_type_loc val)  {
+                    inline ThisType& operator()(value_type_loc const & val)  {
                         using alps::ngs::numeric::operator+=;
                         using alps::ngs::numeric::detail::check_size;
                         base_type::operator <<(val);
@@ -135,6 +135,9 @@ namespace alps {
                         check_size(sum_, val);
                         sum_ += val;
                         return *this;
+                    }
+                    inline ThisType& operator<<(value_type_loc const & val)  {
+                        return (*this)(val);
                     }
 
                     template<typename Stream>  inline void print(Stream & os) {
@@ -196,7 +199,7 @@ namespace alps {
         }
 
         //=================== call GENERATE_PROPERTY macro ===================
-        GEMERATE_PROPERTY(mean, tag::mean)
+        GENERATE_PROPERTY(mean, tag::mean)
 
     }
 }

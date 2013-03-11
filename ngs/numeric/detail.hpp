@@ -45,12 +45,12 @@ namespace alps
             namespace detail
             {
                 template<typename T, typename U>
-                void check_size(T & a, U const & b)
+                inline void check_size(T & a, U const & b)
                 {
                     
                 }
                 template<typename T, typename U>
-                void check_size(std::vector<T> & a, std::vector<U> const & b)
+                inline void check_size(std::vector<T> & a, std::vector<U> const & b)
                 {
                     if(a.size() == 0)
                         alps::resize_same_as(a, b);
@@ -59,7 +59,7 @@ namespace alps
                             boost::throw_exception(std::runtime_error("vectors must have the same size!" + ALPS_STACKTRACE));
                 }
                 template<typename T, typename U, std::size_t D>
-                void check_size(alps::multi_array<T, D> & a, alps::multi_array<U, D> const & b)
+                inline void check_size(alps::multi_array<T, D> & a, alps::multi_array<U, D> const & b)
                 {
                     //~ if(a.size() == 0)
                         //~ alps::resize_same_as(a, b);

@@ -58,7 +58,7 @@ namespace alps
                 else
                 {
                     std::transform(lhs.begin(), lhs.end(), rhs.begin(), lhs.begin(), std::plus<T>() );
-
+ 
                     return lhs;
                 }
             }

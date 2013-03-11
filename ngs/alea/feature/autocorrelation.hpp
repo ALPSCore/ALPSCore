@@ -152,7 +152,7 @@ namespace alps
                         return autocorrelation_proxy_type<value_type_loc>(bin_, partial_, base_type::count());
                     }
                     
-                    inline ThisType& operator <<(value_type_loc const &  val) 
+                    inline ThisType& operator()(value_type_loc const & val) 
                     {
                         using namespace alps::ngs::numeric;
                         using alps::ngs::numeric::operator+;
@@ -181,6 +181,10 @@ namespace alps
                         }
                         
                         return *this;
+                    }
+                    inline ThisType& operator<<(value_type_loc const & val) 
+                    {
+                        return (*this)(val);
                     }
                     
                     template<typename Stream> 
@@ -217,7 +221,7 @@ namespace alps
         }
 
         //=================== call GENERATE_PROPERTY macro ===================
-        GEMERATE_PROPERTY(autocorrelation, tag::autocorrelation)
+        GENERATE_PROPERTY(autocorrelation, tag::autocorrelation)
 
     }
 }

@@ -66,8 +66,11 @@ namespace alps
                         : base_(arg.base_->clone()) 
                     {}
 
-                    template<typename T> accumulator_wrapper & operator<<(T const & value) {
+                    template<typename T> accumulator_wrapper & operator()(T const & value) {
                         (*base_) << value; return *this;
+                    }
+                    template<typename T> accumulator_wrapper & operator<<(T const & value) {
+                        return (*this)(value);
                     }
 
                     template<typename T> result_type_accumulator_wrapper<T> & get() const {
@@ -125,16 +128,7 @@ namespace alps
             return arg.reset();
         }
 
-        namespace detail {
-            //this one is needed, bc of name-collision in accum_wrapper
-            template<typename Accum> boost::uint64_t count_wrap(Accum const & arg) {
-                return count(arg);
-            }
 
-            template<typename Accum> void reset_wrap(Accum & arg) {
-                return reset(arg);
-            }
-        }
 
     }
 }

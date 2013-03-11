@@ -43,7 +43,7 @@ namespace alps {
         template<
               typename vt  = double
             , typename features_input = features<tag::mean, tag::error>
-//            , typename wt = void
+            //~ , typename wt = void
         >
         class accumulator: public detail::accumulator_impl<
               ValueType<vt>

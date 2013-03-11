@@ -25,97 +25,85 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_ALEA_DETAIL_TAU_IMPLEMENTATION_HEADER
-#define ALPS_NGS_ALEA_DETAIL_TAU_IMPLEMENTATION_HEADER
+#ifndef ALPS_NGS_ALEA_WEIGHTED_HPP
+#define ALPS_NGS_ALEA_WEIGHTED_HPP
 
 #include <alps/ngs/alea/feature/mean.hpp>
 #include <alps/ngs/alea/feature/feature_traits.hpp>
 #include <alps/ngs/alea/feature/generate_property.hpp>
 
-#include <boost/cstdint.hpp>
+#include <alps/ngs/alea/accumulator/arguments.hpp>
 
 #include <vector>
+#include <ostream>
 #include <cmath>
+#include <algorithm>
 
 namespace alps
 {
     namespace accumulator
     {
-        //=================== tau proxy ===================
-        //=================== tau trait ===================
-        template <typename T>
-        struct tau_type
-        {
+        //=================== weighted proxy ===================
+        //=================== weighted trait ===================
+        template <typename T> struct weighted_type {
             typedef double type;
         };
-        //=================== tau implementation ===================
-        namespace detail
-        {
-        //set up the dependencies for the tag::autocorrelation-Implementation
+        //=================== weighted implementation ===================
+        namespace detail {
+            //set up the dependencies for the tag::weighted-Implementation
             template<> 
-            struct Dependencies<tag::detail::tau> 
+            struct Dependencies<tag::weighted> 
             {
-                typedef MakeList<>::type type;
+                typedef MakeList<tag::mean, tag::error>::type type;
             };
 
             template<typename base_type> 
-            class AccumulatorImplementation<tag::detail::tau, base_type> : public base_type 
+            class AccumulatorImplementation<tag::weighted, base_type> : public base_type 
             {
                 typedef typename base_type::value_type value_type_loc;
-                typedef typename tau_type<value_type_loc>::type tau_type;
-                typedef typename mean_type<value_type_loc>::type mean_type;
-                typedef AccumulatorImplementation<tag::detail::tau, base_type> ThisType;
-                
+                typedef typename weighted_type<value_type_loc>::type weighted_type_loc;
+                typedef typename std::vector<value_type_loc>::size_type size_type;
+                typedef AccumulatorImplementation<tag::weighted, base_type> ThisType;
+                    
                 public:
-                    AccumulatorImplementation<tag::detail::tau, base_type>(ThisType const & arg): base_type(arg)
+                    AccumulatorImplementation<tag::weighted, base_type>(ThisType const & arg):  base_type(arg)
+                                                                        //~ , 
                     {}
                     
                     template<typename ArgumentPack>
-                    AccumulatorImplementation<tag::detail::tau, base_type>(ArgumentPack const & args
-                                                 , typename boost::disable_if<
-                                                                              boost::is_base_of<ThisType, ArgumentPack>
-                                                                            , int
-                                                                            >::type = 0
-                                             ): base_type(args)
+                    AccumulatorImplementation<tag::weighted, base_type>(ArgumentPack const & args
+                                             , typename boost::disable_if<
+                                                                          boost::is_base_of<ThisType, ArgumentPack>
+                                                                        , int
+                                                                         >::type = 0
+                                            ): base_type(args)
+                                             //~ , bin_size_(args[bin_size | 128]) //change doc if modified
                     {}
                     
-                    inline tau_type const tau() const 
+                    inline weighted_type_loc const weighted() const 
+                    { 
+                        return weighted_type_loc(); 
+                    }
+              
+                    inline ThisType& operator()(value_type_loc const & val, double const & w) 
                     {
-                        //~ //Simplebinning.h Zeile 475
-                        //~ template <class T>
-                        //~ inline typename SimpleBinning<T>::time_type SimpleBinning<T>::tau() const
-                        //~ {
-                          //~ if (count()==0)
-                            //~ boost::throw_exception(NoMeasurementstag::error());
-                        //~ 
-                          //~ if( binning_depth() >= 2 )
-                          //~ {
-                            //~ count_type factor =count()-1;
-                            //~ time_type er(std::abs(error()));
-                            //~ er *=er*factor;
-                            //~ er /= std::abs(variance());
-                            //~ er -=1.;
-                            //~ return 0.5*er;
-                          //~ }
-                          //~ else
-                          //~ {
-                            //~ time_type retval;
-                            //~ resize_same_as(retval,sum_[0]);
-                            //~ retval=inf();
-                            //~ return retval;
-                          //~ }
-                        //~ }
-
-                        //TODO: implement
-                        return 42;
+                        using namespace alps::ngs::numeric;
+                        
+                        base_type::operator()(val * w);
+                        
+                        return *this;
                     }
                     
                     inline ThisType& operator()(value_type_loc const & val) 
                     {
-                        base_type::operator<<(val);
+                        using namespace alps::ngs::numeric;
+                        
+                        base_type::operator()(val);
+                        
+                        
                         return *this;
                     }
-                    inline ThisType& operator<<(value_type_loc const & val)
+                    inline ThisType& operator<<(value_type_loc const & val) 
                     {
                         return (*this)(val);
                     }
@@ -124,24 +112,25 @@ namespace alps
                     inline void print(Stream & os) 
                     {
                         base_type::print(os);
-                        os << "tag::detail::tau: " << std::endl;
+                        os << "Weighted:" << std::endl;
                     }
                     inline void reset()
                     {
-                        base_type::reset();
+                    
                     }
                 private:
+                    
             };
 
-            template<typename base_type> class ResultImplementation<tag::detail::tau, base_type> {
+            template<typename base_type> class ResultImplementation<tag::weighted, base_type> {
 // TODO: implement!
             };
 
         }
 
         //=================== call GENERATE_PROPERTY macro ===================
-        GENERATE_PROPERTY(tau, tag::detail::tau)
+        GENERATE_PROPERTY(weighted, tag::weighted)
 
     }
 }
-#endif //ALPS_NGS_ALEA_DETAIL_TAU_IMPLEMENTATION_HEADER
+#endif

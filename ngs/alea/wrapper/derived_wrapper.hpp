@@ -63,6 +63,7 @@ namespace alps {
             //the effective wrapper
             template <typename Accum> class derived_accumulator_wrapper: public 
 // TODO: generate form all_tags ...
+                feature_accumulator_property<tag::weighted,
                 feature_accumulator_property<tag::histogram,
                 feature_accumulator_property<tag::detail::tau,
                 feature_accumulator_property<tag::detail::converged,
@@ -76,11 +77,12 @@ namespace alps {
                 derived_accumulator_wrapper_base<
                     Accum, result_type_accumulator_wrapper<typename value_type<Accum>::type>
                 >
-            > > > > > > > > > {
+            > > > > > > > > > > {
                 //for nicer syntax
                 typedef typename value_type<Accum>::type value_type;
                 typedef 
 // TODO: generate form all_tags ...
+                    feature_accumulator_property<tag::weighted,
                     feature_accumulator_property<tag::histogram,
                     feature_accumulator_property<tag::detail::tau,
                     feature_accumulator_property<tag::detail::converged,
@@ -94,7 +96,7 @@ namespace alps {
                     derived_accumulator_wrapper_base<
                         Accum, detail::result_type_accumulator_wrapper<value_type>
                     >
-                > > > > > > > > > base_type;
+                > > > > > > > > > > base_type;
 
                 public:
                     using derived_accumulator_wrapper_base<Accum, result_type_accumulator_wrapper<value_type> >::accum_;

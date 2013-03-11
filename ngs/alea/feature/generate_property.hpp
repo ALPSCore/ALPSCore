@@ -54,7 +54,7 @@ namespace alps {
     }
 }
 
-#define GEMERATE_PROPERTY(FNNAME, TAG)                                                                                      \
+#define GENERATE_PROPERTY(FNNAME, TAG)                                                                                      \
                                                                                                                             \
     /* = = = = = = = = = = I N F O   T R A I T = = = = = = = = = = */                                                       \
     template<typename T> struct has_feature< TAG , T> {                                                                     \
