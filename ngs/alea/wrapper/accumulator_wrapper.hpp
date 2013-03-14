@@ -30,7 +30,6 @@
 #define ALPS_NGS_ALEA_ACCUMULATOR_WRAPPER_HPP
 
 #include <alps/ngs/stacktrace.hpp>
-#include <alps/ngs/alea/accumulator.hpp>
 #include <alps/ngs/alea/wrapper/base_wrapper.hpp>
 #include <alps/ngs/alea/wrapper/result_wrapper.hpp>
 #include <alps/ngs/alea/wrapper/derived_wrapper.hpp>
@@ -63,7 +62,8 @@ namespace alps {
                     {}
 
                     template<typename T> accumulator_wrapper & operator()(T const & value) {
-                        (*base_) << value; return *this;
+                        (*base_) << value; 
+                        return *this;
                     }
                     template<typename T> accumulator_wrapper & operator<<(T const & value) {
                         return (*this)(value);
@@ -76,11 +76,19 @@ namespace alps {
                     friend std::ostream& operator<<(std::ostream &out, const accumulator_wrapper& wrapper);
 
                     template <typename T> T & extract() const {
-                        return (dynamic_cast<derived_accumulator_wrapper<T>& >(*base_)).accum_;
+                        return (dynamic_cast<derived_accumulator_wrapper<T> &>(*base_)).accum_;
                     }
 
                     boost::uint64_t count() const {
                         return base_->count();
+                    }
+
+                    void save(hdf5::archive & ar) const {
+                        ar[""] = *base_;
+                    }
+
+                    void load(hdf5::archive & ar) {
+                        ar[""] >> *base_;
                     }
 
                     inline void reset() {

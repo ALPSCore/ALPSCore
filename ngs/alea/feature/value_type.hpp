@@ -39,17 +39,14 @@
     #include <alps/ngs/mpi.hpp>
 #endif
 
-namespace alps
-{
-    namespace accumulator
-    {
+namespace alps {
+    namespace accumulator {
         //=================== value_type trait ===================
         template <typename Accum> struct value_type {
             typedef typename Accum::value_type type;
         };
         //=================== value_type implementation ===================
-        namespace detail
-        {
+        namespace detail {
             //setting up the dependencies for value_type-Implementation isn't neccessary bc has none
             template<typename T, typename base_type> class AccumulatorImplementation<ValueType<T>, base_type> {
                 typedef AccumulatorImplementation<ValueType<T>, base_type> ThisType;
@@ -58,37 +55,39 @@ namespace alps
                     
                     AccumulatorImplementation<ValueType<T>, base_type>(ThisType const & arg): count_(arg.count_) {}
                     
-                    template <typename ArgumentPack>
-                    AccumulatorImplementation<ValueType<T>, base_type>(ArgumentPack const & args, typename boost::disable_if<
-                                                                                                  boost::is_base_of<ThisType, ArgumentPack>
-                                                                                                , int
-                                                                                                >::type = 0
-                                            ): count_() 
+                    template <typename ArgumentPack> AccumulatorImplementation<ValueType<T>, base_type>(
+                        ArgumentPack const & args, typename boost::disable_if<boost::is_base_of<ThisType, ArgumentPack>, int>::type = 0
+                    )
+                        : count_() 
                     {}
                     
-                    inline ThisType& operator()(value_type const & val) 
-                    {
+                    inline ThisType& operator()(value_type const & val) {
                         ++count_;
                         return *this;
                     }
-                    inline ThisType& operator<<(value_type const & val) 
-                    {
+
+                    inline ThisType& operator<<(value_type const & val) {
                         return (*this)(val);
                     }
                     
-                    inline boost::uint64_t const & count() const 
-                    { 
+                    inline boost::uint64_t const & count() const {
                         return count_; 
                     }
                 
-                    template<typename Stream> 
-                    inline void print(Stream & os) 
-                    {
+                    template<typename Stream> inline void print(Stream & os) {
                         os << "ValueType: " << typeid(value_type).name() << " " << std::endl;
                         os << "Count: " << count() << " " << std::endl;
                     }
-                    inline void reset()
-                    {
+
+                    void save(hdf5::archive & ar) const {
+                        ar["count"] = count_;
+                    }
+
+                    void load(hdf5::archive & ar) {
+                        ar["count"] >> count_;
+                    }
+
+                    inline void reset() {
                         count_ = 0;
                     }
 
@@ -176,7 +175,7 @@ namespace alps
                     boost::uint64_t count_;
             };
 
-        } // end namespace detail
-    }//end accumulator namespace 
-}//end alps namespace
+        }
+    }
+}
 #endif // ALPS_NGS_ALEA_DETAIL_VALUE_TYPE_IMPLEMENTATION

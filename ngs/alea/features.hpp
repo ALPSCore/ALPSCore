@@ -35,6 +35,7 @@
 #include <alps/ngs/alea/feature/tau.hpp>
 #include <alps/ngs/alea/feature/mean.hpp>
 #include <alps/ngs/alea/feature/error.hpp>
+#include <alps/ngs/alea/feature/weighted.hpp>
 #include <alps/ngs/alea/feature/converged.hpp>
 #include <alps/ngs/alea/feature/histogram.hpp>
 #include <alps/ngs/alea/feature/value_type.hpp>
@@ -42,6 +43,5 @@
 #include <alps/ngs/alea/feature/autocorrelation.hpp>
 #include <alps/ngs/alea/feature/max_num_binning.hpp>
 #include <alps/ngs/alea/feature/fixed_size_binning.hpp>
-#include <alps/ngs/alea/feature/weighted.hpp>
 
 #endif

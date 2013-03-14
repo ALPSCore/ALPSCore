@@ -44,10 +44,8 @@
 #endif
 
 #include <cmath>
-namespace alps
-{
-    namespace accumulator
-    {
+namespace alps {
+    namespace accumulator {
         //=================== error proxy ===================
         //=================== error trait ===================
         template <typename T>
@@ -73,30 +71,28 @@ namespace alps
                 typedef AccumulatorImplementation<tag::error, base_type> ThisType;
                 
                 public:
+
                     AccumulatorImplementation<tag::error, base_type>(ThisType const & arg): base_type(arg), sum2_(arg.sum2_) {}
                     
-                    template<typename ArgumentPack>
-                    AccumulatorImplementation<tag::error, base_type>(ArgumentPack const & args, typename boost::disable_if<
-                                                                                              boost::is_base_of<ThisType, ArgumentPack>
-                                                                                            , int
-                                                                                            >::type = 0
-                                        ): base_type(args)
-                                         , sum2_() 
+                    template<typename ArgumentPack> AccumulatorImplementation<tag::error, base_type>(
+                          ArgumentPack const & args
+                        , typename boost::disable_if<boost::is_base_of<ThisType, ArgumentPack>, int>::type = 0
+                    )
+                        : base_type(args)
+                        , sum2_() 
                     {}
                     
-                    inline error_type const error() const 
-                    { 
+                    inline error_type const error() const {
                         using alps::ngs::numeric::sqrt;
                         using std::sqrt;
                         using alps::ngs::numeric::operator/;
                         using alps::ngs::numeric::operator-;
                         using alps::ngs::numeric::operator*;
 
-                        return sqrt((sum2_ / base_type::count() - base_type::mean()*base_type::mean()) / ((base_type::count() - 1)));
+                        return sqrt((sum2_ / base_type::count() - base_type::mean() * base_type::mean()) / (base_type::count() - 1));
                     }
                     
-                    inline ThisType& operator ()(value_type_loc const & val) 
-                    {
+                    inline ThisType& operator ()(value_type_loc const & val) {
                         using alps::ngs::numeric::operator+=;
                         using alps::ngs::numeric::operator*;
                         
@@ -104,19 +100,29 @@ namespace alps
                         sum2_ += val*val;
                         return *this;
                     }
-                    inline ThisType& operator <<(value_type_loc const & val) 
-                    {
+
+                    inline ThisType& operator <<(value_type_loc const & val) {
                         return (*this)(val);
                     }
                     
-                    template<typename Stream> 
-                    inline void print(Stream & os) 
-                    {
+                    template<typename Stream> inline void print(Stream & os) {
                         base_type::print(os);
                         os << "tag::error: " << alps::short_print(error()) << " " << std::endl;
                     }
-                    inline void reset()
-                    {
+
+                    void save(hdf5::archive & ar) const {
+                        base_type::save(ar);
+                        ar["mean/error"] = error();
+                    }
+
+                    void load(hdf5::archive & ar) {
+                        base_type::load(ar);
+                        double error;
+                        ar["mean/error"] >> error;
+                        sum2_ = (error * error * (base_type::count() - 1) + base_type::mean() * base_type::mean()) * base_type::count();
+                    }
+
+                    inline void reset() {
                         sum2_ = error_type();
                         base_type::reset();
                     }
@@ -132,6 +138,7 @@ namespace alps
                         else
                             const_cast<ThisType const *>(this)->collective_merge(comm, root);
                     }
+
                     void collective_merge(
                           boost::mpi::communicator const & comm
                         , int root

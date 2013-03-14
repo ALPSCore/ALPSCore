@@ -86,12 +86,14 @@ namespace alps {
                     template<typename value_type> inline void operator<<(value_type& value) {
                         (*this)(value);
                     }
-                    
+
                     template<typename value_type> inline result_type_accumulator_wrapper<value_type> &get() {
                         return dynamic_cast<result_type_accumulator_wrapper<value_type>& >(*this);
                     }
                     
                     virtual boost::uint64_t count() const = 0;
+                    virtual void save(hdf5::archive & ar) const = 0;
+                    virtual void load(hdf5::archive & ar) = 0;
                     virtual void reset() = 0;
                     virtual base_accumulator_wrapper* clone() = 0;  //needed for the copy-ctor
                     virtual void print(std::ostream & out) = 0;

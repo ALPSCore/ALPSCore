@@ -51,7 +51,10 @@ namespace alps {
             storage.insert(make_pair(name, ptr));
         }
 
-        void accumulator_set::save(hdf5::archive & ar) const {}
+        void accumulator_set::save(hdf5::archive & ar) const {
+            for(const_iterator it = begin(); it != end(); ++it)
+                ar[it->first] = *(it->second);
+        }
 
         void accumulator_set::load(hdf5::archive & ar) {}
 

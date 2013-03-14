@@ -100,13 +100,13 @@ namespace alps {
 
                     derived_result_wrapper(Result const & res): base_type(res) {}
 
-                    inline detail::base_result_wrapper* clone() {return new derived_result_wrapper<Result>(result_);}
+                    detail::base_result_wrapper* clone() {return new derived_result_wrapper<Result>(result_);}
 
-                    inline boost::uint64_t count() const {
+                    boost::uint64_t count() const {
                         return count_wrap(result_);
                     }
 
-                    inline void print(std::ostream & out) {
+                    void print(std::ostream & out) {
                         out << result_;
                     }
             };
@@ -169,17 +169,25 @@ namespace alps {
                     
                     derived_accumulator_wrapper(Accum const & acc): base_type(acc) {}
                     
-                    inline detail::base_accumulator_wrapper* clone() {return new derived_accumulator_wrapper<Accum>(accum_);}
+                    detail::base_accumulator_wrapper* clone() {return new derived_accumulator_wrapper<Accum>(accum_);}
                     
-                    inline boost::uint64_t count() const {
+                    boost::uint64_t count() const {
                         return count_wrap(accum_);
+                    }
+
+                    void save(hdf5::archive & ar) const {
+                        ar[""] = dynamic_cast<base_type const &>(*this);
+                    }
+
+                    void load(hdf5::archive & ar) {
+                        ar[""] >> dynamic_cast<base_type &>(*this);
                     }
 
                     void reset() {
                         reset_wrap(accum_);
                     }
                     
-                    inline void print(std::ostream & out) {
+                    void print(std::ostream & out) {
                         out << accum_;
                     }
 
@@ -201,6 +209,7 @@ namespace alps {
                         collective_merge_impl(comm, root, check_helper<sizeof(check_collective_merge<Accum>(0))>());
                     }
                 private:
+
                     template<typename U> static char check_collective_merge(typename check_helper<sizeof(&U::collective_merge)>::type);
                     template<typename U> static double check_collective_merge(...);
 
@@ -230,8 +239,8 @@ namespace alps {
 #endif
 
                 protected:
-                    inline void add_value(void const * value, std::type_info const & info) //type-infusion
-                    {
+
+                    void add_value(void const * value, std::type_info const & info) { //type-infusion
                         if( &info != &typeid(value_type) &&
                         #ifdef BOOST_AUX_ANY_TYPE_ID_NAME
                             std::strcmp(info.name(), typeid(value_type).name()) != 0
@@ -242,10 +251,13 @@ namespace alps {
                             throw std::runtime_error("wrong type added in accumulator_wrapper::add_value" + ALPS_STACKTRACE);
                         accum_ << *static_cast<value_type const *>(value);
                     }
+
                 private:
+
                     boost::shared_ptr<base_result_wrapper> result_impl(check_helper<sizeof(char)>) const {
                         return boost::shared_ptr<base_result_wrapper>(new derived_result_wrapper<typename Accum::result_type>(typename Accum::result_type(accum_)));
                     }
+
                     boost::shared_ptr<base_result_wrapper> result_impl(check_helper<sizeof(double)>) const {
                         throw std::logic_error("The Accumulator has no associated result_type" + ALPS_STACKTRACE);
                         return boost::shared_ptr<base_result_wrapper>((base_result_wrapper *)NULL);

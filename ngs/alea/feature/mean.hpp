@@ -145,6 +145,18 @@ namespace alps {
                         os << "tag::mean: " << alps::short_print(mean()) << " " << std::endl;
                     }
 
+                    void save(hdf5::archive & ar) const {
+                        base_type::save(ar);
+                        ar["mean/value"] = mean();
+                    }
+
+                    void load(hdf5::archive & ar) {
+                        base_type::load(ar);
+                        double mean;
+                        ar["mean/value"] >> mean;
+                        sum_ = mean * base_type::count();
+                    }
+
                     inline void reset() {
                         base_type::reset();
                         sum_ = value_type_loc();
