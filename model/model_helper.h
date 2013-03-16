@@ -80,6 +80,16 @@ public:
   
   template <class OP>
   void substitute_operators(OP& op, const Parameters& p) const { op.substitute_operators(model_library_,p);}
+
+  std::set<std::string> quantum_numbers(int type=0)
+  {
+    std::set<std::string> qns;
+    site_basis_descriptor_type b = this->site_basis(type);
+    for (int i=0;i<b.size();++i)
+      qns.insert(b[i].name());
+    return qns;
+  }
+  
 private:
    ModelLibrary model_library_;
    HamiltonianDescriptor<I> model_;
