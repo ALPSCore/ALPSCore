@@ -45,29 +45,35 @@ namespace alps {
         template <typename Accum> struct value_type {
             typedef typename Accum::value_type type;
         };
+        template <typename Accum> struct weight_value_type {
+            typedef typename Accum::weight_value_type type;
+        };
         //=================== value_type implementation ===================
         namespace detail {
             //setting up the dependencies for value_type-Implementation isn't neccessary bc has none
-            template<typename T, typename base_type> class AccumulatorImplementation<ValueType<T>, base_type> {
-                typedef AccumulatorImplementation<ValueType<T>, base_type> ThisType;
+            template<typename T, typename W, typename base_type> class AccumulatorImplementation<type_holder<T, W>, base_type> {
+                typedef AccumulatorImplementation<type_holder<T, W>, base_type> ThisType;
                 public:
                     typedef T value_type;
+                    typedef W weight_value_type;
                     
-                    AccumulatorImplementation<ValueType<T>, base_type>(ThisType const & arg): count_(arg.count_) {}
+                    AccumulatorImplementation<type_holder<T, W>, base_type>(ThisType const & arg): count_(arg.count_) {}
                     
-                    template <typename ArgumentPack> AccumulatorImplementation<ValueType<T>, base_type>(
-                        ArgumentPack const & args, typename boost::disable_if<boost::is_base_of<ThisType, ArgumentPack>, int>::type = 0
-                    )
-                        : count_() 
+                    template <typename ArgumentPack>
+                    AccumulatorImplementation<type_holder<T, W>, base_type>(ArgumentPack const & args, typename boost::disable_if<
+                                                                                                  boost::is_base_of<ThisType, ArgumentPack>
+                                                                                                , int
+                                                                                                >::type = 0
+                                            ): count_() 
                     {}
                     
-                    inline ThisType& operator()(value_type const & val) {
+                    inline void operator()(value_type const & val) {
                         ++count_;
-                        return *this;
                     }
 
                     inline ThisType& operator<<(value_type const & val) {
-                        return (*this)(val);
+                        (*this)(val);
+                        return (*this);
                     }
                     
                     inline boost::uint64_t const & count() const {
@@ -153,7 +159,7 @@ namespace alps {
                     boost::uint64_t count_;
             };
 
-            template<typename T, typename base_type> class ResultImplementation<ValueType<T>, base_type> {
+            template<typename T, typename base_type> class ResultImplementation<type_holder<T>, base_type> {
                 public:
 
                     typedef T value_type;

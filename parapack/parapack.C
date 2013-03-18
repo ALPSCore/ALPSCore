@@ -1024,7 +1024,7 @@ int start_mpi(int argc, char** argv) {
 
           while (!process.is_halting() || process.num_allocated() > 0) {
             boost::optional<boost::mpi::status> status;
-            if (status = process.comm_ctrl().iprobe(boost::mpi::any_source, boost::mpi::any_tag)) {
+            if ((status = process.comm_ctrl().iprobe(boost::mpi::any_source, boost::mpi::any_tag))) {
               if (status->tag() == mcmp_tag::clone_info) {
                 clone_info_msg_t msg;
                 process.comm_ctrl().recv(status->source(), status->tag(), msg);
@@ -1079,7 +1079,7 @@ int start_mpi(int argc, char** argv) {
                 std::cout << "Warning: ignoring a message in comm_ctrl with an unknown tag "
                           << status->tag() << std::endl;
               }
-            } else if (status = world.iprobe(boost::mpi::any_source, boost::mpi::any_tag)) {
+            } else if ((status = world.iprobe(boost::mpi::any_source, boost::mpi::any_tag))) {
               if (status->tag() == mcmp_tag::process_vmusage) {
                 std::string u;
                 world.recv(status->source(), status->tag(), u);

@@ -37,6 +37,8 @@ namespace alps {
 
         BOOST_PARAMETER_NAME((bin_size, keywords) _bin_size)
         BOOST_PARAMETER_NAME((bin_num, keywords) _bin_num)
+        BOOST_PARAMETER_NAME((weight_ref, keywords) _weight_ref)
+        BOOST_PARAMETER_NAME((Weight, keywords) _Weight)
 
     } // end accumulator namespace
 } // end alps namespace

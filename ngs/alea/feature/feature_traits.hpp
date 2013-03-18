@@ -43,8 +43,8 @@ namespace alps
 {
     namespace accumulator
     {
-        template<typename T> 
-        struct ValueType {};
+        template<typename T, typename W = void> 
+        struct type_holder {};
 
 
         namespace detail
@@ -194,33 +194,34 @@ namespace alps
             
         // = = = = = = = F I N D   V A L U E   T Y P E = = = = = = = = = =
             template<typename list> 
-            struct FindValueType 
+            struct FindTypeHolder 
             {
-                typedef typename FindValueType<typename list::next>::type type;
+                typedef typename FindTypeHolder<typename list::next>::type type;
             };
             
             template<
-                      typename stored_type
+                      typename stored_value_type
+                    , typename stored_weight_type
                     , typename next_list_item
                     > 
-            struct FindValueType<
-                                  ListItem<ValueType<stored_type>
+            struct FindTypeHolder<
+                                  ListItem<type_holder<stored_value_type, stored_weight_type>
                                          , next_list_item> 
                                 > 
             {
-                typedef ValueType<stored_type> type;
+                typedef type_holder<stored_value_type, stored_weight_type> type;
             };
             
             template<> //no value-type found
-            struct FindValueType<ListEnd> {
-                BOOST_STATIC_ASSERT_MSG(true, "No ValueType added!");
+            struct FindTypeHolder<ListEnd> {
+                BOOST_STATIC_ASSERT_MSG(true, "No type_holder added!");
             };
             
             //takes a list and frontInserts the ValueType 
             template<typename list> 
-            struct ValueTypeFirst 
+            struct TypeHolderFirst 
             {
-                typedef ListItem<typename FindValueType<list>::type, list> type;
+                typedef ListItem<typename FindTypeHolder<list>::type, list> type;
             };
 
 

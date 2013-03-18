@@ -68,8 +68,8 @@ namespace alps {
                     virtual bool has_converged() const = 0;
                     virtual typename tau_type<value_type>::type tau() const = 0;
                     virtual bool has_tau() const = 0;
-                    virtual typename weighted_type<value_type>::type weighted() const = 0;
-                    virtual bool has_weighted() const = 0;
+                    virtual typename weight_type<value_type>::type weight() const = 0;
+                    virtual bool has_weight() const = 0;
                     virtual typename histogram_type<value_type>::type histogram() const = 0;
                     virtual bool has_histogram() const = 0;
             };

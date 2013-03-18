@@ -110,14 +110,14 @@ namespace alps
                         return 42;
                     }
                     
-                    inline ThisType& operator()(value_type_loc const & val) 
+                    inline void operator()(value_type_loc const & val) 
                     {
-                        base_type::operator<<(val);
-                        return *this;
+                        base_type::operator()(val);
                     }
                     inline ThisType& operator<<(value_type_loc const & val)
                     {
-                        return (*this)(val);
+                        (*this)(val);
+                        return (*this);
                     }
                     
                     template<typename Stream> 

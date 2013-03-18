@@ -127,17 +127,17 @@ namespace alps {
                         return mean_type(sum_) / base_type::count();
                     }
             
-                    inline ThisType& operator()(value_type_loc const & val)  {
+                    inline void operator()(value_type_loc const & val)  {
                         using alps::ngs::numeric::operator+=;
                         using alps::ngs::numeric::detail::check_size;
-                        base_type::operator <<(val);
+                        base_type::operator()(val);
                         
                         check_size(sum_, val);
                         sum_ += val;
-                        return *this;
                     }
                     inline ThisType& operator<<(value_type_loc const & val)  {
-                        return (*this)(val);
+                        (*this)(val);
+                        return (*this);
                     }
 
                     template<typename Stream>  inline void print(Stream & os) {

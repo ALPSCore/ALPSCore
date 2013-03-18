@@ -152,7 +152,7 @@ namespace alps
                         return autocorrelation_proxy_type<value_type_loc>(bin_, partial_, base_type::count());
                     }
                     
-                    inline ThisType& operator()(value_type_loc const & val) 
+                    inline void operator()(value_type_loc const & val) 
                     {
                         using namespace alps::ngs::numeric;
                         using alps::ngs::numeric::operator+;
@@ -161,7 +161,7 @@ namespace alps
                         using alps::ngs::numeric::operator*;
                         using alps::ngs::numeric::operator-;
                         
-                        base_type::operator<<(val);
+                        base_type::operator()(val);
                         
                         
                         if(base_type::count() == (1 << bin_size_now_))
@@ -179,12 +179,11 @@ namespace alps
                                 partial_[i] = base_type::sum_;
                             }
                         }
-                        
-                        return *this;
                     }
                     inline ThisType& operator<<(value_type_loc const & val) 
                     {
-                        return (*this)(val);
+                        (*this)(val);
+                        return (*this);
                     }
                     
                     template<typename Stream> 

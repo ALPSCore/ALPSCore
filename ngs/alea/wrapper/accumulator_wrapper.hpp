@@ -60,13 +60,18 @@ namespace alps {
                     accumulator_wrapper(accumulator_wrapper const & arg)
                         : base_(arg.base_->clone()) 
                     {}
-
-                    template<typename T> accumulator_wrapper & operator()(T const & value) {
-                        (*base_) << value; 
-                        return *this;
+                //------------------- normal input -------------------
+                    template<typename T> void operator()(T const & value) {
+                        (*base_)(value); 
                     }
                     template<typename T> accumulator_wrapper & operator<<(T const & value) {
-                        return (*this)(value);
+                        (*this)(value);
+                        return (*this);
+                    }
+                //------------------- input with weight-------------------
+                    template<typename T, typename W> 
+                    void operator()(T const & value, W const & weight) {
+                        (*base_)(value, weight);
                     }
 
                     template<typename T> result_type_accumulator_wrapper<T> & get() const {

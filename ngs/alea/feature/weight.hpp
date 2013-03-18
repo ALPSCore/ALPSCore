@@ -25,14 +25,17 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_ALEA_WEIGHTED_HPP
-#define ALPS_NGS_ALEA_WEIGHTED_HPP
+#ifndef ALPS_NGS_ALEA_WEIGHT_HPP
+#define ALPS_NGS_ALEA_WEIGHT_HPP
 
 #include <alps/ngs/alea/feature/mean.hpp>
 #include <alps/ngs/alea/feature/feature_traits.hpp>
 #include <alps/ngs/alea/feature/generate_property.hpp>
+#include <alps/ngs/alea/feature/tags.hpp>
 
 #include <alps/ngs/alea/accumulator/arguments.hpp>
+
+#include <boost/shared_ptr.hpp>
 
 #include <vector>
 #include <ostream>
@@ -43,86 +46,111 @@ namespace alps
 {
     namespace accumulator
     {
-        //=================== weighted proxy ===================
-        //=================== weighted trait ===================
-        template <typename T> struct weighted_type {
+        template<
+              typename vt
+            , typename features_input
+            , typename wvt
+        >
+        class accumulator;
+        
+        namespace detail
+        {
+            class accumulator_wrapper;
+        }
+        //=================== weight proxy ===================
+        //=================== weight trait ===================
+        template <typename T> struct weight_type {
             typedef double type;
         };
-        //=================== weighted implementation ===================
+        //=================== weight implementation ===================
         namespace detail {
-            //set up the dependencies for the tag::weighted-Implementation
+            //set up the dependencies for the tag::detail::weight-Implementation
             template<> 
-            struct Dependencies<tag::weighted> 
+            struct Dependencies<tag::detail::weight> 
             {
                 typedef MakeList<tag::mean, tag::error>::type type;
             };
 
             template<typename base_type> 
-            class AccumulatorImplementation<tag::weighted, base_type> : public base_type 
+            class AccumulatorImplementation<tag::detail::weight, base_type> : public base_type 
             {
                 typedef typename base_type::value_type value_type_loc;
-                typedef typename weighted_type<value_type_loc>::type weighted_type_loc;
+                typedef typename base_type::weight_value_type weight_value_type_loc;
+                typedef typename weight_type<value_type_loc>::type weight_type_loc; //don't mix up weight_value and weight type!!
                 typedef typename std::vector<value_type_loc>::size_type size_type;
-                typedef AccumulatorImplementation<tag::weighted, base_type> ThisType;
+                typedef AccumulatorImplementation<tag::detail::weight, base_type> ThisType;
                     
                 public:
-                    AccumulatorImplementation<tag::weighted, base_type>(ThisType const & arg):  base_type(arg)
-                                                                        //~ , 
+                    AccumulatorImplementation<tag::detail::weight, base_type>(ThisType const & arg):  base_type(arg)
+                                                                        , ownes_weight_acc_(arg.ownes_weight_acc_)
+                                                                        , weight_acc_ptr_(arg.weight_acc_ptr_)
                     {}
                     
                     template<typename ArgumentPack>
-                    AccumulatorImplementation<tag::weighted, base_type>(ArgumentPack const & args
+                    AccumulatorImplementation<tag::detail::weight, base_type>(ArgumentPack const & args
                                              , typename boost::disable_if<
                                                                           boost::is_base_of<ThisType, ArgumentPack>
                                                                         , int
                                                                          >::type = 0
                                             ): base_type(args)
-                                             //~ , bin_size_(args[bin_size | 128]) //change doc if modified
-                    {}
-                    
-                    inline weighted_type_loc const weighted() const 
-                    { 
-                        return weighted_type_loc(); 
+                                             , ownes_weight_acc_(false)
+                                             //~ , weight_acc_ptr_(NULL)
+                                             //~ , weight_acc_ptr_(args[weight_ref| boost::shared_ptr<accumulator_wrapper>()])
+                                                                                          
+                    {
+                        if(weight_acc_ptr_ == NULL)
+                        {
+                            ownes_weight_acc_ = true;
+                            //TODO: features?
+                            //~ weight_acc_ptr_ = new accumulator_wrapper(accumulator<weight_type_loc, features<tag::mean, tag::error>, void>());
+                            
+                        }
                     }
-              
-                    inline ThisType& operator()(value_type_loc const & val, double const & w) 
+                    
+                    inline weight_type_loc const weight() const 
+                    { 
+                        return weight_type_loc(); 
+                    }
+                    
+                    inline void operator()(value_type_loc const & val, weight_value_type_loc const & w)
                     {
                         using namespace alps::ngs::numeric;
                         
                         base_type::operator()(val * w);
-                        
-                        return *this;
                     }
-                    
-                    inline ThisType& operator()(value_type_loc const & val) 
+                    template<typename ArgumentPack>
+                    inline void operator()(value_type_loc const & val, ArgumentPack & arg)
                     {
                         using namespace alps::ngs::numeric;
-                        
-                        base_type::operator()(val);
-                        
-                        
-                        return *this;
+                        base_type::operator()(val * arg[Weight]);
+                    }
+                    
+                    inline void operator()(value_type_loc const & val) 
+                    {
+                        using namespace alps::ngs::numeric;
+                        base_type::operator()(val * weight_type_loc(1));
                     }
                     inline ThisType& operator<<(value_type_loc const & val) 
                     {
-                        return (*this)(val);
+                        (*this)(val);
+                        return (*this);
                     }
-                    
                     template<typename Stream> 
                     inline void print(Stream & os) 
                     {
                         base_type::print(os);
-                        os << "Weighted:" << std::endl;
+                        os << "Weight: " << ownes_weight_acc_ << std::endl;
                     }
                     inline void reset()
                     {
                     
                     }
                 private:
-                    
+                    bool ownes_weight_acc_;
+                    boost::shared_ptr<accumulator_wrapper> weight_acc_ptr_;
             };
 
-            template<typename base_type> class ResultImplementation<tag::weighted, base_type> : public base_type  {
+            template<typename base_type> class ResultImplementation<tag::detail::weight, base_type> : public base_type  {
 
                 public:
 
@@ -135,7 +163,7 @@ namespace alps
         }
 
         //=================== call GENERATE_PROPERTY macro ===================
-        GENERATE_PROPERTY(weighted, tag::weighted)
+        GENERATE_PROPERTY(weight, tag::detail::weight)
 
     }
 }

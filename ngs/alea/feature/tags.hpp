@@ -41,11 +41,11 @@ namespace alps
             struct max_num_binning;
             struct log_binning;
             struct autocorrelation;
-            struct weighted;
             namespace detail
             {
                 struct converged;
                 struct tau;
+                struct weight;
             }
             struct histogram;
         }

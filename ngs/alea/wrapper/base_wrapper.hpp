@@ -29,14 +29,15 @@
 #ifndef ALPS_NGS_ALEA_BASE_WRAPPER_HPP
 #define ALPS_NGS_ALEA_BASE_WRAPPER_HPP
 
+#include <typeinfo> //used in add_value
+#include <stdexcept>
+
 #ifdef ALPS_HAVE_MPI
     #include <alps/ngs/boost_mpi.hpp>
 #endif
 
 #include <boost/cstdint.hpp>
-
-#include <typeinfo> //used in add_value
-#include <stdexcept>
+#include <alps/ngs/alea/accumulator/arguments.hpp>
 
 namespace alps {
     namespace accumulator {
@@ -86,7 +87,32 @@ namespace alps {
                     template<typename value_type> inline void operator<<(value_type& value) {
                         (*this)(value);
                     }
-
+                     //------------------- input with weight-------------------
+                    template<typename value_type, typename weight_value_type>
+                    inline void operator()(value_type const & value
+                                          , weight_value_type const & weight
+                                          , typename boost::disable_if<
+                                                                        boost::is_base_of<boost::parameter::aux::tagged_argument_base
+                                                                                        , weight_value_type
+                                                                                         >
+                                                                      , int
+                                                                      >::type = 0) 
+                    {
+                        add_value(&value, typeid(value_type), &weight, typeid(weight_value_type));
+                    }
+                    template<typename value_type, typename ArgumentPack>
+                    inline void operator()(value_type const & value
+                                         , ArgumentPack const & argpac
+                                         , typename boost::enable_if<
+                                                                    boost::is_base_of<boost::parameter::aux::tagged_argument_base
+                                                                                    , ArgumentPack
+                                                                                     >
+                                                                  , int
+                                                                    >::type = 0) 
+                    {
+                        add_value(&value, typeid(value_type), &(argpac[Weight]), typeid(argpac[Weight]));
+                    }
+                    
                     template<typename value_type> inline result_type_accumulator_wrapper<value_type> &get() {
                         return dynamic_cast<result_type_accumulator_wrapper<value_type>& >(*this);
                     }
@@ -104,7 +130,8 @@ namespace alps {
 #endif
 
                 protected:
-                    virtual void add_value(void const * value, std::type_info const & t_info) = 0; //for operator<<
+                    virtual void add_value(void const * value, std::type_info const & vt_info) = 0; //for operator()
+                    virtual void add_value(void const * value, std::type_info const & vt_info, void const * weight, std::type_info const & wvt_info) = 0; //for operator() with weight
             };
         }
     }

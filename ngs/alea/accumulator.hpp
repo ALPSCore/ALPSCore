@@ -39,15 +39,26 @@
 
 namespace alps {
     namespace accumulator  {
-
+        namespace detail
+        {
+            template<typename wvt, typename features_arg8>
+            struct include_weight_feature
+            {
+                typedef tag::detail::weight type;
+            };
+            template<typename features_arg8>
+            struct include_weight_feature<void, features_arg8>
+            {
+                typedef features_arg8 type;
+            };
+        }
         template<
-              typename vt  = double
+              typename vt  = double //value_type
             , typename features_input = features<tag::mean, tag::error>
-            //~ , typename wt = void
+            , typename wvt = void //weight_value_type
         >
         class accumulator: public detail::accumulator_impl<
-              ValueType<vt>
-//            , WeightType<wt, features_input>
+              type_holder<vt, wvt>
             , typename features_input::T0
             , typename features_input::T1
             , typename features_input::T2
@@ -56,12 +67,12 @@ namespace alps {
             , typename features_input::T5
             , typename features_input::T6
             , typename features_input::T7
-            , typename features_input::T8
+            , typename detail::include_weight_feature<wvt, typename void>::type
         > {
-            typedef accumulator<vt, features_input> self_type;
+            typedef accumulator<vt, features_input, wvt> self_type;
 
             typedef detail::accumulator_impl<
-                  ValueType<vt>
+                  type_holder<vt, wvt>
                 , typename features_input::T0
                 , typename features_input::T1
                 , typename features_input::T2
@@ -70,13 +81,13 @@ namespace alps {
                 , typename features_input::T5
                 , typename features_input::T6
                 , typename features_input::T7
-                , typename features_input::T8
+                , typename detail::include_weight_feature<wvt, typename features_input::T8>::type
             > base_type;
-
+            
             public:
 
                 typedef result<
-                      ValueType<vt>
+                      type_holder<vt, wvt>
                     , typename features_input::T0
                     , typename features_input::T1
                     , typename features_input::T2
@@ -85,7 +96,7 @@ namespace alps {
                     , typename features_input::T5
                     , typename features_input::T6
                     , typename features_input::T7
-                    , typename features_input::T8
+                    , typename detail::include_weight_feature<wvt, typename features_input::T8>::type
                 > result_type;
 
                 accumulator(accumulator const & arg): base_type(static_cast<base_type const &>(arg)) {}
@@ -97,6 +108,7 @@ namespace alps {
                     (optional 
                         (_bin_size, *)
                         (_bin_num, *)
+                        (_weight_ref, *)
                     )
                 )
         };

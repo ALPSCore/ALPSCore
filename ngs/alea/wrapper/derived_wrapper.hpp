@@ -123,7 +123,7 @@ namespace alps {
             //the effective wrapper
             template <typename Accum> class derived_accumulator_wrapper: public 
 // TODO: generate form all_tags ...
-                feature_accumulator_property<tag::weighted,
+                feature_accumulator_property<tag::detail::weight,
                 feature_accumulator_property<tag::histogram,
                 feature_accumulator_property<tag::detail::tau,
                 feature_accumulator_property<tag::detail::converged,
@@ -140,9 +140,10 @@ namespace alps {
             > > > > > > > > > > {
                 //for nicer syntax
                 typedef typename value_type<Accum>::type value_type;
+                typedef typename weight_value_type<Accum>::type weight_value_type;
                 typedef 
 // TODO: generate form all_tags ...
-                    feature_accumulator_property<tag::weighted,
+                    feature_accumulator_property<tag::detail::weight,
                     feature_accumulator_property<tag::histogram,
                     feature_accumulator_property<tag::detail::tau,
                     feature_accumulator_property<tag::detail::converged,
@@ -240,16 +241,41 @@ namespace alps {
 
                 protected:
 
-                    void add_value(void const * value, std::type_info const & info) { //type-infusion
-                        if( &info != &typeid(value_type) &&
+                    void add_value(void const * value, std::type_info const & vt_info) { //type-infusion
+                        if( &vt_info != &typeid(value_type) &&
                         #ifdef BOOST_AUX_ANY_TYPE_ID_NAME
-                            std::strcmp(info.name(), typeid(value_type).name()) != 0
+                            std::strcmp(vt_info.name(), typeid(value_type).name()) != 0
                         #else
-                            info != typeid(value_type)
+                            vt_info != typeid(value_type)
                         #endif
                          )
-                            throw std::runtime_error("wrong type added in accumulator_wrapper::add_value" + ALPS_STACKTRACE);
+                            throw std::runtime_error("wrong value type added in accumulator_wrapper::add_value" + ALPS_STACKTRACE);
                         accum_ << *static_cast<value_type const *>(value);
+                    }
+                    void add_value(void const * value, std::type_info const & vt_info
+                                , void const * weight, std::type_info const & wvt_info) { //type-infusion with weight
+                    //------------------- check value type -------------------
+                        if( &vt_info != &typeid(value_type) &&
+                        #ifdef BOOST_AUX_ANY_TYPE_ID_NAME
+                            std::strcmp(vt_info.name(), typeid(value_type).name()) != 0
+                        #else
+                            vt_info != typeid(value_type)
+                        #endif
+                         )
+                            throw std::runtime_error("wrong value type added in accumulator_wrapper::add_value" + ALPS_STACKTRACE);
+                    //------------------- check weight value type -------------------
+                        std::cout << "typeid(weight_value_type): " << typeid(weight_value_type).name() << std::endl;
+                        std::cout << "twvt_info.name(): " << wvt_info.name() << std::endl;
+                        if( &wvt_info != &typeid(weight_value_type) &&
+                        #ifdef BOOST_AUX_ANY_TYPE_ID_NAME
+                            std::strcmp(wvt_info.name(), typeid(weight_value_type).name()) != 0
+                        #else
+                            wvt_info != typeid(weight_value_type)
+                        #endif
+                         )
+                            throw std::runtime_error("wrong weight value type added in accumulator_wrapper::add_value" + ALPS_STACKTRACE);
+                        impl_picker<value_type, weight_value_type>().add_value(value, weight, accum_);
+                        //~ accum_(*static_cast<value_type const *>(value), *static_cast<weight_value_type const *>(weight));
                     }
 
                 private:
@@ -262,6 +288,25 @@ namespace alps {
                         throw std::logic_error("The Accumulator has no associated result_type" + ALPS_STACKTRACE);
                         return boost::shared_ptr<base_result_wrapper>((base_result_wrapper *)NULL);
                     }
+                //------------------- impl picker for add_value(vt, wvt) -------------------
+                    template<typename value_type, typename weight_value_type>
+                    struct impl_picker
+                    {
+                        template<typename accum_type>
+                        inline void add_value(void const * value, void const * weight, accum_type & acc)
+                        {
+                            acc(*static_cast<value_type const *>(value), *static_cast<weight_value_type const *>(weight));
+                        }
+                    };
+                    template<typename value_type>
+                    struct impl_picker<value_type, void>
+                    {
+                        template<typename accum_type>
+                        inline void add_value(void const * value, void const * weight, accum_type & acc)
+                        {
+                            throw std::runtime_error(" no operator()(vt, wvt) in this accumulator (i.e. no weight-accumulator)" + ALPS_STACKTRACE);
+                        }
+                    };
             };
         }
     }

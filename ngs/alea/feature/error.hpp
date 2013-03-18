@@ -92,17 +92,18 @@ namespace alps {
                         return sqrt((sum2_ / base_type::count() - base_type::mean() * base_type::mean()) / (base_type::count() - 1));
                     }
                     
-                    inline ThisType& operator ()(value_type_loc const & val) {
+                    inline void operator ()(value_type_loc const & val) {
                         using alps::ngs::numeric::operator+=;
                         using alps::ngs::numeric::operator*;
                         
-                        base_type::operator <<(val);
+                        check_size(sum2_, val);
+                        base_type::operator()(val);
                         sum2_ += val*val;
-                        return *this;
                     }
 
                     inline ThisType& operator <<(value_type_loc const & val) {
-                        return (*this)(val);
+                        (*this)(val);
+                        return (*this);
                     }
                     
                     template<typename Stream> inline void print(Stream & os) {

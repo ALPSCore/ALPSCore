@@ -35,7 +35,7 @@
 #include <alps/ngs/alea/feature/tau.hpp>
 #include <alps/ngs/alea/feature/mean.hpp>
 #include <alps/ngs/alea/feature/error.hpp>
-#include <alps/ngs/alea/feature/weighted.hpp>
+#include <alps/ngs/alea/feature/weight.hpp>
 #include <alps/ngs/alea/feature/converged.hpp>
 #include <alps/ngs/alea/feature/histogram.hpp>
 #include <alps/ngs/alea/feature/value_type.hpp>

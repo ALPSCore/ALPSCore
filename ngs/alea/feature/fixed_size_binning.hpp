@@ -129,11 +129,11 @@ namespace alps
                         return fixed_size_binning_proxy_type<value_type_loc>(bin_, bin_size_); 
                     }
               
-                    inline ThisType& operator()(value_type_loc const & val) 
+                    inline void operator()(value_type_loc const & val) 
                     {
                         using namespace alps::ngs::numeric;
                         
-                        base_type::operator << (val);
+                        base_type::operator()(val);
                         
                         partial_ += val;
                         ++partial_count_;
@@ -144,11 +144,11 @@ namespace alps
                             partial_count_ = 0;
                             partial_ = value_type_loc();
                         }
-                        return *this;
                     }
                     inline ThisType& operator<<(value_type_loc const & val) 
                     {
-                        return (*this)(val);
+                        (*this)(val);
+                        return (*this);
                     }
                     
                     template<typename Stream> 

@@ -45,14 +45,14 @@ namespace alps {
             , typename A8  = void
             , typename A9  = void
         > struct result : public detail::DeriveResultProperties<
-              typename detail::UniqueList<typename detail::ResolveDependencies<typename detail::ValueTypeFirst<typename detail::MakeList<
+              typename detail::UniqueList<typename detail::ResolveDependencies<typename detail::TypeHolderFirst<typename detail::MakeList<
                   A0, A1, A2, A3, A4, A5, A6, A7, A8, A9
               >::type>::type>::type>::type
             , detail::UselessBase
         >::type {
             //typename it for shorter syntax
             typedef typename detail::DeriveResultProperties<
-                  typename detail::UniqueList<typename detail::ResolveDependencies<typename detail::ValueTypeFirst<typename detail::MakeList<
+                  typename detail::UniqueList<typename detail::ResolveDependencies<typename detail::TypeHolderFirst<typename detail::MakeList<
                       A0, A1, A2, A3, A4, A5, A6, A7, A8, A9
                   >::type>::type>::type>::type
                 , detail::UselessBase

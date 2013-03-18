@@ -269,10 +269,14 @@ namespace alps
                         return 272.15;
                     }
                     
+                    inline void operator()(value_type_loc val) 
+                    {
+                        base_type::operator()(val);
+                    }
                     inline ThisType& operator <<(value_type_loc val) 
                     {
-                        base_type::operator<<(val);
-                        return *this;
+                        (*this)(val);
+                        return (*this);
                     }
                     
                     template<typename Stream> 
