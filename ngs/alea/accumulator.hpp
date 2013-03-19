@@ -67,7 +67,7 @@ namespace alps {
             , typename features_input::T5
             , typename features_input::T6
             , typename features_input::T7
-            , typename detail::include_weight_feature<wvt, typename void>::type
+            , typename detail::include_weight_feature<wvt, void>::type
         > {
             typedef accumulator<vt, features_input, wvt> self_type;
 
