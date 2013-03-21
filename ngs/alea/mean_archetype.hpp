@@ -29,6 +29,7 @@
 #ifndef TEST_NGS_MEAN_ARCHETYPE_HEADER
 #define TEST_NGS_MEAN_ARCHETYPE_HEADER
 
+#include <alps/ngs/hdf5.hpp>
 #include <iostream>
 
 using namespace std;
@@ -58,9 +59,17 @@ struct mean_archetype
     {
         return mean_archetype();
     }
+
+    void save(alps::hdf5::archive & ar) const {}
+    void load(alps::hdf5::archive & ar) {}
 };
 
 mean_archetype operator*(mean_archetype const & arg, mean_archetype const & arg2)
+{
+    return mean_archetype();
+}
+
+mean_archetype operator/(mean_archetype const & arg, mean_archetype const & arg2)
 {
     return mean_archetype();
 }

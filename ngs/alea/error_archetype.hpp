@@ -60,9 +60,17 @@ struct error_archetype
     {
         return error_archetype();
     }
+
+    void save(alps::hdf5::archive & ar) const {}
+    void load(alps::hdf5::archive & ar) {}
 };
 
 error_archetype operator*(error_archetype const & arg, error_archetype const & arg2)
+{
+    return error_archetype();
+}
+
+error_archetype operator/(error_archetype const & arg, error_archetype const & arg2)
 {
     return error_archetype();
 }
