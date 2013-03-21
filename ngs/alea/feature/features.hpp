@@ -42,8 +42,7 @@ namespace alps {
             , typename A7  = void
             , typename A8  = void
         >
-        struct features
-        {
+        struct features {
             typedef A0 T0;
             typedef A1 T1;
             typedef A2 T2;

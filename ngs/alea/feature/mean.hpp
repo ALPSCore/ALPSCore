@@ -122,9 +122,9 @@ namespace alps {
                         , sum_()
                     {}
                     
-                    inline mean_type const  mean() const {
+                    inline mean_type const mean() const {
                         using alps::ngs::numeric::operator/;
-                        return mean_type(sum_) / base_type::count();
+                        return mean_type(sum_) / (typename alps::hdf5::scalar_type<value_type_loc>::type)base_type::count();
                     }
             
                     inline void operator()(value_type_loc const & val)  {
@@ -140,7 +140,7 @@ namespace alps {
                         return (*this);
                     }
 
-                    template<typename Stream>  inline void print(Stream & os) {
+                    template<typename Stream> inline void print(Stream & os) {
                         base_type::print(os);
                         os << "tag::mean: " << alps::short_print(mean()) << " " << std::endl;
                     }
@@ -151,10 +151,12 @@ namespace alps {
                     }
 
                     void load(hdf5::archive & ar) {
+                        using alps::ngs::numeric::operator*;
+
                         base_type::load(ar);
-                        double mean;
+                        value_type_loc mean;
                         ar["mean/value"] >> mean;
-                        sum_ = mean * base_type::count();
+                        sum_ = mean * (typename alps::hdf5::scalar_type<value_type_loc>::type)base_type::count();
                     }
 
                     inline void reset() {

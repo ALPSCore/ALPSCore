@@ -43,13 +43,10 @@
 #include <numeric>  //for accumulate
 #include <utility> //for pair
 
-namespace alps
-{
-    namespace accumulator
-    {
+namespace alps {
+    namespace accumulator {
         //=================== histogram proxy ===================
-        namespace detail
-        {
+        namespace detail {
         //= = = = = = = = = = = H I S T O G R A M   P R O X Y = = = = = = = = = = = = =
             template <typename Hist>
             class histogram_old_proxy
@@ -102,9 +99,7 @@ namespace alps
                     value_type const pos_;
             };
 
-            template <typename T>
-            std::ostream& operator<<(std::ostream& out,  const histogram_old_proxy<T>& d)
-            {
+            template <typename T> std::ostream& operator<<(std::ostream& out,  const histogram_old_proxy<T>& d) {
                 d.print(out);
                 return out;
             }
@@ -226,14 +221,11 @@ namespace alps
             return out;
         }
         //=================== histogram trait ===================
-        template <typename T>
-        struct histogram_type
-        {
+        template <typename T> struct histogram_type {
             typedef double type;
         };
         //=================== histogram implementation ===================
-        namespace detail
-        {
+        namespace detail {
 
         //set up the dependencies for the tag::histogram-Implementation
             template<> 
@@ -279,14 +271,12 @@ namespace alps
                         return (*this);
                     }
                     
-                    template<typename Stream> 
-                    inline void print(Stream & os) 
-                    {
+                    template<typename Stream>  inline void print(Stream & os) {
                         base_type::print(os);
                         os << "tag::histogram: " << std::endl;
                     }
-                    inline void reset()
-                    {
+
+                    inline void reset() {
                         base_type::reset();
                     }
                 private:

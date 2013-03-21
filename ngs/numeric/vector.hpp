@@ -40,60 +40,71 @@
 #include <cmath>
 #include <stdexcept>
 
-namespace alps
-{
-    namespace ngs
-    {
-        namespace numeric
-        {
+namespace alps {
+    namespace ngs {
+        namespace numeric {
+
             //------------------- operator += -------------------
             template<typename T, typename U>
-            std::vector<T> & operator += (std::vector<T> & lhs, std::vector<U> const & rhs)
-            {
+            std::vector<T> & operator += (std::vector<T> & lhs, std::vector<U> const & rhs) {
                 using boost::numeric::operators::operator+=;
                 lhs += rhs;
                 return lhs;
             }
             //------------------- operator + -------------------
             template<typename T, typename U>
-            std::vector<T> operator + (std::vector<T> const & lhs, std::vector<U> const & rhs)
-            {
+            std::vector<T> operator + (std::vector<T> const & lhs, std::vector<U> const & rhs) {
                 using boost::numeric::operators::operator+;
                 return lhs + rhs;
             }
             //------------------- operator - -------------------
             template<typename T, typename U>
-            std::vector<T> operator - (std::vector<T> const & lhs, std::vector<U> const & rhs)
-            {
+            std::vector<T> operator - (std::vector<T> const & lhs, std::vector<U> const & rhs) {
                 using boost::numeric::operators::operator-;
                 return lhs - rhs;
             }
             //------------------- operator * vector-vector-------------------
             template<typename T, typename U>
-            std::vector<T> operator * (std::vector<T> const & lhs, std::vector<U> const & rhs)
-            {
+            std::vector<T> operator * (std::vector<T> const & lhs, std::vector<U> const & rhs) {
                 using boost::numeric::operators::operator*;
-                return lhs*rhs;
+                return lhs * rhs;
+            }
+            //------------------- operator / vector-vector-------------------
+            template<typename T, typename U>
+            std::vector<T> operator / (std::vector<T> const & lhs, std::vector<U> const & rhs) {
+                using boost::numeric::operators::operator/;
+                return lhs / rhs;
+            }
+
+            //------------------- operator * with scalar -------------------
+            template<typename T>
+            std::vector<T> operator * (std::vector<T> const & lhs, T const & scalar) {
+                using boost::numeric::operators::operator*;
+                return lhs * scalar;
+            }
+            template<typename T>
+            std::vector<T> operator * (T const & scalar, std::vector<T> const & rhs) {
+                using boost::numeric::operators::operator*;
+                return scalar * rhs;
             }
             //------------------- operator / with scalar -------------------
-            template<typename T, typename U>
-            std::vector<T> operator / (std::vector<T> const & lhs, U const & scalar)
-            {
+            template<typename T>
+            std::vector<T> operator / (std::vector<T> const & lhs, T const & scalar) {
                 using boost::numeric::operators::operator/;
                 return lhs / scalar;
             }
+
             //------------------- sqrt -------------------
             template<typename T> 
-            std::vector<T> sqrt(std::vector<T> vec)
-            {
+            std::vector<T> sqrt(std::vector<T> vec) {
                 using std::sqrt;
                 std::transform(vec.begin(), vec.end(), vec.begin(), static_cast<double (*)(double)>(&sqrt));
                 return vec;
             }
         
-        }//end namespace numeric
-    }//end namespace ngs
-}//end namespace alps
+        }
+    }
+}
 
 
-#endif //ALPS_NGS_NUMERIC_VECTOR_HEADER
+#endif

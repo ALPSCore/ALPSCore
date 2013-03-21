@@ -69,6 +69,13 @@ namespace alps{
   }
 
   template <class T1, class T2, std::size_t D, class Allocator>
+  multi_array<T1,D,Allocator> operator*(multi_array<T1,D,Allocator> a, const T2& b)
+  {
+    a *= T1(b);
+    return a;
+  }
+
+  template <class T1, class T2, std::size_t D, class Allocator>
   multi_array<T1,D,Allocator> operator/(multi_array<T1,D,Allocator> a, const T2& b)
   {
     a /= T1(b);

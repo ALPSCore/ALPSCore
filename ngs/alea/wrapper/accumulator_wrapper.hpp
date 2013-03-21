@@ -30,6 +30,7 @@
 #define ALPS_NGS_ALEA_ACCUMULATOR_WRAPPER_HPP
 
 #include <alps/ngs/stacktrace.hpp>
+#include <alps/ngs/alea/accumulator.hpp>
 #include <alps/ngs/alea/wrapper/base_wrapper.hpp>
 #include <alps/ngs/alea/wrapper/result_wrapper.hpp>
 #include <alps/ngs/alea/wrapper/derived_wrapper.hpp>
@@ -60,6 +61,12 @@ namespace alps {
                     accumulator_wrapper(accumulator_wrapper const & arg)
                         : base_(arg.base_->clone()) 
                     {}
+
+                    accumulator_wrapper(hdf5::archive & ar) {
+                        if (ar.is_data("mean/value"))
+                            create_accumulator<features<tag::mean> >(ar);
+                    }
+
                 //------------------- normal input -------------------
                     template<typename T> void operator()(T const & value) {
                         (*base_)(value); 
@@ -120,6 +127,21 @@ namespace alps {
                     }
 #endif
                 private:
+
+                    template <typename Features> void create_accumulator(hdf5::archive & ar) {
+                        // TODO: implement!
+                        // TODO: find type somehow ...
+                        /*
+                        switch dimensions ...
+                            case 0: error
+                            case 1: T
+                            case 2: vector<T>
+                            default: boost::multi_array<N>
+                        */
+//                        base_ = boost::shared_ptr<detail::base_accumulator_wrapper>(new detail::derived_accumulator_wrapper<accumulator<double, Features> >);
+ //                       base_->load(ar);
+                    }
+
                     boost::shared_ptr<base_accumulator_wrapper> base_;
             };
 

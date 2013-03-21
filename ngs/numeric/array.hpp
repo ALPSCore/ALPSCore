@@ -32,7 +32,6 @@
 
 #include <boost/throw_exception.hpp>
 #include <boost/lambda/lambda.hpp>
-
 #include <boost/array.hpp>
 
 #include <algorithm>
@@ -40,108 +39,75 @@
 #include <cmath>
 #include <stdexcept>
 
-namespace alps
-{
-    namespace ngs //merged with alps/numerics/vector_function.hpp
-    {
-        namespace numeric
-        {
+namespace alps {
+    namespace ngs { //merged with alps/numerics/vector_function.hpp 
+        namespace numeric {
             //------------------- operator += -------------------
             template<typename T, typename U, std::size_t N>
-            boost::array<T, N> & operator += (boost::array<T, N> & lhs, boost::array<U, N> const & rhs)
-            {
+            boost::array<T, N> & operator += (boost::array<T, N> & lhs, boost::array<U, N> const & rhs) {
                 if(lhs.size() != rhs.size())
-                {
                     boost::throw_exception(std::runtime_error("arrays must have the same size!" + ALPS_STACKTRACE));
-                    return lhs; //boost::array<T>() not possible bc ref
-                }
                 else
-                {
                     std::transform(lhs.begin(), lhs.end(), rhs.begin(), lhs.begin(), std::plus<T>() );
- 
-                    return lhs;
-                }
+                return lhs;
             }
             //------------------- operator + -------------------
             template<typename T, typename U, std::size_t N>
-            boost::array<T, N> operator + (boost::array<T, N> lhs, boost::array<U, N> const & rhs)
-            {
+            boost::array<T, N> operator + (boost::array<T, N> lhs, boost::array<U, N> const & rhs) {
                 if(lhs.size() != rhs.size())
-                {
                     boost::throw_exception(std::runtime_error("arrays must have the same size!" + ALPS_STACKTRACE));
-                    return lhs;
-                }
                 else
-                {
                     std::transform(lhs.begin(), lhs.end(), rhs.begin(), lhs.begin(), std::plus<T>() );
-                    
-                    return lhs;
-                }
+                return lhs;
             }
             //------------------- operator - -------------------
             template<typename T, typename U, std::size_t N>
-            boost::array<T, N> operator - (boost::array<T, N> lhs, boost::array<U, N> const & rhs)
-            {
+            boost::array<T, N> operator - (boost::array<T, N> lhs, boost::array<U, N> const & rhs) {
                 if(lhs.size() != rhs.size())
-                {
                     boost::throw_exception(std::runtime_error("arrays must have the same size!" + ALPS_STACKTRACE));
-                    return lhs;
-                }
                 else
-                {
                     std::transform(lhs.begin(), lhs.end(), rhs.begin(), lhs.begin(), std::minus<T>() );
-                    
-                    return lhs;
-                }
+                return lhs;
             }
             //------------------- operator * vector-vector-------------------
             template<typename T, typename U, std::size_t N>
             boost::array<T, N> operator * (boost::array<T, N> lhs, boost::array<U, N> const & rhs)
             {
                 if(lhs.size() != rhs.size())
-                {
                     boost::throw_exception(std::runtime_error("arrays must have the same size!" + ALPS_STACKTRACE));
-                    return lhs;
-                }
                 else
-                {
                     std::transform(lhs.begin(), lhs.end(), rhs.begin(), lhs.begin(), std::multiplies<T>());
-                    
-                    return lhs;
-                }
+                return lhs;
             }
+
+            //------------------- operator * with scalar -------------------
+            template<typename T, std::size_t N>
+            boost::array<T, N> operator * (boost::array<T, N> lhs, T const & scalar) {
+                std::transform(lhs.begin(), lhs.end(), lhs.begin(), boost::lambda::_1 * scalar);
+                return lhs;
+            }
+            template<typename T, std::size_t N>
+            boost::array<T, N> operator * (T const & scalar, boost::array<T, N> rhs) {
+                std::transform(rhs.begin(), rhs.end(), rhs.begin(), scalar * boost::lambda::_1);
+                return rhs;
+            }
+
             //------------------- operator / with scalar -------------------
-            //TODO: remove fix. Had a problem with the lambda and mac clang...
-            template<typename T, typename U>
-            class quick_fix_devide
-            {
-            public:
-                quick_fix_devide(U const sca): sca_(sca) {}
-                T operator()(T in) {return in/sca_;}
-                U sca_;
-            };
-        
-            template<typename T, std::size_t N, typename U>
-            boost::array<T, N> operator / (boost::array<T, N> lhs, U const & scalar)
-            {
-                //using boost::lambda::_1;
-                std::transform(lhs.begin(), lhs.end(), lhs.begin(), quick_fix_devide<T,U>(scalar));
-                
+            template<typename T, std::size_t N>
+            boost::array<T, N> operator / (boost::array<T, N> lhs, T const & scalar) {
+                std::transform(lhs.begin(), lhs.end(), lhs.begin(), boost::lambda::_1 * scalar);
                 return lhs;
             }
             //------------------- sqrt -------------------
             template<typename T, std::size_t N> 
-            boost::array<T, N> sqrt(boost::array<T, N> lhs) //sink argument
-            {
+            boost::array<T, N> sqrt(boost::array<T, N> lhs) { //sink argument
                 using std::sqrt;
-                
                 std::transform(lhs.begin(), lhs.end(), lhs.begin(), static_cast<double (*)(double)>(&sqrt));
-                
                 return lhs;
             }
-            
-        }//end namespace numeric
-    }//end namespace ngs
-}//end namespace alps
 
-#endif //ALPS_NGS_NUMERIC_ARRAY_HEADER
+        }
+    }
+}
+
+#endif

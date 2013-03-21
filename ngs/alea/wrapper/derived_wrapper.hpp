@@ -115,6 +115,8 @@ namespace alps {
             template <typename Accum, typename base_type> struct derived_accumulator_wrapper_base: public base_type {
                 typedef Accum accum_type;
 
+                derived_accumulator_wrapper_base() {}
+
                 derived_accumulator_wrapper_base(Accum const & acc): accum_(acc) {}
 
                 accum_type accum_; // TODO: make this private!
@@ -177,11 +179,11 @@ namespace alps {
                     }
 
                     void save(hdf5::archive & ar) const {
-                        ar[""] = dynamic_cast<base_type const &>(*this);
+                        ar[""] = accum_;
                     }
 
                     void load(hdf5::archive & ar) {
-                        ar[""] >> dynamic_cast<base_type &>(*this);
+                        ar[""] >> accum_;
                     }
 
                     void reset() {

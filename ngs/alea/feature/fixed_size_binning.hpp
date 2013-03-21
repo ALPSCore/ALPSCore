@@ -140,7 +140,7 @@ namespace alps
                         
                         if(partial_count_ == bin_size_)
                         {
-                            bin_.push_back(partial_ / bin_size_);
+                            bin_.push_back(partial_ / (typename alps::hdf5::scalar_type<value_type_loc>::type)bin_size_);
                             partial_count_ = 0;
                             partial_ = value_type_loc();
                         }

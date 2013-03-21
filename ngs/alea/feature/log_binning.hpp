@@ -39,29 +39,24 @@
 #include <cmath>
 #include <algorithm>
 
-namespace alps
-{
-    namespace accumulator
-    {
+namespace alps {
+    namespace accumulator {
         //=================== log_binning proxy ===================
-        template<typename value_type>
-        class log_binning_proxy_type
-        {
+        template<typename value_type> class log_binning_proxy_type {
             typedef typename mean_type<value_type>::type mean_type;
             typedef typename std::vector<value_type>::size_type size_type;
-        public:
-            log_binning_proxy_type(): bin_(std::vector<mean_type>()) {}
-            log_binning_proxy_type(std::vector<mean_type> const & bin): bin_(bin) {}
-            
-            inline std::vector<mean_type> const & bins() const 
-            {
-                return bin_;
-            }
-            
-            template<typename T>
-            friend std::ostream & operator<<(std::ostream & os, log_binning_proxy_type<T> const & arg);
-        private:
-            std::vector<mean_type> const & bin_;
+            public:
+                log_binning_proxy_type(): bin_(std::vector<mean_type>()) {}
+                log_binning_proxy_type(std::vector<mean_type> const & bin): bin_(bin) {}
+                
+                inline std::vector<mean_type> const & bins() const {
+                    return bin_;
+                }
+                
+                template<typename T>
+                friend std::ostream & operator<<(std::ostream & os, log_binning_proxy_type<T> const & arg);
+            private:
+                std::vector<mean_type> const & bin_;
         };
 
         //~ template<typename value_type>
@@ -70,32 +65,23 @@ namespace alps
             //~ return log_binning_proxy_type<value_type>(unused);
         //~ }
         
-        template<typename T>
-        inline std::ostream & operator<<(std::ostream & os, log_binning_proxy_type<T> const & arg)
-        {
+        template<typename T> inline std::ostream & operator<<(std::ostream & os, log_binning_proxy_type<T> const & arg) {
             os << "log_binning_proxy" << std::endl;
             return os;
             
         };
         //=================== log_binning trait ===================
-        template <typename T>
-        struct log_binning_type
-        {
+        template <typename T> struct log_binning_type {
             typedef log_binning_proxy_type<T> type;
         };
         //=================== log_binning implementation ===================
-        namespace detail
-        {
+        namespace detail {
             //set up the dependencies for the tag::log_binning-Implementation
-            template<> 
-            struct Dependencies<tag::log_binning> 
-            {
+            template<> struct Dependencies<tag::log_binning> {
                 typedef MakeList<tag::mean, tag::error>::type type;
             };
 
-            template<typename base_type> 
-            class AccumulatorImplementation<tag::log_binning, base_type> : public base_type 
-            {
+            template<typename base_type> class AccumulatorImplementation<tag::log_binning, base_type> : public base_type {
                 typedef typename base_type::value_type value_type_loc;
                 typedef typename log_binning_type<value_type_loc>::type log_binning_type;
                 typedef typename std::vector<value_type_loc>::size_type size_type;
@@ -103,32 +89,28 @@ namespace alps
                 typedef AccumulatorImplementation<tag::log_binning, base_type> ThisType;
           
                 public:    
-                    AccumulatorImplementation<tag::log_binning, base_type>(ThisType const & arg):  base_type(arg)
-                                                                    , bin_(arg.bin_)
-                                                                    , partial_(arg.partial_)
-                                                                    , pos_in_partial_(arg.pos_in_partial_)
-                                                                    , bin_size_now_(arg.bin_size_now_) 
+                    AccumulatorImplementation<tag::log_binning, base_type>(ThisType const & arg)
+                        :  base_type(arg)
+                        , bin_(arg.bin_)
+                        , partial_(arg.partial_)
+                        , pos_in_partial_(arg.pos_in_partial_)
+                        , bin_size_now_(arg.bin_size_now_) 
                     {}
                     
-                    template<typename ArgumentPack>
-                    AccumulatorImplementation<tag::log_binning, base_type>(ArgumentPack const & args
-                                         , typename boost::disable_if<
-                                                                      boost::is_base_of<ThisType, ArgumentPack>
-                                                                    , int
-                                                                    >::type = 0
-                                        ): base_type(args)
-                                         , partial_()
-                                         , pos_in_partial_()
-                                         , bin_size_now_(1)
+                    template<typename ArgumentPack> AccumulatorImplementation<tag::log_binning, base_type>(
+                        ArgumentPack const & args, typename boost::disable_if<boost::is_base_of<ThisType, ArgumentPack>, int>::type = 0
+                    )
+                        : base_type(args)
+                        , partial_()
+                        , pos_in_partial_()
+                        , bin_size_now_(1)
                     {}
                     
-                    inline log_binning_type const log_binning() const 
-                    { 
+                    inline log_binning_type const log_binning() const {
                         return log_binning_proxy_type<value_type_loc>(bin_);
                     }
-              
-                    inline void operator()(value_type_loc const & val) 
-                    {
+
+                    inline void operator()(value_type_loc const & val) {
                         using namespace alps::ngs::numeric;
                         
                         base_type::operator()(val);
@@ -136,24 +118,21 @@ namespace alps
                         partial_ += val;
                         ++pos_in_partial_;
                         
-                        if(pos_in_partial_ == bin_size_now_)
-                        {
-                            bin_.push_back(partial_ / bin_size_now_);
+                        if(pos_in_partial_ == bin_size_now_) {
+                            bin_.push_back(partial_ / (typename alps::hdf5::scalar_type<value_type_loc>::type)bin_size_now_);
                             partial_ = value_type_loc();
                             pos_in_partial_ = 0;
                             bin_size_now_ *= 2;
                         }
                         
                     }
-                    inline ThisType& operator<<(value_type_loc const & val)
-                    {
+
+                    inline ThisType& operator<<(value_type_loc const & val) {
                         (*this)(val);
                         return (*this);
                     }
               
-                    template<typename Stream>
-                    inline void print(Stream & os) 
-                    {
+                    template<typename Stream> inline void print(Stream & os) {
                         base_type::print(os);
                         os << "Log Binning: " << std::endl;
                         
@@ -163,8 +142,8 @@ namespace alps
                             //~ os << "bin[" << i << "] = " << bin_[i] << std::endl;
                         //~ }
                     }
-                    inline void reset()
-                    {
+
+                    inline void reset() {
                         base_type::reset();
                         bin_.clear();
                         partial_ = value_type_loc();

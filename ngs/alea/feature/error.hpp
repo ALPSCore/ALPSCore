@@ -89,16 +89,18 @@ namespace alps {
                         using alps::ngs::numeric::operator-;
                         using alps::ngs::numeric::operator*;
 
-                        return sqrt((sum2_ / base_type::count() - base_type::mean() * base_type::mean()) / (base_type::count() - 1));
+                        return sqrt((sum2_ / (typename alps::hdf5::scalar_type<value_type_loc>::type)base_type::count() - base_type::mean() * base_type::mean()) 
+                            / ((typename alps::hdf5::scalar_type<value_type_loc>::type)base_type::count() - 1));
                     }
                     
                     inline void operator ()(value_type_loc const & val) {
-                        using alps::ngs::numeric::operator+=;
                         using alps::ngs::numeric::operator*;
+                        using alps::ngs::numeric::operator+=;
+                        using alps::ngs::numeric::detail::check_size;
                         
                         check_size(sum2_, val);
                         base_type::operator()(val);
-                        sum2_ += val*val;
+                        sum2_ += val * val;
                     }
 
                     inline ThisType& operator <<(value_type_loc const & val) {
@@ -117,10 +119,16 @@ namespace alps {
                     }
 
                     void load(hdf5::archive & ar) {
+                        using alps::ngs::numeric::operator*;
+                        using alps::ngs::numeric::operator+;
+
                         base_type::load(ar);
-                        double error;
+                        error_type error;
                         ar["mean/error"] >> error;
-                        sum2_ = (error * error * (base_type::count() - 1) + base_type::mean() * base_type::mean()) * base_type::count();
+                        sum2_ = (
+                              error * error * (typename alps::hdf5::scalar_type<value_type_loc>::type)(base_type::count() - 1) 
+                            + base_type::mean() * base_type::mean()
+                        ) * (typename alps::hdf5::scalar_type<value_type_loc>::type)base_type::count();
                     }
 
                     inline void reset() {

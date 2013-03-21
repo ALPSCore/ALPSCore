@@ -43,7 +43,6 @@ namespace alps {
     namespace accumulator {
         namespace detail {
             
-                    //~ namespace detail {
             //this one is needed, bc of name-collision in accum_wrapper
             template<typename Accum> boost::uint64_t count_wrap(Accum const & arg) {
                 return count(arg);
@@ -52,7 +51,6 @@ namespace alps {
             template<typename Accum> void reset_wrap(Accum & arg) {
                 return reset(arg);
             }
-        //~ }
             
             //declaration because needed in base_accumulator_wrapper
             template <typename value_type>  class result_type_result_wrapper;

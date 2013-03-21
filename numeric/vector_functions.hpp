@@ -46,7 +46,6 @@ namespace alps {
     // include ( + (add) , - (subtract, negation) , * (multiply) , / (divide) ) operators for vectors from boost accumulator library (developed by Eric Niebier)
     using namespace boost::numeric::operators;
 
-
     // include ( + (positivity) )
     template<class T>
     inline std::vector<T>& operator+(std::vector<T>& vec)  {  return vec;  }

@@ -39,16 +39,13 @@
 
 #include <iostream>
 
-namespace alps
-{
-    namespace accumulator
-    {
+namespace alps {
+    namespace accumulator {
         template<typename T, typename W = void> 
         struct type_holder {};
 
 
-        namespace detail
-        {
+        namespace detail {
         // = = = = = = M E T A   T E M P A L T E   L I S T = = = = = = = = = = =
             template<typename stored_type, typename next_list_item> struct ListItem {
                 typedef stored_type type;
@@ -58,9 +55,7 @@ namespace alps
             struct ListEnd {};  //is used to mark the end of a list
 
         // = = = = = = = R E M O V E   V O I D   I N   L I S T = = = = = = = = = =
-            template<typename list> 
-            struct RemoveVoid 
-            {
+            template<typename list> struct RemoveVoid {
                 typedef list type;
             };
             
@@ -68,18 +63,11 @@ namespace alps
                     typename stored_type
                   , typename next_list_item
                   > 
-            struct RemoveVoid<
-                            ListItem<stored_type, next_list_item> 
-                             > 
-            {
-                typedef ListItem< stored_type
-                                , typename RemoveVoid<next_list_item>::type
-                                > type;
+            struct RemoveVoid<ListItem<stored_type, next_list_item> > {
+                typedef ListItem< stored_type, typename RemoveVoid<next_list_item>::type> type;
             };
             
-            template<typename next_list_item> 
-            struct RemoveVoid<ListItem<void, next_list_item> > 
-            {
+            template<typename next_list_item> struct RemoveVoid<ListItem<void, next_list_item> > {
                 typedef typename RemoveVoid<next_list_item>::type type;
             };
 
@@ -95,8 +83,7 @@ namespace alps
                 , typename _7  = void
                 , typename _8  = void
                 , typename _9  = void
-            > struct MakeList 
-            {
+            > struct MakeList {
                 typedef typename RemoveVoid<
                         ListItem<_0, 
                          ListItem<_1, 
@@ -114,88 +101,50 @@ namespace alps
             };
 
         // = = = = = = = C O N C A T   T W O   L I S T S = = = = = = = = = =
-            template <
-                    typename list1
-                  , typename list2
-                  > 
-            struct ConcatinateLists 
-            {
-                typedef ListItem< typename list1::type
-                                , typename ConcatinateLists<
-                                                            typename list1::next
-                                                          , list2
-                                                          >::type 
-                                > type;
+            template <typename list1, typename list2> struct ConcatinateLists {
+                typedef ListItem< typename list1::type, typename ConcatinateLists<typename list1::next, list2>::type> type;
             };
             
-            template <typename list2> 
-            struct ConcatinateLists<ListEnd, list2> 
-            {
+            template <typename list2> struct ConcatinateLists<ListEnd, list2> {
                 typedef list2 type;
             };
 
         // = = = = = = = U N I Q U E   L I S T   W A L K E R = = = = = = = = = =
             //walks through the list and eliminates target
-            template <
-                      typename target
-                    , typename list
-                    > 
-            struct UniqueListWalker 
-            {
+            template <typename target, typename list> struct UniqueListWalker {
                 typedef ListItem< 
-                                typename list::type
-                              , typename UniqueListWalker<
-                                                        target
-                                                        , typename list::next
-                                                        >::type 
-                                > type;
+                    typename list::type
+                  , typename UniqueListWalker<target, typename list::next>::type 
+                > type;
             };
             
-            template <
-                      typename target
-                    , typename list
-                    > 
-            struct UniqueListWalker<
-                                      target
-                                    , ListItem<target, list> 
-                                   > 
-            {
+            template <typename target, typename list> struct UniqueListWalker<target, ListItem<target, list> > {
                 typedef typename UniqueListWalker<target, list>::type type;
             };
             
-            template <typename target> 
-            struct UniqueListWalker<
-                                    target
-                                  , ListEnd
-                                  >
-            {
+            template <typename target> struct UniqueListWalker<target, ListEnd>{
                 typedef ListEnd type;
             };
         // = = = = = = U N I Q U E   L I S T = = = = = = = = = = =
         //bc ValueType is at first position one uses typename list::type and after that UniqueList
-            template <typename list> struct UniqueList 
-            {
+            template <typename list> struct UniqueList {
                 typedef ListItem<
+                      typename list::type
+                    , typename UniqueList<
+                          typename UniqueListWalker<
                                 typename list::type
-                              , typename UniqueList<
-                                                    typename UniqueListWalker<
-                                                                            typename list::type
-                                                                          , typename list::next
-                                                                          >::type
-                                                    >::type
+                              , typename list::next
+                          >::type
+                      >::type
                 > type;
             };
             
-            template <> 
-            struct UniqueList<ListEnd> 
-            {
+            template <> struct UniqueList<ListEnd> {
                 typedef ListEnd type;
             };
             
         // = = = = = = = F I N D   V A L U E   T Y P E = = = = = = = = = =
-            template<typename list> 
-            struct FindTypeHolder 
-            {
+            template<typename list> struct FindTypeHolder {
                 typedef typename FindTypeHolder<typename list::next>::type type;
             };
             
@@ -211,44 +160,35 @@ namespace alps
             {
                 typedef type_holder<stored_value_type, stored_weight_type> type;
             };
-            
-            template<> //no value-type found
-            struct FindTypeHolder<ListEnd> {
-                BOOST_STATIC_ASSERT_MSG(true, "No type_holder added!");
+
+            template<> struct FindTypeHolder<ListEnd> { //no type-holder-type found
+                BOOST_STATIC_ASSERT_MSG(true, "No ValueType added!");
             };
             
             //takes a list and frontInserts the ValueType 
-            template<typename list> 
-            struct TypeHolderFirst 
-            {
+            template<typename list> struct TypeHolderFirst {
                 typedef ListItem<typename FindTypeHolder<list>::type, list> type;
             };
 
-
         // = = = = = = = D E P E N D E N C I E S = = = = = = = = = =
-            template<typename T> struct Dependencies //trait that is overloaded for each properties
-            {
+            template<typename T> struct Dependencies { //trait that is overloaded for each properties
                 typedef MakeList<>::type type;
             };
 
         // = = = = = = = = R E S O L V E   D E P E N D E N C I E S = = = = = = = = =
-            template <typename list> 
-            struct ResolveDependencies 
-            {
+            template <typename list> struct ResolveDependencies {
                 typedef typename ConcatinateLists<
-                                                typename ResolveDependencies< //resolve dependencies of the dependencies
-                                                                            typename Dependencies<typename list::type>::type
-                                                                            >::type
-                                              , ListItem<
-                                                        typename list::type, 
-                                                        typename ResolveDependencies<typename list::next>::type
-                                                        >
-                                                >::type type;
+                      typename ResolveDependencies< //resolve dependencies of the dependencies
+                          typename Dependencies<typename list::type>::type
+                      >::type
+                    , ListItem<
+                          typename list::type, 
+                          typename ResolveDependencies<typename list::next>::type
+                    >
+                >::type type;
             };
             
-            template <> 
-            struct ResolveDependencies<ListEnd> 
-            {
+            template <> struct ResolveDependencies<ListEnd> {
                 typedef ListEnd type;
             };
 
@@ -279,7 +219,7 @@ namespace alps
         // = = = = = = S T A N D A R D   B A S E = = = = = = = = = = =
             struct UselessBase {};
 
-        } // end namespace detail
-    }//end accumulator namespace 
-}//end alps namespace
+        }
+    }
+}
 #endif // ALPS_NGS_ALEA_FEATURES_FEATURE_TRAITS_HPP

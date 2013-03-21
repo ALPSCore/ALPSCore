@@ -25,30 +25,26 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_ALEA_DETAIL_IMPLEMENTATION_FWD_HEADER
-#define ALPS_NGS_ALEA_DETAIL_IMPLEMENTATION_FWD_HEADER
+#ifndef ALPS_NGS_ALEA_DETAIL_TAU_HPP
+#define ALPS_NGS_ALEA_DETAIL_TAU_HPP
 
-namespace alps
-{
-    namespace accumulator
-    {
+namespace alps {
+    namespace accumulator {
         // = = = = = = = = = = I M P L E M E N T A T I O N   D E F I N I T I O N = = = = = = = = = =
-        namespace tag
-        {
+        namespace tag {
             struct mean;
             struct error;
             struct fixed_size_binning;
             struct max_num_binning;
             struct log_binning;
             struct autocorrelation;
-            namespace detail
-            {
+            namespace detail {
                 struct converged;
                 struct tau;
                 struct weight;
             }
             struct histogram;
         }
-    }//end accumulator namespace 
-}//end alps namespace
-#endif // ALPS_NGS_ALEA_DETAIL_IMPLEMENTATION_FWD_HEADER
+    }
+}
+#endif
