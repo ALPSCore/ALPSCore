@@ -121,7 +121,15 @@ namespace alps {
 
                 accum_type accum_; // TODO: make this private!
             };
-
+            
+            //is needed for custom accumulators that don't have an operator()
+            //they define their own add_value and the wrapper calls add value
+            template<typename T, typename ValueType>
+            void add_value(T & acc, ValueType const & val)
+            {
+                acc(val);
+            }
+            
             //the effective wrapper
             template <typename Accum> class derived_accumulator_wrapper: public 
 // TODO: generate form all_tags ...
@@ -243,7 +251,7 @@ namespace alps {
 
                 protected:
 
-                    void add_value(void const * value, std::type_info const & vt_info) { //type-infusion
+                    void add_value_wrap(void const * value, std::type_info const & vt_info) { //type-infusion
                         if( &vt_info != &typeid(value_type) &&
                         #ifdef BOOST_AUX_ANY_TYPE_ID_NAME
                             std::strcmp(vt_info.name(), typeid(value_type).name()) != 0
@@ -252,9 +260,12 @@ namespace alps {
                         #endif
                          )
                             throw std::runtime_error("wrong value type added in accumulator_wrapper::add_value" + ALPS_STACKTRACE);
-                        accum_ << *static_cast<value_type const *>(value);
+                        
+                        //~ using alps::accumulator::detail::add_value;
+                        
+                        add_value(accum_, *static_cast<value_type const *>(value));
                     }
-                    void add_value(void const * value, std::type_info const & vt_info
+                    void add_value_wrap(void const * value, std::type_info const & vt_info
                                 , void const * weight, std::type_info const & wvt_info) { //type-infusion with weight
                     //------------------- check value type -------------------
                         if( &vt_info != &typeid(value_type) &&

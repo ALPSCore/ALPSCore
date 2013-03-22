@@ -112,9 +112,11 @@ namespace alps {
 
                     inline void operator()(value_type_loc const & val) {
                         using namespace alps::ngs::numeric;
+                        using alps::ngs::numeric::detail::check_size;
                         
                         base_type::operator()(val);
                         
+                        check_size(partial_, val);
                         partial_ += val;
                         ++pos_in_partial_;
                         

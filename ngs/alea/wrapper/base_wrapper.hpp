@@ -80,7 +80,7 @@ namespace alps {
                     virtual ~base_accumulator_wrapper() {}
                     
                     template<typename value_type> inline void operator()(value_type& value) {
-                        add_value(&value, typeid(value_type));
+                        add_value_wrap(&value, typeid(value_type));
                     }
                     template<typename value_type> inline void operator<<(value_type& value) {
                         (*this)(value);
@@ -96,7 +96,7 @@ namespace alps {
                                                                       , int
                                                                       >::type = 0) 
                     {
-                        add_value(&value, typeid(value_type), &weight, typeid(weight_value_type));
+                        add_value_wrap(&value, typeid(value_type), &weight, typeid(weight_value_type));
                     }
                     template<typename value_type, typename ArgumentPack>
                     inline void operator()(value_type const & value
@@ -108,7 +108,7 @@ namespace alps {
                                                                   , int
                                                                     >::type = 0) 
                     {
-                        add_value(&value, typeid(value_type), &(argpac[Weight]), typeid(argpac[Weight]));
+                        add_value_wrap(&value, typeid(value_type), &(argpac[Weight]), typeid(argpac[Weight]));
                     }
                     
                     template<typename value_type> inline result_type_accumulator_wrapper<value_type> &get() {
@@ -128,8 +128,8 @@ namespace alps {
 #endif
 
                 protected:
-                    virtual void add_value(void const * value, std::type_info const & vt_info) = 0; //for operator()
-                    virtual void add_value(void const * value, std::type_info const & vt_info, void const * weight, std::type_info const & wvt_info) = 0; //for operator() with weight
+                    virtual void add_value_wrap(void const * value, std::type_info const & vt_info) = 0; //for operator()
+                    virtual void add_value_wrap(void const * value, std::type_info const & vt_info, void const * weight, std::type_info const & wvt_info) = 0; //for operator() with weight
             };
         }
     }
