@@ -83,6 +83,18 @@ namespace alps {
                 , typename _7  = void
                 , typename _8  = void
                 , typename _9  = void
+                , typename _10  = void
+                , typename _11  = void
+                , typename _12  = void
+                , typename _13  = void
+                , typename _14  = void
+                , typename _15  = void
+                , typename _16  = void
+                , typename _17  = void
+                , typename _18  = void
+                , typename _19  = void
+                , typename _20  = void
+                , typename _21  = void
             > struct MakeList {
                 typedef typename RemoveVoid<
                         ListItem<_0, 
@@ -95,8 +107,22 @@ namespace alps {
                                ListItem<_7,
                                 ListItem<_8, 
                                  ListItem<_9, 
+                                  ListItem<_10, 
+                                   ListItem<_11, 
+                                    ListItem<_12, 
+                                     ListItem<_13, 
+                                      ListItem<_14, 
+                                       ListItem<_15, 
+                                        ListItem<_16, 
+                                         ListItem<_17, 
+                                          ListItem<_18, 
+                                           ListItem<_19, 
+                                            ListItem<_20, 
+                                             ListItem<_21, 
                                   ListEnd
-                         > > > > > > > > > >
+                         > > > > >  > > > > >
+                         > > > > >  > > > > > 
+                         > >
                         >::type type;
             };
 

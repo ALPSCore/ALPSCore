@@ -44,16 +44,28 @@ namespace alps {
             , typename A7  = void
             , typename A8  = void
             , typename A9  = void
+            , typename A10  = void
+            , typename A11  = void
+            , typename A12  = void
+            , typename A13  = void
+            , typename A14  = void
+            , typename A15  = void
+            , typename A16  = void
+            , typename A17  = void
+            , typename A18  = void
+            , typename A19  = void
+            , typename A20  = void
+            , typename A21  = void
         > struct result : public detail::DeriveResultProperties<
               typename detail::UniqueList<typename detail::ResolveDependencies<typename detail::TypeHolderFirst<typename detail::MakeList<
-                  A0, A1, A2, A3, A4, A5, A6, A7, A8, A9
+                  A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19, A20, A21
               >::type>::type>::type>::type
             , detail::UselessBase
         >::type {
             //typename it for shorter syntax
             typedef typename detail::DeriveResultProperties<
                   typename detail::UniqueList<typename detail::ResolveDependencies<typename detail::TypeHolderFirst<typename detail::MakeList<
-                      A0, A1, A2, A3, A4, A5, A6, A7, A8, A9
+                      A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19, A20, A21
                   >::type>::type>::type>::type
                 , detail::UselessBase
             >::type base_type;
@@ -73,7 +85,19 @@ namespace alps {
             , typename A7
             , typename A8
             , typename A9
-        > inline std::ostream & operator <<(std::ostream & os, result<A0, A1, A2, A3, A4, A5, A6, A7, A8, A9> & res) {
+            , typename A10
+            , typename A11
+            , typename A12
+            , typename A13
+            , typename A14
+            , typename A15
+            , typename A16
+            , typename A17
+            , typename A18
+            , typename A19
+            , typename A20
+            , typename A21
+        > inline std::ostream & operator <<(std::ostream & os, result<A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19, A20, A21> & res) {
             res.print(os);
             return os;
         }

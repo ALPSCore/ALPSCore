@@ -34,28 +34,17 @@
 #include <alps/ngs/alea/accumulator/accumulator_impl.hpp>
 
 #include <boost/parameter.hpp>
+#include <boost/mpl/if.hpp>
+#include <boost/type_traits.hpp>
 
 // = = = = N A M E D   P A R A M E T E R   C T O R   D E F I N I T I O N = = = =
 
 namespace alps {
     namespace accumulator  {
-        namespace detail
-        {
-            template<typename wvt, typename features_arg8>
-            struct include_weight_feature
-            {
-                typedef tag::detail::weight type;
-            };
-            template<typename features_arg8>
-            struct include_weight_feature<void, features_arg8>
-            {
-                typedef features_arg8 type;
-            };
-        }
         template<
               typename vt  = double //value_type
             , typename features_input = features<tag::mean, tag::error>
-            , typename wvt = void //weight_value_type
+            , typename wvt = detail::no_weight_value_type //default: there is no wvt, therefor it's not a weighted accumulator
         >
         class accumulator: public detail::accumulator_impl<
               type_holder<vt, wvt>
@@ -67,7 +56,19 @@ namespace alps {
             , typename features_input::T5
             , typename features_input::T6
             , typename features_input::T7
-            , typename detail::include_weight_feature<wvt, void>::type
+            , typename features_input::T8
+            , typename features_input::T9
+            , typename features_input::T10
+            , typename features_input::T11
+            , typename features_input::T12
+            , typename features_input::T13
+            , typename features_input::T14
+            , typename features_input::T15
+            , typename features_input::T16
+            , typename features_input::T17
+            , typename features_input::T18
+            , typename features_input::T19
+            , typename boost::mpl::if_c<boost::is_same<wvt, detail::no_weight_value_type>::value, void , tag::detail::weight>::type
         > {
             typedef accumulator<vt, features_input, wvt> self_type;
 
@@ -81,7 +82,19 @@ namespace alps {
                 , typename features_input::T5
                 , typename features_input::T6
                 , typename features_input::T7
-                , typename detail::include_weight_feature<wvt, typename features_input::T8>::type
+                , typename features_input::T8
+                , typename features_input::T9
+                , typename features_input::T10
+                , typename features_input::T11
+                , typename features_input::T12
+                , typename features_input::T13
+                , typename features_input::T14
+                , typename features_input::T15
+                , typename features_input::T16
+                , typename features_input::T17
+                , typename features_input::T18
+                , typename features_input::T19
+                , typename boost::mpl::if_c<boost::is_same<wvt, detail::no_weight_value_type>::value, void , tag::detail::weight>::type
             > base_type;
             
             public:
@@ -96,7 +109,19 @@ namespace alps {
                     , typename features_input::T5
                     , typename features_input::T6
                     , typename features_input::T7
-                    , typename detail::include_weight_feature<wvt, typename features_input::T8>::type
+                    , typename features_input::T8
+                    , typename features_input::T9
+                    , typename features_input::T10
+                    , typename features_input::T11
+                    , typename features_input::T12
+                    , typename features_input::T13
+                    , typename features_input::T14
+                    , typename features_input::T15
+                    , typename features_input::T16
+                    , typename features_input::T17
+                    , typename features_input::T18
+                    , typename features_input::T19
+                    , typename boost::mpl::if_c<boost::is_same<wvt, detail::no_weight_value_type>::value, void , tag::detail::weight>::type
                 > result_type;
 
                 accumulator(accumulator const & arg): base_type(static_cast<base_type const &>(arg)) {}

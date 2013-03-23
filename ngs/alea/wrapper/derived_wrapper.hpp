@@ -287,7 +287,7 @@ namespace alps {
                         #endif
                          )
                             throw std::runtime_error("wrong weight value type added in accumulator_wrapper::add_value" + ALPS_STACKTRACE);
-                        impl_picker<value_type, weight_value_type>().add_value(value, weight, accum_);
+                        impl_picker<Accum, has_operator_for_weight<Accum>::value>().add_value(value, weight, accum_);
                         //~ accum_(*static_cast<value_type const *>(value), *static_cast<weight_value_type const *>(weight));
                     }
 
@@ -301,22 +301,57 @@ namespace alps {
                         throw std::logic_error("The Accumulator has no associated result_type" + ALPS_STACKTRACE);
                         return boost::shared_ptr<base_result_wrapper>((base_result_wrapper *)NULL);
                     }
+                //------------------- find out it Accum has op()(vt, wvt) -------------------
+                    template<typename T> 
+                    struct has_operator_for_weight
+                    {
+                        template<typename TT>
+                        struct has_type //checks if T has an type weight_tag_type (library accumulator)
+                        {
+                            template<int i> struct helper { typedef char type; };
+                            template<typename U> static char check(typename helper<sizeof(typename U::weight_tag_type)>::type);
+                            template<typename U> static double check(...);
+                            enum { value = (sizeof(char) == sizeof(check<TT>(0)))};
+                        };
+                        template<bool b, typename TT> //TT only needed since no explicid spec allowed
+                        struct helper // in case is has the weight_tag_type it means that this is the effective type that has the operator we need
+                        {
+                            template<void(T::weight_tag_type::*)(int const &)>
+                            struct helper2
+                            {
+                                typedef char type;
+                            };
+                        };
+                        template<typename TT> //TT only needed since no explicid spec allowed
+                        struct helper<false, TT> //for custom accums that have the op not derived
+                        {
+                            template<void(T::*)(int const &)>
+                            struct helper2
+                            {
+                                typedef char type;
+                            };
+                        };
+                        
+                        template<typename U> static char check(typename helper<has_type<T>::value, int>::template helper2<&U::operator()>::type);
+                        template<typename U> static double check(...);
+                        enum { value = (sizeof(char) == sizeof(check<T>(0))) };
+                    };
                 //------------------- impl picker for add_value(vt, wvt) -------------------
-                    template<typename value_type, typename weight_value_type>
+                    template<typename accum_type, bool b>
                     struct impl_picker
                     {
-                        template<typename accum_type>
                         inline void add_value(void const * value, void const * weight, accum_type & acc)
                         {
+                            std::cout << "type" << typeid(accum_type).name() << " \n" << has_operator_for_weight<Accum>::value << std::endl;
                             acc(*static_cast<value_type const *>(value), *static_cast<weight_value_type const *>(weight));
                         }
                     };
-                    template<typename value_type>
-                    struct impl_picker<value_type, void>
+                    template<typename accum_type>
+                    struct impl_picker<accum_type, false>
                     {
-                        template<typename accum_type>
                         inline void add_value(void const * value, void const * weight, accum_type & acc)
                         {
+                            std::cout << "type" << typeid(accum_type).name() << " \n" << has_operator_for_weight<Accum>::value << std::endl;
                             throw std::runtime_error(" no operator()(vt, wvt) in this accumulator (i.e. no weight-accumulator)" + ALPS_STACKTRACE);
                         }
                     };

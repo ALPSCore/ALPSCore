@@ -45,6 +45,12 @@ namespace alps {
             }
             struct histogram;
         }
+        namespace detail
+        {
+            struct no_weight_value_type {}; //has to be full type because of typeid
+            //one cannot use void as wvt-default because of has_method in derived wrapper that checks if
+            //there is an void op(vt, wvt) and void cannot be an argument-type
+        }
     }
 }
 #endif

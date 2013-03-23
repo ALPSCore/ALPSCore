@@ -81,6 +81,7 @@ namespace alps
                 typedef AccumulatorImplementation<tag::detail::weight, base_type> ThisType;
                     
                 public:
+                    typedef ThisType weight_tag_type; //technical use only / see impl_picker in derived_wrapper
                     AccumulatorImplementation<tag::detail::weight, base_type>(ThisType const & arg):  base_type(arg)
                                                                         , ownes_weight_acc_(arg.ownes_weight_acc_)
                                                                         , weight_acc_ptr_(arg.weight_acc_ptr_)
