@@ -170,7 +170,7 @@ namespace alps {
                 > > > > > > > > > > base_type;
 
                 template<int i> struct check_helper { typedef char type; };
-                template<typename U> static char check_result(typename check_helper<sizeof(U::result_type)>::type);
+                template<typename U> static char check_result(typename check_helper<sizeof(&U::result_type)>::type);
                 template<typename U> static double check_result(...);
 
                 public:
@@ -203,7 +203,7 @@ namespace alps {
                     }
 
                     boost::shared_ptr<base_result_wrapper> result() const {
-                        return result_impl(check_helper<sizeof(check_collective_merge<Accum>(0))>());
+                        return result_impl(check_helper<sizeof(check_result<Accum>(0))>());
                     }
 
 #ifdef ALPS_HAVE_MPI

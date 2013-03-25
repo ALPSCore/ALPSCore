@@ -63,8 +63,16 @@ namespace alps {
                     {}
 
                     accumulator_wrapper(hdf5::archive & ar) {
-                        if (ar.is_data("mean/value"))
+                        if (ar.is_attribute("@ownsweight"))
+                            throw std::runtime_error("Weighted observables are not Implemented" + ALPS_STACKTRACE);
+                        else if (ar.is_data("timeseries/data"))
+                            create_accumulator<features<tag::max_num_binning> >(ar);
+                        else if (ar.is_data("mean/error"))
+                            create_accumulator<features<tag::error> >(ar);
+                        else if (ar.is_data("mean/value"))
                             create_accumulator<features<tag::mean> >(ar);
+                        else
+                            throw std::runtime_error("Unable to load accumulator" + ALPS_STACKTRACE);
                     }
 
                 //------------------- normal input -------------------
@@ -129,17 +137,76 @@ namespace alps {
                 private:
 
                     template <typename Features> void create_accumulator(hdf5::archive & ar) {
-                        // TODO: implement!
-                        // TODO: find type somehow ...
-                        /*
-                        switch dimensions ...
-                            case 0: error
-                            case 1: T
-                            case 2: vector<T>
-                            default: boost::multi_array<N>
-                        */
-//                        base_ = boost::shared_ptr<detail::base_accumulator_wrapper>(new detail::derived_accumulator_wrapper<accumulator<double, Features> >);
- //                       base_->load(ar);
+                    // TODO: implement other types ...
+                    #define ALPS_NGS_ACCUMULATOR_WRAPPER_FOREACH_NATIVE_TYPE(CALLBACK)      \
+/*                        CALLBACK(char)                                                      \
+                        CALLBACK(signed char)                                               \
+                        CALLBACK(unsigned char)                                             \
+                        CALLBACK(short)                                                     \
+                        CALLBACK(unsigned short)                                            \
+                        CALLBACK(int)                                                       \
+                        CALLBACK(unsigned)                                                  \
+                        CALLBACK(long)                                                      \
+                        CALLBACK(unsigned long)                                             \
+                        CALLBACK(long long)                                                 \
+                        CALLBACK(unsigned long long)                                        \
+                        CALLBACK(float)                                                     \
+*/                        CALLBACK(double)                                                    \
+                        CALLBACK(long double)                                               \
+/*                        CALLBACK(bool) 
+*/
+
+                        if (ar.is_attribute("@valuetype")) {
+                            #define ALPS_NGS_ACCUMULATOR_WRAPPER_FIND_TYPE_VALUETYPE(T)     \
+                                if (ar.is_datatype<T>("@valuetype"))                        \
+                                    create_accumulator_typed<T, Features>(ar);
+                            ALPS_NGS_ACCUMULATOR_WRAPPER_FOREACH_NATIVE_TYPE(ALPS_NGS_ACCUMULATOR_WRAPPER_FIND_TYPE_VALUETYPE)
+                            #undef ALPS_NGS_ACCUMULATOR_WRAPPER_FIND_TYPE_VALUETYPE
+                        } else {
+                            #define ALPS_NGS_ACCUMULATOR_WRAPPER_FIND_TYPE_MEAN_VALUE(T)    \
+                                if (ar.is_datatype<T>("mean/value"))                        \
+                                    create_accumulator_typed<T, Features>(ar);
+                            ALPS_NGS_ACCUMULATOR_WRAPPER_FOREACH_NATIVE_TYPE(ALPS_NGS_ACCUMULATOR_WRAPPER_FIND_TYPE_MEAN_VALUE)
+                            #undef ALPS_NGS_ACCUMULATOR_WRAPPER_FIND_TYPE_MEAN_VALUE
+                            #undef ALPS_NGS_ACCUMULATOR_WRAPPER_FOREACH_NATIVE_TYPE
+                        }
+                        throw std::runtime_error("Unknown HDF5 datatype" + ALPS_STACKTRACE);
+                    }
+
+                    template <typename T, typename Features> void create_accumulator_typed(hdf5::archive & ar) {
+                        boost::shared_ptr<base_accumulator_wrapper> base_;
+                        if (ar.is_attribute("@valuetype") ? ar.is_scalar("@valuetype") : ar.is_scalar("mean/value"))
+                            base_ = boost::shared_ptr<detail::base_accumulator_wrapper>(new detail::derived_accumulator_wrapper<accumulator<T, Features> >);
+                        else
+                            switch (ar.is_attribute("@valuetype") ? ar.dimensions("@valuetype") : ar.dimensions("mean/value")) {
+                                case 1:
+                                    base_ = boost::shared_ptr<detail::base_accumulator_wrapper>(
+                                        new detail::derived_accumulator_wrapper<accumulator<std::vector<T>, Features> >
+                                    );
+                                    break;
+                                case 2:
+                                    base_ = boost::shared_ptr<detail::base_accumulator_wrapper>(
+                                        new detail::derived_accumulator_wrapper<accumulator<alps::multi_array<T, 2>, Features> >
+                                    );
+                                    break;
+                                case 3:
+                                    base_ = boost::shared_ptr<detail::base_accumulator_wrapper>(
+                                        new detail::derived_accumulator_wrapper<accumulator<alps::multi_array<T, 3>, Features> >
+                                    );
+                                    break;
+                                case 4:
+                                    base_ = boost::shared_ptr<detail::base_accumulator_wrapper>(
+                                        new detail::derived_accumulator_wrapper<accumulator<alps::multi_array<T, 4>, Features> >
+                                    );
+                                    break;
+                                case 5:
+                                    base_ = boost::shared_ptr<detail::base_accumulator_wrapper>(
+                                        new detail::derived_accumulator_wrapper<accumulator<alps::multi_array<T, 5>, Features> >
+                                    );
+                                    break;
+                                default:
+                                    throw std::runtime_error("More than 5 dimensional value types are not Implemented" + ALPS_STACKTRACE);
+                            }
                     }
 
                     boost::shared_ptr<base_accumulator_wrapper> base_;

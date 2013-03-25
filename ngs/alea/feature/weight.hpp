@@ -5,6 +5,7 @@
  * ALPS Libraries                                                                  *
  *                                                                                 *
  * Copyright (C) 2011 - 2012 by Mario Koenz <mkoenz@ethz.ch>                       *
+ *                              Lukas Gamper <gamperl@gmail.com>                   *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -42,10 +43,8 @@
 #include <cmath>
 #include <algorithm>
 
-namespace alps
-{
-    namespace accumulator
-    {
+namespace alps {
+    namespace accumulator {
         template<
               typename vt
             , typename features_input
@@ -53,8 +52,7 @@ namespace alps
         >
         class accumulator;
         
-        namespace detail
-        {
+        namespace detail {
             class accumulator_wrapper;
         }
         //=================== weight proxy ===================
@@ -108,45 +106,57 @@ namespace alps
                         }
                     }
                     
-                    inline weight_type_loc const weight() const 
-                    { 
+                    inline weight_type_loc const weight() const {
                         return weight_type_loc(); 
                     }
                     
-                    inline void operator()(value_type_loc const & val, weight_value_type_loc const & w)
-                    {
+                    inline void operator()(value_type_loc const & val, weight_value_type_loc const & w) {
                         using namespace alps::ngs::numeric;
                         
                         base_type::operator()(val * w);
                     }
+
                     template<typename ArgumentPack>
-                    inline void operator()(value_type_loc const & val, ArgumentPack & arg)
-                    {
+                    inline void operator()(value_type_loc const & val, ArgumentPack & arg) {
                         using namespace alps::ngs::numeric;
                         base_type::operator()(val * arg[Weight]);
                     }
                     
-                    inline void operator()(value_type_loc const & val) 
-                    {
+                    inline void operator()(value_type_loc const & val) {
                         using namespace alps::ngs::numeric;
                         base_type::operator()(val * weight_type_loc(1));
                     }
-                    inline ThisType& operator<<(value_type_loc const & val) 
-                    {
+
+                    inline ThisType& operator<<(value_type_loc const & val) {
                         (*this)(val);
                         return (*this);
                     }
-                    template<typename Stream> 
-                    inline void print(Stream & os) 
-                    {
+
+                    template<typename Stream> inline void print(Stream & os)  {
                         base_type::print(os);
                         os << "Weight: " << ownes_weight_acc_ << std::endl;
                     }
-                    inline void reset()
-                    {
+
+                    void save(hdf5::archive & ar) const {
+                        base_type::save(ar);
+                        ar["ownsweight"] = ownes_weight_acc_;
+                        // TODO: how do we handle shared weights?
+                    }
+
+                    void load(hdf5::archive & ar) {
+                        using alps::ngs::numeric::operator*;
+
+                        base_type::load(ar);
+                        ar["ownsweight"] >> ownes_weight_acc_;
+                        // TODO: how do we handle shared weights?
+                    }
+
+                    inline void reset() {
                     
                     }
+
                 private:
+
                     bool ownes_weight_acc_;
                     boost::shared_ptr<accumulator_wrapper> weight_acc_ptr_;
             };
