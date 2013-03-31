@@ -47,6 +47,8 @@ ALPS_DECL void save_observable(hdf5::archive & ar, cid_t cid,
 ALPS_DECL void save_observable(hdf5::archive& ar, cid_t cid, int rank,
   std::vector<ObservableSet> const& obs);
 ALPS_DECL bool load_observable(hdf5::archive & ar, std::vector<ObservableSet>& obs);
+ALPS_DECL bool load_observable(hdf5::archive & ar, std::string const& prefix, cid_t cid,
+  std::string const& suffix, std::vector<ObservableSet>& obs);
 ALPS_DECL bool load_observable(hdf5::archive & ar, cid_t cid,
   std::vector<ObservableSet>& obs);
 ALPS_DECL bool load_observable(hdf5::archive & ar, cid_t cid, int rank,

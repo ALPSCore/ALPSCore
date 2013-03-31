@@ -84,16 +84,33 @@ bool load_observable(alps::hdf5::archive & ar, std::vector<ObservableSet>& obs) 
   return load_observable(ar, "simulation/results", obs);
 }
 
+bool load_observable(alps::hdf5::archive & ar, std::string const& prefix, cid_t cid,
+                     std::string const& suffix,  std::vector<ObservableSet>& obs) {
+  std::vector<std::string> children = ar.list_children(prefix);
+  if (children.size() > 1) {
+    std::cerr << logger::header() << "warning: more than one clone is found in in prefix = "
+              << prefix << ". Only the first one will be loaded." << std::endl;
+  }
+  if (children.size() > 0) {
+    if (children[0] != boost::lexical_cast<std::string>(cid)) {
+      std::cerr << logger::header() << "warning: try to find clone id = " << cid << ", but found "
+                << children[0] << " in prefix = " << prefix << std::endl;
+    }
+    return load_observable(ar, prefix + "/" + children[0] + "/" + suffix, obs);
+  }
+  return false;
+}
+
 bool load_observable(alps::hdf5::archive & ar, cid_t cid, std::vector<ObservableSet>& obs) {
   return load_observable(ar, "simulation/realizations/" + boost::lexical_cast<std::string>(0) +
-                         "/clones/" + boost::lexical_cast<std::string>(cid) + "/results", obs);
+                         "/clones", cid, "results", obs);
 }
 
 bool load_observable(alps::hdf5::archive & ar, cid_t cid, int rank,
                        std::vector<ObservableSet>& obs) {
   return load_observable(ar, "simulation/realizations/" + boost::lexical_cast<std::string>(0) +
-                         "/clones/" + boost::lexical_cast<std::string>(cid) +
-                         "/workers/" + boost::lexical_cast<std::string>(rank) + "/results", obs);
+                         "/clones", cid, "workers/" + boost::lexical_cast<std::string>(rank) +
+                         "/results", obs);
 }
 
 
