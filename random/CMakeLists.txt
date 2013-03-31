@@ -7,7 +7,7 @@ include_directories(${PROJECT_BINARY_DIR}/src)
 include_directories(${PROJECT_SOURCE_DIR}/src)
 include_directories(${Boost_ROOT_DIR})
 
-FOREACH(name uniform_on_sphere_n)
+FOREACH(name random_choice uniform_on_sphere_n)
   add_executable(${name} ${name}.C)
   add_dependencies(${name} alps)
   target_link_libraries(${name} alps)
