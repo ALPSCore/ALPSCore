@@ -53,8 +53,6 @@ set(ALPS_SOURCES
 #deprecated, TODO: replace by new alea
     ngs/lib/mcoptions.cpp ngs/lib/observablewrappers.cpp ngs/lib/make_deprecated_parameters.cpp ngs/lib/make_parameters_from_xml.cpp
     ngs/lib/mcresult.cpp ngs/lib/mcresults.cpp ngs/lib/mcobservables.cpp ngs/lib/mcobservable.cpp
-    # ngs-parapack
-    ngs/lib/clone.cpp ngs/lib/clone_info.cpp ngs/lib/job.cpp ngs/lib/parapack.cpp ngs/lib/worker_factory.cpp
   )
 
   if (ALPS_BUILD_PYTHON)
@@ -79,6 +77,8 @@ if (NOT ALPS_FOR_VISTRAILS)
       parapack/option.C parapack/parapack.C parapack/queue.C parapack/rng_helper.C
       parapack/types.C parapack/util.C parapack/version.C parapack/worker_factory.C
       parapack/staging.C
+      # ngs-parapack
+      ngs/lib/clone.cpp ngs/lib/clone_info.cpp ngs/lib/job.cpp ngs/lib/parapack.cpp ngs/lib/worker_factory.cpp
   )
 endif(NOT ALPS_FOR_VISTRAILS)
 
