@@ -78,8 +78,14 @@ namespace alps {
         }
         if (vm.count("continue"))
             resume = true;
-        if (output_file == "<unspecified>")
-            output_file = input_file.substr(0,input_file.find_last_of('.'))+ ".out.h5";
+        if (output_file == "<unspecified>") {
+            if (input_file.find(".in.h5") != std::string::npos)
+              output_file = input_file.substr(0,input_file.find_last_of(".in.h5")-5)+ ".out.h5";
+            else if (input_file.find(".out.h5") != std::string::npos)
+              output_file = input_file;
+            else
+              output_file = input_file.substr(0,input_file.find_last_of('.'))+ ".out.h5";
+        }
     }
 
 }
