@@ -7,7 +7,7 @@ include_directories(${PROJECT_BINARY_DIR}/src)
 include_directories(${PROJECT_SOURCE_DIR}/src)
 include_directories(${Boost_ROOT_DIR})
 
-FOREACH(name vmusage)
+FOREACH(name vmusage bitops)
   add_executable(${name} ${name}.cpp)
   add_dependencies(${name} alps)
   target_link_libraries(${name} alps)
