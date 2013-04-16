@@ -58,6 +58,16 @@ namespace alps {
 # define popcnt _popcnt
 #else
 
+
+#if __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4)
+namespace detail{
+    inline long gcc_popcount(unsigned int x) { return __builtin_popcount(x); }
+    inline long gcc_popcount(unsigned long x) { return __builtin_popcountl(x); }
+    inline long gcc_popcount(unsigned long long x) { return __builtin_popcountll(x); }
+}
+#endif
+
+
 /** \brief extract a bit from a word.
     @param x the word
     @param n position of the bit to be extracted
@@ -81,7 +91,7 @@ inline static int BX_(long x) { return ((x) - (((x)>>1)&0x77777777)
                              - (((x)>>2)&0x33333333)
                              - (((x)>>3)&0x11111111)); }
 
-// TODO: use int __builtin_popcount (unsigned int x); in gcc
+// TODO:
 // use http://graphics.stanford.edu/~seander/bithacks.html
 // for windwos use http://msdn.microsoft.com/en-us/library/bb385231.aspx
 
@@ -102,14 +112,24 @@ inline bool poppar(uint64_t x) {
 /// \brief count the 1-bits in a word
 /// @param x the 32-bit word of which 1-bits should be counted
 /// @return the number of 1-bits in the word
-inline long popcnt(uint32_t x) 
+#if __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4)
+inline long popcnt(uint32_t x)
+{ return detail::gcc_popcount(x); }
+#else
+inline long popcnt(uint32_t x)
 { return (((BX_(x)+(BX_(x)>>4)) & 0x0F0F0F0F) % 255); }
+#endif
 
 /// \brief count the 1-bits in a word
 /// @param x the 64-bit word of which 1-bits should be counted
 /// @return the number of 1-bits in the word
-inline long popcnt(uint64_t x) 
+#if __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4)
+inline long popcnt(uint64_t x)
+{ return detail::gcc_popcount(x); }
+#else
+inline long popcnt(uint64_t x)
 { return popcnt(static_cast<uint32_t>(x)) + popcnt(static_cast<uint32_t>(x>>32)); }
+#endif
 
 #endif
 
