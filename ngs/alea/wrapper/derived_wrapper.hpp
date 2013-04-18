@@ -203,26 +203,32 @@ namespace alps {
                     }
 
                     boost::shared_ptr<base_result_wrapper> result() const {
-                        return result_impl(check_helper<sizeof(check_result<Accum>(0))>());
+// TODO: fix in gcc-4.2
+//                        return result_impl(check_helper<sizeof(check_result<Accum>(0))>());
                     }
 
 #ifdef ALPS_HAVE_MPI
+                private:
+                    template<typename U, void (U::*)(boost::mpi::communicator const &, int) > struct check_collective_merge_helper {};
+                    template<typename U> char check_collective_merge(check_collective_merge_helper<U, &U::collective_merge>*);
+                    template<typename U> double check_collective_merge(...);
+                public:
+
                     void collective_merge(
                           boost::mpi::communicator const & comm
                         , int root
                     ) {
-                        collective_merge_impl(comm, root, check_helper<sizeof(check_collective_merge<Accum>(0))>());
+// TODO: fix in gcc-4.2
+//                        collective_merge_impl(comm, root, check_helper<sizeof(check_collective_merge<Accum>(0))>());
                     }
                     void collective_merge(
                           boost::mpi::communicator const & comm
                         , int root
                     ) const {
-                        collective_merge_impl(comm, root, check_helper<sizeof(check_collective_merge<Accum>(0))>());
+// TODO: fix in gcc-4.2
+//                        collective_merge_impl(comm, root, check_helper<sizeof(check_collective_merge<Accum>(0))>());
                     }
                 private:
-
-                    template<typename U> static char check_collective_merge(typename check_helper<sizeof(&U::collective_merge)>::type);
-                    template<typename U> static double check_collective_merge(...);
 
                     void collective_merge_impl(
                           boost::mpi::communicator const & comm
@@ -308,16 +314,14 @@ namespace alps {
                         template<typename TT>
                         struct has_type //checks if T has an type weight_tag_type (library accumulator)
                         {
-                            template<int i> struct helper { typedef char type; };
-                            template<typename U> static char check(typename helper<sizeof(typename U::weight_tag_type)>::type);
+                            template<typename U> static char check(typename U::weight_tag_type*);
                             template<typename U> static double check(...);
                             enum { value = (sizeof(char) == sizeof(check<TT>(0)))};
                         };
                         template<bool b, typename TT> //TT only needed since no explicid spec allowed
                         struct helper // in case is has the weight_tag_type it means that this is the effective type that has the operator we need
                         {
-                            template<void(T::weight_tag_type::*)(int const &)>
-                            struct helper2
+                            template<void(T::weight_tag_type::*)(int const &)> struct helper2
                             {
                                 typedef char type;
                             };

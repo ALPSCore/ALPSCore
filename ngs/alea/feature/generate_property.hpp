@@ -58,8 +58,8 @@ namespace alps {
                                                                                                                             \
     /* = = = = = = = = = = I N F O   T R A I T = = = = = = = = = = */                                                       \
     template<typename T> struct has_feature< TAG , T> {                                                                     \
-        template<int i> struct helper { typedef char type; };                                                               \
-        template<typename U> static char check(typename helper<sizeof(&U:: FNNAME )>::type);                                \
+        template <typename U, void (U::*)() > struct helper {};                                                             \
+        template<typename U> static char check(helper<U, &U:: FNNAME >*);                                                   \
         template<typename U> static double check(...);                                                                      \
         enum { value = (sizeof(char) == sizeof(check<T>(0))) };                                                             \
     };                                                                                                                      \
