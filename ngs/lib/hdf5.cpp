@@ -480,7 +480,7 @@ namespace alps {
                 std::string ctx = current_;
                 while (ctx.size() && path.size() && path.substr(0, 2) == "..") {
                     ctx = ctx.substr(0, ctx.find_last_of('/'));
-                    path = path.substr(3);
+                    path = path.size() == 2 ? "" : path.substr(3);
                 }
                 return ctx + (ctx.size() == 1 || !path.size() ? "" : "/") + path;
             }
