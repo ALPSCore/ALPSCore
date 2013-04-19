@@ -43,12 +43,12 @@ void mcobservables_load(alps::mcobservables & self, alps::hdf5::archive & ar, st
     ar.set_context(current);
 }
 
-void createRealObservable(alps::mcobservables & self, std::string const & name, uint32_t binnum = 0) {
+void createRealObservable(alps::mcobservables & self, std::string const & name, boost::uint32_t binnum = 0) {
     self << alps::ngs::RealObservable(name, binnum);
 }
 BOOST_PYTHON_FUNCTION_OVERLOADS(createRealObservable_overloads, createRealObservable, 2, 3)
 
-void createRealVectorObservable(alps::mcobservables & self, std::string const & name, uint32_t binnum = 0) {
+void createRealVectorObservable(alps::mcobservables & self, std::string const & name, boost::uint32_t binnum = 0) {
     self << alps::ngs::RealVectorObservable(name, binnum);
 }
 BOOST_PYTHON_FUNCTION_OVERLOADS(createRealVectorObservable_overloads, createRealVectorObservable, 2, 3)

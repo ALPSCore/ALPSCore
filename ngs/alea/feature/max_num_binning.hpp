@@ -90,8 +90,8 @@ namespace alps {
             template<typename base_type> class AccumulatorImplementation<tag::max_num_binning, base_type> : public base_type {
                 typedef typename base_type::value_type value_type_loc;
                 typedef typename max_num_binning_type<value_type_loc>::type num_bin_type;
-                typedef typename std::vector<value_type_loc>::size_type size_type;
-                typedef typename mean_type<value_type_loc>::type mean_type;
+				typedef typename std::size_t size_type;
+				typedef typename alps::accumulator::mean_type<value_type_loc>::type mean_type;
                 typedef AccumulatorImplementation<tag::max_num_binning, base_type> ThisType;
 
                 public:

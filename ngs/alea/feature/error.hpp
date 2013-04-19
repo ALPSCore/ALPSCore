@@ -68,7 +68,7 @@ namespace alps {
             class AccumulatorImplementation<tag::error, base_type> : public base_type 
             {
                 typedef typename base_type::value_type value_type_loc;
-                typedef typename error_type<value_type_loc>::type error_type;
+				typedef typename alps::accumulator::error_type<value_type_loc>::type error_type;
                 typedef AccumulatorImplementation<tag::error, base_type> ThisType;
                 
                 public:

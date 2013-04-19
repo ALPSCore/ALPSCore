@@ -66,7 +66,7 @@ namespace alps {
                                                                                                                             \
     /* = = = = = = = = = = F C T   V I A   M E M B E R = = = = = = = = = = */                                               \
                                                                                                                             \
-    template <typename Accum> inline typename FNNAME ## _type<typename value_type<Accum>::type>::type FNNAME (              \
+    template <typename Accum> inline typename FNNAME ## _type<typename alps::accumulator::value_type<Accum>::type>::type FNNAME (              \
         Accum const & arg                                                                                                   \
     ) {                                                                                                                     \
         return arg. FNNAME ();                                                                                              \
@@ -77,7 +77,7 @@ namespace alps {
     /* = = = = = = = = = = A V O I D S   N A M E C O N F L I C T S = = = = = = = = = = */                                   \
                                                                                                                             \
         template<typename Accum>                                                                                            \
-        inline typename FNNAME ## _type<typename value_type<Accum>::type>::type FNNAME ## _impl(Accum const & arg) {        \
+        inline typename FNNAME ## _type<typename alps::accumulator::value_type<Accum>::type>::type FNNAME ## _impl(Accum const & arg) {        \
             return FNNAME (arg);                                                                                            \
         }                                                                                                                   \
                                                                                                                             \
@@ -89,7 +89,7 @@ namespace alps {
                 feature_accumulator_property_impl(typename base_type::accum_type const & arg): base_type(arg) {}            \
                 bool has_ ## FNNAME () const { return true; }                                                               \
                 typename FNNAME ## _type<                                                                                   \
-                    typename value_type<typename base_type::accum_type>::type                                               \
+				typename alps::accumulator::value_type<typename base_type::accum_type>::type                                               \
                 >::type FNNAME() const {                                                                                    \
                     return FNNAME ## _impl(base_type::accum_);                                                              \
                 }                                                                                                           \
@@ -101,7 +101,7 @@ namespace alps {
                 feature_result_property_impl(typename base_type::result_type const & arg): base_type(arg) {}                \
                 bool has_ ## FNNAME () const { return true; }                                                               \
                 typename FNNAME ## _type<                                                                                   \
-                    typename value_type<typename base_type::result_type>::type                                              \
+				typename alps::accumulator::value_type<typename base_type::result_type>::type                                              \
                 >::type FNNAME() const {                                                                                    \
                     return FNNAME ## _impl(base_type::result_);                                                             \
                 }                                                                                                           \
@@ -115,13 +115,13 @@ namespace alps {
                 feature_accumulator_property_impl(typename base_type::accum_type const & arg): base_type(arg) {}            \
                 bool has_ ## FNNAME() const { return false; }                                                               \
                 typename FNNAME ## _type<                                                                                   \
-                    typename value_type<typename base_type::accum_type>::type                                               \
+                    typename alps::accumulator::value_type<typename base_type::accum_type>::type                                               \
                 >::type FNNAME () const {                                                                                   \
                     throw std::runtime_error(                                                                               \
                         std::string(typeid(typename base_type::accum_type).name()) + " has no " + #FNNAME + "-method"       \
                         + ALPS_STACKTRACE                                                                                   \
                     );                                                                                                      \
-                    return typename FNNAME ## _type<typename value_type<typename base_type::accum_type>::type>::type();     \
+                    return typename FNNAME ## _type<typename alps::accumulator::value_type<typename base_type::accum_type>::type>::type();     \
                 }                                                                                                           \
         };                                                                                                                  \
                                                                                                                             \
@@ -131,13 +131,13 @@ namespace alps {
                 feature_result_property_impl(typename base_type::result_type const & arg): base_type(arg) {}                \
                 bool has_ ## FNNAME() const { return false; }                                                               \
                 typename FNNAME ## _type<                                                                                   \
-                    typename value_type<typename base_type::result_type>::type                                              \
+                    typename alps::accumulator::value_type<typename base_type::result_type>::type                                              \
                 >::type FNNAME () const {                                                                                   \
                     throw std::runtime_error(                                                                               \
                         std::string(typeid(typename base_type::result_type).name()) + " has no " + #FNNAME + "-method"      \
                         + ALPS_STACKTRACE                                                                                   \
                     );                                                                                                      \
-                    return typename FNNAME ## _type<typename value_type<typename base_type::result_type>::type>::type();    \
+                    return typename FNNAME ## _type<typename alps::accumulator::value_type<typename base_type::result_type>::type>::type();    \
                 }                                                                                                           \
         };                                                                                                                  \
     }                                                                                                                       \

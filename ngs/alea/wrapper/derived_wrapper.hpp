@@ -149,7 +149,7 @@ namespace alps {
                 >
             > > > > > > > > > > {
                 //for nicer syntax
-                typedef typename value_type<Accum>::type value_type;
+				typedef typename alps::accumulator::value_type<Accum>::type value_type;
                 typedef typename weight_value_type<Accum>::type weight_value_type;
                 typedef 
 // TODO: generate form all_tags ...
