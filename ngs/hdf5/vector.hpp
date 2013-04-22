@@ -124,7 +124,7 @@ namespace alps {
             };
         }
 
-        ALPS_DECL template<typename T, typename A> void save(
+        template<typename T, typename A> void save(
               archive & ar
             , std::string const & path
             , std::vector<T, A> const & value
@@ -163,7 +163,7 @@ namespace alps {
             }
         }
 
-        ALPS_DECL template<typename T, typename A> void load(
+        template<typename T, typename A> void load(
               archive & ar
             , std::string const & path
             , std::vector<T, A> & value

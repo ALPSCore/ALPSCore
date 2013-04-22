@@ -111,7 +111,7 @@ namespace alps {
 
         }
 
-        ALPS_DECL template <typename T, typename F, typename A> void save(
+        template <typename T, typename F, typename A> void save(
               archive & ar
             , std::string const & path
             , boost::numeric::ublas::matrix<T, F, A> const & value
@@ -130,7 +130,7 @@ namespace alps {
             }
         }
 
-        ALPS_DECL template <typename T, typename F, typename A> void load(
+        template <typename T, typename F, typename A> void load(
               archive & ar
             , std::string const & path
             , boost::numeric::ublas::matrix<T, F, A> & value
