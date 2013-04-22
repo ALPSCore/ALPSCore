@@ -36,7 +36,7 @@
 namespace alps {
     namespace hdf5 {
 
-        template <typename K, typename T, typename C, typename A> void save(
+        ALPS_DECL template <typename K, typename T, typename C, typename A> void save(
               archive & ar
             , std::string const & path
             , std::map<K, T, C, A> const & value
@@ -50,7 +50,7 @@ namespace alps {
                 save(ar, ar.complete_path(path) + "/" + ar.encode_segment(cast<std::string>(it->first)), it->second);
         }
 
-        template <typename K, typename T, typename C, typename A> void load(
+        ALPS_DECL template <typename K, typename T, typename C, typename A> void load(
               archive & ar
             , std::string const & path
             , std::map<K, T, C, A> & value

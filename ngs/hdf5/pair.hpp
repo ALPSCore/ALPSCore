@@ -37,7 +37,7 @@
 namespace alps {
     namespace hdf5 {
 
-        template <typename T, typename U> void save(
+        ALPS_DECL template <typename T, typename U> void save(
               archive & ar
             , std::string const & path
             , std::pair<T, U> const & value
@@ -53,7 +53,7 @@ namespace alps {
                 ar.set_complex(ar.complete_path(path) + "/1");
         }
 
-        template <typename T, typename U> void load(
+        ALPS_DECL template <typename T, typename U> void load(
               archive & ar
             , std::string const & path
             , std::pair<T, U> & value
@@ -133,7 +133,7 @@ namespace alps {
 
         }
 
-        template<typename T> void save(
+        ALPS_DECL template<typename T> void save(
               archive & ar                                                               
             , std::string const & path
             , std::pair<T *, std::vector<std::size_t> > const & value
@@ -198,7 +198,7 @@ namespace alps {
             }
         }
 
-        template<typename T> void load(
+        ALPS_DECL template<typename T> void load(
               archive & ar
             , std::string const & path
             , std::pair<T *, std::vector<std::size_t> > & value

@@ -66,7 +66,7 @@ namespace alps {
             };
         }
 
-        void save(
+        ALPS_DECL void save(
               archive & ar
             , std::string const & path
             , boost::python::object const & value
@@ -75,7 +75,7 @@ namespace alps {
             , std::vector<std::size_t> offset = std::vector<std::size_t>()
         );
 
-        void load(
+        ALPS_DECL void load(
               archive & ar
             , std::string const & path
             , boost::python::object & value
@@ -98,7 +98,7 @@ namespace alps {
             };
         }
 
-        void save(
+        ALPS_DECL void save(
               archive & ar
             , std::string const & path
             , boost::python::list const & value
@@ -107,7 +107,7 @@ namespace alps {
             , std::vector<std::size_t> offset = std::vector<std::size_t>()
         );
 
-        void load(
+        ALPS_DECL void load(
               archive & ar
             , std::string const & path
             , boost::python::list & value
@@ -131,7 +131,7 @@ namespace alps {
             };
         }
 
-        void save(
+        ALPS_DECL void save(
               archive & ar
             , std::string const & path
             , boost::python::numeric::array const & value
@@ -140,7 +140,7 @@ namespace alps {
             , std::vector<std::size_t> offset = std::vector<std::size_t>()
         );
 
-        void load(
+        ALPS_DECL void load(
               archive & ar
             , std::string const & path
             , boost::python::numeric::array & value
@@ -148,7 +148,7 @@ namespace alps {
             , std::vector<std::size_t> offset = std::vector<std::size_t>()
         );
         
-        void save(
+        ALPS_DECL void save(
               archive & ar
             , std::string const & path
             , boost::python::dict const & value
@@ -157,7 +157,7 @@ namespace alps {
             , std::vector<std::size_t> offset = std::vector<std::size_t>()
         );
         
-        void load(
+        ALPS_DECL void load(
               archive & ar
             , std::string const & path
             , boost::python::dict & value

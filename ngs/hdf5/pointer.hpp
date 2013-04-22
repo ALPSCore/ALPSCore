@@ -32,7 +32,7 @@
 
 namespace alps {
 
-    template <typename T> hdf5::detail::make_pvp_proxy<std::pair<T *, std::vector<std::size_t> > > make_pvp(
+    ALPS_DECL template <typename T> hdf5::detail::make_pvp_proxy<std::pair<T *, std::vector<std::size_t> > > make_pvp(
           std::string const & path
         , T * value
         , std::size_t size
@@ -46,7 +46,7 @@ namespace alps {
         );
     }
 
-    template <typename T> hdf5::detail::make_pvp_proxy<std::pair<T *, std::vector<std::size_t> > > make_pvp(
+    ALPS_DECL template <typename T> hdf5::detail::make_pvp_proxy<std::pair<T *, std::vector<std::size_t> > > make_pvp(
           std::string const & path
         , T * value
         , std::vector<std::size_t> const & size

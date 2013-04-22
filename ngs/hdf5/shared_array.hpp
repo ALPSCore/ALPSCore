@@ -35,7 +35,7 @@
 namespace alps {
 
     #define ALPS_NGS_HDF5_BOOST_SHARED_ARRAY_MAKE_PVP(ptr_type, arg_type)                                                                                           \
-        template <typename T> hdf5::detail::make_pvp_proxy<std::pair<ptr_type, std::vector<std::size_t> > > make_pvp(                                               \
+        ALPS_DECL template <typename T> hdf5::detail::make_pvp_proxy<std::pair<ptr_type, std::vector<std::size_t> > > make_pvp(                                     \
               std::string const & path                                                                                                                              \
             , arg_type value                                                                                                                                        \
             , std::size_t size                                                                                                                                      \
@@ -46,7 +46,7 @@ namespace alps {
             );                                                                                                                                                      \
         }                                                                                                                                                           \
                                                                                                                                                                     \
-        template <typename T> hdf5::detail::make_pvp_proxy<std::pair<ptr_type, std::vector<std::size_t> > > make_pvp(                                               \
+        ALPS_DECL template <typename T> hdf5::detail::make_pvp_proxy<std::pair<ptr_type, std::vector<std::size_t> > > make_pvp(                                     \
               std::string const & path                                                                                                                              \
             , arg_type value                                                                                                                                        \
             , std::vector<std::size_t> const & size                                                                                                                 \

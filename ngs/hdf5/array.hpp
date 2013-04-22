@@ -119,7 +119,7 @@ namespace alps {
             };
         }
 
-        template<typename T, std::size_t N> void save(
+        ALPS_DECL template<typename T, std::size_t N> void save(
               archive & ar
             , std::string const & path
             , boost::array<T, N> const & value
@@ -156,7 +156,7 @@ namespace alps {
             }
         }
 
-        template<typename T, std::size_t N> void load(
+        ALPS_DECL template<typename T, std::size_t N> void load(
               archive & ar
             , std::string const & path
             , boost::array<T, N> & value

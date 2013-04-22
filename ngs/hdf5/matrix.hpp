@@ -151,8 +151,7 @@ namespace detail {
 
 } // end namespace detail
 
-    template <typename T, typename MemoryBlock>
-    void save(
+    ALPS_DECL template <typename T, typename MemoryBlock> void save(
           archive& ar
         , std::string const& path
         , alps::numeric::matrix<T,MemoryBlock> const& m
@@ -204,8 +203,7 @@ namespace detail {
         }
     }
 
-    template <typename T, typename MemoryBlock>
-    void load(
+    ALPS_DECL template <typename T, typename MemoryBlock> void load(
           archive & ar
         , std::string const & path
         , alps::numeric::matrix<T,MemoryBlock> & m

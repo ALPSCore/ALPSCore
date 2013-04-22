@@ -88,7 +88,7 @@ namespace alps {
             };
         }
 
-        template<typename T> void save(
+        ALPS_DECL template<typename T> void save(
               archive & ar
             , std::string const & path
             , std::complex<T> const & value
@@ -105,7 +105,7 @@ namespace alps {
                 throw wrong_type("invalid type" + ALPS_STACKTRACE);
         }
 
-        template<typename T> void load(
+        ALPS_DECL template<typename T> void load(
               archive & ar
             , std::string const & path
             , std::complex<T> & value

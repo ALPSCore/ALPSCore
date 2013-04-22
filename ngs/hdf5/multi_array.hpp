@@ -133,7 +133,7 @@ namespace alps {
 
         }
 
-        template<typename T, std::size_t N, typename A> void save(
+        ALPS_DECL template<typename T, std::size_t N, typename A> void save(
               archive & ar
             , std::string const & path
             , boost::multi_array<T, N, A> const & value
@@ -168,7 +168,7 @@ namespace alps {
             } else
                 throw wrong_type("invalid type");
         }
-        template<typename T, std::size_t N, typename A> void save(
+        ALPS_DECL template<typename T, std::size_t N, typename A> void save(
               archive & ar
             , std::string const & path
             , alps::multi_array<T, N, A> const & value
@@ -179,7 +179,7 @@ namespace alps {
             save(ar, path, static_cast<boost::multi_array<T, N, A> const &>(value), size, chunk, offset);
         }
 
-        template<typename T, std::size_t N, typename A> void load(
+        ALPS_DECL template<typename T, std::size_t N, typename A> void load(
               archive & ar
             , std::string const & path
             , boost::multi_array<T, N, A> & value
@@ -218,7 +218,7 @@ namespace alps {
                 }
             }
         }
-        template<typename T, std::size_t N, typename A> void load(
+        ALPS_DECL template<typename T, std::size_t N, typename A> void load(
               archive & ar
             , std::string const & path
             , alps::multi_array<T, N, A> & value
