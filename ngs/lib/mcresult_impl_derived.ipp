@@ -34,7 +34,10 @@
 #include <alps/ngs/short_print.hpp>
 
 #include <alps/alea/mcdata.hpp>
-#include <alps/ngs/alea.hpp>
+
+#ifdef ALPS_NGS_USE_NEW_ALEA
+    #include <alps/ngs/alea.hpp>
+#endif
 
 #ifdef ALPS_HAVE_MPI
     #include <boost/mpi.hpp>

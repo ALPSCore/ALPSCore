@@ -32,7 +32,9 @@
 #include <alps/ngs/lib/mcresult_impl_base.ipp>
 #include <alps/ngs/lib/mcresult_impl_derived.ipp>
 
-#include <alps/ngs/alea/accumulator_set.hpp>
+#ifdef ALPS_NGS_USE_NEW_ALEA
+    #include <alps/ngs/alea/accumulator_set.hpp>
+#endif
 
 #include <alps/alea/observable.h>
 #include <alps/alea/abstractsimpleobservable.h>
