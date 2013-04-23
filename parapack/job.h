@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2012 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2013 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -33,8 +33,7 @@
 #include "logger.h"
 #include "types.h"
 #include <alps/parser/xmlstream.h>
-#include <alps/scheduler.h>
-#include <alps/config.h>
+#include <alps/alea/observableset.h>
 #include <boost/optional.hpp>
 #include <deque>
 #include <set>

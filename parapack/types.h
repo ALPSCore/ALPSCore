@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2012 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2013 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -28,7 +28,8 @@
 #ifndef PARAPACK_TYPES_H
 #define PARAPACK_TYPES_H
 
-#include <alps/scheduler.h>
+#include <alps/scheduler/signal.hpp>
+#include <alps/scheduler/types.h>
 #include "integer_range.h"
 
 namespace alps {
