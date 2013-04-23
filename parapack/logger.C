@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2012 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2013 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -27,6 +27,7 @@
 
 #include "logger.h"
 #include <boost/lexical_cast.hpp>
+#include <boost/date_time.hpp>
 
 namespace alps {
 
