@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2012 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2013 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -57,8 +57,8 @@ option::option(int argc, char** argv)
     ("enable-termination-file", "enable termination file support (*.term)")
     ("evaluate", "evaluation mode")
     ("mpi", "run in parallel using MPI")
-    ("Nmin", "obsolete")
-    ("Nmax", "obsolete")
+    ("Nmin", po::value<int>(), "obsolete")
+    ("Nmax", po::value<int>(), "obsolete")
     ("no-evaluate", "prevent evaluating observables upon halting")
     ("report-interval", po::value<int>(),
      "time between progress report of clones [unit = sec; default = 600s]")
@@ -68,8 +68,8 @@ option::option(int argc, char** argv)
      "specify range of task indices to be processed, e.g. [2:5]")
     ("time-limit,T", po::value<int>(),
      "time limit for the simulation [unit = sec; default = no time limit]")
-    ("Tmin", "obsolete")
-    ("Tmax", "obsolete")
+    ("Tmin", po::value<int>(), "obsolete")
+    ("Tmax", po::value<int>(), "obsolete")
     ("threads-per-clone,p", po::value<int>(),
      "number of threads for each clone [default = 1]")
     ("total-threads,r", po::value<std::string>(),
