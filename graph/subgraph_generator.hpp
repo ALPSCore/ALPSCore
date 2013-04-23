@@ -438,6 +438,17 @@ class subgraph_generator
       }
 };
 
+template <typename SubGraph, typename SuperGraph>
+std::vector<std::pair<SubGraph, typename canonical_properties_type<SubGraph>::type> > generate_subgraphs(SubGraph const&, SuperGraph const& supergraph, typename boost::graph_traits<SuperGraph>::vertex_descriptor pin, unsigned int n)
+{
+    typedef std::vector<std::pair<SubGraph, typename canonical_properties_type<SubGraph>::type> > subgraph_list_type;
+    typedef typename subgraph_list_type::iterator iterator;
+    subgraph_generator<SubGraph, SuperGraph> sg(supergraph,pin);
+    iterator it, end;
+    boost::tie(it,end) = sg.generate_up_to_n_edges(n);
+    return subgraph_list_type(it,end);
+}
+
 } // namespace graph
 } // namespace alps
 

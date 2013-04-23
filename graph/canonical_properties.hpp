@@ -36,16 +36,13 @@
 #define ALPS_GRAPH_CANONICAL_PROPERSTIES
 
 #include <boost/mpl/not.hpp>
-#include <boost/tuple/tuple.hpp>
-#include <boost/dynamic_bitset.hpp>
 #include <boost/tuple/tuple_io.hpp>
 #include <boost/graph/properties.hpp>
-#include <boost/graph/graph_traits.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
 #include <boost/multi_array.hpp>
 
-#include <alps/lattice/graphproperties.h>
+#include <alps/graph/canonical_properties_traits.hpp>
 
 #include <map>
 #include <set>
@@ -54,101 +51,6 @@
 
 namespace alps {
     namespace graph {
-        
-        // pi = (V1, V2, ..., Vr), Vi = (n1, n2, ..., nk), ni element of G
-        template<typename Graph> struct partition_type {
-            typedef std::vector<std::vector<typename boost::graph_traits<Graph>::vertex_descriptor> > type;
-        };
-
-        namespace detail {
-
-            class graph_label_matrix_type : public boost::dynamic_bitset<> {
-                public:
-                    bool operator< (graph_label_matrix_type const & rhs) const {
-                        return size() < rhs.size() || (
-                               !(rhs.size() < size()) 
-                            && static_cast<boost::dynamic_bitset<> >(*this) < static_cast<boost::dynamic_bitset<> > (rhs)
-                        );
-                    }
-                    bool operator == (graph_label_matrix_type const & rhs) const {
-                        return size() == rhs.size()
-                            && static_cast<boost::dynamic_bitset<> >(*this) == static_cast<boost::dynamic_bitset<> >(rhs);
-                    }
-            };
-
-            // printable color list
-            template<typename Value> class graph_label_color_vector : public std::vector<Value> {};
-
-            // ostream operator for color list
-            template<typename Stream, typename Value> Stream & operator<< (Stream & os, graph_label_color_vector<Value> const & vec) {
-                os << "(";
-                for (typename graph_label_color_vector<Value>::const_iterator it = vec.begin(); it != vec.end(); ++it)
-                    os << (it == vec.begin() ? "" : " ") << *it;
-                os << ")";
-                return os;
-            }
-            
-            // no coloring
-            template<typename Graph, bool, bool> struct graph_label_helper {
-                typedef boost::tuple<
-                      // #vertices * (#vertices + 1) / 2 bits: triangular adjacency matrix
-                      graph_label_matrix_type
-                > type;
-            };
-
-            // vertex coloring
-            template<typename Graph> struct graph_label_helper<Graph, true, false> {
-                typedef boost::tuple<
-                      // #vertices * (#vertices + 1) / 2 bits: triangular adjacency matrix
-                      graph_label_matrix_type
-                      // #vertices * (#vertex colors) bits: vertex vs color matrix
-                    , graph_label_matrix_type
-                      // vertex color list
-                    , graph_label_color_vector<typename has_property<alps::vertex_type_t,Graph>::vertex_property_type>
-                > type;
-            };
-
-            // edge coloring
-            template<typename Graph> struct graph_label_helper<Graph, false, true> {
-                typedef boost::tuple<
-                      // #vertices * (#vertices + 1) / 2 bits: triangular adjacency matrix
-                      graph_label_matrix_type
-                      // #edge * (#edge colors) bits: edge vs color matrix
-                    , graph_label_matrix_type
-                      // edge color list
-                    , graph_label_color_vector<typename has_property<alps::edge_type_t,Graph>::edge_property_type>
-                > type;
-            };
-
-            // vertex and edge coloring
-            template<typename Graph> struct graph_label_helper<Graph, true, true> {
-                typedef boost::tuple<
-                      // #vertices * (#vertices + 1) / 2 bits: triangular adjacency matrix
-                      graph_label_matrix_type
-                      // #vertices * (#vertex colors) bits: vertex vs color matrix
-                    , graph_label_matrix_type
-                      // vertex color list
-                    , graph_label_color_vector<typename has_property<alps::vertex_type_t,Graph>::vertex_property_type>
-                      // #edge * (#edge colors) bits: edge vs color matrix
-                    , graph_label_matrix_type
-                      // edge color list
-                    , graph_label_color_vector<typename has_property<alps::edge_type_t,Graph>::edge_property_type>
-                > type;
-            };
-
-        }
-
-        // comparable graph label
-        // vertex coloring tag: alps::vertex_type_t
-        // edge coloring tag: alps::edge_type_t
-        template<typename Graph> struct graph_label {
-            typedef typename detail::graph_label_helper<
-                  Graph
-                , has_property<alps::vertex_type_t,Graph>::vertex_property
-                , has_property<alps::edge_type_t,Graph>::edge_property
-            >::type type;
-        };
-
         namespace detail {
 
             // Input: pi = (V1, V2, ..., Vr)
@@ -292,7 +194,7 @@ namespace alps {
                         n = it->size();
                         i = it - pi.begin();
                     }
-                if (n < num_vertices(G) + 1) {
+                if (n < num_vertices(G) + 1u) {
                     T.push_back(boost::make_tuple(typename partition_type<Graph>::type(), i, 0));
                     terminal_node(T, G);
                 }
@@ -581,16 +483,6 @@ namespace alps {
         }
 
         // Return type of the canonical_properties() function
-        template<typename Graph> struct canonical_properties_type {
-            typedef boost::tuple<
-              // canonical ordering
-              std::vector<typename boost::graph_traits<Graph>::vertex_descriptor>
-              // canonical label
-            , typename graph_label<Graph>::type
-              // orbit partition
-            , typename partition_type<Graph>::type
-            > type;
-        };
 
         namespace detail {
 
@@ -669,9 +561,6 @@ namespace alps {
             }
         }
 
-        // Enum to select the canonical properties with boost::get<enum>
-        // TODO should we put this in some struct/namespace 'properties'?
-        enum { ordering, label, partition };    
         
         // McKay’s canonical isomorph function Cm(G) is deﬁned to be
         // Cm(G) = max{ Gpi: (pi, nu) is a leaf of T(G) }
