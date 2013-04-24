@@ -395,6 +395,23 @@ namespace alps {
         }
 
         template<typename T, class MemoryBlock>
+        void heev(matrix<T, MemoryBlock> M
+           , typename associated_real_vector<matrix<T, MemoryBlock> >::type & evals
+        )   
+        {   
+            assert(num_rows(M) == num_cols(M));
+            assert(evals.size() == num_rows(M));
+#ifndef NDEBUG
+            for (int i = 0; i < num_rows(M); ++i)
+                for (int j = 0; j < num_cols(M); ++j)
+                    assert( abs( M(i,j) - conj(M(j,i)) ) < 1e-10 );
+#endif
+            boost::numeric::bindings::lapack::heevd('N', M, evals);
+            // to be consistent with the SVD, I reorder in decreasing order
+            std::reverse(evals.begin(), evals.end());
+        }
+
+        template<typename T, class MemoryBlock>
         void heev(matrix<T, MemoryBlock> M,
                   matrix<T, MemoryBlock> & evecs,
                   typename associated_real_diagonal_matrix<matrix<T, MemoryBlock> >::type & evals)
