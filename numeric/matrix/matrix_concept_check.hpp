@@ -44,8 +44,8 @@ struct Matrix : boost::Assignable<X>
         BOOST_CONCEPT_ASSERT((boost::UnsignedInteger<size_type>));
         typedef typename X::difference_type                     difference_type;
         BOOST_CONCEPT_ASSERT((boost::SignedInteger<difference_type>));
-        
-        
+
+
 
     BOOST_CONCEPT_USAGE(Matrix)
     {
@@ -56,12 +56,13 @@ struct Matrix : boost::Assignable<X>
         typename boost::remove_const<X>::type z = x;
 
         // Swap
-        std::swap(x,z);
+        swap(x,z);
 
         // num_rows(), num_cols()
         std::size_t s = num_rows(y);
         s = num_cols(y);
-        
+        s = s; // To get rid of annoying unused value warnings (if someone knows a better way be my guest.)
+
         // Element access
         t = x(0,0);
         x(0,0)+=value_type();
@@ -69,7 +70,7 @@ struct Matrix : boost::Assignable<X>
         // Swap rows/cols
 //        swap_rows(x,0,1);
 //        swap_cols(x,0,1);
-        
+
 
         // operators
         z = x;
