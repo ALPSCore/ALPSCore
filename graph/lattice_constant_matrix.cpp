@@ -74,8 +74,8 @@ int main() {
     }
 
     typedef unsigned int contrib_type;
-    typedef boost::tuple<canonical_properties_type<graph_type>::type, unsigned int, std::vector<contrib_type> > input_type;
-    typedef std::vector<contrib_type> output_type;
+    typedef boost::tuple<canonical_properties_type<graph_type>::type, unsigned int, alps::numeric::vector<contrib_type> > input_type;
+    typedef alps::numeric::vector<contrib_type> output_type;
     std::vector<boost::tuple<graph_type, input_type, output_type> > test_graphs;
 
 
@@ -93,7 +93,7 @@ int main() {
 
         // Orbit partition: (0 1) -> [0] (1)
         unsigned int breaking_vertex = 0;
-        std::vector<contrib_type> part_contrib(2);
+        alps::numeric::vector<contrib_type> part_contrib(2);
         part_contrib[0] = 2; // c[0 -> 0]
         part_contrib[1] = 3; // c[0 -> 1]
         input_type in(canonical_properties(g,breaking_vertex), breaking_vertex, part_contrib);
@@ -122,7 +122,7 @@ int main() {
         {
             // Orbit partition: (0)(1 2 3) -> [0] (1 2 3)
             unsigned int breaking_vertex = 0;
-            std::vector<contrib_type> part_contrib(2);
+            alps::numeric::vector<contrib_type> part_contrib(2);
             part_contrib[0] = 2;
             part_contrib[1] = 3;
             input_type in(canonical_properties(g,breaking_vertex), breaking_vertex, part_contrib);
@@ -137,13 +137,12 @@ int main() {
         {
             // Orbit partition: (0)(1 2 3) -> (0) [1] (2 3)
             unsigned int breaking_vertex = 1;
-            std::vector<contrib_type> part_contrib(3);
+            alps::numeric::vector<contrib_type> part_contrib(3);
             part_contrib[0] = 5;  // c[1->0]
             part_contrib[1] = 7;  // c[1->1]
             part_contrib[2] = 11; // c[1->2]
             input_type in(canonical_properties(g,breaking_vertex), breaking_vertex, part_contrib);
-//            std::cout<<get<2>(in.first)<<std::endl;
-        
+
             output_type out(init);
             out[0]  += 12 * part_contrib[1];  // (0,0)
             out[1]  += 3  * part_contrib[0];  // (1,0)
@@ -151,7 +150,7 @@ int main() {
             out[41] += 4*11; // (1,1)
             out[2]  += 2*11; // (2,0)
             out[80] += 2*11; // (0,2)
-    
+
             test_graphs.push_back(boost::make_tuple(g,in,out));
         }
     }
@@ -159,17 +158,19 @@ int main() {
     int success = 0;
     for(std::vector<boost::tuple<graph_type, input_type, output_type> >::iterator it = test_graphs.begin(); it != test_graphs.end(); ++it) {
 
+        alps::numeric::matrix<unsigned int> embedding_factors(num_vertices(lattice_graph), get<2>(get<1>(*it)).size());
+
         output_type output(init);
         alps::graph::lattice_constant(
-              output
+              embedding_factors
             , get<0>(*it)
             , lattice_graph
             , lattice.lattice()
             , alps::cell(std::vector<int>(2,side_length/2),lattice.lattice()) //side_length * side_length / 2 + side_length / 2 - 1
             , get<1>(get<1>(*it))
             , get<alps::graph::partition>(get<0>(get<1>(*it)))
-            , get<2>(get<1>(*it))
         );
+        output += embedding_factors * get<2>(get<1>(*it));
         output_type ref = get<2>(*it);
         if ( output != ref )
         {
