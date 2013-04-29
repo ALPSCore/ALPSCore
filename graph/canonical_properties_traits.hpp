@@ -33,6 +33,7 @@
 #include <boost/dynamic_bitset.hpp>
 #include <boost/graph/graph_traits.hpp>
 #include <alps/lattice/graphproperties.h>
+#include <alps/lattice/propertymap.h>
 
 namespace alps {
 namespace graph {
