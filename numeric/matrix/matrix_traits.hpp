@@ -71,21 +71,10 @@ namespace numeric {
         static bool const value = true;
     };
 
-//    
-//    //
-//    // std::vector are unfriendly with ambient, there we wrap as associated_diagonal_matrix
-//    //
-//    template<class T, class MemoryBlock>
-//    struct associated_vector<matrix<T,MemoryBlock> >
-//    {
-//        typedef std::vector<T> type;
-//    };
-//    
-//    template<class T, class MemoryBlock>
-//    struct associated_real_vector<matrix<T,MemoryBlock> >
-//    {
-//        typedef std::vector<typename detail::real_type<T>::type> type;
-//    };
+    template <typename Matrix, typename T, typename MemoryBlock>
+    struct is_matrix_scalar_multiplication<Matrix,vector<T,MemoryBlock> > {
+        static bool const value = false;
+    };
 
 } // end namespace numeric
 } // end namespace alps
