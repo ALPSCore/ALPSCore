@@ -32,16 +32,20 @@
 #define ALPS_LATTICE_PROPERTYMAP_H
 
 #include <alps/config.h>
-#include <boost/limits.hpp>
 #include <boost/pending/property.hpp>
-#include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/graph_traits.hpp>
 #include <boost/any.hpp>
 #include <boost/version.hpp>
 #include <boost/mpl/if.hpp>
 
-#include <string>
-#include <vector>
+
+//
+// Forward declaration
+//
+namespace boost {
+template <class S1, class S2, class S3, class VP, class EP, class GP, class S4>
+class adjacency_list;
+}
 
 #if BOOST_VERSION == 105100
 

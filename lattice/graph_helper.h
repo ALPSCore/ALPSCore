@@ -33,6 +33,7 @@
 
 #include <alps/lattice/latticelibrary.h>
 #include <alps/lattice/disorder.h>
+#include <alps/lattice/coordinategraph.h>
 #include <alps/lattice/graph_traits.h>
 #include <alps/lattice/parity.h>
 #include <alps/lattice/propertymap.h>
