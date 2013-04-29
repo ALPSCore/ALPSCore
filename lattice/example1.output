@@ -391,6 +391,17 @@
     </FINITELATTICE>
     <UNITCELL ref="simple1d"/>
   </LATTICEGRAPH>
+  <LATTICEGRAPH name="open coupled ladders">
+    <FINITELATTICE>
+      <LATTICE ref="square lattice"/>
+      <PARAMETER name="W" default="L"/>
+      <EXTENT dimension="1" size="L"/>
+      <EXTENT dimension="2" size="W"/>
+      <BOUNDARY dimension="1" type="open"/>
+      <BOUNDARY dimension="2" type="open"/>
+    </FINITELATTICE>
+    <UNITCELL ref="coupled ladders"/>
+  </LATTICEGRAPH>
   <LATTICEGRAPH name="open ladder">
     <FINITELATTICE>
       <LATTICE ref="square lattice"/>
