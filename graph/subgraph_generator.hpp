@@ -77,19 +77,16 @@ namespace detail {
           */
         bool is_embeddable(subgraph_type const& g, typename canonical_properties_type<subgraph_type>::type const& prop) {
             assert(prop == alps::graph::canonical_properties(g));
-            bool result = true;
-            for(typename std::vector<subgraph_properties_pair_type>::iterator it= non_embeddable_graphs_.begin(); it != non_embeddable_graphs_.end(); ++it)
+            for(typename std::vector<std::pair<subgraph_type,typename partition_type<subgraph_type>::type> >::iterator it= non_embeddable_graphs_.begin(); it != non_embeddable_graphs_.end(); ++it)
             {
                 // If any of the non-embeddable graphs can be embedded
                 // we can not embedd this graph either.
-                if(alps::graph::is_embeddable(it->first,g,get<alps::graph::partition>(it->second))) {
-                    result = false;
-                    break;
-                }
+                if(alps::graph::is_embeddable(it->first,g,it->second))
+                    return false;
             }
-            result = result && alps::graph::is_embeddable(g,supergraph_,pin_,boost::get<alps::graph::partition>(prop));
-            if(!result && num_edges(g) < 9)
-                non_embeddable_graphs_.push_back(std::make_pair(g,prop));
+            bool result = alps::graph::is_embeddable(g,supergraph_,pin_,boost::get<alps::graph::partition>(prop));
+            if(!result) // && num_edges(g) < 9)
+                non_embeddable_graphs_.push_back(std::make_pair(g,get<alps::graph::partition>(prop)));
             return result;
         }
 
@@ -100,7 +97,7 @@ namespace detail {
         /// A list of vertices of the supergraph which have to be found in an embeddable subgraph
         typename graph_traits<SuperGraph>::vertex_descriptor pin_;
         /// A list of small non-embeddable graphs for quick embedding checks of larger graphs
-        std::vector<subgraph_properties_pair_type> non_embeddable_graphs_;
+        std::vector<std::pair<subgraph_type, typename partition_type<subgraph_type>::type> > non_embeddable_graphs_;
         /// a list of canonical graph labels of graphs that were seen
         std::set<boost::tuple<std::size_t, typename graph_label<subgraph_type>::type> > labels_;
     };

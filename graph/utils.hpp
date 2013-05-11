@@ -29,7 +29,8 @@
 #ifndef ALPS_GRAPH_UTILS_HPP
 #define ALPS_GRAPH_UTILS_HPP
 
-#include <alps/lattice.h>
+#include <alps/lattice/graphproperties.h>
+#include <alps/lattice/propertymap.h>
 #include <boost/static_assert.hpp>
 #include <cassert>
 #include <algorithm>
