@@ -395,11 +395,11 @@ namespace alps {
     typename matrix_vector_multiplies_return_type<matrix<T,MemoryBlock>,vector<T2,MemoryBlock2> >::type
     matrix_vector_multiply(matrix<T,MemoryBlock> const& m, vector<T2,MemoryBlock2> const& v);
 
-    template <typename T,typename MemoryBlock>
-    void plus_assign(matrix<T,MemoryBlock>& m, matrix<T,MemoryBlock> const& rhs);
+    template <typename T,typename MemoryBlock,typename MemoryBlock2>
+    void plus_assign(matrix<T,MemoryBlock>& m, matrix<T,MemoryBlock2> const& rhs);
 
-    template <typename T, typename MemoryBlock>
-    void minus_assign(matrix<T,MemoryBlock>& m, matrix<T,MemoryBlock> const& rhs);
+    template <typename T, typename MemoryBlock, typename MemoryBlock2>
+    void minus_assign(matrix<T,MemoryBlock>& m, matrix<T,MemoryBlock2> const& rhs);
 
     template <typename T, typename MemoryBlock, typename T2>
     void multiplies_assign(matrix<T,MemoryBlock>& m, T2 const& t);

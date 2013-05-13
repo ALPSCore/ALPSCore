@@ -50,8 +50,8 @@ namespace alps {
 namespace alps {
     namespace numeric {
     #define ALPS_MATRIX_GEMM(T) \
-        template <typename MemoryBlock> \
-        void gemm( matrix<T,MemoryBlock> const& lhs, matrix<T,MemoryBlock> const& rhs, matrix<T,MemoryBlock> & result)\
+        template <typename MemoryBlock, typename MemoryBlock2, typename MemoryBlock3> \
+        void gemm( matrix<T,MemoryBlock> const& lhs, matrix<T,MemoryBlock2> const& rhs, matrix<T,MemoryBlock3> & result)\
         { \
             assert( !(lhs.num_cols() > rhs.num_rows()) ); \
             assert( !(lhs.num_cols() < rhs.num_rows()) ); \
@@ -66,8 +66,8 @@ namespace alps {
                result \
             ); \
         }\
-        template <typename MemoryBlock> \
-        void gemm(matrix<T,MemoryBlock> const& lhs, transpose_view<matrix<T,MemoryBlock> > const& rhs, matrix<T,MemoryBlock> & result) \
+        template <typename MemoryBlock, typename MemoryBlock2, typename MemoryBlock3> \
+        void gemm(matrix<T,MemoryBlock> const& lhs, transpose_view<matrix<T,MemoryBlock2> > const& rhs, matrix<T,MemoryBlock3> & result) \
         { \
             assert( !(lhs.num_cols() > rhs.num_rows()) ); \
             assert( !(lhs.num_cols() < rhs.num_rows()) ); \
@@ -82,8 +82,8 @@ namespace alps {
                result \
             ); \
         } \
-        template <typename MemoryBlock> \
-        void gemm(transpose_view<matrix<T,MemoryBlock> > const& lhs, matrix<T,MemoryBlock> const& rhs, matrix<T,MemoryBlock> & result) \
+        template <typename MemoryBlock, typename MemoryBlock2, typename MemoryBlock3> \
+        void gemm(transpose_view<matrix<T,MemoryBlock> > const& lhs, matrix<T,MemoryBlock2> const& rhs, matrix<T,MemoryBlock3> & result) \
         { \
             assert( !(lhs.num_cols() > rhs.num_rows()) ); \
             assert( !(lhs.num_cols() < rhs.num_rows()) ); \
@@ -98,8 +98,8 @@ namespace alps {
                result \
             ); \
         } \
-        template <typename MemoryBlock> \
-        void gemm(transpose_view<matrix<T,MemoryBlock> > const& lhs, transpose_view<matrix<T,MemoryBlock> > const& rhs, matrix<T,MemoryBlock> & result) \
+        template <typename MemoryBlock, typename MemoryBlock2, typename MemoryBlock3> \
+        void gemm(transpose_view<matrix<T,MemoryBlock> > const& lhs, transpose_view<matrix<T,MemoryBlock2> > const& rhs, matrix<T,MemoryBlock3> & result) \
         { \
             assert( !(lhs.num_cols() > rhs.num_rows()) ); \
             assert( !(lhs.num_cols() < rhs.num_rows()) ); \
@@ -138,8 +138,8 @@ namespace alps {
 
     // This seems to be the best solution for the *_ASSIGN dispatchers at the moment even though they call functions within the detail namespace
     #define PLUS_MINUS_ASSIGN(T) \
-        template <typename MemoryBlock> \
-        void plus_and_minus_assign_impl(matrix<T,MemoryBlock>& m, matrix<T,MemoryBlock> const& rhs, typename matrix<T,MemoryBlock>::value_type const& sign) \
+        template <typename MemoryBlock, typename MemoryBlock2> \
+        void plus_and_minus_assign_impl(matrix<T,MemoryBlock>& m, matrix<T,MemoryBlock2> const& rhs, typename matrix<T,MemoryBlock>::value_type const& sign) \
         { \
             assert( m.num_cols() == rhs.num_cols() && m.num_rows() == rhs.num_rows() ); \
             if(!(m.is_shrinkable() || rhs.is_shrinkable()) ) \
@@ -152,11 +152,11 @@ namespace alps {
                     boost::numeric::bindings::blas::detail::axpy( m.num_rows(), sign, &(*rhs.col(j).first), 1, &(*m.col(j).first), 1); \
             } \
         } \
-        template <typename MemoryBlock> \
-        void plus_assign(matrix<T,MemoryBlock>& m, matrix<T,MemoryBlock> const& rhs) \
+        template <typename MemoryBlock, typename MemoryBlock2> \
+        void plus_assign(matrix<T,MemoryBlock>& m, matrix<T,MemoryBlock2> const& rhs) \
             { plus_and_minus_assign_impl(m, rhs, typename matrix<T,MemoryBlock>::value_type(1)); } \
-        template <typename MemoryBlock> \
-        void minus_assign(matrix<T,MemoryBlock>& m, matrix<T,MemoryBlock> const& rhs) \
+        template <typename MemoryBlock, typename MemoryBlock2> \
+        void minus_assign(matrix<T,MemoryBlock>& m, matrix<T,MemoryBlock2> const& rhs) \
             { plus_and_minus_assign_impl(m, rhs, typename matrix<T,MemoryBlock>::value_type(-1)); }
     ALPS_IMPLEMENT_FOR_ALL_BLAS_TYPES(PLUS_MINUS_ASSIGN)
     #undef PLUS_MINUS_ASSIGN

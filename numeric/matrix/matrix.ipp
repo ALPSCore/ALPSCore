@@ -531,14 +531,14 @@ namespace alps {
         return result;
     }
 
-    template <typename T,typename MemoryBlock>
-    void plus_assign(matrix<T,MemoryBlock>& m, matrix<T,MemoryBlock> const& rhs)
+    template <typename T, typename MemoryBlock, typename MemoryBlock2>
+    void plus_assign(matrix<T,MemoryBlock>& m, matrix<T,MemoryBlock2> const& rhs)
     {
         detail::op_assign_default_impl(m,rhs,std::plus<T>());
     }
 
-    template <typename T, typename MemoryBlock>
-    void minus_assign(matrix<T,MemoryBlock>& m, matrix<T,MemoryBlock> const& rhs)
+    template <typename T, typename MemoryBlock, typename MemoryBlock2>
+    void minus_assign(matrix<T,MemoryBlock>& m, matrix<T,MemoryBlock2> const& rhs)
     {
         detail::op_assign_default_impl(m,rhs,std::minus<T>());
     }
