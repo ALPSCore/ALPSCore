@@ -4,7 +4,7 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2011 - 2012 by Andreas Hehn <hehn@phys.ethz.ch>                   *
+ * Copyright (C) 2011 - 2013 by Andreas Hehn <hehn@phys.ethz.ch>                   *
  *                              Lukas Gamper <gamperl@gmail.com>                   *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
@@ -29,31 +29,22 @@
 //#define USE_COMPRESSED_EMBEDDING2
 
 #include <alps/graph/subgraph_generator.hpp>
-#include <alps/graph/utils.hpp>
 #include <boost/graph/adjacency_list.hpp>
 #include <iostream>
 
-
-
-enum { test_graph_size = 7 };
+enum { test_graph_size = 6 };
 
 template <typename Graph>
 void subgraph_generator_test(unsigned int order_ )
 {
     std::ifstream in("../../lib/xml/lattices.xml");
     alps::Parameters parm;
-    parm["LATTICE"] = "coupled ladders";
+    parm["LATTICE"] = "anisotropic triangular lattice";
     parm["L"] = 2*order_+1;
     alps::graph_helper<> alps_lattice(in,parm);
 
     typedef alps::coordinate_graph_type lattice_graph_type;
     lattice_graph_type& lattice_graph = alps_lattice.graph();
-    std::vector<unsigned int> edge_type_map(3,0);
-    edge_type_map[0] = 0;
-    edge_type_map[1] = 1;
-    edge_type_map[2] = 0;
-    alps::graph::remap_edge_types(lattice_graph,edge_type_map);
-
 
     typedef alps::graph::subgraph_generator<Graph,lattice_graph_type> graph_gen_type;
     graph_gen_type graph_gen(lattice_graph,2*order_*order_);

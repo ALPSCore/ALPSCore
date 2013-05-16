@@ -18,6 +18,7 @@ IF (ALPS_BUILD_GRAPH_TESTS)
             lattice_constant_test
             subgraph_generator_test
             subgraph_generator_test_colored_edges
+            subgraph_generator_test_colored_edges2
             colored_lattice_constant_test
             colored_lattice_constant_test2
             lattice_constant_matrix
