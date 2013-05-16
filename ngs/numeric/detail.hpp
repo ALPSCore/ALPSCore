@@ -32,8 +32,10 @@
 #include <alps/utility/resize.hpp>
 
 #include <alps/multi_array.hpp>
-#include <vector>
 
+#include <boost/array.hpp>
+
+#include <vector>
 #include <stdexcept>
 
 namespace alps {
@@ -51,6 +53,14 @@ namespace alps {
                     else if(a.size() != b.size())
                         boost::throw_exception(std::runtime_error("vectors must have the same size!" + ALPS_STACKTRACE));
                 }
+
+                template<typename T, typename U, std::size_t N, std::size_t M>
+                inline void check_size(boost::array<T, N> & a, boost::array<U, M> const & b) {
+                    boost::throw_exception(std::runtime_error("boost::array s must have the same size!" + ALPS_STACKTRACE));
+                }
+
+                template<typename T, typename U, std::size_t N>
+                inline void check_size(boost::array<T, N> & a, boost::array<U, N> const & b) {}
 
                 template<typename T, typename U, std::size_t D>
                 inline void check_size(alps::multi_array<T, D> & a, alps::multi_array<U, D> const & b) {
