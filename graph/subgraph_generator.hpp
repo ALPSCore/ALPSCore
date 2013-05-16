@@ -77,8 +77,13 @@ namespace detail {
           */
         bool is_embeddable(subgraph_type const& g, typename canonical_properties_type<subgraph_type>::type const& prop) {
             assert(prop == alps::graph::canonical_properties(g));
+            typename graph_traits<subgraph_type>::edges_size_type const num_edges_g = num_edges(g);
             for(typename std::vector<std::pair<subgraph_type,typename partition_type<subgraph_type>::type> >::iterator it= non_embeddable_graphs_.begin(); it != non_embeddable_graphs_.end(); ++it)
             {
+                // Graphs of the same size can't be embedded into each other unless they are the same
+                if(num_edges(it->first) >= num_edges_g)
+                    break;
+
                 // If any of the non-embeddable graphs can be embedded
                 // we can not embedd this graph either.
                 if(alps::graph::is_embeddable(it->first,g,it->second))
