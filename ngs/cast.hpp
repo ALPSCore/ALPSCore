@@ -72,7 +72,7 @@ namespace alps {
         }
 
         template<typename U, typename T> inline U cast_generic(
-            T arg, boost::mpl::int_<1>
+            T arg, boost::mpl::int_<1> const&
         ) {
             return arg;
         }
