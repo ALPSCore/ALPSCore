@@ -127,7 +127,6 @@ inline multi_array<std::pair<T,bool>,2> get_fermionic_matrix(T,const SiteOperato
   return m.template matrix<T,I>(basis1,p);
 }
 
-
 template <class T, class I>
 multi_array<T,2> get_matrix(T,const SiteOperator& m, const SiteBasisDescriptor<I>& basis1,  const Parameters& p=Parameters(), bool ignore_fermion=false)
 {
@@ -143,6 +142,7 @@ multi_array<T,2> get_matrix(T,const SiteOperator& m, const SiteBasisDescriptor<I
 
   return matrix;
 }
+
 
 
 template <class I, class T>
