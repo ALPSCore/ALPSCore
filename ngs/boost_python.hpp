@@ -25,6 +25,8 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/// WARNING: This header has to be the first include ever!
+
 #ifndef ALPS_NGS_BOOST_PYTHON_HPP
 #define ALPS_NGS_BOOST_PYTHON_HPP
 
