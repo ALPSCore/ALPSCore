@@ -430,6 +430,20 @@
     </FINITELATTICE>
     <UNITCELL ref="anisotropic2d"/>
   </LATTICEGRAPH>
+  <LATTICEGRAPH name="open simple cubic lattice">
+    <FINITELATTICE>
+      <LATTICE ref="simple cubic lattice"/>
+      <PARAMETER name="W" default="L"/>
+      <PARAMETER name="H" default="W"/>
+      <EXTENT dimension="1" size="L"/>
+      <EXTENT dimension="2" size="W"/>
+      <EXTENT dimension="3" size="H"/>
+      <BOUNDARY dimension="1" type="open"/>
+      <BOUNDARY dimension="2" type="open"/>
+      <BOUNDARY dimension="3" type="open"/>
+    </FINITELATTICE>
+    <UNITCELL ref="simple3d"/>
+  </LATTICEGRAPH>
   <LATTICEGRAPH name="open square lattice">
     <FINITELATTICE>
       <LATTICE ref="square lattice"/>
