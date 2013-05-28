@@ -86,6 +86,7 @@ public:
   {
     return std::make_pair(terms_.begin(),terms_.end());
   }
+
   void flatten(); // multiply out all blocks
 
   boost::shared_ptr<Expression> flatten_one_expression();
@@ -132,9 +133,14 @@ public:
   void simplify();
   void remove_superfluous_parentheses();
 
+  bool has_no_term()    const { return terms_.empty(); }
   bool is_single_term() const { return terms_.size() == 1; }
   Term<T> term() const;
+  Term<T> zeroth_term() const { return terms_[0]; }
   bool depends_on(const std::string&) const;
+
+  Expression<T> expression_dependent_on(const std::string&) const;
+  Expression<T> expression_dependent_only_on(const std::string&) const;
 
   void parse(const std::string& str);
   bool parse(std::istream& is);
@@ -187,6 +193,28 @@ Term<T> Expression<T>::term() const
   if (!is_single_term())
     boost::throw_exception(std::logic_error("Called term() for multi-term expression"));
   return terms_[0];
+}
+
+template<class T>
+Expression<T> Expression<T>::expression_dependent_on(const std::string& str) const
+{
+  Expression<T> e;
+  for (typename std::vector<Term<T> >::const_iterator it=terms_.begin();
+       it!=terms_.end(); ++it)
+    if (it->depends_on(str))
+      e += (*it);
+  return e;
+} 
+
+template<class T>
+Expression<T> Expression<T>::expression_dependent_only_on(const std::string& str) const
+{
+  Expression<T> e;
+  for (typename std::vector<Term<T> >::const_iterator it=terms_.begin();
+       it!=terms_.end(); ++it)
+    if (it->depends_only_on(str))
+      e += (*it);
+  return e;
 }
 
 template<class T>

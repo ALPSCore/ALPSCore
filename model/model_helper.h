@@ -59,7 +59,8 @@ public:
   {
     model_ = model_library_.get_hamiltonian(g,p,issymbolic);
   }
-  
+
+  const ModelLibrary& model_library() const { return model_library_; }  
   HamiltonianDescriptor<I>& model() { return model_;}
   const HamiltonianDescriptor<I>& model() const { return model_;}
   basis_descriptor_type& basis() { return model().basis();}

@@ -86,6 +86,7 @@ public:
   }
 
   bool depends_on(const std::string&) const;
+  bool depends_only_on(const std::string&) const;
 
   int num_factors() const {return terms_.size(); }
   void negate() { is_negative_ = !is_negative_;}
@@ -108,6 +109,27 @@ bool Term<T>::depends_on(const std::string& s) const {
     if(it->depends_on(s))
       return true;
   return false;
+}
+
+template<class T>
+bool Term<T>::depends_only_on(const std::string& s) const {
+  if (!depends_on(s))
+    return false;
+
+  for (factor_iterator it=factors().first; it!=factors().second; ++it)
+  {
+    if (it->depends_on(s))
+      continue;
+    try {
+      double tmp = boost::lexical_cast<double>(*it);
+      continue;
+    }
+    catch(...) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 template<class T>
