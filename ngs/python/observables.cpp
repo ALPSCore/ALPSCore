@@ -61,7 +61,8 @@ BOOST_PYTHON_MODULE(pyngsobservables_c) {
 
     boost::python::class_<alps::mcobservables>(
         "observables",
-        boost::python::no_init
+//        boost::python::no_init      // Tamama removes this line: Reason: this adds an __init__ method which always raises a Python Runtime exception. 
+        boost::python::init<>()     // Tamama add this line.
     )
         .def(boost::python::map_indexing_suite<alps::mcobservables>())
         .def("reset", &alps::mcobservables::reset)
