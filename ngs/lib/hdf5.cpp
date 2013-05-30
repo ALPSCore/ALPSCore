@@ -593,7 +593,10 @@ namespace alps {
                     && is_scalar(path.substr(0, path.find_last_of('@')) + "@__complex__:" + path.substr(path.find_last_of('@') + 1));
             else if (is_group(path)) {
                 std::vector<std::string> children = list_children(path);
-                return children.size() ? is_complex(path + "/" + children[0]) : false;
+                bool ret = false;
+                for (std::size_t i = 0; i < children.size() && !ret; ++i)
+                    ret |= is_complex(path + "/" + children[i]);
+                return ret;
             } else
                 return is_attribute(path + "/@__complex__") && is_scalar(path + "/@__complex__");
         }
