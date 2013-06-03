@@ -48,9 +48,9 @@
 
 namespace alps {
 	namespace accumulator {
-		namespace tag {
-			struct max_num_binning;
-		}
+        // this should be called namespace tag { struct max_num_binning; }
+        // but gcc <= 4.4 has lookup error, so name it different
+        struct max_num_binning_tag;
 
 		namespace detail {
 			template<typename C, typename M> class max_num_binning_proxy {
@@ -93,7 +93,7 @@ namespace alps {
 			typedef detail::max_num_binning_proxy<typename count_type<T>::type, typename mean_type<T>::type> type;
 		};
 
-		template<typename T> struct has_feature<T, tag::max_num_binning> {
+		template<typename T> struct has_feature<T, max_num_binning_tag> {
 	        template<typename R, typename C> static char helper(R(C::*)() const);
 	        template<typename C> static char check(boost::integral_constant<std::size_t, sizeof(helper(&C::max_num_binning))>*);
 	        template<typename C> static double check(...);
@@ -107,14 +107,14 @@ namespace alps {
 		namespace detail {
 
 			template<typename A> typename boost::enable_if<
-				  typename has_feature<A, tag::max_num_binning>::type
+				  typename has_feature<A, max_num_binning_tag>::type
 				, typename max_num_binning_type<A>::type
 			>::type max_num_binning_impl(A const & acc) {
 				return max_num_binning(acc);
 			}
 
 			template<typename A> typename boost::disable_if<
-				  typename has_feature<A, tag::max_num_binning>::type
+				  typename has_feature<A, max_num_binning_tag>::type
 				, typename max_num_binning_type<A>::type
 			>::type max_num_binning_impl(A const & acc) {
 			    throw std::runtime_error(std::string(typeid(A).name()) + " has no max_num_binning-method" + ALPS_STACKTRACE);
@@ -124,11 +124,11 @@ namespace alps {
 
 		namespace impl {
 
-			template<typename T, typename B> struct Accumulator<T, tag::max_num_binning, B> : public B {
+			template<typename T, typename B> struct Accumulator<T, max_num_binning_tag, B> : public B {
 
 			    public:
 				    typedef typename alps::accumulator::max_num_binning_type<B>::type max_num_binning_type;
-                	typedef Result<T, tag::max_num_binning, typename B::result_type> result_type;
+                	typedef Result<T, max_num_binning_tag, typename B::result_type> result_type;
 
                 	// TODO: implement ...
 			        template<typename ArgumentPack> Accumulator(ArgumentPack const & args)
@@ -252,7 +252,7 @@ namespace alps {
 					std::vector<typename mean_type<B>::type> m_mn_bins;
 			};
 
-			template<typename T, typename B> class Result<T, tag::max_num_binning, B> : public B {
+			template<typename T, typename B> class Result<T, max_num_binning_tag, B> : public B {
 
 			    public:
 					typedef typename alps::accumulator::max_num_binning_type<B>::type max_num_binning_type;
@@ -313,22 +313,22 @@ namespace alps {
 					std::vector<typename mean_type<B>::type> m_mn_bins;
 			};
 
-			template<typename B> class BaseWrapper<tag::max_num_binning, B> : public B {
+			template<typename B> class BaseWrapper<max_num_binning_tag, B> : public B {
 				public:
 				    virtual bool has_max_num_binning() const = 0;
 	        };
 
-			template<typename T, typename B> class ResultTypeWrapper<T, tag::max_num_binning, B> : public B {
+			template<typename T, typename B> class ResultTypeWrapper<T, max_num_binning_tag, B> : public B {
 				public:
 				    virtual typename max_num_binning_type<B>::type max_num_binning() const = 0;
 	        };
 
-			template<typename T, typename B> class DerivedWrapper<T, tag::max_num_binning, B> : public B {
+			template<typename T, typename B> class DerivedWrapper<T, max_num_binning_tag, B> : public B {
 				public:
 				    DerivedWrapper(): B() {}
 				    DerivedWrapper(T const & arg): B(arg) {}
 
-				    bool has_max_num_binning() const { return has_feature<T, tag::max_num_binning>::type::value; }
+				    bool has_max_num_binning() const { return has_feature<T, max_num_binning_tag>::type::value; }
 
 					typename max_num_binning_type<B>::type max_num_binning() const { return detail::max_num_binning_impl(this->m_data); }
 	        };

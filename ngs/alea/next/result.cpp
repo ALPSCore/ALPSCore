@@ -50,7 +50,7 @@ namespace alps {
 		template<typename T> struct result_type_wrapper;
 		template<typename A> struct derived_wrapper;
 
-		class base_wrapper : public impl::BaseWrapper<tag::mean, impl::BaseWrapper<tag::count, impl::Noop> > {
+		class base_wrapper : public impl::BaseWrapper<mean_tag, impl::BaseWrapper<count_tag, impl::Noop> > {
 
 			public:
 				virtual ~base_wrapper() {}
@@ -73,7 +73,7 @@ namespace alps {
                 }
 		};
 
-		template<typename T> struct result_type_wrapper : public impl::ResultTypeWrapper<T, tag::mean, impl::ResultTypeWrapper<T, tag::count, base_wrapper> > {};
+		template<typename T> struct result_type_wrapper : public impl::ResultTypeWrapper<T, mean_tag, impl::ResultTypeWrapper<T, count_tag, base_wrapper> > {};
 
 		namespace detail {
 			template<typename A> class accumulator_holder : public result_type_wrapper<typename value_type<A>::type> {
@@ -90,10 +90,10 @@ namespace alps {
 			acc(value);
 		}
 
-		template<typename A> struct derived_wrapper : public impl::DerivedWrapper<A, tag::mean, impl::DerivedWrapper<A, tag::count, detail::accumulator_holder<A> > > {
+		template<typename A> struct derived_wrapper : public impl::DerivedWrapper<A, mean_tag, impl::DerivedWrapper<A, count_tag, detail::accumulator_holder<A> > > {
 			public:
-				derived_wrapper(): impl::DerivedWrapper<A, tag::mean, impl::DerivedWrapper<A, tag::count, detail::accumulator_holder<A> > >() {}
-				derived_wrapper(A const & arg): impl::DerivedWrapper<A, tag::mean, impl::DerivedWrapper<A, tag::count, detail::accumulator_holder<A> > >(arg) {}
+				derived_wrapper(): impl::DerivedWrapper<A, mean_tag, impl::DerivedWrapper<A, count_tag, detail::accumulator_holder<A> > >() {}
+				derived_wrapper(A const & arg): impl::DerivedWrapper<A, mean_tag, impl::DerivedWrapper<A, count_tag, detail::accumulator_holder<A> > >(arg) {}
 
                 inline A & extract()  {
                     return this->m_acc;
@@ -163,8 +163,8 @@ namespace alps {
 
                 void load(hdf5::archive & ar) {
                 	// TODO: make logic to find right accumulator:
-                	impl::Accumulator<double, tag::mean, impl::Accumulator<double, tag::count, impl::Noop> > acc;
-                	m_base =  boost::shared_ptr<base_wrapper>(new derived_wrapper<impl::Accumulator<double, tag::mean, impl::Accumulator<double, tag::count, impl::Noop> > >(acc));
+                	impl::Accumulator<double, mean_tag, impl::Accumulator<double, count_tag, impl::Noop> > acc;
+                	m_base =  boost::shared_ptr<base_wrapper>(new derived_wrapper<impl::Accumulator<double, mean_tag, impl::Accumulator<double, count_tag, impl::Noop> > >(acc));
                     ar[""] >> *m_base;
                 }
 

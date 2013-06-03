@@ -36,7 +36,7 @@
 #define ALPS_STACKTRACE (                                                          \
       std::string("\nIn ") + __FILE__                                              \
     + " on " + ALPS_NGS_STRINGIFY(__LINE__)                                        \
-    + " in " + __FUNCTION__ + "\n"                                                 \
+    + " in " + __PRETTY_FUNCTION__ + "\n"                                          \
     + ::alps::ngs::stacktrace()                                                    \
 )
 

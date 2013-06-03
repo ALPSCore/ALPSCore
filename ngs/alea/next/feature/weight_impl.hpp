@@ -43,17 +43,17 @@
 
 namespace alps {
 	namespace accumulator {
-		namespace tag {
-			template<typename T> struct weight_holder;
-		}
+        // this should be called namespace tag { template<typename T> struct weight_holder; }
+        // but gcc <= 4.4 has lookup error, so name it different
+		template<typename T> struct weight_holder_tag;
 
 		namespace impl {
 
-			template<typename T, typename W, typename B> struct Accumulator<T, tag::weight_holder<W>, B> : public B {
+			template<typename T, typename W, typename B> struct Accumulator<T, weight_holder_tag<W>, B> : public B {
 
 			    public:
 				    typedef W weight_type;
-                	typedef Result<T, tag::weight_holder<W>, typename B::result_type> result_type;
+                	typedef Result<T, weight_holder_tag<W>, typename B::result_type> result_type;
 
                 	// TODO: add external weight!
 			        template<typename ArgumentPack> Accumulator(ArgumentPack const & args): B(args) {}
@@ -120,7 +120,7 @@ namespace alps {
 	                boost::shared_ptr< ::alps::accumulator::base_wrapper> m_weight;
 			};
 
-			template<typename T, typename W, typename B> class Result<T, tag::weight_holder<W>, B> : public B {
+			template<typename T, typename W, typename B> class Result<T, weight_holder_tag<W>, B> : public B {
 
 			    public:
 					typedef W weight_type;

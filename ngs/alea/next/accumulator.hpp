@@ -338,19 +338,36 @@ namespace alps {
 				set.insert(arg.name, boost::shared_ptr<accumulator_wrapper>(new accumulator_wrapper(T())));
 	            return set;
 	        }
+
+			template<typename T> struct simple_observable_type
+				: public impl::Accumulator<T, error_tag, impl::Accumulator<T, mean_tag, impl::Accumulator<T, count_tag, impl::AccumulatorBase<T> > > >
+			{};
+
+			template<typename T> struct observable_type
+				: public impl::Accumulator<T, max_num_binning_tag, simple_observable_type<T> >
+			{};
+
+			template<typename T> struct signed_observable_type
+				: public impl::Accumulator<T, weight_holder_tag<simple_observable_type<T> >, observable_type<T> >
+			{};
+
+			template<typename T> struct signed_simple_observable_type
+				: public impl::Accumulator<T, weight_holder_tag<simple_observable_type<T> >, simple_observable_type<T> >
+			{};
+
 		}
 
-		typedef detail::PredefinedObservable<impl::Accumulator<double, tag::error, impl::Accumulator<double, tag::mean, impl::Accumulator<double, tag::count, impl::AccumulatorBase<double> > > > > SimpleRealObservable;
-		typedef detail::PredefinedObservable<impl::Accumulator<std::vector<double>, tag::error, impl::Accumulator<std::vector<double>, tag::mean, impl::Accumulator<std::vector<double>, tag::count, impl::AccumulatorBase<std::vector<double> > > > > > SimpleRealVectorObservable;
+		typedef detail::PredefinedObservable<detail::simple_observable_type<double> > SimpleRealObservable;
+		typedef detail::PredefinedObservable<detail::simple_observable_type<std::vector<double> > > SimpleRealVectorObservable;
 
-		typedef detail::PredefinedObservable<impl::Accumulator<double, tag::max_num_binning, SimpleRealObservable::accumulator_type> > RealObservable;
-		typedef detail::PredefinedObservable<impl::Accumulator<std::vector<double>, tag::max_num_binning, SimpleRealVectorObservable::accumulator_type> > RealVectorObservable;
+		typedef detail::PredefinedObservable<detail::observable_type<double> > RealObservable;
+		typedef detail::PredefinedObservable<detail::observable_type<std::vector<double> > > RealVectorObservable;
 
-		typedef detail::PredefinedObservable<impl::Accumulator<double, tag::weight_holder<SimpleRealObservable::accumulator_type>, RealObservable::accumulator_type> > SignedRealObservable;
-		typedef detail::PredefinedObservable<impl::Accumulator<std::vector<double>, tag::weight_holder<SimpleRealVectorObservable::accumulator_type>, RealVectorObservable::accumulator_type> > SignedRealVectorObservable;
+		typedef detail::PredefinedObservable<detail::signed_observable_type<double> > SignedRealObservable;
+		typedef detail::PredefinedObservable<detail::signed_observable_type<std::vector<double> > > SignedRealVectorObservable;
 
-		typedef detail::PredefinedObservable<impl::Accumulator<double, tag::weight_holder<SimpleRealObservable::accumulator_type>, SimpleRealObservable::accumulator_type> > SignedSimpleRealObservable;
-		typedef detail::PredefinedObservable<impl::Accumulator<std::vector<double>, tag::weight_holder<SimpleRealVectorObservable::accumulator_type>, SimpleRealVectorObservable::accumulator_type> > SignedSimpleRealVectorObservable;
+		typedef detail::PredefinedObservable<detail::signed_simple_observable_type<double> > SignedSimpleRealObservable;
+		typedef detail::PredefinedObservable<detail::signed_simple_observable_type<std::vector<double> > > SignedSimpleRealVectorObservable;
 
         // TODO implement: RealTimeSeriesObservable
 

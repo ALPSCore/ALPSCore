@@ -48,11 +48,11 @@ namespace alps {
 
 		// TODO: make for macro for that ...
 		class base_wrapper : public 
-			impl::BaseWrapper<tag::weight, 
-			impl::BaseWrapper<tag::max_num_binning, 
-			impl::BaseWrapper<tag::error, 
-			impl::BaseWrapper<tag::mean, 
-			impl::BaseWrapper<tag::count, 
+			impl::BaseWrapper<weight_tag, 
+			impl::BaseWrapper<max_num_binning_tag, 
+			impl::BaseWrapper<error_tag, 
+			impl::BaseWrapper<mean_tag, 
+			impl::BaseWrapper<count_tag, 
 		impl::BaseWrapper<void, void> > > > > > {
 			public:
 				virtual ~base_wrapper() {}
@@ -85,11 +85,11 @@ namespace alps {
 		}
 
 		template<typename T> class result_type_wrapper : public 
-			impl::ResultTypeWrapper<T, tag::weight, 
-			impl::ResultTypeWrapper<T, tag::max_num_binning, 
-			impl::ResultTypeWrapper<T, tag::error, 
-			impl::ResultTypeWrapper<T, tag::mean, 
-			impl::ResultTypeWrapper<T, tag::count, 
+			impl::ResultTypeWrapper<T, weight_tag, 
+			impl::ResultTypeWrapper<T, max_num_binning_tag, 
+			impl::ResultTypeWrapper<T, error_tag, 
+			impl::ResultTypeWrapper<T, mean_tag, 
+			impl::ResultTypeWrapper<T, count_tag, 
 		detail::value_type_wrapper<T, base_wrapper> > > > > > {};
 
 		namespace detail {
@@ -112,27 +112,27 @@ namespace alps {
 		}
 
  		template<typename A> class derived_wrapper : public 
- 			impl::DerivedWrapper<A, tag::weight, 
-			impl::DerivedWrapper<A, tag::max_num_binning, 
- 			impl::DerivedWrapper<A, tag::error, 
- 			impl::DerivedWrapper<A, tag::mean, 
- 			impl::DerivedWrapper<A, tag::count, 
+ 			impl::DerivedWrapper<A, weight_tag, 
+			impl::DerivedWrapper<A, max_num_binning_tag, 
+ 			impl::DerivedWrapper<A, error_tag, 
+ 			impl::DerivedWrapper<A, mean_tag, 
+ 			impl::DerivedWrapper<A, count_tag, 
  		detail::foundation_wrapper<A> > > > > > {
 			public:
 				derived_wrapper(): 
-					impl::DerivedWrapper<A, tag::weight, 
-					impl::DerivedWrapper<A, tag::max_num_binning, 
-					impl::DerivedWrapper<A, tag::error, 
-					impl::DerivedWrapper<A, tag::mean, 
-					impl::DerivedWrapper<A, tag::count, 
+					impl::DerivedWrapper<A, weight_tag, 
+					impl::DerivedWrapper<A, max_num_binning_tag, 
+					impl::DerivedWrapper<A, error_tag, 
+					impl::DerivedWrapper<A, mean_tag, 
+					impl::DerivedWrapper<A, count_tag, 
 				detail::foundation_wrapper<A> > > > > >() {}
 
 				derived_wrapper(A const & arg): 
-					impl::DerivedWrapper<A, tag::weight, 
-					impl::DerivedWrapper<A, tag::max_num_binning, 
-					impl::DerivedWrapper<A, tag::error, 
-					impl::DerivedWrapper<A, tag::mean, 
-					impl::DerivedWrapper<A, tag::count, 
+					impl::DerivedWrapper<A, weight_tag, 
+					impl::DerivedWrapper<A, max_num_binning_tag, 
+					impl::DerivedWrapper<A, error_tag, 
+					impl::DerivedWrapper<A, mean_tag, 
+					impl::DerivedWrapper<A, count_tag, 
 				detail::foundation_wrapper<A> > > > > >(arg) {}
 
                 A & extract()  {
@@ -209,7 +209,7 @@ namespace alps {
 		            add_value(this->m_data, *static_cast<typename value_type<A>::type const *>(value));
 				}
 
-				template<typename T> typename boost::enable_if<typename has_feature<T, tag::weight>::type>::type call_impl(
+				template<typename T> typename boost::enable_if<typename has_feature<T, weight_tag>::type>::type call_impl(
 					void const * value, std::type_info const & value_info, void const * weight, std::type_info const & weight_info
 				) {
 					if (!equal(value_info, typeid(typename value_type<T>::type)))
@@ -218,7 +218,7 @@ namespace alps {
 		                throw std::runtime_error("wrong weight type added in accumulator_wrapper::add_value" + ALPS_STACKTRACE);
 		            add_value(this->m_data, *static_cast<typename value_type<T>::type const *>(value), *static_cast<typename value_type<typename weight_type<T>::type>::type const *>(weight));
 				}
-				template<typename T> typename boost::disable_if<typename has_feature<T, tag::weight>::type>::type call_impl(
+				template<typename T> typename boost::disable_if<typename has_feature<T, weight_tag>::type>::type call_impl(
 					void const * value, std::type_info const & value_info, void const * weight, std::type_info const & weight_info
 				) {
 	                throw std::runtime_error(std::string("The type ") + typeid(T).name() + " has no weight" + ALPS_STACKTRACE);

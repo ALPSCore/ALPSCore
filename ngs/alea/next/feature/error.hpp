@@ -47,13 +47,13 @@
 
 namespace alps {
 	namespace accumulator {
-		namespace tag {
-			struct error;
-		}
+        // this should be called namespace tag { struct error; }
+        // but gcc <= 4.4 has lookup error, so name it different
+        struct error_tag;
 
 		template<typename T> struct error_type : public mean_type<T> {};
 
-		template<typename T> struct has_feature<T, tag::error> {
+		template<typename T> struct has_feature<T, error_tag> {
 	        template<typename R, typename C> static char helper(R(C::*)() const);
 	        template<typename C> static char check(boost::integral_constant<std::size_t, sizeof(helper(&C::error))>*);
 	        template<typename C> static double check(...);
@@ -67,14 +67,14 @@ namespace alps {
 		namespace detail {
 
 			template<typename A> typename boost::enable_if<
-				  typename has_feature<A, tag::error>::type
+				  typename has_feature<A, error_tag>::type
 				, typename error_type<A>::type
 			>::type error_impl(A const & acc) {
 				return error(acc);
 			}
 
 			template<typename A> typename boost::disable_if<
-				  typename has_feature<A, tag::error>::type
+				  typename has_feature<A, error_tag>::type
 				, typename error_type<A>::type
 			>::type error_impl(A const & acc) {
 			    throw std::runtime_error(std::string(typeid(A).name()) + " has no error-method" + ALPS_STACKTRACE);
@@ -84,11 +84,11 @@ namespace alps {
 
 		namespace impl {
 
-			template<typename T, typename B> struct Accumulator<T, tag::error, B> : public B {
+			template<typename T, typename B> struct Accumulator<T, error_tag, B> : public B {
 
 			    public:
 				    typedef typename alps::accumulator::error_type<B>::type error_type;
-                	typedef Result<T, tag::error, typename B::result_type> result_type;
+                	typedef Result<T, error_tag, typename B::result_type> result_type;
 
 			        template<typename ArgumentPack> Accumulator(ArgumentPack const & args): B(args), m_sum2(T()) {}
 
@@ -159,7 +159,7 @@ namespace alps {
 			        T m_sum2;
 			};
 
-			template<typename T, typename B> class Result<T, tag::error, B> : public B {
+			template<typename T, typename B> class Result<T, error_tag, B> : public B {
 
 			    public:
 					typedef typename alps::accumulator::error_type<B>::type error_type;
@@ -208,22 +208,22 @@ namespace alps {
 			        error_type m_error;		        
 			};
 
-			template<typename B> class BaseWrapper<tag::error, B> : public B {
+			template<typename B> class BaseWrapper<error_tag, B> : public B {
 				public:
 				    virtual bool has_error() const = 0;
 	        };
 
-			template<typename T, typename B> class ResultTypeWrapper<T, tag::error, B> : public B {
+			template<typename T, typename B> class ResultTypeWrapper<T, error_tag, B> : public B {
 				public:
 				    virtual typename error_type<B>::type error() const = 0;
 	        };
 
-			template<typename T, typename B> class DerivedWrapper<T, tag::error, B> : public B {
+			template<typename T, typename B> class DerivedWrapper<T, error_tag, B> : public B {
 				public:
 				    DerivedWrapper(): B() {}
 				    DerivedWrapper(T const & arg): B(arg) {}
 
-				    bool has_error() const { return has_feature<T, tag::error>::type::value; }
+				    bool has_error() const { return has_feature<T, error_tag>::type::value; }
 
 				    typename error_type<B>::type error() const { return detail::error_impl(this->m_data); }
 	        };

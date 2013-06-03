@@ -45,11 +45,11 @@ namespace alps {
 
 		class base_wrapper;
 
-		namespace tag {
-			struct weight;
-		}
+        // this should be called namespace tag { struct weight; }
+        // but gcc <= 4.4 has lookup error, so name it different
+		struct weight_tag;
 
-		template<typename T> struct has_feature<T, tag::weight> {
+		template<typename T> struct has_feature<T, weight_tag> {
 	        template<typename R, typename C> static char helper(R(C::*)() const);
 	        template<typename C> static char check(boost::integral_constant<std::size_t, sizeof(helper(&C::owns_weight))>*);
 	        template<typename C> static double check(...);
@@ -67,7 +67,7 @@ namespace alps {
 		}
 
 		template<typename T> struct weight_type {
-			typedef typename detail::weight_type_impl<has_feature<T, tag::weight>::type::value, T>::type type;
+			typedef typename detail::weight_type_impl<has_feature<T, weight_tag>::type::value, T>::type type;
 		};
 
 		template<typename T> base_wrapper const * weight(T const & arg) {
@@ -77,14 +77,14 @@ namespace alps {
 		namespace detail {
 
 			template<typename A> typename boost::enable_if<
-				  typename has_feature<A, tag::weight>::type
+				  typename has_feature<A, weight_tag>::type
 				, base_wrapper const *
 			>::type weight_impl(A const & acc) {
 				return weight(acc);
 			}
 
 			template<typename A> typename boost::disable_if<
-				  typename has_feature<A, tag::weight>::type
+				  typename has_feature<A, weight_tag>::type
 				, base_wrapper const *
 			>::type weight_impl(A const & acc) {
 			    throw std::runtime_error(std::string(typeid(A).name()) + " has no weight-method" + ALPS_STACKTRACE);
@@ -94,22 +94,22 @@ namespace alps {
 
 		namespace impl {
 
-			template<typename B> class BaseWrapper<tag::weight, B> : public B {
+			template<typename B> class BaseWrapper<weight_tag, B> : public B {
 				public:
 				    virtual bool has_weight() const = 0;
 	        };
 
-			template<typename T, typename B> class ResultTypeWrapper<T, tag::weight, B> : public B {
+			template<typename T, typename B> class ResultTypeWrapper<T, weight_tag, B> : public B {
 				public:
 				    virtual base_wrapper const * weight() const = 0;
 	        };
 
-			template<typename T, typename B> class DerivedWrapper<T, tag::weight, B> : public B {
+			template<typename T, typename B> class DerivedWrapper<T, weight_tag, B> : public B {
 				public:
 				    DerivedWrapper(): B() {}
 				    DerivedWrapper(T const & arg): B(arg) {}
 
-				    bool has_weight() const { return has_feature<T, tag::weight>::type::value; }
+				    bool has_weight() const { return has_feature<T, weight_tag>::type::value; }
 
 				    base_wrapper const * weight() const { return detail::weight_impl(this->m_data); }
 	        };

@@ -42,45 +42,45 @@
 
 namespace alps {
 	namespace accumulator {
-		namespace tag {
-			struct count;
-		}
+        // this should be called namespace tag { struct count; }
+        // but gcc <= 4.4 has lookup error, so name it different
+        struct count_tag;
 
         template<typename T> struct count_type {
             typedef boost::uint64_t type;
         };
 
-		template<typename T> struct has_feature<T, tag::count> {
-            template<typename C> static char helper(boost::uint64_t (C::*)() const);
+		template<typename T> struct has_feature<T, count_tag> {
+            template<typename C> static char helper(typename count_type<T>::type (C::*)() const);
             template<typename C> static char check(boost::integral_constant<std::size_t, sizeof(helper(&C::count))>*);
             template<typename C> static double check(...);
             typedef boost::integral_constant<bool, sizeof(char) == sizeof(check<T>(0))> type;
         };
 
-		template<typename T> boost::uint64_t count(T const & arg) {
+		template<typename T> typename count_type<T>::type count(T const & arg) {
 			return arg.count();
 		}
 
 		namespace detail {
 
 			template<typename A> typename boost::enable_if<
-				typename has_feature<A, tag::count>::type, boost::uint64_t
+				typename has_feature<A, count_tag>::type, typename count_type<A>::type
 			>::type count_impl(A const & acc) {
 				return count(acc);
 			}
 
 			template<typename A> typename boost::disable_if<
-				typename has_feature<A, tag::count>::type, boost::uint64_t
+				typename has_feature<A, count_tag>::type, typename count_type<A>::type
 			>::type count_impl(A const & acc) {
                 throw std::runtime_error(std::string(typeid(A).name()) + " has no count-method" + ALPS_STACKTRACE);
-				return boost::uint64_t();
+				return typename count_type<A>::type();
 			}
 
 		}
 
 		namespace impl {
 
-			template<typename T, typename B> class Result<T, tag::count, B> : public B {
+			template<typename T, typename B> class Result<T, count_tag, B> : public B {
 
                 public:
                     typedef typename count_type<T>::type count_type;
@@ -126,11 +126,11 @@ namespace alps {
                     count_type m_count;
             };
 
-			template<typename T, typename B> struct Accumulator<T, tag::count, B> : public B {
+			template<typename T, typename B> struct Accumulator<T, count_tag, B> : public B {
 
                 public:
 	                typedef typename count_type<T>::type count_type;
-                	typedef Result<T, tag::count, typename B::result_type> result_type;
+                	typedef Result<T, count_tag, typename B::result_type> result_type;
 
                     template<typename ArgumentPack> Accumulator(ArgumentPack const & args)
                     	: m_count(count_type())
@@ -172,20 +172,20 @@ namespace alps {
                     count_type m_count;
 			};
 
-			template<typename B> class BaseWrapper<tag::count, B> : public B {
+			template<typename B> class BaseWrapper<count_tag, B> : public B {
             	public:
 	                virtual bool has_count() const = 0;
 	                virtual boost::uint64_t count() const = 0;
 	        };
 
-			template<typename T, typename B> class ResultTypeWrapper<T, tag::count, B> : public B {};
+			template<typename T, typename B> class ResultTypeWrapper<T, count_tag, B> : public B {};
 
-			template<typename T, typename B> class DerivedWrapper<T, tag::count, B> : public B {
+			template<typename T, typename B> class DerivedWrapper<T, count_tag, B> : public B {
             	public:
 	                DerivedWrapper(): B() {}
 	                DerivedWrapper(T const & arg): B(arg) {}
 
-	                bool has_count() const { return has_feature<T, tag::count>::type::value; }
+	                bool has_count() const { return has_feature<T, count_tag>::type::value; }
 
 	                typename boost::uint64_t count() const { return detail::count_impl(this->m_data); }
 	        };

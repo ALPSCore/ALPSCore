@@ -46,15 +46,15 @@
 
 namespace alps {
 	namespace accumulator {
-		namespace tag {
-			struct mean;
-		}
+        // this should be called namespace tag { struct mean; }
+        // but gcc <= 4.4 has lookup error, so name it different
+        struct mean_tag;
 
 		template<typename T> struct mean_type
 			: public boost::mpl::if_<boost::is_integral<typename value_type<T>::type>, double, typename value_type<T>::type>
 		{};
 
-		template<typename T> struct has_feature<T, tag::mean> {
+		template<typename T> struct has_feature<T, mean_tag> {
 			template<typename R, typename C> static char helper(R(C::*)() const);
 			template<typename C> static char check(boost::integral_constant<std::size_t, sizeof(helper(&C::mean))>*);
 			template<typename C> static double check(...);
@@ -68,14 +68,14 @@ namespace alps {
 		namespace detail {
 
 			template<typename A> typename boost::enable_if<
-				  typename has_feature<A, tag::mean>::type
+				  typename has_feature<A, mean_tag>::type
 				, typename mean_type<A>::type
 			>::type mean_impl(A const & acc) {
 				return mean(acc);
 			}
 
 			template<typename A> typename boost::disable_if<
-				  typename has_feature<A, tag::mean>::type
+				  typename has_feature<A, mean_tag>::type
 				, typename mean_type<A>::type
 			>::type mean_impl(A const & acc) {
 				throw std::runtime_error(std::string(typeid(A).name()) + " has no mean-method" + ALPS_STACKTRACE);
@@ -85,11 +85,11 @@ namespace alps {
 
 		namespace impl {
 
-			template<typename T, typename B> struct Accumulator<T, tag::mean, B> : public B {
+			template<typename T, typename B> struct Accumulator<T, mean_tag, B> : public B {
 
 				public:
 					typedef typename alps::accumulator::mean_type<B>::type mean_type;
-					typedef Result<T, tag::mean, typename B::result_type> result_type;
+					typedef Result<T, mean_tag, typename B::result_type> result_type;
 
 					template<typename ArgumentPack> Accumulator(ArgumentPack const & args): B(args), m_sum(T()) {}
 
@@ -154,7 +154,7 @@ namespace alps {
 					T m_sum;
 			};
 
-			template<typename T, typename B> class Result<T, tag::mean, B> : public B {
+			template<typename T, typename B> class Result<T, mean_tag, B> : public B {
 
 				public:
 					typedef typename alps::accumulator::mean_type<B>::type mean_type;
@@ -203,22 +203,22 @@ namespace alps {
 					mean_type m_mean;
 			};
 
-			template<typename B> class BaseWrapper<tag::mean, B> : public B {
+			template<typename B> class BaseWrapper<mean_tag, B> : public B {
 				public:
 					virtual bool has_mean() const = 0;
 			};
 
-			template<typename T, typename B> class ResultTypeWrapper<T, tag::mean, B> : public B {
+			template<typename T, typename B> class ResultTypeWrapper<T, mean_tag, B> : public B {
 				public:
 					virtual typename mean_type<B>::type mean() const = 0;
 			};
 
-			template<typename T, typename B> class DerivedWrapper<T, tag::mean, B> : public B {
+			template<typename T, typename B> class DerivedWrapper<T, mean_tag, B> : public B {
 				public:
 					DerivedWrapper(): B() {}
 					DerivedWrapper(T const & arg): B(arg) {}
 
-					bool has_mean() const { return has_feature<T, tag::mean>::type::value; }
+					bool has_mean() const { return has_feature<T, mean_tag>::type::value; }
 
 					typename mean_type<B>::type mean() const { return detail::mean_impl(this->m_data); }
 			};
