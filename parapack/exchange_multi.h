@@ -450,7 +450,7 @@ protected:
   }
 
 private:
-  parapack::process_helper_mpi process_helper_;
+  alps::process_helper_mpi process_helper_;
   boost::mpi::communicator comm_;
 
   int nrep_local_;           // number of walkers (replicas) on this process
