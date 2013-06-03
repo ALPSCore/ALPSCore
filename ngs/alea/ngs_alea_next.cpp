@@ -41,52 +41,52 @@ BOOST_AUTO_TEST_CASE(ngs_alea_next) {
 	using namespace alps::accumulator;
 
 	accumulator_set::register_serializable_type<
-		impl::Accumulator<double, tag::count, impl::AccumulatorBase<double> >
+		impl::Accumulator<double, count_tag, impl::AccumulatorBase<double> >
 	>();
 
 	accumulator_set::register_serializable_type<
-		impl::Accumulator<double, tag::mean, impl::Accumulator<double, tag::count, impl::AccumulatorBase<double> > >
+		impl::Accumulator<double, mean_tag, impl::Accumulator<double, count_tag, impl::AccumulatorBase<double> > >
 	>();
 
 	accumulator_set::register_serializable_type<
-		impl::Accumulator<double, tag::error, impl::Accumulator<double, tag::mean, impl::Accumulator<double, tag::count, impl::AccumulatorBase<double> > > >
+		impl::Accumulator<double, error_tag, impl::Accumulator<double, mean_tag, impl::Accumulator<double, count_tag, impl::AccumulatorBase<double> > > >
 	>();
 
 	accumulator_set::register_serializable_type<
-		impl::Accumulator<double, tag::weight_holder<
-			impl::Accumulator<double, tag::mean, impl::Accumulator<double, tag::count, impl::AccumulatorBase<double> > >
-		>, impl::Accumulator<double, tag::mean, impl::Accumulator<double, tag::count, impl::AccumulatorBase<double> > > >
+		impl::Accumulator<double, weight_holder_tag<
+			impl::Accumulator<double, mean_tag, impl::Accumulator<double, count_tag, impl::AccumulatorBase<double> > >
+		>, impl::Accumulator<double, mean_tag, impl::Accumulator<double, count_tag, impl::AccumulatorBase<double> > > >
 	>();
 
 	accumulator_set::register_serializable_type<
-		impl::Accumulator<double, tag::max_num_binning, impl::Accumulator<
-			double, tag::error, impl::Accumulator<double, tag::mean, impl::Accumulator<double, tag::count, impl::AccumulatorBase<double> > >
+		impl::Accumulator<double, max_num_binning_tag, impl::Accumulator<
+			double, error_tag, impl::Accumulator<double, mean_tag, impl::Accumulator<double, count_tag, impl::AccumulatorBase<double> > >
 		> >
 	>();
 
 	accumulator_set::register_serializable_type<
-		impl::Accumulator<std::vector<double>, tag::mean, impl::Accumulator<std::vector<double>, tag::count, impl::AccumulatorBase<std::vector<double> > > >
+		impl::Accumulator<std::vector<double>, mean_tag, impl::Accumulator<std::vector<double>, count_tag, impl::AccumulatorBase<std::vector<double> > > >
 	>();
 
 	accumulator_set::register_serializable_type<
-		impl::Accumulator<std::vector<double>, tag::max_num_binning, impl::Accumulator<
-			std::vector<double>, tag::error, impl::Accumulator<std::vector<double>, tag::mean, impl::Accumulator<std::vector<double>, tag::count, impl::AccumulatorBase<std::vector<double> > > >
+		impl::Accumulator<std::vector<double>, max_num_binning_tag, impl::Accumulator<
+			std::vector<double>, error_tag, impl::Accumulator<std::vector<double>, mean_tag, impl::Accumulator<std::vector<double>, count_tag, impl::AccumulatorBase<std::vector<double> > > >
 		> >
 	>();
 
 	accumulator_set::register_serializable_type<
-		impl::Accumulator<alps::multi_array<double, 3>, tag::mean, impl::Accumulator<alps::multi_array<double, 3>, tag::count, impl::AccumulatorBase<alps::multi_array<double, 3> > > >
+		impl::Accumulator<alps::multi_array<double, 3>, mean_tag, impl::Accumulator<alps::multi_array<double, 3>, count_tag, impl::AccumulatorBase<alps::multi_array<double, 3> > > >
 	>();
 
 	accumulator_set::register_serializable_type<
-		impl::Accumulator<alps::multi_array<double, 3>, tag::max_num_binning, impl::Accumulator<
-			alps::multi_array<double, 3>, tag::error, impl::Accumulator<alps::multi_array<double, 3>, tag::mean, impl::Accumulator<alps::multi_array<double, 3>, tag::count, impl::AccumulatorBase<alps::multi_array<double, 3> > > >
+		impl::Accumulator<alps::multi_array<double, 3>, max_num_binning_tag, impl::Accumulator<
+			alps::multi_array<double, 3>, error_tag, impl::Accumulator<alps::multi_array<double, 3>, mean_tag, impl::Accumulator<alps::multi_array<double, 3>, count_tag, impl::AccumulatorBase<alps::multi_array<double, 3> > > >
 		> >
 	>();
 
 	accumulator_set accumulators;
 	accumulators.insert("mean", boost::shared_ptr<accumulator_wrapper>(
-		new accumulator_wrapper(impl::Accumulator<double, tag::mean, impl::Accumulator<double, tag::count, impl::AccumulatorBase<double> > >())
+		new accumulator_wrapper(impl::Accumulator<double, mean_tag, impl::Accumulator<double, count_tag, impl::AccumulatorBase<double> > >())
 	));
 
 	accumulators["mean"] << 1.;
@@ -110,16 +110,16 @@ BOOST_AUTO_TEST_CASE(ngs_alea_next) {
     BOOST_REQUIRE(mean(accumulators["error"].get<double>()) == 2);
     BOOST_REQUIRE(error(accumulators["error"].get<double>()) == 1);
 
-	accumulators.insert("count", boost::shared_ptr<accumulator_wrapper>(new accumulator_wrapper(impl::Accumulator<double, tag::count, impl::AccumulatorBase<double> >())));
+	accumulators.insert("count", boost::shared_ptr<accumulator_wrapper>(new accumulator_wrapper(impl::Accumulator<double, count_tag, impl::AccumulatorBase<double> >())));
 	for (int i = 0; i < 10; ++i)
 		accumulators["count"] << 1.;
 
     BOOST_REQUIRE(count(accumulators["count"]) == 10);
 
 	accumulators.insert("weighted", boost::shared_ptr<accumulator_wrapper>(
-		new accumulator_wrapper(impl::Accumulator<double, tag::weight_holder<
-			impl::Accumulator<double, tag::mean, impl::Accumulator<double, tag::count, impl::AccumulatorBase<double> > >
-		>, impl::Accumulator<double, tag::mean, impl::Accumulator<double, tag::count, impl::AccumulatorBase<double> > > >())
+		new accumulator_wrapper(impl::Accumulator<double, weight_holder_tag<
+			impl::Accumulator<double, mean_tag, impl::Accumulator<double, count_tag, impl::AccumulatorBase<double> > >
+		>, impl::Accumulator<double, mean_tag, impl::Accumulator<double, count_tag, impl::AccumulatorBase<double> > > >())
 	));
 
 	accumulators["weighted"](1., 1.);
@@ -135,7 +135,7 @@ BOOST_AUTO_TEST_CASE(ngs_alea_next) {
     BOOST_REQUIRE(mean(weight(accumulators["weighted"].get<double>())->get<double>()) == 1);
 
 	accumulators.insert("vector", boost::shared_ptr<accumulator_wrapper>(
-		new accumulator_wrapper(impl::Accumulator<std::vector<double>, tag::mean, impl::Accumulator<std::vector<double>, tag::count, impl::AccumulatorBase<std::vector<double> > > >())
+		new accumulator_wrapper(impl::Accumulator<std::vector<double>, mean_tag, impl::Accumulator<std::vector<double>, count_tag, impl::AccumulatorBase<std::vector<double> > > >())
 	));
 
 	accumulators["vector"](std::vector<double>(3, 1.));
@@ -149,7 +149,7 @@ BOOST_AUTO_TEST_CASE(ngs_alea_next) {
     BOOST_REQUIRE(std::equal(vector_mean.begin(), vector_mean.end(), mean(accumulators["vector"].get<std::vector<double> >()).begin()));
 
 	accumulators.insert("int", boost::shared_ptr<accumulator_wrapper>(
-		new accumulator_wrapper(impl::Accumulator<int, tag::mean, impl::Accumulator<int, tag::count, impl::AccumulatorBase<int > > >())
+		new accumulator_wrapper(impl::Accumulator<int, mean_tag, impl::Accumulator<int, count_tag, impl::AccumulatorBase<int > > >())
 	));
 	accumulators["int"](1);
 
@@ -157,7 +157,7 @@ BOOST_AUTO_TEST_CASE(ngs_alea_next) {
     BOOST_REQUIRE(mean(accumulators["int"].get<int>()) == 1);
 
 	accumulators.insert("vecint", boost::shared_ptr<accumulator_wrapper>(
-		new accumulator_wrapper(impl::Accumulator<std::vector<int>, tag::mean, impl::Accumulator<std::vector<int>, tag::count, impl::AccumulatorBase<std::vector<int> > > >())
+		new accumulator_wrapper(impl::Accumulator<std::vector<int>, mean_tag, impl::Accumulator<std::vector<int>, count_tag, impl::AccumulatorBase<std::vector<int> > > >())
 	));
 	accumulators["vecint"](std::vector<int>(3, 1));
 
@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_CASE(ngs_alea_next) {
     BOOST_REQUIRE(std::equal(vecint_mean.begin(), vecint_mean.end(), mean(accumulators["vecint"].get<std::vector<int> >()).begin()));
 
 	accumulators.insert("array", boost::shared_ptr<accumulator_wrapper>(
-		new accumulator_wrapper(impl::Accumulator<boost::array<double, 3>, tag::mean, impl::Accumulator<boost::array<double, 3>, tag::count, impl::AccumulatorBase<boost::array<double, 3> > > >())
+		new accumulator_wrapper(impl::Accumulator<boost::array<double, 3>, mean_tag, impl::Accumulator<boost::array<double, 3>, count_tag, impl::AccumulatorBase<boost::array<double, 3> > > >())
 	));
 	boost::array<double, 3> array_val = { {1., 2., 3.} };
 	accumulators["array"](array_val);
@@ -175,7 +175,7 @@ BOOST_AUTO_TEST_CASE(ngs_alea_next) {
     BOOST_REQUIRE(std::equal(array_val.begin(), array_val.end(), mean(accumulators["array"].get<boost::array<double, 3> >()).begin()));
 
 	accumulators.insert("multi_array", boost::shared_ptr<accumulator_wrapper>(
-		new accumulator_wrapper(impl::Accumulator<alps::multi_array<double, 3>, tag::mean, impl::Accumulator<alps::multi_array<double, 3>, tag::count, impl::AccumulatorBase<alps::multi_array<double, 3> > > >())
+		new accumulator_wrapper(impl::Accumulator<alps::multi_array<double, 3>, mean_tag, impl::Accumulator<alps::multi_array<double, 3>, count_tag, impl::AccumulatorBase<alps::multi_array<double, 3> > > >())
 	));
 	alps::multi_array<double, 3> multi_array_val(boost::extents[2][2][2]);
 	std::fill(multi_array_val.origin(), multi_array_val.origin() + 8, 1.);
@@ -185,8 +185,8 @@ BOOST_AUTO_TEST_CASE(ngs_alea_next) {
     BOOST_REQUIRE(std::equal(multi_array_val.begin(), multi_array_val.end(), mean(accumulators["multi_array"].get<alps::multi_array<double, 3> >()).begin()));
 
 	accumulators.insert("doublemaxbin", boost::shared_ptr<accumulator_wrapper>(
-		new accumulator_wrapper(impl::Accumulator<double, tag::max_num_binning, impl::Accumulator<
-			double, tag::error, impl::Accumulator<double, tag::mean, impl::Accumulator<double, tag::count, impl::AccumulatorBase<double > > >
+		new accumulator_wrapper(impl::Accumulator<double, max_num_binning_tag, impl::Accumulator<
+			double, error_tag, impl::Accumulator<double, mean_tag, impl::Accumulator<double, count_tag, impl::AccumulatorBase<double > > >
 		> >())
 	));
 
@@ -202,8 +202,8 @@ BOOST_AUTO_TEST_CASE(ngs_alea_next) {
     // TODO: check binning ...
 
 	accumulators.insert("vectormaxbin", boost::shared_ptr<accumulator_wrapper>(
-		new accumulator_wrapper(impl::Accumulator<std::vector<double>, tag::max_num_binning, impl::Accumulator<
-			std::vector<double>, tag::error, impl::Accumulator<std::vector<double>, tag::mean, impl::Accumulator<std::vector<double>, tag::count, impl::AccumulatorBase<std::vector<double> > > >
+		new accumulator_wrapper(impl::Accumulator<std::vector<double>, max_num_binning_tag, impl::Accumulator<
+			std::vector<double>, error_tag, impl::Accumulator<std::vector<double>, mean_tag, impl::Accumulator<std::vector<double>, count_tag, impl::AccumulatorBase<std::vector<double> > > >
 		> >())
 	));
 
@@ -220,8 +220,8 @@ BOOST_AUTO_TEST_CASE(ngs_alea_next) {
     // TODO: check binning ...
 
 	accumulators.insert("multiarraymaxbin", boost::shared_ptr<accumulator_wrapper>(
-		new accumulator_wrapper(impl::Accumulator<alps::multi_array<double, 3>, tag::max_num_binning, impl::Accumulator<
-			alps::multi_array<double, 3>, tag::error, impl::Accumulator<alps::multi_array<double, 3>, tag::mean, impl::Accumulator<alps::multi_array<double, 3>, tag::count, impl::AccumulatorBase<alps::multi_array<double, 3> > > >
+		new accumulator_wrapper(impl::Accumulator<alps::multi_array<double, 3>, max_num_binning_tag, impl::Accumulator<
+			alps::multi_array<double, 3>, error_tag, impl::Accumulator<alps::multi_array<double, 3>, mean_tag, impl::Accumulator<alps::multi_array<double, 3>, count_tag, impl::AccumulatorBase<alps::multi_array<double, 3> > > >
 		> >())
 	));
 
