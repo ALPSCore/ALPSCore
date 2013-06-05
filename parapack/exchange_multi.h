@@ -86,25 +86,35 @@ public:
   static void print_copyright(std::ostream& out) { walker_type::print_copyright(out); }
 
   multiple_parallel_exchange_worker(boost::mpi::communicator const& comm, alps::Parameters const& params)
-    : super_type(params), process_helper_(comm, params.value_or_default("PROCESS_PER_WORKER", 1)), comm_(process_helper_.comm_ctrl()), init_(params), beta_(params), mcs_(params),
+    : super_type(params), process_helper_(comm, params.value_or_default("PROCESS_PER_WORKER", 1)),
+      comm_(process_helper_.comm_ctrl()), work_(process_helper_.comm_work()),
+      head_(process_helper_.comm_head()), init_(params), beta_(params), mcs_(params),
       num_returnee_(0) {
 
+    if (head_ && head_.rank() == 0) {
+      if (comm_.rank() != 0) {
+        std::cerr << "Error: total number of processes should be a multiple of PROCESS_PER_WORKER\n";
+        boost::throw_exception(std::runtime_error(
+          "total number of processes should be a multiple of PROCESS_PER_WORKER"));
+      }
+    }
+    
     int nrep = beta_.size();
-    if (process_helper_.comm_work().rank() == 0) {
-      boost::tie(nrep_local_, offset_local_) = calc_nrep(comm_.rank());
+    if (head_) {
+      boost::tie(nrep_local_, offset_local_) = calc_nrep(head_.rank());
       if (nrep_local_ == 0) {
         std::cerr << "Error: number of replicas is smaller than number of processes\n";
         boost::throw_exception(std::runtime_error(
           "number of replicas is smaller than number of processes"));
       }
     }
-    broadcast(process_helper_.comm_work(), nrep_local_, 0);
-    broadcast(process_helper_.comm_work(), offset_local_, 0);
-    if (process_helper_.comm_work().rank() == 0 && comm_.rank() == 0) {
-      nreps_.resize(comm_.size());
-      offsets_.resize(comm_.size());
+    broadcast(work_, nrep_local_, 0);
+    broadcast(work_, offset_local_, 0);
+    if (head_ && head_.rank() == 0) {
+      nreps_.resize(head_.size());
+      offsets_.resize(head_.size());
       nrep_max_ = 0;
-      for (int p = 0; p < comm_.size(); ++p) {
+      for (int p = 0; p < head_.size(); ++p) {
         boost::tie(nreps_[p], offsets_[p]) = calc_nrep(p);
         nrep_max_ = std::max(nrep_max_, nreps_[p]);
       }
@@ -123,21 +133,21 @@ public:
       // different WORKER_SEED for each walker, same DISORDER_SEED for all walkers
       for (int j = 1; j < 3637 /* 509th prime number */; ++j) engine()();
       wp["WORKER_SEED"] = engine()();
-      walker_[p] = helper::create_walker(process_helper_.comm_work(), wp, init_);
+      walker_[p] = helper::create_walker(work_, wp, init_);
       tid_local_[p] = p + offset_local_;
     }
-    if (process_helper_.comm_work().rank() == 0 && comm_.rank() == 0) {
+    if (head_ && head_.rank() == 0) {
       tid_.resize(nrep);
       for (int p = 0; p < nrep; ++p) tid_[p] = p;
     }
 
-    if (process_helper_.comm_work().rank() == 0 && comm_.rank() == 0 && mcs_.exchange()) {
+    if (head_ && head_.rank() == 0 && mcs_.exchange()) {
       weight_parameters_.resize(nrep);
       for (int p = 0; p < nrep; ++p) weight_parameters_[p] = weight_parameter_type(0);
     }
 
     // initialize walker labels
-    if (process_helper_.comm_work().rank() == 0 && comm_.rank() == 0) {
+    if (head_ && head_.rank() == 0) {
       wid_.resize(nrep);
       for (int p = 0; p < nrep; ++p) wid_[p] = p;
       if (mcs_.exchange()) {
@@ -149,9 +159,9 @@ public:
 
     // working space
     if (mcs_.exchange()) {
-      if (process_helper_.comm_work().rank() == 0) {
+      if (head_) {
         wp_local_.resize(nrep_local_);
-        if (comm_.rank() == 0) {
+        if (head_.rank() == 0) {
           wp_.resize(nrep);
           upward_.resize(nrep);
           accept_.resize(nrep - 1);
@@ -167,7 +177,7 @@ public:
     obs.resize(nrep);
     for (int p = 0; p < nrep; ++p)
       helper::init_observables(walker_[0], params, init_, obs[p]);
-    if (process_helper_.comm_work().rank() == 0 && comm_.rank() == 0) {
+    if (head_ && head_.rank() == 0) {
       for (int p = 0; p < nrep; ++p) {
         obs[p] << SimpleRealObservable("EXMC: Temperature")
                << SimpleRealObservable("EXMC: Inverse Temperature");
@@ -192,7 +202,7 @@ public:
 
     int nrep = beta_.size();
 
-    if (process_helper_.comm_work().rank() == 0 && comm_.rank() == 0) {
+    if (head_ && head_.rank() == 0) {
       for (int p = 0; p < nrep; ++p) {
         add_constant(obs[p]["EXMC: Temperature"], 1. / beta_[p]);
         add_constant(obs[p]["EXMC: Inverse Temperature"], beta_[p]);
@@ -212,21 +222,21 @@ public:
       bool continue_stage = false;
       bool next_stage = false;
 
-      if (process_helper_.comm_work().rank() == 0) {
+      if (head_) {
         for (int w = 0; w < nrep_local_; ++w) wp_local_[w] = walker_[w]->weight_parameter();
-        if (comm_.rank() == 0) {
+        if (head_.rank() == 0) {
           std::copy(wp_local_.begin(), wp_local_.begin() + nrep_local_, wp_.begin());
           for (int p = 1; p < nreps_.size(); ++p)
-            comm_.recv(p, 0, &wp_[offsets_[p]], nreps_[p]);
+            head_.recv(p, 0, &wp_[offsets_[p]], nreps_[p]);
           for (int w = 0; w < nrep; ++w) {
             int p = tid_[w];
             weight_parameters_[p] += wp_[w];
           }
         } else {
-          comm_.send(0, 0, &wp_local_[0], nrep_local_);
+          head_.send(0, 0, &wp_local_[0], nrep_local_);
         }
 
-        if (comm_.rank() == 0) {
+        if (head_.rank() == 0) {
           if (mcs_.random_exchange()) {
             // random exchange
             for (int p = 0; p < nrep - 1; ++p) permutation_[p] = p;
@@ -294,22 +304,22 @@ public:
           if (mcs_.doing_optimization() && mcs_.stage_count() == mcs_.stage_sweeps()) {
 
             if (mcs_.optimization_type() == exmc::exchange_steps::rate) {
-              
+
               for (int p = 0; p < nrep - 1; ++p)
                 accept_[p] =
                   reinterpret_cast<SimpleRealObservable&>(obs[p]["EXMC: Acceptance Rate"]).mean();
               for (int p = 0; p < nrep; ++p) wp_[p] = weight_parameters_[p] / mcs_.stage_count();
               std::cout << "EXMC stage " << mcs_.stage() << ": acceptance rate = "
                         << write_vector(accept_, " ", 5) << std::endl;
-              
+           
               if (mcs_.stage() != 0) {
                 beta_.optimize_h1999<walker_type>(wp_);
                 std::cout << "EXMC stage " << mcs_.stage() << ": optimized inverse temperature set = "
                           << write_vector(beta_, " ", 5) << std::endl;
               }
               next_stage = true;
-              
-              for (int p = 0; p < nrep; ++p) {
+           
+              for (int p = 0; p < nrep - 1; ++p) {
                 obs[p]["EXMC: Acceptance Rate"].reset(true);
               }
               for (int p = 0; p < nrep; ++p) {
@@ -325,7 +335,7 @@ public:
               int nu = 0;
               for (int p = 0; p < nrep; ++p) if (direc_[p] == walker_direc::unlabeled) ++nu;
               if (nu > 0) success = false;
-              
+           
               for (int p = 0; p < nrep; ++p) {
                 double up = reinterpret_cast<SimpleRealObservable&>(
                   obs[p]["EXMC: Ratio of Upward-Moving Walker"]).mean();
@@ -352,7 +362,7 @@ public:
 
               // preform optimization
               if (mcs_.stage() != 0 && success) success = beta_.optimize2(upward_);
-              
+           
               if (success) {
                 std::cout << "EXMC stage " << mcs_.stage() << ": DONE" << std::endl;
                 if (mcs_.stage() > 0)
@@ -396,24 +406,24 @@ public:
         }
       
         // broadcast EXMC results
-        broadcast(comm_, continue_stage, 0);
-        broadcast(comm_, next_stage, 0);
+        broadcast(head_, continue_stage, 0);
+        broadcast(head_, next_stage, 0);
       }
-      broadcast(process_helper_.comm_work(), continue_stage, 0);
-      broadcast(process_helper_.comm_work(), next_stage, 0);
+      broadcast(work_, continue_stage, 0);
+      broadcast(work_, next_stage, 0);
       if (continue_stage) mcs_.continue_stage();
       if (next_stage) mcs_.next_stage();
-      if (process_helper_.comm_work().rank() == 0) {
-        if (comm_.rank() == 0) {
+      if (head_) {
+        if (head_.rank() == 0) {
           for (int p = 1; p < nreps_.size(); ++p)
-            comm_.send(p, 0, &tid_[offsets_[p]], nreps_[p]);
+            head_.send(p, 0, &tid_[offsets_[p]], nreps_[p]);
           std::copy(tid_.begin(), tid_.begin() + nrep_local_, tid_local_.begin());
         } else {
-          comm_.recv(0, 0, &tid_local_[0], nrep_local_);
+          head_.recv(0, 0, &tid_local_[0], nrep_local_);
         }
       }
       for (int i = 0; i < nrep_local_; ++i)
-        broadcast(process_helper_.comm_work(), tid_local_[i], 0);
+        broadcast(work_, tid_local_[i], 0);
     }
   }
 
@@ -451,7 +461,7 @@ protected:
 
 private:
   alps::process_helper_mpi process_helper_;
-  boost::mpi::communicator comm_;
+  boost::mpi::communicator comm_, work_, head_;
 
   int nrep_local_;           // number of walkers (replicas) on this process
   int offset_local_;         // first (global) id of walker on this process

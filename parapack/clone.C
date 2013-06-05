@@ -86,6 +86,7 @@ bool load_observable(alps::hdf5::archive & ar, std::vector<ObservableSet>& obs) 
 
 bool load_observable(alps::hdf5::archive & ar, std::string const& prefix, cid_t cid,
                      std::string const& suffix,  std::vector<ObservableSet>& obs) {
+  if (!ar.is_group(prefix)) return false;
   std::vector<std::string> children = ar.list_children(prefix);
   if (children.size() > 1) {
     std::cerr << logger::header() << "warning: more than one clone is found in in prefix = "
@@ -102,8 +103,12 @@ bool load_observable(alps::hdf5::archive & ar, std::string const& prefix, cid_t 
 }
 
 bool load_observable(alps::hdf5::archive & ar, cid_t cid, std::vector<ObservableSet>& obs) {
-  return load_observable(ar, "simulation/realizations/" + boost::lexical_cast<std::string>(0) +
-                         "/clones", cid, "results", obs);
+  std::string prefix = "simulation/realizations/" + boost::lexical_cast<std::string>(0) +
+    "/clones";
+  if (ar.is_group(prefix))
+    return load_observable(ar, prefix, cid, "results", obs);
+  else
+    return false;
 }
 
 bool load_observable(alps::hdf5::archive & ar, cid_t cid, int rank,

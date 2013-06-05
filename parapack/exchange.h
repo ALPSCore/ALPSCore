@@ -1097,7 +1097,7 @@ public:
             }
             next_stage = true;
 
-            for (int p = 0; p < nrep; ++p) {
+            for (int p = 0; p < nrep - 1; ++p) {
               obs[p]["EXMC: Acceptance Rate"].reset(true);
             }
             for (int p = 0; p < nrep; ++p) {

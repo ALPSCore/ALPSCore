@@ -109,6 +109,7 @@ public:
 
   boost::mpi::communicator const& comm_ctrl() const { return ctrl_; }
   boost::mpi::communicator const& comm_work() const { return work_; }
+  boost::mpi::communicator const& comm_head() const { return head_; }
   int num_procs_per_group() const { return np_; }
 
   int num_total_processes() const { return ctrl_.size(); }
@@ -126,7 +127,7 @@ public:
   bool check_halted();
 
 private:
-  boost::mpi::communicator ctrl_, work_;
+  boost::mpi::communicator ctrl_, work_, head_;
 
   // number of processes in each group
   int np_;

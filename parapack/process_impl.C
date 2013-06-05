@@ -70,6 +70,8 @@ process_helper_mpi::process_helper_mpi(boost::mpi::communicator const& comm, int
         procs_[colors[i]].push_back(alps::Process(i));
     for (int g = 0; g < ng; ++g) free_.push_back(g);
   }
+
+  head_ = comm.split((work_ && work_.rank() == 0) ? 1 : MPI_UNDEFINED);
 }
 
 process_helper_mpi::~process_helper_mpi() {
