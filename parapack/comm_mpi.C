@@ -37,20 +37,21 @@ int main(int argc, char **argv) {
     alps::process_helper_mpi process(world, 4);
     mpi::communicator cg = process.comm_ctrl();
     mpi::communicator cl = process.comm_work();
-    if (cg)
-      if (cl)
-        std::cout << "rank: " << world.rank()
-                  << ", global rank = " << cg.rank()
-                  << ", local rank = " << cl.rank() << std::endl;
-      else
-        std::cout << "rank: " << world.rank()
-                  << ", global rank = " << cg.rank() << std::endl;
-    else
-      if (cl)
-        std::cout << "rank: " << world.rank()
-                  << ", local rank = " << cl.rank() << std::endl;
-      else
-        std::cout << "rank: " << world.rank() << std::endl;
+    mpi::communicator hd = process.comm_head();
+    for (int p = 0; p < world.size(); ++p) {
+      if (world.rank() == p) {
+        std::cout << "rank: " << world.rank();
+        if (cg)
+          std::cout << ", global rank = " << cg.rank();
+        if (cl)
+          std::cout << ", local rank = " << cl.rank();
+        if (hd)
+          std::cout << ", head rank = " << hd.rank();
+        std::cout << std::endl;
+      }
+      std::cout << std::flush;
+      world.barrier();
+    }
     process.halt();
     while (!process.check_halted()) {}
   }

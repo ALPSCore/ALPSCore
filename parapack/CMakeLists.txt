@@ -5,6 +5,7 @@
 
 include_directories(${PROJECT_BINARY_DIR}/src)
 include_directories(${PROJECT_SOURCE_DIR}/src)
+include_directories(${PROJECT_SOURCE_DIR})
 include_directories(${Boost_ROOT_DIR})
 
 IF(NOT ALPS_LLVM_WORKAROUND)
@@ -15,4 +16,14 @@ IF(NOT ALPS_LLVM_WORKAROUND)
     add_alps_test(${name})
     set_property(TEST ${name} PROPERTY LABELS parapack)
   ENDFOREACH(name)
+
+  IF(ALPS_HAVE_MPI)
+    FOREACH (name collect_mpi comm_mpi filelock_mpi halt_mpi info_test_mpi process_mpi)
+      add_executable(${name} ${name}.C)
+      add_dependencies(${name} alps)
+      target_link_libraries(${name} alps)
+      # add_alps_test(${name})
+      # set_property(TEST ${name} PROPERTY LABELS parapack)
+    ENDFOREACH(name)
+  ENDIF(ALPS_HAVE_MPI)
 ENDIF(NOT ALPS_LLVM_WORKAROUND)
