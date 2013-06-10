@@ -135,6 +135,7 @@ namespace alps {
         ALPS_PY_MCDATA_WRAPPER(tau)
         ALPS_PY_MCDATA_WRAPPER(variance)
         ALPS_PY_MCDATA_WRAPPER(bins)
+        ALPS_PY_MCDATA_WRAPPER(jackknife)
         #undef ALPS_PY_MCDATA_WRAPPER
 
         template <typename T> boost::python::str print_mcdata(alps::alea::mcdata<T> const & self) {
@@ -190,7 +191,10 @@ const char count_docstring[] =
 "the number of measurements recorded.";
 
 const char bins_docstring[] =
-"the number of bins recorded for a jackknife analysis.";
+"the bins recorded for a jackknife analysis.";
+
+const char jackknife_docstring[] =
+"the jackknife data structure.";
 
 
 BOOST_PYTHON_MODULE(pymcdata_c) {
@@ -201,6 +205,7 @@ BOOST_PYTHON_MODULE(pymcdata_c) {
         .add_property("tau", static_cast<double(*)(mcdata<double> const &)>(&alps::python::wrap_tau),tau_docstring)
         .add_property("variance", static_cast<double(*)(mcdata<double> const &)>(&alps::python::wrap_variance),variance_docstring)
         .add_property("bins", static_cast<numeric::array(*)(mcdata<double> const &)>(&alps::python::wrap_bins),bins_docstring)
+        .add_property("jackknife", static_cast<numeric::array(*)(mcdata<double> const &)>(&alps::python::wrap_jackknife),jackknife_docstring)
         .add_property("count", &mcdata<double>::count,count_docstring)
         .def("__repr__", static_cast<str(*)(mcdata<double> const &)>(&alps::python::print_mcdata))
         .def("__deepcopy__", &alps::python::make_copy<mcdata<double> >)
@@ -270,6 +275,7 @@ BOOST_PYTHON_MODULE(pymcdata_c) {
         .add_property("tau", static_cast<numeric::array(*)(mcdata<std::vector<double> > const &)>(&alps::python::wrap_tau),tau_docstring)
         .add_property("variance", static_cast<numeric::array(*)(mcdata<std::vector<double> > const &)>(&alps::python::wrap_variance),variance_docstring)
         .add_property("bins", static_cast<numeric::array(*)(mcdata<std::vector<double> > const &)>(&alps::python::wrap_bins),bins_docstring)
+        .add_property("jackknife", static_cast<numeric::array(*)(mcdata<std::vector<double> > const &)>(&alps::python::wrap_jackknife),jackknife_docstring)
         .add_property("count", &mcdata<std::vector<double> >::count,count_docstring)
         .def("__repr__", static_cast<str(*)(mcdata<std::vector<double> > const &)>(&alps::python::print_mcdata))
         .def("__deepcopy__", &alps::python::make_copy<mcdata<std::vector<double> > >)

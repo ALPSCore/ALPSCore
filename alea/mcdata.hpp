@@ -319,6 +319,11 @@ namespace alps {
                 inline std::vector<value_type> const & bins() const { 
                     return values_;  
                 }
+                
+                inline std::vector<result_type> const & jackknife() const { 
+                    fill_jack();
+                    return jack_;  
+                }
 
                 inline result_type const & mean() const {
                     analyze();
