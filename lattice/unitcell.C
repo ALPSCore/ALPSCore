@@ -50,6 +50,8 @@ GraphUnitCell::GraphUnitCell(const XMLTag& intag, std::istream& p)
   bool fixed_nvertices=false;
   uint32_t vertex_number=0;
   name_ = tag.attributes["name"];
+  if (!tag.attributes.defined("dimension"))
+    boost::throw_exception(std::runtime_error("Dimension attribute is missing in <UNITCELL>"));
   dim_ = boost::lexical_cast<uint32_t,std::string>(tag.attributes["dimension"]);
   if (dim_<1)
     boost::throw_exception(std::runtime_error("Illegal dimension "+tag.attributes["dimension"]+ " in unit cell"));
