@@ -128,7 +128,7 @@ namespace alps {
                                       << " on " 
                                       << ALPS_NGS_STRINGIFY(__LINE__) 
                                       << " in " 
-                                      << __PRETTY_FUNCTION__ 
+                                      << __FUNCTION__ // TODO: check for gcc and use __PRETTY_FUNCTION__ 
                                       << ":" 
                                       << std::endl 
                                       << error().invoke(_id) 
@@ -356,7 +356,7 @@ namespace alps {
                                           << " on " 
                                           << ALPS_NGS_STRINGIFY(__LINE__) 
                                           << " in " 
-                                          << __PRETTY_FUNCTION__ 
+                                          << __FUNCTION__ // TODO: check for gcc and use __PRETTY_FUNCTION__  
                                           << ":" 
                                           << std::endl
                                           << error().invoke(file_id_)

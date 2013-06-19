@@ -33,10 +33,12 @@
 
 #include <string>
 
+// TODO: check for gcc and use __PRETTY_FUNCTION__
+
 #define ALPS_STACKTRACE (                                                          \
       std::string("\nIn ") + __FILE__                                              \
     + " on " + ALPS_NGS_STRINGIFY(__LINE__)                                        \
-    + " in " + __PRETTY_FUNCTION__ + "\n"                                          \
+    + " in " + __FUNCTION__ + "\n"                                          	   \
     + ::alps::ngs::stacktrace()                                                    \
 )
 
