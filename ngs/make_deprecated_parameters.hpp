@@ -25,6 +25,7 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+
 #ifndef ALPS_NGS_MADE_DEPRECATED_PARAMETERS_HPP
 #define ALPS_NGS_MADE_DEPRECATED_PARAMETERS_HPP
 

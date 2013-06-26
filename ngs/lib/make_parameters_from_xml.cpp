@@ -26,6 +26,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <alps/ngs/make_deprecated_parameters.hpp>
+#include <alps/ngs/make_parameters_from_xml.hpp>
 
 #include <string>
 

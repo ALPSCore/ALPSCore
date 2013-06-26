@@ -31,10 +31,11 @@
 #include <alps/ngs/params.hpp>
 
 #include <alps/parameter.h>
+#include <alps/config.h>
 
 namespace alps {
 
-    params make_parameters_from_xml(boost::filesystem::path const & filename);
+    ALPS_DECL params make_parameters_from_xml(boost::filesystem::path const & filename);
 
 }
 
