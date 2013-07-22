@@ -315,6 +315,6 @@ BOOST_AUTO_TEST_CASE(ngs_alea_next) {
 - implement tag-magic
 - add mpi
 - add has hdf5
-- plug ist into the easing examples
+- plug ist into the easy examples
 */
 }
