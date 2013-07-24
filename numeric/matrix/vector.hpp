@@ -32,6 +32,7 @@
 #define ALPS_VECTOR_HPP
 
 #include <alps/numeric/matrix/detail/vector_adaptor.hpp>
+#include <alps/numeric/matrix/matrix_traits.hpp>
 
 #include <alps/numeric/matrix/detail/blasmacros.hpp>
 #include <boost/numeric/bindings/blas/level1/dot.hpp>
@@ -251,6 +252,13 @@ inline T scalar_product(const vector<T,MemoryBlock> v1, const vector<T,MemoryBlo
     { return boost::numeric::bindings::blas::detail::dot(v1.size(), &v1[0],1,&v2[0],1);}
     ALPS_IMPLEMENT_FOR_ALL_BLAS_TYPES(SCALAR_PRODUCT)
 #undef SCALAR_PRODUCT
+    
+    
+    template <typename Matrix, typename T, typename MemoryBlock>
+    struct is_matrix_scalar_multiplication<Matrix,vector<T,MemoryBlock> > {
+        static bool const value = false;
+    };
+    
    } //namespace numeric 
 } //namespace alps
 

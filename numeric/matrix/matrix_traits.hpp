@@ -71,11 +71,6 @@ namespace numeric {
         static bool const value = true;
     };
 
-    template <typename Matrix, typename T, typename MemoryBlock>
-    struct is_matrix_scalar_multiplication<Matrix,vector<T,MemoryBlock> > {
-        static bool const value = false;
-    };
-
 } // end namespace numeric
 } // end namespace alps
 #endif //ALPS_MATRIX_TRAITS_HPP
