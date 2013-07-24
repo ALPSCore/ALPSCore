@@ -214,7 +214,7 @@ namespace alps {
           * @param cols For how many columns should memory be reserved, value is ignored if it's smaller than the current number of columns
           * @param init_value i
           */
-        void reserve(size_type rows, size_type cols, T const & init_value = T());
+        void reserve(size_type rows, size_type cols);
 
         /**
           * Returns how many rows and columns are reserved in memory for the matrix.
@@ -228,6 +228,11 @@ namespace alps {
           * @return true iff (capacity().first == num_rows() && capacity().second == num_cols()), false otherwise
           */
         bool is_shrinkable() const;
+
+        /**
+          * Shrinks the reserved space to the actual size of the matrix.
+          */
+        void shrink_to_fit();
 
         /**
           * Deletes all entries, and sets the matrix size to (0,0).
@@ -358,7 +363,7 @@ namespace alps {
 
         void write_xml(oxstream& ox) const;
 
-        template<typename Archive> 
+        template<typename Archive>
         inline void serialize(Archive & ar, const unsigned int version);
 
         MemoryBlock const& get_values() const;
@@ -370,16 +375,13 @@ namespace alps {
         template <typename OtherT,typename OtherMemoryBlock>
         friend class matrix;
 
-        template <typename T2, typename OtherMemoryBlock>
-        MemoryBlock copy_values(matrix<T2,OtherMemoryBlock> const& m);
+        bool automatic_reserve(size_type size1, size_type size2);
+        void force_reserve(size_type rows, size_type cols);
 
-        inline bool automatic_reserve(size_type size1, size_type size2, T const& init_value = T());
-
+        MemoryBlock values_;
+        size_type reserved_size1_;
         size_type size1_;
         size_type size2_;
-        size_type reserved_size1_;
-        // "reserved_size2_" is done automatically by underlying std::vector (see vector.reserve(), vector.capacity() )
-        MemoryBlock values_;
     };
 
     }  // namespace numeric 

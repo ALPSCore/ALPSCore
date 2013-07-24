@@ -34,53 +34,28 @@
 #include <boost/serialization/vector.hpp>
 
 namespace alps {
-    namespace numeric {
-        namespace detail {
-
-            template <typename T, typename T2>
-            struct insert_cast_helper
+namespace numeric {
+    namespace detail {
+        template <typename T, typename MemoryBlock, typename Operation>
+        void op_assign_default_impl(matrix<T,MemoryBlock>& lhs, matrix<T,MemoryBlock> const& rhs, Operation op)
+        {
+            assert(lhs.num_rows() == rhs.num_rows());
+            assert(lhs.num_cols() == rhs.num_cols());
+            if(!(lhs.is_shrinkable() || rhs.is_shrinkable()) )
             {
-                template <typename MemoryBlock, typename InputIterator>
-                static void apply(MemoryBlock& mem, InputIterator it, InputIterator end)
-                {
-                    mem.insert(
-                        mem.end()
-                        , boost::make_transform_iterator( it, numeric_cast<T,T2>)
-                        , boost::make_transform_iterator(end, numeric_cast<T,T2>)
-                    );
-                }
-            };
-
-            template <typename T>
-            struct insert_cast_helper<T,T>
+                std::transform(lhs.col(0).first,lhs.col(lhs.num_cols()-1).second,rhs.col(0).first,lhs.col(0).first, op);
+            }
+            else
             {
-                template <typename MemoryBlock, typename InputIterator>
-                static void apply(MemoryBlock& mem, InputIterator it, InputIterator end)
+                // Do the operation column by column
+                for(typename matrix<T,MemoryBlock>::size_type j=0; j < lhs.num_cols(); ++j)
                 {
-                    mem.insert( mem.end() , it, end);
-                }
-            };
-
-            template <typename T, typename MemoryBlock, typename Operation>
-            void op_assign_default_impl(matrix<T,MemoryBlock>& lhs, matrix<T,MemoryBlock> const& rhs, Operation op)
-            {
-                assert(lhs.num_rows() == rhs.num_rows());
-                assert(lhs.num_cols() == rhs.num_cols());
-                if(!(lhs.is_shrinkable() || rhs.is_shrinkable()) )
-                {
-                    std::transform(lhs.col(0).first,lhs.col(lhs.num_cols()-1).second,rhs.col(0).first,lhs.col(0).first, op);
-                }
-                else
-                {
-                    // Do the operation column by column
-                    for(typename matrix<T,MemoryBlock>::size_type j=0; j < lhs.num_cols(); ++j)
-                    {
-                        typedef typename matrix<T,MemoryBlock>::col_element_iterator col_element_iterator;
-                        std::pair<col_element_iterator,col_element_iterator> range(lhs.col(j));
-                        std::transform( range.first, range.second, rhs.col(j).first, range.first, op);
-                    }
+                    typedef typename matrix<T,MemoryBlock>::col_element_iterator col_element_iterator;
+                    std::pair<col_element_iterator,col_element_iterator> range(lhs.col(j));
+                    std::transform( range.first, range.second, rhs.col(j).first, range.first, op);
                 }
             }
+        }
 
         template <typename T, typename MemoryBlock, typename T2>
         void multiplies_assign_default_impl(matrix<T,MemoryBlock>& lhs, T2 const& t)
@@ -113,64 +88,55 @@ namespace alps {
 
     template <typename T, typename MemoryBlock>
     matrix<T, MemoryBlock>::matrix(size_type rows, size_type cols, T init_value)
-    : size1_(rows), size2_(cols), reserved_size1_(rows), values_(rows*cols, init_value)
+    : values_(rows*cols, init_value), reserved_size1_(rows), size1_(rows), size2_(cols)
     {
     }
 
     template <typename T, typename MemoryBlock>
     matrix<T, MemoryBlock>::matrix(matrix const& m)
-    : size1_(m.size1_), size2_(m.size2_), reserved_size1_(m.size1_), values_(copy_values(m))
-    { }
-
-    template <typename T, typename MemoryBlock>
-    template <typename T2, typename OtherMemoryBlock>
-    matrix<T, MemoryBlock>::matrix(matrix<T2,OtherMemoryBlock> const& m)
-    : size1_(m.size1_), size2_(m.size2_), reserved_size1_(m.size1_), values_(copy_values(m))
-    { }
-
-    template <typename T, typename MemoryBlock>
-    template <typename ForwardIterator>
-    matrix<T, MemoryBlock>::matrix(std::vector<std::pair<ForwardIterator,ForwardIterator> > const& columns)
-    : size1_(0), size2_(0), reserved_size1_(0), values_()
+    : values_(m.values_), reserved_size1_(m.reserved_size1_), size1_(m.size1_), size2_(m.size2_)
     {
-        using std::distance;
-        using std::copy;
-        assert(columns.size() > 0);
-
-        size_type const reserve_rows = distance(columns.front().first, columns.front().second);
-        values_.reserve(reserve_rows*columns.size());
-        for(std::size_t i=0; i < columns.size(); ++i) {
-            assert(distance(columns[i].first,columns[i].second) == reserve_rows);
-            copy(columns[i].first, columns[i].second, std::back_inserter(values_));
-        }
-        reserved_size1_ = reserve_rows;
-        size1_ = reserve_rows;
-        size2_ = columns.size();
+        // TODO improve (if needed)
+        // the copy constructor copies the whole data vector including the whole reserved space
+        // it could copy only the data that is really in use
+        // (if reserved_space/actual_space is above a certain threshold)
     }
 
     template <typename T, typename MemoryBlock>
     template <typename T2, typename OtherMemoryBlock>
-    MemoryBlock matrix<T, MemoryBlock>::copy_values(matrix<T2,OtherMemoryBlock> const& m)
+    matrix<T, MemoryBlock>::matrix(matrix<T2,OtherMemoryBlock> const& m)
+    :   values_(
+              boost::make_transform_iterator( m.values_.begin(), numeric_cast<T,T2> )
+            , boost::make_transform_iterator( m.values_.end(),   numeric_cast<T,T2> )
+        )
+      , reserved_size1_(m.reserved_size1_) , size1_(m.size1_), size2_(m.size2_)
     {
-        MemoryBlock ret;
-        // If the size of the matrix corresponds to the allocated size of the matrix...
-        if(!m.is_shrinkable())
-        {
-            detail::insert_cast_helper<T,T2>::apply(ret, m.values_.begin(), m.values_.end());
+        // TODO improve (if needed)
+        // the copy constructor copies the whole data vector including the whole reserved space
+        // it could copy only the data that is really in use
+        // (if reserved_space/actual_space is above a certain threshold)
+    }
+
+    template <typename T, typename MemoryBlock>
+    template <typename ForwardIterator>
+    matrix<T, MemoryBlock>::matrix(std::vector<std::pair<ForwardIterator,ForwardIterator> > const& columns)
+    : values_(), reserved_size1_(0), size1_(0), size2_(0)
+    {
+        using std::distance;
+        using std::copy;
+        using std::swap;
+        assert(columns.size() > 0);
+
+        size_type const reserve_rows = distance(columns.front().first, columns.front().second);
+        MemoryBlock tmp(reserve_rows*columns.size());
+        for(std::size_t i=0; i < columns.size(); ++i) {
+            assert(distance(columns[i].first,columns[i].second) == static_cast<difference_type>(reserve_rows));
+            copy(columns[i].first, columns[i].second, tmp.begin()+reserve_rows*i);
         }
-        else
-        {
-            // copy only a shrinked to size version of the original matrix
-            ret.reserve(m.size1_*m.size2_);
-            for(size_type j=0; j < m.size2_; ++j)
-            {
-                std::pair<typename matrix<T2,OtherMemoryBlock>::const_col_element_iterator,
-                          typename matrix<T2,OtherMemoryBlock>::const_col_element_iterator
-                         > range(m.col(j));
-                detail::insert_cast_helper<T,T2>::apply(ret, range.first, range.second);
-            }
-        }
-        return ret;
+        swap(tmp,values_);
+        reserved_size1_ = reserve_rows;
+        size1_ = reserve_rows;
+        size2_ = columns.size();
     }
 
     template <typename T, typename MemoryBlock>
@@ -178,9 +144,9 @@ namespace alps {
     {
         using std::swap;
         swap(this->values_, r.values_);
+        swap(this->reserved_size1_,r.reserved_size1_);
         swap(this->size1_, r.size1_);
         swap(this->size2_, r.size2_);
-        swap(this->reserved_size1_,r.reserved_size1_);
     }
 
     template <typename T, typename MemoryBlock>
@@ -201,7 +167,8 @@ namespace alps {
     template <typename T, typename MemoryBlock>
     inline T const& matrix<T, MemoryBlock>::operator()(const size_type i, const size_type j) const
     {
-        assert((i < this->size1_) && (j < this->size2_));
+        assert(i < this->size1_);
+        assert(j < this->size2_);
         return this->values_[i+j*this->reserved_size1_];
     }
 
@@ -244,7 +211,8 @@ namespace alps {
     template <typename T2>
     matrix<T,MemoryBlock>& matrix<T, MemoryBlock>::operator /= (T2 const& t)
     {
-        multiplies_assign(*this, T(1)/t);
+        // FIXME this is not really the same as /=
+        multiplies_assign(*this, value_type(1)/t);
         return *this;
     }
 
@@ -281,97 +249,77 @@ namespace alps {
     template <typename T, typename MemoryBlock>
     void matrix<T, MemoryBlock>::resize(size_type rows, size_type cols, T const& init_value)
     {
+        using std::fill;
         assert(rows > 0);
         assert(cols > 0);
         // Do we need more space? Reserve more space if needed!
-        //
-        // If the memory is reallocated using reserve
-        // we just have to fill the new columns with the init_value
-        // (->after this if statement),
-        // since reserve fills all elements in the range between size1_
-        // and reserved_size1_ of each EXISTING column with init_value
-        // by using values_.resize()
-        if(!automatic_reserve(rows,cols,init_value))
+        automatic_reserve(rows,cols);
+        if(rows > this->size1_)
         {
-            if(rows > this->size1_)
-            {
-                // Reset all "new" elements which are in already reserved
-                // rows of already existing columns to init_value
-                // For all elements of new columns this is already done by
-                // values_.resize() (->after this if statement)
-                size_type num_of_cols = (std::min)(cols, this->size2_);
-                for(size_type j=0; j < num_of_cols; ++j)
-                    std::fill(
-                            this->values_.begin()+j*this->reserved_size1_ + this->size1_,
-                            this->values_.begin()+j*this->reserved_size1_ + rows,
-                            init_value
-                            );
-            }
+            // Reset all "new" elements which are in already reserved
+            // rows of already existing columns to init_value
+            size_type const num_of_cols = (std::min)(cols, this->size2_);
+            for(size_type j=0; j < num_of_cols; ++j)
+                fill(
+                      this->values_.begin()+j*this->reserved_size1_ + this->size1_
+                    , this->values_.begin()+j*this->reserved_size1_ + rows
+                    , init_value
+                );
         }
-        this->values_.resize(this->reserved_size1_*cols, init_value);
+        if(cols > this->size2_)
+        {
+            // Fill all new cols
+            fill(
+                  this->values_.begin()+ this->size2_ * this->reserved_size1_
+                , this->values_.begin()+ cols * this->reserved_size1_
+                , init_value
+            );
+        }
         this->size1_=rows;
         this->size2_=cols;
     }
 
     template <typename T, typename MemoryBlock>
-    void matrix<T, MemoryBlock>::reserve(size_type rows, size_type cols, T const& init_value)
+    void matrix<T, MemoryBlock>::reserve(size_type rows, size_type cols)
     {
-        // The init_value may seem a little weird in a reserve method,
-        // but one has to initialize all matrix elements in the
-        // reserved_size1_ range of each column, due to the 1d-structure
-        // of the underlying MemoryBlock (e.g. std::vector)
+        assert( (this->reserved_size1_ == 0 && this->values_.size() == 0 ) || this->values_.size() % this->reserved_size1_ == 0 );
         using std::swap;
+        using std::copy;
         // Ignore values that would shrink the matrix
-        cols = (std::max)(cols, this->size2_);
+        cols = (std::max)(cols, this->reserved_size1_ == 0 ? 0 : this->values_.size() / this->reserved_size1_);
         rows = (std::max)(rows, this->reserved_size1_);
 
         // Is change of structure or size of the MemoryBlock necessary?
-        if(rows > this->reserved_size1_ || rows*cols > this->values_.capacity() )
+        if(rows > this->reserved_size1_ || rows*cols > this->values_.size() )
         {
-            MemoryBlock tmp;
-            tmp.reserve(rows*cols);
-            // Copy column by column
-            for(size_type j=0; j < this->size2_; ++j)
-            {
-                std::pair<col_element_iterator, col_element_iterator> range(col(j));
-                // Copy the elements from the current MemoryBlock
-                tmp.insert(tmp.end(),range.first,range.second);
-                // and fill the rest with the init_value
-                tmp.insert(tmp.end(),rows-this->size1_,init_value);
-            }
-            swap(this->values_,tmp);
-            this->reserved_size1_ = rows;
+            this->force_reserve(rows,cols);
         }
     }
 
     template <typename T, typename MemoryBlock>
-    std::pair<std::size_t,std::size_t> matrix<T, MemoryBlock>::capacity() const
+    std::pair<typename matrix<T,MemoryBlock>::size_type,typename matrix<T,MemoryBlock>::size_type> matrix<T, MemoryBlock>::capacity() const
     {
-        assert( this->values_.capacity() % this->reserved_size1_ == 0 );
-        // Evaluate the maximal number of columns (with size reserved_size1_) that the underlying vector could hold.
-        // If the constructor, resize() and reserve() of std::vector would guarantee to allocate 
-        // the requested amount of memory exactly
-        // values_.capacity() % reserved_size1_ == 0 should hold.
-        // However these functions guarantee to allocate _at least_ the requested amount.
-        size_type reserved_size2_ = this->values_.capacity() - (this->values_.capacity() % this->reserved_size1_) / this->reserved_size1_;
-        return std::pair<size_type,size_type>( this->reserved_size1_, reserved_size2_ );
+        assert( (this->reserved_size1_ == 0 && this->values_.size() == 0 ) || this->values_.size() % this->reserved_size1_ == 0 );
+        return std::make_pair( this->reserved_size1_, this->reserved_size1_ == 0 ? 0 : values_.size() / this->reserved_size1_ );
     }
 
     template <typename T, typename MemoryBlock>
-    bool matrix<T, MemoryBlock>::is_shrinkable() const
+    inline bool matrix<T, MemoryBlock>::is_shrinkable() const
     {
-        // This assertion should actually never fail
-        assert( this->reserved_size1_*this->size2_ == this->values_.size() );
-        if(this->size1_ < this->reserved_size1_) return true;
-        else return false;
+        return (this->size1_ < this->reserved_size1_ || this->reserved_size1_*this->size2_ < values_.size() );
+    }
+
+    template <typename T, typename MemoryBlock>
+    void matrix<T, MemoryBlock>::shrink_to_fit()
+    {
+        if(this->size1_ == this->reserved_size1_ && this->size1_*this->size2_ == values_.size() )
+            return;
+        this->force_reserve(this->size1_, this->size2_);
     }
 
     template <typename T, typename MemoryBlock>
     void matrix<T, MemoryBlock>::clear()
     {
-        // Clear the values vector and ensure the reserved size stays the way it was
-        this->values_.clear();
-        this->values_.resize(this->reserved_size1_*this->size2_);
         this->size1_ = 0;
         this->size2_ = 0;
     }
@@ -380,16 +328,14 @@ namespace alps {
     template <typename InputIterator>
     void matrix<T, MemoryBlock>::append_cols(std::pair<InputIterator,InputIterator> const& range, difference_type k)
     {
-        assert( std::distance(range.first, range.second) == k*this->size1_ );
+        using std::copy;
+        using std::distance;
+        assert( distance(range.first, range.second) == static_cast<difference_type>(k*this->size1_) );
         // Reserve more space if needed
         automatic_reserve(this->size1_,this->size2_+k);
         // Append column by column
         for(difference_type l=0; l<k; ++l)
-        {
-            this->values_.insert(this->values_.end(), range.first+(l*this->size1_), range.first+((l+1)*this->size1_) );
-            // Fill the space reserved for new rows
-            this->values_.insert(this->values_.end(), this->reserved_size1_-this->size1_, T());
-        }
+            copy(range.first+(l*this->size1_), range.first+((l+1)*this->size1_), values_.begin()+this->reserved_size1_*(this->size2_+l));
         this->size2_ += k;
     }
 
@@ -397,12 +343,14 @@ namespace alps {
     template <typename InputIterator>
     void matrix<T, MemoryBlock>::append_rows(std::pair<InputIterator,InputIterator> const& range, difference_type k)
     {
-        assert( std::distance(range.first, range.second) == k*this->size2_ );
+        using std::copy;
+        using std::distance;
+        assert( distance(range.first, range.second) == static_cast<difference_type>(k*this->size2_) );
         // Reserve more space if needed
         automatic_reserve(this->size1_+k, this->size2_);
         // The elements do already exists due to reserve, so we can just use (copy to) them.
         for(difference_type l=0; l<k; ++l)
-            std::copy( range.first+(l*this->size2_), range.first+((l+1)*this->size2_), row_element_iterator(&values_[size1_+l],reserved_size1_) );
+            copy( range.first+(l*this->size2_), range.first+((l+1)*this->size2_), row_element_iterator(&values_[size1_+l],reserved_size1_) );
         this->size1_ += k;
     }
 
@@ -410,52 +358,70 @@ namespace alps {
     template <typename InputIterator>
     void matrix<T, MemoryBlock>::insert_rows(size_type i, std::pair<InputIterator,InputIterator> const& range, difference_type k)
     {
+        using std::copy;
+        using std::distance;
         assert( i <= this->size1_ );
-        assert( std::distance(range.first, range.second) == k*this->size2_ );
+        assert( distance(range.first, range.second) == static_cast<difference_type>(k*this->size2_) );
 
         // Append the row
         automatic_reserve(this->size1_+k,this->size2_);
 
+
+        // Move existing data to make some space for the insertion
+        // We can not use std::copy because input and output range overlap
+        size_type const newsize1 = this->size1_+k;
         for(size_type j=0; j<this->size2_; ++j)
-            std::copy_backward(&this->values_[this->reserved_size1_*j+i],&this->values_[this->reserved_size1_*j+this->size1_],&this->values_[this->reserved_size1_*j+this->size1_+k]);
+            for(size_type l=this->size1_; l > i; --l)
+                *(this->values_.begin()+this->reserved_size1_*j+k+l-1) = *(this->values_.begin()+this->reserved_size1_*j+l-1);
+
+        // Insert new data
         for(difference_type l=0; l<k; ++l)
-            std::copy(range.first+l*this->size2_,range.first+(l+1)*this->size2_,row_element_iterator(&values_[i+l],reserved_size1_) );
-        this->size1_+=k;
+            copy(range.first+l*this->size2_,range.first+(l+1)*this->size2_,row_element_iterator(&values_[i+l],reserved_size1_) );
+        this->size1_= newsize1;
     }
 
     template <typename T, typename MemoryBlock>
     template <typename InputIterator>
     void matrix<T, MemoryBlock>::insert_cols(size_type j, std::pair<InputIterator,InputIterator> const& range, difference_type k)
     {
+        using std::copy;
+        using std::distance;
+
         assert( j <= this->size2_);
-        assert( std::distance(range.first, range.second) == k*this->size1_ );
+        assert( distance(range.first, range.second) == static_cast<difference_type>(k*this->size1_) );
 
         // Append the column
         automatic_reserve(this->size1_,this->size2_+k);
 
         // Move the column through the matrix to the right possition
         for(size_type h=this->size2_; h>j; --h)
-            std::copy(&this->values_[this->reserved_size1_*(h-1)],&this->values_[this->reserved_size1_*(h-1)]+this->size1_,&this->values_[this->reserved_size1_*(h+k-1)]);
+            copy(&this->values_[this->reserved_size1_*(h-1)],&this->values_[this->reserved_size1_*(h-1)]+this->size1_,&this->values_[this->reserved_size1_*(h+k-1)]);
         for(difference_type l=0; l<k; ++l)
-            std::copy(range.first+l*this->size1_,range.first+(l+1)*this->size1_,&this->values_[this->reserved_size1_*(j+l)]);
+            copy(range.first+l*this->size1_,range.first+(l+1)*this->size1_,&this->values_[this->reserved_size1_*(j+l)]);
         this->size2_+=k;
     }
 
     template <typename T, typename MemoryBlock>
     void matrix<T, MemoryBlock>::remove_rows(size_type i, difference_type k)
     {
+        using std::copy;
         assert( i+k <= this->size1_ );
         // for each column, copy the rows > i+k   k rows  up
+        // We can not use std::copy because input and output range overlap
+        size_type const newsize1 = this->size1_-k;
         for(size_type j = 0; j < this->size2_; ++j)
-            std::copy(&this->values_[this->reserved_size1_*j + i + k], &this->values_[this->reserved_size1_*j + this->size1_], &this->values_[this->reserved_size1_*j + i] );
-        this->size1_ -= k;
+            for(size_type l=i; l < newsize1; ++l)
+                *(this->values_.begin()+this->reserved_size1_*j+l) = *(this->values_.begin()+this->reserved_size1_*j+l+k);
+        this->size1_ = newsize1;
     }
 
     template <typename T, typename MemoryBlock>
     void matrix<T, MemoryBlock>::remove_cols(size_type j, difference_type k)
     {
+        using std::copy;
         assert( j+k <= this->size2_ );
-        this->values_.erase(this->values_.begin()+(this->reserved_size1_*j), this->values_.begin()+(this->reserved_size1_*(j+k)) );
+        for(; j < this->size2_-k; ++j)
+            copy(this->values_.begin()+reserved_size1_*(j+k), this->values_.begin()+reserved_size1_*(j+k)+size1_, this->values_.begin()+reserved_size1_*j);
         this->size2_ -= k;
     }
 
@@ -476,18 +442,37 @@ namespace alps {
     }
 
     template <typename T, typename MemoryBlock>
-    inline bool matrix<T, MemoryBlock>::automatic_reserve(size_type size1, size_type size2, T const& init_value)
+    bool matrix<T, MemoryBlock>::automatic_reserve(size_type size1, size_type size2)
     {
         // Do we need to reserve more space in any dimension?
-        if(size1 > this->reserved_size1_ || this->reserved_size1_*size2 > this->values_.capacity())
+        if(size1 > this->reserved_size1_ || this->reserved_size1_*size2 > this->values_.size())
         {
-            reserve(size1*3/2,size2*3/2,init_value);
+            this->reserve(size1*3/2,size2*3/2);
             return true;
         }
         else
         {
             return false;
         }
+    }
+
+    template <typename T, typename MemoryBlock>
+    void matrix<T, MemoryBlock>::force_reserve(size_type rows, size_type cols)
+    {
+        using std::swap;
+        using std::copy;
+        // We assume the underlying MemoryBlock doesn't
+        // reserve additional space on construction
+        MemoryBlock tmp(rows*cols);
+        // Copy column by column
+        for(size_type j=0; j < this->size2_; ++j)
+        {
+            std::pair<col_element_iterator, col_element_iterator> range(col(j));
+            // Copy the elements from the current MemoryBlock
+            copy(range.first, range.second, tmp.begin()+j*rows);
+        }
+        swap(this->values_,tmp);
+        this->reserved_size1_ = rows;
     }
 
     template <typename T, typename MemoryBlock>
@@ -641,7 +626,7 @@ namespace alps {
    }
 
    template <typename T, typename MemoryBlock>
-   template<typename Archive> 
+   template<typename Archive>
    inline void matrix<T, MemoryBlock>::serialize(Archive & ar, const unsigned int version)
    {
        ar & size1_ & size2_ & reserved_size1_ & values_;

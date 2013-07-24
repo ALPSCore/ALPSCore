@@ -79,7 +79,7 @@ namespace detail {
                                first.size() != size.size()
                             || !equal(first.begin(),first.end(), size.begin())
                           )
-                            throw archive_error("No rectengual matrix" + ALPS_STACKTRACE);
+                            throw archive_error("Matrix elements have different sizes." + ALPS_STACKTRACE);
                     }
                 copy(first.begin(),first.end(), std::back_inserter(extent));
             }

@@ -27,6 +27,11 @@
 
 #ifndef ALPS_MATRIX_CONCEPT_CHECK_HPP
 #define ALPS_MATRIX_CONCEPT_CHECK_HPP
+
+// To get rid of annoying unused value warnings.
+#define ALPS_UNUSED(x) \
+    static_cast<void>(x)
+
 #include <boost/concept_check.hpp>
 #include <boost/type_traits/remove_const.hpp>
 #include <boost/type_traits/add_const.hpp>
@@ -61,7 +66,7 @@ struct Matrix : boost::Assignable<X>
         // num_rows(), num_cols()
         std::size_t s = num_rows(y);
         s = num_cols(y);
-        s = s; // To get rid of annoying unused value warnings (if someone knows a better way be my guest.)
+        ALPS_UNUSED(s);
 
         // Element access
         t = x(0,0);
@@ -113,6 +118,8 @@ struct DiagonalIteratableMatrix : Matrix<X>
 
         std::pair<diagonal_iterator,diagonal_iterator>              diagonal_range = diagonal(x);
         std::pair<const_diagonal_iterator,const_diagonal_iterator>  const_diagonal_range = diagonal(y);
+        ALPS_UNUSED(diagonal_range);
+        ALPS_UNUSED(const_diagonal_range);
     }
 };
 
@@ -145,4 +152,5 @@ struct IteratableMatrix : DiagonalIteratableMatrix<X>
 } // namespace numeric
 } // namespace alps
 
+#undef ALPS_UNUSED
 #endif //ALPS_MATRIX_CONCEPT_CHECK_HPP

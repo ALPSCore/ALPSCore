@@ -91,7 +91,7 @@ class matrix_element_iterator : public boost::iterator_facade<
         void increment()
         {
             ++i;
-            if( i >= num_rows(*m) )
+            if( i >= static_cast<typename Matrix::difference_type>(num_rows(*m)) )
             {
                 i=0;
                 ++j;
