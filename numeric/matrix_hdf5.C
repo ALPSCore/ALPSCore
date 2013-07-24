@@ -39,6 +39,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( hdf5, T, test_types )
     fill_matrix_with_numbers(a);
     resize(a,10,20);
     matrix<T> b(a);
+    b.shrink_to_fit();
+
 
     BOOST_CHECK_EQUAL(a.capacity() > b.capacity(), true); // maybe this should be an assert instead
 
@@ -80,6 +82,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( hdf5_matrix_matrix, T, test_types )
     }
     a.resize(10,20);
     matrix<matrix<T> > b(a);
+    b.shrink_to_fit();
 
     BOOST_CHECK_EQUAL(a.capacity() > b.capacity(), true); // maybe this should be an assert instead
 

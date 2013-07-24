@@ -85,13 +85,13 @@ struct ValidateHelper{
     void static validate(matrix<T> const & M1, matrix<T> const & M2){
         BOOST_CHECK_EQUAL(num_rows(M1),num_rows(M2));
         BOOST_CHECK_EQUAL(num_cols(M1),num_cols(M2));
-        for(int j(0); j< num_cols(M1); ++j)  
-            for(int i(0); i< num_rows(M1); ++i)
+        for(std::size_t j(0); j< num_cols(M1); ++j)  
+            for(std::size_t i(0); i< num_rows(M1); ++i)
                 BOOST_CHECK_CLOSE(M1(i,j),M2(i,j),1e-6); 
     };
     void static validateid(matrix<T> const & M1){
-        for(int j(0); j< num_cols(M1); ++j)
-            for(int i(0); i< num_rows(M1); ++i)         
+        for(std::size_t j(0); j< num_cols(M1); ++j)
+            for(std::size_t i(0); i< num_rows(M1); ++i)         
                 if (i==j)
                     BOOST_CHECK_CLOSE(M1(i,j),1.0,1e-6);  // checks relative difference
                 else
@@ -104,15 +104,15 @@ struct ValidateHelper<std::complex<T> > {
     void static validate(matrix<std::complex<T> > const & M1,matrix<std::complex<T> > const & M2){
         BOOST_CHECK_EQUAL(num_rows(M1),num_rows(M2));
         BOOST_CHECK_EQUAL(num_cols(M1),num_cols(M2));        
-        for(int j(0); j< num_cols(M1); ++j)
-            for(int i(0); i< num_rows(M1); ++i){
+        for(std::size_t j(0); j< num_cols(M1); ++j)
+            for(std::size_t i(0); i< num_rows(M1); ++i){
                 BOOST_CHECK_CLOSE(M1(i,j).real(),M2(i,j).real(),1e-6); 
                 BOOST_CHECK_CLOSE(M1(i,j).imag(),M2(i,j).imag(),1e-6); 
             }
     }
     void static validateid(matrix<std::complex<T> > const & M1){ 
-        for(int j(0); j< num_cols(M1); ++j)
-            for(int i(0); i< num_rows(M1); ++i){
+        for(std::size_t j(0); j< num_cols(M1); ++j)
+            for(std::size_t i(0); i< num_rows(M1); ++i){
                 if (i==j)
                     BOOST_CHECK_CLOSE(M1(i,j).real(),1.0,1e-6);
                 else
@@ -132,8 +132,8 @@ struct InitHelper{
 template<typename T>
 struct InitHelper<std::complex<T> > {
     void static init(matrix<std::complex<T> > & M){
-        for(int i(0); i< num_rows(M); ++i) 
-            for(int j(0); j< num_cols(M); ++j){ 
+        for(std::size_t i(0); i< num_rows(M); ++i) 
+            for(std::size_t j(0); j< num_cols(M); ++j){ 
                T r = uniDblGen();
                T m = uniDblGen();
                M(i,j) = std::complex<T>(r, m);
