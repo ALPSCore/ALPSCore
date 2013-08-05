@@ -66,6 +66,10 @@ namespace alps {
 				virtual void print(std::ostream & os) const = 0;
                 virtual void reset() = 0;
 
+#ifdef ALPS_HAVE_MPI
+                virtual void collective_merge(boost::mpi::communicator const & comm, int root) = 0;
+#endif
+
 				virtual base_wrapper* clone() const = 0;
 				virtual base_wrapper* result() const = 0;
 
@@ -161,6 +165,22 @@ namespace alps {
                 void reset() {
                     this->m_data.reset();
                 }
+
+#ifdef ALPS_HAVE_MPI
+                inline void collective_merge(
+                      boost::mpi::communicator const & comm
+                    , int root
+                ) {
+                    this->m_data.collective_merge(comm, root);
+                }
+
+                inline void collective_merge(
+                      boost::mpi::communicator const & comm
+                    , int root
+                ) const {
+                    this->m_data.collective_merge(comm, root);
+                }
+#endif
 
 				base_wrapper * clone() const { 
 					return new derived_wrapper<A>(this->m_data); 

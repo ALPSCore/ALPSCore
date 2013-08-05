@@ -111,6 +111,24 @@ namespace alps {
 						m_weight->reset();
 			        }
 
+#ifdef ALPS_HAVE_MPI
+                    void collective_merge(
+                          boost::mpi::communicator const & comm
+                        , int root
+                    ) {
+                        B::collective_merge(comm, root);
+                        m_weight->collective_merge(comm, root);
+                    }
+
+                    void collective_merge(
+                          boost::mpi::communicator const & comm
+                        , int root
+                    ) const {
+                        B::collective_merge(comm, root);
+                        m_weight->collective_merge(comm, root);
+                    }
+#endif
+
 			        bool owns_weight() const {
 			        	return m_owner;
 			        }

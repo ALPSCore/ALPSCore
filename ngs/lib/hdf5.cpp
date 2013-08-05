@@ -374,7 +374,6 @@ namespace alps {
                                 throw ex;
                         }
                     }
-
             };
 
         }
@@ -973,7 +972,11 @@ namespace alps {
                         }                                                                                                                                               \
                         if (class_type != H5S_SCALAR || !is_datatype<T>(path)) {                                                                                        \
                             detail::check_data(data_id);                                                                                                                \
-                            detail::check_error(H5Ldelete(context_->file_id_, path.c_str(), H5P_DEFAULT));                                                              \
+                            if (path.find_last_of('/') < std::string::npos && path.find_last_of('/') > 0) {                                                             \
+                                detail::group_type group_id(H5Gopen2(context_->file_id_, path.substr(0, path.find_last_of('/')).c_str(), H5P_DEFAULT));                 \
+                                detail::check_error(H5Ldelete(group_id, path.substr(path.find_last_of('/') + 1).c_str(), H5P_DEFAULT));                                 \
+                            } else                                                                                                                                      \
+                               detail::check_error(H5Ldelete(context_->file_id_, path.c_str(), H5P_DEFAULT));                                                           \
                             data_id = -1;                                                                                                                               \
                         }                                                                                                                                               \
                     }                                                                                                                                                   \

@@ -150,6 +150,29 @@ namespace alps {
 						m_sum = T();
 					}
 
+#ifdef ALPS_HAVE_MPI
+                    void collective_merge(
+                          boost::mpi::communicator const & comm
+                        , int root
+                    ) {
+                        B::collective_merge(comm, root);
+                        if (comm.rank() == root)
+                            B::reduce_if(comm, m_sum, m_sum, std::plus<typename alps::hdf5::scalar_type<T>::type>(), root);
+                        else
+                            const_cast<Accumulator<T, mean_tag, B> const *>(this)->collective_merge(comm, root);
+                    }                    
+                    void collective_merge(
+                          boost::mpi::communicator const & comm
+                        , int root
+                    ) const {
+                        B::collective_merge(comm, root);
+                        if (comm.rank() == root)
+                            throw std::runtime_error("A const object cannot be root" + ALPS_STACKTRACE);
+                        else
+                            B::reduce_if(comm, m_sum, std::plus<typename alps::hdf5::scalar_type<T>::type>(), root);
+                    }
+#endif
+
 				private:
 					T m_sum;
 			};

@@ -82,7 +82,7 @@ namespace alps {
                         throw std::runtime_error("No parameter '" + key + "' available" + ALPS_STACKTRACE);
                     return (!value ? getter() : *value).cast<T>();
                 }
-                
+
                 template<typename T> operator T () const {
                     return cast<T>();
                 }

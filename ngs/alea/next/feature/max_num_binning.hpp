@@ -244,6 +244,58 @@ namespace alps {
 						// TODO: implement!
 			        }
 
+#ifdef ALPS_HAVE_MPI
+                    void collective_merge(
+                          boost::mpi::communicator const & comm
+                        , int root
+                    ) {
+                        B::collective_merge(comm, root);
+                        if (comm.rank() == root) {
+                            if (!m_mn_bins.empty()) {
+                                std::vector<typename mean_type<B>::type> local_bins(m_mn_bins);
+                                m_mn_elements_in_bin = partition_bins(comm, local_bins);
+                                m_mn_bins.resize(local_bins.size());
+                                B::reduce_if(comm, local_bins, m_mn_bins, std::plus<typename alps::hdf5::scalar_type<typename mean_type<B>::type>::type>(), 0);
+                            }
+                        } else
+                            const_cast<Accumulator<T, max_num_binning_tag, B> const *>(this)->collective_merge(comm, root);
+                    }
+
+                    void collective_merge(
+                          boost::mpi::communicator const & comm
+                        , int root
+                    ) const {
+                        B::collective_merge(comm, root);
+                        if (comm.rank() == root)
+                            throw std::runtime_error("A const object cannot be root" + ALPS_STACKTRACE);
+                        else if (!m_mn_bins.empty()) {
+                            std::vector<typename mean_type<B>::type> local_bins(m_mn_bins);
+                            partition_bins(comm, local_bins);
+                            B::reduce_if(comm, local_bins, std::plus<typename alps::hdf5::scalar_type<typename mean_type<B>::type>::type>(), root);
+                        }
+                    }
+
+                private:
+                    std::size_t partition_bins (boost::mpi::communicator const & comm, std::vector<typename mean_type<B>::type> & local_bins) const {
+                        using alps::ngs::numeric::operator+;
+                        using alps::ngs::numeric::operator/;
+                        typename B::count_type elements_in_local_bins = boost::mpi::all_reduce(comm, m_mn_elements_in_bin, boost::mpi::maximum<typename B::count_type>());
+                        typename B::count_type howmany = (elements_in_local_bins - 1) / m_mn_elements_in_bin + 1;
+                        if (howmany > 1) {
+                            typename B::count_type newbins = local_bins.size() / howmany;
+                            for (typename B::count_type i = 0; i < newbins; ++i) {
+                                local_bins[i] = local_bins[howmany * i];
+                                for (typename B::count_type j = 1; j < howmany; ++j)
+                                    local_bins[i] = local_bins[i] + local_bins[howmany * i + j];
+                                local_bins[i] = local_bins[i] / (typename alps::hdf5::scalar_type<typename mean_type<B>::type>::type)howmany;
+
+                            }
+                            local_bins.resize(newbins);
+                        }
+                        return elements_in_local_bins;
+                    }
+#endif
+
 			    private:
 
 					std::size_t m_mn_max_number;

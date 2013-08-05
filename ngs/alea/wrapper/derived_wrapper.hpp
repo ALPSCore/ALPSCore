@@ -204,7 +204,7 @@ namespace alps {
 
                     boost::shared_ptr<base_result_wrapper> result() const {
 // TODO: fix in gcc-4.2
-//                        return result_impl(check_helper<sizeof(check_result<Accum>(0))>());
+                        // return result_impl(check_helper<sizeof(check_result<Accum>(0))>());
                     }
 
 #ifdef ALPS_HAVE_MPI
