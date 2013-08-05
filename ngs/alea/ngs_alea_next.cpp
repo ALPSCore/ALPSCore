@@ -307,13 +307,12 @@ BOOST_AUTO_TEST_CASE(ngs_alea_next) {
 	}
 
 /* TODO:
+- implement functions for results
+- implement jacknife for results
 - implement fixed num binning
 - implement log binning
 - implement boost::ArgPack for external weight
-- implement jacknife for results
-- implement functions for results
 - implement tag-magic
-- add mpi
 - add has hdf5
 - plug ist into the easy examples
 */
