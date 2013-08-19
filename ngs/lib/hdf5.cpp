@@ -378,8 +378,28 @@ namespace alps {
 
         }
 
-        archive::archive(std::string const & filename, std::size_t props) {
+        archive::archive(std::string const & filename, int props) { // TODO: remove that!
             construct(filename, props);
+        }
+
+        archive::archive(std::string const & filename, char prop) { // TODO: remove that!
+            construct(filename,
+                  ('w' == prop ? WRITE | REPLACE : 0)
+                | ('a' == prop ? WRITE : 0)
+                | ('c' == prop ? COMPRESS : 0)
+                | ('l' == prop ? LARGE : 0)
+                | ('m' == prop ? MEMORY : 0)
+            );
+        }
+
+        archive::archive(std::string const & filename, char signed prop) { // TODO: remove that!
+            construct(filename,
+                  ('w' == prop ? WRITE | REPLACE : 0)
+                | ('a' == prop ? WRITE : 0)
+                | ('c' == prop ? COMPRESS : 0)
+                | ('l' == prop ? LARGE : 0)
+                | ('m' == prop ? MEMORY : 0)
+            );
         }
 
         archive::archive(boost::filesystem::path const & filename, std::string mode) {

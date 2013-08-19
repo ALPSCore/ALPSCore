@@ -116,8 +116,9 @@ namespace alps {
                 } properties;
 
                 archive(boost::filesystem::path const & filename, std::string mode = "r");
-                // TODO: remove that!
-                archive(std::string const & filename, std::size_t props);
+                explicit archive(std::string const & filename, int props); // TODO: remove that!
+                explicit archive(std::string const & filename, char prop); // TODO: remove that!
+                explicit archive(std::string const & filename, char signed prop); // TODO: remove that!
                 archive(archive const & arg);
 
                 virtual ~archive();
