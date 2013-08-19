@@ -122,6 +122,7 @@ bool Term<T>::depends_only_on(const std::string& s) const {
       continue;
     try {
       double tmp = boost::lexical_cast<double>(*it);
+      static_cast<void>(tmp); // fix unused variable warning
       continue;
     }
     catch(...) {
