@@ -30,18 +30,44 @@
 #define ALPS_MULTI_ARRAY_FUNCTIONS_HPP
 
 #include <alps/multi_array/multi_array.hpp>
+#include <alps/numeric/special_functions.hpp>
 
-namespace alps{
+namespace alps {
 
-#define ALPS_IMPLEMENT_FUNCTION(F) template <class T, std::size_t D, class Allocator> multi_array<T,D,Allocator> F(multi_array<T,D,Allocator> a) { std::transform(a.data(),a.data()+a.num_elements(),a.data(),std::ptr_fun<T,T>(std::F)); return a; }
-  
-  ALPS_IMPLEMENT_FUNCTION(sqrt)
-  ALPS_IMPLEMENT_FUNCTION(sin)
-    ALPS_IMPLEMENT_FUNCTION(cos)
-    ALPS_IMPLEMENT_FUNCTION(tan)
-    ALPS_IMPLEMENT_FUNCTION(exp)
-    ALPS_IMPLEMENT_FUNCTION(log)
-    ALPS_IMPLEMENT_FUNCTION(fabs)
+#define ALPS_IMPLEMENT_FUNCTION(FUN)                                                                                            \
+    template <class T, std::size_t D, class Allocator> multi_array<T,D,Allocator> FUN (multi_array<T, D, Allocator> arg) {      \
+        using std:: FUN;                                                                                                        \
+        std::transform(arg.data(), arg.data() + arg.num_elements(), arg.data(), std::ptr_fun<T, T>(FUN));                       \
+        return arg;                                                                                                             \
+    }
+
+ALPS_IMPLEMENT_FUNCTION(sin)
+ALPS_IMPLEMENT_FUNCTION(cos)
+ALPS_IMPLEMENT_FUNCTION(tan)
+ALPS_IMPLEMENT_FUNCTION(sinh)
+ALPS_IMPLEMENT_FUNCTION(cosh)
+ALPS_IMPLEMENT_FUNCTION(tanh)
+ALPS_IMPLEMENT_FUNCTION(asin)
+ALPS_IMPLEMENT_FUNCTION(acos)
+ALPS_IMPLEMENT_FUNCTION(atan)
+ALPS_IMPLEMENT_FUNCTION(abs)
+ALPS_IMPLEMENT_FUNCTION(sqrt)
+ALPS_IMPLEMENT_FUNCTION(exp)
+ALPS_IMPLEMENT_FUNCTION(log)
+ALPS_IMPLEMENT_FUNCTION(fabs)
+
+#undef ALPS_IMPLEMENT_FUNCTION
+
+#define ALPS_IMPLEMENT_FUNCTION(FUN)                                                                                            \
+    template <class T, std::size_t D, class Allocator> multi_array<T, D, Allocator> FUN (multi_array<T, D, Allocator> arg) {    \
+        using alps::numeric:: FUN ;                                                                                             \
+        std::transform(arg.data(), arg.data() + arg.num_elements(), arg.data(), std::ptr_fun<T, T>(FUN));                       \
+        return arg;                                                                                                             \
+    }
+
+ALPS_IMPLEMENT_FUNCTION(sq)
+ALPS_IMPLEMENT_FUNCTION(cb)
+ALPS_IMPLEMENT_FUNCTION(cbrt)
 
 #undef ALPS_IMPLEMENT_FUNCTION
 

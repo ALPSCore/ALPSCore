@@ -50,7 +50,7 @@ namespace alps {
 		class ALPS_DECL result_wrapper {
             public:
                 template<typename T> result_wrapper(T arg)
-                	: m_base(new derived_wrapper<T>(arg))
+                	: m_base(new derived_result_wrapper<T>(arg))
                 {}
 
                 result_wrapper(base_wrapper * arg)
@@ -101,6 +101,35 @@ namespace alps {
                     m_base->print(os);
                 }
 
+				// FUNCTION_PROXY(addeq)
+				// FUNCTION_PROXY(subeq)
+				// FUNCTION_PROXY(muleq)
+				// FUNCTION_PROXY(diveq)
+
+				#define FUNCTION_PROXY(FUN)						 				\
+					result_wrapper FUN () const { 								\
+		                result_wrapper clone(*this);							\
+						clone.m_base-> FUN ();				\
+						return clone;											\
+					}
+					FUNCTION_PROXY(sin)
+					FUNCTION_PROXY(cos)
+					FUNCTION_PROXY(tan)
+					FUNCTION_PROXY(sinh)
+					FUNCTION_PROXY(cosh)
+					FUNCTION_PROXY(tanh)
+					FUNCTION_PROXY(asin)
+					FUNCTION_PROXY(acos)
+					FUNCTION_PROXY(atan)
+					FUNCTION_PROXY(abs)
+					FUNCTION_PROXY(sqrt)
+					FUNCTION_PROXY(log)
+					FUNCTION_PROXY(sq)
+					FUNCTION_PROXY(cb)
+					FUNCTION_PROXY(cbrt)
+
+				#undef FUNCTION_PROXY
+
             private:
                 boost::shared_ptr<base_wrapper> m_base;
         };
@@ -114,10 +143,32 @@ namespace alps {
 	        return m.extract<A>();
 	    }
 
+		#define EXTERNAL_FUNCTION(FUN)						 			\
+			result_wrapper FUN (result_wrapper const & arg) { 			\
+                return arg. FUN ();										\
+			}
+			EXTERNAL_FUNCTION(sin)
+			EXTERNAL_FUNCTION(cos)
+			EXTERNAL_FUNCTION(tan)
+			EXTERNAL_FUNCTION(sinh)
+			EXTERNAL_FUNCTION(cosh)
+			EXTERNAL_FUNCTION(tanh)
+			EXTERNAL_FUNCTION(asin)
+			EXTERNAL_FUNCTION(acos)
+			EXTERNAL_FUNCTION(atan)
+			EXTERNAL_FUNCTION(abs)
+			EXTERNAL_FUNCTION(sqrt)
+			EXTERNAL_FUNCTION(log)
+			EXTERNAL_FUNCTION(sq)
+			EXTERNAL_FUNCTION(cb)
+			EXTERNAL_FUNCTION(cbrt)
+
+		#undef EXTERNAL_FUNCTION
+
         class ALPS_DECL accumulator_wrapper {
             public:
                 template<typename T> accumulator_wrapper(T arg)
-                	: m_base(new derived_wrapper<T>(arg))
+                	: m_base(new derived_accumulator_wrapper<T>(arg))
                 {}
 
                 accumulator_wrapper(accumulator_wrapper const & arg)

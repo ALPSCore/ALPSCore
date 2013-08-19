@@ -76,12 +76,11 @@ namespace alps {
     mcbase::results_type mcbase::collect_results(result_names_type const & names) const {
         results_type partial_results;
         for(result_names_type::const_iterator it = names.begin(); it != names.end(); ++it)
-/*            #ifdef ALPS_NGS_USE_NEW_ALEA
-                partial_results.insert(*it, measurements[*it].result());
-            #else
-*/                // TODO: this is ugly make measurements[*it]
+            // #ifdef ALPS_NGS_USE_NEW_ALEA
+            //     partial_results.insert(*it, measurements[*it].result());
+            // #else
                 partial_results.insert(*it, alps::mcresult(measurements[*it]));
-//            #endif
+            // #endif
         return partial_results;
     }
 

@@ -228,8 +228,114 @@ namespace alps {
                     	;
                     }
 
+					#define NUMERIC_FUNCTION_USEING                                 \
+						using alps::numeric::sq;                                    \
+						using alps::ngs::numeric::cbrt;                             \
+						using alps::ngs::numeric::cb;                               \
+						using std::sqrt;                                            \
+						using alps::ngs::numeric::sqrt;                             \
+						using std::exp;                                             \
+						using alps::ngs::numeric::exp;                              \
+						using std::log;                                             \
+						using alps::ngs::numeric::log;                              \
+						using std::abs;                                             \
+						using alps::ngs::numeric::abs;                              \
+						using std::pow;                                             \
+						using alps::ngs::numeric::pow;                              \
+						using std::sin;                                             \
+						using alps::ngs::numeric::sin;                              \
+						using std::cos;                                             \
+						using alps::ngs::numeric::cos;                              \
+						using std::tan;                                             \
+						using alps::ngs::numeric::tan;                              \
+						using std::sinh;                                            \
+						using alps::ngs::numeric::sinh;                             \
+						using std::cosh;                                            \
+						using alps::ngs::numeric::cosh;                             \
+						using std::tanh;                                            \
+						using alps::ngs::numeric::tanh;                             \
+						using std::asin;                                            \
+						using alps::ngs::numeric::asin;                             \
+						using std::acos;                                            \
+						using alps::ngs::numeric::acos;                             \
+						using std::atan;                                            \
+						using alps::ngs::numeric::atan;                             \
+						using alps::ngs::numeric::operator+;                        \
+						using alps::ngs::numeric::operator-;                        \
+						using alps::ngs::numeric::operator*;                        \
+						using alps::ngs::numeric::operator/;
+/*
+					#define NUMERIC_FUNCTION_OPERATOR(OP_NAME, OP_ARG)				\
+						template<typename U> void OP_NAME (U const & arg) {         \
+							B:: OP_NAME (arg);                                      \
+							OP_NAME ## _impl(arg);                                  \
+						}                                                           \
+						void OP_NAME (T const & arg) {                              \
+							B:: OP_NAME (arg);                                      \
+							NUMERIC_FUNCTION_USEING                                 \
+							m_error = OP_ARG;                                       \
+						}                                                           \
+
+					// addig does not change the error, so nothing has to be done ...
+					// substract does not change the error, so nothing has to be done ...
+					NUMERIC_FUNCTION_OPERATOR(muleq, sqrt(sq(arg) * sq(error())))
+					NUMERIC_FUNCTION_OPERATOR(diveq, sqrt(sq(arg) * sq(error())) / sq(arg))
+
+					#undef NUMERIC_FUNCTION_OPERATOR
+*/
+					#define NUMERIC_FUNCTION_IMPLEMENTATION(FUNCTION_NAME, ERROR)	\
+						void FUNCTION_NAME () {										\
+							B:: FUNCTION_NAME ();									\
+							NUMERIC_FUNCTION_USEING									\
+							m_error = ERROR ;										\
+						}
+
+					NUMERIC_FUNCTION_IMPLEMENTATION(sin, abs(cos(this->mean()) * m_error))
+					// NUMERIC_FUNCTION_IMPLEMENTATION(cos, abs(-sin(this->mean()) * m_error)) // TODO: unary minus is missing
+					// NUMERIC_FUNCTION_IMPLEMENTATION(tan, abs(1. / (cos(this->mean()) * cos(this->mean())) * m_error)) // TODO: scalar devided by data missing
+					NUMERIC_FUNCTION_IMPLEMENTATION(sinh, abs(cosh(this->mean()) * m_error))
+					NUMERIC_FUNCTION_IMPLEMENTATION(cosh, abs(sinh(this->mean()) * m_error))
+					// NUMERIC_FUNCTION_IMPLEMENTATION(tanh, abs(1. / (cosh(this->mean()) * cosh(this->mean())) * m_error)) // TODO: scalar devided by data missing
+					// NUMERIC_FUNCTION_IMPLEMENTATION(asin, abs(1. / sqrt(1. - this->mean() * this->mean()) * m_error)) // TODO: substraction of scalar is missing
+					// NUMERIC_FUNCTION_IMPLEMENTATION(acos, abs(-1. / sqrt(1. - this->mean() * this->mean()) * m_error)) // TODO: substraction of scalar is missing
+					// NUMERIC_FUNCTION_IMPLEMENTATION(atan, abs(1. / (1. + this->mean() * this->mean()) * m_error)) // TODO: addition of scalar is missing
+					// abs does not change the error, so nothing has to be done ...
+					NUMERIC_FUNCTION_IMPLEMENTATION(sq, abs(2. * this->mean() * m_error))
+					NUMERIC_FUNCTION_IMPLEMENTATION(sqrt, abs(m_error / (2. * sqrt(this->mean()))))
+					NUMERIC_FUNCTION_IMPLEMENTATION(cb, abs(3. * sq(this->mean()) * m_error))
+					NUMERIC_FUNCTION_IMPLEMENTATION(cbrt, abs(m_error / (3. * sq(pow(this->mean(),1. / 3)))))
+					NUMERIC_FUNCTION_IMPLEMENTATION(exp, exp(this->mean()) * m_error)
+					NUMERIC_FUNCTION_IMPLEMENTATION(log, abs(m_error / this->mean()))
+
+					#undef NUMERIC_FUNCTION_IMPLEMENTATION
+
 			    private:
-			        error_type m_error;		        
+
+			        error_type m_error;
+
+					#define NUMERIC_FUNCTION_OPERATOR_IMPL(OP_NAME, OP_T, OP_ARG)							\
+						template<typename U> void OP_NAME ## _impl(typename boost::disable_if<				\
+							  typename boost::is_same<typename alps::hdf5::scalar_type<T>::type, U>::type 	\
+							, U																				\
+						>::type const & arg) {																\
+							NUMERIC_FUNCTION_USEING															\
+							m_error = OP_T;																	\
+						}																					\
+						template<typename U> void OP_NAME ## _impl(typename boost::enable_if<				\
+							  typename boost::is_same<typename alps::hdf5::scalar_type<T>::type, U>::type	\
+							, U																				\
+						>::type arg) {																		\
+							NUMERIC_FUNCTION_USEING															\
+							m_error = OP_ARG;																\
+						}
+
+					NUMERIC_FUNCTION_OPERATOR_IMPL(addeq, sqrt(sq(error()) + sq(arg.error())), error())
+					NUMERIC_FUNCTION_OPERATOR_IMPL(subeq, sqrt(sq(error()) + sq(arg.error())), error())
+					NUMERIC_FUNCTION_OPERATOR_IMPL(muleq, sqrt(sq(arg.mean()) * sq(error()) + sq(B::mean()) * sq(arg.error())), sqrt(sq(arg) * sq(error())))
+					NUMERIC_FUNCTION_OPERATOR_IMPL(diveq, sqrt(sq(arg.mean()) * sq(error()) + sq(B::mean()) * sq(arg.error())) / sq(arg.mean()), sqrt(sq(arg) * sq(error())) / sq(arg))
+
+					#undef NUMERIC_FUNCTION_USEING
+					#undef NUMERIC_FUNCTION_OPERATOR_IMPL
 			};
 
 			template<typename B> class BaseWrapper<error_tag, B> : public B {

@@ -58,7 +58,7 @@ namespace alps {
                 	// TODO: add external weight!
 			        template<typename ArgumentPack> Accumulator(ArgumentPack const & args): B(args) {}
 
-			        Accumulator(): B(), m_owner(true), m_weight(new ::alps::accumulator::derived_wrapper<W>(W())) {}
+			        Accumulator(): B(), m_owner(true), m_weight(new ::alps::accumulator::derived_accumulator_wrapper<W>(W())) {}
 			        Accumulator(Accumulator const & arg): B(arg), m_owner(arg.m_owner), m_weight(arg.m_weight) {}
 
 			        base_wrapper const * weight() const {
@@ -146,7 +146,7 @@ namespace alps {
 			        Result()
 			        	: B()
 			        	, m_owner(true)
-			        	, m_weight(new ::alps::accumulator::derived_wrapper<W>(W()))
+			        	, m_weight(new ::alps::accumulator::derived_result_wrapper<W>(W()))
 			        {}
 
 				    template<typename A> Result(A const & acc)

@@ -66,13 +66,57 @@ namespace alps {
                 ) const {
 					throw std::logic_error("A result cannot be merged " + ALPS_STACKTRACE);
                 }
-#endif					
+#endif
+                template<typename U> void addeq(U const &) {}
+                template<typename U> void subeq(U const &) {}
+                template<typename U> void muleq(U const &) {}
+                template<typename U> void diveq(U const &) {}
+
+                void sin() {}
+                void cos() {}
+                void tan() {}
+                void sinh() {}
+                void cosh() {}
+                void tanh() {}
+                void asin() {}
+                void acos() {}
+                void atan() {}
+                void abs() {}
+                void sq() {}
+                void sqrt() {}
+                void cb() {}
+                void cbrt() {}
+                void exp() {}
+                void log() {}
 			};
 
 			template<typename T> class AccumulatorBase {
 				public:
 					typedef T value_type;
 					typedef ResultBase<T> result_type;
+
+                    template<typename U> void addeq(U const &) {}
+                    template<typename U> void subeq(U const &) {}
+                    template<typename U> void muleq(U const &) {}
+                    template<typename U> void diveq(U const &) {}
+
+                    void sin() { throw std::runtime_error("The Function sin is not implemented for accumulators, only for results" + ALPS_STACKTRACE); }
+                    void cos() { throw std::runtime_error("The Function cos is not implemented for accumulators, only for results" + ALPS_STACKTRACE); }
+                    void tan() { throw std::runtime_error("The Function tan is not implemented for accumulators, only for results" + ALPS_STACKTRACE); }
+                    void sinh() { throw std::runtime_error("The Function sinh is not implemented for accumulators, only for results" + ALPS_STACKTRACE); }
+                    void cosh() { throw std::runtime_error("The Function cosh is not implemented for accumulators, only for results" + ALPS_STACKTRACE); }
+                    void tanh() { throw std::runtime_error("The Function tanh is not implemented for accumulators, only for results" + ALPS_STACKTRACE); }
+                    void asin() { throw std::runtime_error("The Function asin is not implemented for accumulators, only for results" + ALPS_STACKTRACE); }
+                    void acos() { throw std::runtime_error("The Function acos is not implemented for accumulators, only for results" + ALPS_STACKTRACE); }
+                    void atan() { throw std::runtime_error("The Function atan is not implemented for accumulators, only for results" + ALPS_STACKTRACE); }
+                    void abs() { throw std::runtime_error("The Function ags is not implemented for accumulators, only for results" + ALPS_STACKTRACE); }
+                    void sq() { throw std::runtime_error("The Function sq is not implemented for accumulators, only for results" + ALPS_STACKTRACE); }
+                    void sqrt() { throw std::runtime_error("The Function sqrt is not implemented for accumulators, only for results" + ALPS_STACKTRACE); }
+                    void cb() { throw std::runtime_error("The Function cb is not implemented for accumulators, only for results" + ALPS_STACKTRACE); }
+                    void cbrt() { throw std::runtime_error("The Function cbrt is not implemented for accumulators, only for results" + ALPS_STACKTRACE); }
+                    void exp() { throw std::runtime_error("The Function exp is not implemented for accumulators, only for results" + ALPS_STACKTRACE); }
+                    void log() { throw std::runtime_error("The Function log is not implemented for accumulators, only for results" + ALPS_STACKTRACE); }
+
 #ifdef ALPS_HAVE_MPI
                 protected:
                     template <typename U, typename Op> void static reduce_if(

@@ -30,9 +30,13 @@
 
 #include <alps/ngs/stacktrace.hpp>
 
+#include <alps/numeric/special_functions.hpp>
+
 #include <boost/accumulators/numeric/functional/vector.hpp>
 #include <boost/accumulators/numeric/functional.hpp>
 #include <boost/throw_exception.hpp>
+#include <boost/lambda/lambda.hpp>
+#include <boost/lambda/bind.hpp>
 #include <boost/bind.hpp>
 
 #include <vector>
@@ -44,13 +48,25 @@ namespace alps {
     namespace ngs {
         namespace numeric {
 
-            //------------------- operator += -------------------
-            template<typename T, typename U>
-            std::vector<T> & operator += (std::vector<T> & lhs, std::vector<U> const & rhs) {
-                using boost::numeric::operators::operator+=;
-                lhs += rhs;
-                return lhs;
-            }
+            //------------------- operator equal -------------------
+
+            #define ALPS_NUMERIC_OPERATOR_EQ(OP_NAME, OPERATOR)                                                                 \
+                template<typename T>                                                                                            \
+                std::vector<T> & OP_NAME (std::vector<T> & lhs, std::vector<T> const & rhs) {                                   \
+                    if(lhs.size() != rhs.size())                                                                                \
+                        boost::throw_exception(std::runtime_error("std::vectors must have the same size!" + ALPS_STACKTRACE));  \
+                    else                                                                                                        \
+                        std::transform(lhs.begin(), lhs.end(), rhs.begin(), lhs.begin(), std:: OPERATOR <T>() );                \
+                    return lhs;                                                                                                 \
+                }
+
+            ALPS_NUMERIC_OPERATOR_EQ(operator+=, plus)
+            ALPS_NUMERIC_OPERATOR_EQ(operator-=, minus)
+            ALPS_NUMERIC_OPERATOR_EQ(operator*=, multiplies)
+            ALPS_NUMERIC_OPERATOR_EQ(operator/=, divides)
+
+            #undef ALPS_NUMERIC_OPERATOR_EQ
+
             //------------------- operator + -------------------
             template<typename T, typename U>
             std::vector<T> operator + (std::vector<T> const & lhs, std::vector<U> const & rhs) {
@@ -94,14 +110,48 @@ namespace alps {
                 return lhs / scalar;
             }
 
-            //------------------- sqrt -------------------
-            template<typename T> 
-            std::vector<T> sqrt(std::vector<T> vec) {
-                using std::sqrt;
-                std::transform(vec.begin(), vec.end(), vec.begin(), static_cast<double (*)(double)>(&sqrt));
+            //------------------- numeric functions -------------------
+            #define ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION(FUNCTION_NAME)                                                      \
+                template<typename T> std::vector<T> FUNCTION_NAME (std::vector<T> arg) {                                    \
+                    using std:: FUNCTION_NAME ;                                                                             \
+                    std::transform(arg.begin(), arg.end(), arg.begin(), static_cast<double (*)(double)>(& FUNCTION_NAME )); \
+                    return arg;                                                                                             \
+                }
+
+            ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION(sin)
+            ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION(cos)
+            ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION(tan)
+            ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION(sinh)
+            ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION(cosh)
+            ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION(tanh)
+            ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION(asin)
+            ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION(acos)
+            ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION(atan)
+            ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION(abs)
+            ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION(sqrt)
+            ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION(exp)
+            ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION(log)
+
+            #undef ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION
+
+            #define ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION(FUNCTION_NAME)                                                      \
+                template<typename T> std::vector<T> FUNCTION_NAME (std::vector<T> arg) {                                    \
+                    using alps::numeric:: FUNCTION_NAME ;                                                                   \
+                    std::transform(arg.begin(), arg.end(), arg.begin(), static_cast<double (*)(double)>(& FUNCTION_NAME )); \
+                    return arg;                                                                                             \
+                }
+
+            ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION(sq)
+            ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION(cb)
+            ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION(cbrt)
+
+            #undef ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION
+
+            template<typename T, typename U> std::vector<T> pow(std::vector<T> vec, U index) {
+                using std::pow;
+                std::transform(vec.begin(), vec.end(), vec.begin(), boost::lambda::bind<T>(static_cast<T (*)(T, U)>(&pow), boost::lambda::_1, index));
                 return vec;
             }
-        
         }
     }
 }

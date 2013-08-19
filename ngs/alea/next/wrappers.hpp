@@ -70,8 +70,8 @@ namespace alps {
                 virtual void collective_merge(boost::mpi::communicator const & comm, int root) = 0;
 #endif
 
-				virtual base_wrapper* clone() const = 0;
-				virtual base_wrapper* result() const = 0;
+				virtual base_wrapper * clone() const = 0;
+				virtual base_wrapper * result() const = 0;
 
                 template<typename T> result_type_wrapper<T> const & get() const {
                     return dynamic_cast<result_type_wrapper<T> const &>(*this);
@@ -80,6 +80,29 @@ namespace alps {
                 template<typename A> A & extract() {
                     return dynamic_cast<derived_wrapper<A>& >(*this).extract();
                 }
+                template<typename A> A const & extract() const {
+                    return dynamic_cast<derived_wrapper<A> const &>(*this).extract();
+                }
+
+				virtual void addeq(base_wrapper const *) = 0;
+				virtual void subeq(base_wrapper const *) = 0;
+				virtual void muleq(base_wrapper const *) = 0;
+				virtual void diveq(base_wrapper const *) = 0;
+				virtual void sin() = 0;
+				virtual void cos() = 0;
+				virtual void tan() = 0;
+				virtual void sinh() = 0;
+				virtual void cosh() = 0;
+				virtual void tanh() = 0;
+				virtual void asin() = 0;
+				virtual void acos() = 0;
+				virtual void atan() = 0;
+				virtual void abs() = 0;
+				virtual void sqrt() = 0;
+				virtual void log() = 0;
+				virtual void sq() = 0;
+				virtual void cb() = 0;
+				virtual void cbrt() = 0;
 		};
 
 		namespace detail {
@@ -139,7 +162,10 @@ namespace alps {
 					impl::DerivedWrapper<A, count_tag, 
 				detail::foundation_wrapper<A> > > > > >(arg) {}
 
-                A & extract()  {
+                A & extract() {
+                    return this->m_data;
+                }
+                A const & extract() const {
                     return this->m_data;
                 }
 
@@ -182,12 +208,6 @@ namespace alps {
                 }
 #endif
 
-				base_wrapper * clone() const { 
-					return new derived_wrapper<A>(this->m_data); 
-				}
-				base_wrapper * result() const { 
-					return result_impl<A>();
-				}
 			private:
 
 				bool equal(std::type_info const & info1, std::type_info const & info2) const {
@@ -243,14 +263,116 @@ namespace alps {
 				) {
 	                throw std::runtime_error(std::string("The type ") + typeid(T).name() + " has no weight" + ALPS_STACKTRACE);
 				}
+		};
+
+		template<typename A> class derived_result_wrapper : public derived_wrapper<A> {
+			public:
+				derived_result_wrapper(): derived_wrapper<A>() {}
+
+				derived_result_wrapper(A const & arg): derived_wrapper<A>(arg) {}
+
+				base_wrapper * clone() const { 
+					return new derived_result_wrapper<A>(this->m_data); 
+				}
+				base_wrapper * result() const { 
+					throw std::runtime_error(std::string("A result(") + typeid(A).name() + ") cannot be converted to a result" + ALPS_STACKTRACE);
+					return NULL;
+				}
+
+				#define OPERATOR_PROXY(OP)						\
+					void OP (base_wrapper const * arg) { 		\
+						this->m_data. OP (arg->extract<A>());	\
+					}
+
+				OPERATOR_PROXY(addeq)
+				OPERATOR_PROXY(subeq)
+				OPERATOR_PROXY(muleq)
+				OPERATOR_PROXY(diveq)
+
+				#undef OPERATOR_PROXY
+
+				#define FUNCTION_PROXY(FUN)						\
+					void FUN () { 								\
+						this->m_data. FUN ();					\
+					}
+
+				FUNCTION_PROXY(sin)
+				FUNCTION_PROXY(cos)
+				FUNCTION_PROXY(tan)
+				FUNCTION_PROXY(sinh)
+				FUNCTION_PROXY(cosh)
+				FUNCTION_PROXY(tanh)
+				FUNCTION_PROXY(asin)
+				FUNCTION_PROXY(acos)
+				FUNCTION_PROXY(atan)
+				FUNCTION_PROXY(abs)
+				FUNCTION_PROXY(sqrt)
+				FUNCTION_PROXY(log)
+				FUNCTION_PROXY(sq)
+				FUNCTION_PROXY(cb)
+				FUNCTION_PROXY(cbrt)
+
+				#undef FUNCTION_PROXY
+		};
+
+		template<typename A> class derived_accumulator_wrapper : public derived_wrapper<A> {
+			public:
+				derived_accumulator_wrapper(): derived_wrapper<A>() {}
+
+				derived_accumulator_wrapper(A const & arg): derived_wrapper<A>(arg) {}
+
+				base_wrapper * clone() const { 
+					return new derived_accumulator_wrapper<A>(this->m_data); 
+				}
+				base_wrapper * result() const { 
+					return result_impl<A>();
+				}
+
+				#define OPERATOR_PROXY(OP)																											\
+					void OP (base_wrapper const *) { 																								\
+						throw std::runtime_error("The Function " #OP " is not implemented for accumulators, only for results" + ALPS_STACKTRACE);	\
+					}
+
+				OPERATOR_PROXY(addeq)
+				OPERATOR_PROXY(subeq)
+				OPERATOR_PROXY(muleq)
+				OPERATOR_PROXY(diveq)
+
+				#undef OPERATOR_PROXY
+
+				#define FUNCTION_PROXY(FUN)																											\
+					void FUN () { 																													\
+						throw std::runtime_error("The Function " #FUN " is not implemented for accumulators, only for results" + ALPS_STACKTRACE);	\
+					}
+
+				FUNCTION_PROXY(sin)
+				FUNCTION_PROXY(cos)
+				FUNCTION_PROXY(tan)
+				FUNCTION_PROXY(sinh)
+				FUNCTION_PROXY(cosh)
+				FUNCTION_PROXY(tanh)
+				FUNCTION_PROXY(asin)
+				FUNCTION_PROXY(acos)
+				FUNCTION_PROXY(atan)
+				FUNCTION_PROXY(abs)
+				FUNCTION_PROXY(sqrt)
+				FUNCTION_PROXY(log)
+				FUNCTION_PROXY(sq)
+				FUNCTION_PROXY(cb)
+				FUNCTION_PROXY(cbrt)
+
+				#undef FUNCTION_PROXY
+
+			private:
 
 				template<typename T> typename boost::enable_if<typename has_result_type<T>::type, base_wrapper *>::type result_impl() const {
-					return new derived_wrapper<typename A::result_type>(this->m_data);
+					return new derived_result_wrapper<typename A::result_type>(this->m_data);
 				}
 				template<typename T> typename boost::disable_if<typename has_result_type<T>::type, base_wrapper *>::type result_impl() const {
 	                throw std::runtime_error(std::string("The type ") + typeid(A).name() + " has no result_type" + ALPS_STACKTRACE);
 	                return NULL;
 				}
+
 		};
 	}
 }

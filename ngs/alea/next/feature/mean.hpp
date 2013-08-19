@@ -221,9 +221,88 @@ namespace alps {
 							&& (boost::is_scalar<T>::value || get_extent(T()).size() == ar.dimensions("mean/value"))
 						;
 					}
+/*
+					#define NUMERIC_FUNCTION_OPERATOR(OP_NAME, OP_USING, OP_SYMBOL)	\
+						template<typename U> void OP_NAME (U const & arg) {			\
+							B:: OP_NAME (arg);										\
+							OP_NAME ## _impl(arg);									\
+						}															\
+						void OP_NAME (T const & arg) {								\
+							using alps::ngs::numeric:: OP_USING ;					\
+							B:: OP_NAME (arg);										\
+							m_mean OP_SYMBOL arg;									\
+						}
+
+					NUMERIC_FUNCTION_OPERATOR(addeq, operator+=, +=)
+					NUMERIC_FUNCTION_OPERATOR(subeq, operator-=, -=)
+					NUMERIC_FUNCTION_OPERATOR(muleq, operator*=, *=)
+					NUMERIC_FUNCTION_OPERATOR(diveq, operator/=, /=)
+
+					#undef NUMERIC_FUNCTION_OPERATOR
+*/
+					#define NUMERIC_FUNCTION_IMPLEMENTATION(FUNCTION_NAME)			\
+						void FUNCTION_NAME () { 									\
+							B:: FUNCTION_NAME ();									\
+							using std:: FUNCTION_NAME ;								\
+							using alps::ngs::numeric:: FUNCTION_NAME ;				\
+							m_mean = FUNCTION_NAME (m_mean); 						\
+						}
+
+					NUMERIC_FUNCTION_IMPLEMENTATION(sin)
+					NUMERIC_FUNCTION_IMPLEMENTATION(cos)
+					NUMERIC_FUNCTION_IMPLEMENTATION(tan)
+					NUMERIC_FUNCTION_IMPLEMENTATION(sinh)
+					NUMERIC_FUNCTION_IMPLEMENTATION(cosh)
+					NUMERIC_FUNCTION_IMPLEMENTATION(tanh)
+					NUMERIC_FUNCTION_IMPLEMENTATION(asin)
+					NUMERIC_FUNCTION_IMPLEMENTATION(acos)
+					NUMERIC_FUNCTION_IMPLEMENTATION(atan)
+					NUMERIC_FUNCTION_IMPLEMENTATION(abs)
+					NUMERIC_FUNCTION_IMPLEMENTATION(sqrt)
+					NUMERIC_FUNCTION_IMPLEMENTATION(log)
+
+					#undef NUMERIC_FUNCTION_IMPLEMENTATION
+
+					#define NUMERIC_FUNCTION_IMPLEMENTATION(FUNCTION_NAME)			\
+						void FUNCTION_NAME () {									 	\
+							B:: FUNCTION_NAME ();									\
+		                    using alps::numeric:: FUNCTION_NAME ;                   \
+							using alps::ngs::numeric:: FUNCTION_NAME ;				\
+							m_mean = FUNCTION_NAME (m_mean); 						\
+						}
+
+					NUMERIC_FUNCTION_IMPLEMENTATION(sq)
+					NUMERIC_FUNCTION_IMPLEMENTATION(cb)
+					NUMERIC_FUNCTION_IMPLEMENTATION(cbrt)
+
+					#undef NUMERIC_FUNCTION_IMPLEMENTATION
 
 				private:
+
 					mean_type m_mean;
+
+					#define NUMERIC_FUNCTION_OPERATOR_IMPL(OP_NAME, OP_USING, OP_SYMBOL)					\
+						template<typename U> void OP_NAME ## _impl(typename boost::disable_if<				\
+							  typename boost::is_same<typename alps::hdf5::scalar_type<T>::type, U>::type	\
+							, U																				\
+						>::type const & arg) {																\
+							using alps::ngs::numeric:: OP_USING ;											\
+							m_mean OP_SYMBOL arg.mean();													\
+						}																					\
+						template<typename U> void OP_NAME ## _impl(typename boost::enable_if<				\
+							  typename boost::is_same<typename alps::hdf5::scalar_type<T>::type, U>::type	\
+							, typename alps::hdf5::scalar_type<T>::type										\
+						>::type arg) {																		\
+							using alps::ngs::numeric:: OP_USING ;											\
+							m_mean OP_SYMBOL arg;															\
+						}
+
+					NUMERIC_FUNCTION_OPERATOR_IMPL(addeq, operator+=, +=)
+					NUMERIC_FUNCTION_OPERATOR_IMPL(subeq, operator-=, -=)
+					NUMERIC_FUNCTION_OPERATOR_IMPL(muleq, operator*=, *=)
+					NUMERIC_FUNCTION_OPERATOR_IMPL(diveq, operator/=, /=)
+
+					#undef NUMERIC_FUNCTION_OPERATOR_IMPL
 			};
 
 			template<typename B> class BaseWrapper<mean_tag, B> : public B {
