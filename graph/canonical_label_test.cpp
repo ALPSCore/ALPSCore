@@ -99,7 +99,7 @@ bool colored_edges_test() {
     return true;
 }
 
-bool colored_edges_test2() {
+void colored_edges_test2() {
     std::cout << "colored_edges_test2()" << std::endl;
     typedef boost::property<alps::edge_type_t,unsigned int> edge_props;
     typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS, boost::no_property, edge_props> graph_type;
