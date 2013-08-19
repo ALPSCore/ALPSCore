@@ -279,6 +279,8 @@ BOOST_AUTO_TEST_CASE(ngs_alea_next) {
 
 	std::cout << "> results: " << std::endl << results << std::endl;
 
+	std::cout << "> sin(\"vectors\"): " << std::endl << sin(results["vector"]) << std::endl << std::endl;
+
 	{
 		alps::hdf5::archive ar("test.h5", "w");
 		ar["/results"] << results;
