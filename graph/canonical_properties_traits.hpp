@@ -30,6 +30,7 @@
 #define ALPS_GRAPH_CANONICAL_PROPERTIES_TRAITS
 
 #include <boost/tuple/tuple.hpp>
+#include <boost/tuple/tuple_comparison.hpp>
 #include <boost/dynamic_bitset.hpp>
 #include <boost/graph/graph_traits.hpp>
 #include <alps/lattice/graphproperties.h>
