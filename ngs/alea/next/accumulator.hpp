@@ -395,7 +395,7 @@ namespace alps {
 			{};
 
 			template<typename T> struct observable_type
-				: public impl::Accumulator<T, max_num_binning_tag, simple_observable_type<T> >
+				: public impl::Accumulator<T, autocorrelation_tag, impl::Accumulator<T, max_num_binning_tag, simple_observable_type<T> > >
 			{};
 
 			template<typename T> struct signed_observable_type

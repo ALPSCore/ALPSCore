@@ -172,6 +172,11 @@ namespace alps {
                             B::reduce_if(comm, m_sum, std::plus<typename alps::hdf5::scalar_type<T>::type>(), root);
                     }
 #endif
+                protected:
+
+					T const & sum() const {
+						return m_sum;
+					}
 
 				private:
 					T m_sum;

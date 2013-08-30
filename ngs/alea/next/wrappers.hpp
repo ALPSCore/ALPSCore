@@ -34,6 +34,7 @@
 #include <alps/ngs/alea/next/feature/count.hpp>
 #include <alps/ngs/alea/next/feature/weight.hpp>
 #include <alps/ngs/alea/next/feature/max_num_binning.hpp>
+#include <alps/ngs/alea/next/feature/autocorrelation.hpp>
 
 #include <alps/hdf5.hpp>
 
