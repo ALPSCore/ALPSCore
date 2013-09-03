@@ -136,10 +136,14 @@ endif (NOT ALPS_FOR_VISTRAILS)
 
 if (ALPS_INSTALL_VISTRAILS_PACKAGES)
   if (APPLE)
-    SET_TARGET_PROPERTIES(alps
-      PROPERTIES BUILD_WITH_INSTALL_RPATH ON
-      INSTALL_NAME_DIR "@executable_path/../Frameworks"
-    )
+#    SET_TARGET_PROPERTIES(alps
+#      PROPERTIES BUILD_WITH_INSTALL_RPATH ON
+#      INSTALL_NAME_DIR "@executable_path/../Frameworks"
+#    )
+    install(TARGETS alps COMPONENT libraries
+            ARCHIVE DESTINATION lib
+            LIBRARY DESTINATION lib
+            RUNTIME DESTINATION bin)
   endif(APPLE)
   install(TARGETS alps  COMPONENT vistrails
           ARCHIVE DESTINATION ${VISTRAILS_DYLIB_DIR}
