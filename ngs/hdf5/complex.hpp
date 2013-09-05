@@ -28,7 +28,7 @@
 #ifndef ALPS_NGS_HDF5_STD_COMPLEX
 #define ALPS_NGS_HDF5_STD_COMPLEX
 
-#include <alps/ngs/hdf5.hpp>
+#include <alps/hdf5/archive.hpp>
 
 #include <complex>
 

@@ -26,9 +26,9 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <alps/ngs/short_print.hpp>
-#include <alps/ngs/hdf5/vector.hpp>
-#include <alps/ngs/hdf5/complex.hpp>
-#include <alps/ngs/hdf5/pointer.hpp>
+#include <alps/hdf5/vector.hpp>
+#include <alps/hdf5/complex.hpp>
+#include <alps/hdf5/pointer.hpp>
 #include <alps/ngs/detail/paramvalue.hpp>
 #include <alps/ngs/detail/type_wrapper.hpp>
 

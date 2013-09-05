@@ -28,7 +28,7 @@
 #ifndef ALPS_NGS_HDF5_BOOST_NUMERIC_UBLAS_VECTOR_HPP
 #define ALPS_NGS_HDF5_BOOST_NUMERIC_UBLAS_VECTOR_HPP
 
-#include <alps/ngs/hdf5.hpp>
+#include <alps/hdf5/archive.hpp>
 #include <alps/ngs/cast.hpp>
 
 #include <boost/numeric/ublas/vector.hpp>

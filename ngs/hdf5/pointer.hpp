@@ -28,7 +28,7 @@
 #ifndef ALPS_NGS_HDF5_POINTER_HPP
 #define ALPS_NGS_HDF5_POINTER_HPP
 
-#include <alps/ngs/hdf5/pair.hpp>
+#include <alps/hdf5/pair.hpp>
 
 namespace alps {
 

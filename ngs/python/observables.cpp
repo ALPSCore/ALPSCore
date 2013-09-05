@@ -28,7 +28,7 @@
 
 #define PY_ARRAY_UNIQUE_SYMBOL pyngsobservables_PyArrayHandle
 
-#include <alps/ngs/hdf5.hpp>
+#include <alps/hdf5/archive.hpp>
 #include <alps/ngs/mcobservable.hpp>
 #include <alps/ngs/mcobservables.hpp>
 #include <alps/ngs/observablewrappers.hpp>

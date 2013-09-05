@@ -28,7 +28,7 @@
 
 #define PY_ARRAY_UNIQUE_SYMBOL pyngsresults_PyArrayHandle
 
-#include <alps/ngs/hdf5.hpp>
+#include <alps/hdf5.hpp>
 #include <alps/ngs/mcresults.hpp>
 
 #include <alps/ngs/boost_python.hpp>

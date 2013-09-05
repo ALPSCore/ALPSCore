@@ -28,7 +28,7 @@
 #ifndef ALPS_NGS_ALEA_ACCUMULATOR_SET_HEADER
 #define ALPS_NGS_ALEA_ACCUMULATOR_SET_HEADER
 
-#include <alps/ngs/hdf5.hpp>
+#include <alps/hdf5/archive.hpp>
 #include <alps/ngs/alea/accumulator.hpp>
 #include <alps/ngs/alea/wrapper/accumulator_wrapper.hpp>
 

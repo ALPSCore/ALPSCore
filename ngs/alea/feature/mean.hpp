@@ -34,9 +34,9 @@
 #include <alps/ngs/numeric/detail.hpp>
 #include <alps/ngs/numeric/vector.hpp>
 
-#include <alps/ngs/hdf5.hpp>
-#include <alps/ngs/hdf5/vector.hpp>
-#include <alps/ngs/hdf5/multi_array.hpp>
+#include <alps/hdf5/archive.hpp>
+#include <alps/hdf5/vector.hpp>
+#include <alps/hdf5/multi_array.hpp>
 
 #include <alps/ngs/alea/feature/feature_traits.hpp>
 #include <alps/ngs/alea/feature/generate_property.hpp>

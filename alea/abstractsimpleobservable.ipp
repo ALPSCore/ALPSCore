@@ -33,7 +33,7 @@
 #ifndef ALPS_ALEA_ABSTRACTSIMPLEOBSERVABLE_IPP
 #define ALPS_ALEA_ABSTRACTSIMPLEOBSERVABLE_IPP
 
-#include <alps/hdf5.hpp>
+#include <alps/hdf5/archive.hpp>
 #include <alps/hdf5/complex.hpp>
 #include <alps/hdf5/valarray.hpp>
 

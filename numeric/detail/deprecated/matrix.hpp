@@ -41,7 +41,7 @@
 #include <vector>
 #include <numeric>
 
-#include <alps/hdf5.hpp>
+#include <alps/hdf5/archive.hpp>
 #include <alps/hdf5/pointer.hpp>
 
 #ifdef UBLAS

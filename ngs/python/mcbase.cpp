@@ -30,7 +30,7 @@
 
 #include <alps/ngs/boost_python.hpp>
 
-#include <alps/ngs/hdf5.hpp>
+#include <alps/hdf5/archive.hpp>
 #include <alps/ngs/scheduler/mcbase.hpp>
 
 #include <alps/python/make_copy.hpp>

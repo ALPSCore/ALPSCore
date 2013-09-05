@@ -28,8 +28,8 @@
 
 #define PY_ARRAY_UNIQUE_SYMBOL pyngsobservable_PyArrayHandle
 
-#include <alps/ngs/hdf5.hpp>
-#include <alps/ngs/hdf5/complex.hpp>
+#include <alps/hdf5/archive.hpp>
+#include <alps/hdf5/complex.hpp>
 #include <alps/ngs/mcobservable.hpp>
 
 #include <alps/ngs/boost_python.hpp>

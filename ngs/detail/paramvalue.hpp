@@ -28,7 +28,7 @@
 #ifndef ALPS_NGS_DETAIL_PARAMVALUE_HPP
 #define ALPS_NGS_DETAIL_PARAMVALUE_HPP
 
-#include <alps/ngs/hdf5.hpp>
+#include <alps/hdf5/archive.hpp>
 #include <alps/ngs/config.hpp>
 #include <alps/ngs/detail/remove_cvr.hpp>
 #include <alps/ngs/detail/paramvalue_reader.hpp>

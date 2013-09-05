@@ -38,7 +38,7 @@
 #include <alps/osiris/dump.h>
 #include <alps/osiris/std/vector.h>
 
-#include <alps/hdf5.hpp>
+#include <alps/hdf5/archive.hpp>
 #include <alps/hdf5/vector.hpp>
 
 #include <vector>

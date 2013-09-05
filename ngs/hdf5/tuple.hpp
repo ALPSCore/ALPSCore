@@ -28,7 +28,7 @@
 #ifndef ALPS_NGS_HDF5_BOOST_TUPLE
 #define ALPS_NGS_HDF5_BOOST_TUPLE
 
-#include <alps/ngs/hdf5.hpp>
+#include <alps/hdf5/archive.hpp>
 #include <alps/ngs/cast.hpp>
 #include <alps/ngs/stringify.hpp>
 #include <alps/ngs/detail/remove_cvr.hpp>

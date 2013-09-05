@@ -25,7 +25,7 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <alps/ngs/hdf5/python.hpp>
+#include <alps/hdf5/python.hpp>
 #include <alps/ngs/detail/type_wrapper.hpp>
 #include <alps/ngs/detail/numpy_import.ipp>
 #include <alps/ngs/detail/get_numpy_type.hpp>

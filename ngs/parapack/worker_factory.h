@@ -35,7 +35,7 @@
 #define NGS_PARAPACK_FACTORY_H
 
 #include <alps/config.h>
-#include <alps/ngs/hdf5.hpp>
+#include <alps/hdf5.hpp>
 #include <alps/ngs/params.hpp>
 #include <boost/shared_ptr.hpp>
 

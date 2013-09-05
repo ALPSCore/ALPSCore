@@ -28,7 +28,7 @@
 #ifndef ALPS_NGS_DETAIL_PARAMPROXY_HPP
 #define ALPS_NGS_DETAIL_PARAMPROXY_HPP
 
-#include <alps/ngs/hdf5.hpp>
+#include <alps/hdf5/archive.hpp>
 #include <alps/ngs/config.hpp>
 #include <alps/ngs/detail/paramvalue.hpp>
 

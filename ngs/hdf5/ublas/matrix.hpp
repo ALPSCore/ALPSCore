@@ -28,7 +28,7 @@
 #ifndef ALPS_NGS_HDF5_BOOST_NUMERIC_UBLAS_MATRIX_HPP
 #define ALPS_NGS_HDF5_BOOST_NUMERIC_UBLAS_MATRIX_HPP
 
-#include <alps/ngs/hdf5.hpp>
+#include <alps/hdf5/archive.hpp>
 
 #include <boost/numeric/ublas/matrix.hpp>
 

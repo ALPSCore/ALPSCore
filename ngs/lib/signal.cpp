@@ -27,7 +27,7 @@
 
 #include <alps/ngs/signal.hpp>
 #include <alps/ngs/stacktrace.hpp>
-#include <alps/ngs/hdf5.hpp>
+#include <alps/hdf5/archive.hpp>
 
 #include <cstring>
 #include <sstream>

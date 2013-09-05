@@ -28,16 +28,15 @@
 #ifndef ALPS_NGS_HDF5_ALPS_MATRIX_HPP
 #define ALPS_NGS_HDF5_ALPS_MATRIX_HPP
 
-#include <alps/ngs/hdf5.hpp>
+#include <alps/hdf5/archive.hpp>
 #include <alps/ngs/cast.hpp>
-#include <alps/ngs/hdf5/complex.hpp>
+#include <alps/hdf5/complex.hpp>
 #include <alps/numeric/matrix.hpp>
 
 #include <algorithm>
 
 // This one is only required for the old matrix hdf5 format
-#include <alps/ngs/hdf5/vector.hpp>
-
+#include <alps/hdf5/vector.hpp>
 
 namespace alps {
 namespace hdf5 {

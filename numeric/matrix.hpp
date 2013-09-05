@@ -32,4 +32,4 @@
 #include <alps/numeric/matrix/matrix_blas.hpp>
 #include <alps/numeric/matrix/conj.hpp>
 #include <alps/numeric/matrix/transpose.hpp>
-#include <alps/ngs/hdf5/matrix.hpp>
+#include <alps/hdf5/matrix.hpp>

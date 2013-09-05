@@ -32,7 +32,7 @@
 #include <alps/ngs/alea/next/feature.hpp>
 #include <alps/ngs/alea/next/feature/count.hpp>
 
-#include <alps/hdf5.hpp>
+#include <alps/hdf5/archive.hpp>
 #include <alps/ngs/stacktrace.hpp>
 #include <alps/ngs/short_print.hpp>
 

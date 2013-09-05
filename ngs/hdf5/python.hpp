@@ -28,12 +28,12 @@
 #ifndef ALPS_NGS_HDF5_PYTHON_CPP
 #define ALPS_NGS_HDF5_PYTHON_CPP
 
-#include <alps/ngs/hdf5.hpp>
+#include <alps/hdf5/archive.hpp>
 #include <alps/ngs/cast.hpp>
-#include <alps/ngs/hdf5/pair.hpp>
+#include <alps/hdf5/pair.hpp>
 #include <alps/ngs/stacktrace.hpp>
-#include <alps/ngs/hdf5/vector.hpp>
-#include <alps/ngs/hdf5/complex.hpp>
+#include <alps/hdf5/vector.hpp>
+#include <alps/hdf5/complex.hpp>
 
 #include <alps/ngs/boost_python.hpp>
 

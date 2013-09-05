@@ -36,7 +36,7 @@
 #include <alps/ngs/alea/next/feature/max_num_binning.hpp>
 #include <alps/ngs/alea/next/feature/autocorrelation.hpp>
 
-#include <alps/hdf5.hpp>
+#include <alps/hdf5/archive.hpp>
 
 #include <typeinfo>
 #include <stdexcept>

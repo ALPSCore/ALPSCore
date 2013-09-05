@@ -28,7 +28,7 @@
 #ifndef ALPS_NGS_MCRESULT_IMPL_DERIVED_IPP
 #define ALPS_NGS_MCRESULT_IMPL_DERIVED_IPP
 
-#include <alps/ngs/hdf5.hpp>
+#include <alps/hdf5/archive.hpp>
 #include <alps/ngs/boost_mpi.hpp>
 #include <alps/ngs/stacktrace.hpp>
 #include <alps/ngs/short_print.hpp>

@@ -32,7 +32,7 @@
 #include <alps/ngs/alea/next/wrappers.hpp>
 #include <alps/ngs/alea/next/feature/weight_impl.hpp>
 
-#include <alps/hdf5.hpp>
+#include <alps/hdf5/archive.hpp>
 
 #include <boost/shared_ptr.hpp>
 

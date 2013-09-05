@@ -28,7 +28,7 @@
 #ifndef ALPS_NGS_HDF5_STD_PAIR
 #define ALPS_NGS_HDF5_STD_PAIR
 
-#include <alps/ngs/hdf5.hpp>
+#include <alps/hdf5/archive.hpp>
 #include <alps/ngs/cast.hpp>
 #include <alps/ngs/detail/remove_cvr.hpp>
 

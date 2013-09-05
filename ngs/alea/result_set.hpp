@@ -28,7 +28,7 @@
 #ifndef ALPS_NGS_ALEA_RESULT_SET_HPP
 #define ALPS_NGS_ALEA_RESULT_SET_HPP
 
-#include <alps/ngs/hdf5.hpp>
+#include <alps/hdf5/archive.hpp>
 #include <alps/ngs/alea/wrapper/result_wrapper.hpp>
 
 #include <map>

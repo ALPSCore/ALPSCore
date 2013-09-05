@@ -35,7 +35,7 @@
 // #include "measurement.h"
 #include <alps/ngs/parapack/simulation_p.h>
 
-#include <alps/ngs/hdf5.hpp>
+#include <alps/hdf5.hpp>
 
 // some file (probably a python header) defines a tolower macro ...
 #undef tolower
