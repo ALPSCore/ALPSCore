@@ -47,14 +47,14 @@ int main()
     }
     
     {
-        alps::hdf5::archive ia("test_hdf5_memory.h5");
+ 
         std::vector<double> foo, foo2;
         try {
+			alps::hdf5::archive ia("test_hdf5_memory.h5");
             ia >> alps::make_pvp("/foo", foo);
             ia >> alps::make_pvp("/foo2", foo2);
         } catch (exception e) {
-            cout << "Exception caught:" << endl;
-            cout << e.what() << endl;
+            cout << "Exception caught: no complex value" << endl;
             boost::filesystem::remove(boost::filesystem::path("test_hdf5_memory.h5"));
             return EXIT_SUCCESS;
         }

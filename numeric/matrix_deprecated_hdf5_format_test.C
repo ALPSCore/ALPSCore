@@ -38,11 +38,11 @@ int main() {
     infile += "/test/numeric/matrix_deprecated_hdf5_format_test.h5";
     if (!boost::filesystem::exists(infile))
     {
-        std::cout << "Reference file " << infile.native() << " not found." << std::endl;
+        std::cout << "Reference file " << infile << " not found." << std::endl;
         return -1;
     }
     alps::numeric::matrix<double> m;
-    alps::hdf5::archive ar(infile.native(), 'r');
+    alps::hdf5::archive ar(infile.native(), "r");
     ar["/matrix_old_hdf5_format"] >> m;
     std::cout << "Matrix " << num_rows(m) << "x" << num_cols(m) << ":\n";
     std::cout << "capacity: " <<m.capacity().first << "x" << m.capacity().second <<"\n";
