@@ -34,9 +34,6 @@
 
 namespace detail {
     void copy_data(alps::hdf5::archive & tar, alps::hdf5::archive & sar, std::string const & segment) {
-
-        std::cout << sar.complete_path(segment) << " " << tar.complete_path(segment) << std::endl;
-
         if (false);
         #define CHECK_TYPE(T)                                                                                                                   \
             else if (sar.is_datatype<T>(segment) && sar.is_null(segment))                                                                       \
@@ -58,14 +55,6 @@ namespace detail {
         else
             throw std::runtime_error("Unknown type in path: " + sar.complete_path(segment) + ALPS_STACKTRACE);
     }
-    void copy_attributes(alps::hdf5::archive & tar, alps::hdf5::archive & sar) {
-        std::vector<std::string> attributes = sar.list_attributes("");
-
-        std::cout << sar.get_context() << " " << attributes.size() << std::endl;
-
-        for (std::vector<std::string>::const_iterator it = attributes.begin(); it != attributes.end(); ++it)
-            detail::copy_data(tar, sar, "@" + *it);
-    }
 }
 
 void copy(alps::hdf5::archive & tar, std::string const & tpath, alps::hdf5::archive & sar, std::string const & spath) {
@@ -80,9 +69,13 @@ void copy(alps::hdf5::archive & tar, std::string const & tpath, alps::hdf5::arch
             copy(tar, *it, sar, *it);
         else {
             detail::copy_data(tar, sar, *it);
-            detail::copy_attributes(sar, tar);
+            std::vector<std::string> attributes = sar.list_attributes(*it);
+            for (std::vector<std::string>::const_iterator jt = attributes.begin(); jt != attributes.end(); ++jt)
+                detail::copy_data(tar, sar, *it + "/@" + *jt);
         }
-    detail::copy_attributes(sar, tar);
+    std::vector<std::string> attributes = sar.list_attributes("");
+    for (std::vector<std::string>::const_iterator it = attributes.begin(); it != attributes.end(); ++it)
+        detail::copy_data(tar, sar, "@" + *it);
 
     tar.set_context(tcontext);
     sar.set_context(scontext);
@@ -97,11 +90,11 @@ int main() {
 
         {
             alps::hdf5::archive ar("test_hdf5_copy.h5", "w");
-            ar["/dat/vec"] << a;
-            ar["/dat/cpx"] << std::complex<double>(1., 1.);
-            ar["/int"] << 2;
+            ar["/dat/vec"] = a;
+            ar["/dat/vec/@foo"] = 10;
+            ar["/dat/cpx"] = std::complex<double>(1., 1.);
+            ar["/int"] = 2;
         }
-
         {
             alps::hdf5::archive tar("test_hdf5_copy2.h5", "w");
             alps::hdf5::archive sar("test_hdf5_copy.h5", "r");
