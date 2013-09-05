@@ -25,4 +25,38 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <alps/ngs/hdf5/pointer.hpp>
+#ifndef ALPS_NGS_HDF5_POINTER_HPP
+#define ALPS_NGS_HDF5_POINTER_HPP
+
+#include <alps/hdf5/pair.hpp>
+
+namespace alps {
+
+    template <typename T> hdf5::detail::make_pvp_proxy<std::pair<T *, std::vector<std::size_t> > > make_pvp(
+          std::string const & path
+        , T * value
+        , std::size_t size
+    ) {
+        return hdf5::detail::make_pvp_proxy<std::pair<T *, std::vector<std::size_t> > >(
+              path
+            , std::make_pair(value, size > 0 
+                ? std::vector<std::size_t>(1, size)
+                : std::vector<std::size_t>()
+            )
+        );
+    }
+
+    template <typename T> hdf5::detail::make_pvp_proxy<std::pair<T *, std::vector<std::size_t> > > make_pvp(
+          std::string const & path
+        , T * value
+        , std::vector<std::size_t> const & size
+    ) {
+        return hdf5::detail::make_pvp_proxy<std::pair<T *, std::vector<std::size_t> > >(
+              path
+            , std::make_pair(value, size)
+        );
+    }
+
+}
+
+#endif
