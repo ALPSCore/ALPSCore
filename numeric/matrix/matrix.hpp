@@ -249,12 +249,12 @@ namespace alps {
         std::pair<col_element_iterator,col_element_iterator> col(size_type col = 0 )
         {
             assert(col < size2_);
-            return std::make_pair( col_element_iterator(&values_[col*reserved_size1_]), col_element_iterator(&values_[col*reserved_size1_+size1_]) );
+            return std::make_pair( col_element_iterator(&values_[0]+(col*reserved_size1_)), col_element_iterator(&values_[0]+(col*reserved_size1_+size1_)) );
         }
         std::pair<const_col_element_iterator,const_col_element_iterator> col(size_type col = 0 ) const
         {
             assert(col < size2_);
-            return std::make_pair( const_col_element_iterator(&values_[col*reserved_size1_]), const_col_element_iterator(&values_[col*reserved_size1_+size1_]) );
+            return std::make_pair( const_col_element_iterator(&values_[0]+col*reserved_size1_), const_col_element_iterator(&values_[0]+col*reserved_size1_+size1_) );
         }
 
         /**
@@ -265,13 +265,13 @@ namespace alps {
         std::pair<row_element_iterator,row_element_iterator> row(size_type row = 0)
         {
             assert(row < size1_);
-            return std::make_pair( row_element_iterator(&values_[row],reserved_size1_), row_element_iterator(&values_[row+reserved_size1_*size2_], reserved_size1_) );
+            return std::make_pair( row_element_iterator(&values_[0]+row,reserved_size1_), row_element_iterator(&values_[0]+(row+reserved_size1_*size2_), reserved_size1_) );
         }
 
         std::pair<const_row_element_iterator,const_row_element_iterator> row(size_type row = 0) const
         {
             assert(row < size1_);
-            return std::make_pair( const_row_element_iterator(&values_[row],reserved_size1_), const_row_element_iterator(&values_[row+reserved_size1_*size2_], reserved_size1_) );
+            return std::make_pair( const_row_element_iterator(&values_[0]+row,reserved_size1_), const_row_element_iterator(&values_[0]+(row+reserved_size1_*size2_), reserved_size1_) );
         }
 
         /**
@@ -283,13 +283,13 @@ namespace alps {
         std::pair<diagonal_iterator,diagonal_iterator> diagonal()
         {
             size_type const square_part = (std::min)(size1_,size2_);
-            return std::make_pair( diagonal_iterator(&values_[0],reserved_size1_+1), diagonal_iterator(&values_[square_part*reserved_size1_+square_part], reserved_size1_+1) );
+            return std::make_pair( diagonal_iterator(&values_[0],reserved_size1_+1), diagonal_iterator(&values_[0]+(square_part*reserved_size1_+square_part), reserved_size1_+1) );
         }
 
         std::pair<const_diagonal_iterator,const_diagonal_iterator> diagonal() const
         {
             size_type const square_part = (std::min)(size1_,size2_);
-            return std::make_pair( const_diagonal_iterator(&values_[0],reserved_size1_+1), const_diagonal_iterator(&values_[square_part*reserved_size1_+square_part], reserved_size1_+1) );
+            return std::make_pair( const_diagonal_iterator(&values_[0],reserved_size1_+1), const_diagonal_iterator(&values_[0]+(square_part*reserved_size1_+square_part), reserved_size1_+1) );
         }
 
         /**

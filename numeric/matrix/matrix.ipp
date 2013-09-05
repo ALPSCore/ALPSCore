@@ -350,7 +350,7 @@ namespace numeric {
         automatic_reserve(this->size1_+k, this->size2_);
         // The elements do already exists due to reserve, so we can just use (copy to) them.
         for(difference_type l=0; l<k; ++l)
-            copy( range.first+(l*this->size2_), range.first+((l+1)*this->size2_), row_element_iterator(&values_[size1_+l],reserved_size1_) );
+            copy( range.first+(l*this->size2_), range.first+((l+1)*this->size2_), row_element_iterator(&values_[0]+size1_+l,reserved_size1_) );
         this->size1_ += k;
     }
 
@@ -376,7 +376,7 @@ namespace numeric {
 
         // Insert new data
         for(difference_type l=0; l<k; ++l)
-            copy(range.first+l*this->size2_,range.first+(l+1)*this->size2_,row_element_iterator(&values_[i+l],reserved_size1_) );
+            copy(range.first+l*this->size2_,range.first+(l+1)*this->size2_,row_element_iterator(&values_[0]+i+l,reserved_size1_) );
         this->size1_= newsize1;
     }
 
@@ -395,9 +395,9 @@ namespace numeric {
 
         // Move the column through the matrix to the right possition
         for(size_type h=this->size2_; h>j; --h)
-            copy(&this->values_[this->reserved_size1_*(h-1)],&this->values_[this->reserved_size1_*(h-1)]+this->size1_,&this->values_[this->reserved_size1_*(h+k-1)]);
+            copy(&this->values_[0]+(this->reserved_size1_*(h-1)),&this->values_[0]+(this->reserved_size1_*(h-1)+this->size1_),&this->values_[0]+(this->reserved_size1_*(h+k-1)));
         for(difference_type l=0; l<k; ++l)
-            copy(range.first+l*this->size1_,range.first+(l+1)*this->size1_,&this->values_[this->reserved_size1_*(j+l)]);
+            copy(range.first+l*this->size1_,range.first+(l+1)*this->size1_,&this->values_[0]+(this->reserved_size1_*(j+l)));
         this->size2_+=k;
     }
 
