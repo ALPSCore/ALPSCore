@@ -69,17 +69,17 @@ def read(ar):
         raise Exception('invalid array value')
 
 try:
-    oar = h5.oArchive("py.h5")
+    oar = h5.archive("py.h5", 'w')
     write(oar)
     del oar
     
-    iar = h5.iArchive("py.h5")
+    iar = h5.archive("py.h5", 'r')
     if iar.is_complex("/int") or not iar.is_complex("/cplx") or not iar.extent("/np/cplx"):
         raise Exception('invalid complex detection')
     read(iar)
     del iar
     
-    ar = h5.oArchive("py.h5")
+    ar = h5.archive("py.h5", 'w')
     write(ar)
     read(ar)
     del ar

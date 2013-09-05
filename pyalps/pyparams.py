@@ -25,6 +25,7 @@
  #                                                                                 #
  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+import pyalps.hdf5 as hdf5
 import pyalps.ngs as ngs
 import sys
 
@@ -37,11 +38,11 @@ p = ngs.params({
 })
 print type(p["val1"]), type(p["val2"]), type(p["undefined"])
 
-oar = ngs.h5ar('parms1.h5', 'w')
+oar = hdf5.archive('parms1.h5', 'w')
 p.save(oar) # does not use path '/parameters'
 del oar
 
-oar = ngs.h5ar('parms2.h5', 'w')
+oar = hdf5.archive('parms2.h5', 'w')
 
 print p.keys(), p.values()
 
@@ -50,7 +51,7 @@ for key in p.keys():
     oar['parameters/' + key] = p[key]
 del oar
 
-iar = ngs.h5ar('parms2.h5', 'r')
+iar = hdf5.archive('parms2.h5', 'r')
 p.load(iar)
 
 print type(p["val1"]), type(p["val2"])

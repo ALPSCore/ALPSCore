@@ -26,9 +26,9 @@
  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 import numpy as np
-import pyalps.ngs as ngs
+import pyalps.hdf5 as hdf5
 
-ar = ngs.h5ar('pyngs.h5', 'w')
+ar = hdf5.archive('pyngs.h5', 'w')
 a = np.array([1, 2, 3]);
 b = np.array([1.1, 2.0, 3.5]);
 c = np.array([1.1 + 1j, 2.0j, 3.5]);
@@ -56,7 +56,7 @@ ar["/numpylist2"] = [np.arange(5), np.arange(10)]
 
 del ar
 
-ar = ngs.h5ar('pyngs.h5', 'r')
+ar = hdf5.archive('pyngs.h5', 'r')
 
 childs = ar.list_children('/')
 l1 = ar["/list"]

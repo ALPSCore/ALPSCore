@@ -88,7 +88,7 @@ print
 print "before"
 print
 
-#iar = h5.iArchive('test/scalartestfile.h5')
+#iar = h5.archive('test/scalartestfile.h5', 'r')
 #for name in iar.list_children('/simulation/results'):
 #    if iar.is_scalar('/simulation/results/' + pyalps.hdf5_name_encode(name) + '/mean/value'):
 #        obs = pyalps.alea.MCScalarData()
@@ -108,7 +108,7 @@ print "after"
 print
 
 
-#iar = h5.iArchive('test/scalartestfile.h5')
+#iar = h5.archive('test/scalartestfile.h5', 'r')
 #for name in iar.list_children('/simulation/results'):
 #    if iar.is_scalar('/simulation/results/' + pyalps.hdf5_name_encode(name) + '/mean/value'):
 #        obs = pyalps.alea.MCScalarData()

@@ -26,10 +26,10 @@
  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 import numpy as np
-import pyalps.ngs as ngs
+import pyalps.hdf5 as hdf5
 import os
 
-ar=ngs.h5ar('foo%d.h5', 'al')
+ar=hdf5.archive('foo%d.h5', 'al')
 s=2**10
 
 while s < 2**29:

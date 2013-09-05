@@ -30,7 +30,7 @@ import pyalps as alps
 import pyalps.hdf5 as h5
 import pyalps.alea as alea
 
-iar = h5.iArchive('loadobs.h5')
+iar = h5.archive('loadobs.h5', 'r')
 
 for name in iar.list_children('/simulation/results'):
     if iar.is_scalar('/simulation/results/' + alps.hdf5_name_encode(name) + '/mean/value'):
