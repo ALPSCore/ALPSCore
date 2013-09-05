@@ -26,7 +26,7 @@
 *****************************************************************************/
 
 #include <alps/parameter/parameters.h>
-#include <alps/hdf5.hpp>
+#include <alps/hdf5/archive.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <iostream>
 #include <cstdlib>

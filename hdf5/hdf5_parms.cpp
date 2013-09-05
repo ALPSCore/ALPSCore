@@ -27,7 +27,7 @@
 
 #include <iostream>
 #include <boost/filesystem.hpp>
-#include <alps/hdf5.hpp>
+#include <alps/hdf5/archive.hpp>
 #include <alps/parameter.h>
 
 using namespace std;

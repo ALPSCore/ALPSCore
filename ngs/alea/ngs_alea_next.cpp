@@ -27,8 +27,8 @@
 
 #define BOOST_TEST_MODULE alps::ngs::accumulator
 
-#include <alps/ngs/hdf5/array.hpp>
-#include <alps/ngs/hdf5/multi_array.hpp>
+#include <alps/hdf5/array.hpp>
+#include <alps/hdf5/multi_array.hpp>
 #include <alps/ngs/alea/next/accumulator.hpp>
 
 #ifndef ALPS_LINK_BOOST_TEST

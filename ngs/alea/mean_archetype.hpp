@@ -29,7 +29,7 @@
 #ifndef TEST_NGS_MEAN_ARCHETYPE_HEADER
 #define TEST_NGS_MEAN_ARCHETYPE_HEADER
 
-#include <alps/ngs/hdf5.hpp>
+#include <alps/hdf5/archive.hpp>
 #include <iostream>
 
 using namespace std;

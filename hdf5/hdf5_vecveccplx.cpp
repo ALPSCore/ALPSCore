@@ -25,8 +25,9 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <alps/hdf5.hpp>
+#include <alps/hdf5/archive.hpp>
 #include <alps/hdf5/vector.hpp>
+#include <alps/hdf5/complex.hpp>
 
 #include <boost/filesystem.hpp>
 

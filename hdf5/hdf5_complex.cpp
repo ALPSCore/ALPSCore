@@ -26,7 +26,9 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <complex>
-#include <alps/hdf5.hpp>
+#include <alps/hdf5/archive.hpp>
+#include <alps/hdf5/complex.hpp>
+#include <alps/hdf5/vector.hpp>
 #include <vector>
 #include <iostream>
 #include <algorithm>
