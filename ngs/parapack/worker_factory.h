@@ -65,7 +65,7 @@ public:
 
 
 template<typename WORKER>
-class ALPS_DECL ngs_worker : public abstract_worker {
+class ngs_worker : public abstract_worker {
 public:
   ngs_worker(alps::params const& p) : worker_(p) {}
   virtual ~ngs_worker() {}
@@ -131,7 +131,7 @@ private:
 #ifdef ALPS_HAVE_MPI
 
 template<typename WORKER>
-class ALPS_DECL parallel_ngs_worker : public abstract_worker {
+class parallel_ngs_worker : public abstract_worker {
 public:
   parallel_ngs_worker(boost::mpi::communicator const& comm, alps::params const& p) : worker_(comm, p) {}
   virtual ~parallel_ngs_worker() {}

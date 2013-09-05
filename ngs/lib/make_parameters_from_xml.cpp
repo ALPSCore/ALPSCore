@@ -32,7 +32,7 @@
 
 namespace alps {
 
-    params make_parameters_from_xml(boost::filesystem::path const & arg) {
+    ALPS_DECL params make_parameters_from_xml(boost::filesystem::path const & arg) {
         Parameters par;
         boost::filesystem::ifstream infile(arg.string());
 

@@ -210,7 +210,7 @@ namespace detail {
         , std::vector<std::size_t> offset = std::vector<std::size_t>()
     ){
         using std::copy;
-        if(ar.is_data(path + "/size1") && ar.is_scalar(path + "/size1") && ar.is_datatype<std::size_t>(path + "/size1")) {
+        if(ar.is_data(path + "/size1") && ar.is_scalar(path + "/size1")) {
             // Old matrix hdf5 format
             std::size_t size1(0), size2(0), reserved_size1(0);
             ar[path + "/size1"] >> size1;
