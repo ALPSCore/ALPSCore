@@ -28,6 +28,7 @@
 
 #include <alps/hdf5/archive.hpp>
 #include <alps/hdf5/pair.hpp>
+#include <iostream>
 
 using namespace std;
 using namespace alps;
@@ -103,10 +104,10 @@ int main()
             >> make_pvp("/true",bt) 
             >> make_pvp("/false",bf)
         ;
-        cout << "Read bb=" << bb << ", should be " << a.b.b << endl;
-        cout << "Read bc=" << bc << ", should be " << a.c.b << endl;
-        cout << "Read bt=" << bt << ", should be " << true << endl;
-        cout << "Read bf=" << bf << ", should be " << false << endl;
+        std::cout << "Read bb=" << bb << ", should be " << a.b.b << endl;
+        std::cout << "Read bc=" << bc << ", should be " << a.c.b << endl;
+        std::cout << "Read bt=" << bt << ", should be " << true << endl;
+        std:: cout << "Read bf=" << bf << ", should be " << false << endl;
     }
     return 0;
 }
