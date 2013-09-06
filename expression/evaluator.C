@@ -37,10 +37,10 @@ Disorder::random_type Disorder::rng_;
 
 int Disorder::last_seed_;
   
-boost::variate_generator<Disorder::random_type&, boost::uniform_real<> > 
+ALPS_DECL  boost::variate_generator<Disorder::random_type&, boost::uniform_real<> > 
   Disorder::random(Disorder::rng_, boost::uniform_real<>());
     
-boost::variate_generator<Disorder::random_type&, boost::normal_distribution<> > 
+ALPS_DECL  boost::variate_generator<Disorder::random_type&, boost::normal_distribution<> > 
   Disorder::gaussian_random(Disorder::rng_, boost::normal_distribution<>());
 
 void Disorder::seed(unsigned int i) 

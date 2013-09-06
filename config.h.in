@@ -217,9 +217,18 @@ using boost::uint_fast64_t;
 #  define ALPS_DECL __declspec(dllimport)
 #  define ALPS_TEMPL_DECL
 # endif
+# if defined(PYALPS_EXPORTS)
+#  define PYALPS_DECL __declspec(dllexport)
+#  define PYALPS_TEMPL_DECL __declspec(dllexport)
+# else
+#  define PYALPS_DECL __declspec(dllimport)
+#  define PYALPS_TEMPL_DECL
+# endif
 #else
 # define ALPS_TEMPL_DECL
 # define ALPS_DECL
+# define PYALPS_TEMPL_DECL
+# define PYALPS_DECL
 #endif
 
 //

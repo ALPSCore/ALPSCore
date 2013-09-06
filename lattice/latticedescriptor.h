@@ -39,7 +39,7 @@
 
 namespace alps {
 
-class LatticeDescriptor : public coordinate_lattice<simple_lattice<>,std::vector<alps::StringValue> >
+ class ALPS_DECL LatticeDescriptor : public coordinate_lattice<simple_lattice<>,std::vector<alps::StringValue> >
 {
 public:
   typedef coordinate_lattice<simple_lattice<>, std::vector<alps::StringValue> >
@@ -75,7 +75,7 @@ private:
 
 typedef std::map<std::string,LatticeDescriptor> LatticeMap;
 
-class FiniteLatticeDescriptor : public hypercubic_lattice<coordinate_lattice<simple_lattice<>,std::vector<alps::StringValue> >, std::vector<alps::StringValue> >
+class ALPS_DECL FiniteLatticeDescriptor : public hypercubic_lattice<coordinate_lattice<simple_lattice<>,std::vector<alps::StringValue> >, std::vector<alps::StringValue> >
 {
 public:
   typedef hypercubic_lattice<coordinate_lattice<simple_lattice<>,std::vector<alps::StringValue> > > base_type;
