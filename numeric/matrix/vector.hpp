@@ -61,6 +61,22 @@ namespace alps {
         };
     } // end namespace detail
 
+#if defined(__clang_major__) && __clang_major__ < 3 || (__clang_major__ == 3 && __clang_minor__ == 0)
+// Workaround for a compiler bug in clang 3.0 (and maybe earlier versions)
+    template <typename T1, typename T2, class MemoryBlock1, class MemoryBlock2>
+    void plus_assign(vector<T1, MemoryBlock1> & lhs, const vector<T2, MemoryBlock2> & rhs)
+    {
+        for(std::size_t i=0; i< lhs.size(); ++i)
+            lhs[i] += rhs[i];
+    }
+
+    template <typename T1, typename T2, class MemoryBlock1, class MemoryBlock2>
+    void minus_assign(vector<T1, MemoryBlock1> & lhs, const vector<T2, MemoryBlock2> & rhs)
+    {
+        for(std::size_t i=0; i< lhs.size(); ++i)
+            lhs[i] -= rhs[i];
+    }
+#else // defined(__clang_major__) && __clang_major__ < 3 || (__clang_major__ == 3 && __clang_minor__ == 0)
     template <typename T1, typename T2, class MemoryBlock1, class MemoryBlock2>
     void plus_assign(vector<T1, MemoryBlock1> & lhs, const vector<T2, MemoryBlock2> & rhs)
     {
@@ -72,6 +88,7 @@ namespace alps {
     {
         std::transform(lhs.begin(), lhs.end(), rhs.begin(), lhs.begin(), std::minus<typename vector<T2, MemoryBlock2>::value_type>());
     }
+#endif // defined(__clang_major__) && __clang_major__ < 3 || (__clang_major__ == 3 && __clang_minor__ == 0)
 
     template <typename T1, typename T2, class MemoryBlock>
     void multiplies_assign(vector<T1, MemoryBlock> & lhs, T2 lambda)

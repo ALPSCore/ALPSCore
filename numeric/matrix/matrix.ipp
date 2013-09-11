@@ -41,6 +41,17 @@ namespace numeric {
         {
             assert(lhs.num_rows() == rhs.num_rows());
             assert(lhs.num_cols() == rhs.num_cols());
+#if defined(__clang_major__) && __clang_major__ < 3 || (__clang_major__ == 3 && __clang_minor__ == 0)
+// Workaround for a compiler bug in clang 3.0 (and maybe earlier versions)
+            for(typename matrix<T,MemoryBlock>::size_type j=0; j < lhs.num_cols(); ++j)
+            {
+                for(typename matrix<T,MemoryBlock>::size_type i=0; i < lhs.num_rows(); ++i)
+                {
+                    typename matrix<T,MemoryBlock>::value_type const tmp = op(lhs(i,j),rhs(i,j));
+                    lhs(i,j) = tmp;
+                }
+            }
+#else //defined(__clang_major__) && __clang_major__ < 3 || (__clang_major__ == 3 && __clang_minor__ == 0)
             if(!(lhs.is_shrinkable() || rhs.is_shrinkable()) )
             {
                 std::transform(lhs.col(0).first,lhs.col(lhs.num_cols()-1).second,rhs.col(0).first,lhs.col(0).first, op);
@@ -55,6 +66,7 @@ namespace numeric {
                     std::transform( range.first, range.second, rhs.col(j).first, range.first, op);
                 }
             }
+#endif //defined(__clang_major__) && __clang_major__ < 3 || (__clang_major__ == 3 && __clang_minor__ == 0)
         }
 
         template <typename T, typename MemoryBlock, typename T2>
@@ -556,9 +568,18 @@ namespace numeric {
         // Do the operation column by column
         for(typename matrix<T,MemoryBlock>::size_type j=0; j < a.num_cols(); ++j)
         {
+#if defined(__clang_major__) && __clang_major__ < 3 || (__clang_major__ == 3 && __clang_minor__ == 0)
+// Workaround for a compiler bug in clang 3.0 (and maybe earlier versions)
+            for(typename matrix<T,MemoryBlock>::size_type i=0; i < a.num_rows(); ++i)
+            {
+                typename matrix<T,MemoryBlock>::value_type const tmp = -a(i,j);
+                a(i,j) = tmp;
+            }
+#else // defined(__clang_major__) && __clang_major__ < 3 || (__clang_major__ == 3 && __clang_minor__ == 0)
             std::pair<typename matrix<T,MemoryBlock>::col_element_iterator,
                 typename matrix<T,MemoryBlock>::col_element_iterator> range(a.col(j));
             std::transform(range.first, range.second,range.first, std::negate<T>());
+#endif // defined(__clang_major__) && __clang_major__ < 3 || (__clang_major__ == 3 && __clang_minor__ == 0)
         }
         return a;
     }
