@@ -50,6 +50,12 @@ ALPS_DECL std::string username();
 /// returns the username
 ALPS_DECL boost::filesystem::path temp_directory_path();
 
+/// returns the installation directory
+ALPS_DECL boost::filesystem::path installation_directory();
+
+/// returns the program directory
+ALPS_DECL boost::filesystem::path bin_directory();
+
 } // end namespace
 
 #endif // ALPS_UTILITY_OS_HPP

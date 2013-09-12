@@ -29,6 +29,7 @@
 /* $Id$ */
 
 #include <alps/utility/os.hpp>
+#include <alps/utility/version.h>
 #include <boost/throw_exception.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <stdexcept>
@@ -134,6 +135,17 @@ boost::filesystem::path temp_directory_path()
 #   endif
 }
 
+boost::filesystem::path installation_directory()
+{
+  return boost::filesystem::path(ALPS_PREFIX);
+}
+
+boost::filesystem::path bin_directory()
+{
+  return installation_directory() / "bin";
+}
+
+  
 
 
 } // end namespace alps
