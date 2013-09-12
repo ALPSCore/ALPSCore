@@ -28,15 +28,15 @@
 import pyalps.hdf5 as h5
 
 o = h5.archive('blubb', 'w')
-o.write('/a',0)
+o['/a'] = 0
 del o
 
 i = h5.archive('blubb', 'r')
 o = h5.archive('blubb', 'w')
-o.write('/a',0)
+o['/a'] = 0
 del o
 
 del i
 o = h5.archive('blubb', 'w')
-o.write('/a',0)
+o['/a'] = 0
 del o

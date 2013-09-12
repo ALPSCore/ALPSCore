@@ -31,28 +31,28 @@ import numpy as np
 import sys
 
 def write(ar):
-    ar.write("/int", 9)
-    ar.write("/double", 9.123)
-    ar.write("/cplx", complex(1, 2))
-    ar.write("/str", "test")
-    ar.write("/np/int", np.array([1, 2, 3]))
-    ar.write("/np2/int", np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
-    ar.write("/np/cplx", np.array([[1 + 1j,2 +2j ],[3 + 3j,4 + 4j]]))
+    ar["/int"] =  9
+    ar["/double"] =  9.123
+    ar["/cplx"] =  complex(1, 2)
+    ar["/str"] =  "test"
+    ar["/np/int"] =  np.array([1, 2, 3])
+    ar["/np2/int"] =  np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    ar["/np/cplx"] =  np.array([[1 + 1j,2 +2j ],[3 + 3j,4 + 4j]])
     
     ar.create_group("/my/group")
-    ar.write("/my/double", 9.123)
+    ar["/my/double"] = 9.123
     
     ar.delete_group("/my/group")
     ar.delete_data("/my/double")
 
 def read(ar):
     childs = ar.list_children('/')
-    i = ar.read("/int")
-    d = ar.read("/double")
-    c = ar.read("/cplx")
-    s = ar.read("/str")
-    n = ar.read("/np/int")
-    x = ar.read("/np/cplx")
+    i = ar["/int"]
+    d = ar["/double"]
+    c = ar["/cplx"]
+    s = ar["/str"]
+    n = ar["/np/int"]
+    x = ar["/np/cplx"]
     
     if len(childs) != 7:
         raise Exception('invalid length of \'/\'')
