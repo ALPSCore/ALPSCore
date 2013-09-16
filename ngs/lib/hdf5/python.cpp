@@ -403,7 +403,7 @@ namespace alps {
                     load(ar, path, static_cast<boost::python::dict &>(value), chunk, offset);
                 }
             } else if (ar.is_scalar(path) || (ar.is_datatype<double>(path) && ar.is_complex(path) && ar.extent(path).size() == 1 && ar.extent(path)[0] == 2)) {
-                if (ar.is_datatype<std::string>(path)) {
+                if (ar.is_string(path)) {
                     std::string data;
                     load(ar, path, data, chunk, offset);
                     value = boost::python::str(data);
@@ -414,7 +414,7 @@ namespace alps {
                 #undef NGS_PYTHON_HDF5_LOAD_SCALAR_NUMPY
                 } else
                     throw std::runtime_error("Unsupported type." + ALPS_STACKTRACE);
-            } else if (ar.is_datatype<std::string>(path)) {
+            } else if (ar.is_string(path)) {
                 value = boost::python::list();
                 load(ar, path, static_cast<boost::python::list &>(value), chunk, offset);
             } else {
