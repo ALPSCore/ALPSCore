@@ -46,85 +46,85 @@
 #include <stdexcept>
 
 namespace alps {
-	namespace accumulator {
+    namespace accumulator {
         // this should be called namespace tag { struct autocorrelation; }
         // but gcc <= 4.4 has lookup error, so name it different
         struct autocorrelation_tag;
 
-		template<typename T> struct autocorrelation_type {
-			typedef std::vector<typename value_type<T>::type> type;
-		};
+        template<typename T> struct autocorrelation_type {
+            typedef std::vector<typename value_type<T>::type> type;
+        };
 
-		template<typename T> struct has_feature<T, autocorrelation_tag> {
-	        template<typename R, typename C> static char helper(R(C::*)() const);
-	        template<typename C> static char check(boost::integral_constant<std::size_t, sizeof(helper(&C::autocorrelation))>*);
-	        template<typename C> static double check(...);
-			typedef boost::integral_constant<bool, sizeof(char) == sizeof(check<T>(0))> type;
-	    };
+        template<typename T> struct has_feature<T, autocorrelation_tag> {
+            template<typename R, typename C> static char helper(R(C::*)() const);
+            template<typename C> static char check(boost::integral_constant<std::size_t, sizeof(helper(&C::autocorrelation))>*);
+            template<typename C> static double check(...);
+            typedef boost::integral_constant<bool, sizeof(char) == sizeof(check<T>(0))> type;
+        };
 
-		template<typename T> typename autocorrelation_type<T>::type autocorrelation(T const & arg) {
-			return arg.autocorrelation();
-		}
+        template<typename T> typename autocorrelation_type<T>::type autocorrelation(T const & arg) {
+            return arg.autocorrelation();
+        }
 
-		namespace detail {
+        namespace detail {
 
-			template<typename A> typename boost::enable_if<
-				  typename has_feature<A, autocorrelation_tag>::type
-				, typename autocorrelation_type<A>::type
-			>::type autocorrelation_impl(A const & acc) {
-				return autocorrelation(acc);
-			}
+            template<typename A> typename boost::enable_if<
+                  typename has_feature<A, autocorrelation_tag>::type
+                , typename autocorrelation_type<A>::type
+            >::type autocorrelation_impl(A const & acc) {
+                return autocorrelation(acc);
+            }
 
-			template<typename A> typename boost::disable_if<
-				  typename has_feature<A, autocorrelation_tag>::type
-				, typename autocorrelation_type<A>::type
-			>::type autocorrelation_impl(A const & acc) {
-			    throw std::runtime_error(std::string(typeid(A).name()) + " has no autocorrelation-method" + ALPS_STACKTRACE);
-				return *static_cast<typename autocorrelation_type<A>::type *>(NULL);
-			}
-		}
+            template<typename A> typename boost::disable_if<
+                  typename has_feature<A, autocorrelation_tag>::type
+                , typename autocorrelation_type<A>::type
+            >::type autocorrelation_impl(A const & acc) {
+                throw std::runtime_error(std::string(typeid(A).name()) + " has no autocorrelation-method" + ALPS_STACKTRACE);
+                return *static_cast<typename autocorrelation_type<A>::type *>(NULL);
+            }
+        }
 
-		namespace impl {
+        namespace impl {
 
-			template<typename T, typename B> struct Accumulator<T, autocorrelation_tag, B> : public B {
+            template<typename T, typename B> struct Accumulator<T, autocorrelation_tag, B> : public B {
 
-			    public:
-                	typedef Result<T, autocorrelation_tag, typename B::result_type> result_type;
+                public:
+                    typedef Result<T, autocorrelation_tag, typename B::result_type> result_type;
 
-                	// TODO: implement ...
-			        template<typename ArgumentPack> Accumulator(ArgumentPack const & args)
-			        	: B(args)
-						, m_ac_partial(0)
-						, m_ac_bins(0)
-			        {}
+                    // TODO: implement ...
+                    template<typename ArgumentPack> Accumulator(ArgumentPack const & args)
+                        : B(args)
+                        , m_ac_partial(0)
+                        , m_ac_bins(0)
+                    {}
 
-			        Accumulator()
-			        	: B()
-						, m_ac_partial(0)
-						, m_ac_bins(0)
-			        {}
+                    Accumulator()
+                        : B()
+                        , m_ac_partial(0)
+                        , m_ac_bins(0)
+                    {}
 
-			        Accumulator(Accumulator const & arg)
-			        	: B(arg)
-			        	, m_ac_partial(arg.m_ac_partial)
-			        	, m_ac_bins(arg.m_ac_bins)
-			        {}
+                    Accumulator(Accumulator const & arg)
+                        : B(arg)
+                        , m_ac_partial(arg.m_ac_partial)
+                        , m_ac_bins(arg.m_ac_bins)
+                    {}
 
-			        std::vector<T> const autocorrelation() const {
-						using alps::ngs::numeric::operator*;
-						using alps::ngs::numeric::operator-;
-						using alps::ngs::numeric::operator/;
-						using std::sqrt;
-						using alps::ngs::numeric::sqrt;
-						typename alps::hdf5::scalar_type<T>::type cnt = B::count() - 1;
-						// TODO: probably we need less than count(), since we remove the partials ...
-						std::vector<T> result = m_ac_bins - m_ac_partial * m_ac_partial;
-						for (typename std::vector<T>::iterator it = result.begin(); it != result.end(); ++it)
-							*it = sqrt(*it / cnt);
-						return result;
-			        }
+                    std::vector<T> const autocorrelation() const {
+                        using alps::ngs::numeric::operator*;
+                        using alps::ngs::numeric::operator-;
+                        using alps::ngs::numeric::operator/;
+                        using std::sqrt;
+                        using alps::ngs::numeric::sqrt;
+                        typename alps::hdf5::scalar_type<T>::type cnt = B::count() - 1;
+                        // TODO: probably we need less than count(), since we remove the partials ...
+                        std::vector<T> result = m_ac_bins - m_ac_partial * m_ac_partial;
+                        for (typename std::vector<T>::iterator it = result.begin(); it != result.end(); ++it)
+                            *it = sqrt(*it / cnt);
+                        return result;
+                    }
 
-					void operator()(T const & val) {
+                    void operator()(T const & val) {
                         using alps::ngs::numeric::operator+;
                         using alps::ngs::numeric::operator+=;
                         using alps::ngs::numeric::operator-;
@@ -138,47 +138,47 @@ namespace alps {
                             m_ac_partial.push_back(T());
                         }
                         for (unsigned i = 0; i < m_ac_bins.size(); ++i)
-                        	// TODO: check if this makes sence
+                            // TODO: check if this makes sence
                             if(B::count() % (1u << i) == 0) {
                                 m_ac_partial[i] = B::sum() - m_ac_partial[i];
                                 m_ac_bins[i] += m_ac_partial[i] * m_ac_partial[i];
                                 m_ac_partial[i] = B::sum();
                             }
-					}
-
-					template<typename S> void print(S & os) const {
-						B::print(os);
-						os << " Tau: " << short_print(autocorrelation());
-			        }
-
-			        void save(hdf5::archive & ar) const {
-						B::save(ar);
-                		if (B::count())
-                            ar["tau/partialbin"] = m_ac_partial;
-						ar["tau/data"] = m_ac_bins;
                     }
 
-			        void load(hdf5::archive & ar) { // TODO: make archive const
-						B::load(ar);
+                    template<typename S> void print(S & os) const {
+                        B::print(os);
+                        os << " Tau: " << short_print(autocorrelation());
+                    }
+
+                    void save(hdf5::archive & ar) const {
+                        B::save(ar);
+                        if (B::count())
+                            ar["tau/partialbin"] = m_ac_partial;
+                        ar["tau/data"] = m_ac_bins;
+                    }
+
+                    void load(hdf5::archive & ar) { // TODO: make archive const
+                        B::load(ar);
                         if (ar.is_data("tau/partialbin"))
                             ar["tau/partialbin"] >> m_ac_partial;
-						ar["tau/data"] >> m_ac_bins;
-			        }
+                        ar["tau/data"] >> m_ac_bins;
+                    }
 
                     static std::size_t rank() { return B::rank() + 1; }
                     static bool can_load(hdf5::archive & ar) { // TODO: make archive const
-	                    using alps::hdf5::get_extent;
+                        using alps::hdf5::get_extent;
 
-						return B::can_load(ar)
-                    		&& ar.is_data("tau/data")
-                    		&& get_extent(T()).size() + 1 == ar.dimensions("tau/data")
-                    	;
+                        return B::can_load(ar)
+                            && ar.is_data("tau/data")
+                            && get_extent(T()).size() + 1 == ar.dimensions("tau/data")
+                        ;
                     }
 
-			        void reset() {
-						B::reset();
-						// TODO: implement!
-			        }
+                    void reset() {
+                        B::reset();
+                        // TODO: implement!
+                    }
 
 // #ifdef ALPS_HAVE_MPI
 //                     void collective_merge(
@@ -232,82 +232,82 @@ namespace alps {
 //                     }
 // #endif
 
-			    private:
+                private:
 
-					std::vector<T> m_ac_partial;
-					std::vector<T> m_ac_bins;
-			};
+                    std::vector<T> m_ac_partial;
+                    std::vector<T> m_ac_bins;
+            };
 
-			template<typename T, typename B> class Result<T, autocorrelation_tag, B> : public B {
+            template<typename T, typename B> class Result<T, autocorrelation_tag, B> : public B {
 
-			    public:
-					typedef typename alps::accumulator::autocorrelation_type<B>::type autocorrelation_type;
+                public:
+                    typedef typename alps::accumulator::autocorrelation_type<B>::type autocorrelation_type;
 
-				    Result()
-				    	: B()
-				    	, m_ac_bins(0)
-				    {}
+                    Result()
+                        : B()
+                        , m_ac_bins(0)
+                    {}
 
-				    template<typename A> Result(A const & acc)
-						: B(acc)
-						, m_ac_bins(autocorrelation_impl(acc))
-			        {}
+                    template<typename A> Result(A const & acc)
+                        : B(acc)
+                        , m_ac_bins(autocorrelation_impl(acc))
+                    {}
 
-			        autocorrelation_type const autocorrelation() const {
-			        	return m_ac_bins;
-			        }
+                    autocorrelation_type const autocorrelation() const {
+                        return m_ac_bins;
+                    }
 
-					template<typename S> void print(S & os) const {
-						B::print(os);
-						os << " Tau: " << short_print(autocorrelation());
-			        }
+                    template<typename S> void print(S & os) const {
+                        B::print(os);
+                        os << " Tau: " << short_print(autocorrelation());
+                    }
 
-					void save(hdf5::archive & ar) const {
-						B::save(ar);
-						ar["tau"] = m_ac_bins;
-					}
+                    void save(hdf5::archive & ar) const {
+                        B::save(ar);
+                        ar["tau"] = m_ac_bins;
+                    }
 
-					void load(hdf5::archive & ar) {
-						B::load(ar);
-						ar["tau"] >> m_ac_bins;
-					}
+                    void load(hdf5::archive & ar) {
+                        B::load(ar);
+                        ar["tau"] >> m_ac_bins;
+                    }
 
-					static std::size_t rank() { return B::rank() + 1; }
-					static bool can_load(hdf5::archive & ar) { // TODO: make archive const
-	                    using alps::hdf5::get_extent;
+                    static std::size_t rank() { return B::rank() + 1; }
+                    static bool can_load(hdf5::archive & ar) { // TODO: make archive const
+                        using alps::hdf5::get_extent;
 
-						return B::can_load(ar)
-                    		&& ar.is_data("tau")
-                    		&& get_extent(T()).size() + 1 == ar.dimensions("tau")
-                    	;
-					}
+                        return B::can_load(ar)
+                            && ar.is_data("tau")
+                            && get_extent(T()).size() + 1 == ar.dimensions("tau")
+                        ;
+                    }
 
-				private:
-					std::vector<T> m_ac_bins;
-			};
+                private:
+                    std::vector<T> m_ac_bins;
+            };
 
-			template<typename B> class BaseWrapper<autocorrelation_tag, B> : public B {
-				public:
-				    virtual bool has_autocorrelation() const = 0;
-	        };
+            template<typename B> class BaseWrapper<autocorrelation_tag, B> : public B {
+                public:
+                    virtual bool has_autocorrelation() const = 0;
+            };
 
-			template<typename T, typename B> class ResultTypeWrapper<T, autocorrelation_tag, B> : public B {
-				public:
-				    virtual typename autocorrelation_type<B>::type autocorrelation() const = 0;
-	        };
+            template<typename T, typename B> class ResultTypeWrapper<T, autocorrelation_tag, B> : public B {
+                public:
+                    virtual typename autocorrelation_type<B>::type autocorrelation() const = 0;
+            };
 
-			template<typename T, typename B> class DerivedWrapper<T, autocorrelation_tag, B> : public B {
-				public:
-				    DerivedWrapper(): B() {}
-				    DerivedWrapper(T const & arg): B(arg) {}
+            template<typename T, typename B> class DerivedWrapper<T, autocorrelation_tag, B> : public B {
+                public:
+                    DerivedWrapper(): B() {}
+                    DerivedWrapper(T const & arg): B(arg) {}
 
-				    bool has_autocorrelation() const { return has_feature<T, autocorrelation_tag>::type::value; }
+                    bool has_autocorrelation() const { return has_feature<T, autocorrelation_tag>::type::value; }
 
-					typename autocorrelation_type<B>::type autocorrelation() const { return detail::autocorrelation_impl(this->m_data); }
-	        };
+                    typename autocorrelation_type<B>::type autocorrelation() const { return detail::autocorrelation_impl(this->m_data); }
+            };
 
-		}
-	}
+        }
+    }
 }
 
  #endif

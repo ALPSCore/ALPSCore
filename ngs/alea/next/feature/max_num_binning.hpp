@@ -47,202 +47,202 @@
 #include <stdexcept>
 
 namespace alps {
-	namespace accumulator {
+    namespace accumulator {
         // this should be called namespace tag { struct max_num_binning; }
         // but gcc <= 4.4 has lookup error, so name it different
         struct max_num_binning_tag;
 
-		namespace detail {
-			template<typename C, typename M> class max_num_binning_proxy {
-				typedef typename std::size_t size_type;
+        namespace detail {
+            template<typename C, typename M> class max_num_binning_proxy {
+                typedef typename std::size_t size_type;
 
-				public:
-					max_num_binning_proxy(std::vector<M> const & bins, C const & num_elements, size_type const & max_number)
-						: m_max_number(max_number), m_num_elements(num_elements), m_bins(bins)
-					{}
+                public:
+                    max_num_binning_proxy(std::vector<M> const & bins, C const & num_elements, size_type const & max_number)
+                        : m_max_number(max_number), m_num_elements(num_elements), m_bins(bins)
+                    {}
 
-					std::vector<M> const & bins() const {
-						return m_bins;
-					}
+                    std::vector<M> const & bins() const {
+                        return m_bins;
+                    }
 
-					C num_elements() const {
-						return m_num_elements;
-					}
+                    C num_elements() const {
+                        return m_num_elements;
+                    }
 
-					size_type max_number() const {
-						return m_max_number;
-					}
+                    size_type max_number() const {
+                        return m_max_number;
+                    }
 
-				private:
+                private:
 
-					size_type m_max_number;
-					C m_num_elements;
-					std::vector<M> const & m_bins;
-			};
+                    size_type m_max_number;
+                    C m_num_elements;
+                    std::vector<M> const & m_bins;
+            };
 
-	        template<typename C, typename M> inline std::ostream & operator<<(std::ostream & os, max_num_binning_proxy<C, M> const & arg) {
-	            if (arg.bins().empty())
-	                os << "No Bins";
-	            else
-	                os << short_print(arg.bins(), 4) << "#" << arg.num_elements();
-	            return os;
-	        };
-		}
+            template<typename C, typename M> inline std::ostream & operator<<(std::ostream & os, max_num_binning_proxy<C, M> const & arg) {
+                if (arg.bins().empty())
+                    os << "No Bins";
+                else
+                    os << short_print(arg.bins(), 4) << "#" << arg.num_elements();
+                return os;
+            };
+        }
 
-		template<typename T> struct max_num_binning_type {
-			typedef detail::max_num_binning_proxy<typename count_type<T>::type, typename mean_type<T>::type> type;
-		};
+        template<typename T> struct max_num_binning_type {
+            typedef detail::max_num_binning_proxy<typename count_type<T>::type, typename mean_type<T>::type> type;
+        };
 
-		template<typename T> struct has_feature<T, max_num_binning_tag> {
-	        template<typename R, typename C> static char helper(R(C::*)() const);
-	        template<typename C> static char check(boost::integral_constant<std::size_t, sizeof(helper(&C::max_num_binning))>*);
-	        template<typename C> static double check(...);
-			typedef boost::integral_constant<bool, sizeof(char) == sizeof(check<T>(0))> type;
-	    };
+        template<typename T> struct has_feature<T, max_num_binning_tag> {
+            template<typename R, typename C> static char helper(R(C::*)() const);
+            template<typename C> static char check(boost::integral_constant<std::size_t, sizeof(helper(&C::max_num_binning))>*);
+            template<typename C> static double check(...);
+            typedef boost::integral_constant<bool, sizeof(char) == sizeof(check<T>(0))> type;
+        };
 
-		template<typename T> typename max_num_binning_type<T>::type max_num_binning(T const & arg) {
-			return arg.max_num_binning();
-		}
+        template<typename T> typename max_num_binning_type<T>::type max_num_binning(T const & arg) {
+            return arg.max_num_binning();
+        }
 
-		namespace detail {
+        namespace detail {
 
-			template<typename A> typename boost::enable_if<
-				  typename has_feature<A, max_num_binning_tag>::type
-				, typename max_num_binning_type<A>::type
-			>::type max_num_binning_impl(A const & acc) {
-				return max_num_binning(acc);
-			}
+            template<typename A> typename boost::enable_if<
+                  typename has_feature<A, max_num_binning_tag>::type
+                , typename max_num_binning_type<A>::type
+            >::type max_num_binning_impl(A const & acc) {
+                return max_num_binning(acc);
+            }
 
-			template<typename A> typename boost::disable_if<
-				  typename has_feature<A, max_num_binning_tag>::type
-				, typename max_num_binning_type<A>::type
-			>::type max_num_binning_impl(A const & acc) {
-			    throw std::runtime_error(std::string(typeid(A).name()) + " has no max_num_binning-method" + ALPS_STACKTRACE);
-				return *static_cast<typename max_num_binning_type<A>::type *>(NULL);
-			}
-		}
+            template<typename A> typename boost::disable_if<
+                  typename has_feature<A, max_num_binning_tag>::type
+                , typename max_num_binning_type<A>::type
+            >::type max_num_binning_impl(A const & acc) {
+                throw std::runtime_error(std::string(typeid(A).name()) + " has no max_num_binning-method" + ALPS_STACKTRACE);
+                return *static_cast<typename max_num_binning_type<A>::type *>(NULL);
+            }
+        }
 
-		namespace impl {
+        namespace impl {
 
-			template<typename T, typename B> struct Accumulator<T, max_num_binning_tag, B> : public B {
+            template<typename T, typename B> struct Accumulator<T, max_num_binning_tag, B> : public B {
 
-			    public:
-				    typedef typename alps::accumulator::max_num_binning_type<B>::type max_num_binning_type;
-                	typedef Result<T, max_num_binning_tag, typename B::result_type> result_type;
+                public:
+                    typedef typename alps::accumulator::max_num_binning_type<B>::type max_num_binning_type;
+                    typedef Result<T, max_num_binning_tag, typename B::result_type> result_type;
 
-                	// TODO: implement ...
-			        template<typename ArgumentPack> Accumulator(ArgumentPack const & args)
-			        	: B(args)
-			        	, m_mn_max_number(128)
-			        	, m_mn_elements_in_bin(0)
-			        	, m_mn_elements_in_partial(0)
-			        	, m_mn_partial(T())
-			        {}
+                    // TODO: implement ...
+                    template<typename ArgumentPack> Accumulator(ArgumentPack const & args)
+                        : B(args)
+                        , m_mn_max_number(128)
+                        , m_mn_elements_in_bin(0)
+                        , m_mn_elements_in_partial(0)
+                        , m_mn_partial(T())
+                    {}
 
-			        Accumulator()
-			        	: B()
-			        	, m_mn_max_number(128)
-			        	, m_mn_elements_in_bin(0)
-			        	, m_mn_elements_in_partial(0)
-			        	, m_mn_partial(T())
-			        {}
+                    Accumulator()
+                        : B()
+                        , m_mn_max_number(128)
+                        , m_mn_elements_in_bin(0)
+                        , m_mn_elements_in_partial(0)
+                        , m_mn_partial(T())
+                    {}
 
-			        Accumulator(Accumulator const & arg)
-			        	: B(arg)
-			        	, m_mn_max_number(arg.m_mn_max_number)
-			        	, m_mn_elements_in_bin(arg.m_mn_elements_in_bin)
-			        	, m_mn_elements_in_partial(arg.m_mn_elements_in_partial)
-			        	, m_mn_partial(arg.m_mn_partial)
-			        {}
+                    Accumulator(Accumulator const & arg)
+                        : B(arg)
+                        , m_mn_max_number(arg.m_mn_max_number)
+                        , m_mn_elements_in_bin(arg.m_mn_elements_in_bin)
+                        , m_mn_elements_in_partial(arg.m_mn_elements_in_partial)
+                        , m_mn_partial(arg.m_mn_partial)
+                    {}
 
-			        max_num_binning_type const max_num_binning() const {
-			        	return max_num_binning_type(m_mn_bins, m_mn_elements_in_bin, m_mn_max_number); 
-			        }
+                    max_num_binning_type const max_num_binning() const {
+                        return max_num_binning_type(m_mn_bins, m_mn_elements_in_bin, m_mn_max_number); 
+                    }
 
-					void operator()(T const & val) {
+                    void operator()(T const & val) {
                         using alps::ngs::numeric::operator+=;
                         using alps::ngs::numeric::operator+;
                         using alps::ngs::numeric::operator/;
-						using alps::ngs::numeric::detail::check_size;
+                        using alps::ngs::numeric::detail::check_size;
 
-						B::operator()(val);
+                        B::operator()(val);
 
-						if (!m_mn_elements_in_bin) {
-							m_mn_bins.push_back(val);
-							m_mn_elements_in_bin = 1;
-						} else {
-							check_size(m_mn_bins[0], val);
-							check_size(m_mn_partial, val);
-							m_mn_partial += val;
-							++m_mn_elements_in_partial;
-						}
+                        if (!m_mn_elements_in_bin) {
+                            m_mn_bins.push_back(val);
+                            m_mn_elements_in_bin = 1;
+                        } else {
+                            check_size(m_mn_bins[0], val);
+                            check_size(m_mn_partial, val);
+                            m_mn_partial += val;
+                            ++m_mn_elements_in_partial;
+                        }
 
-						// TODO: make library for scalar type
-						typename alps::hdf5::scalar_type<T>::type elements_in_bin = m_mn_elements_in_bin;
-						typename alps::hdf5::scalar_type<typename mean_type<B>::type>::type two = 2;
+                        // TODO: make library for scalar type
+                        typename alps::hdf5::scalar_type<T>::type elements_in_bin = m_mn_elements_in_bin;
+                        typename alps::hdf5::scalar_type<typename mean_type<B>::type>::type two = 2;
 
-						if (m_mn_elements_in_partial == m_mn_elements_in_bin && m_mn_bins.size() >= m_mn_max_number) {
-							if (m_mn_max_number % 2 == 1) {
-								m_mn_partial += m_mn_bins[m_mn_max_number - 1];
-								m_mn_elements_in_partial += m_mn_elements_in_bin;
-							}
-							for (typename count_type<T>::type i = 0; i < m_mn_max_number / 2; ++i)
-								m_mn_bins[i] = (m_mn_bins[2 * i] + m_mn_bins[2 * i + 1]) / two;
-							m_mn_bins.erase(m_mn_bins.begin() + m_mn_max_number / 2, m_mn_bins.end());
-							m_mn_elements_in_bin *= (typename count_type<T>::type)2;
-						}
-						if (m_mn_elements_in_partial == m_mn_elements_in_bin) {
-							m_mn_bins.push_back(m_mn_partial / elements_in_bin);
-							m_mn_partial = T();
-							m_mn_elements_in_partial = 0;
-						}
-					}
+                        if (m_mn_elements_in_partial == m_mn_elements_in_bin && m_mn_bins.size() >= m_mn_max_number) {
+                            if (m_mn_max_number % 2 == 1) {
+                                m_mn_partial += m_mn_bins[m_mn_max_number - 1];
+                                m_mn_elements_in_partial += m_mn_elements_in_bin;
+                            }
+                            for (typename count_type<T>::type i = 0; i < m_mn_max_number / 2; ++i)
+                                m_mn_bins[i] = (m_mn_bins[2 * i] + m_mn_bins[2 * i + 1]) / two;
+                            m_mn_bins.erase(m_mn_bins.begin() + m_mn_max_number / 2, m_mn_bins.end());
+                            m_mn_elements_in_bin *= (typename count_type<T>::type)2;
+                        }
+                        if (m_mn_elements_in_partial == m_mn_elements_in_bin) {
+                            m_mn_bins.push_back(m_mn_partial / elements_in_bin);
+                            m_mn_partial = T();
+                            m_mn_elements_in_partial = 0;
+                        }
+                    }
 
-					template<typename S> void print(S & os) const {
-						B::print(os);
-						os << " Bins: " << max_num_binning();
-			        }
+                    template<typename S> void print(S & os) const {
+                        B::print(os);
+                        os << " Bins: " << max_num_binning();
+                    }
 
-			        void save(hdf5::archive & ar) const {
-						B::save(ar);
+                    void save(hdf5::archive & ar) const {
+                        B::save(ar);
                         if (B::count()) {
                             ar["timeseries/partialbin"] = m_mn_partial;
                             ar["timeseries/partialbin/@count"] = m_mn_elements_in_partial;
                         }
-						ar["timeseries/data"] = m_mn_bins;
-						ar["timeseries/data/@binningtype"] = "linear";
-						ar["timeseries/data/@minbinsize"] = 0; // TODO: what should we put here?
-						ar["timeseries/data/@binsize"] = m_mn_elements_in_bin;
-						ar["timeseries/data/@maxbinnum"] = m_mn_max_number;
+                        ar["timeseries/data"] = m_mn_bins;
+                        ar["timeseries/data/@binningtype"] = "linear";
+                        ar["timeseries/data/@minbinsize"] = 0; // TODO: what should we put here?
+                        ar["timeseries/data/@binsize"] = m_mn_elements_in_bin;
+                        ar["timeseries/data/@maxbinnum"] = m_mn_max_number;
                     }
 
-			        void load(hdf5::archive & ar) { // TODO: make archive const
-						B::load(ar);
-						ar["timeseries/data"] >> m_mn_bins;
-						ar["timeseries/data/@binsize"] >> m_mn_elements_in_bin;
-						ar["timeseries/data/@maxbinnum"] >> m_mn_max_number;
+                    void load(hdf5::archive & ar) { // TODO: make archive const
+                        B::load(ar);
+                        ar["timeseries/data"] >> m_mn_bins;
+                        ar["timeseries/data/@binsize"] >> m_mn_elements_in_bin;
+                        ar["timeseries/data/@maxbinnum"] >> m_mn_max_number;
                         if (ar.is_data("timeseries/partialbin")) {
                             ar["timeseries/partialbin"] >> m_mn_partial;
                             ar["timeseries/partialbin/@count"] >> m_mn_elements_in_partial;
                         }
-			        }
+                    }
 
                     static std::size_t rank() { return B::rank() + 1; }
                     static bool can_load(hdf5::archive & ar) { // TODO: make archive const
-	                    using alps::hdf5::get_extent;
+                        using alps::hdf5::get_extent;
 
-						return B::can_load(ar)
-                    		&& ar.is_data("timeseries/data")
-                    		&& ar.is_attribute("timeseries/data/@binsize")
-                    		&& ar.is_attribute("timeseries/data/@maxbinnum")
-                    		&& get_extent(T()).size() + 1 == ar.dimensions("timeseries/data")
-                    	;
+                        return B::can_load(ar)
+                            && ar.is_data("timeseries/data")
+                            && ar.is_attribute("timeseries/data/@binsize")
+                            && ar.is_attribute("timeseries/data/@maxbinnum")
+                            && get_extent(T()).size() + 1 == ar.dimensions("timeseries/data")
+                        ;
                     }
 
-			        void reset() {
-						B::reset();
-						// TODO: implement!
-			        }
+                    void reset() {
+                        B::reset();
+                        // TODO: implement!
+                    }
 
 #ifdef ALPS_HAVE_MPI
                     void collective_merge(
@@ -296,97 +296,97 @@ namespace alps {
                     }
 #endif
 
-			    private:
+                private:
 
-					std::size_t m_mn_max_number;
-					typename B::count_type m_mn_elements_in_bin, m_mn_elements_in_partial;
-					T m_mn_partial;
-					std::vector<typename mean_type<B>::type> m_mn_bins;
-			};
+                    std::size_t m_mn_max_number;
+                    typename B::count_type m_mn_elements_in_bin, m_mn_elements_in_partial;
+                    T m_mn_partial;
+                    std::vector<typename mean_type<B>::type> m_mn_bins;
+            };
 
-			template<typename T, typename B> class Result<T, max_num_binning_tag, B> : public B {
+            template<typename T, typename B> class Result<T, max_num_binning_tag, B> : public B {
 
-			    public:
-					typedef typename alps::accumulator::max_num_binning_type<B>::type max_num_binning_type;
+                public:
+                    typedef typename alps::accumulator::max_num_binning_type<B>::type max_num_binning_type;
 
-				    Result()
-				    	: B()
-				    	, m_mn_max_number(0) 
-				    	, m_mn_elements_in_bin(0)
-				    {}
+                    Result()
+                        : B()
+                        , m_mn_max_number(0) 
+                        , m_mn_elements_in_bin(0)
+                    {}
 
-				    template<typename A> Result(A const & acc)
-						: B(acc)
-						, m_mn_max_number(detail::max_num_binning_impl(acc).max_number())
-						, m_mn_elements_in_bin(detail::max_num_binning_impl(acc).num_elements())
-						, m_mn_bins(detail::max_num_binning_impl(acc).bins())
-			        {}
+                    template<typename A> Result(A const & acc)
+                        : B(acc)
+                        , m_mn_max_number(detail::max_num_binning_impl(acc).max_number())
+                        , m_mn_elements_in_bin(detail::max_num_binning_impl(acc).num_elements())
+                        , m_mn_bins(detail::max_num_binning_impl(acc).bins())
+                    {}
 
-			        max_num_binning_type const max_num_binning() const {
-			        	return max_num_binning_type(m_mn_bins, m_mn_elements_in_bin, m_mn_max_number); 
-			        }
+                    max_num_binning_type const max_num_binning() const {
+                        return max_num_binning_type(m_mn_bins, m_mn_elements_in_bin, m_mn_max_number); 
+                    }
 
-					template<typename S> void print(S & os) const {
-						B::print(os);
-						os << " Bins: " << max_num_binning();
-			        }
+                    template<typename S> void print(S & os) const {
+                        B::print(os);
+                        os << " Bins: " << max_num_binning();
+                    }
 
-					void save(hdf5::archive & ar) const {
-						B::save(ar);
-						ar["timeseries/data"] = m_mn_bins;
-						ar["timeseries/data/@binningtype"] = "linear";
-						ar["timeseries/data/@minbinsize"] = 0; // TODO: what should we put here?
-						ar["timeseries/data/@binsize"] = m_mn_elements_in_bin;
-						ar["timeseries/data/@maxbinnum"] = m_mn_max_number;
-					}
+                    void save(hdf5::archive & ar) const {
+                        B::save(ar);
+                        ar["timeseries/data"] = m_mn_bins;
+                        ar["timeseries/data/@binningtype"] = "linear";
+                        ar["timeseries/data/@minbinsize"] = 0; // TODO: what should we put here?
+                        ar["timeseries/data/@binsize"] = m_mn_elements_in_bin;
+                        ar["timeseries/data/@maxbinnum"] = m_mn_max_number;
+                    }
 
-					void load(hdf5::archive & ar) {
-						B::load(ar);
-						ar["timeseries/data"] >> m_mn_bins;
-						ar["timeseries/data/@binsize"] >> m_mn_elements_in_bin;
-						ar["timeseries/data/@maxbinnum"] >> m_mn_max_number;
-					}
+                    void load(hdf5::archive & ar) {
+                        B::load(ar);
+                        ar["timeseries/data"] >> m_mn_bins;
+                        ar["timeseries/data/@binsize"] >> m_mn_elements_in_bin;
+                        ar["timeseries/data/@maxbinnum"] >> m_mn_max_number;
+                    }
 
-					static std::size_t rank() { return B::rank() + 1; }
-					static bool can_load(hdf5::archive & ar) { // TODO: make archive const
-	                    using alps::hdf5::get_extent;
+                    static std::size_t rank() { return B::rank() + 1; }
+                    static bool can_load(hdf5::archive & ar) { // TODO: make archive const
+                        using alps::hdf5::get_extent;
 
-						return B::can_load(ar)
-                    		&& ar.is_data("timeseries/data")
-                    		&& ar.is_attribute("timeseries/data/@binsize")
-                    		&& ar.is_attribute("timeseries/data/@maxbinnum")
-                    		&& get_extent(T()).size() + 1 == ar.dimensions("timeseries/data")
-                    	;
-					}
+                        return B::can_load(ar)
+                            && ar.is_data("timeseries/data")
+                            && ar.is_attribute("timeseries/data/@binsize")
+                            && ar.is_attribute("timeseries/data/@maxbinnum")
+                            && get_extent(T()).size() + 1 == ar.dimensions("timeseries/data")
+                        ;
+                    }
 
-				private:
-					std::size_t m_mn_max_number;
-					typename B::count_type m_mn_elements_in_bin;
-					std::vector<typename mean_type<B>::type> m_mn_bins;
-			};
+                private:
+                    std::size_t m_mn_max_number;
+                    typename B::count_type m_mn_elements_in_bin;
+                    std::vector<typename mean_type<B>::type> m_mn_bins;
+            };
 
-			template<typename B> class BaseWrapper<max_num_binning_tag, B> : public B {
-				public:
-				    virtual bool has_max_num_binning() const = 0;
-	        };
+            template<typename B> class BaseWrapper<max_num_binning_tag, B> : public B {
+                public:
+                    virtual bool has_max_num_binning() const = 0;
+            };
 
-			template<typename T, typename B> class ResultTypeWrapper<T, max_num_binning_tag, B> : public B {
-				public:
-				    virtual typename max_num_binning_type<B>::type max_num_binning() const = 0;
-	        };
+            template<typename T, typename B> class ResultTypeWrapper<T, max_num_binning_tag, B> : public B {
+                public:
+                    virtual typename max_num_binning_type<B>::type max_num_binning() const = 0;
+            };
 
-			template<typename T, typename B> class DerivedWrapper<T, max_num_binning_tag, B> : public B {
-				public:
-				    DerivedWrapper(): B() {}
-				    DerivedWrapper(T const & arg): B(arg) {}
+            template<typename T, typename B> class DerivedWrapper<T, max_num_binning_tag, B> : public B {
+                public:
+                    DerivedWrapper(): B() {}
+                    DerivedWrapper(T const & arg): B(arg) {}
 
-				    bool has_max_num_binning() const { return has_feature<T, max_num_binning_tag>::type::value; }
+                    bool has_max_num_binning() const { return has_feature<T, max_num_binning_tag>::type::value; }
 
-					typename max_num_binning_type<B>::type max_num_binning() const { return detail::max_num_binning_impl(this->m_data); }
-	        };
+                    typename max_num_binning_type<B>::type max_num_binning() const { return detail::max_num_binning_impl(this->m_data); }
+            };
 
-		}
-	}
+        }
+    }
 }
 
  #endif

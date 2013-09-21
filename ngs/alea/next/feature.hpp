@@ -38,33 +38,33 @@
 #endif
 
 namespace alps {
-	namespace accumulator {
+    namespace accumulator {
 
-		template<typename T, typename F> struct has_feature 
-			: public boost::false_type
-		{};
+        template<typename T, typename F> struct has_feature 
+            : public boost::false_type
+        {};
 
-		template<typename T> struct has_result_type {
-	        template<typename U> static char check(typename U::result_type *);
-	        template<typename U> static double check(...);
-			typedef boost::integral_constant<bool, sizeof(char) == sizeof(check<T>(0))> type;
-	    };
+        template<typename T> struct has_result_type {
+            template<typename U> static char check(typename U::result_type *);
+            template<typename U> static double check(...);
+            typedef boost::integral_constant<bool, sizeof(char) == sizeof(check<T>(0))> type;
+        };
 
-		template<typename T> struct value_type {
-	    	typedef typename T::value_type type;
-		};
+        template<typename T> struct value_type {
+            typedef typename T::value_type type;
+        };
 
-		namespace impl {
+        namespace impl {
 
-			template<typename T> struct ResultBase {
-				typedef T value_type;
+            template<typename T> struct ResultBase {
+                typedef T value_type;
 
 #ifdef ALPS_HAVE_MPI
                 inline void collective_merge(
                       boost::mpi::communicator const & comm
                     , int root
                 ) const {
-					throw std::logic_error("A result cannot be merged " + ALPS_STACKTRACE);
+                    throw std::logic_error("A result cannot be merged " + ALPS_STACKTRACE);
                 }
 #endif
                 template<typename U> void addeq(U const &) {}
@@ -88,12 +88,12 @@ namespace alps {
                 void cbrt() {}
                 void exp() {}
                 void log() {}
-			};
+            };
 
-			template<typename T> class AccumulatorBase {
-				public:
-					typedef T value_type;
-					typedef ResultBase<T> result_type;
+            template<typename T> class AccumulatorBase {
+                public:
+                    typedef T value_type;
+                    typedef ResultBase<T> result_type;
 
                     template<typename U> void addeq(U const &) {}
                     template<typename U> void subeq(U const &) {}
@@ -155,20 +155,20 @@ namespace alps {
                         throw std::logic_error("No boost::mpi::reduce available for this type " + std::string(typeid(U).name()) + ALPS_STACKTRACE);
                     }
 #endif
-			};
+            };
 
-			template<typename T, typename F, typename B> struct Accumulator {};
+            template<typename T, typename F, typename B> struct Accumulator {};
 
-			template<typename T, typename F, typename B> class Result {};
+            template<typename T, typename F, typename B> class Result {};
 
-			template<typename F, typename B> class BaseWrapper {};
+            template<typename F, typename B> class BaseWrapper {};
 
-			template<typename T, typename F, typename B> class ResultTypeWrapper {};
+            template<typename T, typename F, typename B> class ResultTypeWrapper {};
 
-			template<typename A, typename F, typename B> class DerivedWrapper {};
+            template<typename A, typename F, typename B> class DerivedWrapper {};
 
-		}
-	}
+        }
+    }
 }
 
  #endif

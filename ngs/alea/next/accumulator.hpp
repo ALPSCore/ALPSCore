@@ -44,13 +44,13 @@
 #include <stdexcept>
 
 namespace alps {
-	namespace accumulator {
+    namespace accumulator {
 
-		// TODO: merge with accumulator_wrapper
-		class ALPS_DECL result_wrapper {
+        // TODO: merge with accumulator_wrapper
+        class ALPS_DECL result_wrapper {
             public:
                 template<typename T> result_wrapper(T arg)
-                	: m_base(new derived_result_wrapper<T>(arg))
+                    : m_base(new derived_result_wrapper<T>(arg))
                 {}
 
                 result_wrapper(base_wrapper * arg)
@@ -62,8 +62,8 @@ namespace alps {
                 {}
 
                 result_wrapper(hdf5::archive & ar) {
-                	ar[""] >> *this;
-	            }
+                    ar[""] >> *this;
+                }
 
                 template<typename T> void operator()(T const & value) {
                     (*m_base)(&value, typeid(T));
@@ -97,38 +97,38 @@ namespace alps {
                     ar[""] >> *m_base;
                 }
 
-				void print(std::ostream & os) const {
+                void print(std::ostream & os) const {
                     m_base->print(os);
                 }
 
-				// FUNCTION_PROXY(addeq)
-				// FUNCTION_PROXY(subeq)
-				// FUNCTION_PROXY(muleq)
-				// FUNCTION_PROXY(diveq)
+                // FUNCTION_PROXY(addeq)
+                // FUNCTION_PROXY(subeq)
+                // FUNCTION_PROXY(muleq)
+                // FUNCTION_PROXY(diveq)
 
-				#define FUNCTION_PROXY(FUN)						 				\
-					result_wrapper FUN () const { 								\
-		                result_wrapper clone(*this);							\
-						clone.m_base-> FUN ();				\
-						return clone;											\
-					}
-					FUNCTION_PROXY(sin)
-					FUNCTION_PROXY(cos)
-					FUNCTION_PROXY(tan)
-					FUNCTION_PROXY(sinh)
-					FUNCTION_PROXY(cosh)
-					FUNCTION_PROXY(tanh)
-					FUNCTION_PROXY(asin)
-					FUNCTION_PROXY(acos)
-					FUNCTION_PROXY(atan)
-					FUNCTION_PROXY(abs)
-					FUNCTION_PROXY(sqrt)
-					FUNCTION_PROXY(log)
-					FUNCTION_PROXY(sq)
-					FUNCTION_PROXY(cb)
-					FUNCTION_PROXY(cbrt)
+                #define FUNCTION_PROXY(FUN)                                         \
+                    result_wrapper FUN () const {                                 \
+                        result_wrapper clone(*this);                            \
+                        clone.m_base-> FUN ();                \
+                        return clone;                                            \
+                    }
+                    FUNCTION_PROXY(sin)
+                    FUNCTION_PROXY(cos)
+                    FUNCTION_PROXY(tan)
+                    FUNCTION_PROXY(sinh)
+                    FUNCTION_PROXY(cosh)
+                    FUNCTION_PROXY(tanh)
+                    FUNCTION_PROXY(asin)
+                    FUNCTION_PROXY(acos)
+                    FUNCTION_PROXY(atan)
+                    FUNCTION_PROXY(abs)
+                    FUNCTION_PROXY(sqrt)
+                    FUNCTION_PROXY(log)
+                    FUNCTION_PROXY(sq)
+                    FUNCTION_PROXY(cb)
+                    FUNCTION_PROXY(cbrt)
 
-				#undef FUNCTION_PROXY
+                #undef FUNCTION_PROXY
 
             private:
                 boost::shared_ptr<base_wrapper> m_base;
@@ -139,36 +139,36 @@ namespace alps {
             return os;
         }
 
-	    template <typename A> A & extract(result_wrapper & m) {
-	        return m.extract<A>();
-	    }
+        template <typename A> A & extract(result_wrapper & m) {
+            return m.extract<A>();
+        }
 
-		#define EXTERNAL_FUNCTION(FUN)						 			\
-			result_wrapper FUN (result_wrapper const & arg) { 			\
-                return arg. FUN ();										\
-			}
-			EXTERNAL_FUNCTION(sin)
-			EXTERNAL_FUNCTION(cos)
-			EXTERNAL_FUNCTION(tan)
-			EXTERNAL_FUNCTION(sinh)
-			EXTERNAL_FUNCTION(cosh)
-			EXTERNAL_FUNCTION(tanh)
-			EXTERNAL_FUNCTION(asin)
-			EXTERNAL_FUNCTION(acos)
-			EXTERNAL_FUNCTION(atan)
-			EXTERNAL_FUNCTION(abs)
-			EXTERNAL_FUNCTION(sqrt)
-			EXTERNAL_FUNCTION(log)
-			EXTERNAL_FUNCTION(sq)
-			EXTERNAL_FUNCTION(cb)
-			EXTERNAL_FUNCTION(cbrt)
+        #define EXTERNAL_FUNCTION(FUN)                                     \
+            result_wrapper FUN (result_wrapper const & arg) {             \
+                return arg. FUN ();                                        \
+            }
+            EXTERNAL_FUNCTION(sin)
+            EXTERNAL_FUNCTION(cos)
+            EXTERNAL_FUNCTION(tan)
+            EXTERNAL_FUNCTION(sinh)
+            EXTERNAL_FUNCTION(cosh)
+            EXTERNAL_FUNCTION(tanh)
+            EXTERNAL_FUNCTION(asin)
+            EXTERNAL_FUNCTION(acos)
+            EXTERNAL_FUNCTION(atan)
+            EXTERNAL_FUNCTION(abs)
+            EXTERNAL_FUNCTION(sqrt)
+            EXTERNAL_FUNCTION(log)
+            EXTERNAL_FUNCTION(sq)
+            EXTERNAL_FUNCTION(cb)
+            EXTERNAL_FUNCTION(cbrt)
 
-		#undef EXTERNAL_FUNCTION
+        #undef EXTERNAL_FUNCTION
 
         class ALPS_DECL accumulator_wrapper {
             public:
                 template<typename T> accumulator_wrapper(T arg)
-                	: m_base(new derived_accumulator_wrapper<T>(arg))
+                    : m_base(new derived_accumulator_wrapper<T>(arg))
                 {}
 
                 accumulator_wrapper(accumulator_wrapper const & arg)
@@ -176,8 +176,8 @@ namespace alps {
                 {}
 
                 accumulator_wrapper(hdf5::archive & ar) {
-                	ar[""] >> *this;
-	            }
+                    ar[""] >> *this;
+                }
 
                 template<typename T> void operator()(T const & value) {
                     (*m_base)(&value, typeid(T));
@@ -214,11 +214,11 @@ namespace alps {
                     m_base->reset();
                 }
 
-               	boost::shared_ptr<result_wrapper> result() const {
+                   boost::shared_ptr<result_wrapper> result() const {
                    return boost::shared_ptr<result_wrapper>(new result_wrapper(m_base->result()));
-               	}
+                   }
 
-				void print(std::ostream & os) const {
+                void print(std::ostream & os) const {
                     m_base->print(os);
                 }
 
@@ -232,219 +232,219 @@ namespace alps {
             return os;
         }
 
-	    template <typename A> A & extract(accumulator_wrapper & m) {
-	        return m.extract<A>();
-	    }
+        template <typename A> A & extract(accumulator_wrapper & m) {
+            return m.extract<A>();
+        }
 
-	    inline void ALPS_DECL reset(accumulator_wrapper & arg) {
-	        return arg.reset();
-	    }
+        inline void ALPS_DECL reset(accumulator_wrapper & arg) {
+            return arg.reset();
+        }
 
-	    namespace detail {
-			
-			template<typename T> struct serializable_type {
-	    		virtual ~serializable_type() {}
-				virtual std::size_t rank() const = 0;
-				virtual bool can_load(hdf5::archive & ar) const = 0;
-				virtual T * create(hdf5::archive & ar) const = 0;
-			};
+        namespace detail {
+            
+            template<typename T> struct serializable_type {
+                virtual ~serializable_type() {}
+                virtual std::size_t rank() const = 0;
+                virtual bool can_load(hdf5::archive & ar) const = 0;
+                virtual T * create(hdf5::archive & ar) const = 0;
+            };
 
-			template<typename T, typename A> struct serializable_type_impl : public serializable_type<T> {
-				std::size_t rank() const {
-					return A::rank();
-				}
-				bool can_load(hdf5::archive & ar) const {
-					return A::can_load(ar);
-				}
-				T * create(hdf5::archive & ar) const {
-					return new T(A());
-				}
-			};
-	    }
+            template<typename T, typename A> struct serializable_type_impl : public serializable_type<T> {
+                std::size_t rank() const {
+                    return A::rank();
+                }
+                bool can_load(hdf5::archive & ar) const {
+                    return A::can_load(ar);
+                }
+                T * create(hdf5::archive & ar) const {
+                    return new T(A());
+                }
+            };
+        }
 
-		namespace detail {
+        namespace detail {
 
-			inline void register_predefined_serializable_type();
+            inline void register_predefined_serializable_type();
 
-		}
+        }
 
-	    namespace impl {
+        namespace impl {
 
-	    	template <typename T> class wrapper_set {
+            template <typename T> class wrapper_set {
 
-	            public: 
-	                typedef typename std::map<std::string, boost::shared_ptr<T> >::iterator iterator;
-	                typedef typename std::map<std::string, boost::shared_ptr<T> >::const_iterator const_iterator;
+                public: 
+                    typedef typename std::map<std::string, boost::shared_ptr<T> >::iterator iterator;
+                    typedef typename std::map<std::string, boost::shared_ptr<T> >::const_iterator const_iterator;
 
-	                template <typename U> wrapper_set(wrapper_set<U> const & arg, typename boost::disable_if<boost::is_same<result_wrapper, U>, void *>::type = NULL) {
-					    for (typename wrapper_set<U>::const_iterator it = arg.begin(); it != arg.end(); ++it)
-					    	insert(it->first, it->second->result());
-		            }
+                    template <typename U> wrapper_set(wrapper_set<U> const & arg, typename boost::disable_if<boost::is_same<result_wrapper, U>, void *>::type = NULL) {
+                        for (typename wrapper_set<U>::const_iterator it = arg.begin(); it != arg.end(); ++it)
+                            insert(it->first, it->second->result());
+                    }
 
-	                wrapper_set() {
-						if (m_types.empty())
-							detail::register_predefined_serializable_type();
-	                }
-	                wrapper_set(wrapper_set const &) {} // TODO: how do we handle that?
+                    wrapper_set() {
+                        if (m_types.empty())
+                            detail::register_predefined_serializable_type();
+                    }
+                    wrapper_set(wrapper_set const &) {} // TODO: how do we handle that?
 
-			        T & operator[](std::string const & name) {
-			            if (!has(name))
-			                throw std::out_of_range("No observable found with the name: " + name + ALPS_STACKTRACE);
-			            return *(m_storage.find(name)->second);
-			        }
+                    T & operator[](std::string const & name) {
+                        if (!has(name))
+                            throw std::out_of_range("No observable found with the name: " + name + ALPS_STACKTRACE);
+                        return *(m_storage.find(name)->second);
+                    }
 
-			        T const & operator[](std::string const & name) const {
-			            if (!has(name))
-			                throw std::out_of_range("No observable found with the name: " + name + ALPS_STACKTRACE);
-			            return *(m_storage.find(name)->second);
-			        }
+                    T const & operator[](std::string const & name) const {
+                        if (!has(name))
+                            throw std::out_of_range("No observable found with the name: " + name + ALPS_STACKTRACE);
+                        return *(m_storage.find(name)->second);
+                    }
 
-			        bool has(std::string const & name) const{
-			            return m_storage.find(name) != m_storage.end();
-			        }
-			        
-			        void insert(std::string const & name, boost::shared_ptr<T> ptr){
-			            if (has(name))
-			                throw std::out_of_range("There exists alrady an accumulator with the name: " + name + ALPS_STACKTRACE);
-			            m_storage.insert(make_pair(name, ptr));
-			        }
+                    bool has(std::string const & name) const{
+                        return m_storage.find(name) != m_storage.end();
+                    }
+                    
+                    void insert(std::string const & name, boost::shared_ptr<T> ptr){
+                        if (has(name))
+                            throw std::out_of_range("There exists alrady an accumulator with the name: " + name + ALPS_STACKTRACE);
+                        m_storage.insert(make_pair(name, ptr));
+                    }
 
-			        void save(hdf5::archive & ar) const {
-			            for(const_iterator it = begin(); it != end(); ++it)
-			            	ar[it->first] = *(it->second);
-			        }
+                    void save(hdf5::archive & ar) const {
+                        for(const_iterator it = begin(); it != end(); ++it)
+                            ar[it->first] = *(it->second);
+                    }
 
-			        void load(hdf5::archive & ar) {
-					    std::vector<std::string> list = ar.list_children("");
-					    for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
-					    	ar.set_context(*it);
-					    	for (typename std::vector<boost::shared_ptr<detail::serializable_type<T> > >::const_iterator jt = m_types.begin()
-					    		; jt != m_types.end()
-					    		; ++jt
-					    	)
-					    		if ((*jt)->can_load(ar)) {
-					    			insert(*it, boost::shared_ptr<T>((*jt)->create(ar)));
-					    			break;
-					    		}
-					    	if (!has(*it))
-					    		throw std::logic_error("The Accumulator/Result " + *it + " cannot be unserilized" + ALPS_STACKTRACE);
-					    	operator[](*it).load(ar);
-					    	ar.set_context("..");
-					    }
-			        }
+                    void load(hdf5::archive & ar) {
+                        std::vector<std::string> list = ar.list_children("");
+                        for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
+                            ar.set_context(*it);
+                            for (typename std::vector<boost::shared_ptr<detail::serializable_type<T> > >::const_iterator jt = m_types.begin()
+                                ; jt != m_types.end()
+                                ; ++jt
+                            )
+                                if ((*jt)->can_load(ar)) {
+                                    insert(*it, boost::shared_ptr<T>((*jt)->create(ar)));
+                                    break;
+                                }
+                            if (!has(*it))
+                                throw std::logic_error("The Accumulator/Result " + *it + " cannot be unserilized" + ALPS_STACKTRACE);
+                            operator[](*it).load(ar);
+                            ar.set_context("..");
+                        }
+                    }
 
-			        template<typename A> static void register_serializable_type(bool known = false) {
-						if (!known && m_types.empty())
-							detail::register_predefined_serializable_type();
-			        	m_types.push_back(boost::shared_ptr<detail::serializable_type<T> >(new detail::serializable_type_impl<T, A>));
-			        	for (std::size_t i = m_types.size(); i > 1 && m_types[i - 1]->rank() > m_types[i - 2]->rank(); --i)
-			        		m_types[i - 1].swap(m_types[i - 2]);
-				    }
+                    template<typename A> static void register_serializable_type(bool known = false) {
+                        if (!known && m_types.empty())
+                            detail::register_predefined_serializable_type();
+                        m_types.push_back(boost::shared_ptr<detail::serializable_type<T> >(new detail::serializable_type_impl<T, A>));
+                        for (std::size_t i = m_types.size(); i > 1 && m_types[i - 1]->rank() > m_types[i - 2]->rank(); --i)
+                            m_types[i - 1].swap(m_types[i - 2]);
+                    }
 
-			        void merge(wrapper_set const &) {}
+                    void merge(wrapper_set const &) {}
 
-			        void print(std::ostream & os) const {
-						for(const_iterator it = begin(); it != end(); ++it)
-							os << it->first << ": " << *(it->second) << std::endl;
-			        }
+                    void print(std::ostream & os) const {
+                        for(const_iterator it = begin(); it != end(); ++it)
+                            os << it->first << ": " << *(it->second) << std::endl;
+                    }
 
-			        void reset() {
-			            for(iterator it = begin(); it != end(); ++it)
-			                it->second->reset();
-			        }
-			        
-			        iterator begin() { return m_storage.begin(); }
-			        iterator end() { return m_storage.end(); }
+                    void reset() {
+                        for(iterator it = begin(); it != end(); ++it)
+                            it->second->reset();
+                    }
+                    
+                    iterator begin() { return m_storage.begin(); }
+                    iterator end() { return m_storage.end(); }
 
-			        const_iterator begin() const { return m_storage.begin(); }
-			        const_iterator end() const { return m_storage.end(); }
-			        
-			        void clear() { m_storage.clear(); }
+                    const_iterator begin() const { return m_storage.begin(); }
+                    const_iterator end() const { return m_storage.end(); }
+                    
+                    void clear() { m_storage.clear(); }
 
-	            private:
-	                std::map<std::string, boost::shared_ptr<T> > m_storage;
-		            static std::vector<boost::shared_ptr<detail::serializable_type<T> > > m_types;
-	        };
-			template<typename T> std::vector<boost::shared_ptr<detail::serializable_type<T> > > wrapper_set<T>::m_types;
+                private:
+                    std::map<std::string, boost::shared_ptr<T> > m_storage;
+                    static std::vector<boost::shared_ptr<detail::serializable_type<T> > > m_types;
+            };
+            template<typename T> std::vector<boost::shared_ptr<detail::serializable_type<T> > > wrapper_set<T>::m_types;
 
-	        template<typename T> inline std::ostream & operator<<(std::ostream & os, const wrapper_set<T> & arg) {
-	            arg.print(os);
-	            return os;
-	        }
-	    }
-	    typedef impl::wrapper_set<accumulator_wrapper> accumulator_set;
-	    typedef impl::wrapper_set<result_wrapper> result_set;
+            template<typename T> inline std::ostream & operator<<(std::ostream & os, const wrapper_set<T> & arg) {
+                arg.print(os);
+                return os;
+            }
+        }
+        typedef impl::wrapper_set<accumulator_wrapper> accumulator_set;
+        typedef impl::wrapper_set<result_wrapper> result_set;
 
-	    // TODO: make this nicer ... move it to deprecated file ...
-	    namespace detail {
-	
-		    template<typename T> struct PredefinedObservable {
-	    		typedef T accumulator_type;
-	    		typedef typename T::result_type result_type;
-	    		PredefinedObservable(std::string arg) : name(arg) {}
-	    		std::string name;
-		    };
+        // TODO: make this nicer ... move it to deprecated file ...
+        namespace detail {
+    
+            template<typename T> struct PredefinedObservable {
+                typedef T accumulator_type;
+                typedef typename T::result_type result_type;
+                PredefinedObservable(std::string arg) : name(arg) {}
+                std::string name;
+            };
 
-	        template<typename T> inline accumulator_set & operator<<(accumulator_set & set, const PredefinedObservable<T> & arg) {
-				set.insert(arg.name, boost::shared_ptr<accumulator_wrapper>(new accumulator_wrapper(T())));
-	            return set;
-	        }
+            template<typename T> inline accumulator_set & operator<<(accumulator_set & set, const PredefinedObservable<T> & arg) {
+                set.insert(arg.name, boost::shared_ptr<accumulator_wrapper>(new accumulator_wrapper(T())));
+                return set;
+            }
 
-			template<typename T> struct simple_observable_type
-				: public impl::Accumulator<T, error_tag, impl::Accumulator<T, mean_tag, impl::Accumulator<T, count_tag, impl::AccumulatorBase<T> > > >
-			{};
+            template<typename T> struct simple_observable_type
+                : public impl::Accumulator<T, error_tag, impl::Accumulator<T, mean_tag, impl::Accumulator<T, count_tag, impl::AccumulatorBase<T> > > >
+            {};
 
-			template<typename T> struct observable_type
-				: public impl::Accumulator<T, autocorrelation_tag, impl::Accumulator<T, max_num_binning_tag, simple_observable_type<T> > >
-			{};
+            template<typename T> struct observable_type
+                : public impl::Accumulator<T, autocorrelation_tag, impl::Accumulator<T, max_num_binning_tag, simple_observable_type<T> > >
+            {};
 
-			template<typename T> struct signed_observable_type
-				: public impl::Accumulator<T, weight_holder_tag<simple_observable_type<T> >, observable_type<T> >
-			{};
+            template<typename T> struct signed_observable_type
+                : public impl::Accumulator<T, weight_holder_tag<simple_observable_type<T> >, observable_type<T> >
+            {};
 
-			template<typename T> struct signed_simple_observable_type
-				: public impl::Accumulator<T, weight_holder_tag<simple_observable_type<T> >, simple_observable_type<T> >
-			{};
+            template<typename T> struct signed_simple_observable_type
+                : public impl::Accumulator<T, weight_holder_tag<simple_observable_type<T> >, simple_observable_type<T> >
+            {};
 
-		}
+        }
 
-		typedef detail::PredefinedObservable<detail::simple_observable_type<double> > SimpleRealObservable;
-		typedef detail::PredefinedObservable<detail::simple_observable_type<std::vector<double> > > SimpleRealVectorObservable;
+        typedef detail::PredefinedObservable<detail::simple_observable_type<double> > SimpleRealObservable;
+        typedef detail::PredefinedObservable<detail::simple_observable_type<std::vector<double> > > SimpleRealVectorObservable;
 
-		typedef detail::PredefinedObservable<detail::observable_type<double> > RealObservable;
-		typedef detail::PredefinedObservable<detail::observable_type<std::vector<double> > > RealVectorObservable;
+        typedef detail::PredefinedObservable<detail::observable_type<double> > RealObservable;
+        typedef detail::PredefinedObservable<detail::observable_type<std::vector<double> > > RealVectorObservable;
 
-		typedef detail::PredefinedObservable<detail::signed_observable_type<double> > SignedRealObservable;
-		typedef detail::PredefinedObservable<detail::signed_observable_type<std::vector<double> > > SignedRealVectorObservable;
+        typedef detail::PredefinedObservable<detail::signed_observable_type<double> > SignedRealObservable;
+        typedef detail::PredefinedObservable<detail::signed_observable_type<std::vector<double> > > SignedRealVectorObservable;
 
-		typedef detail::PredefinedObservable<detail::signed_simple_observable_type<double> > SignedSimpleRealObservable;
-		typedef detail::PredefinedObservable<detail::signed_simple_observable_type<std::vector<double> > > SignedSimpleRealVectorObservable;
+        typedef detail::PredefinedObservable<detail::signed_simple_observable_type<double> > SignedSimpleRealObservable;
+        typedef detail::PredefinedObservable<detail::signed_simple_observable_type<std::vector<double> > > SignedSimpleRealVectorObservable;
 
         // TODO implement: RealTimeSeriesObservable
 
-		namespace detail {
+        namespace detail {
 
-			inline void register_predefined_serializable_type() {
-				accumulator_set::register_serializable_type<SimpleRealObservable::accumulator_type>(true);
-				accumulator_set::register_serializable_type<SimpleRealVectorObservable::accumulator_type>(true);
-				accumulator_set::register_serializable_type<RealObservable::accumulator_type>(true);
-				accumulator_set::register_serializable_type<RealVectorObservable::accumulator_type>(true);
-				accumulator_set::register_serializable_type<SignedRealObservable::accumulator_type>(true);
-				accumulator_set::register_serializable_type<SignedRealVectorObservable::accumulator_type>(true);
-				accumulator_set::register_serializable_type<SignedSimpleRealObservable::accumulator_type>(true);
-				accumulator_set::register_serializable_type<SignedSimpleRealVectorObservable::accumulator_type>(true);
+            inline void register_predefined_serializable_type() {
+                accumulator_set::register_serializable_type<SimpleRealObservable::accumulator_type>(true);
+                accumulator_set::register_serializable_type<SimpleRealVectorObservable::accumulator_type>(true);
+                accumulator_set::register_serializable_type<RealObservable::accumulator_type>(true);
+                accumulator_set::register_serializable_type<RealVectorObservable::accumulator_type>(true);
+                accumulator_set::register_serializable_type<SignedRealObservable::accumulator_type>(true);
+                accumulator_set::register_serializable_type<SignedRealVectorObservable::accumulator_type>(true);
+                accumulator_set::register_serializable_type<SignedSimpleRealObservable::accumulator_type>(true);
+                accumulator_set::register_serializable_type<SignedSimpleRealVectorObservable::accumulator_type>(true);
 
-				result_set::register_serializable_type<SimpleRealObservable::result_type>(true);
-				result_set::register_serializable_type<SimpleRealVectorObservable::result_type>(true);
-				result_set::register_serializable_type<RealObservable::result_type>(true);
-				result_set::register_serializable_type<RealVectorObservable::result_type>(true);
-				result_set::register_serializable_type<SignedRealObservable::result_type>(true);
-				result_set::register_serializable_type<SignedRealVectorObservable::result_type>(true);
-				result_set::register_serializable_type<SignedSimpleRealObservable::result_type>(true);
-				result_set::register_serializable_type<SignedSimpleRealVectorObservable::result_type>(true);
-			}
-		}
-	}
+                result_set::register_serializable_type<SimpleRealObservable::result_type>(true);
+                result_set::register_serializable_type<SimpleRealVectorObservable::result_type>(true);
+                result_set::register_serializable_type<RealObservable::result_type>(true);
+                result_set::register_serializable_type<RealVectorObservable::result_type>(true);
+                result_set::register_serializable_type<SignedRealObservable::result_type>(true);
+                result_set::register_serializable_type<SignedRealVectorObservable::result_type>(true);
+                result_set::register_serializable_type<SignedSimpleRealObservable::result_type>(true);
+                result_set::register_serializable_type<SignedSimpleRealVectorObservable::result_type>(true);
+            }
+        }
+    }
 }
 
  #endif

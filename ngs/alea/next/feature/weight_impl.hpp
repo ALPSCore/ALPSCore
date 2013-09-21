@@ -42,74 +42,74 @@
 #include <stdexcept>
 
 namespace alps {
-	namespace accumulator {
+    namespace accumulator {
         // this should be called namespace tag { template<typename T> struct weight_holder; }
         // but gcc <= 4.4 has lookup error, so name it different
-		template<typename T> struct weight_holder_tag;
+        template<typename T> struct weight_holder_tag;
 
-		namespace impl {
+        namespace impl {
 
-			template<typename T, typename W, typename B> struct Accumulator<T, weight_holder_tag<W>, B> : public B {
+            template<typename T, typename W, typename B> struct Accumulator<T, weight_holder_tag<W>, B> : public B {
 
-			    public:
-				    typedef W weight_type;
-                	typedef Result<T, weight_holder_tag<W>, typename B::result_type> result_type;
+                public:
+                    typedef W weight_type;
+                    typedef Result<T, weight_holder_tag<W>, typename B::result_type> result_type;
 
-                	// TODO: add external weight!
-			        template<typename ArgumentPack> Accumulator(ArgumentPack const & args): B(args) {}
+                    // TODO: add external weight!
+                    template<typename ArgumentPack> Accumulator(ArgumentPack const & args): B(args) {}
 
-			        Accumulator(): B(), m_owner(true), m_weight(new ::alps::accumulator::derived_accumulator_wrapper<W>(W())) {}
-			        Accumulator(Accumulator const & arg): B(arg), m_owner(arg.m_owner), m_weight(arg.m_weight) {}
+                    Accumulator(): B(), m_owner(true), m_weight(new ::alps::accumulator::derived_accumulator_wrapper<W>(W())) {}
+                    Accumulator(Accumulator const & arg): B(arg), m_owner(arg.m_owner), m_weight(arg.m_weight) {}
 
-			        base_wrapper const * weight() const {
-						// TODO: make library for scalar type
-						return m_weight.get();
-			        }
+                    base_wrapper const * weight() const {
+                        // TODO: make library for scalar type
+                        return m_weight.get();
+                    }
 
-			        void operator()(T const & val) {
-			        	// TODO: throw if weight is owned ...
-						B::operator()(val);
-			        }
+                    void operator()(T const & val) {
+                        // TODO: throw if weight is owned ...
+                        B::operator()(val);
+                    }
 
-			        void operator()(T const & val, typename value_type<weight_type>::type const & weight) {
-			        	// TODO: how do we make sure, weight is updated only once?
-						B::operator()(val);
-						(m_weight->extract<W>())(weight);
-			        }
+                    void operator()(T const & val, typename value_type<weight_type>::type const & weight) {
+                        // TODO: how do we make sure, weight is updated only once?
+                        B::operator()(val);
+                        (m_weight->extract<W>())(weight);
+                    }
 
-					template<typename S> void print(S & os) const {
-						B::print(os);
-						os << ", weight: ";
-						m_weight->print(os);
-			        }
+                    template<typename S> void print(S & os) const {
+                        B::print(os);
+                        os << ", weight: ";
+                        m_weight->print(os);
+                    }
 
-			        // TODO: implement!
-			        void save(hdf5::archive & ar) const {
-						B::save(ar);
-						ar["weight/value"] = *weight();
-			        }
+                    // TODO: implement!
+                    void save(hdf5::archive & ar) const {
+                        B::save(ar);
+                        ar["weight/value"] = *weight();
+                    }
 
-			        // TODO: implement!
-			        void load(hdf5::archive & ar) { // TODO: make archive const
-						B::load(ar);
-						ar["weight/value"] >> *m_weight;
-			        }
+                    // TODO: implement!
+                    void load(hdf5::archive & ar) { // TODO: make archive const
+                        B::load(ar);
+                        ar["weight/value"] >> *m_weight;
+                    }
 
                     static std::size_t rank() { return B::rank() + 1; }
                     static bool can_load(hdf5::archive & ar) { // TODO: make archive const
-	                    using alps::hdf5::get_extent;
+                        using alps::hdf5::get_extent;
 
-	                    ar.set_context("weight/value");
-	                    bool is = weight_type::can_load(ar);
-	                    ar.set_context("../..");
+                        ar.set_context("weight/value");
+                        bool is = weight_type::can_load(ar);
+                        ar.set_context("../..");
 
-                    	return is && B::can_load(ar);
+                        return is && B::can_load(ar);
                     }
 
-			        void reset() {
-						B::reset();
-						m_weight->reset();
-			        }
+                    void reset() {
+                        B::reset();
+                        m_weight->reset();
+                    }
 
 #ifdef ALPS_HAVE_MPI
                     void collective_merge(
@@ -129,71 +129,71 @@ namespace alps {
                     }
 #endif
 
-			        bool owns_weight() const {
-			        	return m_owner;
-			        }
+                    bool owns_weight() const {
+                        return m_owner;
+                    }
 
-			    private:
-			    	bool m_owner;
-	                boost::shared_ptr< ::alps::accumulator::base_wrapper> m_weight;
-			};
+                private:
+                    bool m_owner;
+                    boost::shared_ptr< ::alps::accumulator::base_wrapper> m_weight;
+            };
 
-			template<typename T, typename W, typename B> class Result<T, weight_holder_tag<W>, B> : public B {
+            template<typename T, typename W, typename B> class Result<T, weight_holder_tag<W>, B> : public B {
 
-			    public:
-					typedef W weight_type;
+                public:
+                    typedef W weight_type;
 
-			        Result()
-			        	: B()
-			        	, m_owner(true)
-			        	, m_weight(new ::alps::accumulator::derived_result_wrapper<W>(W()))
-			        {}
+                    Result()
+                        : B()
+                        , m_owner(true)
+                        , m_weight(new ::alps::accumulator::derived_result_wrapper<W>(W()))
+                    {}
 
-				    template<typename A> Result(A const & acc)
-						: B(acc)
-						, m_owner(acc.owns_weight())
-						// TODO: implement shared weight
-						, m_weight(acc.weight()->result())
-			        {}
+                    template<typename A> Result(A const & acc)
+                        : B(acc)
+                        , m_owner(acc.owns_weight())
+                        // TODO: implement shared weight
+                        , m_weight(acc.weight()->result())
+                    {}
 
-			        base_wrapper const * weight() const {
-						return m_weight.get();
-			        }
+                    base_wrapper const * weight() const {
+                        return m_weight.get();
+                    }
 
-					template<typename S> void print(S & os) const {
-						B::print(os);
-						os << ", weight: ";
-						m_weight->print(os);
-			        }
+                    template<typename S> void print(S & os) const {
+                        B::print(os);
+                        os << ", weight: ";
+                        m_weight->print(os);
+                    }
 
-			        void save(hdf5::archive & ar) const {
-						B::save(ar);
-						ar["weight/value"] = *weight();
-			        }
+                    void save(hdf5::archive & ar) const {
+                        B::save(ar);
+                        ar["weight/value"] = *weight();
+                    }
 
-			        void load(hdf5::archive & ar) {
-						B::load(ar);
-						ar["weight/value"] >> *m_weight;
-			        }
+                    void load(hdf5::archive & ar) {
+                        B::load(ar);
+                        ar["weight/value"] >> *m_weight;
+                    }
 
                     static std::size_t rank() { return B::rank() + 1; }
                     static bool can_load(hdf5::archive & ar) { // TODO: make archive const
-	                    using alps::hdf5::get_extent;
+                        using alps::hdf5::get_extent;
 
-	                    ar.set_context("weight/value");
-	                    bool is = weight_type::can_load(ar);
-	                    ar.set_context("../..");
+                        ar.set_context("weight/value");
+                        bool is = weight_type::can_load(ar);
+                        ar.set_context("../..");
 
-                    	return is && B::can_load(ar);
+                        return is && B::can_load(ar);
                     }
 
-			    protected:
-			        bool m_owner;
-	                boost::shared_ptr< ::alps::accumulator::base_wrapper> m_weight;
-			};
+                protected:
+                    bool m_owner;
+                    boost::shared_ptr< ::alps::accumulator::base_wrapper> m_weight;
+            };
 
-		}
-	}
+        }
+    }
 }
 
  #endif
