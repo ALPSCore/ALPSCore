@@ -4,7 +4,7 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2010 - 2012 by Andreas Hehn <hehn@phys.ethz.ch>                   *
+ * Copyright (C) 2013 by Andreas Hehn <hehn@phys.ethz.ch>                          *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -25,33 +25,38 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#ifndef ALPS_HDF5_NUMERIC_VECTOR_HPP
+#define ALPS_HDF5_NUMERIC_VECTOR_HPP
 
-#ifndef ALPS_MATRIX_TRAITS_HPP
-#define ALPS_MATRIX_TRAITS_HPP
+#include <alps/hdf5/archive.hpp>
+#include <alps/numeric/matrix/vector.hpp>
 
 namespace alps {
-namespace numeric {
+namespace hdf5 {
 
-    template <typename Matrix>
-    struct associated_diagonal_matrix
-    {
-    };
-
-    template <typename Matrix>
-    struct associated_real_diagonal_matrix
-    {
-    };
-
-    template <typename Matrix>
-    struct associated_vector
-    {
-    };
-
-    template <typename Matrix>
-    struct associated_real_vector
-    {
-    };
-
-} // end namespace numeric
-} // end namespace alps
-#endif //ALPS_MATRIX_TRAITS_HPP
+        template <typename T, typename MemoryBlock>
+        void save(
+                  alps::hdf5::archive & ar
+                  , std::string const & path
+                  , alps::numeric::vector<T, MemoryBlock> const & value
+                  , std::vector<std::size_t> size = std::vector<std::size_t>()
+                  , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+                  , std::vector<std::size_t> offset = std::vector<std::size_t>()
+                  ) {
+            ar[path] << static_cast<MemoryBlock const&>(value);
+        }
+        template <typename T, typename MemoryBlock>
+        void load(
+                  alps::hdf5::archive & ar
+                  , std::string const & path
+                  , alps::numeric::vector<T, MemoryBlock> & value
+                  , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+                  , std::vector<std::size_t> offset = std::vector<std::size_t>()
+                  ) {
+            MemoryBlock tmp;
+            ar[path] >> tmp;
+            value = alps::numeric::vector<T, MemoryBlock>(tmp.begin(), tmp.end());
+        }
+}
+}
+#endif // ALPS_HDF5_NUMERIC_VECTOR_HPP

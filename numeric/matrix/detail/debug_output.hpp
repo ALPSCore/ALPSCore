@@ -4,7 +4,7 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2010 - 2012 by Andreas Hehn <hehn@phys.ethz.ch>                   *
+ * Copyright (C) 2013 by Andreas Hehn <hehn@phys.ethz.ch>                          *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -24,34 +24,16 @@
  * DEALINGS IN THE SOFTWARE.                                                       *
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+#ifndef ALPS_NUMERIC_MATRIX_DETAIL_DEBUG_OUTPUT_HPP
+#define ALPS_NUMERIC_MATRIX_DETAIL_DEBUG_OUTPUT_HPP
 
+#ifdef ALPS_NUMERIC_MATRIX_DEBUG
+#include <typeinfo>
+#include <iostream>
+#define ALPS_NUMERIC_MATRIX_DEBUG_OUTPUT(T) \
+    std::cerr << __FILE__ <<" " << __LINE__ << ":" << T << std::endl;
+#else
+#define ALPS_NUMERIC_MATRIX_DEBUG_OUTPUT(T)
+#endif
 
-#ifndef ALPS_MATRIX_TRAITS_HPP
-#define ALPS_MATRIX_TRAITS_HPP
-
-namespace alps {
-namespace numeric {
-
-    template <typename Matrix>
-    struct associated_diagonal_matrix
-    {
-    };
-
-    template <typename Matrix>
-    struct associated_real_diagonal_matrix
-    {
-    };
-
-    template <typename Matrix>
-    struct associated_vector
-    {
-    };
-
-    template <typename Matrix>
-    struct associated_real_vector
-    {
-    };
-
-} // end namespace numeric
-} // end namespace alps
-#endif //ALPS_MATRIX_TRAITS_HPP
+#endif //ALPS_NUMERIC_MATRIX_DETAIL_DEBUG_OUTPUT_HPP

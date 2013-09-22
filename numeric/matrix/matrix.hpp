@@ -32,13 +32,24 @@
 #include <alps/numeric/matrix/matrix_element_iterator.hpp>
 #include <alps/numeric/matrix/vector.hpp>
 #include <alps/numeric/matrix/detail/matrix_adaptor.hpp>
+#include <alps/numeric/matrix/detail/print_matrix.hpp>
+#include <alps/numeric/matrix/entity.hpp>
+#include <alps/numeric/matrix/operators/op_assign.hpp>
+#include <alps/numeric/matrix/operators/op_assign_matrix.hpp>
+#include <alps/numeric/matrix/operators/multiply.hpp>
+#include <alps/numeric/matrix/operators/multiply_matrix.hpp>
+#include <alps/numeric/matrix/operators/multiply_scalar.hpp>
+#include <alps/numeric/matrix/operators/plus_minus.hpp>
+#include <alps/numeric/matrix/detail/auto_deduce_multiply_return_type.hpp>
+#include <alps/numeric/matrix/detail/auto_deduce_plus_return_type.hpp>
 #include <alps/numeric/matrix/matrix_traits.hpp>
 #include <alps/numeric/matrix/matrix_interface.hpp>
-#include <alps/numeric/matrix/matrix_blas.hpp>
-#include <alps/numeric/matrix/matrix_matrix_multiply.hpp>
 #include <alps/numeric/real.hpp>
 #include <alps/parser/xmlstream.h>
-#include <boost/utility/enable_if.hpp>
+
+#include <boost/lambda/lambda.hpp>
+#include <boost/numeric/bindings/blas/level1/axpy.hpp>
+#include <boost/numeric/bindings/blas/level1/scal.hpp>
 
 #include <ostream>
 #include <vector>
@@ -153,15 +164,35 @@ namespace alps {
 
         bool operator == (matrix const& rhs) const;
 
-        matrix<T,MemoryBlock>& operator += (matrix const& rhs);
-
-        matrix<T,MemoryBlock>& operator -= (matrix const& rhs);
 
         template <typename T2>
-        matrix<T,MemoryBlock>& operator *= (T2 const& t);
+        matrix<T,MemoryBlock>& operator += (T2 const& rhs)
+        {
+            plus_assign(*this, rhs, typename get_entity<matrix>::type(), typename get_entity<T2>::type() );
+            return *this;
+        }
 
         template <typename T2>
-        matrix<T,MemoryBlock>& operator /= (T2 const& t);
+        matrix<T,MemoryBlock>& operator -= (T2 const& rhs)
+        {
+            minus_assign(*this, rhs, typename get_entity<matrix>::type(), typename get_entity<T2>::type() );
+            return *this;
+        }
+
+        template <typename T2>
+        matrix<T,MemoryBlock>& operator *= (T2 const& t)
+        {
+            multiplies_assign(*this, t, typename get_entity<matrix>::type(), typename get_entity<T2>::type() );
+            return *this;
+        }
+
+        template <typename T2>
+        matrix<T,MemoryBlock>& operator /= (T2 const& t)
+        {
+            // FIXME this is not really the same as /=
+            multiplies_assign(*this, value_type(1)/t, typename get_entity<matrix>::type(), typename get_entity<T2>::type() );
+            return *this;
+        }
 
         /**
           * Checks if a matrix is empty
@@ -388,56 +419,15 @@ namespace alps {
 } // namespace alps 
 
 //
-// Function hooks
-//
-namespace alps {
-    namespace numeric {
-
-    template<typename T, typename MemoryBlock, typename T2, typename MemoryBlock2>
-    typename matrix_vector_multiplies_return_type<matrix<T,MemoryBlock>,vector<T2,MemoryBlock2> >::type
-    matrix_vector_multiply(matrix<T,MemoryBlock> const& m, vector<T2,MemoryBlock2> const& v);
-
-    template <typename T,typename MemoryBlock,typename MemoryBlock2>
-    void plus_assign(matrix<T,MemoryBlock>& m, matrix<T,MemoryBlock2> const& rhs);
-
-    template <typename T, typename MemoryBlock, typename MemoryBlock2>
-    void minus_assign(matrix<T,MemoryBlock>& m, matrix<T,MemoryBlock2> const& rhs);
-
-    template <typename T, typename MemoryBlock, typename T2>
-    void multiplies_assign(matrix<T,MemoryBlock>& m, T2 const& t);
-
-    }
-}
-
-//
 // Free dense matrix functions
 //
 namespace alps {
     namespace numeric {
 
     template <typename T, typename MemoryBlock>
-    const matrix<T,MemoryBlock> operator + (matrix<T,MemoryBlock> a, matrix<T,MemoryBlock> const& b);
-
-    template <typename T, typename MemoryBlock>
-    const matrix<T,MemoryBlock> operator - (matrix<T,MemoryBlock> a, matrix<T,MemoryBlock> const& b);
-
-    template <typename T, typename MemoryBlock>
     const matrix<T,MemoryBlock> operator - (matrix<T,MemoryBlock> a);
 
-    template<typename T, typename MemoryBlock, typename T2, typename MemoryBlock2>
-    typename matrix_vector_multiplies_return_type<matrix<T,MemoryBlock>,vector<T2,MemoryBlock2> >::type
-    operator * (matrix<T,MemoryBlock> const& m, vector<T2,MemoryBlock2> const& v);
-
     // TODO: adj(Vector) * Matrix, where adj is a proxy object
-
-    template<typename T,typename MemoryBlock, typename T2>
-    typename boost::enable_if<is_matrix_scalar_multiplication<matrix<T,MemoryBlock>,T2>, matrix<T,MemoryBlock> >::type operator * (matrix<T,MemoryBlock> m, T2 const& t);
-
-    template<typename T,typename MemoryBlock, typename T2>
-    typename boost::enable_if<is_matrix_scalar_multiplication<matrix<T,MemoryBlock>,T2>, matrix<T,MemoryBlock> >::type operator * (T2 const& t, matrix<T,MemoryBlock> m);
-
-    template<typename T, typename MemoryBlock>
-    const matrix<T,MemoryBlock> operator * (matrix<T,MemoryBlock> const& m1, matrix<T,MemoryBlock> const& m2);
 
     template<class T, class MemoryBlock>
     std::size_t size_of(matrix<T, MemoryBlock> const & m);
@@ -456,7 +446,7 @@ namespace alps {
 // Trait specializations
 //
 namespace alps {
-    namespace numeric {
+namespace numeric {
 
     //
     // Forward declarations
@@ -466,13 +456,13 @@ namespace alps {
 
     template <typename T, typename MemoryBlock>
     class vector;
-    
+
     template <typename T>
     struct real_type<matrix<T> >
     {
         typedef matrix<typename real_type<T>::type> type;
     };
-    
+
     template<typename T, typename MemoryBlock>
     struct associated_real_vector<matrix<T, MemoryBlock> >
     {
@@ -498,28 +488,152 @@ namespace alps {
     };
 
     template <typename T1, typename MemoryBlock1, typename T2, typename MemoryBlock2>
-    struct matrix_vector_multiplies_return_type<matrix<T1,MemoryBlock1>,vector<T2,MemoryBlock2> >
+    struct multiply_return_type<matrix<T1,MemoryBlock1>, matrix<T2,MemoryBlock2>, tag::matrix, tag::matrix>
     {
         private:
-            typedef char one;
-            typedef long unsigned int two;
-            static one test(T1 t) {return one();}
-            static two test(T2 t) {return two();}
-            typedef typename boost::mpl::if_<typename boost::mpl::bool_<(sizeof(test(T1()*T2())) == sizeof(one))>,T1,T2>::type value_type;
-            typedef typename boost::mpl::if_<typename boost::mpl::bool_<(sizeof(test(T1()*T2())) == sizeof(one))>,MemoryBlock1,MemoryBlock2>::type memoryblock_type;
+            typedef typename detail::auto_deduce_multiply_return_type<T1,T2>::type value_type;
+            typedef typename boost::mpl::if_<typename detail::auto_deduce_multiply_return_type<T1,T2>::select_first,MemoryBlock1,MemoryBlock2>::type memory_block_type;
         public:
-            typedef alps::numeric::vector<value_type,memoryblock_type> type;
+            typedef matrix<value_type, memory_block_type> type;
     };
 
-    template <typename T,typename MemoryBlock1, typename MemoryBlock2>
-    struct matrix_vector_multiplies_return_type<matrix<T,MemoryBlock1>,vector<T,MemoryBlock2> >
+    template <typename T1, typename MemoryBlock1, typename T2, typename MemoryBlock2>
+    struct plus_minus_return_type<matrix<T1,MemoryBlock1>, matrix<T2,MemoryBlock2>, tag::matrix, tag::matrix>
     {
-        typedef alps::numeric::vector<T,MemoryBlock2> type;
+        private:
+            typedef typename detail::auto_deduce_plus_return_type<T1,T2>::type value_type;
+            typedef typename boost::mpl::if_<typename detail::auto_deduce_plus_return_type<T1,T2>::select_first,MemoryBlock1,MemoryBlock2>::type memory_block_type;
+        public:
+            typedef matrix<value_type, memory_block_type> type;
     };
 
+    template <typename T, typename MemoryBlock>
+    struct entity<matrix<T,MemoryBlock> >
+    {
+        typedef tag::matrix type;
+    };
+
+#define ALPS_MATRIX_BLAS_TRAITS(T) \
+template <typename MemoryBlock> \
+struct supports_blas<matrix<T,MemoryBlock> > : boost::mpl::true_ {};
+
+ALPS_IMPLEMENT_FOR_ALL_BLAS_TYPES(ALPS_MATRIX_BLAS_TRAITS)
+
+#undef ALPS_MATRIX_BLAS_TRAITS
+
+}
+}
+
+
+//
+// Some implementation detail dependent overloads
+//
+namespace alps {
+namespace numeric {
+namespace impl {
+namespace detail {
+    template <typename Op> struct get_sign;
+    template <typename T>  struct get_sign<std::plus<T> >  { static int const value = 1; };
+    template <typename T>  struct get_sign<std::minus<T> > { static int const value = -1; };
+} // end namespace detail 
+
+template <typename T1, typename MemoryBlock1, typename T2, typename MemoryBlock2, typename Operation>
+void plus_minus_assign_impl(matrix<T1,MemoryBlock1>& lhs, matrix<T2,MemoryBlock2> const& rhs, Operation op, tag::matrix, tag::matrix)
+{
+    // One could do also a dispatch on row vs. column major, but since we don't have row major right now, let's leave it like that.
+    typedef typename matrix<T1,MemoryBlock1>::size_type             size_type;
+    typedef typename matrix<T1,MemoryBlock1>::col_element_iterator  col_element_iterator;
+    typedef typename matrix<T1,MemoryBlock1>::value_type            value_type;
+    assert(num_rows(lhs) == num_rows(rhs));
+    assert(num_cols(lhs) == num_cols(rhs));
+#if defined(__clang_major__) && __clang_major__ < 3 || (__clang_major__ == 3 && __clang_minor__ == 0)
+// Workaround for a compiler bug in clang 3.0 (and maybe earlier versions)
+    for(size_type j=0; j < num_cols(lhs); ++j)
+    {
+        for(size_type i=0; i < num_rows(lhs); ++i)
+        {
+            value_type const tmp = op(lhs(i,j),rhs(i,j));
+            lhs(i,j) = tmp;
+        }
+    }
+#else //defined(__clang_major__) && __clang_major__ < 3 || (__clang_major__ == 3 && __clang_minor__ == 0)
+    if(!(lhs.is_shrinkable() || rhs.is_shrinkable()) )
+    {
+        std::transform(lhs.col(0).first,lhs.col(lhs.num_cols()-1).second,rhs.col(0).first,lhs.col(0).first, op);
+    }
+    else
+    {
+        // Do the operation column by column
+        for(size_type j=0; j < num_cols(lhs); ++j)
+        {
+            std::pair<col_element_iterator,col_element_iterator> range(col(lhs,j));
+            std::transform( range.first, range.second, col(rhs,j).first, range.first, op);
+        }
+    }
+#endif //defined(__clang_major__) && __clang_major__ < 3 || (__clang_major__ == 3 && __clang_minor__ == 0)
+}
+#define ALPS_MATRIX_PLUS_MINUS_ASSIGN(T) \
+    template <typename MemoryBlock, typename MemoryBlock2, typename Operation> \
+    void plus_minus_assign_impl(matrix<T,MemoryBlock>& m, matrix<T,MemoryBlock2> const& rhs, Operation op, tag::matrix, tag::matrix) \
+    { \
+        ALPS_NUMERIC_MATRIX_DEBUG_OUTPUT( "using blas axpy for " << typeid(m).name() << " " << typeid(rhs).name() ); \
+        typename matrix<T,MemoryBlock>::value_type const sign(detail::get_sign<Operation>::value); \
+        assert( m.num_cols() == rhs.num_cols() && m.num_rows() == rhs.num_rows() ); \
+        if(!(m.is_shrinkable() || rhs.is_shrinkable()) ) \
+        { \
+            boost::numeric::bindings::blas::detail::axpy( m.num_rows() * m.num_cols(), sign, &(*rhs.col(0).first), 1, &(*m.col(0).first), 1); \
+        } \
+        else \
+        { \
+            for(std::size_t j=0; j < m.num_cols(); ++j) \
+                boost::numeric::bindings::blas::detail::axpy( m.num_rows(), sign, &(*rhs.col(j).first), 1, &(*m.col(j).first), 1); \
+        } \
+    }
+ALPS_IMPLEMENT_FOR_ALL_BLAS_TYPES(ALPS_MATRIX_PLUS_MINUS_ASSIGN)
+#undef ALPS_MATRIX_PLUS_MINUS_ASSIGN
+
+template <typename T, typename MemoryBlock, typename T2>
+void multiplies_assign_impl(matrix<T,MemoryBlock>& lhs, T2 const& t, tag::matrix, tag::scalar)
+{
+    typedef typename matrix<T,MemoryBlock>::size_type              size_type;
+    typedef typename matrix<T,MemoryBlock>::value_type             value_type;
+    typedef typename matrix<T,MemoryBlock>::col_element_iterator   col_element_iterator;
+    if(!(lhs.is_shrinkable()) )
+    {
+        std::for_each(lhs.col(0).first, lhs.col(lhs.num_cols()-1).second, boost::lambda::_1 *= t);
+    }
+    else
+    {
+        // Do the operation column by column
+        for(size_type j=0; j < num_cols(lhs); ++j)
+        {
+            std::pair<col_element_iterator,col_element_iterator> range(col(lhs,j));
+            std::for_each(range.first, range.second, boost::lambda::_1 *= t);
+        }
     }
 }
 
+#define ALPS_MATRIX_MULTIPLIES_ASSIGN(T) \
+    template <typename MemoryBlock> \
+    void multiplies_assign_impl(matrix<T,MemoryBlock>& m, T const& t, tag::matrix, tag::scalar) \
+    { \
+        ALPS_NUMERIC_MATRIX_DEBUG_OUTPUT( "using blas scal for " << typeid(m).name() << " " << typeid(t).name() ); \
+        if( !(m.is_shrinkable()) ) \
+        { \
+            boost::numeric::bindings::blas::detail::scal( m.num_rows()*m.num_cols(), t, &(*m.col(0).first), 1 ); \
+        } \
+        else \
+        { \
+            for(std::size_t j=0; j <m.num_cols(); ++j) \
+                boost::numeric::bindings::blas::detail::scal( m.num_rows(), t, &(*m.col(j).first), 1 ); \
+        } \
+    }
+    ALPS_IMPLEMENT_FOR_ALL_BLAS_TYPES(ALPS_MATRIX_MULTIPLIES_ASSIGN)
+#undef ALPS_MATRIX_MULTIPLIES_ASSIGN
+
+} // end namespace impl
+} // end namespace numeric
+} // end namespace alps
 
 //
 // Implement the default matrix interface

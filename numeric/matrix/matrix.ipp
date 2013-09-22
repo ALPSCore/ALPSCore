@@ -26,7 +26,6 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <alps/numeric/conj.hpp>
-#include <boost/lambda/lambda.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 #include <alps/utility/numeric_cast.hpp>
 
@@ -35,59 +34,6 @@
 
 namespace alps {
 namespace numeric {
-    namespace detail {
-        template <typename T, typename MemoryBlock, typename Operation>
-        void op_assign_default_impl(matrix<T,MemoryBlock>& lhs, matrix<T,MemoryBlock> const& rhs, Operation op)
-        {
-            assert(lhs.num_rows() == rhs.num_rows());
-            assert(lhs.num_cols() == rhs.num_cols());
-#if defined(__clang_major__) && __clang_major__ < 3 || (__clang_major__ == 3 && __clang_minor__ == 0)
-// Workaround for a compiler bug in clang 3.0 (and maybe earlier versions)
-            for(typename matrix<T,MemoryBlock>::size_type j=0; j < lhs.num_cols(); ++j)
-            {
-                for(typename matrix<T,MemoryBlock>::size_type i=0; i < lhs.num_rows(); ++i)
-                {
-                    typename matrix<T,MemoryBlock>::value_type const tmp = op(lhs(i,j),rhs(i,j));
-                    lhs(i,j) = tmp;
-                }
-            }
-#else //defined(__clang_major__) && __clang_major__ < 3 || (__clang_major__ == 3 && __clang_minor__ == 0)
-            if(!(lhs.is_shrinkable() || rhs.is_shrinkable()) )
-            {
-                std::transform(lhs.col(0).first,lhs.col(lhs.num_cols()-1).second,rhs.col(0).first,lhs.col(0).first, op);
-            }
-            else
-            {
-                // Do the operation column by column
-                for(typename matrix<T,MemoryBlock>::size_type j=0; j < lhs.num_cols(); ++j)
-                {
-                    typedef typename matrix<T,MemoryBlock>::col_element_iterator col_element_iterator;
-                    std::pair<col_element_iterator,col_element_iterator> range(lhs.col(j));
-                    std::transform( range.first, range.second, rhs.col(j).first, range.first, op);
-                }
-            }
-#endif //defined(__clang_major__) && __clang_major__ < 3 || (__clang_major__ == 3 && __clang_minor__ == 0)
-        }
-
-        template <typename T, typename MemoryBlock, typename T2>
-        void multiplies_assign_default_impl(matrix<T,MemoryBlock>& lhs, T2 const& t)
-        {
-            if(!(lhs.is_shrinkable()) )
-            {
-                std::for_each(lhs.col(0).first, lhs.col(lhs.num_cols()-1).second, boost::lambda::_1 *= t);
-            }
-            else
-            {
-                // Do the operation column by column
-                for(typename matrix<T,MemoryBlock>::size_type j=0; j < lhs.num_cols(); ++j)
-                {
-                    typedef typename matrix<T,MemoryBlock>::col_element_iterator col_element_iterator;
-                    std::pair<col_element_iterator,col_element_iterator> range(lhs.col(j));
-                    std::for_each(range.first, range.second, boost::lambda::_1 *= t);
-                }
-            }
-        }
-    } // end namespace detail
 
     template <typename T, typename MemoryBlock>
     matrix<T, MemoryBlock> matrix<T, MemoryBlock>::identity_matrix(size_type size)
@@ -198,37 +144,6 @@ namespace numeric {
     }
 
     template <typename T, typename MemoryBlock>
-    matrix<T,MemoryBlock>& matrix<T, MemoryBlock>::operator += (matrix const& rhs)
-    {
-        plus_assign(*this,rhs);
-        return *this;
-    }
-
-    template <typename T, typename MemoryBlock>
-    matrix<T,MemoryBlock>& matrix<T, MemoryBlock>::operator -= (matrix const& rhs)
-    {
-        minus_assign(*this,rhs);
-        return *this;
-    }
-
-    template <typename T, typename MemoryBlock>
-    template <typename T2>
-    matrix<T,MemoryBlock>& matrix<T, MemoryBlock>::operator *= (T2 const& t)
-    {
-        multiplies_assign(*this, t);
-        return *this;
-    }
-
-    template <typename T, typename MemoryBlock>
-    template <typename T2>
-    matrix<T,MemoryBlock>& matrix<T, MemoryBlock>::operator /= (T2 const& t)
-    {
-        // FIXME this is not really the same as /=
-        multiplies_assign(*this, value_type(1)/t);
-        return *this;
-    }
-
-    template <typename T, typename MemoryBlock>
     inline bool matrix<T, MemoryBlock>::empty() const
     {
         return (this->size1_ == 0 || this->size2_ == 0);
@@ -262,8 +177,6 @@ namespace numeric {
     void matrix<T, MemoryBlock>::resize(size_type rows, size_type cols, T const& init_value)
     {
         using std::fill;
-        assert(rows > 0);
-        assert(cols > 0);
         // Do we need more space? Reserve more space if needed!
         automatic_reserve(rows,cols);
         if(rows > this->size1_)
@@ -510,57 +423,7 @@ namespace numeric {
         xml << end_tag("MATRIX");
     }
 
-    template<typename T, typename MemoryBlock, typename T2, typename MemoryBlock2>
-    typename matrix_vector_multiplies_return_type<matrix<T,MemoryBlock>,vector<T2,MemoryBlock2> >::type
-    matrix_vector_multiply(matrix<T,MemoryBlock> const& m, vector<T2,MemoryBlock2> const& v)
-    {
-        assert( m.num_cols() == v.size() );
-        typename matrix_vector_multiplies_return_type<matrix<T,MemoryBlock>,vector<T2,MemoryBlock2> >::type
-            result(m.num_rows());
-        // Simple Matrix * Vector
-        for(typename matrix<T,MemoryBlock>::size_type i = 0; i < m.num_rows(); ++i)
-        {
-            for(typename matrix<T,MemoryBlock>::size_type j=0; j <m.num_cols(); ++j)
-            {
-                result(i) += m(i,j) * v(j);
-            }
-        }
-        return result;
-    }
-
-    template <typename T, typename MemoryBlock, typename MemoryBlock2>
-    void plus_assign(matrix<T,MemoryBlock>& m, matrix<T,MemoryBlock2> const& rhs)
-    {
-        detail::op_assign_default_impl(m,rhs,std::plus<T>());
-    }
-
-    template <typename T, typename MemoryBlock, typename MemoryBlock2>
-    void minus_assign(matrix<T,MemoryBlock>& m, matrix<T,MemoryBlock2> const& rhs)
-    {
-        detail::op_assign_default_impl(m,rhs,std::minus<T>());
-    }
-
-    template <typename T, typename MemoryBlock, typename T2>
-    void multiplies_assign(matrix<T,MemoryBlock>& m, T2 const& t)
-    {
-        detail::multiplies_assign_default_impl(m,t);
-    }
-
 //////////////////////////////////////////////////////////////////////////////
-
-    template <typename T, typename MemoryBlock>
-    const matrix<T,MemoryBlock> operator + (matrix<T,MemoryBlock> a, matrix<T,MemoryBlock> const& b)
-    {
-        a += b;
-        return a;
-    }
-
-    template <typename T, typename MemoryBlock>
-    const matrix<T,MemoryBlock> operator - (matrix<T,MemoryBlock> a, matrix<T,MemoryBlock> const& b)
-    {
-        a -= b;
-        return a;
-    }
 
     template <typename T, typename MemoryBlock>
     const matrix<T,MemoryBlock> operator - (matrix<T,MemoryBlock> a)
@@ -584,31 +447,6 @@ namespace numeric {
         return a;
     }
 
-    template<typename T, typename MemoryBlock, typename T2, typename MemoryBlock2>
-    typename matrix_vector_multiplies_return_type<matrix<T,MemoryBlock>,vector<T2,MemoryBlock2> >::type
-    operator * (matrix<T,MemoryBlock> const& m, vector<T2,MemoryBlock2> const& v)
-    {
-        return matrix_vector_multiply(m,v);
-    }
-
-    template<typename T,typename MemoryBlock, typename T2>
-    typename boost::enable_if<is_matrix_scalar_multiplication<matrix<T,MemoryBlock>,T2>, matrix<T,MemoryBlock> >::type operator * (matrix<T,MemoryBlock> m, T2 const& t)
-    {
-        return m*=t;
-    }
-
-    template<typename T,typename MemoryBlock, typename T2>
-    typename boost::enable_if<is_matrix_scalar_multiplication<matrix<T,MemoryBlock>,T2>, matrix<T,MemoryBlock> >::type operator * (T2 const& t, matrix<T,MemoryBlock> m)
-    {
-        return m*=t;
-    }
-
-    template<typename T, typename MemoryBlock>
-    const matrix<T,MemoryBlock> operator * (matrix<T,MemoryBlock> const& m1, matrix<T,MemoryBlock> const& m2)
-    {
-        return matrix_matrix_multiply(m1,m2);
-    }
-
     template<class T, class MemoryBlock>
     std::size_t size_of(matrix<T, MemoryBlock> const & m)
     {
@@ -616,15 +454,10 @@ namespace numeric {
     }
 
     template <typename T, typename MemoryBlock>
-    std::ostream& operator << (std::ostream& o, matrix<T,MemoryBlock> const& m)
+    std::ostream& operator << (std::ostream& os, matrix<T,MemoryBlock> const& m)
     {
-        for(typename matrix<T,MemoryBlock>::size_type i=0; i< m.num_rows(); ++i)
-        {
-            for(typename matrix<T,MemoryBlock>::size_type j=0; j < m.num_cols(); ++j)
-                o<<m(i,j)<<" ";
-            o<<std::endl;
-        }
-        return o;
+        detail::print_matrix(os, m);
+        return os;
     }
 
     template <typename T, typename MemoryBlock>

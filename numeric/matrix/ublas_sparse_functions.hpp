@@ -4,7 +4,7 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2010 - 2012 by Andreas Hehn <hehn@phys.ethz.ch>                   *
+ * Copyright (C) 2013 by Andreas Hehn <hehn@phys.ethz.ch>                          *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -24,34 +24,46 @@
  * DEALINGS IN THE SOFTWARE.                                                       *
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+#ifndef ALPS_NUMERIC_MATRIX_UBLAS_SPARSE_FUNCTIONS_HPP
+#define ALPS_NUMERIC_MATRIX_UBLAS_SPARSE_FUNCTIONS_HPP
 
-
-#ifndef ALPS_MATRIX_TRAITS_HPP
-#define ALPS_MATRIX_TRAITS_HPP
+#include <alps/numeric/matrix/entity.hpp>
+#include <alps/numeric/matrix/operators/multiply.hpp>
+#include <boost/numeric/ublas/fwd.hpp>
 
 namespace alps {
 namespace numeric {
 
-    template <typename Matrix>
-    struct associated_diagonal_matrix
-    {
-    };
+template<class T, class L, class A>
+struct entity< ::boost::numeric::ublas::mapped_vector_of_mapped_vector<T,L,A> >
+{
+    typedef tag::matrix type;
+};
 
-    template <typename Matrix>
-    struct associated_real_diagonal_matrix
-    {
-    };
+template <typename T, typename L, typename A, typename Vector>
+typename multiply_return_type_helper<matrix<T>,Vector>::type multiply(::boost::numeric::ublas::mapped_vector_of_mapped_vector<T,L,A> const& m, Vector const& t2, tag::matrix, tag::vector)
+{
+    // NOTE: This function depends on some implementation details of ublas. I didn't see any other efficient way.
+    using ::boost::numeric::ublas::map_std;
+    BOOST_STATIC_ASSERT(( boost::is_same<A, map_std<std::size_t, map_std<std::size_t, T> > >::value ));
+    BOOST_STATIC_ASSERT(( boost::is_same<L, ::boost::numeric::ublas::row_major>::value ));
+    typedef A array_type;
+    typedef typename map_std<std::size_t, map_std<std::size_t, T> >::const_iterator const_iterator1;
+    typedef typename map_std<std::size_t, T>::const_iterator                        const_iterator2;
 
-    template <typename Matrix>
-    struct associated_vector
+    // We just use the same return type as for a regular dense matrix vector multiplication
+    typename multiply_return_type_helper<matrix<T>,Vector>::type r(m.size1());
+    const_iterator1 const end = m.data().end();
+    for(const_iterator1 col_it = m.data().begin(); col_it != end; ++col_it)
     {
-    };
+        const_iterator2 const row_end = col_it->second.end();
+        for(const_iterator2 row_it = col_it->second.begin(); row_it != row_end; ++row_it)
+            r(col_it->first) += row_it->second * t2(row_it->first);
+    }
+    return r;
+}
 
-    template <typename Matrix>
-    struct associated_real_vector
-    {
-    };
+}
+}
 
-} // end namespace numeric
-} // end namespace alps
-#endif //ALPS_MATRIX_TRAITS_HPP
+#endif // ALPS_NUMERIC_MATRIX_UBLAS_SPARSE_FUNCTIONS_HPP

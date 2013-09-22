@@ -4,7 +4,7 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2010 - 2012 by Andreas Hehn <hehn@phys.ethz.ch>                   *
+ * Copyright (C) 2013 by Andreas Hehn <hehn@phys.ethz.ch>                          *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -24,34 +24,39 @@
  * DEALINGS IN THE SOFTWARE.                                                       *
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+#ifndef ALPS_NUMERIC_OPERATORS_OP_ASSIGN_HPP
+#define ALPS_NUMERIC_OPERATORS_OP_ASSIGN_HPP
 
-
-#ifndef ALPS_MATRIX_TRAITS_HPP
-#define ALPS_MATRIX_TRAITS_HPP
+#include <boost/static_assert.hpp>
 
 namespace alps {
 namespace numeric {
 
-    template <typename Matrix>
-    struct associated_diagonal_matrix
-    {
-    };
+template <typename T>
+struct not_implemented
+{
+    static bool const value = false;
+};
 
-    template <typename Matrix>
-    struct associated_real_diagonal_matrix
-    {
-    };
+template <typename T1, typename T2, typename Category1, typename Category2>
+void plus_assign(T1& t1, T2 const& t2, Category1, Category2)
+{
+    BOOST_STATIC_ASSERT(not_implemented<T1>::value);
+}
 
-    template <typename Matrix>
-    struct associated_vector
-    {
-    };
+template <typename T1, typename T2, typename Category1, typename Category2>
+void minus_assign(T1& t1, T2 const& t2, Category1, Category2)
+{
+    BOOST_STATIC_ASSERT(not_implemented<T1>::value);
+}
 
-    template <typename Matrix>
-    struct associated_real_vector
-    {
-    };
+template <typename T1, typename T2, typename Category1, typename Category2>
+void multiplies_assign(T1& t1, T2 const& t2, Category1, Category2)
+{
+    BOOST_STATIC_ASSERT(not_implemented<T1>::value);
+}
 
 } // end namespace numeric
 } // end namespace alps
-#endif //ALPS_MATRIX_TRAITS_HPP
+
+#endif // ALPS_NUMERIC_OPERATORS_OP_ASSIGN_HPP

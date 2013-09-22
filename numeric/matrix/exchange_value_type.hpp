@@ -4,7 +4,7 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2010 - 2012 by Andreas Hehn <hehn@phys.ethz.ch>                   *
+ * Copyright (C) 2013 by Andreas Hehn <hehn@phys.ethz.ch>                          *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -24,34 +24,16 @@
  * DEALINGS IN THE SOFTWARE.                                                       *
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-
-#ifndef ALPS_MATRIX_TRAITS_HPP
-#define ALPS_MATRIX_TRAITS_HPP
+#ifndef ALPS_NUMERIC_MATRIX_EXCHANGE_VALUE_TYPE_HPP
+#define ALPS_NUMERIC_MATRIX_EXCHANGE_VALUE_TYPE_HPP
 
 namespace alps {
 namespace numeric {
 
-    template <typename Matrix>
-    struct associated_diagonal_matrix
-    {
-    };
-
-    template <typename Matrix>
-    struct associated_real_diagonal_matrix
-    {
-    };
-
-    template <typename Matrix>
-    struct associated_vector
-    {
-    };
-
-    template <typename Matrix>
-    struct associated_real_vector
-    {
-    };
+template <typename Container, typename NewValueType>
+struct exchange_value_type;
 
 } // end namespace numeric
 } // end namespace alps
-#endif //ALPS_MATRIX_TRAITS_HPP
+
+#endif // ALPS_NUMERIC_MATRIX_EXCHANGE_VALUE_TYPE_HPP

@@ -4,7 +4,7 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2010 - 2012 by Andreas Hehn <hehn@phys.ethz.ch>                   *
+ * Copyright (C) 2013 by Andreas Hehn <hehn@phys.ethz.ch>                          *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -25,39 +25,36 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#ifndef ALPS_NUMERIC_MATRIX_DETAIL_AUTO_DEDUCE_PLUS_RETURN_TYPE_HPP
+#define ALPS_NUMERIC_MATRIX_DETAIL_AUTO_DEDUCE_PLUS_RETURN_TYPE_HPP
+
+#include <boost/mpl/if.hpp>
 
 namespace alps {
 namespace numeric {
-    //
-    // Default matrix matrix multiplication implementations
-    // May be overlaoded for special Matrix types
-    //
+namespace detail {
 
-    // The classic gemm - as known from Fortran - writing the result to argument c
-    template<typename MatrixA, typename MatrixB, typename MatrixC>
-    void gemm(MatrixA const & a, MatrixB const & b, MatrixC & c)
-    {
-        assert( num_cols(a) == num_rows(b) );
-        assert( num_rows(c) == num_rows(a) );
-        assert( num_cols(c) == num_cols(b) );
-        // Simple matrix matrix multiplication
-        for(std::size_t j=0; j < num_cols(b); ++j)
-            for(std::size_t k=0; k < num_cols(a); ++k)
-                for(std::size_t i=0; i < num_rows(a); ++i)
-                    c(i,j) += a(i,k) * b(k,j);
-    }
+template <typename T1, typename T2>
+struct auto_deduce_plus_return_type
+{
+    private:
+        typedef char one;
+        typedef long unsigned int two;
+        static one test(T1 t) {return one();}
+        static two test(T2 t) {return two();}
+    public:
+        typedef boost::mpl::bool_<(sizeof(test(T1()+T2())) == sizeof(one))> select_first;
+        typedef typename boost::mpl::if_<select_first,T1,T2>::type type;
+};
 
-    //
-    // A multiply function returning the resulting matrix
-    //
-    // In most cases you should prefer this function to the gemm().
-    //
-    template <typename Matrix1, typename Matrix2>
-    typename matrix_matrix_multiply_return_type<Matrix1,Matrix2>::type matrix_matrix_multiply(Matrix1 const& lhs, Matrix2 const& rhs)
-    {
-        typename matrix_matrix_multiply_return_type<Matrix1,Matrix2>::type result(lhs.num_rows(),rhs.num_cols());
-        gemm(lhs,rhs,result);
-        return result;
-    }
+template <typename T>
+struct auto_deduce_plus_return_type<T,T>
+{
+    typedef boost::mpl::bool_<true> select_first;
+    typedef T type;
+};
+
+} // end namespace detail
 } // end namespace numeric
 } // end namespace alps
+#endif // ALPS_NUMERIC_MATRIX_DETAIL_AUTO_DEDUCE_PLUS_RETURN_TYPE_HPP

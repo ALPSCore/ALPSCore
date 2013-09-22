@@ -4,7 +4,7 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2010 - 2012 by Andreas Hehn <hehn@phys.ethz.ch>                   *
+ * Copyright (C) 2010 - 2013 by Andreas Hehn <hehn@phys.ethz.ch>                   *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -24,34 +24,45 @@
  * DEALINGS IN THE SOFTWARE.                                                       *
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+#ifndef ALPS_NUMERIC_MATRIX_GEMV_HPP
+#define ALPS_NUMERIC_MATRIX_GEMV_HPP
 
-
-#ifndef ALPS_MATRIX_TRAITS_HPP
-#define ALPS_MATRIX_TRAITS_HPP
+#include <alps/numeric/matrix/detail/debug_output.hpp>
+#include <alps/numeric/matrix/is_blas_dispatchable.hpp>
+#include <boost/numeric/bindings/blas/level2/gemv.hpp>
+#include <cassert>
 
 namespace alps {
 namespace numeric {
 
-    template <typename Matrix>
-    struct associated_diagonal_matrix
-    {
-    };
+template <typename Matrix, typename Vector, typename Vector2>
+void gemv(Matrix const& m, Vector const& x, Vector2& y, boost::mpl::false_)
+{
+    typedef typename Matrix::size_type size_type;
+    assert(num_cols(m) > 0);
+    for(size_type j=0; j < num_cols(m); ++j)
+    for(size_type i=0; i < num_rows(m); ++i)
+        y[i] += m(i,j) * x[j];
+}
 
-    template <typename Matrix>
-    struct associated_real_diagonal_matrix
-    {
-    };
+template <typename Matrix, typename Vector, typename Vector2>
+void gemv(Matrix const& m, Vector const& x, Vector2& y, boost::mpl::true_)
+{
+    ALPS_NUMERIC_MATRIX_DEBUG_OUTPUT( "using blas gemv for " << typeid(m).name() << " " << typeid(x).name() << " -> " << typeid(y).name() );
+    typedef typename Matrix::value_type value_type;
+    boost::numeric::bindings::blas::gemv(value_type(1), m, x, value_type(0), y);
+}
 
-    template <typename Matrix>
-    struct associated_vector
-    {
-    };
-
-    template <typename Matrix>
-    struct associated_real_vector
-    {
-    };
+template <typename Matrix, typename Vector, typename Vector2>
+void gemv(Matrix const& m, Vector const& x, Vector2& y)
+{
+    assert(num_rows(m) == y.size());
+    assert(num_cols(m) == x.size());
+    // TODO test also Vector2
+    gemv(m,x,y,is_blas_dispatchable<Matrix,Vector>());
+}
 
 } // end namespace numeric
 } // end namespace alps
-#endif //ALPS_MATRIX_TRAITS_HPP
+
+#endif // ALPS_NUMERIC_MATRIX_GEMV_HPP

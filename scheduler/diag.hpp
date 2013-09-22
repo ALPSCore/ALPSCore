@@ -34,8 +34,8 @@
 #include <alps/lattice/graph_helper.h>
 #include <alps/scheduler/task.h>
 
-#include <alps/hdf5.hpp>
-#include <alps/hdf5/ublas/vector.hpp>
+#include <alps/numeric/matrix/vector.hpp>
+#include <alps/hdf5/numeric_vector.hpp>
 
 namespace alps { namespace scheduler {
 
@@ -45,8 +45,8 @@ class DiagTask : public scheduler::Task, public graph_helper<G>,  public model_h
 public:
   typedef T value_type;
   typedef typename norm_type<value_type>::type magnitude_type;
-  typedef boost::numeric::ublas::vector<value_type> vector_type;
-  typedef boost::numeric::ublas::vector<magnitude_type> mag_vector_type;
+  typedef alps::numeric::vector<value_type> vector_type;
+  typedef alps::numeric::vector<magnitude_type> mag_vector_type;
   typedef model_helper<>::half_integer_type half_integer_type;
   typedef boost::numeric::ublas::mapped_vector_of_mapped_vector<T, boost::numeric::ublas::row_major>  operator_matrix_type;
   

@@ -36,72 +36,29 @@
 
 #include <alps/numeric/matrix/detail/blasmacros.hpp>
 #include <boost/numeric/bindings/blas/level1/dot.hpp>
-#include <boost/numeric/bindings/blas/level1/scal.hpp>
-#include <boost/numeric/bindings/blas/level1/axpy.hpp>
-#include <iostream>
+#include <ostream>
 #include <vector>
 #include <algorithm>
 #include <cassert>
+#include <alps/numeric/matrix/detail/print_vector.hpp>
 #include <alps/numeric/scalar_product.hpp>
 
-#ifdef HAVE_ALPS_HDF5
-#include <alps/hdf5.hpp>
-#endif
+
+#include <alps/numeric/matrix/entity.hpp>
+#include <alps/numeric/matrix/operators/op_assign.hpp>
+#include <alps/numeric/matrix/operators/op_assign_vector.hpp>
+#include <alps/numeric/matrix/operators/plus_minus.hpp>
+#include <alps/numeric/matrix/detail/auto_deduce_plus_return_type.hpp>
+#include <alps/numeric/matrix/exchange_value_type.hpp>
 
 namespace alps {
-  namespace numeric {
-    namespace detail {
-        template <typename T, typename T2>
-        struct multiplies : public std::binary_function<T,T2,T>
-        {
-            inline T operator()(T t, T2 const& t2) const
-            {
-                return t*t2;
-            }
-        };
-    } // end namespace detail
-
-#if defined(__clang_major__) && __clang_major__ < 3 || (__clang_major__ == 3 && __clang_minor__ == 0)
-// Workaround for a compiler bug in clang 3.0 (and maybe earlier versions)
-    template <typename T1, typename T2, class MemoryBlock1, class MemoryBlock2>
-    void plus_assign(vector<T1, MemoryBlock1> & lhs, const vector<T2, MemoryBlock2> & rhs)
-    {
-        for(std::size_t i=0; i< lhs.size(); ++i)
-            lhs[i] += rhs[i];
-    }
-
-    template <typename T1, typename T2, class MemoryBlock1, class MemoryBlock2>
-    void minus_assign(vector<T1, MemoryBlock1> & lhs, const vector<T2, MemoryBlock2> & rhs)
-    {
-        for(std::size_t i=0; i< lhs.size(); ++i)
-            lhs[i] -= rhs[i];
-    }
-#else // defined(__clang_major__) && __clang_major__ < 3 || (__clang_major__ == 3 && __clang_minor__ == 0)
-    template <typename T1, typename T2, class MemoryBlock1, class MemoryBlock2>
-    void plus_assign(vector<T1, MemoryBlock1> & lhs, const vector<T2, MemoryBlock2> & rhs)
-    {
-        std::transform(lhs.begin(), lhs.end(), rhs.begin(), lhs.begin(), std::plus<typename vector<T2, MemoryBlock2>::value_type>());
-    }
-
-    template <typename T1, typename T2, class MemoryBlock1, class MemoryBlock2>
-    void minus_assign(vector<T1, MemoryBlock1> & lhs, const vector<T2, MemoryBlock2> & rhs)
-    {
-        std::transform(lhs.begin(), lhs.end(), rhs.begin(), lhs.begin(), std::minus<typename vector<T2, MemoryBlock2>::value_type>());
-    }
-#endif // defined(__clang_major__) && __clang_major__ < 3 || (__clang_major__ == 3 && __clang_minor__ == 0)
-
-    template <typename T1, typename T2, class MemoryBlock>
-    void multiplies_assign(vector<T1, MemoryBlock> & lhs, T2 lambda)
-    {
-        using detail::multiplies;
-        std::transform(lhs.begin(), lhs.end(), lhs.begin(), std::bind2nd(multiplies<typename vector<T1, MemoryBlock>::value_type, T2>(), lambda));
-    }
+namespace numeric {
 
   template<typename T, typename MemoryBlock = std::vector<T> >
   class vector : public MemoryBlock
   {
     public:
-      vector(std::size_t size=0, T const& initial_value = T())
+      explicit vector(std::size_t size=0, T const& initial_value = T())
       : MemoryBlock(size, initial_value)
       {
       }
@@ -111,15 +68,15 @@ namespace alps {
       {
       }
 
-      template <typename OtherMemoryBlock>
-      vector(vector<T,OtherMemoryBlock> const& v)
-      : MemoryBlock( v.begin(), v.end() )
-      {
-      }
-
       template <class InputIterator>
       vector (InputIterator first, InputIterator last)
       : MemoryBlock( first, last )
+      {
+      }
+
+      template <typename Vector>
+      explicit vector(Vector const& v, typename boost::enable_if<boost::is_same<typename get_entity<Vector>::type, tag::vector>, void>::type* = 0)
+      : MemoryBlock(v.begin(), v.end())
       {
       }
 
@@ -140,24 +97,24 @@ namespace alps {
           return this->operator[](i);
       }
 
-      vector& operator+=(const vector& rhs)
+      template <typename T2>
+      vector& operator += (T2 const& rhs)
       {
-          assert(rhs.size() == this->size());
-          plus_assign(*this, rhs);
-          return *this;
-      }
-
-      vector& operator-=(const vector& rhs)
-      {
-          assert(rhs.size() == this->size());
-          minus_assign(*this, rhs);
+          plus_assign(*this, rhs, typename get_entity<vector>::type(), typename get_entity<T2>::type());
           return *this;
       }
 
       template <typename T2>
-      vector& operator *= (T2 const& lambda)
+      vector& operator-=(T2 const& rhs)
       {
-          multiplies_assign(*this, lambda);
+          minus_assign(*this, rhs, typename get_entity<vector>::type(), typename get_entity<T2>::type());
+          return *this;
+      }
+
+      template <typename T2>
+      vector& operator *= (T2 const& x)
+      {
+          multiplies_assign(*this, x, typename get_entity<vector>::type(), typename get_entity<T2>::type());
           return *this;
       }
   };
@@ -168,35 +125,6 @@ namespace alps {
         assert((i <= v.size()));
         v.insert(v.begin()+i,value);
     }
-
-    template<typename T, typename MemoryBlock>
-    vector<T,MemoryBlock> operator+(vector<T,MemoryBlock> v1, const vector<T,MemoryBlock>& v2)
-    {
-        assert(v1.size() == v2.size());
-        v1 += v2;
-        return v1;
-    }
-
-    template<typename T, typename MemoryBlock>
-    vector<T,MemoryBlock> operator-(vector<T,MemoryBlock> v1, const vector<T,MemoryBlock>& v2)
-    {
-        assert(v1.size() == v2.size());
-        v1 -= v2;
-        return v1;
-    }
-
-    template <typename T1, typename T2, typename MemoryBlock>
-    vector<T2,MemoryBlock> operator * (T1 const& t, vector<T2,MemoryBlock> v)
-    {
-        return v *= t;
-    }
-
-    template <typename T1, typename T2, typename MemoryBlock>
-    vector<T1,MemoryBlock> operator * (vector<T1,MemoryBlock> v, T2 const& t)
-    {
-        return v *= t;
-    }
-
 
     template <typename T, typename MemoryBlock>
     inline vector<T,MemoryBlock> exp(T c, vector<T,MemoryBlock> v)
@@ -233,84 +161,42 @@ namespace alps {
   template <typename T, typename MemoryBlock>
   inline std::ostream &operator<<(std::ostream &os, const vector<T,MemoryBlock> &v)
   {
-    os<<"[ ";
-    for(unsigned int i=0;i<v.size()-1;++i){
-      os<<v(i)<<", ";
-    }
-      os<< v(v.size()-1) << "]"<<std::endl;
+    detail::print_vector(os,v);
     return os;
   }
 
-#define PLUS_ASSIGN(T) \
+
+template <typename T, typename MemoryBlock>
+struct entity<vector<T,MemoryBlock> >
+{
+    typedef tag::vector type;
+};
+
+template <typename T1, typename MemoryBlock1, typename T2, typename MemoryBlock2>
+struct plus_minus_return_type<vector<T1,MemoryBlock1>, vector<T2,MemoryBlock2>, tag::vector, tag::vector>
+{
+    private:
+        typedef typename detail::auto_deduce_plus_return_type<T1,T2>::type value_type;
+        typedef typename boost::mpl::if_<typename detail::auto_deduce_plus_return_type<T1,T2>::select_first,MemoryBlock1,MemoryBlock2>::type memory_block_type;
+    public:
+        typedef vector<value_type, memory_block_type> type;
+};
+
+template <typename T, typename MemoryBlock, typename T2>
+struct exchange_value_type<vector<T,MemoryBlock>,T2>
+{
+    typedef vector<T2> type;
+};
+
+#define ALPS_VECTOR_BLAS_TRAITS(T) \
 template <typename MemoryBlock> \
-void plus_assign(vector<T,MemoryBlock> & lhs, const vector<T,MemoryBlock> & rhs) \
-{ boost::numeric::bindings::blas::detail::axpy(lhs.end()-lhs.begin(), 1., &*rhs.begin(), 1, &*lhs.begin(), 1);}
-    ALPS_IMPLEMENT_FOR_ALL_BLAS_TYPES(PLUS_ASSIGN)
-#undef PLUS_ASSIGN
+struct supports_blas<vector<T,MemoryBlock> > : boost::mpl::true_ {};
 
+ALPS_IMPLEMENT_FOR_ALL_BLAS_TYPES(ALPS_VECTOR_BLAS_TRAITS)
 
-#define MINUS_ASSIGN(T) \
-template <typename MemoryBlock> \
-void minus_assign(vector<T, MemoryBlock> & lhs, const vector<T,MemoryBlock> & rhs) \
-{ boost::numeric::bindings::blas::detail::axpy(lhs.end()-lhs.begin(), -1., &*rhs.begin(), 1, &*lhs.begin(), 1);}
-    ALPS_IMPLEMENT_FOR_ALL_BLAS_TYPES(MINUS_ASSIGN)
-#undef MINUS_ASSIGN
+#undef ALPS_VECTOR_BLAS_TRAITS
 
-#define MULTIPLIES_ASSIGN(T) \
-template <typename MemoryBlock, typename T1> \
-void multiplies_assign(vector<T, MemoryBlock> & rhs, T1 lambda) \
-    { boost::numeric::bindings::blas::detail::scal(rhs.end()-rhs.begin(), lambda, &*rhs.begin(), 1);}
-    ALPS_IMPLEMENT_FOR_ALL_BLAS_TYPES(MULTIPLIES_ASSIGN)
-#undef MULTIPLIES_ASSIGN
-
-#define SCALAR_PRODUCT(T) \
-template <typename MemoryBlock> \
-inline T scalar_product(const vector<T,MemoryBlock> v1, const vector<T,MemoryBlock> v2) \
-    { return boost::numeric::bindings::blas::detail::dot(v1.size(), &v1[0],1,&v2[0],1);}
-    ALPS_IMPLEMENT_FOR_ALL_BLAS_TYPES(SCALAR_PRODUCT)
-#undef SCALAR_PRODUCT
-    
-    
-    template <typename Matrix, typename T, typename MemoryBlock>
-    struct is_matrix_scalar_multiplication<Matrix,vector<T,MemoryBlock> > {
-        static bool const value = false;
-    };
-    
    } //namespace numeric 
 } //namespace alps
-
-
-#ifdef HAVE_ALPS_HDF5
-namespace alps {
-    namespace hdf5 {
-
-        template <typename T, typename MemoryBlock>
-        void save(
-                  alps::hdf5::archive & ar
-                  , std::string const & path
-                  , alps::numeric::vector<T, MemoryBlock> const & value
-                  , std::vector<std::size_t> size = std::vector<std::size_t>()
-                  , std::vector<std::size_t> chunk = std::vector<std::size_t>()
-                  , std::vector<std::size_t> offset = std::vector<std::size_t>()
-                  ) {
-            ar[path] << MemoryBlock(value.begin(), value.end());
-        }
-        template <typename T, typename MemoryBlock>
-        void load(
-                  alps::hdf5::archive & ar
-                  , std::string const & path
-                  , alps::numeric::vector<T, MemoryBlock> & value
-                  , std::vector<std::size_t> chunk = std::vector<std::size_t>()
-                  , std::vector<std::size_t> offset = std::vector<std::size_t>()
-                  ) {
-            MemoryBlock tmp;
-            ar[path] >> tmp;
-            value = alps::numeric::vector<T, MemoryBlock>(tmp.begin(), tmp.end());
-        }
-
-    }
-}
-#endif //HAVE_ALPS_HDF5 
-
 
 #endif //ALPS_VECTOR_HPP

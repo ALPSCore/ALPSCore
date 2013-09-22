@@ -4,7 +4,7 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2010 - 2012 by Andreas Hehn <hehn@phys.ethz.ch>                   *
+ * Copyright (C) 2013 by Andreas Hehn <hehn@phys.ethz.ch>                          *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -24,34 +24,32 @@
  * DEALINGS IN THE SOFTWARE.                                                       *
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+#ifndef ALPS_NUMERIC_MATRIX_OPERATORS_MULTIPLY_MATRIX_HPP
+#define ALPS_NUMERIC_MATRIX_OPERATORS_MULTIPLY_MATRIX_HPP
 
-
-#ifndef ALPS_MATRIX_TRAITS_HPP
-#define ALPS_MATRIX_TRAITS_HPP
+#include <alps/numeric/matrix/gemm.hpp>
+#include <alps/numeric/matrix/gemv.hpp>
 
 namespace alps {
 namespace numeric {
 
-    template <typename Matrix>
-    struct associated_diagonal_matrix
-    {
-    };
+template <typename Matrix1, typename Matrix2>
+typename multiply_return_type_helper<Matrix1,Matrix2>::type multiply(Matrix1 const& m1, Matrix2 const& m2, tag::matrix, tag::matrix)
+{
+    typename multiply_return_type_helper<Matrix1,Matrix2>::type r(num_rows(m1),num_cols(m2));
+    gemm(m1,m2,r);
+    return r;
+}
 
-    template <typename Matrix>
-    struct associated_real_diagonal_matrix
-    {
-    };
-
-    template <typename Matrix>
-    struct associated_vector
-    {
-    };
-
-    template <typename Matrix>
-    struct associated_real_vector
-    {
-    };
+template <typename Matrix, typename Vector>
+typename multiply_return_type_helper<Matrix,Vector>::type multiply(Matrix const& m, Vector const& v, tag::matrix, tag::vector)
+{
+    typename multiply_return_type_helper<Matrix,Vector>::type r(num_rows(m));
+    gemv(m,v,r);
+    return r;
+}
 
 } // end namespace numeric
 } // end namespace alps
-#endif //ALPS_MATRIX_TRAITS_HPP
+
+#endif // ALPS_NUMERIC_MATRIX_OPERATORS_MULTIPLY_MATRIX_HPP

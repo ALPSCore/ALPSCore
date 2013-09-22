@@ -4,7 +4,7 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2010 - 2012 by Andreas Hehn <hehn@phys.ethz.ch>                   *
+ * Copyright (C) 2010 - 2013 by Andreas Hehn <hehn@phys.ethz.ch>                   *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -24,34 +24,38 @@
  * DEALINGS IN THE SOFTWARE.                                                       *
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+#ifndef ALPS_NUMERIC_MATRIX_DETAIL_PRINT_MATRIX_HPP
+#define ALPS_NUMERIC_MATRIX_DETAIL_PRINT_MATRIX_HPP
 
+#include <ostream>
 
-#ifndef ALPS_MATRIX_TRAITS_HPP
-#define ALPS_MATRIX_TRAITS_HPP
 
 namespace alps {
 namespace numeric {
+namespace detail {
 
-    template <typename Matrix>
-    struct associated_diagonal_matrix
+template <typename Matrix>
+void print_matrix(std::ostream& os, Matrix const& m)
+{
+    os << "[";
+    for(typename Matrix::size_type i=0; i < num_rows(m); ++i)
     {
-    };
+        os << "[ ";
+        if(num_cols(m) > 0)
+        {
+            for(typename Matrix::size_type j=0; j < num_cols(m)-1; ++j)
+                os << m(i,j) << ", ";
+            os << m(i,num_cols(m)-1);
+        }
+        os << "]";
+        if(i+1 < num_rows(m))
+            os << "," << std::endl;
+    }
+    os << "]" << std::endl;
+}
 
-    template <typename Matrix>
-    struct associated_real_diagonal_matrix
-    {
-    };
-
-    template <typename Matrix>
-    struct associated_vector
-    {
-    };
-
-    template <typename Matrix>
-    struct associated_real_vector
-    {
-    };
-
+} // end namespace detail
 } // end namespace numeric
 } // end namespace alps
-#endif //ALPS_MATRIX_TRAITS_HPP
+
+#endif // ALPS_NUMERIC_MATRIX_DETAIL_PRINT_MATRIX_HPP

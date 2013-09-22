@@ -4,7 +4,7 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2010 - 2012 by Andreas Hehn <hehn@phys.ethz.ch>                   *
+ * Copyright (C) 2010 - 2013 by Andreas Hehn <hehn@phys.ethz.ch>                   *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -24,34 +24,55 @@
  * DEALINGS IN THE SOFTWARE.                                                       *
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+#ifndef ALPS_NUMERIC_MATRIX_GEMM_HPP
+#define ALPS_NUMERIC_MATRIX_GEMM_HPP
+#include <boost/numeric/bindings/blas/level3/gemm.hpp>
+#include <alps/numeric/matrix/detail/debug_output.hpp>
+#include <alps/numeric/matrix/is_blas_dispatchable.hpp>
+#include <cassert>
 
-
-#ifndef ALPS_MATRIX_TRAITS_HPP
-#define ALPS_MATRIX_TRAITS_HPP
 
 namespace alps {
 namespace numeric {
+    //
+    // Default matrix matrix multiplication implementations
+    // May be overlaoded for special Matrix types
+    //
 
-    template <typename Matrix>
-    struct associated_diagonal_matrix
+    template<typename MatrixA, typename MatrixB, typename MatrixC>
+    void gemm(MatrixA const& a, MatrixB const& b, MatrixC& c, boost::mpl::false_)
     {
-    };
+        assert( num_cols(a) == num_rows(b) );
+        assert( num_rows(c) == num_rows(a) );
+        assert( num_cols(c) == num_cols(b) );
+        // Simple matrix matrix multiplication
+        for(std::size_t j=0; j < num_cols(b); ++j)
+            for(std::size_t k=0; k < num_cols(a); ++k)
+                for(std::size_t i=0; i < num_rows(a); ++i)
+                    c(i,j) += a(i,k) * b(k,j);
+    }
 
-    template <typename Matrix>
-    struct associated_real_diagonal_matrix
-    {
-    };
 
-    template <typename Matrix>
-    struct associated_vector
+    template<typename MatrixA, typename MatrixB, typename MatrixC>
+    void gemm(MatrixA const& a, MatrixB const& b, MatrixC& c, boost::mpl::true_)
     {
-    };
+        ALPS_NUMERIC_MATRIX_DEBUG_OUTPUT( "using blas gemm for " << typeid(a).name() << " " << typeid(b).name() << " -> " << typeid(c).name() );
+        typedef typename MatrixA::value_type value_type;
+        boost::numeric::bindings::blas::gemm(value_type(1),a,b,value_type(0),c);
+    }
 
-    template <typename Matrix>
-    struct associated_real_vector
+    // The classic gemm - as known from Fortran - writing the result to argument c
+    template<typename MatrixA, typename MatrixB, typename MatrixC>
+    void gemm(MatrixA const & a, MatrixB const & b, MatrixC & c)
     {
-    };
+        assert( num_cols(a) == num_rows(b) );
+        assert( num_rows(c) == num_rows(a) );
+        assert( num_cols(c) == num_cols(b) );
+        // TODO this check should also involve MatrixC
+        gemm(a,b,c,is_blas_dispatchable<MatrixA,MatrixB>());
+    }
 
 } // end namespace numeric
 } // end namespace alps
-#endif //ALPS_MATRIX_TRAITS_HPP
+
+#endif // ALPS_NUMERIC_MATRIX_GEMM_HPP

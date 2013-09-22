@@ -4,7 +4,7 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2010 - 2012 by Andreas Hehn <hehn@phys.ethz.ch>                   *
+ * Copyright (C) 2013 by Andreas Hehn <hehn@phys.ethz.ch>                          *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -24,34 +24,31 @@
  * DEALINGS IN THE SOFTWARE.                                                       *
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-
-#ifndef ALPS_MATRIX_TRAITS_HPP
-#define ALPS_MATRIX_TRAITS_HPP
+#ifndef ALPS_NUMERIC_MATRIX_ENTITY_HPP
+#define ALPS_NUMERIC_MATRIX_ENTITY_HPP
 
 namespace alps {
 namespace numeric {
 
-    template <typename Matrix>
-    struct associated_diagonal_matrix
-    {
-    };
+namespace tag {
+    struct scalar {};
+    struct vector {};
+    struct matrix {};
+}
 
-    template <typename Matrix>
-    struct associated_real_diagonal_matrix
-    {
-    };
 
-    template <typename Matrix>
-    struct associated_vector
-    {
-    };
+template <typename T>
+struct entity
+{
+    typedef tag::scalar type;
+};
 
-    template <typename Matrix>
-    struct associated_real_vector
-    {
-    };
+template <typename T>
+struct get_entity : entity<typename boost::remove_const<T>::type>
+{
+};
 
 } // end namespace numeric
 } // end namespace alps
-#endif //ALPS_MATRIX_TRAITS_HPP
+
+#endif // ALPS_NUMERIC_MATRIX_ENTITY_HPP

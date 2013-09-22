@@ -28,9 +28,17 @@
 #ifndef ALPS_MATRIX_TRANSPOSE_VIEW_HPP
 #define ALPS_MATRIX_TRANSPOSE_VIEW_HPP
 
+#include <alps/numeric/matrix/entity.hpp>
 #include <boost/type_traits/add_const.hpp>
 #include <boost/type_traits/remove_const.hpp>
 #include <alps/numeric/matrix/detail/transpose_view_adaptor.hpp>
+#include <alps/numeric/matrix/detail/print_matrix.hpp>
+#include <alps/numeric/matrix/operators/multiply.hpp>
+#include <alps/numeric/matrix/operators/multiply_matrix.hpp>
+#include <alps/numeric/matrix/operators/multiply_scalar.hpp>
+#include <alps/numeric/matrix/operators/op_assign.hpp>
+#include <alps/numeric/matrix/operators/op_assign_matrix.hpp>
+#include <alps/numeric/matrix/operators/plus_minus.hpp>
 
 namespace alps {
 namespace numeric {
@@ -137,19 +145,11 @@ class transpose_view {
     Matrix const& m_;
 };
 
-
-template <typename Matrix1, typename Matrix2>
-typename matrix_matrix_multiply_return_type<Matrix1, transpose_view<Matrix2> >::type operator * (Matrix1 const& m1, transpose_view<Matrix2> const& m2) {
-    return matrix_matrix_multiply(m1,m2);
-}
-template <typename Matrix1, typename Matrix2>
-typename matrix_matrix_multiply_return_type<transpose_view<Matrix1>, Matrix2 >::type operator * (transpose_view<Matrix1> const& m1, Matrix2 const& m2) {
-    return matrix_matrix_multiply(m1,m2);
-}
-
-template <typename Matrix1, typename Matrix2>
-typename matrix_matrix_multiply_return_type<transpose_view<Matrix1>, transpose_view<Matrix2> >::type operator * (transpose_view<Matrix1> const& m1, transpose_view<Matrix2> const& m2) {
-    return matrix_matrix_multiply(m1,m2);
+template <typename Matrix>
+std::ostream& operator << (std::ostream& os, transpose_view<Matrix> const& m)
+{
+    detail::print_matrix(os,m);
+    return os;
 }
 
 //
@@ -162,35 +162,48 @@ ALPS_IMPLEMENT_MATRIX_INTERFACE(transpose_view<Matrix>,<typename Matrix>)
 // Specializations
 //
 
-template <typename Matrix1, typename Matrix2>
-struct matrix_matrix_multiply_return_type<Matrix1, transpose_view<Matrix2> >
-{
-    typedef typename matrix_matrix_multiply_return_type<
-          typename boost::remove_const<Matrix1>::type
-        , typename boost::remove_const<Matrix2>::type
-    >::type type;
-};
-
-template <typename Matrix1, typename Matrix2>
-struct matrix_matrix_multiply_return_type<transpose_view<Matrix1>, Matrix2>
-{
-    typedef typename matrix_matrix_multiply_return_type<
-          typename boost::remove_const<Matrix1>::type
-        , typename boost::remove_const<Matrix2>::type
-    >::type type;
-};
-
 template <typename Matrix>
-struct matrix_matrix_multiply_return_type<transpose_view<Matrix>, transpose_view<Matrix> >
+struct entity<transpose_view<Matrix> >
 {
-    typedef typename boost::remove_const<Matrix>::type type;
+    typedef tag::matrix type;
 };
 
 template <typename Matrix1, typename Matrix2>
-struct is_matrix_scalar_multiplication<Matrix1,transpose_view<Matrix2> >
+struct multiply_return_type<Matrix1,transpose_view<Matrix2>,tag::matrix,tag::matrix>
+: multiply_return_type<Matrix1,Matrix2,tag::matrix,tag::matrix>
 {
-    static bool const value = false;
 };
+
+template <typename Matrix1, typename Matrix2>
+struct multiply_return_type<transpose_view<Matrix1>,Matrix2,tag::matrix,tag::matrix>
+: multiply_return_type<Matrix1,Matrix2,tag::matrix,tag::matrix>
+{
+};
+
+template <typename Matrix1, typename Matrix2>
+struct multiply_return_type<transpose_view<Matrix1>,transpose_view<Matrix2>,tag::matrix,tag::matrix>
+: multiply_return_type<Matrix1,Matrix2,tag::matrix,tag::matrix>
+{
+};
+
+template <typename Matrix1, typename Matrix2>
+struct plus_minus_return_type<transpose_view<Matrix1>, Matrix2, tag::matrix, tag::matrix>
+: plus_minus_return_type<Matrix1,Matrix2,tag::matrix,tag::matrix>
+{
+};
+
+template <typename Matrix1, typename Matrix2>
+struct plus_minus_return_type<Matrix1, transpose_view<Matrix2>, tag::matrix, tag::matrix>
+: plus_minus_return_type<Matrix1,Matrix2,tag::matrix,tag::matrix>
+{
+};
+
+template <typename Matrix1, typename Matrix2>
+struct plus_minus_return_type<transpose_view<Matrix1>, transpose_view<Matrix2>, tag::matrix, tag::matrix>
+: plus_minus_return_type<Matrix1,Matrix2,tag::matrix,tag::matrix>
+{
+};
+
 
 template <typename Matrix>
 Matrix conj(transpose_view<Matrix> const& t)

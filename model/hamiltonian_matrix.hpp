@@ -40,15 +40,43 @@
 #include <alps/type_traits/is_symbolic.hpp>
 #include <alps/multi_array.hpp>
 
-#include <boost/numeric/ublas/vector.hpp>
-#include <boost/numeric/ublas/matrix.hpp>
-#include <boost/numeric/ublas/matrix_sparse.hpp>
-#include <boost/numeric/ublas/vector.hpp>
-
 #include <cmath>
 #include <cstddef>
 
 namespace alps {
+
+namespace numeric {
+    template <typename T, typename MemoryBlock>
+    class matrix;
+} // end namespace numeric
+
+namespace detail {
+
+    // The alps::numeric::matrix and ublas matrices behave differently on construction.
+    // - ublas matrices are uninitalized -> call clear() afterwards
+    // - alps::numeric::matrix is initialized after construction
+    template <typename Matrix>
+    Matrix initialized_matrix(Matrix const&, std::size_t const rows, std::size_t const cols)
+    {
+        Matrix m(rows,cols);
+        m.clear();
+
+        // Boost bug workaround
+        // force at least one entry per row for sparse ublas matrices
+        assert(rows == cols);
+        for (std::size_t i=0;i<rows;++i) {
+          m(i,i) +=1.;
+          m(i,i) -=1.;
+        }
+        return m;
+    }
+
+    template <typename T, typename MemoryBlock>
+    alps::numeric::matrix<T,MemoryBlock> initialized_matrix(alps::numeric::matrix<T,MemoryBlock> const&, std::size_t const rows, std::size_t const cols)
+    {
+        return alps::numeric::matrix<T,MemoryBlock>(rows,cols);
+    }
+} // end namespace detail
 
 template <class M, class G = typename graph_helper<>::graph_type>
 class hamiltonian_matrix
@@ -128,12 +156,7 @@ public:
   template <class MM, class OP> 
   MM operator_matrix(const OP& op) const 
   {
-    MM m(dimension(),dimension());
-    m.clear();
-    for (unsigned i=0;i<dimension();++i) {
-      m(i,i) +=1.;
-      m(i,i) -=1.;
-    } // Boost bug workaround
+    MM m(detail::initialized_matrix(MM(),dimension(),dimension()));
     add_operator_matrix(m,op);
     return m;
   }
@@ -150,12 +173,7 @@ public:
   template <class MM, class OP, class D> 
   MM operator_matrix(const OP& op, D d) const 
   {
-    MM m(dimension(),dimension());
-    m.clear();
-    for (unsigned i=0;i<dimension();++i) {
-      m(i,i) +=1.;
-      m(i,i) -=1.;
-    } // Boost bug workaround
+    MM m(detail::initialized_matrix(MM(),dimension(),dimension()));
     add_operator_matrix(m,op,d);
     return m;
   }
@@ -170,12 +188,7 @@ public:
   template <class MM, class OP> 
   MM operator_matrix(const OP& op, site_descriptor s1, site_descriptor s2) const 
   {
-    MM m(dimension(),dimension());
-    m.clear();
-    for (unsigned i=0;i<dimension();++i) {
-      m(i,i) +=1.;
-      m(i,i) -=1.;
-    } // Boost bug workaround
+    MM m(detail::initialized_matrix(MM(),dimension(),dimension()));
     add_operator_matrix(m,op,s1,s2);
     return m;
   }
@@ -427,16 +440,10 @@ void hamiltonian_matrix<M,G>::build() const
   if (!built_basis_)
     build_basis();
   Disorder::seed(parms.value_or_default("DISORDER_SEED",0));
-  matrix_ = matrix_type(dimension(),dimension());
-  matrix_.clear();
+  matrix_ = detail::initialized_matrix(matrix_type(),dimension(),dimension());
   built_matrix_ = true;
   add_operator_matrix(matrix_,model_.model());
-  // counter ublas bug
-  for (unsigned i=0;i<dimension();++i)
-    matrix_(i,i) += 1.;
-  for (unsigned i=0;i<dimension();++i)
-    matrix_(i,i) -= 1.;
-    
+
   //std::cerr << "Time to build matrix: " << t.elapsed() << "\n";
 /*
   if (this->parms.value_or_default("CHECK_SYMMETRY",false)) {

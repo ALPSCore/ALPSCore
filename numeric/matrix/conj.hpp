@@ -32,31 +32,46 @@
 
 namespace alps {
 namespace numeric {
+
 /**
   * Does an conj_inplace on all elements of the matrix
   */
-template <typename T, typename MemoryBlock>
-void conj_inplace(matrix<T,MemoryBlock>& m)
+template <typename Matrix>
+void conj_inplace(Matrix& m, tag::matrix)
 {
     // TODO discuss conj() for matrix may be misleading:
     //      elementwise conj() <-> adjoint()
     //
-    using std::for_each;
-    typedef typename matrix<T,MemoryBlock>::col_element_iterator col_element_iterator;
-    for(typename matrix<T,MemoryBlock>::size_type j=0; j < m.num_cols(); ++j)
-       for(std::pair<col_element_iterator,col_element_iterator> range = m.col(j); range.first != range.second; ++range.first)
+    typedef typename Matrix::col_element_iterator col_element_iterator;
+    for(typename Matrix::size_type j=0; j < num_cols(m); ++j)
+       for(std::pair<col_element_iterator,col_element_iterator> range = col(m,j); range.first != range.second; ++range.first)
            conj_inplace(*range.first);
 }
 
+template <typename Vector>
+void conj_inplace(Vector& t, tag::vector)
+{
+    typename Vector::iterator const end = t.end();
+    for(typename Vector::iterator it=t.begin(); it != end; ++it)
+        conj_inplace(*it);
+}
+
 /**
-  * Returns a matrix containing a the complex conjugates of the original matrix.
+  * Returns a matrix or a vector of type T containing a the complex conjugates of the original object.
   * It does an element-wise conjugation.
   */
-template <typename T, typename MemoryBlock>
-matrix<T,MemoryBlock> conj(matrix<T,MemoryBlock> m)
+template <typename T>
+typename boost::enable_if<
+      boost::mpl::or_<
+            boost::is_same<typename get_entity<T>::type, tag::vector>
+          , boost::is_same<typename get_entity<T>::type, tag::matrix>
+       >
+    , T
+>::type conj(T const& t)
 {
-    conj_inplace(m);
-    return m;
+    T r(t);
+    conj_inplace(r);
+    return r;
 }
 
 } // end namespace numeric
