@@ -46,7 +46,7 @@ namespace numeric {
     } // end namespace detail
 
     namespace impl {
-#if defined(__clang_major__) && __clang_major__ < 3 || (__clang_major__ == 3 && __clang_minor__ == 0)
+#if defined(__clang_major__) && __clang_major__ < 3 || (__clang_major__ == 3 && __clang_minor__ == 0) || defined(BOOST_MSVC)
 // Workaround for a compiler bug in clang 3.0 (and maybe earlier versions)
     template <typename Vector1, typename Vector2>
     void plus_assign_impl(Vector1& lhs, Vector2 const& rhs, tag::vector, tag::vector, boost::mpl::false_)

@@ -52,13 +52,15 @@ struct value_type_scalar_product_return_type
 template <typename T1, typename T2>
 struct scalar_product_return_type
 {
-    typedef typename boost::enable_if<
-          boost::mpl::and_<
+    typedef /*typename  boost::enable_if<
+          typename boost::mpl::and_<
                 boost::is_same<typename get_entity<T1>::type, tag::vector>
               , boost::is_same<typename get_entity<T2>::type, tag::vector>
-          >
-        , typename value_type_scalar_product_return_type<T1,T2>::type
-    >::type type;
+          >::type
+        , */
+	typename value_type_scalar_product_return_type<T1,T2>::type
+    //>::type 
+	type;
 };
 
 
