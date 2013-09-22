@@ -109,9 +109,8 @@ T fill_range_with_numbers(OutputIterator begin, OutputIterator end, T iota)
 }
 
 template <typename T>
-T fill_matrix_with_numbers(alps::numeric::matrix<T>& a)
+T fill_matrix_with_numbers(alps::numeric::matrix<T>& a, T iota = T(0))
 {
-    T iota(0);
     for(unsigned int i=0; i<num_rows(a); ++i)
     {
         std::pair<typename alps::numeric::matrix<T>::row_element_iterator, typename alps::numeric::matrix<T>::row_element_iterator> range(row(a,i));
