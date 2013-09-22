@@ -392,6 +392,10 @@
     <PARAMETER name="t'" default="0"/>
     <PARAMETER name="V" default="0"/>
     <PARAMETER name="V'" default="0"/>
+    <PARAMETER name="t0" default="t"/>
+    <PARAMETER name="t1" default="t'"/>
+    <PARAMETER name="V0" default="V"/>
+    <PARAMETER name="V1" default="V'"/>
     <BASIS ref="boson"/>
     <SITETERM site="i">
       <PARAMETER name="mu#" default="mu"/>
@@ -399,8 +403,8 @@
       -mu#*n(i)+U#*n(i)*(n(i)-1)/2
     </SITETERM>
     <BONDTERM source="i" target="j">
-      <PARAMETER name="t#" default="t"/>
-      <PARAMETER name="V#" default="V"/>
+      <PARAMETER name="t#" default="0"/>
+      <PARAMETER name="V#" default="0"/>
       -t#*(bdag(i)*b(j)+bdag(j)*b(i)) + V#*n(i)*n(j)
     </BONDTERM>
   </HAMILTONIAN>
