@@ -138,7 +138,9 @@ namespace numeric {
     template <typename MemoryBlock>
     inline vector<double,MemoryBlock> exp(double c, vector<double,MemoryBlock> v)
     {
-        fortran_int_t s=v.size();
+// TODO: remove this crap
+//         fortran_int_t s=v.size();
+        int s=v.size();
         vector<double,MemoryBlock> result(s);
         v*=c;
 #ifdef VECLIB
