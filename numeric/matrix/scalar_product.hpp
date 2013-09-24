@@ -35,7 +35,10 @@
 #include <alps/functional.h>
 #include <boost/utility/enable_if.hpp>
 #include <boost/mpl/and.hpp>
-#include <boost/numeric/bindings/blas/level1/dot.hpp>
+//
+// FIXME: not needed right now, since blas is dispatch is deactivated (see below) 
+//#include <boost/numeric/bindings/blas/level1/dot.hpp>
+//
 #include <functional>
 #include <numeric>
 
@@ -73,19 +76,21 @@ typename scalar_product_return_type<T1,T2>::type scalar_product_impl(T1 const& t
 }
 #endif // defined(__clang_major__) && __clang_major__ < 3 || (__clang_major__ == 3 && __clang_minor__ == 0)
 
-template <typename T1, typename T2>
-typename scalar_product_return_type<T1,T2>::type scalar_product_impl(T1 const& t1, T2 const& t2, boost::mpl::true_)
-{
-    ALPS_NUMERIC_MATRIX_DEBUG_OUTPUT( "using blas dot for " << typeid(t1).name() << " " << typeid(t2).name() );
-    return boost::numeric::bindings::blas::dot(t1,t2);
-}
+// FIXME: the dispatch to BLAS has been deactivated for now,
+// due to a problem with the ABI for VecLib and MKL (mostly on OSX).
+//
+//template <typename T1, typename T2>
+//typename scalar_product_return_type<T1,T2>::type scalar_product_impl(T1 const& t1, T2 const& t2, boost::mpl::true_)
+//{
+//    ALPS_NUMERIC_MATRIX_DEBUG_OUTPUT( "using blas dot for " << typeid(t1).name() << " " << typeid(t2).name() );
+//    return boost::numeric::bindings::blas::dot(t1,t2);
+//}
 
 template <typename T1, typename T2>
 typename scalar_product_return_type<T1,T2>::type scalar_product(T1 const& t1, T2 const& t2)
 {
     assert(t1.size() == t2.size());
-// FIXME: the dispatch to BLAS has been deactivated for now,
-// due to a problem with the ABI for VecLib and MKL (mostly on OSX).
+// FIXME: blas deactivated for now
 //    return scalar_product_impl(t1,t2,is_blas_dispatchable<T1,T2>());
     return scalar_product_impl(t1,t2,boost::mpl::false_());
 }
