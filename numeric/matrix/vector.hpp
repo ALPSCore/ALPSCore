@@ -41,6 +41,8 @@
 #include <algorithm>
 #include <cassert>
 #include <alps/numeric/matrix/detail/print_vector.hpp>
+#include <alps/numeric/scalar_product.hpp>
+
 
 #include <alps/numeric/matrix/entity.hpp>
 #include <alps/numeric/matrix/operators/op_assign.hpp>

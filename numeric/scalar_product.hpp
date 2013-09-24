@@ -4,9 +4,8 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1999-2013 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
-*                            Synge Todo <wistaria@comp-phys.org>,
-*                            Andreas Hehn <hehn@itp.phys.ethz.ch>
+* Copyright (C) 1999-2010 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+*                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -29,37 +28,34 @@
 
 /* $Id$ */
 
-#ifndef ALPS_NUMERIC_VALARRAY_SCALAR_PRODUCT_HPP
-#define ALPS_NUMERIC_VALARRAY_SCALAR_PRODUCT_HPP
+#ifndef ALPS_NUMERIC_SCALAR_PRODUCT_HPP
+#define ALPS_NUMERIC_SCALAR_PRODUCT_HPP
 
 #include <alps/functional.h>
+#include <alps/type_traits/element_type.hpp>
+
+#include <algorithm>
 #include <functional>
 #include <numeric>
-
-// Some fwd declaration
-namespace std {
-    template <class T>
-    class valarray;
-}
+#include <valarray>
 
 namespace alps { namespace numeric {
 
-/// \overload for valarrays
-#if defined(__clang_major__) && __clang_major__ < 3 || (__clang_major__ == 3 && __clang_minor__ == 0) || defined(BOOST_MSVC)
-// Workaround for a compiler bug in clang 3.0 (and maybe earlier versions)
+/// calculates the scalar product of two vectors
+template <class C>
+inline typename element_type<C>::type scalar_product(const C& c1, const C& c2) 
+{
+  return std::inner_product(c1.begin(),c1.end(),c2.begin(),typename C::value_type(),
+                              std::plus<typename C::value_type>(),conj_mult<typename C::value_type, typename C::value_type>());
+}
+
+/// \overload
 template <class T>
 inline T scalar_product(const std::valarray<T>& c1, const std::valarray<T>& c2) 
 {
   return std::inner_product(data(c1),data(c1)+c1.size(),data(c2),T(), std::plus<T>(),conj_mult<T,T>());
 }
-#else // defined(__clang_major__) && __clang_major__ < 3 || (__clang_major__ == 3 && __clang_minor__ == 0)
-template <class T>
-inline T scalar_product(const std::valarray<T>& c1, const std::valarray<T>& c2) 
-{
-  return std::inner_product(data(c1),data(c1)+c1.size(),data(c2),T(), std::plus<T>(),conj_mult<T,T>());
-}
-#endif // defined(__clang_major__) && __clang_major__ < 3 || (__clang_major__ == 3 && __clang_minor__ == 0)
 
 } } // namespace alps::numeric
 
-#endif // ALPS_NUMERIC_VALARRAY_SCALAR_PRODUCT_HPP
+#endif // ALPS_NUMERIC_SCALAR_PRODUCT_HPP

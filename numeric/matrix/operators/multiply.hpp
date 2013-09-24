@@ -29,7 +29,6 @@
 
 #include <alps/numeric/matrix/entity.hpp>
 #include <alps/numeric/matrix/exchange_value_type.hpp>
-#include <alps/numeric/matrix/detail/auto_deduce_multiply_return_type.hpp>
 #include <boost/type_traits/remove_const.hpp>
 
 namespace alps {

@@ -38,7 +38,7 @@
 
 #include <alps/utility/vectorio.hpp>
 #include <alps/numeric/vector_functions.hpp>
-#include <alps/numeric/matrix/scalar_product.hpp>
+#include <alps/numeric/scalar_product.hpp>
 
 #include <boost/utility.hpp>
 
