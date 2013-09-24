@@ -31,6 +31,7 @@
 #ifndef ALPS_NUMERIC_SCALAR_PRODUCT_HPP
 #define ALPS_NUMERIC_SCALAR_PRODUCT_HPP
 
+#include <alps/numeric/matrix/scalar_product.hpp>
 #include <alps/functional.h>
 #include <alps/type_traits/element_type.hpp>
 
@@ -41,13 +42,7 @@
 
 namespace alps { namespace numeric {
 
-/// calculates the scalar product of two vectors
-template <class C>
-inline typename element_type<C>::type scalar_product(const C& c1, const C& c2) 
-{
-  return std::inner_product(c1.begin(),c1.end(),c2.begin(),typename C::value_type(),
-                              std::plus<typename C::value_type>(),conj_mult<typename C::value_type, typename C::value_type>());
-}
+// The generic implementation of the scalar_product moved to alps/numeric/matrix/scalar_product.hpp
 
 /// \overload
 template <class T>
