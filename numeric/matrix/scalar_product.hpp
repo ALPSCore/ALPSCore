@@ -70,7 +70,10 @@ template <typename T1, typename T2>
 typename scalar_product_return_type<T1,T2>::type scalar_product(T1 const& t1, T2 const& t2)
 {
     assert(t1.size() == t2.size());
-    return scalar_product_impl(t1,t2,is_blas_dispatchable<T1,T2>());
+// FIXME: the dispatch to BLAS has been deactivated for now,
+// due to a problem with the ABI for VecLib and MKL (mostly on OSX).
+//    return scalar_product_impl(t1,t2,is_blas_dispatchable<T1,T2>());
+    return scalar_product_impl(t1,t2,boost::mpl::false_);
 }
 
 } // end namespace numeric
