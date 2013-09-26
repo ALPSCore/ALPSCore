@@ -570,22 +570,6 @@ namespace alps {
             return type == H5S_SCALAR;
         }
 
-        bool archive::is_string(std::string path) const {
-            hid_t type_id;
-            if (context_ == NULL)
-                throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
-            if ((path = complete_path(path)).find_last_of('@') != std::string::npos) {
-                detail::attribute_type attr_id(detail::open_attribute(*this, context_->file_id_, path));
-                type_id = H5Aget_type(attr_id);
-            } else {
-                detail::data_type data_id(H5Dopen2(context_->file_id_, path.c_str(), H5P_DEFAULT));
-                type_id = H5Dget_type(data_id);
-            }
-            detail::type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND));
-            detail::check_type(type_id);
-            return H5Tget_class(native_id) == H5T_STRING;
-        }
-    
         bool archive::is_null(std::string path) const {
             hid_t space_id;
             if (context_ == NULL)
@@ -1295,6 +1279,21 @@ namespace alps {
         ALPS_NGS_FOREACH_NATIVE_HDF5_TYPE(ALPS_NGS_HDF5_IMPLEMENT_FREE_FUNCTIONS)
         #undef ALPS_NGS_HDF5_IMPLEMENT_FREE_FUNCTIONS
 
+        namespace detail {
+            template<typename T> struct is_datatype_impl_compare {
+                static bool apply(type_type const & native_id) {
+                    return check_error(
+                        H5Tequal(type_type(H5Tcopy(native_id)), type_type(get_native_type(typename alps::detail::type_wrapper<T>::type())))
+                    ) > 0;
+                }
+            };
+            template<> struct is_datatype_impl_compare<std::string> {
+                static bool apply(type_type const & native_id) {
+                    return H5Tget_class(native_id) == H5T_STRING;
+                }
+            };
+        }
+
         #define ALPS_NGS_HDF5_IS_DATATYPE_IMPL_IMPL(T)                                                                                                                  \
             bool archive::is_datatype_impl(std::string path, T) const {                                                                                                 \
                 hid_t type_id;                                                                                                                                          \
@@ -1311,9 +1310,7 @@ namespace alps {
                     throw path_not_found("no valid path: " + path + ALPS_STACKTRACE);                                                                                   \
                 detail::type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND));                                                                               \
                 detail::check_type(type_id);                                                                                                                            \
-                return detail::check_error(                                                                                                                             \
-                    H5Tequal(detail::type_type(H5Tcopy(native_id)), detail::type_type(detail::get_native_type(alps::detail::type_wrapper< T >::type())))                \
-                ) > 0;                                                                                                                                                  \
+                return detail::is_datatype_impl_compare< T >::apply(native_id);                                                                                         \
             }
         ALPS_NGS_FOREACH_NATIVE_HDF5_TYPE(ALPS_NGS_HDF5_IS_DATATYPE_IMPL_IMPL)
         #undef ALPS_NGS_HDF5_IS_DATATYPE_IMPL_IMPL

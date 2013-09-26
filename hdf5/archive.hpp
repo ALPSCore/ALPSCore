@@ -141,7 +141,6 @@ namespace alps {
                 bool is_group(std::string path) const;
 
                 bool is_scalar(std::string path) const;
-                bool is_string(std::string path) const;
                 bool is_null(std::string path) const;
                 bool is_complex(std::string path) const;
 
