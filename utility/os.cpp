@@ -135,10 +135,18 @@ boost::filesystem::path temp_directory_path()
 #   endif
 }
 
+#ifdef ALPS_PREFIX
 boost::filesystem::path installation_directory()
 {
   return boost::filesystem::path(ALPS_PREFIX);
 }
+#else
+boost::filesystem::path installation_directory()
+{
+  return boost::filesystem::path("");
+}
+
+#endif
 
 boost::filesystem::path bin_directory()
 {
