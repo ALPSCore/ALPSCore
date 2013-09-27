@@ -30,12 +30,12 @@
 #define ALPS_NGS_MADE_DEPRECATED_PARAMETERS_HPP
 
 #include <alps/ngs/params.hpp>
-
+#include <alps/config.h>
 #include <alps/parameter.h>
 
 namespace alps {
 
-    Parameters make_deprecated_parameters(params const & arg);
+    ALPS_DECL Parameters make_deprecated_parameters(params const & arg);
 
 }
 
