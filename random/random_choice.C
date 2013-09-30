@@ -29,14 +29,17 @@
 #include <cmath>
 #include <vector>
 
+#define BOOST_TEST_MODULE random_choice
+#ifndef BOOST_TEST_DYN_LINK
+#include <boost/test/included/unit_test.hpp>
+#else
+#include <boost/test/unit_test.hpp>
+#endif
+
 static const unsigned int n = 9;
 static const unsigned int samples = 100000;
 
-int main() {
-
-#ifndef BOOST_NO_EXCEPTIONS
-try {
-#endif
+BOOST_AUTO_TEST_CASE(random_choice) {
   std::cout << "number of bins = " << n << std::endl;
   std::cout << "number of samples = " << samples << std::endl;
 
@@ -55,16 +58,8 @@ try {
 
   // double-base version
   {
-    // random_choice
     alps::random_choice<generator_type> dist(weights);
-
-    // check
-    if (dist.check(weights)) {
-      std::cout << "check succeeded\n";
-    } else {
-      std::cout << "check failed\n";
-      std::exit(-1);
-    }
+    BOOST_CHECK(dist.check(weights));
 
     std::vector<double> accum(n, 0);
     for (unsigned int t = 0; t < samples; ++t) ++accum[dist(rng)];
@@ -76,21 +71,14 @@ try {
       std::cout << i << "\t" << (weights[i] / tw) << "    \t"
                 << (accum[i] / samples) << "    \t" << diff << "    \t"
                 << sigma << "    \t" << (diff / sigma) << std::endl;
+      BOOST_CHECK(diff < 3 * sigma);
     }
   }
 
   // integer-base version
   {
-    // random_choice
     alps::random_choice<engine_type> dist(weights);
-
-    // check
-    if (dist.check(weights)) {
-      std::cout << "check succeeded\n";
-    } else {
-      std::cout << "check failed\n";
-      std::exit(-1);
-    }
+    BOOST_CHECK(dist.check(weights));
 
     std::vector<double> accum(n, 0);
     for (unsigned int t = 0; t < samples; ++t) ++accum[dist(eng)];
@@ -102,16 +90,7 @@ try {
       std::cout << i << "\t" << (weights[i] / tw) << "    \t"
                 << (accum[i] / samples) << "    \t" << diff << "    \t"
                 << sigma << "    \t" << (diff / sigma) << std::endl;
+      BOOST_CHECK(diff < 3 * sigma);
     }
   }
-
-#ifndef BOOST_NO_EXCEPTIONS
-}
-catch (const std::exception& excp) {
-  std::cerr << excp.what() << std::endl;
-  std::exit(-1); }
-catch (...) {
-  std::cerr << "Unknown exception occurred!" << std::endl;
-  std::exit(-1); }
-#endif
 }
