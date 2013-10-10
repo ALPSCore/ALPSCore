@@ -35,7 +35,9 @@
 #include <alps/ngs/detail/type_wrapper.hpp>
 
 #include <boost/mpl/and.hpp>
+#include <boost/thread/mutex.hpp>
 #include <boost/filesystem/path.hpp>
+#include <boost/thread/lock_guard.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/type_traits/is_array.hpp>
@@ -68,7 +70,7 @@ namespace alps {
     namespace hdf5 {
 
         namespace detail {
-            struct mccontext;
+            struct archivecontext;
 
             template<typename A, typename T> struct is_datatype_caller {
                 static bool apply(A const & ar, std::string path) {
@@ -218,9 +220,10 @@ namespace alps {
                 std::string file_key(std::string filename, bool large, bool memory) const;
 
                 std::string current_;
-                detail::mccontext * context_;
+                detail::archivecontext * context_;
 
-                static std::map<std::string, std::pair<detail::mccontext *, std::size_t> > ref_cnt_;
+                static boost::mutex mutex_;
+                static std::map<std::string, std::pair<detail::archivecontext *, std::size_t> > ref_cnt_;
 
         };
 

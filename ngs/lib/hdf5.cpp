@@ -220,9 +220,9 @@ namespace alps {
                 return 0;
             }
 
-            struct ALPS_DECL mccontext : boost::noncopyable {
+            struct ALPS_DECL archivecontext : boost::noncopyable {
 
-                mccontext(std::string const & filename, bool write, bool replace, bool compress, bool large, bool memory)
+                archivecontext(std::string const & filename, bool write, bool replace, bool compress, bool large, bool memory)
                     : compress_(compress)
                     , write_(write || replace)
                     , replace_(!memory && replace)
@@ -233,7 +233,7 @@ namespace alps {
                     construct();
                 }
 
-                ~mccontext() {
+                ~archivecontext() {
                     destruct(true);
                 }
                 
@@ -417,8 +417,10 @@ namespace alps {
             : current_(arg.current_)
             , context_(arg.context_)
         {
-            if (context_ != NULL)
+            if (context_ != NULL) {
+                boost::lock_guard<boost::mutex> guard(mutex_);
                 ++ref_cnt_[file_key(context_->filename_, context_->large_, context_->memory_)].second;
+            }
         }
 
         archive::~archive() {
@@ -432,7 +434,8 @@ namespace alps {
         }
 
         void archive::abort() {
-            for (std::map<std::string, std::pair<detail::mccontext *, std::size_t> >::iterator it = ref_cnt_.begin(); it != ref_cnt_.end(); ++it) {
+            boost::lock_guard<boost::mutex> guard(mutex_);
+            for (std::map<std::string, std::pair<detail::archivecontext *, std::size_t> >::iterator it = ref_cnt_.begin(); it != ref_cnt_.end(); ++it) {
                 bool replace = it->second.first->replace_;
                 std::string filename = it->second.first->filename_;
                 it->second.first->replace_ = false;
@@ -447,6 +450,7 @@ namespace alps {
             if (context_ == NULL)
                 throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
             H5Fflush(context_->file_id_, H5F_SCOPE_GLOBAL);
+            boost::lock_guard<boost::mutex> guard(mutex_);
             if (!--ref_cnt_[file_key(context_->filename_, context_->large_, context_->memory_)].second) {
                 ref_cnt_.erase(file_key(context_->filename_, context_->large_, context_->memory_));
                 delete context_;
@@ -1322,10 +1326,11 @@ namespace alps {
                 detail::check_error(H5Zget_filter_info(H5Z_FILTER_SZIP, &flag));
                 props &= (flag & H5Z_FILTER_CONFIG_ENCODE_ENABLED ? ~0x00 : ~COMPRESS);
             }
+            boost::lock_guard<boost::mutex> guard(mutex_);
             if (ref_cnt_.find(file_key(filename, props & LARGE, props & MEMORY)) == ref_cnt_.end())
                 ref_cnt_.insert(std::make_pair(
                       file_key(filename, props & LARGE, props & MEMORY)
-                    , std::make_pair(context_ = new detail::mccontext(filename, props & WRITE, props & REPLACE, props & COMPRESS, props & LARGE, props & MEMORY), 1)
+                    , std::make_pair(context_ = new detail::archivecontext(filename, props & WRITE, props & REPLACE, props & COMPRESS, props & LARGE, props & MEMORY), 1)
                 ));
             else {
                 context_ = ref_cnt_.find(file_key(filename, props & LARGE, props & MEMORY))->second.first;
@@ -1338,7 +1343,8 @@ namespace alps {
             return (large ? "l" : (memory ? "m" : "_")) + filename;
         }
     
-        std::map<std::string, std::pair<detail::mccontext *, std::size_t> > archive::ref_cnt_;
+        boost::mutex archive::mutex_;
+        std::map<std::string, std::pair<detail::archivecontext *, std::size_t> > archive::ref_cnt_;
     }
 }
 
