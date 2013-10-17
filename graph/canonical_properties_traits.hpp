@@ -25,9 +25,8 @@
  * DEALINGS IN THE SOFTWARE.                                                       *
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-#ifndef ALPS_GRAPH_CANONICAL_PROPERTIES_TRAITS
-#define ALPS_GRAPH_CANONICAL_PROPERTIES_TRAITS
+#ifndef ALPS_GRAPH_CANONICAL_PROPERTIES_TRAITS_HPP
+#define ALPS_GRAPH_CANONICAL_PROPERTIES_TRAITS_HPP
 
 #include <boost/tuple/tuple.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
@@ -113,6 +112,14 @@ namespace detail {
             , graph_label_color_vector<typename has_property<alps::edge_type_t,Graph>::edge_property_type>
         > type;
     };
+
+    template<typename Graph, bool> struct color_partition_helper {
+    };
+
+    template<typename Graph> struct color_partition_helper<Graph, true> {
+        typedef boost::container::flat_map<typename boost::property_map<Graph,alps::edge_type_t>::type::value_type, unsigned int> type;
+    };
+
 } // end namespace detail
 
 // pi = (V1, V2, ..., Vr), Vi = (n1, n2, ..., nk), ni element of G
@@ -131,6 +138,8 @@ template<typename Graph> struct graph_label {
     >::type type;
 };
 
+template<typename Graph> struct color_partition : detail::color_partition_helper<Graph, has_property<alps::edge_type_t,Graph>::edge_property> {
+};
 
 template<typename Graph> struct canonical_properties_type {
     typedef boost::tuple<
@@ -148,4 +157,5 @@ enum { ordering, label, partition };
 
 } // end namespace graph
 } // end namespace alps
-#endif //ALPS_GRAPH_CANONICAL_PROPERTIES_TRAITS
+
+#endif // ALPS_GRAPH_CANONICAL_PROPERTIES_TRAITS_HPP
