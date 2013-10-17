@@ -43,41 +43,50 @@ bool colored_edges_test() {
     typedef boost::property_map<graph_type,alps::edge_type_t>::type edge_color_map_type;
 
     graph_type g(4);
-    edge_color_map_type g_edge_color = get(alps::edge_type_t(),g);
-    edge_descriptor e = add_edge(0, 1, g).first;
-    boost::put(g_edge_color,e,0);
-    e = add_edge(1, 2, g).first;
-    boost::put(g_edge_color,e,0);
-    e = add_edge(2, 3, g).first;
-    boost::put(g_edge_color,e,0);
-    e = add_edge(0, 3, g).first;
-    boost::put(g_edge_color,e,0);
+    {
+        edge_color_map_type edge_color = get(alps::edge_type_t(),g);
+        edge_descriptor e;
+        e = add_edge(0, 1, g).first;
+        edge_color[e] = 0;
+        e = add_edge(1, 2, g).first;
+        edge_color[e] = 0;
+        e = add_edge(2, 3, g).first;
+        edge_color[e] = 0;
+        e = add_edge(0, 3, g).first;
+        edge_color[e] = 0;
+    }
 
     graph_type h(g);
-    edge_color_map_type h_edge_color = get(alps::edge_type_t(),h);
-    e = edge(2,3,h).first;
-    boost::put(h_edge_color,e,1);
+    {
+        edge_descriptor e = edge(2,3,h).first;
+        get(alps::edge_type_t(),h)[e] = 1;
+    }
 
     graph_type i(g);
-    edge_color_map_type i_edge_color = get(alps::edge_type_t(),i);
-    e = edge(2,3,i).first;
-    boost::put(i_edge_color,e,2);
+    {
+        edge_descriptor e = edge(2,3,i).first;
+        get(alps::edge_type_t(),i)[e] = 2;
+    }
 
     graph_type j(h);
-    edge_color_map_type j_edge_color = get(alps::edge_type_t(),j);
-    e = edge(2,3,j).first;
-    boost::put(j_edge_color,e,1);
+    {
+        edge_descriptor e = edge(2,3,j).first;
+        get(alps::edge_type_t(),j)[e] = 1;
+    }
 
     graph_type k(g);
-    edge_color_map_type k_edge_color = get(alps::edge_type_t(),k);
-    e = edge( 0, 1, k).first;
-    boost::put(k_edge_color,e,1);
-    e = edge( 1, 2, k).first;
-    boost::put(k_edge_color,e,1);
-    e = edge( 2, 3, k).first;
-    boost::put(k_edge_color,e,1);
-    e = edge( 0, 3, k).first;
-    boost::put(k_edge_color,e,1);
+    {
+        edge_color_map_type edge_color = get(alps::edge_type_t(),k);
+        edge_descriptor e;
+        e = edge( 0, 1, k).first;
+        edge_color[e] = 1;
+        e = edge( 1, 2, k).first;
+        edge_color[e] = 1;
+        e = edge( 2, 3, k).first;
+        edge_color[e] = 1;
+        e = edge( 0, 3, k).first;
+        edge_color[e] = 1;
+    }
 
     alps::graph::graph_label<graph_type>::type label_g(get<1>(canonical_properties(g)));
     alps::graph::graph_label<graph_type>::type label_h(get<1>(canonical_properties(h)));
@@ -106,8 +115,8 @@ void colored_edges_test2() {
     typedef boost::graph_traits<graph_type>::edge_descriptor edge_descriptor;
     typedef boost::property_map<graph_type,alps::edge_type_t>::type edge_color_map_type;
 
-    edge_descriptor e;
     graph_type g;
+    edge_descriptor e;
     e = add_edge(0,1,g).first;
     boost::put(alps::edge_type_t(),g,e,0);
     e = add_edge(0,2,g).first;
