@@ -49,7 +49,6 @@
 #include <alps/graph/canonical_properties_traits.hpp>
 
 #include <map>
-#include <set>
 #include <vector>
 #include <algorithm>
 
@@ -241,6 +240,7 @@ namespace alps {
                 template <typename Graph>
                 struct label_vertex_coloring_helper
                 {
+                    typedef typename boost::property_map<Graph,alps::vertex_type_t>::type::value_type color_type;
                     // Vertex colored graph label
                     // Input: pi = (V1, V2, ..., Vr)
                     // Output: comparable graph label l(pi)
@@ -251,24 +251,19 @@ namespace alps {
                         , Graph const & G
                     ) const {
                         using boost::get;
-                        std::set<typename boost::property_map<Graph, alps::vertex_type_t>::type::value_type> colors;
+                        boost::container::flat_set<color_type> colors;
                         typename boost::graph_traits<Graph>::vertex_iterator it, end;
                         for (boost::tie(it, end) = vertices(G); it != end; ++it)
                             colors.insert(get(alps::vertex_type_t(), G)[*it]);
                         get<2>(l).clear();
-                        for (
-                              typename std::set<typename boost::property_map<Graph, alps::vertex_type_t>::type::value_type>::const_iterator jt = colors.begin()
-                            ; jt != colors.end()
-                            ; ++jt
-                        )
-                            get<2>(l).push_back(*jt);
+                        get<2>(l).insert(get<2>(l).end(), colors.begin(), colors.end());
                         get<1>(l).clear();
                         get<1>(l).resize(num_vertices(G) * get<2>(l).size());
                         // TODO: just make one row per orbit, not per vertex
                         std::size_t index = 0;
                         for (typename partition_type<Graph>::type::const_iterator jt = pi.begin(); jt != pi.end(); ++jt)
                             for (typename partition_type<Graph>::type::value_type::const_iterator kt = jt->begin(); kt != jt->end(); ++kt)
-                                get<1>(l)[(std::find(get<2>(l).begin(), get<2>(l).end(), get(alps::vertex_type_t(), G)[*kt]) - get<2>(l).begin()) * num_vertices(G) + index++] = true;
+                                get<1>(l).set((std::find(get<2>(l).begin(), get<2>(l).end(), get(alps::vertex_type_t(), G)[*kt]) - get<2>(l).begin()) * num_vertices(G) + index++);
                     }
                 };
 
@@ -465,20 +460,13 @@ namespace alps {
                 , typename partition_type<Graph>::type & pi
                 , boost::mpl::true_
             ) {
-                std::set<typename boost::property_map<Graph, alps::vertex_type_t>::type::value_type> color_set;
+                boost::container::flat_set<typename boost::property_map<Graph, alps::vertex_type_t>::type::value_type> color_set;
                 typename boost::graph_traits<Graph>::vertex_iterator it, end;
                 for (boost::tie(it, end) = vertices(G); it != end; ++it)
                     color_set.insert(get(alps::vertex_type_t(), G)[*it]);
-                std::vector<typename boost::property_map<Graph, alps::vertex_type_t>::type::value_type> color_vector;
-                for (
-                      typename std::set<typename boost::property_map<Graph, alps::vertex_type_t>::type::value_type>::const_iterator jt = color_set.begin()
-                    ; jt != color_set.end()
-                    ; ++jt
-                )
-                    color_vector.push_back(*jt);
-                pi.resize(color_vector.size());    
+                pi.resize(color_set.size());
                 for (boost::tie(it, end) = vertices(G); it != end; ++it)
-                    pi[std::find(color_vector.begin(), color_vector.end(), get(alps::vertex_type_t(), G)[*it]) - color_vector.begin()].push_back(*it);
+                    pi[std::find(color_set.begin(), color_set.end(), get(alps::vertex_type_t(), G)[*it]) - color_set.begin()].push_back(*it);
             }
 
             // uncolored initial partition with symmetry breaking vertex v
@@ -503,22 +491,15 @@ namespace alps {
                 , typename boost::graph_traits<Graph>::vertex_descriptor v
                 , boost::mpl::true_
             ) {
-                std::set<typename boost::property_map<Graph, alps::vertex_type_t>::type::value_type> color_set;
+                boost::container::flat_set<typename boost::property_map<Graph, alps::vertex_type_t>::type::value_type> color_set;
                 typename boost::graph_traits<Graph>::vertex_iterator it, end;
                 for (boost::tie(it, end) = vertices(G); it != end; ++it)
                     color_set.insert(get(alps::vertex_type_t(), G)[*it]);
-                std::vector<typename boost::property_map<Graph, alps::vertex_type_t>::type::value_type> color_vector;
-                for (
-                      typename std::set<typename boost::property_map<Graph, alps::vertex_type_t>::type::value_type>::const_iterator jt = color_set.begin()
-                    ; jt != color_set.end()
-                    ; ++jt
-                )
-                    color_vector.push_back(*jt);
-                pi.resize(color_vector.size() + 1);    
+                pi.resize(color_set.size() + 1);
                 pi.back().push_back(v);
                 for (boost::tie(it, end) = vertices(G); it != end; ++it)
                     if (*it != v)
-                        pi[std::find(color_vector.begin(), color_vector.end(), get(alps::vertex_type_t(), G)[*it]) - color_vector.begin()].push_back(*it);
+                        pi[std::find(color_set.begin(), color_set.end(), get(alps::vertex_type_t(), G)[*it]) - color_set.begin()].push_back(*it);
             }
         }
 
