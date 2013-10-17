@@ -20,3 +20,10 @@ colored_edges_with_color_symmetry_test2()
 falsefalsefalse
 true
 false
+colored_edges_with_color_symmetry_test3()
+(0100101000 111 (0))
+(0100101000 111 (1))
+(0100101000 000111 (0 1))
+(0100101000 000111 (0 1))
+false
+true

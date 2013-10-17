@@ -219,8 +219,61 @@ bool colored_edges_with_color_symmetry_test2() {
     return true;
 }
 
+bool colored_edges_with_color_symmetry_test3() {
+    std::cout << "colored_edges_with_color_symmetry_test3()" << std::endl;
+    typedef alps::graph::graph_label<graph_type>::type label_type;
+    using alps::graph::canonical_properties;
+
+    // g: O---O---O---O
+    graph_type g(4);
+    {
+        edge_color_map_type edge_color = get(alps::edge_type_t(),g);
+        edge_descriptor e;
+        e = add_edge(0, 1, g).first;
+        edge_color[e] = 0;
+        e = add_edge(1, 2, g).first;
+        edge_color[e] = 0;
+        e = add_edge(2, 3, g).first;
+        edge_color[e] = 0;
+    }
+
+    // h: O+++O+++O+++O
+    graph_type h(g);
+    {
+        unsigned int const map[] = {1,0};
+        edge_iterator it,end;
+        for(boost::tie(it,end) = edges(h); it != end; ++it)
+            get(alps::edge_type_t(),h)[*it] = map[get(alps::edge_type_t(),h)[*it]];
+    }
+
+    alps::graph::color_partition<graph_type>::type color_symmetry;
+    // makepair(color,color_partition)
+    color_symmetry.insert(std::make_pair(0,0));
+    color_symmetry.insert(std::make_pair(1,0));
+
+    label_type lg(get<1>(canonical_properties(g)));
+    label_type lh(get<1>(canonical_properties(h)));
+
+    label_type lg_with_sym(get<1>(canonical_properties(g,color_symmetry)));
+    label_type lh_with_sym(get<1>(canonical_properties(h,color_symmetry)));
+
+    std::cout << lg << std::endl;
+    std::cout << lh << std::endl;
+    std::cout << lg_with_sym << std::endl;
+    std::cout << lh_with_sym << std::endl;
+
+    // False statements
+    std::cout << std::boolalpha
+        << (lg == lh) << std::endl;
+
+    // True statements
+    std::cout << std::boolalpha
+        << (lg_with_sym == lh_with_sym) << std::endl;
+}
+
 int main() {
     colored_edges_with_color_symmetry_test1();
     colored_edges_with_color_symmetry_test2();
+    colored_edges_with_color_symmetry_test3();
     return 0;
 }
