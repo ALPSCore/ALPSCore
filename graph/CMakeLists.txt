@@ -15,6 +15,7 @@ IF (ALPS_BUILD_GRAPH_TESTS)
     FOREACH (name
             iso_simple
             canonical_label_test
+            canonical_label_with_color_symmetries_test
             lattice_constant_test
             subgraph_generator_test
             subgraph_generator_test_colored_edges
