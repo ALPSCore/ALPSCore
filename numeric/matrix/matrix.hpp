@@ -334,7 +334,7 @@ namespace alps {
         {
             return std::make_pair( element_iterator(this,0,0), element_iterator(this,0, num_cols()) );
         }
-        std::pair<element_iterator,element_iterator> elements() const
+        std::pair<const_element_iterator,const_element_iterator> elements() const
         {
             return std::make_pair( const_element_iterator(this,0,0), const_element_iterator(this,0,num_cols() ) );
         }
