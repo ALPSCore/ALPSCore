@@ -58,9 +58,9 @@
 #include <alps/numeric/vector_valarray_conversion.hpp>
 #include <alps/utility/data.hpp>
 
-#ifdef ALPS_NGS_USE_NEW_ALEA
-    #include <alps/ngs/alea/wrapper/accumulator_wrapper.hpp>
-#endif
+// #ifdef ALPS_NGS_USE_NEW_ALEA
+//     #include <alps/ngs/alea/wrapper/accumulator_wrapper.hpp>
+// #endif
 #include <alps/ngs/numeric/array.hpp>
 
 #include <boost/config.hpp>
@@ -229,28 +229,28 @@ namespace alps {
                             jack_.push_back(result_type(it->begin() + from, it->begin() + to));
                 }
                 
-                #ifdef ALPS_NGS_USE_NEW_ALEA
+                // #ifdef ALPS_NGS_USE_NEW_ALEA
                 
-                //------------------- for RealObservable and RealVectorObservable -------------------
-                mcdata(alps::accumulator::detail::result_type_accumulator_wrapper<T> & acc) // TODO: do not use a detail class
-                    : count_(acc.count())
-                    , data_is_analyzed_(true)
-                    , jacknife_bins_valid_(false)
-                    , cannot_rebin_(false)
-                    //~ , mean_(acc.has_mean() ? acc.mean() : T())
-                {
-                    if(acc.has_mean())
-                        mean_ = acc.mean();
+                // //------------------- for RealObservable and RealVectorObservable -------------------
+                // mcdata(alps::accumulator::detail::result_type_accumulator_wrapper<T> & acc) // TODO: do not use a detail class
+                //     : count_(acc.count())
+                //     , data_is_analyzed_(true)
+                //     , jacknife_bins_valid_(false)
+                //     , cannot_rebin_(false)
+                //     //~ , mean_(acc.has_mean() ? acc.mean() : T())
+                // {
+                //     if(acc.has_mean())
+                //         mean_ = acc.mean();
                     
-                    if(acc.has_error())
-                        error_ = acc.error();
+                //     if(acc.has_error())
+                //         error_ = acc.error();
                     
-                    if(acc.has_max_num_binning())
-                        binsize_ = acc.max_num_binning().bin_number();
-                    else
-                        binsize_ = 0;
-                }
-                #endif
+                //     if(acc.has_max_num_binning())
+                //         binsize_ = acc.max_num_binning().bin_number();
+                //     else
+                //         binsize_ = 0;
+                // }
+                // #endif
                 
                 template <typename X> mcdata(AbstractSimpleObservable<X> const & obs)
                     : count_(obs.count())

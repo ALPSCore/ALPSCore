@@ -30,12 +30,9 @@
 #if !defined(ALPS_NGS_MPI_ADAPTER_HPP) && defined(ALPS_HAVE_MPI)
 #define ALPS_NGS_MPI_ADAPTER_HPP
 
+#include <alps/ngs.hpp>
 #include <alps/ngs/boost_mpi.hpp>
 #include <alps/ngs/scheduler/check_schedule.hpp>
-
-#ifdef ALPS_NGS_USE_NEW_ALEA
-    #include <alps/ngs/alea.hpp>
-#endif
 
 namespace alps {
 
@@ -84,13 +81,11 @@ namespace alps {
                     #ifdef ALPS_NGS_USE_NEW_ALEA
                         if (communicator.rank() == 0) {
                             if (this->measurements[*it].count()) {
-                                // TODO: make this nicer! Do not use detail types ...
-                                accumulator::detail::accumulator_wrapper merged = this->measurements[*it];
+                                typename Base::observable_collection_type::value_type merged = this->measurements[*it];
                                 merged.collective_merge(communicator, 0);
-                                // TODO: create new result object
-                                partial_results.insert(*it, alps::mcresult(merged));
+                                partial_results.insert(*it, merged.result());
                             } else
-                                partial_results.insert(*it, alps::mcresult(this->measurements[*it]));
+                                partial_results.insert(*it, this->measurements[*it].result());
                         } else if (this->measurements[*it].count())
                             this->measurements[*it].collective_merge(communicator, 0);
                     #else

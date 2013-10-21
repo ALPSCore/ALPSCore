@@ -26,9 +26,9 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <alps/ngs/observablewrappers.hpp>
-#ifdef ALPS_NGS_USE_NEW_ALEA
-    #include <alps/ngs/alea.hpp>
-#endif
+// #ifdef ALPS_NGS_USE_NEW_ALEA
+//     #include <alps/ngs/alea.hpp>
+// #endif
 
 namespace alps {
 
@@ -56,51 +56,51 @@ namespace alps {
             return set;
         }
 
-        #ifdef ALPS_NGS_USE_NEW_ALEA
-            alps::accumulator::accumulator_set & operator<< (alps::accumulator::accumulator_set & set, RealObservable const & obs) {
-                using namespace alps::accumulator::tag;
+        // #ifdef ALPS_NGS_USE_NEW_ALEA
+        //     alps::accumulator::accumulator_set & operator<< (alps::accumulator::accumulator_set & set, RealObservable const & obs) {
+        //         using namespace alps::accumulator::tag;
                 
-                typedef accumulator::accumulator<double, accumulator::features<mean, error, max_num_binning> > accum_type;
-                typedef accumulator::detail::accumulator_wrapper wrapper_type;
+        //         typedef accumulator::accumulator<double, accumulator::features<mean, error, max_num_binning> > accum_type;
+        //         typedef accumulator::detail::accumulator_wrapper wrapper_type;
                 
-                set.insert(obs.getName(), boost::shared_ptr<wrapper_type>(new wrapper_type(accum_type(accumulator::bin_num = obs.getBinnum()))));
+        //         set.insert(obs.getName(), boost::shared_ptr<wrapper_type>(new wrapper_type(accum_type(accumulator::bin_num = obs.getBinnum()))));
 
-                return set;
-            }
+        //         return set;
+        //     }
             
-            alps::accumulator::accumulator_set & operator<< (alps::accumulator::accumulator_set & set, RealVectorObservable const & obs) {
-                using namespace alps::accumulator::tag;
+        //     alps::accumulator::accumulator_set & operator<< (alps::accumulator::accumulator_set & set, RealVectorObservable const & obs) {
+        //         using namespace alps::accumulator::tag;
                 
-                typedef accumulator::accumulator<std::vector<double>, accumulator::features<mean, error, max_num_binning> > accum_type;
-                typedef accumulator::detail::accumulator_wrapper wrapper_type;
+        //         typedef accumulator::accumulator<std::vector<double>, accumulator::features<mean, error, max_num_binning> > accum_type;
+        //         typedef accumulator::detail::accumulator_wrapper wrapper_type;
                 
-                set.insert(obs.getName(), boost::shared_ptr<wrapper_type>(new wrapper_type(accum_type(accumulator::bin_num = obs.getBinnum()))));
+        //         set.insert(obs.getName(), boost::shared_ptr<wrapper_type>(new wrapper_type(accum_type(accumulator::bin_num = obs.getBinnum()))));
 
-                return set;
-            }
+        //         return set;
+        //     }
             
-            alps::accumulator::accumulator_set & operator<< (alps::accumulator::accumulator_set & set, SimpleRealObservable const & obs) {
-                using namespace alps::accumulator::tag;
+        //     alps::accumulator::accumulator_set & operator<< (alps::accumulator::accumulator_set & set, SimpleRealObservable const & obs) {
+        //         using namespace alps::accumulator::tag;
                 
-                typedef accumulator::accumulator<double, accumulator::features<mean, error> > accum_type;
-                typedef accumulator::detail::accumulator_wrapper wrapper_type;
+        //         typedef accumulator::accumulator<double, accumulator::features<mean, error> > accum_type;
+        //         typedef accumulator::detail::accumulator_wrapper wrapper_type;
                 
-                set.insert(obs.getName(), boost::shared_ptr<wrapper_type>(new wrapper_type(accum_type(accumulator::bin_num = obs.getBinnum()))));
+        //         set.insert(obs.getName(), boost::shared_ptr<wrapper_type>(new wrapper_type(accum_type(accumulator::bin_num = obs.getBinnum()))));
                 
-                return set;
-            }
+        //         return set;
+        //     }
             
-            alps::accumulator::accumulator_set & operator<< (alps::accumulator::accumulator_set & set, SimpleRealVectorObservable const & obs) {
-                using namespace alps::accumulator::tag;
+        //     alps::accumulator::accumulator_set & operator<< (alps::accumulator::accumulator_set & set, SimpleRealVectorObservable const & obs) {
+        //         using namespace alps::accumulator::tag;
                 
-                typedef accumulator::accumulator<std::vector<double>, accumulator::features<mean, error> > accum_type;
-                typedef accumulator::detail::accumulator_wrapper wrapper_type;
+        //         typedef accumulator::accumulator<std::vector<double>, accumulator::features<mean, error> > accum_type;
+        //         typedef accumulator::detail::accumulator_wrapper wrapper_type;
                 
-                set.insert(obs.getName(), boost::shared_ptr<wrapper_type>(new wrapper_type(accum_type(accumulator::bin_num = obs.getBinnum()))));
+        //         set.insert(obs.getName(), boost::shared_ptr<wrapper_type>(new wrapper_type(accum_type(accumulator::bin_num = obs.getBinnum()))));
                 
-                return set;
-            }
-        #endif        
+        //         return set;
+        //     }
+        // #endif        
 
         alps::mcobservables & operator<< (alps::mcobservables & set, RealVectorObservable const & obs) {
             set.create_RealVectorObservable(obs.getName(), obs.getBinnum());

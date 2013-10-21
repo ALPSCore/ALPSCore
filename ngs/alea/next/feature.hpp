@@ -67,10 +67,11 @@ namespace alps {
                     throw std::logic_error("A result cannot be merged " + ALPS_STACKTRACE);
                 }
 #endif
-                template<typename U> void addeq(U const &) {}
-                template<typename U> void subeq(U const &) {}
-                template<typename U> void muleq(U const &) {}
-                template<typename U> void diveq(U const &) {}
+
+                template<typename U> void operator+=(U const &) {}
+                template<typename U> void operator-=(U const &) {}
+                template<typename U> void operator*=(U const &) {}
+                template<typename U> void operator/=(U const &) {}
 
                 void sin() {}
                 void cos() {}
@@ -95,10 +96,18 @@ namespace alps {
                     typedef T value_type;
                     typedef ResultBase<T> result_type;
 
-                    template<typename U> void addeq(U const &) {}
-                    template<typename U> void subeq(U const &) {}
-                    template<typename U> void muleq(U const &) {}
-                    template<typename U> void diveq(U const &) {}
+                    template<typename U> void operator+=(U) {
+                        throw std::runtime_error("The Function operator += is not implemented for accumulators, only for results" + ALPS_STACKTRACE); 
+                    }
+                    template<typename U> void operator-=(U) {
+                        throw std::runtime_error("The Function operator -= is not implemented for accumulators, only for results" + ALPS_STACKTRACE); 
+                    }
+                    template<typename U> void operator*=(U) {
+                        throw std::runtime_error("The Function operator *= is not implemented for accumulators, only for results" + ALPS_STACKTRACE); 
+                    }
+                    template<typename U> void operator/=(U) {
+                        throw std::runtime_error("The Function operator /= is not implemented for accumulators, only for results" + ALPS_STACKTRACE); 
+                    }
 
                     void sin() { throw std::runtime_error("The Function sin is not implemented for accumulators, only for results" + ALPS_STACKTRACE); }
                     void cos() { throw std::runtime_error("The Function cos is not implemented for accumulators, only for results" + ALPS_STACKTRACE); }

@@ -85,10 +85,11 @@ namespace alps {
                     return dynamic_cast<derived_wrapper<A> const &>(*this).extract();
                 }
 
-                virtual void addeq(base_wrapper const *) = 0;
-                virtual void subeq(base_wrapper const *) = 0;
-                virtual void muleq(base_wrapper const *) = 0;
-                virtual void diveq(base_wrapper const *) = 0;
+                virtual void operator+=(base_wrapper const &) = 0;
+                virtual void operator-=(base_wrapper const &) = 0;
+                virtual void operator*=(base_wrapper const &) = 0;
+                virtual void operator/=(base_wrapper const &) = 0;
+
                 virtual void sin() = 0;
                 virtual void cos() = 0;
                 virtual void tan() = 0;
@@ -140,11 +141,11 @@ namespace alps {
         }
 
          template<typename A> class derived_wrapper : public 
-             impl::DerivedWrapper<A, weight_tag, 
+            impl::DerivedWrapper<A, weight_tag, 
             impl::DerivedWrapper<A, max_num_binning_tag, 
-             impl::DerivedWrapper<A, error_tag, 
-             impl::DerivedWrapper<A, mean_tag, 
-             impl::DerivedWrapper<A, count_tag, 
+            impl::DerivedWrapper<A, error_tag, 
+            impl::DerivedWrapper<A, mean_tag, 
+            impl::DerivedWrapper<A, count_tag, 
          detail::foundation_wrapper<A> > > > > > {
             public:
                 derived_wrapper(): 
@@ -194,16 +195,16 @@ namespace alps {
                 }
 
 #ifdef ALPS_HAVE_MPI
-                inline void collective_merge(
+                void collective_merge(
                       boost::mpi::communicator const & comm
-                    , int root
+                    , int root = 0
                 ) {
                     this->m_data.collective_merge(comm, root);
                 }
 
-                inline void collective_merge(
+                void collective_merge(
                       boost::mpi::communicator const & comm
-                    , int root
+                    , int root = 0
                 ) const {
                     this->m_data.collective_merge(comm, root);
                 }
@@ -280,21 +281,19 @@ namespace alps {
                     return NULL;
                 }
 
-                #define OPERATOR_PROXY(OP)                        \
-                    void OP (base_wrapper const * arg) {         \
-                        this->m_data. OP (arg->extract<A>());    \
+                #define OPERATOR_PROXY(AUGOPNAME, AUGOP)            \
+                    void AUGOPNAME(base_wrapper const & arg) {      \
+                        this->m_data AUGOP arg.extract<A>();        \
                     }
-
-                OPERATOR_PROXY(addeq)
-                OPERATOR_PROXY(subeq)
-                OPERATOR_PROXY(muleq)
-                OPERATOR_PROXY(diveq)
-
+                OPERATOR_PROXY(operator+=, +=)
+                OPERATOR_PROXY(operator-=, -=)
+                OPERATOR_PROXY(operator*=, *=)
+                OPERATOR_PROXY(operator/=, /=)
                 #undef OPERATOR_PROXY
 
-                #define FUNCTION_PROXY(FUN)                        \
-                    void FUN () {                                 \
-                        this->m_data. FUN ();                    \
+                #define FUNCTION_PROXY(FUN)                         \
+                    void FUN () {                                   \
+                        this->m_data. FUN ();                       \
                     }
 
                 FUNCTION_PROXY(sin)
@@ -329,19 +328,20 @@ namespace alps {
                     return result_impl<A>();
                 }
 
-                #define OPERATOR_PROXY(OP)                                                                                                            \
-                    void OP (base_wrapper const *) {                                                                                                 \
-                        throw std::runtime_error("The Function " #OP " is not implemented for accumulators, only for results" + ALPS_STACKTRACE);    \
-                    }
+                void operator+=(base_wrapper const &) {
+                    throw std::runtime_error("The Operator += is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
+                }
+                void operator-=(base_wrapper const &) {
+                    throw std::runtime_error("The Operator += is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
+                }
+                void operator*=(base_wrapper const &) {
+                    throw std::runtime_error("The Operator += is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
+                }
+                void operator/=(base_wrapper const &) {
+                    throw std::runtime_error("The Operator += is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
+                }
 
-                OPERATOR_PROXY(addeq)
-                OPERATOR_PROXY(subeq)
-                OPERATOR_PROXY(muleq)
-                OPERATOR_PROXY(diveq)
-
-                #undef OPERATOR_PROXY
-
-                #define FUNCTION_PROXY(FUN)                                                                                                            \
+                #define FUNCTION_PROXY(FUN)                                                                                                           \
                     void FUN () {                                                                                                                     \
                         throw std::runtime_error("The Function " #FUN " is not implemented for accumulators, only for results" + ALPS_STACKTRACE);    \
                     }

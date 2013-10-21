@@ -118,6 +118,13 @@ namespace alps {
                         return ar.is_data("count");
                     }
 
+                    // TODO: implement -=, *=, /=
+                    template<typename U> void operator+=(U const & arg) {
+                        m_count += arg.count();
+                        B::operator+=(arg);
+                    }
+                    // TODO: how we implement operators
+
                     inline void reset() {
                         throw std::runtime_error("A result cannot be reseted" + ALPS_STACKTRACE);
                     }

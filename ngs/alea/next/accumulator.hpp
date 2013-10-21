@@ -32,6 +32,9 @@
 #include <alps/ngs/alea/next/wrappers.hpp>
 #include <alps/ngs/alea/next/feature/weight_impl.hpp>
 
+// TODO: move inside features
+#include <alps/type_traits/covariance_type.hpp>
+
 #include <alps/hdf5/archive.hpp>
 
 #include <boost/shared_ptr.hpp>
@@ -89,6 +92,12 @@ namespace alps {
                     return m_base->count();
                 }
 
+                // TODO: add all member functions
+                template<typename T> typename mean_type<result_type_wrapper<T> >::type mean() const { return get<T>().mean(); }
+                template<typename T> typename error_type<result_type_wrapper<T> >::type error() const { return get<T>().error(); }
+                template<typename T> typename covariance_type<T>::type accurate_covariance(result_wrapper const & rhs) const { return typename covariance_type<T>::type(); } // TODO: implement!
+                template<typename T> typename covariance_type<T>::type covariance(result_wrapper const & rhs) const { return typename covariance_type<T>::type(); } // TODO: implement!
+
                 void save(hdf5::archive & ar) const {
                     ar[""] = *m_base;
                 }
@@ -101,33 +110,43 @@ namespace alps {
                     m_base->print(os);
                 }
 
-                // FUNCTION_PROXY(addeq)
-                // FUNCTION_PROXY(subeq)
-                // FUNCTION_PROXY(muleq)
-                // FUNCTION_PROXY(diveq)
-
-                #define FUNCTION_PROXY(FUN)                                         \
-                    result_wrapper FUN () const {                                 \
-                        result_wrapper clone(*this);                            \
-                        clone.m_base-> FUN ();                \
-                        return clone;                                            \
+                #define OPERATOR_PROXY(OPNAME, AUGOPNAME, AUGOP)                        \
+                    result_wrapper & AUGOPNAME (result_wrapper const & arg) {           \
+                        *this->m_base AUGOP *arg.m_base;                                \
+                        return *this;                                                   \
+                    }                                                                   \
+                    result_wrapper OPNAME (result_wrapper const & arg) {                \
+                        result_wrapper clone(*this);                                    \
+                        clone AUGOP arg;                                                \
+                        return clone;                                                   \
                     }
-                    FUNCTION_PROXY(sin)
-                    FUNCTION_PROXY(cos)
-                    FUNCTION_PROXY(tan)
-                    FUNCTION_PROXY(sinh)
-                    FUNCTION_PROXY(cosh)
-                    FUNCTION_PROXY(tanh)
-                    FUNCTION_PROXY(asin)
-                    FUNCTION_PROXY(acos)
-                    FUNCTION_PROXY(atan)
-                    FUNCTION_PROXY(abs)
-                    FUNCTION_PROXY(sqrt)
-                    FUNCTION_PROXY(log)
-                    FUNCTION_PROXY(sq)
-                    FUNCTION_PROXY(cb)
-                    FUNCTION_PROXY(cbrt)
+                OPERATOR_PROXY(operator+, operator+=, +=)
+                OPERATOR_PROXY(operator-, operator-=, -=)
+                OPERATOR_PROXY(operator*, operator*=, *=)
+                OPERATOR_PROXY(operator/, operator/=, /=)
+                #undef OPERATOR_PROXY
 
+                #define FUNCTION_PROXY(FUN)            \
+                    result_wrapper FUN () const {      \
+                        result_wrapper clone(*this);   \
+                        clone.m_base-> FUN ();         \
+                        return clone;                  \
+                    }
+                FUNCTION_PROXY(sin)
+                FUNCTION_PROXY(cos)
+                FUNCTION_PROXY(tan)
+                FUNCTION_PROXY(sinh)
+                FUNCTION_PROXY(cosh)
+                FUNCTION_PROXY(tanh)
+                FUNCTION_PROXY(asin)
+                FUNCTION_PROXY(acos)
+                FUNCTION_PROXY(atan)
+                FUNCTION_PROXY(abs)
+                FUNCTION_PROXY(sqrt)
+                FUNCTION_PROXY(log)
+                FUNCTION_PROXY(sq)
+                FUNCTION_PROXY(cb)
+                FUNCTION_PROXY(cbrt)
                 #undef FUNCTION_PROXY
 
             private:
@@ -143,10 +162,9 @@ namespace alps {
             return m.extract<A>();
         }
 
-        #define EXTERNAL_FUNCTION(FUN)                                     \
-            result_wrapper FUN (result_wrapper const & arg) {             \
-                return arg. FUN ();                                        \
-            }
+        #define EXTERNAL_FUNCTION(FUN)                          \
+            result_wrapper FUN (result_wrapper const & arg);
+
             EXTERNAL_FUNCTION(sin)
             EXTERNAL_FUNCTION(cos)
             EXTERNAL_FUNCTION(tan)
@@ -214,13 +232,29 @@ namespace alps {
                     m_base->reset();
                 }
 
-                   boost::shared_ptr<result_wrapper> result() const {
+                boost::shared_ptr<result_wrapper> result() const {
                    return boost::shared_ptr<result_wrapper>(new result_wrapper(m_base->result()));
-                   }
+                }
 
                 void print(std::ostream & os) const {
                     m_base->print(os);
                 }
+
+#ifdef ALPS_HAVE_MPI
+                inline void collective_merge(
+                      boost::mpi::communicator const & comm
+                    , int root
+                ) {
+                    m_base->collective_merge(comm, root);
+                }
+
+                inline void collective_merge(
+                      boost::mpi::communicator const & comm
+                    , int root
+                ) const {
+                    m_base->collective_merge(comm, root);
+                }
+#endif
 
             private:
 
@@ -273,6 +307,8 @@ namespace alps {
             template <typename T> class wrapper_set {
 
                 public: 
+                    typedef T value_type;
+
                     typedef typename std::map<std::string, boost::shared_ptr<T> >::iterator iterator;
                     typedef typename std::map<std::string, boost::shared_ptr<T> >::const_iterator const_iterator;
 
@@ -307,6 +343,10 @@ namespace alps {
                         if (has(name))
                             throw std::out_of_range("There exists alrady an accumulator with the name: " + name + ALPS_STACKTRACE);
                         m_storage.insert(make_pair(name, ptr));
+                    }
+
+                    std::size_t size() const {
+                        return m_storage.size();
                     }
 
                     void save(hdf5::archive & ar) const {
@@ -348,7 +388,7 @@ namespace alps {
                             os << it->first << ": " << *(it->second) << std::endl;
                     }
 
-                    void reset() {
+                    void reset(bool=true /* deprecated flag */) { // TODO: Do we really want this flag?
                         for(iterator it = begin(); it != end(); ++it)
                             it->second->reset();
                     }

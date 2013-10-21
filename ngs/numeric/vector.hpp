@@ -30,6 +30,7 @@
 
 #include <alps/ngs/stacktrace.hpp>
 
+#include <alps/numeric/vector_functions.hpp>
 #include <alps/numeric/special_functions.hpp>
 
 #include <boost/accumulators/numeric/functional/vector.hpp>
@@ -133,7 +134,7 @@ namespace alps {
             ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION(log)
 
             #undef ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION
-
+/*
             #define ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION(FUNCTION_NAME)                                                      \
                 template<typename T> std::vector<T> FUNCTION_NAME (std::vector<T> arg) {                                    \
                     using alps::numeric:: FUNCTION_NAME ;                                                                   \
@@ -146,7 +147,7 @@ namespace alps {
             ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION(cbrt)
 
             #undef ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION
-
+*/
             template<typename T, typename U> std::vector<T> pow(std::vector<T> vec, U index) {
                 using std::pow;
                 std::transform(vec.begin(), vec.end(), vec.begin(), boost::lambda::bind<T>(static_cast<T (*)(T, U)>(&pow), boost::lambda::_1, index));

@@ -42,6 +42,18 @@ namespace alps {
         }
     }
 
+    #ifdef ALPS_NGS_USE_NEW_ALEA
+
+        void save_results(alps::accumulator::result_set const & results, params const & params, boost::filesystem::path const & filename, std::string const & path) {
+            detail::save_results_impl(results, params, filename, path);
+        }
+
+        void save_results(alps::accumulator::accumulator_set const & observables, params const & params, boost::filesystem::path const & filename, std::string const & path) {
+            detail::save_results_impl(observables, params, filename, path);
+        }
+
+    #endif
+
     void save_results(mcresults const & results, params const & params, boost::filesystem::path const & filename, std::string const & path) {
         detail::save_results_impl(results, params, filename, path);
     }

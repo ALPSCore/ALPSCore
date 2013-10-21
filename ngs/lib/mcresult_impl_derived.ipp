@@ -35,9 +35,9 @@
 
 #include <alps/alea/mcdata.hpp>
 
-#ifdef ALPS_NGS_USE_NEW_ALEA
-    #include <alps/ngs/alea.hpp>
-#endif
+// #ifdef ALPS_NGS_USE_NEW_ALEA
+//     #include <alps/ngs/alea.hpp>
+// #endif
 
 #ifdef ALPS_HAVE_MPI
     #include <boost/mpi.hpp>
@@ -62,13 +62,13 @@ namespace alps {
                     : alea::mcdata<T>(obs) 
                 {}
                 
-                #ifdef ALPS_NGS_USE_NEW_ALEA
-                //TODO4 just pass the result_type wrapper to mcdata<..>..
-                mcresult_impl_derived(accumulator::detail::accumulator_wrapper const & acc_wrapper)
-                    : alea::mcdata<T>(acc_wrapper.get<T>())
-                {
-                }
-                #endif
+                // #ifdef ALPS_NGS_USE_NEW_ALEA
+                // //TODO4 just pass the result_type wrapper to mcdata<..>..
+                // mcresult_impl_derived(accumulator::detail::accumulator_wrapper const & acc_wrapper)
+                //     : alea::mcdata<T>(acc_wrapper.get<T>())
+                // {
+                // }
+                // #endif
                 
                 mcresult_impl_derived(alea::mcdata<T> const & data)
                     : alea::mcdata<T>(data) 

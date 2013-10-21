@@ -55,11 +55,11 @@ namespace alps {
             typedef alps::params parameters_type;
             typedef std::vector<std::string> result_names_type;
 
-            // #ifdef ALPS_NGS_USE_NEW_ALEA
-            //     typedef alps::accumulator::result_set results_type;
-            // #else
+            #ifdef ALPS_NGS_USE_NEW_ALEA
+                typedef alps::accumulator::result_set results_type;
+            #else
                 typedef alps::mcresults results_type;
-            // #endif
+            #endif
 
             mcbase(parameters_type const & parms, std::size_t seed_offset = 0);
 

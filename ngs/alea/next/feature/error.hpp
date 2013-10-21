@@ -228,6 +228,19 @@ namespace alps {
                         ;
                     }
 
+                    // TODO: implement -=, *=, /=
+                    template<typename U> void operator+=(U const & arg) {
+
+                        using alps::numeric::sq;
+                        using std::sqrt;
+                        using alps::ngs::numeric::sqrt;
+
+                        using alps::ngs::numeric::operator+;
+
+                        m_error = sqrt(sq(m_error) + sq(arg.error()));
+                        B::operator+=(arg);
+                    }
+
                     #define NUMERIC_FUNCTION_USEING                                 \
                         using alps::numeric::sq;                                    \
                         using alps::ngs::numeric::cbrt;                             \
@@ -313,29 +326,29 @@ namespace alps {
 
                     error_type m_error;
 
-                    #define NUMERIC_FUNCTION_OPERATOR_IMPL(OP_NAME, OP_T, OP_ARG)                            \
-                        template<typename U> void OP_NAME ## _impl(typename boost::disable_if<                \
-                              typename boost::is_same<typename alps::hdf5::scalar_type<T>::type, U>::type     \
-                            , U                                                                                \
-                        >::type const & arg) {                                                                \
-                            NUMERIC_FUNCTION_USEING                                                            \
-                            m_error = OP_T;                                                                    \
-                        }                                                                                    \
-                        template<typename U> void OP_NAME ## _impl(typename boost::enable_if<                \
-                              typename boost::is_same<typename alps::hdf5::scalar_type<T>::type, U>::type    \
-                            , U                                                                                \
-                        >::type arg) {                                                                        \
-                            NUMERIC_FUNCTION_USEING                                                            \
-                            m_error = OP_ARG;                                                                \
-                        }
+                    // #define NUMERIC_FUNCTION_OPERATOR_IMPL(OP_NAME, OP_T, OP_ARG)                            \
+                    //     template<typename U> void OP_NAME ## _impl(typename boost::disable_if<                \
+                    //           typename boost::is_same<typename alps::hdf5::scalar_type<T>::type, U>::type     \
+                    //         , U                                                                                \
+                    //     >::type const & arg) {                                                                \
+                    //         NUMERIC_FUNCTION_USEING                                                            \
+                    //         m_error = OP_T;                                                                    \
+                    //     }                                                                                    \
+                    //     template<typename U> void OP_NAME ## _impl(typename boost::enable_if<                \
+                    //           typename boost::is_same<typename alps::hdf5::scalar_type<T>::type, U>::type    \
+                    //         , U                                                                                \
+                    //     >::type arg) {                                                                        \
+                    //         NUMERIC_FUNCTION_USEING                                                            \
+                    //         m_error = OP_ARG;                                                                \
+                    //     }
 
-                    NUMERIC_FUNCTION_OPERATOR_IMPL(addeq, sqrt(sq(error()) + sq(arg.error())), error())
-                    NUMERIC_FUNCTION_OPERATOR_IMPL(subeq, sqrt(sq(error()) + sq(arg.error())), error())
-                    NUMERIC_FUNCTION_OPERATOR_IMPL(muleq, sqrt(sq(arg.mean()) * sq(error()) + sq(B::mean()) * sq(arg.error())), sqrt(sq(arg) * sq(error())))
-                    NUMERIC_FUNCTION_OPERATOR_IMPL(diveq, sqrt(sq(arg.mean()) * sq(error()) + sq(B::mean()) * sq(arg.error())) / sq(arg.mean()), sqrt(sq(arg) * sq(error())) / sq(arg))
+                    // NUMERIC_FUNCTION_OPERATOR_IMPL(addeq, sqrt(sq(error()) + sq(arg.error())), error())
+                    // NUMERIC_FUNCTION_OPERATOR_IMPL(subeq, sqrt(sq(error()) + sq(arg.error())), error())
+                    // NUMERIC_FUNCTION_OPERATOR_IMPL(muleq, sqrt(sq(arg.mean()) * sq(error()) + sq(B::mean()) * sq(arg.error())), sqrt(sq(arg) * sq(error())))
+                    // NUMERIC_FUNCTION_OPERATOR_IMPL(diveq, sqrt(sq(arg.mean()) * sq(error()) + sq(B::mean()) * sq(arg.error())) / sq(arg.mean()), sqrt(sq(arg) * sq(error())) / sq(arg))
 
-                    #undef NUMERIC_FUNCTION_USEING
-                    #undef NUMERIC_FUNCTION_OPERATOR_IMPL
+                    // #undef NUMERIC_FUNCTION_USEING
+                    // #undef NUMERIC_FUNCTION_OPERATOR_IMPL
             };
 
             template<typename B> class BaseWrapper<error_tag, B> : public B {

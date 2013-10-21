@@ -32,9 +32,9 @@
 #include <alps/ngs/lib/mcresult_impl_base.ipp>
 #include <alps/ngs/lib/mcresult_impl_derived.ipp>
 
-#ifdef ALPS_NGS_USE_NEW_ALEA
-    #include <alps/ngs/alea/accumulator_set.hpp>
-#endif
+// #ifdef ALPS_NGS_USE_NEW_ALEA
+//     #include <alps/ngs/alea/accumulator_set.hpp>
+// #endif
 
 #include <alps/alea/observable.h>
 #include <alps/alea/abstractsimpleobservable.h>
@@ -52,31 +52,31 @@ namespace alps {
         construct(obs);
     }
     
-#ifdef ALPS_NGS_USE_NEW_ALEA
-    template<typename T> bool has_cast(alps::accumulator::detail::accumulator_wrapper const & acc_wrapper) { 
-        try { 
-            acc_wrapper.get<T>();
-            return true;
-        }  catch(std::bad_cast)  { 
-            return false;
-        }
-    }
+// #ifdef ALPS_NGS_USE_NEW_ALEA
+//     template<typename T> bool has_cast(alps::accumulator::detail::accumulator_wrapper const & acc_wrapper) { 
+//         try { 
+//             acc_wrapper.get<T>();
+//             return true;
+//         }  catch(std::bad_cast)  { 
+//             return false;
+//         }
+//     }
     
-    mcresult::mcresult(alps::accumulator::detail::accumulator_wrapper const & acc_wrapper) {
-        //------------------- find out value_type  -------------------
-        if(has_cast<double>(acc_wrapper))
-            impl_ = new detail::mcresult_impl_derived<detail::mcresult_impl_base, double>(acc_wrapper);
-        else if(has_cast<std::vector<double> >(acc_wrapper))
-           impl_ = new detail::mcresult_impl_derived<detail::mcresult_impl_base, std::vector<double> >(acc_wrapper);
-/*
-        else if(has_cast<boost::array<double, 3> >(acc_wrapper))
-            impl_ = new detail::mcresult_impl_derived<detail::mcresult_impl_base, boost::array<double, 3> >(acc_wrapper);
-*/
-        else
-            throw std::runtime_error("type not supported in mcresult-constructor" + ALPS_STACKTRACE);
-        ref_cnt_[impl_] = 1;
-    }
-#endif
+//     mcresult::mcresult(alps::accumulator::detail::accumulator_wrapper const & acc_wrapper) {
+//         //------------------- find out value_type  -------------------
+//         if(has_cast<double>(acc_wrapper))
+//             impl_ = new detail::mcresult_impl_derived<detail::mcresult_impl_base, double>(acc_wrapper);
+//         else if(has_cast<std::vector<double> >(acc_wrapper))
+//            impl_ = new detail::mcresult_impl_derived<detail::mcresult_impl_base, std::vector<double> >(acc_wrapper);
+// /*
+//         else if(has_cast<boost::array<double, 3> >(acc_wrapper))
+//             impl_ = new detail::mcresult_impl_derived<detail::mcresult_impl_base, boost::array<double, 3> >(acc_wrapper);
+// */
+//         else
+//             throw std::runtime_error("type not supported in mcresult-constructor" + ALPS_STACKTRACE);
+//         ref_cnt_[impl_] = 1;
+//     }
+// #endif
 
     mcresult::mcresult(mcresult const & rhs) {
         ++ref_cnt_[impl_ = rhs.impl_];

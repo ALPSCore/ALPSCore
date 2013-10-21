@@ -359,6 +359,8 @@ namespace alps {
                         ;
                     }
 
+                    // TODO: add functions and operators
+
                 private:
                     std::size_t m_mn_max_number;
                     typename B::count_type m_mn_elements_in_bin;

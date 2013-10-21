@@ -282,6 +282,8 @@ namespace alps {
                         ;
                     }
 
+                    // TODO: add functions and operators
+
                 private:
                     std::vector<T> m_ac_bins;
             };
