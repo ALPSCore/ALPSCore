@@ -279,7 +279,28 @@ BOOST_AUTO_TEST_CASE(ngs_alea_next) {
 
 	std::cout << "> results: " << std::endl << results << std::endl;
 
-	std::cout << "> sin(\"vectors\"): " << std::endl << sin(results["vector"]) << std::endl << std::endl;
+	std::cout << "> \"vector\" + \"vector\":  " << results["vector"] + results["vector"] << std::endl;
+	std::cout << "> \"vector\" - \"vector\":  " << results["vector"] - results["vector"] << std::endl;
+	std::cout << "> \"vector\" * \"vector\":  " << results["vector"] * results["vector"] << std::endl;
+	std::cout << "> \"vector\" / \"vector\":  " << results["vector"] / results["vector"] << std::endl;
+
+	// std::cout << "> \"vector\" + \"vector\":  " << results["vector"] + 1 << std::endl;
+	
+	std::cout << "> sin(\"vector\"):  " << sin(results["vector"]) << std::endl;
+	std::cout << "> cos(\"vector\"):  " << cos(results["vector"]) << std::endl;
+	std::cout << "> tan(\"vector\"):  " << tan(results["vector"]) << std::endl;
+	std::cout << "> sinh(\"vector\"): " << sinh(results["vector"]) << std::endl;
+	std::cout << "> cosh(\"vector\"): " << cosh(results["vector"]) << std::endl;
+	std::cout << "> tanh(\"vector\"): " << tanh(results["vector"]) << std::endl;
+	std::cout << "> asin(\"vector\"): " << asin(results["vector"]) << std::endl;
+	std::cout << "> acos(\"vector\"): " << acos(results["vector"]) << std::endl;
+	std::cout << "> atan(\"vector\"): " << atan(results["vector"]) << std::endl;
+	std::cout << "> abs(\"vector\"):  " << abs(results["vector"]) << std::endl;
+	std::cout << "> sqrt(\"vector\"): " << sqrt(results["vector"]) << std::endl;
+	std::cout << "> log(\"vector\"):  " << log(results["vector"]) << std::endl;
+	std::cout << "> sq(\"vector\"):   " << sq(results["vector"]) << std::endl;
+	std::cout << "> cb(\"vector\"):   " << cb(results["vector"]) << std::endl;
+	std::cout << "> cbrt(\"vector\"): " << cbrt(results["vector"]) << std::endl << std::endl;
 
 	{
 		alps::hdf5::archive ar("test.h5", "w");
@@ -309,7 +330,8 @@ BOOST_AUTO_TEST_CASE(ngs_alea_next) {
 	}
 
 /* TODO:
-- implement functions for results
+- implement operators for tow results correctly
+- implement operators with scalars
 - implement jacknife for results
 - implement boost::ArgPack for external weight
 - implement tag-magic
