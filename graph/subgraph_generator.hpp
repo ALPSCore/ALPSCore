@@ -39,8 +39,8 @@ namespace graph {
 
 namespace detail {
 
-    template <typename SubGraph, typename SuperGraph>
-    class subgraph_generator_impl_base
+    template <typename SubGraph, typename SuperGraph, typename CanoncialPropertiesPolicy>
+    class subgraph_generator_impl_base : public CanoncialPropertiesPolicy
     {
       public:
         typedef SubGraph   subgraph_type;
@@ -76,7 +76,7 @@ namespace detail {
           * \return true if g is embeddable, false if g is not embeddable
           */
         bool is_embeddable(subgraph_type const& g, typename canonical_properties_type<subgraph_type>::type const& prop) {
-            assert(prop == alps::graph::canonical_properties(g));
+            assert(prop == this->canonical_prop(g));
             typename graph_traits<subgraph_type>::edges_size_type const num_edges_g = num_edges(g);
             for(typename std::vector<std::pair<subgraph_type,typename partition_type<subgraph_type>::type> >::iterator it= non_embeddable_graphs_.begin(); it != non_embeddable_graphs_.end(); ++it)
             {
@@ -107,15 +107,15 @@ namespace detail {
         std::set<boost::tuple<std::size_t, typename graph_label<subgraph_type>::type> > labels_;
     };
 
-    template <typename SubGraph, typename SuperGraph, bool ColoredVertices, bool ColoredEdges>
+    template <typename SubGraph, typename SuperGraph, typename CanonicalPropertiesPolicy, bool ColoredVertices, bool ColoredEdges>
     class subgraph_generator_impl;
 
-    template <typename SubGraph, typename SuperGraph>
-    class subgraph_generator_impl<SubGraph, SuperGraph,false,false>
-    : public subgraph_generator_impl_base<SubGraph, SuperGraph>
+    template <typename SubGraph, typename SuperGraph, typename CanonicalPropertiesPolicy>
+    class subgraph_generator_impl<SubGraph, SuperGraph,CanonicalPropertiesPolicy,false,false>
+    : public subgraph_generator_impl_base<SubGraph, SuperGraph, CanonicalPropertiesPolicy>
     {
       public:
-        typedef subgraph_generator_impl_base<SubGraph, SuperGraph>  base_type;
+        typedef subgraph_generator_impl_base<SubGraph, SuperGraph, CanonicalPropertiesPolicy>  base_type;
 
         typedef typename base_type::subgraph_type                   subgraph_type;
         typedef typename base_type::supergraph_type                 supergraph_type;
@@ -126,11 +126,6 @@ namespace detail {
             : base_type(g,pin)
         {
             analyze_supergraph(g);
-
-            // Initialize
-            subgraph_type sg;
-            add_vertex(sg);
-            this->graphs_.push_back(std::make_pair(sg,canonical_properties(sg)));
         }
 
         void analyze_supergraph(SuperGraph const& g)
@@ -140,6 +135,15 @@ namespace detail {
             typename graph_traits<supergraph_type>::vertex_iterator v_it, v_end;
             for(boost::tie(v_it,v_end) = vertices(g); v_it != v_end; ++v_it)
                 max_degree_ = (std::max)(max_degree_,degree(*v_it, g));
+        }
+
+        void initialize()
+        {
+            this->graphs_.clear();
+            // Initialize
+            subgraph_type sg;
+            add_vertex(sg);
+            this->graphs_.push_back(std::make_pair(sg,this->canonical_prop(sg)));
         }
 
         void grow_at(std::vector<subgraph_properties_pair_type>& result, iterator const it, typename graph_traits<subgraph_type>::vertex_descriptor v, typename partition_type<subgraph_type>::type::const_iterator const p_it)
@@ -158,7 +162,7 @@ namespace detail {
 
             subgraph_type new_graph(it->first);
             add_edge( v, add_vertex(new_graph), new_graph);
-            canonical_properties_type const new_graph_prop = canonical_properties(new_graph);
+            canonical_properties_type const new_graph_prop = this->canonical_prop(new_graph);
             if( this->is_unknown(new_graph_prop) && this->is_embeddable(new_graph,new_graph_prop) )
                 result.push_back(std::make_pair(new_graph,new_graph_prop));
         }
@@ -181,7 +185,7 @@ namespace detail {
                 if(!edge(v, v2, it->first).second) {
                     subgraph_type new_graph2(it->first);
                     add_edge( v2, v, new_graph2);
-                    canonical_properties_type const new_graph2_prop = canonical_properties(new_graph2);
+                    canonical_properties_type const new_graph2_prop = this->canonical_prop(new_graph2);
                     if( this->is_unknown(new_graph2_prop) && this->is_embeddable(new_graph2,new_graph2_prop) )
                         result.push_back(std::make_pair(new_graph2,new_graph2_prop));
                 }
@@ -196,7 +200,7 @@ namespace detail {
                 if(!edge(v, v2, it->first).second) {
                     subgraph_type new_graph2(it->first);
                     add_edge( v2, v, new_graph2);
-                    canonical_properties_type const new_graph2_prop = canonical_properties(new_graph2);
+                    canonical_properties_type const new_graph2_prop = this->canonical_prop(new_graph2);
                     if( this->is_unknown(new_graph2_prop) && this->is_embeddable(new_graph2,new_graph2_prop) )
                         result.push_back(std::make_pair(new_graph2,new_graph2_prop));
                 }
@@ -207,12 +211,12 @@ namespace detail {
         typename graph_traits<supergraph_type>::degree_size_type max_degree_;
     };
 
-    template <typename SubGraph, typename SuperGraph>
-    class subgraph_generator_impl<SubGraph, SuperGraph, false, true>
-    : public subgraph_generator_impl_base<SubGraph, SuperGraph>
+    template <typename SubGraph, typename SuperGraph, typename CanonicalPropertiesPolicy>
+    class subgraph_generator_impl<SubGraph, SuperGraph, CanonicalPropertiesPolicy, false, true>
+    : public subgraph_generator_impl_base<SubGraph, SuperGraph, CanonicalPropertiesPolicy>
     {
       public:
-        typedef subgraph_generator_impl_base<SubGraph, SuperGraph>  base_type;
+        typedef subgraph_generator_impl_base<SubGraph, SuperGraph, CanonicalPropertiesPolicy>  base_type;
 
         typedef typename base_type::subgraph_type                   subgraph_type;
         typedef typename base_type::supergraph_type                 supergraph_type;
@@ -226,11 +230,6 @@ namespace detail {
             : base_type(g,pin)
         {
             analyze_supergraph(g);
-
-            // Initialize
-            subgraph_type sg;
-            add_vertex(sg);
-            this->graphs_.push_back(std::make_pair(sg,canonical_properties(sg)));
         }
 
         void analyze_supergraph(supergraph_type const& g)
@@ -246,6 +245,15 @@ namespace detail {
 
             // Analyse edges
             edge_colors_ = get_edge_color_list(g);
+        }
+
+        void initialize()
+        {
+            this->graphs_.clear();
+            // Initialize
+            subgraph_type sg;
+            add_vertex(sg);
+            this->graphs_.push_back(std::make_pair(sg,this->canonical_prop(sg)));
         }
 
         void grow_at(std::vector<subgraph_properties_pair_type>& result, iterator const it, typename graph_traits<subgraph_type>::vertex_descriptor v,  typename partition_type<subgraph_type>::type::const_iterator const p_it)
@@ -269,7 +277,7 @@ namespace detail {
             for(typename edge_color_list_type::iterator ecl_it = edge_colors_.begin(); ecl_it != edge_colors_.end(); ++ecl_it)
             {
                 put( alps::edge_type_t(), new_graph, new_edge, *ecl_it);
-                canonical_properties_type const new_graph_prop = canonical_properties(new_graph);
+                canonical_properties_type const new_graph_prop = this->canonical_prop(new_graph);
                 if( this->is_unknown(new_graph_prop) && this->is_embeddable(new_graph,new_graph_prop) )
                     result.push_back(std::make_pair(new_graph,new_graph_prop));
             }
@@ -296,7 +304,7 @@ namespace detail {
                     for(typename edge_color_list_type::iterator ecl_it = edge_colors_.begin(); ecl_it != edge_colors_.end(); ++ecl_it)
                     {
                         put( alps::edge_type_t(), new_graph2, new_edge, *ecl_it);
-                        canonical_properties_type const new_graph2_prop = canonical_properties(new_graph2);
+                        canonical_properties_type const new_graph2_prop = this->canonical_prop(new_graph2);
                         if( this->is_unknown(new_graph2_prop) && this->is_embeddable(new_graph2,new_graph2_prop) )
                             result.push_back(std::make_pair(new_graph2,new_graph2_prop));
                     }
@@ -315,7 +323,7 @@ namespace detail {
                     for(typename edge_color_list_type::iterator ecl_it = edge_colors_.begin(); ecl_it != edge_colors_.end(); ++ecl_it)
                     {
                         put( alps::edge_type_t(), new_graph2, new_edge, *ecl_it);
-                        canonical_properties_type const new_graph2_prop = canonical_properties(new_graph2);
+                        canonical_properties_type const new_graph2_prop = this->canonical_prop(new_graph2);
                         if( this->is_unknown(new_graph2_prop) && this->is_embeddable(new_graph2,new_graph2_prop) )
                             result.push_back(std::make_pair(new_graph2,new_graph2_prop));
                     }
@@ -327,7 +335,57 @@ namespace detail {
             typename graph_traits<supergraph_type>::degree_size_type max_degree_;
             edge_color_list_type edge_colors_;
     };
-}
+} // end namespace detail
+
+namespace policies {
+
+    /**
+      * \brief A policy class for the subgraph_generator class
+      *
+      * This is the default policy to create canonical labels for sub graphs within the subgraph_generator
+      * \tparam SubGraph the type of the subgraphs to be generated. Has to fulfill the concepts required by canonical_properties().
+      */
+    template <typename SubGraph>
+    struct canonical_properties_simple_policy
+    {
+        inline typename canonical_properties_type<SubGraph>::type canonical_prop(SubGraph const& g)
+        {
+            return canonical_properties(g);
+        }
+    };
+
+    /**
+      * \brief A policy class for the subgraph_generator class
+      *
+      * This is a special policy to create canonical labels for sub graphs
+      * within the subgraph_generator considering permutation symmetries of the
+      * edge colors.
+      * After construction of the subgraph_generator object, the member
+      * set_color_partition(...) has to be called to pass the symmetry
+      * information to the object.
+      * \tparam SubGraph the type of the subgraphs to be generated. Has to fulfill the concepts required by canonical_properties().
+      */
+    template <typename SubGraph>
+    struct canonical_properties_with_color_symmetries_policy
+    {
+        inline typename canonical_properties_type<SubGraph>::type canonical_prop(SubGraph const& g)
+        {
+            assert(!c_.empty());
+            return canonical_properties(g,c_);
+        }
+
+        /**
+          * Sets the edge color permutation symmetry.
+          * \param color_partitions a map assigning each edge color a group number. The graph is symmetric under permutations of colors having the same group number.
+          */
+        void set_color_partition(typename color_partition<SubGraph>::type const& color_partitions)
+        {
+            c_ = color_partitions;
+        }
+      private:
+        typename color_partition<SubGraph>::type c_;
+    };
+} // end namespace policies
 
     /**
       * \brief the subgraph_generator class
@@ -335,13 +393,14 @@ namespace detail {
       * A class for generating subgraphs of an (super-)graph, e.g. a lattice.
       * \tparam SubGraph the type of the subgraphs to be generated. Has to fulfill boost::MutableGraph, boost::IncidenceGraph concepts and the concepts required by canonical_properties() and embedding().
       * \tparam SuperGraph the type of the (super-)graph for which the subgraphs are generated. Has to fulfill boost::IncidenceGraph, boost::EdgeListGraph, boost::VertexListGraph concepts and the concepts required by embedding().
+      * \tparam CanonicalPropertiesPolicy the policy how to create canonical_properties for the generated subgraphs. Must offer at least the functions of policies::canonical_properties_simple_policy policy class.
       */
-template <typename SubGraph, typename SuperGraph>
+template <typename SubGraph, typename SuperGraph, typename CanonicalPropertiesPolicy = policies::canonical_properties_simple_policy<SubGraph> >
 class subgraph_generator
-: public detail::subgraph_generator_impl<SubGraph, SuperGraph, has_property<alps::vertex_type_t,SubGraph>::vertex_property, has_property<alps::edge_type_t,SubGraph>::edge_property>
+: public detail::subgraph_generator_impl<SubGraph, SuperGraph, CanonicalPropertiesPolicy, has_property<alps::vertex_type_t,SubGraph>::vertex_property, has_property<alps::edge_type_t,SubGraph>::edge_property>
 {
   public:
-    typedef detail::subgraph_generator_impl<SubGraph, SuperGraph, has_property<alps::vertex_type_t,SubGraph>::vertex_property, has_property<alps::edge_type_t,SubGraph>::edge_property> base_type;
+    typedef detail::subgraph_generator_impl<SubGraph, SuperGraph, CanonicalPropertiesPolicy, has_property<alps::vertex_type_t,SubGraph>::vertex_property, has_property<alps::edge_type_t,SubGraph>::edge_property> base_type;
 
     typedef typename base_type::subgraph_type                   subgraph_type;
     typedef typename base_type::supergraph_type                 supergraph_type;
@@ -368,6 +427,8 @@ class subgraph_generator
       */
     std::pair<iterator,iterator> generate_up_to_n_edges(unsigned int n)
     {
+        if(this->graphs_.empty())
+            this->initialize();
         iterator cur_end(this->graphs_.end());
         iterator last_end(this->graphs_.begin());
 
@@ -402,7 +463,8 @@ class subgraph_generator
       * \return a std::pair of iterators pointing to the beginning and the end of the list of subgraphs
       */
     std::pair<iterator,iterator> generate_exactly_n_edges(unsigned int n) {
-        assert( this->graphs_.size() >= 0 );
+        if(this->graphs_.empty())
+            this->initialize();
         // While the last graph has not the desired number of edges
         // and we found new graphs in the last iteration
         while( (num_edges(this->graphs_.back().first) < n) && (this->graphs_.size() == 0) )
@@ -450,6 +512,19 @@ std::vector<std::pair<SubGraph, typename canonical_properties_type<SubGraph>::ty
     boost::tie(it,end) = sg.generate_up_to_n_edges(n);
     return subgraph_list_type(it,end);
 }
+
+template <typename SubGraph, typename SuperGraph>
+std::vector<std::pair<SubGraph, typename canonical_properties_type<SubGraph>::type> > generate_subgraphs(SubGraph const&, SuperGraph const& supergraph, typename boost::graph_traits<SuperGraph>::vertex_descriptor pin, unsigned int n, typename color_partition<SubGraph>::type const& color_partitions)
+{
+    typedef std::vector<std::pair<SubGraph, typename canonical_properties_type<SubGraph>::type> > subgraph_list_type;
+    typedef typename subgraph_list_type::iterator iterator;
+    subgraph_generator<SubGraph, SuperGraph, policies::canonical_properties_with_color_symmetries_policy<SubGraph> > sg(supergraph,pin);
+    sg.set_color_partition(color_partitions);
+    iterator it, end;
+    boost::tie(it,end) = sg.generate_up_to_n_edges(n);
+    return subgraph_list_type(it,end);
+}
+
 
 } // namespace graph
 } // namespace alps
