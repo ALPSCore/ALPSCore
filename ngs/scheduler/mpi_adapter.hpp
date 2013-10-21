@@ -50,7 +50,7 @@ namespace alps {
                 , schedule_checker(check)
                 , clone(comm.rank())
                 // TODO: remove with new ALEA
-                , binnumber(parameters["BINNUMBER"] | std::min(128, 2 * comm.size()))
+                , binnumber(parameters["BINNUMBER"] | 128)
             {}
 
             double fraction_completed() const {
@@ -62,7 +62,8 @@ namespace alps {
                 do {
                     this->update();
                     this->measure();
-                    if ((stopped = stop_callback()) || schedule_checker.pending()) {
+                    if (stopped || schedule_checker.pending()) {
+                        stopped = stop_callback(); // TODO: do we want to check after every sweep? probably not ...
                         double local_fraction = stopped ? 1. : Base::fraction_completed();
                         schedule_checker.update(fraction = boost::mpi::all_reduce(communicator, local_fraction, std::plus<double>()));
                         done = fraction >= 1.;
