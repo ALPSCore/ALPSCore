@@ -32,6 +32,7 @@
 #include <boost/tuple/tuple_comparison.hpp>
 #include <boost/dynamic_bitset.hpp>
 #include <boost/graph/graph_traits.hpp>
+#include <boost/container/container_fwd.hpp>
 #include <alps/lattice/graphproperties.h>
 #include <alps/lattice/propertymap.h>
 
