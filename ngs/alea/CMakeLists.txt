@@ -8,14 +8,14 @@ include_directories(${PROJECT_BINARY_DIR}/src)
 include_directories(${PROJECT_SOURCE_DIR}/src)
 include_directories(${Boost_ROOT_DIR})
 
-#IF(FALSE AND ALPS_NGS_USE_NEW_ALEA)
+IF(ALPS_NGS_USE_NEW_ALEA)
     FOREACH (name ngs_alea_next)
         add_executable(${name} ${name}.cpp)
         add_dependencies(${name} alps)
         target_link_libraries(${name} alps)
         add_alps_test(${name})
     ENDFOREACH(name)
-#ENDIF(FALSE AND ALPS_NGS_USE_NEW_ALEA)
+ENDIF(ALPS_NGS_USE_NEW_ALEA)
 
 IF(FALSE AND ALPS_NGS_USE_NEW_ALEA)
     FOREACH (name   ngs_alea_count_test_compile
