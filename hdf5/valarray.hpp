@@ -39,7 +39,7 @@ namespace alps {
     namespace hdf5 {
 
         template<typename T> struct scalar_type<std::valarray<T> > {
-            typedef typename scalar_type<typename std::valarray<T>::value_type>::type type;
+            typedef typename scalar_type<T>::type type;
         };
 
         template<typename T> struct has_complex_elements<std::valarray<T> > 
@@ -54,7 +54,7 @@ namespace alps {
                     std::vector<std::size_t> result(1, value.size());
                     if (value.size()) {
                         std::vector<std::size_t> extent(get_extent(const_cast<std::valarray<T> &>(value)[0]));
-                        if (!boost::is_scalar<typename std::valarray<T>::value_type>::value)
+                        if (!boost::is_scalar<T>::value)
                             for (std::size_t i = 1; i < value.size(); ++i)
                                 if (!std::equal(extent.begin(), extent.end(), get_extent(const_cast<std::valarray<T> &>(value)[i]).begin()))
                                     throw archive_error("no rectengual matrix" + ALPS_STACKTRACE);
@@ -84,7 +84,7 @@ namespace alps {
                         if (!is_vectorizable(const_cast<std::valarray<T> &>(value)[0]))
                             return false;
                         std::vector<std::size_t> first(get_extent(const_cast<std::valarray<T> &>(value)[0]));
-                        if (!boost::is_scalar<typename std::valarray<T>::value_type>::value) {
+                        if (!boost::is_scalar<T>::value) {
                             for(std::size_t i = 0; i < value.size(); ++i)
                                 if (!is_vectorizable(const_cast<std::valarray<T> &>(value)[i])) {
                                     return false;
