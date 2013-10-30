@@ -61,7 +61,7 @@ namespace alps {
             //     typedef accumulator::accumulator_set observables_type;
             // #else
                 typedef mcobservables observables_type;
-            #endif
+            // #endif
         private:
 
             struct lock_guard_impl : boost::noncopyable {
