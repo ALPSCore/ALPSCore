@@ -61,11 +61,11 @@ namespace alps {
                             if (!is_vectorizable<boost::python::list>::apply(boost::python::extract<boost::python::list>(value[0])))
                                 return false;
                             std::vector<std::size_t> extent = get_extent(boost::python::extract<boost::python::list>(value[i]));
-                            if (first_extent.size() != extent.size() || !equal(first_extent.begin(), first_extent.end(), extent.begin()))
+                            if (first_extent.size() != extent.size() || !std::equal(first_extent.begin(), first_extent.end(), extent.begin()))
                                 return false;
                         } else if (dtype == "numpy.ndarray") {
                             std::vector<std::size_t> extent = get_extent(boost::python::extract<boost::python::numeric::array>(value[i]));
-                            if (first_extent.size() != extent.size() || !equal(first_extent.begin(), first_extent.end(), extent.begin()))
+                            if (first_extent.size() != extent.size() || !std::equal(first_extent.begin(), first_extent.end(), extent.begin()))
                                 return false;
                         } else if (first_dtype != dtype || find(scalar_types, scalar_types + 19, dtype) == scalar_types + 19)
                             return false;
