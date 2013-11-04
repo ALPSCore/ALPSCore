@@ -173,17 +173,19 @@ class ALPS_DECL Observable {
   template <class T>
   void add(const T& x)
   {
-    if (dynamic_cast<RecordableObservable<T>*>(this)==0)
+    RecordableObservable<T>* obs = dynamic_cast<RecordableObservable<T>*>(this);
+    if (obs==0)
       boost::throw_exception(std::runtime_error("Cannot add measurement to observable " + name()));
-    dynamic_cast<RecordableObservable<T> *>(this)->add(x);
+    obs->add(x);
   }
 
   template <class T,class S>
   void add(const T& x, S s)
   {
-    if (dynamic_cast<RecordableObservable<T>*>(this)==0)
+    RecordableObservable<T>* obs = dynamic_cast<RecordableObservable<T>*>(this);
+    if (obs==0)
       boost::throw_exception(std::runtime_error("Cannot add measurement to observable " + name()));
-    dynamic_cast<RecordableObservable<T> *>(this)->add(x,s);
+    obs->add(x,s);
   }
 private:
   void added_to_set() { in_observable_set_=true;}

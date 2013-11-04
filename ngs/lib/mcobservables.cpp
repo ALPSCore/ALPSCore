@@ -41,15 +41,17 @@
 namespace alps {
     
     mcobservable & mcobservables::operator[](std::string const & name) {
-        if (!has(name))
+        iterator it = find(name);
+        if (it == end())
             throw std::out_of_range("No observable found with the name: " + name + ALPS_STACKTRACE);
-        return std::map<std::string, mcobservable>::find(name)->second;
+        return it->second;
     }
 
     mcobservable const & mcobservables::operator[](std::string const & name) const {
-        if (!has(name))
+        const_iterator it = find(name);
+        if (it == end())
             throw std::out_of_range("No observable found with the name: " + name + ALPS_STACKTRACE);
-        return std::map<std::string, mcobservable>::find(name)->second;
+        return it->second;
     }
 
     bool mcobservables::has(std::string const & name) const {

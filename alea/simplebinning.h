@@ -271,10 +271,10 @@ template <> inline void SimpleBinning<std::valarray<double> >::operator<<(const 
           result_type x1=(sum_[0]-sum_[bin]);
           x1/=count_type(binlen);
 
-          result_type y1 = x1*x1;
-
           last_bin_[bin]=x1;
-          sum2_[bin] += y1;
+
+          x1 *= x1;
+          sum2_[bin] += x1;
           sum_[bin] = sum_[0];
           bin_entries_[bin]++;
         }
