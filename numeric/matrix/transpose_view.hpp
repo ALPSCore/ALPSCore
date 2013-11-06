@@ -213,6 +213,9 @@ Matrix conj(transpose_view<Matrix> const& t)
     return m;
 }
 
+template <typename Matrix>
+struct supports_blas<transpose_view<Matrix> > : supports_blas<Matrix>{};
+
 } // end namespace numeric
 } // end namespace alps
 
