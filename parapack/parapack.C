@@ -79,7 +79,7 @@ int start(int argc, char **argv) {
     if (!opt.valid) {
       std::cerr << "Error: unknown command line option(s)\n";
       opt.print(std::cerr);
-      return -1;
+      return 127;
     }
     int ret;
     if (opt.jobfiles.size() == 0) {
@@ -112,7 +112,7 @@ int start(int argc, char **argv) {
         ret = run_sequential_mpi(argc, argv);
 #else
         std::cerr << "ERROR: MPI is not supported\n";
-        return -1;
+        return 127;
 #endif
       }
     } else {
@@ -123,7 +123,7 @@ int start(int argc, char **argv) {
         ret = start_mpi(argc, argv);
 #else
         std::cerr << "ERROR: MPI is not supported\n";
-        return -1;
+        return 127;
 #endif
       }
     }
@@ -137,7 +137,7 @@ int start(int argc, char **argv) {
   catch (...) {
     std::cerr << "Unknown exception occurred!" << std::endl;
   }
-  return -1;
+  return 127;
   #endif
 }
 
@@ -150,7 +150,7 @@ int evaluate(int argc, char **argv) {
     if (!opt.valid) {
       std::cerr << "Error: unknown command line option(s)\n";
       opt.print(std::cerr);
-      return -1;
+      return 127;
     }
     if (opt.show_help) {
       opt.print(std::cout);
@@ -166,7 +166,7 @@ int evaluate(int argc, char **argv) {
       boost::filesystem::path file = complete(boost::filesystem::path(file_str)).normalize();
       if (!exists(file)) {
         std::cerr << "Error: file not found: " << file << std::endl;
-        return -1;
+        return 127;
       }
       boost::filesystem::path basedir = file.branch_path();
       std::string file_in_str;
@@ -207,7 +207,7 @@ int evaluate(int argc, char **argv) {
   catch (...) {
     std::cerr << "known exception occurred!" << std::endl;
   }
-  return -1;
+  return 127;
   #endif
 }
 
@@ -404,11 +404,11 @@ int run_sequential(int argc, char **argv) {
   catch (const std::exception& excp) {
     std::cerr << excp.what() << std::endl;
     alps::comm_exit(true);
-    return -1; }
+    return 127; }
   catch (...) {
     std::cerr << "Unknown exception occurred!" << std::endl;
     alps::comm_exit(true);
-    return -1; }
+    return 127; }
 #endif
   return 0;
 }
@@ -418,7 +418,7 @@ int start_sgl(int argc, char** argv) {
   if (!opt.valid) {
     std::cerr << "Error: unknown command line option(s)\n";
     opt.print(std::cerr);
-    return -1;
+    return 127;
   }
   if (opt.show_help) {
     opt.print(std::cout);
@@ -441,7 +441,7 @@ int start_sgl(int argc, char** argv) {
     boost::filesystem::path file = complete(boost::filesystem::path(file_str)).normalize();
     if (!exists(file)) {
       std::cerr << "Error: file not found: " << file << std::endl;
-      return -1;
+      return 127;
     }
     boost::filesystem::path basedir = file.branch_path();
 
@@ -460,7 +460,7 @@ int start_sgl(int argc, char** argv) {
     int num_groups = num_total_threads / opt.threads_per_clone;
     if (num_groups < 1) {
       boost::throw_exception(std::runtime_error("Invalid number of threads"));
-      return -1;
+      return 127;
     }
 #if defined(_OPENMP) && defined(ALPS_ENABLE_OPENMP_WORKER)
     omp_set_nested(true);
@@ -468,7 +468,7 @@ int start_sgl(int argc, char** argv) {
     if (opt.threads_per_clone > 1) {
       std::cerr << "OpenMP worker parallelization is not supported.  Please rebuild ALPS with -DALPS_PARAPACK_ENABLE_OPENMP_WORKER=ON.\n";
       boost::throw_exception(std::runtime_error("OpenMP worker parallelization is not supported"));
-      return -1;
+      return 127;
     }
 #endif
 
@@ -806,11 +806,11 @@ int run_sequential_mpi(int argc, char** argv) {
   catch (const std::exception& excp) {
     std::cerr << excp.what() << std::endl;
     alps::comm_exit(true);
-    return -1; }
+    return 127; }
   catch (...) {
     std::cerr << "Unknown exception occurred!" << std::endl;
     alps::comm_exit(true);
-    return -1; }
+    return 127; }
 #endif
   return 0;
 }
@@ -819,7 +819,7 @@ int run_sequential_mpi(int argc, char** argv) {
 
 int run_sequential_mpi(int argc, char** argv) {
   std::cerr << "This program has not been compiled for use with MPI\n";
-  return -1;
+  return 127;
 }
 
 #endif // ALPS_HAVE_MPI
@@ -835,7 +835,7 @@ int start_mpi(int argc, char** argv) {
       std::cerr << "Error: unknown command line option(s)\n";
       opt.print(std::cerr);
     }
-    return -1;
+    return 127;
   }
   if (opt.show_help) {
     if (world.rank() == 0) opt.print(std::cout);
@@ -859,7 +859,33 @@ int start_mpi(int argc, char** argv) {
     num_total_threads = max_threads() * world.size();
   else
     num_total_threads = opt.num_total_threads;
-
+  if (num_total_threads % world.size() != 0) {
+    if (world.rank() == 0)
+      std::cerr << "Error: number of total threads is not a multiple of number of processes\n"
+                << "  number of total threads (-r)     : " << num_total_threads << std::endl
+                << "  number of processes              : " << world.size() << std::endl;
+    return 127;
+  }
+  if (num_total_threads % opt.threads_per_clone != 0) {
+    if (world.rank() == 0)
+      std::cerr << "Error: number of total threads is not a multiple of number of threads per "
+                << "clone\n"
+                << "  number of total threads (-r)     : " << num_total_threads << std::endl
+                << "  number of threads per clone (-p) : " << opt.threads_per_clone << std::endl;
+    return 127;
+  }
+  if (num_total_threads / opt.threads_per_clone > world.size()) {
+    if (world.rank() == 0)
+      std::cerr << "Error: number of thread groups is larger than number of processes\n"
+                << "  number of total threads (-r)     : " << num_total_threads << std::endl
+                << "  number of threads per clone (-p) : " << opt.threads_per_clone << std::endl
+                << "  number of thread groups          : " << num_total_threads << " / "
+                << opt.threads_per_clone << " = " << (num_total_threads / opt.threads_per_clone)
+                << std::endl
+                << "  number of processes              : " << world.size() << std::endl;
+    return 127;
+  }
+  
   BOOST_FOREACH(std::string const& file_str, opt.jobfiles) {
     process_helper_mpi
       process(world, world.size() * opt.threads_per_clone / num_total_threads);
@@ -867,7 +893,7 @@ int start_mpi(int argc, char** argv) {
     if (!exists(file)) {
       if (world.rank() == 0)
         std::cerr << "Error: file not found: " << file << std::endl;
-      return -1;
+      return 127;
     }
     boost::filesystem::path basedir = file.branch_path();
 
@@ -1216,7 +1242,7 @@ int start_mpi(int argc, char** argv) {
 int start_mpi(int, char**) {
   boost::throw_exception(std::runtime_error(
     "This program has not been compiled for use with MPI"));
-  return -1;
+  return 127;
 }
 
 #endif // ALPS_HAVE_MPI
