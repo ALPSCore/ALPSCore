@@ -106,11 +106,11 @@ int main() {
     add_edge(0, 4,g.back().first);
 
     //
-    //   2       5
-    //    \     /
-    //     0---1
-    //    /     \
-    //   3       4
+    //   2   5
+    //   |   |
+    //   0---1
+    //   |   |
+    //   3   4
     //
     g.push_back(std::make_pair(graph_type(),18));
     add_edge(0, 1,g.back().first);

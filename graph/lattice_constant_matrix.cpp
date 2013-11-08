@@ -70,7 +70,7 @@ int main() {
     boost::graph_traits<alps::graph_helper<>::graph_type>::edge_iterator it, et;
     for(boost::tie(it, et) = edges(lattice.graph()); it != et; ++it)
     {
-        boost::graph_traits<graph_type>::edge_descriptor  e = add_edge(source(*it, lattice.graph()), target(*it, lattice.graph()), lattice_graph).first;
+        add_edge(source(*it, lattice.graph()), target(*it, lattice.graph()), lattice_graph);
     }
 
     typedef unsigned int contrib_type;
