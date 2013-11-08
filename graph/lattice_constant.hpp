@@ -4,7 +4,8 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2010 - 2012 by Lukas Gamper <gamperl@gmail.com>                   *
+ * Copyright (C) 2010 - 2013 by Lukas Gamper <gamperl@gmail.com>                   *
+ *                              Andreas Hehn <hehn@phys.ethz.ch>                   *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -56,7 +57,7 @@
 
 namespace alps {
     namespace graph {
-    
+
         namespace detail {
 
             struct embedding_generic_type {
@@ -67,7 +68,7 @@ namespace alps {
                     , vertices(new std::vector<std::vector<boost::uint16_t> >(vertices_size))
                     , edges(new std::vector<boost::uint64_t>((edges_size >> 6) + ((edges_size & 0x3F) == 0 ? 0 : 1)))
                 {}
-                
+
                 embedding_generic_type(embedding_generic_type const & rhs)
                     : hash(rhs.hash)
                     , counter(rhs.counter)
@@ -96,8 +97,8 @@ namespace alps {
                 std::size_t hash;
                 boost::uint8_t * counter;
                 std::vector<std::vector<boost::uint16_t> > * vertices;
-                std::vector<boost::uint64_t> * edges;                
-                
+                std::vector<boost::uint64_t> * edges;
+
                 private:
                     embedding_generic_type() {}
             };
@@ -274,7 +275,7 @@ namespace alps {
                 , boost::mpl::true_
             ) {
                 return get(alps::vertex_type_t(), S)[s] == get(alps::vertex_type_t(), G)[g];
-            } 
+            }
 
             template<typename Subgraph, typename Graph> bool lattice_constant_edge_equal(
                   typename boost::graph_traits<Subgraph>::edge_descriptor const & s_e
@@ -430,7 +431,7 @@ namespace alps {
 
                 BOOST_STATIC_ASSERT((boost::is_unsigned<typename alps::graph_traits<Graph>::vertex_descriptor>::value));
                 assert(num_vertices(G) > 0);
-                
+
                 // make sure, that a distance in one direction fits in a boost::uint8_t
                 assert(num_vertices(G) < 256 * 256);
 
@@ -465,7 +466,7 @@ namespace alps {
                                 , *it
                                 , S
                                 , G
-                                , I 
+                                , I
                                 , matches
                                 , distance_to_boarder
                                 , stack
@@ -500,7 +501,7 @@ namespace alps {
             , Graph const & G
             , Lattice const & L
             , typename alps::lattice_traits<Lattice>::cell_descriptor c
-        ) {            
+        ) {
             typedef typename alps::lattice_traits<Lattice>::size_type cell_index_type;
 
             // Get the possible translation in the lattice
@@ -528,6 +529,7 @@ namespace alps {
             , typename boost::graph_traits<Subgraph>::vertex_descriptor b
             , typename partition_type<Subgraph>::type const & subgraph_orbit
         ) {
+            assert(get<alps::graph::partition>(canonical_properties(S)) == subgraph_orbit);
             // Get the possible translation in the lattice
             std::vector<std::vector<boost::uint_t<8>::fast> > distance_to_boarder(dimension(L), std::vector<boost::uint_t<8>::fast>(num_vertices(G), num_vertices(G)));
             detail::build_translation_table(G, L, distance_to_boarder);
@@ -545,8 +547,9 @@ namespace alps {
               Subgraph const & S
             , Graph const & G
             , typename boost::graph_traits<Graph>::vertex_descriptor v
-            , typename partition_type<Subgraph>::type const & subgraph_orbit            
+            , typename partition_type<Subgraph>::type const & subgraph_orbit
         ) {
+            assert(get<alps::graph::partition>(canonical_properties(S)) == subgraph_orbit);
             std::vector<std::vector<boost::uint_t<8>::fast> > distance_to_boarder;
 
             try {
@@ -564,6 +567,7 @@ namespace alps {
             , Graph const & G
             , typename partition_type<Subgraph>::type const & subgraph_orbit
         ) {
+            assert(get<alps::graph::partition>(canonical_properties(S)) == subgraph_orbit);
             std::vector<std::vector<boost::uint_t<8>::fast> > distance_to_boarder;
 
             try {
@@ -591,6 +595,8 @@ namespace alps {
             , typename color_partition<Subgraph>::type const & color_partition
         ) {
             using std::distance;
+            assert(get<alps::graph::partition>(canonical_properties(S,color_partition)) == subgraph_orbit);
+
             std::vector<std::vector<boost::uint_t<8>::fast> > distance_to_boarder;
 
             // Try to embedd directly
