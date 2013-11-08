@@ -16,14 +16,15 @@ IF (ALPS_BUILD_GRAPH_TESTS)
             iso_simple
             canonical_label_test
             canonical_label_with_color_symmetries_test
-            lattice_constant_test
+            is_embeddable_with_color_symmetries_test
             subgraph_generator_test
             subgraph_generator_test_colored_edges
             subgraph_generator_test_colored_edges2
             subgraph_generator_test_colored_edges_with_sym
+            lattice_constant_test
+            lattice_constant_matrix
             colored_lattice_constant_test
             colored_lattice_constant_test2
-            lattice_constant_matrix
     )
       add_executable(${name} ${name}.cpp)
       add_dependencies(${name} alps)
