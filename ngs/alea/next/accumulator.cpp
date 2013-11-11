@@ -4,7 +4,8 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2010 - 2013 by Lukas Gamper <gamperl@gmail.com>                   *
+ * Copyright (C) 2011 - 2013 by Mario Koenz <mkoenz@ethz.ch>                       *
+ *                              Lukas Gamper <gamperl@gmail.com>                   *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -25,68 +26,31 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_MCBASE_HPP
-#define ALPS_NGS_MCBASE_HPP
+#include <alps/ngs/alea/next/accumulator.hpp>
 
-#include <alps/ngs.hpp>
-
-#include <boost/function.hpp>
-#include <boost/filesystem/path.hpp>
-#include <boost/random/uniform_real.hpp>
-#include <boost/random/variate_generator.hpp>
-
-#include <vector>
-#include <string>
-
-// move to alps::mcbase root scope
 namespace alps {
+    namespace accumulator {
 
-    class ALPS_DECL mcbase {
+        #define EXTERNAL_FUNCTION(FUN)                          \
+            result_wrapper FUN (result_wrapper const & arg) {   \
+                return arg. FUN ();                             \
+            }
+            EXTERNAL_FUNCTION(sin)
+            EXTERNAL_FUNCTION(cos)
+            EXTERNAL_FUNCTION(tan)
+            EXTERNAL_FUNCTION(sinh)
+            EXTERNAL_FUNCTION(cosh)
+            EXTERNAL_FUNCTION(tanh)
+            EXTERNAL_FUNCTION(asin)
+            EXTERNAL_FUNCTION(acos)
+            EXTERNAL_FUNCTION(atan)
+            EXTERNAL_FUNCTION(abs)
+            EXTERNAL_FUNCTION(sqrt)
+            EXTERNAL_FUNCTION(log)
+            EXTERNAL_FUNCTION(sq)
+            EXTERNAL_FUNCTION(cb)
+            EXTERNAL_FUNCTION(cbrt)
 
-        protected:
-
-            #ifdef ALPS_NGS_USE_NEW_ALEA
-                typedef alps::accumulator::accumulator_set observable_collection_type;
-            #else
-                typedef alps::mcobservables observable_collection_type;
-            #endif
-
-        public:
-
-            typedef alps::params parameters_type;
-            typedef std::vector<std::string> result_names_type;
-
-            #ifdef ALPS_NGS_USE_NEW_ALEA
-                typedef alps::accumulator::result_set results_type;
-            #else
-                typedef alps::mcresults results_type;
-            #endif
-
-            mcbase(parameters_type const & parms, std::size_t seed_offset = 0);
-
-            virtual void update() = 0;
-            virtual void measure() = 0;
-            virtual double fraction_completed() const = 0;
-            bool run(boost::function<bool ()> const & stop_callback);
-
-            result_names_type result_names() const;
-            result_names_type unsaved_result_names() const;
-            results_type collect_results() const;
-            results_type collect_results(result_names_type const & names) const;
-
-            void save(boost::filesystem::path const & filename) const;
-            void load(boost::filesystem::path const & filename);
-            virtual void save(alps::hdf5::archive & ar) const;
-            virtual void load(alps::hdf5::archive & ar);
-
-        protected:
-
-            parameters_type parameters;
-            parameters_type & params; // TODO: deprecated, remove!
-            alps::random01 mutable random;
-            observable_collection_type measurements;
-    };
-
+        #undef EXTERNAL_FUNCTION
+    }
 }
-
-#endif

@@ -79,7 +79,7 @@ namespace alps {
                 }
 
                 template<typename A> A & extract() {
-                    return dynamic_cast<derived_wrapper<A>& >(*this).extract();
+                    return dynamic_cast<derived_wrapper<A> &>(*this).extract();
                 }
                 template<typename A> A const & extract() const {
                     return dynamic_cast<derived_wrapper<A> const &>(*this).extract();

@@ -130,12 +130,16 @@ namespace alps {
                         using alps::ngs::numeric::operator-;
                         using alps::ngs::numeric::operator*;
                         using alps::ngs::numeric::operator-;
-                        
+                        using alps::ngs::numeric::detail::check_size;
+
                         B::operator()(val);
                         
                         if(B::count() == (1 << m_ac_bins.size())) {
                             m_ac_bins.push_back(T());
+                            check_size(m_ac_bins.back(), val);
+
                             m_ac_partial.push_back(T());
+                            check_size(m_ac_partial.back(), val);
                         }
                         for (unsigned i = 0; i < m_ac_bins.size(); ++i)
                             // TODO: check if this makes sence

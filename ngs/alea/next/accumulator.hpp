@@ -52,6 +52,10 @@ namespace alps {
         // TODO: merge with accumulator_wrapper
         class ALPS_DECL result_wrapper {
             public:
+                result_wrapper() 
+                    : m_base()
+                {}
+
                 template<typename T> result_wrapper(T arg)
                     : m_base(new derived_result_wrapper<T>(arg))
                 {}
@@ -78,6 +82,11 @@ namespace alps {
 
                 template<typename T, typename W> void operator()(T const & value, W const & weight) {
                     (*m_base)(&value, typeid(T), &weight, typeid(W));
+                }
+
+                result_wrapper & operator=(boost::shared_ptr<result_wrapper> const & ptr) {
+                    m_base = ptr->m_base;
+                    return *this;
                 }
 
                 template<typename T> result_type_wrapper<T> const & get() const {
@@ -185,6 +194,10 @@ namespace alps {
 
         class ALPS_DECL accumulator_wrapper {
             public:
+                accumulator_wrapper() 
+                    : m_base()
+                {}
+
                 template<typename T> accumulator_wrapper(T arg)
                     : m_base(new derived_accumulator_wrapper<T>(arg))
                 {}
@@ -207,6 +220,11 @@ namespace alps {
                 template<typename T, typename W> void operator()(T const & value, W const & weight) {
                     (*m_base)(&value, typeid(T), &weight, typeid(W));
                 }                
+
+                accumulator_wrapper & operator=(boost::shared_ptr<accumulator_wrapper> const & ptr) {
+                    m_base = ptr->m_base;
+                    return *this;
+                }
 
                 template<typename T> result_type_wrapper<T> const & get() const {
                     return m_base->get<T>();
@@ -325,7 +343,7 @@ namespace alps {
 
                     T & operator[](std::string const & name) {
                         if (!has(name))
-                            throw std::out_of_range("No observable found with the name: " + name + ALPS_STACKTRACE);
+                            m_storage.insert(make_pair(name, boost::shared_ptr<T>(new T())));
                         return *(m_storage.find(name)->second);
                     }
 
@@ -363,7 +381,7 @@ namespace alps {
                                 ; ++jt
                             )
                                 if ((*jt)->can_load(ar)) {
-                                    insert(*it, boost::shared_ptr<T>((*jt)->create(ar)));
+                                    operator[](*it) = boost::shared_ptr<T>((*jt)->create(ar));
                                     break;
                                 }
                             if (!has(*it))
