@@ -56,6 +56,14 @@ namespace alps {
     namespace graph {
         namespace detail {
 
+            template <typename Graph>
+            bool graph_has_vertex(Graph const& g, typename boost::graph_traits<Graph>::vertex_descriptor v)
+            {
+                typename boost::graph_traits<Graph>::vertex_iterator vb,ve;
+                boost::tie(vb,ve) = vertices(g);
+                return (std::find(vb,ve,v) != ve);
+            }
+
             // Input: pi = (V1, V2, ..., Vr)
             // Output: I = {(ni, j) : ni element of Vj
             template<typename Graph> void partition_indeces(
@@ -99,11 +107,11 @@ namespace alps {
                                 return make_pair(it - pi.begin(), jt - adjacent_numbers.begin());
                     }
                 }
-                
+
                 // no shattering found
                 return std::make_pair(pi.size(), 0);
             }
-            
+
             // Input: pi = (V1, V2, ..., Vr)
             // Output: An ordered partition R(pi)
             template<typename Graph> void equitable_refinement(
@@ -202,7 +210,7 @@ namespace alps {
                     terminal_node(T, G);
                 }
             }
-            
+
             // The not colored graph label is a triangular bit matrix
             // Input: pi = (V1, V2, ..., Vr)
             // Output: comparable graph label l(pi)
@@ -224,7 +232,7 @@ namespace alps {
                         if (I[*ai] <= I[it->first])
                             get<0>(l)[I[*ai] * pi.size() - (I[*ai] - 1) * I[*ai] / 2 + I[it->first] - I[*ai]] = true;
             }
-            
+
 
 
             namespace label_helpers {
@@ -441,7 +449,7 @@ namespace alps {
                             detail::partition_indeces(I, orbit, G);
                         }
             }
-            
+
             // uncolored initial partition
             template<typename Graph> void initial_partition(
                   Graph const & G
@@ -568,7 +576,7 @@ namespace alps {
                         canonical_label = current_label;
                     }
                 }
-                
+
                 std::vector<typename boost::graph_traits<Graph>::vertex_descriptor> canonical_ordering;
                 for (typename partition_type<Graph>::type::const_iterator it = canonical_partition.begin(); it != canonical_partition.end(); ++it)
                     canonical_ordering.push_back((*it)[0]);
@@ -580,7 +588,7 @@ namespace alps {
             }
         }
 
-        
+
         // McKay’s canonical isomorph function Cm(G) is deﬁned to be
         // Cm(G) = max{ Gpi: (pi, nu) is a leaf of T(G) }
         // Input: graph G
@@ -642,6 +650,7 @@ namespace alps {
         template<typename Graph>
         typename canonical_properties_type<Graph>::type
         canonical_properties(Graph const & G, typename boost::graph_traits<Graph>::vertex_descriptor v) {
+            assert( detail::graph_has_vertex(G,v));
             typename partition_type<Graph>::type pi;
             // pi = (V1, V2, ..., Vr), Vi = (n1, n2, ..., nk), ni element of G
             // uncolored graphs: pi is a unit partition (pi has only one part)
