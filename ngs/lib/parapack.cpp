@@ -33,7 +33,6 @@
 #include <alps/ngs/parapack/clone.h>
 #include <alps/ngs/parapack/clone_proxy.h>
 #include <alps/ngs/parapack/job_p.h>
-#include <alps/ngs/scheduler/stop_callback.hpp>
 #include <alps/parapack/filelock.h>
 #include <alps/parapack/logger.h>
 #include <alps/parapack/queue.h>
@@ -41,6 +40,7 @@
 #include <alps/parapack/version.h>
 
 #include <alps/config.h>
+#include <alps/stop_callback.hpp>
 #include <alps/utility/copyright.hpp>
 #include <alps/utility/os.hpp>
 #include <alps/osiris/comm.h>

@@ -27,20 +27,20 @@
 
 #include <alps/ngs/config.hpp>
 
-#if !defined(ALPS_NGS_MPI_ADAPTER_HPP) && defined(ALPS_HAVE_MPI)
-#define ALPS_NGS_MPI_ADAPTER_HPP
+#if !defined(ALPS_MCMPIADAPTER_HPP) && defined(ALPS_HAVE_MPI)
+#define ALPS_MCMPIADAPTER_HPP
 
 #include <alps/ngs.hpp>
 #include <alps/ngs/boost_mpi.hpp>
-#include <alps/ngs/scheduler/check_schedule.hpp>
+#include <alps/check_schedule.hpp>
 
 namespace alps {
 
-    template<typename Base, typename ScheduleChecker = alps::check_schedule> class mpi_adapter : public Base {
+    template<typename Base, typename ScheduleChecker = alps::check_schedule> class mcmpiadapter : public Base {
 
         public:
 
-            mpi_adapter(
+            mcmpiadapter(
                   typename Base::parameters_type const & parameters
                 , boost::mpi::communicator const & comm
                 , ScheduleChecker const & check = ScheduleChecker()

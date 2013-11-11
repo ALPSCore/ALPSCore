@@ -27,7 +27,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <alps/ngs.hpp>
-#include <alps/ngs/scheduler/mcbase.hpp>
+#include <alps/mcbase.hpp>
 
 namespace alps {
     namespace detail {

@@ -26,7 +26,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <alps/ngs/signal.hpp>
-#include <alps/ngs/scheduler/mcbase.hpp>
+#include <alps/mcbase.hpp>
 
 namespace alps {
 

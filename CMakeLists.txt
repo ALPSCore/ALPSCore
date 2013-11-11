@@ -33,7 +33,7 @@ set(ALPS_SOURCES
     parser/parser.C parser/xmlattributes.C parser/xmlhandler.C parser/xmlparser.C
     parser/xmlstream.C parser/xslt_path.C
     #hdf5
-    ngs/lib/hdf5.cpp ngs/lib/signal.cpp ngs/lib/stacktrace.cpp
+    hdf5/archive.cpp ngs/lib/signal.cpp ngs/lib/stacktrace.cpp
     # random
     random/rngfactory.C random/parallel/get_prime.cpp random/parallel/primelist_64.cpp
     # scheduler
@@ -49,14 +49,14 @@ set(ALPS_SOURCES
     # parameters
     ngs/lib/paramvalue.cpp ngs/lib/paramproxy.cpp ngs/lib/params.cpp
     # scheduler
-    ngs/lib/mcbase.cpp ngs/lib/parseargs.cpp
+    mcbase.cpp ngs/lib/parseargs.cpp
 #deprecated, TODO: replace by new alea
     ngs/lib/mcoptions.cpp ngs/lib/observablewrappers.cpp ngs/lib/make_deprecated_parameters.cpp ngs/lib/make_parameters_from_xml.cpp
     ngs/lib/mcresult.cpp ngs/lib/mcresults.cpp ngs/lib/mcobservables.cpp ngs/lib/mcobservable.cpp
   )
 
   if (ALPS_BUILD_PYTHON)
-    set(ALPS_SOURCES ${ALPS_SOURCES} ngs/lib/get_numpy_type.cpp ngs/lib/hdf5/python.cpp)
+    set(ALPS_SOURCES ${ALPS_SOURCES} ngs/lib/get_numpy_type.cpp hdf5/python.cpp)
   endif (ALPS_BUILD_PYTHON)
 
   # OpenMPI ULFM

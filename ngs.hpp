@@ -54,13 +54,10 @@
 	#include <alps/ngs/alea/next/accumulator.hpp>
 #endif
 
-#include <alps/ngs/scheduler/mcbase.hpp>
-//#include <alps/ngs/scheduler/mpimcsim.hpp>
-#include <alps/ngs/scheduler/parseargs.hpp>
-#include <alps/ngs/scheduler/stop_callback.hpp>
-#include <alps/ngs/scheduler/progress_callback.hpp> // TODO: remove this file!
-//#include <alps/ngs/scheduler/mpiparallelsim.hpp>
-//#include <alps/ngs/scheduler/multithreadedsim.hpp>
+// #include <alps/mcbase.hpp>
+// #include <alps/parseargs.hpp>
+// #include <alps/stop_callback.hpp>
+// #include <alps/progress_callback.hpp> // TODO: remove this file!
 
 // TODO: remove these deprecated headers:
 #include <alps/ngs/mcresult.hpp>
