@@ -39,7 +39,7 @@ option::option(int argc, char** argv)
     checkpoint_interval(pt::seconds(3600)), report_interval(pt::seconds(600)),
     vmusage_interval(pt::pos_infin),
     use_termfile(false), auto_evaluate(true), evaluate_only(false),
-    dump_policy(dump_policy::RunningOnly), write_xml(false),
+    dump_format(dump_format::hdf5), dump_policy(dump_policy::RunningOnly), write_xml(false),
     use_mpi(false), default_total_threads(true), auto_total_threads(false), 
     num_total_threads(1), threads_per_clone(1), task_range(),
     jobfiles(), valid(true), show_help(false), show_license(false) {
@@ -52,6 +52,8 @@ option::option(int argc, char** argv)
      "time between internal status check [unit = millisec; default = 100ms]")
     ("checkpoint-interval", po::value<int>(),
      "time between checkpointing [unit = sec; default = 3600s]")
+    ("dump-format", po::value<std::string>(),
+     "format for dumping clone info, parameter, and measurements [hdf5 (default), xdr]")
     ("dump-policy", po::value<std::string>(),
      "policy for dumping user checkpoint data [running (default), never, all]")
     ("enable-termination-file", "enable termination file support (*.term)")
@@ -105,6 +107,17 @@ option::option(int argc, char** argv)
     checkpoint_interval = pt::seconds(vm["checkpoint-interval"].as<int>());
   if (vm.count("enable-termination-file"))
     use_termfile = true;
+  if (vm.count("dump-format")) {
+    std::string value = vm["dump-format"].as<std::string>();
+    if (value == "hdf5")
+      dump_format = dump_format::hdf5;
+    else if (value == "xdr")
+      dump_format = dump_format::xdr;
+    else {
+      valid = false;
+      return;
+    }
+  }
   if (vm.count("dump-policy")) {
     std::string value = vm["dump-policy"].as<std::string>();
     if (value == "never")

@@ -359,13 +359,21 @@ void task::evaluate(bool write_xml) {
     std::cout << (cid+1) << ' ' << std::flush;
     std::vector<ObservableSet> os;
     if (clone_info_[cid].checkpoints().size() == 1) {
-      std::string p = clone_info_[cid].checkpoints()[0] + ".h5";
+      boost::filesystem::path dump_h5 =
+        complete(boost::filesystem::path(clone_info_[cid].checkpoints()[0] + ".h5"), basedir_);
+      boost::filesystem::path dump_xdr =
+        complete(boost::filesystem::path(clone_info_[cid].checkpoints()[0] + ".xdr"), basedir_);
       std::vector<ObservableSet> o;
       bool success;
-      #pragma omp critical (hdf5io)
-      {
-        hdf5::archive h5(complete(p, basedir_).string());
-        success = load_observable(h5, cid, o);
+      if (exists(dump_h5)) {
+        #pragma omp critical (hdf5io)
+        {
+          hdf5::archive h5(dump_h5);
+          success = load_observable(h5, cid, o);
+        }
+      } else {
+        IXDRFileDump dp(dump_xdr);
+        success = load_observable(dp, o);
       }
       if (success) {
         evaluator->load(o, os);
@@ -373,13 +381,21 @@ void task::evaluate(bool write_xml) {
       }
     } else {
       for (unsigned int w = 0; w < clone_info_[cid].checkpoints().size(); ++w) {
-        std::string p = clone_info_[cid].checkpoints()[w] + ".h5";
+        boost::filesystem::path dump_h5 =
+          complete(boost::filesystem::path(clone_info_[cid].checkpoints()[w] + ".h5"), basedir_);
+        boost::filesystem::path dump_xdr =
+          complete(boost::filesystem::path(clone_info_[cid].checkpoints()[w] + ".xdr"), basedir_);
         std::vector<ObservableSet> o;
         bool success;
-        #pragma omp critical (hdf5io)
-        {
-          hdf5::archive h5(complete(p, basedir_).string());
-          success = load_observable(h5, cid, w, o);
+        if (exists(dump_h5)) {
+          #pragma omp critical (hdf5io)
+          {
+            hdf5::archive h5(dump_h5);
+            success = load_observable(h5, cid, w, o);
+          }
+        } else {
+          IXDRFileDump dp(dump_xdr);
+          success = load_observable(dp, o);
         }
         if (success) {
           evaluator->load(o, os);

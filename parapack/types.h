@@ -58,6 +58,15 @@ struct parapack_dump {
 };
 typedef parapack_dump::parapack_dump_t parapack_dump_t;
 
+struct dump_format {
+  enum dump_format_t {
+    hdf5, // default
+    xdr
+  };
+  static std::string to_string(dump_format_t format);
+};
+typedef dump_format::dump_format_t dump_format_t;
+
 struct dump_policy {
   enum dump_policy_t {
     Never,

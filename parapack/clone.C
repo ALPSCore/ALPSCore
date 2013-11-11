@@ -118,16 +118,22 @@ bool load_observable(alps::hdf5::archive & ar, cid_t cid, int rank,
                          "/results", obs);
 }
 
+bool load_observable(alps::IDump& dp, std::vector<ObservableSet>& obs) {
+  Parameters ptmp;
+  clone_info itmp;
+  dp >> ptmp >> itmp >> obs;
+  return true;
+}
+  
 
 //
 // clone
 //
 
-clone::clone(boost::filesystem::path const& basedir, dump_policy_t dump_policy, 
-  clone_timer::duration_t const& check_interval, tid_t tid, cid_t cid, Parameters const& params,
-  std::string const& base, bool is_new)
-  : task_id_(tid), clone_id_(cid), params_(params), basedir_(basedir), dump_policy_(dump_policy),
-    timer_(check_interval) {
+clone::clone(boost::filesystem::path const& basedir, alps::parapack::option opt, tid_t tid,
+  cid_t cid, Parameters const& params, std::string const& base, bool is_new)
+  : task_id_(tid), clone_id_(cid), params_(params), basedir_(basedir),
+    dump_format_(opt.dump_format), dump_policy_(opt.dump_policy), timer_(opt.check_interval) {
   params_["DIR_NAME"] = basedir_.string();
   params_["BASE_NAME"] = base;
 
@@ -197,14 +203,21 @@ bool clone::halted() const { return !worker_; }
 clone_info const& clone::info() const { return info_; }
 
 void clone::load() {
+  boost::filesystem::path dump = complete(boost::filesystem::path(info_.dumpfile()), basedir_);
   boost::filesystem::path dump_h5 =
     complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_);
-  #pragma omp critical (hdf5io)
-  {
-    hdf5::archive h5(dump_h5.string());
-    h5["/"] >> *this;
+  boost::filesystem::path dump_xdr =
+    complete(boost::filesystem::path(info_.dumpfile_xdr()), basedir_);
+  if (exists(dump_h5)) {
+    #pragma omp critical (hdf5io)
+    {
+      hdf5::archive h5(dump_h5.string());
+      h5["/"] >> *this;
+    }
+  } else {
+    IXDRFileDump dp(dump_xdr);
+    dp >> params_ >> info_ >> measurements_;
   }
-  boost::filesystem::path dump = complete(boost::filesystem::path(info_.dumpfile()), basedir_);
   bool workerdump = (dump_policy_ == dump_policy::All) ||
     (dump_policy_ == dump_policy::RunningOnly && info_.progress() < 1);
   if (workerdump) {
@@ -214,14 +227,21 @@ void clone::load() {
 }
 
 void clone::save() const{
+  boost::filesystem::path dump = complete(boost::filesystem::path(info_.dumpfile()), basedir_);
   boost::filesystem::path dump_h5 =
     complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_);
-  #pragma omp critical (hdf5io)
-  {
-    hdf5::archive h5(dump_h5.string(), "a");
-    h5["/"] << *this;
+  boost::filesystem::path dump_xdr =
+    complete(boost::filesystem::path(info_.dumpfile_xdr()), basedir_);
+  if (dump_format_ == dump_format::hdf5) {
+    #pragma omp critical (hdf5io)
+    {
+      hdf5::archive h5(dump_h5.string(), "a");
+      h5["/"] << *this;
+    }
+  } else if (dump_format_ == dump_format::xdr) {
+    OXDRFileDump dp(dump_xdr);
+    dp << params_ << info_ << measurements_;
   }
-  boost::filesystem::path dump = complete(boost::filesystem::path(info_.dumpfile()), basedir_);
   bool workerdump = (dump_policy_ == dump_policy::All) ||
     (dump_policy_ == dump_policy::RunningOnly && info_.progress() < 1);
   if (workerdump) {
@@ -274,11 +294,10 @@ void clone::output() const{
 //
 
 clone_mpi::clone_mpi(boost::mpi::communicator const& ctrl, boost::mpi::communicator const& work,
-  boost::filesystem::path const& basedir, dump_policy_t dump_policy,
-  clone_timer::duration_t const& check_interval, clone_create_msg_t const& msg)
+  boost::filesystem::path const& basedir, alps::parapack::option opt, clone_create_msg_t const& msg)
   : ctrl_(ctrl), work_(work), task_id_(msg.task_id), clone_id_(msg.clone_id),
-    group_id_(msg.group_id), params_(msg.params), basedir_(basedir),
-    dump_policy_(dump_policy), timer_(check_interval) {
+    group_id_(msg.group_id), params_(msg.params), basedir_(basedir), dump_format_(opt.dump_format),
+    dump_policy_(opt.dump_policy), timer_(opt.check_interval) {
   bool is_new = msg.is_new;
   params_["DIR_NAME"] = basedir;
   params_["BASE_NAME"] = msg.base;
@@ -441,14 +460,21 @@ bool clone_mpi::halted() const { return !worker_; }
 clone_info const& clone_mpi::info() const { return info_; }
 
 void clone_mpi::load() {
+  boost::filesystem::path dump = complete(boost::filesystem::path(info_.dumpfile()), basedir_);
   boost::filesystem::path dump_h5 =
     complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_);
-  #pragma omp critical (hdf5io)
-  {
-    hdf5::archive h5(dump_h5.string());
-    h5["/"] >> *this;
+  boost::filesystem::path dump_xdr =
+    complete(boost::filesystem::path(info_.dumpfile_xdr()), basedir_);
+  if (exists(dump_h5)) {
+    #pragma omp critical (hdf5io)
+    {
+      hdf5::archive h5(dump_h5.string());
+      h5["/"] >> *this;
+    }
+  } else {
+    IXDRFileDump dp(dump_xdr);
+    dp >> params_ >> info_ >> measurements_;
   }
-  boost::filesystem::path dump = complete(boost::filesystem::path(info_.dumpfile()), basedir_);
   bool workerdump = (dump_policy_ == dump_policy::All) ||
     (dump_policy_ == dump_policy::RunningOnly && info_.progress() < 1);
   broadcast(work_, workerdump, 0);
@@ -459,17 +485,24 @@ void clone_mpi::load() {
 }
 
 void clone_mpi::save() const{
+  boost::filesystem::path dump = complete(boost::filesystem::path(info_.dumpfile()), basedir_);
   boost::filesystem::path dump_h5 =
     complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_);
-  #pragma omp critical (hdf5io)
-  {
-    hdf5::archive h5(dump_h5.string(), "a");
-    h5["/"] << *this;
+  boost::filesystem::path dump_xdr =
+    complete(boost::filesystem::path(info_.dumpfile_xdr()), basedir_);
+  if (dump_format_ == dump_format::hdf5) {
+    #pragma omp critical (hdf5io)
+    {
+      hdf5::archive h5(dump_h5.string(), "a");
+      h5["/"] << *this;
+    }
+  } else if (dump_format_ == dump_format::xdr) {
+    OXDRFileDump dp(dump_xdr);
+    dp << params_ << info_ << measurements_;
   }
   bool workerdump = (dump_policy_ == dump_policy::All) ||
     (dump_policy_ == dump_policy::RunningOnly && info_.progress() < 1);
   broadcast(work_, workerdump, 0);
-  boost::filesystem::path dump = complete(boost::filesystem::path(info_.dumpfile()), basedir_);
   if (workerdump) {
     OXDRFileDump dp(dump);
     worker_->save_worker(dp);

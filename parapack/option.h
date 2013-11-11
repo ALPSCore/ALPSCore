@@ -43,6 +43,7 @@ struct option {
   boost::posix_time::time_duration vmusage_interval;
   bool use_termfile;
   bool auto_evaluate, evaluate_only;
+  dump_format_t dump_format;
   dump_policy_t dump_policy;
   bool write_xml;
   bool use_mpi, default_total_threads, auto_total_threads;

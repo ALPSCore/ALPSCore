@@ -30,8 +30,9 @@
 
 #include "clone_info.h"
 #include "clone_timer.h"
-#include "worker_factory.h"
+#include "option.h"
 #include "types.h"
+#include "worker_factory.h"
 
 #include <alps/alea.h>
 #include <alps/hdf5.hpp>
@@ -53,6 +54,7 @@ ALPS_DECL bool load_observable(hdf5::archive & ar, cid_t cid,
   std::vector<ObservableSet>& obs);
 ALPS_DECL bool load_observable(hdf5::archive & ar, cid_t cid, int rank,
   std::vector<ObservableSet>& obs);
+ALPS_DECL bool load_observable(alps::IDump& dp, std::vector<ObservableSet>& obs);
 
 class abstract_clone : public boost::noncopyable {
 public:
@@ -72,9 +74,8 @@ public:
 
 class clone : public abstract_clone {
 public:
-  clone(boost::filesystem::path const& basedir, dump_policy_t dump_policy, 
-    clone_timer::duration_t const& check_interval, tid_t tid, cid_t cid, Parameters const& params,
-    std::string const& base, bool is_new);
+  clone(boost::filesystem::path const& basedir, alps::parapack::option opt, tid_t tid, cid_t cid,
+    Parameters const& params, std::string const& base, bool is_new);
   virtual ~clone();
 
   tid_t task_id() const { return task_id_; }
@@ -107,6 +108,7 @@ private:
   clone_info info_;
   std::vector<ObservableSet> measurements_;
 
+  dump_format_t dump_format_;
   dump_policy_t dump_policy_;
   clone_timer timer_;
   clone_timer::loops_t loops_;
@@ -162,8 +164,8 @@ struct clone_halt_msg_t {
 class clone_mpi : public abstract_clone {
 public:
   clone_mpi(boost::mpi::communicator const& ctrl, boost::mpi::communicator const& work,
-    boost::filesystem::path const& basedir, dump_policy_t dump_policy,
-    clone_timer::duration_t const& check_interval, clone_create_msg_t const& msg);
+    boost::filesystem::path const& basedir, alps::parapack::option opt,
+    clone_create_msg_t const& msg);
   virtual ~clone_mpi();
 
   tid_t task_id() const { return task_id_; }
@@ -204,6 +206,7 @@ private:
   clone_info info_;
   std::vector<ObservableSet> measurements_;
 
+  dump_format_t dump_format_;
   dump_policy_t dump_policy_;
   clone_timer timer_;
   clone_timer::loops_t loops_;

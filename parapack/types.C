@@ -29,6 +29,18 @@
 
 namespace alps {
 
+std::string dump_format::to_string(dump_format_t format) {
+  switch (format) {
+  case hdf5:
+    return "hdf5";
+  case xdr:
+    return "xdr";
+  default:
+    ;
+  }
+  return "undefined";
+}
+
 std::string dump_policy::to_string(dump_policy_t policy) {
   switch (policy) {
   case All:

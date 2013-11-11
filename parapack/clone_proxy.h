@@ -34,13 +34,12 @@ namespace alps {
 
 class clone_proxy {
 public:
-  clone_proxy(clone*& clone_ptr, boost::filesystem::path const& basedir, dump_policy_t dump_policy,
-    clone_timer::duration_t const& check_interval) : clone_ptr_(clone_ptr), basedir_(basedir),
-    dump_policy_(dump_policy), check_interval_(check_interval) {}
+  clone_proxy(clone*& clone_ptr, boost::filesystem::path const& basedir, alps::parapack::option opt)
+    : clone_ptr_(clone_ptr), basedir_(basedir), opt_(opt) {}
   bool is_local(Process const&) const { return true; }
   void start(tid_t tid, cid_t cid, thread_group const&, Parameters const& params,
     std::string const& base, bool is_new) {
-    clone_ptr_ = new clone(basedir_, dump_policy_, check_interval_, tid, cid, params, base, is_new);
+    clone_ptr_ = new clone(basedir_, opt_, tid, cid, params, base, is_new);
   }
   clone_info const& info(Process const&) const {
     if (!clone_ptr_)
@@ -60,8 +59,7 @@ public:
 private:
   clone*& clone_ptr_;
   boost::filesystem::path basedir_;
-  dump_policy_t dump_policy_;
-  clone_timer::duration_t check_interval_;
+  alps::parapack::option opt_;
 };
 
 #ifdef ALPS_HAVE_MPI
@@ -70,9 +68,9 @@ class clone_proxy_mpi {
 public:
   clone_proxy_mpi(clone_mpi*& clone_ptr, boost::mpi::communicator const& comm_ctrl,
     boost::mpi::communicator const& comm_work, boost::filesystem::path const& basedir,
-    dump_policy_t dump_policy, clone_timer::duration_t const& check_interval)
+    alps::parapack::option opt)
     : clone_ptr_(clone_ptr), comm_ctrl_(comm_ctrl), comm_work_(comm_work), basedir_(basedir),
-      dump_policy_(dump_policy), check_interval_(check_interval) {}
+      opt_(opt) {}
   bool is_local(Process const& proc) const { return proc == 0; }
   void start(tid_t tid, cid_t cid, process_group const& procs, Parameters const& params,
     std::string const& base, bool is_new) const {
@@ -86,7 +84,7 @@ public:
     }
     if (worker_on_master)
       clone_ptr_ =
-        new clone_mpi(comm_ctrl_, comm_work_, basedir_, dump_policy_, check_interval_, msg);
+        new clone_mpi(comm_ctrl_, comm_work_, basedir_, opt_, msg);
   }
 
   clone_info const& info(Process const& proc) const {
@@ -140,8 +138,7 @@ private:
   clone_mpi*& clone_ptr_;
   boost::mpi::communicator comm_ctrl_, comm_work_;
   boost::filesystem::path basedir_;
-  dump_policy_t dump_policy_;
-  clone_timer::duration_t check_interval_;
+  alps::parapack::option opt_;
 };
 
 #endif // ALPS_HAVE_MPI

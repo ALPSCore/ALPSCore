@@ -568,7 +568,7 @@ int start_sgl(int argc, char** argv) {
       } // end omp master
 
       clone* clone_ptr = 0;
-      clone_proxy proxy(clone_ptr, basedir, opt.dump_policy, opt.check_interval);
+      clone_proxy proxy(clone_ptr, basedir, opt);
 
       while (true) {
 
@@ -1019,8 +1019,7 @@ int start_mpi(int argc, char** argv) {
 
         // server process
         if (world.rank() == 0) {
-          clone_proxy_mpi proxy(clone_ptr, process.comm_ctrl(), process.comm_work(), basedir,
-            opt.dump_policy, opt.check_interval);
+          clone_proxy_mpi proxy(clone_ptr, process.comm_ctrl(), process.comm_work(), basedir, opt);
 
           if (!process.is_halting()) {
             bool to_halt = false;
@@ -1206,8 +1205,7 @@ int start_mpi(int argc, char** argv) {
             // create a clone
             clone_create_msg_t msg;
             process.comm_ctrl().recv(0, mcmp_tag::clone_create, msg);
-            clone_ptr = new clone_mpi(process.comm_ctrl(), process.comm_work(), basedir,
-                                      opt.dump_policy, opt.check_interval, msg);
+            clone_ptr = new clone_mpi(process.comm_ctrl(), process.comm_work(), basedir, opt, msg);
           }
 
         }
