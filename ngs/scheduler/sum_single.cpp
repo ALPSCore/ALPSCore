@@ -26,6 +26,8 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <alps/ngs.hpp>
+#include <alps/mcbase.hpp>
+#include <alps/stop_callback.hpp>
 
 #include <boost/lambda/lambda.hpp>
 
