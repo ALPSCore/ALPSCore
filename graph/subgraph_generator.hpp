@@ -32,6 +32,7 @@
 #include <alps/graph/utils.hpp>
 #include <boost/static_assert.hpp>
 #include <alps/graph/lattice_constant.hpp>
+#include <alps/graph/is_embeddable.hpp>
 #include <vector>
 
 namespace alps {
