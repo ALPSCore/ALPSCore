@@ -25,7 +25,7 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <alps/graph/lattice_constant.hpp>
+#include <alps/graph/is_embeddable.hpp>
 #include <alps/graph/utils.hpp>
 #include <boost/graph/adjacency_list.hpp>
 #include <iostream>
