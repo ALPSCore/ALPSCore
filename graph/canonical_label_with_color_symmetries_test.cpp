@@ -269,6 +269,7 @@ bool colored_edges_with_color_symmetry_test3() {
     // True statements
     std::cout << std::boolalpha
         << (lg_with_sym == lh_with_sym) << std::endl;
+    return true;
 }
 
 int main() {
