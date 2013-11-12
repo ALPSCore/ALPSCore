@@ -43,7 +43,7 @@ void subgraph_generator_with_color_symmetries_test(unsigned int order)
     typedef alps::coordinate_graph_type lattice_graph_type;
     lattice_graph_type& lattice_graph = alps_lattice.graph();
 
-    typedef alps::graph::subgraph_generator<Graph,lattice_graph_type,alps::graph::policies::canonical_properties_with_color_symmetries_policy<Graph> > graph_gen_type;
+    typedef alps::graph::subgraph_generator<Graph,lattice_graph_type,alps::graph::policies::edge_color_symmetries<Graph> > graph_gen_type;
     graph_gen_type graph_gen(lattice_graph, 2*order*order);
 
     typename alps::graph::color_partition<Graph>::type color_sym_group;
