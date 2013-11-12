@@ -549,7 +549,7 @@ namespace alps {
             , typename boost::graph_traits<Graph>::vertex_descriptor v
             , typename partition_type<Subgraph>::type const & subgraph_orbit
         ) {
-            assert(get<alps::graph::partition>(canonical_properties(S,v)) == subgraph_orbit);
+            assert(get<alps::graph::partition>(canonical_properties(S)) == subgraph_orbit);
             std::vector<std::vector<boost::uint_t<8>::fast> > distance_to_boarder;
 
             try {
