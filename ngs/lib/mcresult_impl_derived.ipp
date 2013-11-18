@@ -501,6 +501,7 @@ namespace alps {
 
                     std::size_t partition_bins (std::vector<T> & bins, boost::mpi::communicator const & communicator) {
                         using boost::numeric::operators::operator+;
+                        using boost::numeric::operators::operator/;
                         alea::mcdata<T>::set_bin_size(boost::mpi::all_reduce(communicator, alea::mcdata<T>::bin_size(), boost::mpi::maximum<std::size_t>()));
                         std::vector<int> buffer(2 * communicator.size()), index(communicator.size());
                         int data[2] = {communicator.rank(), static_cast<int>(alea::mcdata<T>::bin_number())};
@@ -513,7 +514,7 @@ namespace alps {
                         int perbin = total_bins / bins.size();
                         int start = std::accumulate(index.begin(), index.begin() + communicator.rank(), 0);
                         for (int i = start / perbin, j = start % perbin, k = 0; i < bins.size() && k < alea::mcdata<T>::bin_number(); ++k) {
-                            bins[i] = bins[i] + alea::mcdata<T>::bins()[k];
+                            bins[i] = bins[i] + alea::mcdata<T>::bins()[k] / perbin;
                             if (++j == perbin) {
                                 ++i;
                                 j = 0;
