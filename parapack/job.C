@@ -155,8 +155,7 @@ void task::save(bool write_xml) const {
   }
 }
 
-void task::save_observable(bool write_xml,
-  std::vector<std::vector<ObservableSet> > const& oss) const {
+void task::save_observable(bool write_xml) const {
   if (!on_memory()) boost::throw_exception(std::logic_error("task not loaded"));
   boost::filesystem::path file_out = complete(boost::filesystem::path(file_out_str_), basedir_);
   {
@@ -354,10 +353,10 @@ void task::evaluate(bool write_xml) {
     = parapack::evaluator_factory::instance()->make_evaluator(p);
 
   std::cout << "  loading clones: ";
-  std::vector<std::vector<ObservableSet> > oss;
+  // std::vector<std::vector<ObservableSet> > oss;
   BOOST_FOREACH(cid_t cid, clones) {
     std::cout << (cid+1) << ' ' << std::flush;
-    std::vector<ObservableSet> os;
+    // std::vector<ObservableSet> os;
     if (clone_info_[cid].checkpoints().size() == 1) {
       boost::filesystem::path dump_h5 =
         complete(boost::filesystem::path(clone_info_[cid].checkpoints()[0] + ".h5"), basedir_);
@@ -376,7 +375,7 @@ void task::evaluate(bool write_xml) {
         success = load_observable(dp, o);
       }
       if (success) {
-        evaluator->load(o, os);
+        // evaluator->load(o, os);
         evaluator->load(o, obs_);
       }
     } else {
@@ -398,17 +397,17 @@ void task::evaluate(bool write_xml) {
           success = load_observable(dp, o);
         }
         if (success) {
-          evaluator->load(o, os);
+          // evaluator->load(o, os);
           evaluator->load(o, obs_);
         }
       }
     }
-    oss.push_back(os);
+    // oss.push_back(os);
   }
   std::cout << std::endl;
   if (clones.size() > 0) {
     evaluator->evaluate(obs_);
-    save_observable(write_xml, oss);
+    save_observable(write_xml);
   }
   halt();
 }

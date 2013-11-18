@@ -65,7 +65,7 @@ public:
 
   void load();
   void save(bool write_xml) const;
-  void save_observable(bool write_xml, std::vector<std::vector<ObservableSet> > const& oss) const;
+  void save_observable(bool write_xml) const;
   void halt();
 
   void check_parameter(bool write_xml);
