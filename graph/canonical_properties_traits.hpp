@@ -45,12 +45,12 @@ namespace detail {
             bool operator< (graph_label_matrix_type const & rhs) const {
                 return size() < rhs.size() || (
                        !(rhs.size() < size())
-                    && static_cast<boost::dynamic_bitset<> >(*this) < static_cast<boost::dynamic_bitset<> > (rhs)
+                    && static_cast<boost::dynamic_bitset<> const &>(*this) < static_cast<boost::dynamic_bitset<> const &> (rhs)
                 );
             }
             bool operator == (graph_label_matrix_type const & rhs) const {
                 return size() == rhs.size()
-                    && static_cast<boost::dynamic_bitset<> >(*this) == static_cast<boost::dynamic_bitset<> >(rhs);
+                    && static_cast<boost::dynamic_bitset<> const &>(*this) == static_cast<boost::dynamic_bitset<> const &>(rhs);
             }
     };
 

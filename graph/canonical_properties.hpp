@@ -363,11 +363,13 @@ namespace alps {
                     label_edge_coloring_helper(Graph const& G, color_partition_type const& color_partition)
                     : color_partition_(color_partition)
                     {
+#ifndef NDEBUG
                         // Check if all edge colors occuring in the graph are also in the color_partition
                         typename boost::graph_traits<Graph>::edge_iterator it, end;
                         bool partitions_are_complete = true;
                         for (boost::tie(it, end) = edges(G); it != end; ++it)
                             partitions_are_complete = partitions_are_complete && color_partition_.find(get(alps::edge_type_t(),G)[*it]) != color_partition_.end();
+#endif //NDEBUG
                         assert(partitions_are_complete);
                     }
 
