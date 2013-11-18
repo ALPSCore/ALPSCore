@@ -109,31 +109,40 @@ inline void HistogramObservableData<T>::collect_from(const std::vector<Histogram
   count_=0;
 
   for(typename std::vector<HistogramObservableData<T> >::const_iterator r = runs.begin(); r!=runs.end();++r) {
-        if(r->count()) {
-          if(!got_data) {
-            count_=r->count_;
-            min_=r->min_;
-            max_=r->max_;
-            stepsize_=r->stepsize_;
-            histogram_.resize(r->histogram_.size());
+    if(r->count()) {
+      if(!got_data) {
+        count_=r->count_;
+        min_=r->min_;
+        max_=r->max_;
+        stepsize_=r->stepsize_;
+        histogram_.resize(r->histogram_.size());
         std::copy(r->histogram_.begin(),r->histogram_.end(),histogram_.begin());
         got_data=true;
-      }
-          else {
-            size_type loc_size=histogram_.size();
+      } else {
+        size_type loc_size=histogram_.size();
         if(min_!=r->min_)
           boost::throw_exception(std::runtime_error("Cannot collect data from histograms with different min_."));
-            if(max_!=r->max_)
+        if(max_!=r->max_)
           boost::throw_exception(std::runtime_error("Cannot collect data from histograms with different max_."));
-            if(stepsize_!=r->stepsize_)
+        if(stepsize_!=r->stepsize_)
           boost::throw_exception(std::runtime_error("Cannot collect data from histograms with different stepsize_."));
-            if(loc_size!=r->histogram_.size())
+        if(loc_size!=r->histogram_.size())
           boost::throw_exception(std::runtime_error("Cannot collect data from histograms with different size_."));
-            count_+=r->count_;
+        count_+=r->count_;
         std::transform(histogram_.begin(),histogram_.end(),r->histogram_.begin(),histogram_.begin(),std::plus<value_type>());
-          }
-        }
+      }
+    }
   }
+
+  if(runs.size() && !got_data) {
+    count_=runs.front().count_;
+    min_=runs.front().min_;
+    max_=runs.front().max_;
+    stepsize_=runs.front().stepsize_;
+    histogram_.resize(runs.front().histogram_.size());
+    std::copy(runs.front().histogram_.begin(),runs.front().histogram_.end(),histogram_.begin());
+  }
+
 }
 
 
