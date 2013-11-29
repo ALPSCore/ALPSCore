@@ -41,6 +41,7 @@
 #include <boost/type_traits/is_same.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
 #include <boost/multi_array.hpp>
+#include <boost/algorithm/minmax.hpp>
 
 #include <boost/mpl/if.hpp>
 #include <boost/container/flat_map.hpp>
@@ -56,6 +57,7 @@ namespace alps {
     namespace graph {
         namespace detail {
 
+            // Checks if the Graph g has a Vertex labeled v
             template <typename Graph>
             bool graph_has_vertex(Graph const& g, typename boost::graph_traits<Graph>::vertex_descriptor v)
             {
@@ -92,13 +94,16 @@ namespace alps {
                 for (typename partition_type<Graph>::type::const_iterator it = pi.begin(); it != pi.end(); ++it)
                     maxsize = std::max(maxsize,it->size());
                 boost::multi_array<std::size_t,2> adjacent_numbers(boost::extents[pi.size()][maxsize]);
+                // For each Vi
                 for (typename partition_type<Graph>::type::const_iterator it = pi.begin(); it != pi.end(); ++it) {
                     std::fill_n(adjacent_numbers.data(),adjacent_numbers.num_elements(),0);
+                    // Get the deg(v,Vj) for all Vj, for all v in Vi
                     for (typename partition_type<Graph>::type::value_type::const_iterator jt = it->begin(); jt != it->end(); ++jt) {
                         typename boost::graph_traits<Graph>::adjacency_iterator ai, ae;
                         for (boost::tie(ai, ae) = adjacent_vertices(*jt, G); ai != ae; ++ai)
                             ++adjacent_numbers[I.find(*ai)->second][jt - it->begin()];
                     }
+                    // Return the earliest i,j for which deg(v0,Vj) != deg(v1,Vj) where {v0,v1} in Vi
                     for (boost::multi_array<std::size_t,2>::const_iterator jt = adjacent_numbers.begin(); jt != adjacent_numbers.end(); ++jt)
                     {
                         for (std::size_t k = 0; k < it->size(); ++k)
@@ -120,8 +125,10 @@ namespace alps {
             ) {
                 using boost::tie;
                 using std::make_pair;
+                // If we don't have a discrete partition pi (i.e. only trivial parts)
                 if (pi.size() < num_vertices(G))
                     while(true) {
+                        // OPTIMIZE move map outside
                         std::map<typename boost::graph_traits<Graph>::vertex_descriptor, std::size_t> I;
                         // I = {(ni, j) : ni element of Vj
                         partition_indeces(I, pi, G);
@@ -135,7 +142,9 @@ namespace alps {
                         // that is, replace pi = (V1, V2, ..., Vr) with (V1, V2, ..., Vi−1, X1, X2, ..., Xt, Vi+1, ..., Vr).
                         typename partition_type<Graph>::type tau(pi.begin(), pi.begin() + i);
                         // O = {(k, l) : nl element of Vi with k adjacents in Vj}
+                        // OPTIMIZE move vector outside
                         std::vector<std::pair<std::size_t, std::size_t> > O;
+                        // Note: one could optimize the following loop by combining it with the shattering function
                         for (typename partition_type<Graph>::type::value_type::const_iterator it = pi[i].begin(); it != pi[i].end(); ++it) {
                             O.push_back(make_pair(0, *it));
                             typename boost::graph_traits<Graph>::adjacency_iterator ai, ae;
@@ -158,7 +167,7 @@ namespace alps {
                         // pi = (V1, V2, ..., Vi−1, X1, X2, ..., Xt, Vi+1, ..., Vr).
                         if (i + 1 < pi.size())
                             std::copy(pi.begin() + i + 1, pi.end(), std::back_inserter(tau));
-                        pi = tau;
+                        swap(pi,tau);
                     }
             }
 
@@ -175,21 +184,25 @@ namespace alps {
             ) {
                 using boost::get;
                 using boost::make_tuple;
-                typename partition_type<Graph>::type & tau = get<0>(*(T.rbegin() + 1));
-                typename partition_type<Graph>::type & pi = get<0>(T.back());
+                assert(T.size() >= 2);
+                typename partition_type<Graph>::type const & tau = get<0>(*(T.rbegin() + 1));
+                typename partition_type<Graph>::type & pi        = get<0>(T.back());
+                assert(pi.empty());
                 std::size_t i = get<1>(T.back());
                 // u = nj, nj is j-th element of Vi
                 std::size_t j = get<2>(T.back());
                 // Let pi be an equitable ordered partition of [n] with a nontrivial
-                // part Vi, and let u be an elemeent of Vi. The splitting of pi by u, 
+                // part Vi, and let u be an element of Vi. The splitting of pi by u, 
                 // denoted by pi ⊥ u, is the equitable reﬁnement R(pi) of the ordered partition 
                 // pi = (V1, V2, ..., {u}, Vi \ {u}, Vi+1, ..., Vr).
+                // u = j-th element of part Vi
+                pi.reserve(tau.size()+2);
                 std::copy(tau.begin(), tau.begin() + i, std::back_inserter(pi));
                 pi.push_back(typename partition_type<Graph>::type::value_type(1, tau[i][j]));
                 pi.push_back(typename partition_type<Graph>::type::value_type(tau[i].begin(), tau[i].begin() + j));
                 if (j + 1 < tau[i].size())
                     std::copy(tau[i].begin() + j + 1, tau[i].end(), std::back_inserter(pi.back()));
-                if (!pi.back().size())
+                if (pi.back().empty())
                     pi.pop_back();
                 if (i + 1 < tau.size())
                     std::copy(tau.begin() + i + 1, tau.end(), std::back_inserter(pi));
@@ -220,17 +233,19 @@ namespace alps {
                 , Graph const & G
             ) {
                 using boost::get;
+                // pi should be a discrete partition
+                assert( pi.size() == num_vertices(G) );
                 // N = #of parts of pi
                 get<0>(l).clear();
                 get<0>(l).resize(pi.size() * (pi.size() + 1) / 2);
                 typename boost::graph_traits<Graph>::adjacency_iterator ai, ae;
                 std::map<typename boost::graph_traits<Graph>::vertex_descriptor, std::size_t> I;
-                // I = {(ni, j) : ni element of Vj
+                // I = {(ni, j) : ni element of Vj (which has only a single element, since pi is discrete)
                 partition_indeces(I, pi, G);
                 for (typename std::map<typename boost::graph_traits<Graph>::vertex_descriptor, std::size_t>::const_iterator it = I.begin(); it != I.end(); ++it)
                     for (boost::tie(ai, ae) = adjacent_vertices(it->first, G); ai != ae; ++ai)
-                        if (I[*ai] <= I[it->first])
-                            get<0>(l)[I[*ai] * pi.size() - (I[*ai] - 1) * I[*ai] / 2 + I[it->first] - I[*ai]] = true;
+                        if (I[*ai] <= it->second)
+                            get<0>(l).set(I[*ai] * pi.size() - (I[*ai] - 1) * I[*ai] / 2 + it->second - I[*ai]);
             }
 
 
@@ -383,7 +398,6 @@ namespace alps {
                         , Graph const & G
                     ) const {
                         using boost::get;
-                        using std::copy;
                         static std::size_t const Base = boost::tuples::length<typename graph_label<Graph>::type>::value - 2;
                         typename boost::graph_traits<Graph>::edge_iterator it, end;
                         boost::tie(it, end) = edges(G);
@@ -429,27 +443,32 @@ namespace alps {
             // If an ni
             // Input: pi = (V1, V2, ..., Vr), Vi = (n1, n2, ..., nk), ni element of G
             //        tau = (W1, W2, ..., Wr), Wi = (m1, m2, ..., mk), mi element of G 
-            //        orbit = (Q1, Q2, ..., Qr), Wi = (o1, o2, ..., ok), oi element of G 
-            // Output: coarsed orbit
+            //        orbit = (Q1, Q2, ..., Qr), Qi = (o1, o2, ..., ok), oi element of G 
+            // Output: coarsed orbit, Io updated map (vertex -> orbit)
             template<typename Graph> void coarse_orbit(
                   typename partition_type<Graph>::type & orbit
-                , std::map<typename boost::graph_traits<Graph>::vertex_descriptor, std::size_t> & I
+                , std::map<typename boost::graph_traits<Graph>::vertex_descriptor, std::size_t> & Io
                 , typename partition_type<Graph>::type const & pi
                 , typename partition_type<Graph>::type const & tau
-                , Graph G
+                , Graph const & G
             ) {
+                assert( pi.size() == tau.size() );
                 if (pi != tau)
                     for (typename partition_type<Graph>::type::const_iterator it = pi.begin(), jt = tau.begin(); it != pi.end(); ++it, ++jt)
+                    {
                         // If Vi != Wi and {Qa: oj = n1, oj element of Qa, n1 element of Vi} != {Qb: oj = m1, oj element of Qb, m1 element of Wi} 
                         // merge Qa and Qb into Qa and remove Qb
-                        if (*it != *jt && I[it->front()] != I[jt->front()]) {
-                            std::size_t a = std::min(I[it->front()], I[jt->front()]);
-                            std::size_t b = std::max(I[it->front()], I[jt->front()]);
-                            std::copy(orbit[b].begin(), orbit[b].end(), std::back_inserter(orbit[std::min(I[it->front()], I[jt->front()])]));
+                        std::size_t const orbit_n = Io[it->front()];
+                        std::size_t const orbit_m = Io[jt->front()];
+                        if (*it != *jt && orbit_n != orbit_m ) {
+                            std::size_t a,b;
+                            boost::tie(a,b) = boost::minmax(orbit_n, orbit_m);
+                            std::copy(orbit[b].begin(), orbit[b].end(), std::back_inserter(orbit[a]));
                             std::sort(orbit[a].begin(), orbit[a].end());
                             orbit.erase(orbit.begin() + b);
-                            detail::partition_indeces(I, orbit, G);
+                            detail::partition_indeces(Io, orbit, G);
                         }
+                    }
             }
 
             // uncolored initial partition
@@ -519,55 +538,71 @@ namespace alps {
             // Output: canonical ordering, canonical label and orbit of G
             template<typename Graph, typename LabelVertexColoringHelper, typename LabelEdgeColoringHelper>
             typename canonical_properties_type<Graph>::type
-            canonical_properties_impl(Graph const & G, typename partition_type<Graph>::type const pi, LabelVertexColoringHelper const& lvch, LabelEdgeColoringHelper const& lech) {
+            canonical_properties_impl(Graph const & G, typename partition_type<Graph>::type const& pi, LabelVertexColoringHelper const& lvch, LabelEdgeColoringHelper const& lech) {
                 using boost::get;
                 using boost::make_tuple;
                 typename partition_type<Graph>::type orbit, canonical_partition, first_partition;
                 typename graph_label<Graph>::type canonical_label, first_label, current_label;
+                // A map assigning each vertex to an orbit
                 std::map<typename boost::graph_traits<Graph>::vertex_descriptor, std::size_t> Io;
                 // The orbit starts with a discrete partition (a partition with only trivial parts)
                 // orbit = (W1, W2, ..., Wr), Wi = (m1, m2, ..., mk), mi element of G
+                orbit.reserve(num_vertices(G));
                 typename boost::graph_traits<Graph>::vertex_iterator vi, ve;
                 for (boost::tie(vi, ve) = vertices(G); vi != ve; ++vi)
                     orbit.push_back(typename partition_type<Graph>::type::value_type(1, *vi));
                 // Io = {(mi, j) : ni element of Vj
                 detail::partition_indeces(Io, orbit, G);
                 // Build first node of the search tree T(G)
+                // Each node of the search tree is (partition,i,j).
+                // i is the index of the part Vi to be splitted
+                // j is the index of the vertex u in Vi which is separated from the rest of the part {Vi/u}
                 std::vector<boost::tuple<typename partition_type<Graph>::type, std::size_t, std::size_t> > T(1, boost::make_tuple(pi, 0, 0));
                 detail::equitable_refinement(get<0>(T.back()), G);
+                // Build the first branch of the tree with j = 0
+                // terminal_node() will create a whole branch,
+                // where each recursion will split one part of the partition 
+                // using the j-th entry of the part,
+                // until we obtain a discrete partition in the leaf.
                 T.push_back(boost::make_tuple(typename partition_type<Graph>::type(), 0, 0));
                 detail::terminal_node(T, G);
                 // Initialize partitions and labels
                 first_partition = canonical_partition = get<0>(T.back());
                 detail::assemble_label(canonical_label, canonical_partition, G, lvch, lech);
                 first_label = current_label = canonical_label;
+
+                // Perform an depth first search by trying to increment j
                 while(true) {
                     // Find next node in the search tree T(G). The last node is always a leaf.
-                    while(T.size() > 1)
-                        if (get<2>(T.back()) + 1 < get<0>(*(T.rbegin() + 1))[get<1>(T.back())].size()) {
-                            ++get<2>(T.back());
-                            // Prune the search tree: if we have already visited a branch strating at an element in the 
+                    while(T.size() > 1) {
+                        // if ++j (node) < size of Vi (parent node)
+                        if ( (++get<2>(T.back())) < get<0>(*(T.rbegin() + 1))[get<1>(T.back())].size()) {
+                            // Prune the search tree: if we have already visited a branch starting at
+                            // an element (=first j-1 elements) in the 
                             // same part of the orbit, skip the current element
-                            typename partition_type<Graph>::type::value_type & part = get<0>(*(T.rbegin() + 1))[get<1>(T.back())];
+                            typename partition_type<Graph>::type::value_type const & part = get<0>(*(T.rbegin() + 1))[get<1>(T.back())];
+                            std::size_t const j_orbit = Io[part[get<2>(T.back())]];
                             bool visited = false;
                             for (
-                                typename partition_type<Graph>::type::value_type::const_iterator it = part.begin(); 
-                                it != part.begin() + get<2>(T.back()); 
+                                typename partition_type<Graph>::type::value_type::const_iterator it = part.begin();
+                                it != part.begin() + get<2>(T.back());
                                 ++it
                             )
-                                visited = visited || (Io[*it] == Io[part[get<2>(T.back())]]);
+                                visited = visited || (Io[*it] == j_orbit);
                             if (!visited)
                                 break;
                         } else
                             T.pop_back();
+                    }
                     get<0>(T.back()).clear();
                     // all leafs have been checked
                     if (T.size() == 1)
                         break;
                     // TODO: add edge coloring to algorithym
+                    // Grow new branch with j=get<2>(T.back())
                     detail::terminal_node(T, G);
                     detail::assemble_label(current_label, get<0>(T.back()), G, lvch, lech);
-                    // If two labels are the same, coarse orbit
+                    // If two labels are the same we found an automorphism -> coarse orbit
                     if(first_label == current_label)
                         detail::coarse_orbit(orbit, Io, first_partition, get<0>(T.back()), G);
                     else if(canonical_label == current_label)
@@ -575,11 +610,12 @@ namespace alps {
                     // Cl = min{ Gl: Gl graph label of G }
                     if (canonical_label > current_label) {
                         canonical_partition = get<0>(T.back());
-                        canonical_label = current_label;
+                        swap(canonical_label,     current_label);
                     }
                 }
 
                 std::vector<typename boost::graph_traits<Graph>::vertex_descriptor> canonical_ordering;
+                canonical_ordering.reserve(canonical_partition.size());
                 for (typename partition_type<Graph>::type::const_iterator it = canonical_partition.begin(); it != canonical_partition.end(); ++it)
                     canonical_ordering.push_back((*it)[0]);
                 return boost::make_tuple(
@@ -594,7 +630,7 @@ namespace alps {
         // McKay’s canonical isomorph function Cm(G) is deﬁned to be
         // Cm(G) = max{ Gpi: (pi, nu) is a leaf of T(G) }
         // Input: graph G
-        // Output: canonical ordering, canonical label and orbit of G
+        // Output: canonical ordering, canonical label Gpi and orbit of G
         template<typename Graph>
         typename canonical_properties_type<Graph>::type
         canonical_properties(Graph const & G) {
@@ -620,7 +656,7 @@ namespace alps {
         // McKay’s canonical isomorph function Cm(G) is deﬁned to be
         // Cm(G) = max{ Gpi: (pi, nu) is a leaf of T(G) }
         // Input: graph G
-        // Output: canonical ordering, canonical label and orbit of G
+        // Output: canonical ordering, canonical label Gpi and orbit of G
         template<typename Graph>
         typename canonical_properties_type<Graph>::type
         canonical_properties(Graph const & G, typename color_partition<Graph>::type const& c) {
@@ -648,7 +684,7 @@ namespace alps {
         // McKay’s canonical isomorph function Cm(G) is deﬁned to be
         // Cm(G) = max{ Gpi: (pi, nu) is a leaf of T(G) }
         // Input: graph G, symmetry breaking vertex v
-        // Output: canonical ordering, canonical label and orbit of G
+        // Output: canonical ordering, canonical label Gpi and orbit of G
         template<typename Graph>
         typename canonical_properties_type<Graph>::type
         canonical_properties(Graph const & G, typename boost::graph_traits<Graph>::vertex_descriptor v) {
