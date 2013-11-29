@@ -28,7 +28,7 @@
 #ifndef ALPS_NGS_SCHEDULER_PROGRESS_CALLBACK_HPP
 #define ALPS_NGS_SCHEDULER_PROGRESS_CALLBACK_HPP
 
-#include <alps/ngs/scheduler/check_schedule.hpp>
+#include <alps/check_schedule.hpp>
 #include <iostream>
 
 namespace alps {
