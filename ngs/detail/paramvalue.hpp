@@ -113,7 +113,7 @@ namespace alps {
 
     }
 
-    template<typename T> T const & extract (detail::paramvalue const & arg);
+    template<typename T> T extract (detail::paramvalue const & arg);
 
     namespace detail {
 
@@ -257,7 +257,7 @@ namespace alps {
         }
     };
 
-    template<typename T> T const & extract (detail::paramvalue const & arg) {
+    template<typename T> T extract (detail::paramvalue const & arg) {
         detail::paramvalue_reader< T > visitor;
         boost::apply_visitor(visitor, arg);
         return visitor.get_value();
