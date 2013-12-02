@@ -13,6 +13,7 @@ if (MPI_FOUND)
     add_executable(scheduler_sum_mpi sum_mpi.cpp)
     add_dependencies(scheduler_sum_mpi alps)
     target_link_libraries(scheduler_sum_mpi alps)
+	add_alps_test_mpi(scheduler_sum_mpi)
 
 endif (MPI_FOUND)
 

@@ -29,6 +29,8 @@
 #include <alps/mcbase.hpp>
 #include <alps/mcmpiadapter.hpp>
 #include <alps/stop_callback.hpp>
+#include <alps/ngs/scheduler/parseargs.hpp>
+#include <alps/ngs/make_parameters_from_xml.hpp>
 
 #include <boost/lambda/lambda.hpp>
 
@@ -86,25 +88,42 @@ class my_sim_type : public alps::mcbase {
 
 int main(int argc, char *argv[]) {
 
-    alps::mcoptions options(argc, argv);
-    boost::mpi::environment env(argc, argv);
-    boost::mpi::communicator c;
+    try {
 
-    alps::parameters_type<alps::mcmpiadapter<my_sim_type> >::type params;
-    if (c.rank() == 0) { // read parameters only in master
-        alps::hdf5::archive ar(options.input_file);
-        ar["/parameters"] >> params;
+        alps::parseargs options(argc, argv);
+        boost::mpi::environment env(argc, argv);
+        boost::mpi::communicator c;
+
+        alps::parameters_type<my_sim_type>::type params;
+        if (c.rank() > 0)
+          /* do nothing*/ ;
+        else if (boost::filesystem::extension(options.input_file) == ".xml")
+            params = alps::make_parameters_from_xml(options.input_file);
+        else if (boost::filesystem::extension(options.input_file) == ".h5")
+            alps::hdf5::archive(options.input_file)["/parameters"] >> params;
+        else
+            params = alps::parameters_type<my_sim_type>::type(options.input_file);
+        broadcast(c, params);
+
+        alps::mcmpiadapter<my_sim_type> my_sim(params, c, alps::check_schedule(options.tmin, options.tmax)); // creat a simulation
+
+        my_sim.run(alps::stop_callback(c, options.timelimit)); // run the simulation
+
+        using alps::collect_results;
+
+        if (c.rank() == 0) { // print the results and save it to hdf5
+            alps::results_type<alps::mcmpiadapter<my_sim_type> >::type results = collect_results(my_sim);
+            std::cout << "e^(-x*x): " << results["Value"] << std::endl;
+            // std::cout << results["Value"] << " " << 2. * results["Value"] / 2.  << std::endl;
+            save_results(results, params, options.output_file, "/simulation/results");
+        } else
+            collect_results(my_sim);
+
+    } catch(std::exception & ex) {
+        std::cerr << ex.what() << std::endl;
+        return -1;
+    } catch(...) {
+        std::cerr << "Fatal Error: Unknown Exception!\n";
+        return -2;
     }
-    broadcast(c, params); // send parameters to all clones
-
-    alps::mcmpiadapter<my_sim_type> my_sim(params, c); // creat a simulation
-    my_sim.run(alps::stop_callback(options.time_limit)); // run the simulation
-
-    alps::results_type<alps::mcmpiadapter<my_sim_type> >::type results = collect_results(my_sim); // collect the results
-
-    if (c.rank() == 0) { // print the results and save it to hdf5
-        std::cout << "e^(-x*x): " << results["Value"] << std::endl;
-        save_results(results, params, options.output_file, "/simulation/results");
-    }
-
 }
