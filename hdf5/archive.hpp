@@ -35,13 +35,18 @@
 #include <alps/ngs/detail/type_wrapper.hpp>
 
 #include <boost/mpl/and.hpp>
-#include <boost/thread/mutex.hpp>
 #include <boost/filesystem/path.hpp>
-#include <boost/thread/lock_guard.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/type_traits/is_array.hpp>
 #include <boost/type_traits/remove_all_extents.hpp>
+
+#ifndef ALPS_NGS_SINGLE_THREAD
+
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/lock_guard.hpp>
+
+#endif
 
 #include <map>
 #include <vector>
@@ -222,7 +227,9 @@ namespace alps {
                 std::string current_;
                 detail::archivecontext * context_;
 
+#ifndef ALPS_NGS_SINGLE_THREAD
                 static boost::mutex mutex_;
+#endif
                 static std::map<std::string, std::pair<detail::archivecontext *, std::size_t> > ref_cnt_;
 
         };

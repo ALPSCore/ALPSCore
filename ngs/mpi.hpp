@@ -68,7 +68,12 @@
                     return offset;
                 }
 
-                template<typename T, typename Op> void reduce_impl(const boost::mpi::communicator & comm, T const & in_values, Op op, int root, boost::true_type) {
+                template<typename T, typename Op, typename C> void reduce_impl(const boost::mpi::communicator & comm, T const & in_values, Op op, int root, boost::true_type, C) {
+                    using boost::mpi::reduce;
+                    reduce(comm, in_values, op, root);
+                }
+
+                template<typename T, typename Op> void reduce_impl(const boost::mpi::communicator & comm, T const & in_values, Op op, int root, boost::false_type, boost::true_type) {
                     using alps::hdf5::get_extent;
                     std::vector<std::size_t> extent(get_extent(in_values));
                     using boost::mpi::reduce;
@@ -76,7 +81,12 @@
                     reduce(comm, get_pointer(in_values), std::accumulate(extent.begin(), extent.end(), 0), op, root);
                 }
 
-                template<typename T, typename Op> void reduce_impl(const boost::mpi::communicator & comm, T const & in_values, T & out_values, Op op, int root, boost::true_type) {
+                template<typename T, typename Op, typename C> void reduce_impl(const boost::mpi::communicator & comm, T const & in_values, T & out_values, Op op, int root, boost::true_type, C) {
+                    using boost::mpi::reduce;
+                    reduce(comm, (T)in_values, out_values, op, root); // TODO: WTF? - why does boost not define unsigned long long as native datatype
+                }
+
+                template<typename T, typename Op> void reduce_impl(const boost::mpi::communicator & comm, T const & in_values, T & out_values, Op op, int root, boost::false_type, boost::true_type) {
                     using alps::hdf5::get_extent;
                     std::vector<std::size_t> extent(get_extent(in_values));
                     using alps::hdf5::set_extent;
@@ -86,7 +96,7 @@
                     reduce(comm, get_pointer(in_values), std::accumulate(extent.begin(), extent.end(), 0), get_pointer(out_values), op, root);
                 }
 
-                template<typename T, typename Op> void reduce_impl(const boost::mpi::communicator & comm, T const & in_values, Op op, int root, boost::false_type) {
+                template<typename T, typename Op> void reduce_impl(const boost::mpi::communicator & comm, T const & in_values, Op op, int root, boost::false_type, boost::false_type) {
                     using alps::hdf5::is_vectorizable;
                     if (is_vectorizable(in_values)) {
                         using alps::hdf5::get_extent;
@@ -100,7 +110,7 @@
                         throw std::logic_error("No alps::mpi::reduce available for this type " + std::string(typeid(T).name()) + ALPS_STACKTRACE);
                 }
 
-                template<typename T, typename Op> void reduce_impl(const boost::mpi::communicator & comm, T const & in_values, T & out_values, Op op, int root, boost::false_type) {
+                template<typename T, typename Op> void reduce_impl(const boost::mpi::communicator & comm, T const & in_values, T & out_values, Op op, int root, boost::false_type, boost::false_type) {
                     using alps::hdf5::is_vectorizable;
                     if (is_vectorizable(in_values)) {
                         using alps::hdf5::get_extent;
@@ -122,12 +132,12 @@
 
             template<typename T, typename Op> void reduce(const boost::mpi::communicator & comm, T const & in_values, Op op, int root) {
                 using detail::reduce_impl;
-                reduce_impl(comm, in_values, op, root, typename hdf5::is_continuous<T>::type());
+                reduce_impl(comm, in_values, op, root, typename boost::is_scalar<T>::type(), typename hdf5::is_continuous<T>::type());
             }
 
             template<typename T, typename Op> void reduce(const boost::mpi::communicator & comm, T const & in_values, T & out_values, Op op, int root) {
                 using detail::reduce_impl;
-                reduce_impl(comm, in_values, out_values, op, root, typename hdf5::is_continuous<T>::type());
+                reduce_impl(comm, in_values, out_values, op, root, typename boost::is_scalar<T>::type(), typename hdf5::is_continuous<T>::type());
             }
 
         }

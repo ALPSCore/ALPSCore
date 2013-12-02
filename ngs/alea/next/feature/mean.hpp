@@ -155,12 +155,12 @@ namespace alps {
                           boost::mpi::communicator const & comm
                         , int root
                     ) {
-                        B::collective_merge(comm, root);
-                        if (comm.rank() == root)
+                        if (comm.rank() == root) {
+                            B::collective_merge(comm, root);
                             B::reduce_if(comm, m_sum, m_sum, std::plus<typename alps::hdf5::scalar_type<T>::type>(), root);
-                        else
+                        } else
                             const_cast<Accumulator<T, mean_tag, B> const *>(this)->collective_merge(comm, root);
-                    }                    
+                    }
                     void collective_merge(
                           boost::mpi::communicator const & comm
                         , int root

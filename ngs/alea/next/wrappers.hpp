@@ -148,21 +148,25 @@ namespace alps {
             impl::DerivedWrapper<A, count_tag, 
          detail::foundation_wrapper<A> > > > > > {
             public:
-                derived_wrapper(): 
-                    impl::DerivedWrapper<A, weight_tag, 
-                    impl::DerivedWrapper<A, max_num_binning_tag, 
-                    impl::DerivedWrapper<A, error_tag, 
-                    impl::DerivedWrapper<A, mean_tag, 
-                    impl::DerivedWrapper<A, count_tag, 
-                detail::foundation_wrapper<A> > > > > >() {}
+                derived_wrapper()
+                    : 
+                        impl::DerivedWrapper<A, weight_tag, 
+                        impl::DerivedWrapper<A, max_num_binning_tag, 
+                        impl::DerivedWrapper<A, error_tag, 
+                        impl::DerivedWrapper<A, mean_tag, 
+                        impl::DerivedWrapper<A, count_tag, 
+                    detail::foundation_wrapper<A> > > > > >() 
+                {}
 
-                derived_wrapper(A const & arg): 
-                    impl::DerivedWrapper<A, weight_tag, 
-                    impl::DerivedWrapper<A, max_num_binning_tag, 
-                    impl::DerivedWrapper<A, error_tag, 
-                    impl::DerivedWrapper<A, mean_tag, 
-                    impl::DerivedWrapper<A, count_tag, 
-                detail::foundation_wrapper<A> > > > > >(arg) {}
+                derived_wrapper(A const & arg)
+                    : 
+                        impl::DerivedWrapper<A, weight_tag, 
+                        impl::DerivedWrapper<A, max_num_binning_tag, 
+                        impl::DerivedWrapper<A, error_tag, 
+                        impl::DerivedWrapper<A, mean_tag, 
+                        impl::DerivedWrapper<A, count_tag, 
+                    detail::foundation_wrapper<A> > > > > >(arg) 
+                {}
 
                 A & extract() {
                     return this->m_data;
@@ -321,7 +325,7 @@ namespace alps {
 
                 derived_accumulator_wrapper(A const & arg): derived_wrapper<A>(arg) {}
 
-                base_wrapper * clone() const { 
+                base_wrapper * clone() const {
                     return new derived_accumulator_wrapper<A>(this->m_data); 
                 }
                 base_wrapper * result() const { 

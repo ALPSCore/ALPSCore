@@ -418,7 +418,9 @@ namespace alps {
             , context_(arg.context_)
         {
             if (context_ != NULL) {
+#ifndef ALPS_NGS_SINGLE_THREAD
                 boost::lock_guard<boost::mutex> guard(mutex_);
+#endif
                 ++ref_cnt_[file_key(context_->filename_, context_->large_, context_->memory_)].second;
             }
         }
@@ -434,7 +436,9 @@ namespace alps {
         }
 
         void archive::abort() {
+#ifndef ALPS_NGS_SINGLE_THREAD
             boost::lock_guard<boost::mutex> guard(mutex_);
+#endif
             for (std::map<std::string, std::pair<detail::archivecontext *, std::size_t> >::iterator it = ref_cnt_.begin(); it != ref_cnt_.end(); ++it) {
                 bool replace = it->second.first->replace_;
                 std::string filename = it->second.first->filename_;
@@ -450,7 +454,9 @@ namespace alps {
             if (context_ == NULL)
                 throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
             H5Fflush(context_->file_id_, H5F_SCOPE_GLOBAL);
+#ifndef ALPS_NGS_SINGLE_THREAD
             boost::lock_guard<boost::mutex> guard(mutex_);
+#endif
             if (!--ref_cnt_[file_key(context_->filename_, context_->large_, context_->memory_)].second) {
                 ref_cnt_.erase(file_key(context_->filename_, context_->large_, context_->memory_));
                 delete context_;
@@ -1326,7 +1332,9 @@ namespace alps {
                 detail::check_error(H5Zget_filter_info(H5Z_FILTER_SZIP, &flag));
                 props &= (flag & H5Z_FILTER_CONFIG_ENCODE_ENABLED ? ~0x00 : ~COMPRESS);
             }
+#ifndef ALPS_NGS_SINGLE_THREAD
             boost::lock_guard<boost::mutex> guard(mutex_);
+#endif
             if (ref_cnt_.find(file_key(filename, props & LARGE, props & MEMORY)) == ref_cnt_.end())
                 ref_cnt_.insert(std::make_pair(
                       file_key(filename, props & LARGE, props & MEMORY)
@@ -1343,7 +1351,9 @@ namespace alps {
             return (large ? "l" : (memory ? "m" : "_")) + filename;
         }
     
+#ifndef ALPS_NGS_SINGLE_THREAD
         boost::mutex archive::mutex_;
+#endif
         std::map<std::string, std::pair<detail::archivecontext *, std::size_t> > archive::ref_cnt_;
     }
 }

@@ -450,20 +450,39 @@ namespace alps {
 
             template<typename T> struct simple_observable_type
                 : public impl::Accumulator<T, error_tag, impl::Accumulator<T, mean_tag, impl::Accumulator<T, count_tag, impl::AccumulatorBase<T> > > >
-            {};
+            {
+                simple_observable_type(): base_type() {}
+                template<typename A> simple_observable_type(A const & arg): base_type(arg) {}
+                private:
+                    typedef impl::Accumulator<T, error_tag, impl::Accumulator<T, mean_tag, impl::Accumulator<T, count_tag, impl::AccumulatorBase<T> > > > base_type;
+            };
 
             template<typename T> struct observable_type
                 : public impl::Accumulator<T, autocorrelation_tag, impl::Accumulator<T, max_num_binning_tag, simple_observable_type<T> > >
-            {};
+            {
+                observable_type(): base_type() {}
+                template<typename A> observable_type(A  const & arg): base_type(arg) {}
+                private:
+                    typedef impl::Accumulator<T, autocorrelation_tag, impl::Accumulator<T, max_num_binning_tag, simple_observable_type<T> > > base_type;
+            };
 
             template<typename T> struct signed_observable_type
                 : public impl::Accumulator<T, weight_holder_tag<simple_observable_type<T> >, observable_type<T> >
-            {};
+            {
+                signed_observable_type(): base_type() {}
+                template<typename A> signed_observable_type(A  const & arg): base_type(arg) {}
+                private:
+                    typedef impl::Accumulator<T, weight_holder_tag<simple_observable_type<T> >, observable_type<T> > base_type;
+            };
 
             template<typename T> struct signed_simple_observable_type
                 : public impl::Accumulator<T, weight_holder_tag<simple_observable_type<T> >, simple_observable_type<T> >
-            {};
-
+            {
+                signed_simple_observable_type(): base_type() {}
+                template<typename A> signed_simple_observable_type(A  const & arg): base_type(arg) {}
+                private:
+                    typedef impl::Accumulator<T, weight_holder_tag<simple_observable_type<T> >, simple_observable_type<T> > base_type;
+            };
         }
 
         typedef detail::PredefinedObservable<detail::simple_observable_type<double> > SimpleRealObservable;

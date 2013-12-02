@@ -44,6 +44,13 @@ namespace alps {
             typedef typename scalar_type<typename std::vector<T, A>::value_type>::type type;
         };
 
+        template<typename T, typename A> struct is_continuous<std::vector<T, A> >
+            : public boost::is_scalar<T>::type
+        {};
+        template<typename T, typename A> struct is_continuous<std::vector<T, A> const>
+            : public boost::is_scalar<T>::type
+        {};
+
         template<typename T, typename A> struct has_complex_elements<std::vector<T, A> > 
             : public has_complex_elements<typename alps::detail::remove_cvr<typename std::vector<T, A>::value_type>::type>
         {};
