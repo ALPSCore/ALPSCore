@@ -312,5 +312,40 @@ int main() {
             std::cout << *it << std::endl;
     }
 
-    return EXIT_SUCCESS;    
+    {
+    //#v = 10 #e = 14 Missed automorphism!
+    //(0100000100010011001001001010011000001010000000010000000)
+    //   0 1 2 3 4 5 6 7 8 9
+    // 0 .
+    // 1 . .
+    // 2 . . .
+    // 3 . . . .
+    // 4 . . . x .
+    // 5 . . . . . x
+    // 6 . . . x x . .
+    // 7 x x x . . . . .
+    // 8 . . x . . x x . .
+    // 9 . x . x x . . . x .
+
+        graph_type g;
+        add_edge(4,3,g);
+        add_edge(5,5,g);
+        add_edge(6,3,g);
+        add_edge(6,4,g);
+        add_edge(7,0,g);
+        add_edge(7,1,g);
+        add_edge(7,2,g);
+        add_edge(8,2,g);
+        add_edge(8,5,g);
+        add_edge(8,6,g);
+        add_edge(9,1,g);
+        add_edge(9,3,g);
+        add_edge(9,4,g);
+        add_edge(9,8,g);
+
+        std::cout << get<alps::graph::label>(canonical_properties(g)) << std::endl;
+
+        std::cout << get<alps::graph::partition>(canonical_properties(g)) << std::endl;
+    }
+    return EXIT_SUCCESS;
 }
