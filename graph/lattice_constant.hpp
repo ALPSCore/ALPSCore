@@ -61,7 +61,9 @@ namespace alps {
                 V.push_back(cell_id * unit_cell_size + v);
 
             boost::false_type no_argument;
-            return detail::lattice_constant_impl(S, G, V, distance_to_boarder, subgraph_orbit, unit_cell_size, no_argument, boost::false_type(), boost::false_type());
+            detail::vertex_equal_simple<Subgraph> vertex_equal;
+            detail::edge_equal_simple<Subgraph>   edge_equal;
+            return detail::lattice_constant_impl(S, G, V, distance_to_boarder, subgraph_orbit, unit_cell_size, no_argument, boost::false_type(), vertex_equal, edge_equal, boost::false_type());
         }
 
         template<typename Subgraph, typename Graph, typename Lattice> std::size_t lattice_constant(
@@ -84,7 +86,9 @@ namespace alps {
             for(unsigned v = 0; v < unit_cell_size; ++v)
                 V.push_back(cell_id * unit_cell_size + v);
 
-            return detail::lattice_constant_impl(S, G, V, distance_to_boarder, subgraph_orbit, unit_cell_size, lw, b, boost::false_type());
+            detail::vertex_equal_simple<Subgraph> vertex_equal;
+            detail::edge_equal_simple<Subgraph>   edge_equal;
+            return detail::lattice_constant_impl(S, G, V, distance_to_boarder, subgraph_orbit, unit_cell_size, lw, b, vertex_equal, edge_equal, boost::false_type());
         }
     }
 }

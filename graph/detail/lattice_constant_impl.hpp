@@ -39,6 +39,7 @@
 #include <boost/array.hpp>
 #include <boost/unordered_set.hpp>
 #include <boost/functional/hash.hpp>
+#include <boost/integer_traits.hpp>
 
 #include <deque>
 #include <vector>
@@ -262,48 +263,132 @@ namespace alps {
                 lattice_constant_geometry(geometric_info, S, G, I, distance_to_boarder, pinning, subgraph_orbit, breaking_vertex, matches.insert(embedding_generic).second);
             }
 
-            template<typename Subgraph, typename Graph> bool lattice_constant_vertex_equal(
-                  typename boost::graph_traits<Subgraph>::vertex_descriptor const & s
-                , typename boost::graph_traits<Graph>::vertex_descriptor const & g
-                , Subgraph const & S
-                , Graph const & G
-                , boost::mpl::true_
-            ) {
-                return get(alps::vertex_type_t(), S)[s] == get(alps::vertex_type_t(), G)[g];
-            }
-
-            template<typename Subgraph, typename Graph> bool lattice_constant_edge_equal(
+            template <typename Subgraph>
+            struct edge_equal_simple
+            {
+              private:
+                template <typename Graph>
+                bool impl(
                   typename boost::graph_traits<Subgraph>::edge_descriptor const & s_e
                 , typename boost::graph_traits<Graph>::edge_descriptor const & g_e
                 , Subgraph const & S
                 , Graph const & G
                 , boost::mpl::true_
-            ) {
-                return get(alps::edge_type_t(), S)[s_e] == get(alps::edge_type_t(), G)[g_e];
-            }
+                ) const {
+                    return get(alps::edge_type_t(), S)[s_e] == get(alps::edge_type_t(), G)[g_e];
+                }
 
-            template<typename Subgraph, typename Graph> bool lattice_constant_vertex_equal(
-                  typename boost::graph_traits<Subgraph>::vertex_descriptor const & s
-                , typename boost::graph_traits<Graph>::vertex_descriptor const & g
-                , Subgraph const & S
-                , Graph const & G
-                , boost::mpl::false_
-            ) {
-                return true;
-            }
-
-            template<typename Subgraph, typename Graph> bool lattice_constant_edge_equal(
+                template <typename Graph>
+                bool impl(
                   typename boost::graph_traits<Subgraph>::edge_descriptor const & s_e
                 , typename boost::graph_traits<Graph>::edge_descriptor const & g_e
                 , Subgraph const & S
                 , Graph const & G
                 , boost::mpl::false_
-            ) {
-                return true;
-            }
+                ) const {
+                    return true;
+                }
+
+              public:
+                template <typename Graph>
+                bool operator()(
+                  typename boost::graph_traits<Subgraph>::edge_descriptor const & s_e
+                , typename boost::graph_traits<Graph>::edge_descriptor const & g_e
+                , Subgraph const & S
+                , Graph const & G
+                ) const {
+                    return impl(s_e,g_e,S,G,boost::mpl::bool_<has_property<alps::edge_type_t,Subgraph>::edge_property>());
+                }
+
+            };
+
+            template <typename Subgraph>
+            struct edge_equal_with_color_symmetries
+            {
+                typedef typename boost::property_map<Subgraph,alps::edge_type_t>::type::value_type color_type;
+                typedef typename color_partition<Subgraph>::type                                color_partition_type;
+                typedef std::vector<color_type>                                                 color_map_type;
+
+                static color_type const invalid = boost::integer_traits<color_type>::const_max;
+
+                edge_equal_with_color_symmetries(color_partition_type const& color_partition)
+                : color_partition_(color_partition), color_map_(color_partition_.size(),color_type(invalid))
+                {
+                    BOOST_STATIC_ASSERT(( has_property<alps::edge_type_t,Subgraph>::edge_property ));
+                }
+
+                void reset()
+                {
+                    color_map_.clear();
+                    color_map_.resize(color_partition_.size(),invalid);
+                }
+
+
+                template <typename Graph>
+                bool operator()(
+                      typename boost::graph_traits<Subgraph>::edge_descriptor const & s_e
+                    , typename boost::graph_traits<Graph>::edge_descriptor const & g_e
+                    , Subgraph const & S
+                    , Graph const & G
+                ) {
+                    color_type const sec = get(alps::edge_type_t(), S)[s_e];
+                    color_type const gec = get(alps::edge_type_t(), G)[g_e];
+                    assert(sec < color_map_.size());
+
+                    if(color_map_[sec] == invalid && color_partition_[sec] == color_partition_[gec])
+                    {
+                        // Try to add a mapping from color sec to color gec to the color_map_ while keeping the mapping unique.
+                        // (i.e. no two colors sec0,sec1 can be mapped to the same color gec)
+                        if(std::find(color_map_.begin(),color_map_.end(), gec) == color_map_.end())
+                            color_map_[sec] = gec;
+                    }
+                    return color_map_[sec] == gec;
+                }
+            private:
+                color_partition_type    color_partition_;
+                color_map_type          color_map_;
+            };
+
+            template <typename Subgraph>
+            struct vertex_equal_simple
+            {
+              private:
+                template <typename Graph>
+                bool impl(
+                  typename boost::graph_traits<Subgraph>::vertex_descriptor const & s_v
+                , typename boost::graph_traits<Graph>::vertex_descriptor const & g_v
+                , Subgraph const & S
+                , Graph const & G
+                , boost::mpl::true_
+                ) const {
+                    return get(alps::vertex_type_t(), S)[s_v] == get(alps::vertex_type_t(), G)[g_v];
+                }
+
+                template <typename Graph>
+                bool impl(
+                  typename boost::graph_traits<Subgraph>::vertex_descriptor const & s_v
+                , typename boost::graph_traits<Graph>::vertex_descriptor const & g_v
+                , Subgraph const & S
+                , Graph const & G
+                , boost::mpl::false_
+                ) const {
+                    return true;
+                }
+
+              public:
+                template <typename Graph>
+                bool operator()(
+                  typename boost::graph_traits<Subgraph>::vertex_descriptor const & s_v
+                , typename boost::graph_traits<Graph>::vertex_descriptor const & g_v
+                , Subgraph const & S
+                , Graph const & G
+                ) const {
+                    return impl(s_v,g_v,S,G,boost::mpl::bool_<has_property<alps::vertex_type_t,Subgraph>::vertex_property>());
+                }
+            };
 
             // TODO: make an object out of walker
-            template<typename Subgraph, typename Graph, typename ExitOnMatch, typename GeometricInfo, typename BreakingVertex> void lattice_constant_walker(
+            template<typename Subgraph, typename Graph, typename GeometricInfo, typename BreakingVertex, typename VertexEqual, typename EdgeEqual, typename ExitOnMatch> void lattice_constant_walker(
                   typename boost::graph_traits<Subgraph>::vertex_descriptor const & s
                 , typename boost::graph_traits<Graph>::vertex_descriptor const & g
                 , Subgraph const & S
@@ -322,6 +407,8 @@ namespace alps {
                 , std::size_t unit_cell_size
                 , GeometricInfo & geometric_info
                 , BreakingVertex const & breaking_vertex
+                , VertexEqual & vertex_equal
+                , EdgeEqual & edge_equal
                 , ExitOnMatch exit_on_match
             ) {
                 typedef typename boost::graph_traits<Subgraph>::vertex_descriptor SubgraphVertex;
@@ -329,14 +416,7 @@ namespace alps {
 
                 if (out_degree(s, S) > out_degree(g, G))
                     return;
-                if (!lattice_constant_vertex_equal(
-                      s
-                    , g
-                    , S
-                    , G
-                    , boost::mpl::bool_<has_property<alps::vertex_type_t, Subgraph>::vertex_property>()
-                    )
-                )
+                if (!vertex_equal(s, g, S, G))
                     return;
                 typename boost::graph_traits<Subgraph>::adjacency_iterator s_ai, s_ae;
                 for (boost::tie(s_ai, s_ae) = adjacent_vertices(s, S); s_ai != s_ae; ++s_ai)
@@ -344,14 +424,7 @@ namespace alps {
                         typename boost::graph_traits<Graph>::edge_descriptor e;
                         bool is_e;
                         boost::tie(e, is_e) = edge(g, pinning[*s_ai], G);
-                        if (!is_e || !lattice_constant_edge_equal(
-                              edge(s, *s_ai, S).first
-                            , e
-                            , S
-                            , G
-                            , boost::mpl::bool_<has_property<alps::edge_type_t, Subgraph>::edge_property>()
-                            )
-                        )
+                        if (!is_e || !edge_equal( edge(s, *s_ai, S).first , e, S, G) )
                             return;
                     }
                 visited[g] = true;
@@ -384,6 +457,8 @@ namespace alps {
                                 , unit_cell_size
                                 , geometric_info
                                 , breaking_vertex
+                                , vertex_equal
+                                , edge_equal
                                 , exit_on_match
                             );
                 } else
@@ -406,7 +481,7 @@ namespace alps {
 
             // Input: Subgraph, Graph, vertices of G contained in mapping of S on G
             // Output: lattice_constant of S in G containing v
-            template<typename Subgraph, typename Graph, typename GeometricInfo, typename BreakingVertex, typename ExitOnMatch> std::size_t lattice_constant_impl(
+            template<typename Subgraph, typename Graph, typename GeometricInfo, typename BreakingVertex, typename VertexEqual, typename EdgeEqual, typename ExitOnMatch> std::size_t lattice_constant_impl(
                   Subgraph const & S
                 , Graph const & G
                 , std::vector<typename boost::graph_traits<Graph>::vertex_descriptor> const & V
@@ -415,6 +490,8 @@ namespace alps {
                 , std::size_t unit_cell_size
                 , GeometricInfo & geometric_info
                 , BreakingVertex const & breaking_vertex
+                , VertexEqual & vertex_equal
+                , EdgeEqual & edge_equal
                 , ExitOnMatch exit_on_match
             ) {
                 // Assume the vertex desciptor is an unsigned integer type (since we want to use it as an index for a vector)
@@ -472,6 +549,8 @@ namespace alps {
                                 , unit_cell_size
                                 , geometric_info
                                 , breaking_vertex
+                                , vertex_equal
+                                , edge_equal
                                 , exit_on_match
                             );
                             break;
@@ -479,16 +558,6 @@ namespace alps {
                 return matches.size();
             }
 
-            template <typename ColorPartition>
-            bool mapping_respects_color_partition(std::vector<std::size_t> const& index, ColorPartition const& color_partition)
-            {
-                typename ColorPartition::const_iterator const color_partition_begin = color_partition.begin();
-                typename ColorPartition::const_iterator const color_partition_end   = color_partition.end();
-                for(typename ColorPartition::const_iterator it = color_partition_begin; it != color_partition_end; ++it)
-                    if(it->second != (color_partition_begin + index[ distance(color_partition_begin,it) ])->second)
-                        return false;
-                return true;
-            }
         } // end namespace detail
     } // end namespace graph
 } // end namespace alps
