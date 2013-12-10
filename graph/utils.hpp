@@ -44,6 +44,7 @@ template <typename Graph>
 std::vector<typename has_property<alps::edge_type_t,Graph>::edge_property_type> get_edge_color_list(Graph const& g)
 {
     BOOST_STATIC_ASSERT(( has_property<alps::edge_type_t,Graph>::edge_property ));
+    using std::sort;
     std::vector<typename has_property<alps::edge_type_t,Graph>::edge_property_type> edge_colors;
     typename graph_traits<Graph>::edge_iterator e_it, e_end;
 
@@ -54,6 +55,7 @@ std::vector<typename has_property<alps::edge_type_t,Graph>::edge_property_type> 
         if( find(edge_colors.begin(),edge_colors.end(),ep) == edge_colors.end() )
             edge_colors.push_back(ep);
     }
+    sort(edge_colors.begin(),edge_colors.end());
     return edge_colors;
 }
 
