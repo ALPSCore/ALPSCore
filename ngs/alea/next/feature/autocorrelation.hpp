@@ -103,6 +103,7 @@ namespace alps {
                         : B()
                         , m_ac_sum()
                         , m_ac_sum2()
+                        , m_ac_partial()
                         , m_ac_count()
                     {}
 
@@ -110,6 +111,7 @@ namespace alps {
                         : B(arg)
                         , m_ac_sum(arg.m_ac_sum)
                         , m_ac_sum2(arg.m_ac_sum2)
+                        , m_ac_partial(arg.m_ac_partial)
                         , m_ac_count(arg.m_ac_count)
                     {}
 
@@ -141,7 +143,6 @@ namespace alps {
                             mean_scalar_type N_i = m_ac_count[i];
                             mean_type sum_i = m_ac_sum[i] / binlen;
                             mean_type sum2_i = m_ac_sum2[i] / (binlen * binlen);
-
                             mean_type delta_i = sqrt((sum2_i - sum_i * sum_i / N_i) / (N_i * (N_i - one)));
                             acorr[i] = 0.5 * (delta_i / delta_0 - one);
                         }
@@ -158,18 +159,20 @@ namespace alps {
                             m_ac_sum2.push_back(T());
                             check_size(m_ac_sum2.back(), val);
                             m_ac_sum.push_back(T());
-                            m_ac_partial.push_back(T());
                             check_size(m_ac_sum.back(), val);
+                            m_ac_partial.push_back(T());
+                            check_size(m_ac_partial.back(), val);
                             m_ac_count.push_back(typename count_type<B>::type());
                         }
-                        for (unsigned i = 0; i < m_ac_sum2.size(); ++i)
+                        for (unsigned i = 0; i < m_ac_sum2.size(); ++i) {
+                            m_ac_partial[i] += val;
                             if (!(B::count() & ((1ll << i) - 1))) {
                                 m_ac_sum2[i] += m_ac_partial[i] * m_ac_partial[i];
                                 m_ac_sum[i] += m_ac_partial[i];
                                 m_ac_count[i]++;
                                 m_ac_partial[i] = T();
-                            } else
-                                m_ac_partial[i] += val;
+                            }
+                        }
                     }
 
                     template<typename S> void print(S & os) const {
@@ -213,6 +216,7 @@ namespace alps {
                     ) {
 
                         if (comm.rank() == root) {
+
                             B::collective_merge(comm, root);
                             typedef typename alps::hdf5::scalar_type<typename mean_type<B>::type>::type mean_scalar_type;
                             std::size_t size = boost::mpi::all_reduce(comm, m_ac_count.size(), boost::mpi::maximum<std::size_t>());
