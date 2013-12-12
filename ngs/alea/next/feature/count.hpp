@@ -139,9 +139,10 @@ namespace alps {
                     typedef typename count_type<T>::type count_type;
                     typedef Result<T, count_tag, typename B::result_type> result_type;
 
-                    template<typename ArgumentPack> Accumulator(ArgumentPack const & args)
-                        : m_count(count_type())
-                    {}
+                    // TODO: implement using disable_if<Accumulator<...> > ...
+                    // template<typename ArgumentPack> Accumulator(ArgumentPack const & args)
+                    //     : m_count(count_type())
+                    // {}
 
                     Accumulator(): m_count(count_type()) {}
                     Accumulator(Accumulator const & arg): m_count(arg.m_count) {}

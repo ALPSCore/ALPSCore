@@ -91,7 +91,8 @@ namespace alps {
                     typedef typename alps::accumulator::mean_type<B>::type mean_type;
                     typedef Result<T, mean_tag, typename B::result_type> result_type;
 
-                    template<typename ArgumentPack> Accumulator(ArgumentPack const & args): B(args), m_sum(T()) {}
+                    // TODO: implement using disable_if<Accumulator<...> > ...
+                    // template<typename ArgumentPack> Accumulator(ArgumentPack const & args): B(args), m_sum(T()) {}
 
                     Accumulator(): B(), m_sum(T()) {}
                     Accumulator(Accumulator const & arg): B(arg), m_sum(arg.m_sum) {}

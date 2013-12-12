@@ -91,63 +91,85 @@ namespace alps {
                 public:
                     typedef Result<T, autocorrelation_tag, typename B::result_type> result_type;
 
-                    // TODO: implement ...
-                    template<typename ArgumentPack> Accumulator(ArgumentPack const & args)
-                        : B(args)
-                        , m_ac_partial(0)
-                        , m_ac_bins(0)
-                    {}
+                    // TODO: implement using disable_if<Accumulator<...> > ...
+                    // template<typename ArgumentPack> Accumulator(ArgumentPack const & args)
+                    //     : B(args)
+                    //     , m_ac_sum()
+                    //     , m_ac_sum2()
+                    //     , m_ac_count()
+                    // {}
 
                     Accumulator()
                         : B()
-                        , m_ac_partial(0)
-                        , m_ac_bins(0)
+                        , m_ac_sum()
+                        , m_ac_sum2()
+                        , m_ac_count()
                     {}
 
                     Accumulator(Accumulator const & arg)
                         : B(arg)
-                        , m_ac_partial(arg.m_ac_partial)
-                        , m_ac_bins(arg.m_ac_bins)
+                        , m_ac_sum(arg.m_ac_sum)
+                        , m_ac_sum2(arg.m_ac_sum2)
+                        , m_ac_count(arg.m_ac_count)
                     {}
 
-                    std::vector<T> const autocorrelation() const {
+                    std::vector<typename mean_type<B>::type> const autocorrelation() const {
                         using alps::ngs::numeric::operator*;
                         using alps::ngs::numeric::operator-;
                         using alps::ngs::numeric::operator/;
                         using std::sqrt;
                         using alps::ngs::numeric::sqrt;
-                        typename alps::hdf5::scalar_type<T>::type cnt = B::count() - 1;
-                        // TODO: probably we need less than count(), since we remove the partials ...
-                        std::vector<T> result = m_ac_bins - m_ac_partial * m_ac_partial;
-                        for (typename std::vector<T>::iterator it = result.begin(); it != result.end(); ++it)
-                            *it = sqrt(*it / cnt);
-                        return result;
+
+                        typedef typename mean_type<B>::type mean_type;
+                        typedef typename alps::hdf5::scalar_type<mean_type>::type mean_scalar_type;
+
+                        // TODO: if not enoght bins are available, return infinity
+                        if (m_ac_sum2.size() == 0)
+                            return std::vector<mean_type>();
+
+                        // TODO: make library for scalar type
+                        mean_scalar_type one = 1;
+
+                        mean_scalar_type N_0 = m_ac_count[0];
+                        mean_type sum_0 = m_ac_sum[0];
+                        mean_type sum2_0 = m_ac_sum2[0];
+                        mean_type delta_0 = sqrt((sum2_0 - sum_0 * sum_0 / N_0) / (N_0 * (N_0 - one)));
+
+                        std::vector<mean_type> acorr(m_ac_sum2.size() - 1);
+                        for (std::size_t i = 0; i < acorr.size(); ++i) {
+                            mean_scalar_type binlen = 1ll << i;
+                            mean_scalar_type N_i = m_ac_count[i];
+                            mean_type sum_i = m_ac_sum[i] / binlen;
+                            mean_type sum2_i = m_ac_sum2[i] / (binlen * binlen);
+
+                            mean_type delta_i = sqrt((sum2_i - sum_i * sum_i / N_i) / (N_i * (N_i - one)));
+                            acorr[i] = 0.5 * (delta_i / delta_0 - one);
+                        }
+                        return acorr;
                     }
 
                     void operator()(T const & val) {
-                        using alps::ngs::numeric::operator+;
                         using alps::ngs::numeric::operator+=;
-                        using alps::ngs::numeric::operator-;
                         using alps::ngs::numeric::operator*;
-                        using alps::ngs::numeric::operator-;
                         using alps::ngs::numeric::detail::check_size;
 
                         B::operator()(val);
-                        
-                        if(B::count() == (1 << m_ac_bins.size())) {
-                            m_ac_bins.push_back(T());
-                            check_size(m_ac_bins.back(), val);
-
+                        if(B::count() == (1 << m_ac_sum2.size())) {
+                            m_ac_sum2.push_back(T());
+                            check_size(m_ac_sum2.back(), val);
+                            m_ac_sum.push_back(T());
                             m_ac_partial.push_back(T());
-                            check_size(m_ac_partial.back(), val);
+                            check_size(m_ac_sum.back(), val);
+                            m_ac_count.push_back(typename count_type<B>::type());
                         }
-                        for (unsigned i = 0; i < m_ac_bins.size(); ++i)
-                            // TODO: check if this makes sence
-                            if(B::count() % (1u << i) == 0) {
-                                m_ac_partial[i] = B::sum() - m_ac_partial[i];
-                                m_ac_bins[i] += m_ac_partial[i] * m_ac_partial[i];
-                                m_ac_partial[i] = B::sum();
-                            }
+                        for (unsigned i = 0; i < m_ac_sum2.size(); ++i)
+                            if (!(B::count() & ((1ll << i) - 1))) {
+                                m_ac_sum2[i] += m_ac_partial[i] * m_ac_partial[i];
+                                m_ac_sum[i] += m_ac_partial[i];
+                                m_ac_count[i]++;
+                                m_ac_partial[i] = T();
+                            } else
+                                m_ac_partial[i] += val;
                     }
 
                     template<typename S> void print(S & os) const {
@@ -158,15 +180,15 @@ namespace alps {
                     void save(hdf5::archive & ar) const {
                         B::save(ar);
                         if (B::count())
-                            ar["tau/partialbin"] = m_ac_partial;
-                        ar["tau/data"] = m_ac_bins;
+                            ar["tau/partialbin"] = m_ac_sum;
+                        ar["tau/data"] = m_ac_sum2;
                     }
 
                     void load(hdf5::archive & ar) { // TODO: make archive const
                         B::load(ar);
                         if (ar.is_data("tau/partialbin"))
-                            ar["tau/partialbin"] >> m_ac_partial;
-                        ar["tau/data"] >> m_ac_bins;
+                            ar["tau/partialbin"] >> m_ac_sum;
+                        ar["tau/data"] >> m_ac_sum2;
                     }
 
                     static std::size_t rank() { return B::rank() + 1; }
@@ -184,62 +206,66 @@ namespace alps {
                         // TODO: implement!
                     }
 
-// #ifdef ALPS_HAVE_MPI
-//                     void collective_merge(
-//                           boost::mpi::communicator const & comm
-//                         , int root
-//                     ) {
-//                         B::collective_merge(comm, root);
-//                         if (comm.rank() == root) {
-//                             if (!m_mn_bins.empty()) {
-//                                 std::vector<typename mean_type<B>::type> local_bins(m_mn_bins);
-//                                 m_mn_elements_in_bin = partition_bins(comm, local_bins);
-//                                 m_mn_bins.resize(local_bins.size());
-//                                 B::reduce_if(comm, local_bins, m_mn_bins, std::plus<typename alps::hdf5::scalar_type<typename mean_type<B>::type>::type>(), 0);
-//                             }
-//                         } else
-//                             const_cast<Accumulator<T, autocorrelation_tag, B> const *>(this)->collective_merge(comm, root);
-//                     }
+#ifdef ALPS_HAVE_MPI
+                    void collective_merge(
+                          boost::mpi::communicator const & comm
+                        , int root
+                    ) {
 
-//                     void collective_merge(
-//                           boost::mpi::communicator const & comm
-//                         , int root
-//                     ) const {
-//                         B::collective_merge(comm, root);
-//                         if (comm.rank() == root)
-//                             throw std::runtime_error("A const object cannot be root" + ALPS_STACKTRACE);
-//                         else if (!m_mn_bins.empty()) {
-//                             std::vector<typename mean_type<B>::type> local_bins(m_mn_bins);
-//                             partition_bins(comm, local_bins);
-//                             B::reduce_if(comm, local_bins, std::plus<typename alps::hdf5::scalar_type<typename mean_type<B>::type>::type>(), root);
-//                         }
-//                     }
+                        if (comm.rank() == root) {
+                            B::collective_merge(comm, root);
+                            typedef typename alps::hdf5::scalar_type<typename mean_type<B>::type>::type mean_scalar_type;
+                            std::size_t size = boost::mpi::all_reduce(comm, m_ac_count.size(), boost::mpi::maximum<std::size_t>());
 
-//                 private:
-//                     std::size_t partition_bins (boost::mpi::communicator const & comm, std::vector<typename mean_type<B>::type> & local_bins) const {
-//                         using alps::ngs::numeric::operator+;
-//                         using alps::ngs::numeric::operator/;
-//                         typename B::count_type elements_in_local_bins = boost::mpi::all_reduce(comm, m_mn_elements_in_bin, boost::mpi::maximum<typename B::count_type>());
-//                         typename B::count_type howmany = (elements_in_local_bins - 1) / m_mn_elements_in_bin + 1;
-//                         if (howmany > 1) {
-//                             typename B::count_type newbins = local_bins.size() / howmany;
-//                             for (typename B::count_type i = 0; i < newbins; ++i) {
-//                                 local_bins[i] = local_bins[howmany * i];
-//                                 for (typename B::count_type j = 1; j < howmany; ++j)
-//                                     local_bins[i] = local_bins[i] + local_bins[howmany * i + j];
-//                                 local_bins[i] = local_bins[i] / (typename alps::hdf5::scalar_type<typename mean_type<B>::type>::type)howmany;
+                            m_ac_count.resize(size);
+                            B::reduce_if(comm, std::vector<typename count_type<B>::type>(m_ac_count), m_ac_count, std::plus<mean_scalar_type>(), root);
 
-//                             }
-//                             local_bins.resize(newbins);
-//                         }
-//                         return elements_in_local_bins;
-//                     }
-// #endif
+                            m_ac_sum.resize(size);
+                            B::reduce_if(comm, std::vector<T>(m_ac_sum), m_ac_sum, std::plus<mean_scalar_type>(), root);
+
+                            m_ac_sum2.resize(size);
+                            B::reduce_if(comm, std::vector<T>(m_ac_sum2), m_ac_sum2, std::plus<mean_scalar_type>(), root);
+
+                        } else
+                            const_cast<Accumulator<T, autocorrelation_tag, B> const *>(this)->collective_merge(comm, root);
+                    }
+
+                    void collective_merge(
+                          boost::mpi::communicator const & comm
+                        , int root
+                    ) const {
+                        B::collective_merge(comm, root);
+                        if (comm.rank() == root)
+                            throw std::runtime_error("A const object cannot be root" + ALPS_STACKTRACE);
+                        else {
+                            typedef typename alps::hdf5::scalar_type<typename mean_type<B>::type>::type mean_scalar_type;
+
+                            std::size_t size = boost::mpi::all_reduce(comm, m_ac_count.size(), boost::mpi::maximum<std::size_t>());
+                            {
+                                std::vector<typename count_type<B>::type> count(m_ac_count);
+                                count.resize(size);
+                                B::reduce_if(comm, count, std::plus<mean_scalar_type>(), root);
+                            }
+                            {
+                                std::vector<T> sum(m_ac_sum);
+                                sum.resize(size);
+                                B::reduce_if(comm, sum, std::plus<mean_scalar_type>(), root);
+                            }
+                            {
+                                std::vector<T> sum2(m_ac_sum2);
+                                sum2.resize(size);
+                                B::reduce_if(comm, sum2, std::plus<mean_scalar_type>(), root);
+                            }
+                        }
+                    }
+#endif
 
                 private:
 
+                    std::vector<T> m_ac_sum;
+                    std::vector<T> m_ac_sum2;
                     std::vector<T> m_ac_partial;
-                    std::vector<T> m_ac_bins;
+                    std::vector<typename count_type<B>::type> m_ac_count;
             };
 
             template<typename T, typename B> class Result<T, autocorrelation_tag, B> : public B {
@@ -249,16 +275,16 @@ namespace alps {
 
                     Result()
                         : B()
-                        , m_ac_bins(0)
+                        , m_ac_autocorrelation()
                     {}
 
                     template<typename A> Result(A const & acc)
                         : B(acc)
-                        , m_ac_bins(autocorrelation_impl(acc))
+                        , m_ac_autocorrelation(autocorrelation_impl(acc))
                     {}
 
                     autocorrelation_type const autocorrelation() const {
-                        return m_ac_bins;
+                        return m_ac_autocorrelation;
                     }
 
                     template<typename S> void print(S & os) const {
@@ -268,12 +294,12 @@ namespace alps {
 
                     void save(hdf5::archive & ar) const {
                         B::save(ar);
-                        ar["tau"] = m_ac_bins;
+                        ar["tau"] = m_ac_autocorrelation;
                     }
 
                     void load(hdf5::archive & ar) {
                         B::load(ar);
-                        ar["tau"] >> m_ac_bins;
+                        ar["tau"] >> m_ac_autocorrelation;
                     }
 
                     static std::size_t rank() { return B::rank() + 1; }
@@ -289,7 +315,7 @@ namespace alps {
                     // TODO: add functions and operators
 
                 private:
-                    std::vector<T> m_ac_bins;
+                    std::vector<typename mean_type<B>::type> m_ac_autocorrelation;
             };
 
             template<typename B> class BaseWrapper<autocorrelation_tag, B> : public B {

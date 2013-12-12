@@ -93,6 +93,28 @@ namespace alps {
                 return lhs / rhs;
             }
 
+            //------------------- operator + with scalar -------------------
+            template<typename T>
+            std::vector<T> operator + (T const & scalar, std::vector<T> lhs) {
+                std::transform(lhs.begin(), lhs.end(), lhs.begin(), bind1st(std::plus<T>(), scalar));
+                return lhs;
+            }
+            template<typename T>
+            std::vector<T> operator + (std::vector<T> lhs, T const & scalar) {
+                std::transform(lhs.begin(), lhs.end(), lhs.begin(), bind2nd(std::plus<T>(), scalar));
+                return lhs;
+            }
+
+            //------------------- operator - with scalar -------------------
+            template<typename T>
+            std::vector<T> operator - (T const & scalar, std::vector<T> const & lhs) {
+                return -scalar + lhs;
+            }
+            template<typename T>
+            std::vector<T> operator - (std::vector<T> const & lhs, T const & scalar) {
+                return lhs + -scalar;
+            }
+
             //------------------- operator * with scalar -------------------
             template<typename T>
             std::vector<T> operator * (std::vector<T> const & lhs, T const & scalar) {

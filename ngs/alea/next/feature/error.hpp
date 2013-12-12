@@ -90,7 +90,8 @@ namespace alps {
                     typedef typename alps::accumulator::error_type<B>::type error_type;
                     typedef Result<T, error_tag, typename B::result_type> result_type;
 
-                    template<typename ArgumentPack> Accumulator(ArgumentPack const & args): B(args), m_sum2(T()) {}
+                    // TODO: implement using disable_if<Accumulator<...> > ...
+                    // template<typename ArgumentPack> Accumulator(ArgumentPack const & args): B(args), m_sum2(T()) {}
 
                     Accumulator(): B(), m_sum2(T()) {}
                     Accumulator(Accumulator const & arg): B(arg), m_sum2(arg.m_sum2) {}
