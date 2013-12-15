@@ -679,9 +679,9 @@ template <class T>
 template <class OP>
 void SimpleObservableData<T>::transform_linear(OP op)
 {
+  fill_jack();
   mean_ = op(mean_);
   std::transform(values_.begin(), values_.end(), values_.begin(), op);
-  fill_jack();
   std::transform(jack_.begin(), jack_.end(), jack_.begin(), op);
 }
 
@@ -689,6 +689,7 @@ template <class T>
 template <class OP>
 void SimpleObservableData<T>::transform(OP op)
 {
+  fill_jack();
   valid_ = false;
   nonlinear_operations_ = true;
   changed_ = true;
@@ -698,7 +699,6 @@ void SimpleObservableData<T>::transform(OP op)
   std::transform(values_.begin(), values_.end(), values_.begin(),boost::lambda::_1/double(bin_size()));
   std::transform(values_.begin(), values_.end(), values_.begin(), op);
   std::transform(values_.begin(), values_.end(), values_.begin(),boost::lambda::_1*double(bin_size()));
-  fill_jack();
   std::transform(jack_.begin(), jack_.end(), jack_.begin(), op);
 }
 
@@ -773,6 +773,7 @@ template <class T> template <class X>
 void SimpleObservableData<T>::divide(const X& x)
 {
   if (count()) {
+    fill_jack();
     error_ = x *error_/mean_/mean_;
     has_variance_ = false;
     values2_.clear();
@@ -780,7 +781,6 @@ void SimpleObservableData<T>::divide(const X& x)
     changed_ = true;
     mean_ = x/mean_;
     double f = bin_size() * bin_size();
-    fill_jack();
     std::transform(values_.begin(), values_.end(), values_.begin(), (x*f)/boost::lambda::_1);
     std::transform(jack_.begin(), jack_.end(), jack_.begin(), x/boost::lambda::_1);
     nonlinear_operations_ = true;
