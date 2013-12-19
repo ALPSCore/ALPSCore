@@ -29,7 +29,7 @@
 #include <alps/mcbase.hpp>
 #include <alps/mcmpiadapter.hpp>
 #include <alps/stop_callback.hpp>
-#include <alps/ngs/scheduler/parseargs.hpp>
+#include <alps/parseargs.hpp>
 #include <alps/ngs/make_parameters_from_xml.hpp>
 
 #include <boost/lambda/lambda.hpp>
@@ -45,9 +45,11 @@ class my_sim_type : public alps::mcbase {
 
         {
 #ifdef ALPS_NGS_USE_NEW_ALEA
-            measurements << alps::accumulator::RealObservable("Value");
+            measurements << alps::accumulator::RealObservable("SValue")
+                         << alps::accumulator::RealVectorObservable("VValue");
 #else
-            measurements << alps::ngs::RealObservable("Value");
+            measurements << alps::ngs::RealObservable("SValue")
+                         << alps::ngs::RealVectorObservable("VValue");
 #endif
         }
 
@@ -58,9 +60,11 @@ class my_sim_type : public alps::mcbase {
             , total_count(params["COUNT"])
         {
 #ifdef ALPS_NGS_USE_NEW_ALEA
-            measurements << alps::accumulator::RealObservable("Value");
+            measurements << alps::accumulator::RealObservable("SValue")
+                         << alps::accumulator::RealVectorObservable("VValue");
 #else
-            measurements << alps::ngs::RealObservable("Value");
+            measurements << alps::ngs::RealObservable("SValue")
+                         << alps::ngs::RealVectorObservable("VValue");
 #endif
         }
 
@@ -73,7 +77,8 @@ class my_sim_type : public alps::mcbase {
         // do the measurements here
         void measure() {
             ++count;
-            measurements["Value"] << value;
+            measurements["SValue"] << value;
+            measurements["VValue"] << std::vector<double>(3, value);
         };
 
         double fraction_completed() const {
@@ -113,7 +118,8 @@ int main(int argc, char *argv[]) {
 
         if (c.rank() == 0) { // print the results and save it to hdf5
             alps::results_type<alps::mcmpiadapter<my_sim_type> >::type results = collect_results(my_sim);
-            std::cout << "e^(-x*x): " << results["Value"] << std::endl;
+            std::cout << "e^(-x*x): " << results["SValue"] << std::endl;
+            std::cout << "e^(-x*x): " << results["VValue"] << std::endl;
             // std::cout << results["Value"] << " " << 2. * results["Value"] / 2.  << std::endl;
             save_results(results, params, options.output_file, "/simulation/results");
         } else

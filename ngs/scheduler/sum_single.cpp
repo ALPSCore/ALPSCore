@@ -42,9 +42,11 @@ class my_sim_type : public alps::mcbase {
 
         {
 #ifdef ALPS_NGS_USE_NEW_ALEA
-            measurements << alps::accumulator::RealObservable("Value");
+            measurements << alps::accumulator::RealObservable("SValue")
+                         << alps::accumulator::RealVectorObservable("VValue");
 #else
-            measurements << alps::ngs::RealObservable("Value");
+            measurements << alps::ngs::RealObservable("SValue")
+                         << alps::ngs::RealVectorObservable("VValue");
 #endif
         }
 
@@ -55,9 +57,11 @@ class my_sim_type : public alps::mcbase {
             , total_count(params["COUNT"])
         {
 #ifdef ALPS_NGS_USE_NEW_ALEA
-            measurements << alps::accumulator::RealObservable("Value");
+            measurements << alps::accumulator::RealObservable("SValue")
+                         << alps::accumulator::RealVectorObservable("VValue");
 #else
-            measurements << alps::ngs::RealObservable("Value");
+            measurements << alps::ngs::RealObservable("SValue")
+                         << alps::ngs::RealVectorObservable("VValue");
 #endif
         }
 
@@ -70,7 +74,8 @@ class my_sim_type : public alps::mcbase {
         // do the measurements here
         void measure() {
             ++count;
-            measurements["Value"] << value;
+            measurements["SValue"] << value;
+            measurements["VValue"] << std::vector<double>(3, value);
         };
 
         double fraction_completed() const {
@@ -94,6 +99,7 @@ int main(int argc, char *argv[]) {
 
     alps::results_type<my_sim_type>::type results = collect_results(my_sim); // collect the results
 
-    std::cout << "e^(-x*x): " << results["Value"] << std::endl;
+    std::cout << "e^(-x*x): " << results["SValue"] << std::endl;
+    std::cout << "e^(-x*x): " << results["VValue"] << std::endl;
     save_results(results, params, options.output_file, "/simulation/results");
 }
