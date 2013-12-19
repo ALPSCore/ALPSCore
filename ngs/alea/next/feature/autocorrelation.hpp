@@ -171,6 +171,7 @@ namespace alps {
                                 m_ac_sum[i] += m_ac_partial[i];
                                 m_ac_count[i]++;
                                 m_ac_partial[i] = T();
+                                check_size(m_ac_partial[i], val);
                             }
                         }
                     }
@@ -216,17 +217,23 @@ namespace alps {
                     ) {
 
                         if (comm.rank() == root) {
+std::cout << comm.rank() << "\t" << __LINE__ << std::endl;
 
                             B::collective_merge(comm, root);
+std::cout << comm.rank() << "\t" << __LINE__ << std::endl;
                             typedef typename alps::hdf5::scalar_type<typename mean_type<B>::type>::type mean_scalar_type;
+std::cout << comm.rank() << "\t" << __LINE__ << std::endl;
                             std::size_t size = boost::mpi::all_reduce(comm, m_ac_count.size(), boost::mpi::maximum<std::size_t>());
 
+std::cout << comm.rank() << "\t" << __LINE__ << std::endl;
                             m_ac_count.resize(size);
                             B::reduce_if(comm, std::vector<typename count_type<B>::type>(m_ac_count), m_ac_count, std::plus<mean_scalar_type>(), root);
 
+std::cout << comm.rank() << "\t" << __LINE__ << std::endl;
                             m_ac_sum.resize(size);
                             B::reduce_if(comm, std::vector<T>(m_ac_sum), m_ac_sum, std::plus<mean_scalar_type>(), root);
 
+std::cout << comm.rank() << "\t" << __LINE__ << std::endl;
                             m_ac_sum2.resize(size);
                             B::reduce_if(comm, std::vector<T>(m_ac_sum2), m_ac_sum2, std::plus<mean_scalar_type>(), root);
 
@@ -239,22 +246,27 @@ namespace alps {
                         , int root
                     ) const {
                         B::collective_merge(comm, root);
+std::cout << comm.rank() << "\t" << __LINE__ << std::endl;
                         if (comm.rank() == root)
                             throw std::runtime_error("A const object cannot be root" + ALPS_STACKTRACE);
                         else {
                             typedef typename alps::hdf5::scalar_type<typename mean_type<B>::type>::type mean_scalar_type;
 
+std::cout << comm.rank() << "\t" << __LINE__ << std::endl;
                             std::size_t size = boost::mpi::all_reduce(comm, m_ac_count.size(), boost::mpi::maximum<std::size_t>());
+std::cout << comm.rank() << "\t" << __LINE__ << std::endl;
                             {
                                 std::vector<typename count_type<B>::type> count(m_ac_count);
                                 count.resize(size);
                                 B::reduce_if(comm, count, std::plus<mean_scalar_type>(), root);
                             }
+std::cout << comm.rank() << "\t" << __LINE__ << std::endl;
                             {
                                 std::vector<T> sum(m_ac_sum);
                                 sum.resize(size);
                                 B::reduce_if(comm, sum, std::plus<mean_scalar_type>(), root);
                             }
+std::cout << comm.rank() << "\t" << __LINE__ << std::endl;
                             {
                                 std::vector<T> sum2(m_ac_sum2);
                                 sum2.resize(size);

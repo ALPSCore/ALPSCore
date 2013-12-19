@@ -49,8 +49,9 @@ namespace alps {
                 , communicator(comm)
                 , schedule_checker(check)
                 , clone(comm.rank())
-                // TODO: remove with new ALEA
+#ifndef ALPS_NGS_USE_NEW_ALEA
                 , binnumber(parameters["BINNUMBER"] | 128)
+#endif
             {}
 
             double fraction_completed() const {
@@ -107,7 +108,9 @@ namespace alps {
             ScheduleChecker schedule_checker;
             double fraction;
             int clone;
+#ifndef ALPS_NGS_USE_NEW_ALEA
             std::size_t binnumber;
+#endif
     };
 }
 

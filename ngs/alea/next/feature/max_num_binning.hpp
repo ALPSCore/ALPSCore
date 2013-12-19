@@ -255,7 +255,6 @@ namespace alps {
                             if (!m_mn_bins.empty()) {
                                 std::vector<typename mean_type<B>::type> local_bins(m_mn_bins), merged_bins;
                                 partition_bins(comm, local_bins, merged_bins, root);
-                                m_mn_bins.resize(merged_bins.size());
                                 B::reduce_if(comm, merged_bins, m_mn_bins, std::plus<typename alps::hdf5::scalar_type<typename mean_type<B>::type>::type>(), root);
                             }
                         } else
@@ -285,6 +284,8 @@ namespace alps {
                     ) const {
                         using alps::ngs::numeric::operator+;
                         using alps::ngs::numeric::operator/;
+                        using alps::ngs::numeric::detail::check_size;
+
                         typename B::count_type elements_in_local_bins = boost::mpi::all_reduce(comm, m_mn_elements_in_bin, boost::mpi::maximum<typename B::count_type>());
                         typename B::count_type howmany = (elements_in_local_bins - 1) / m_mn_elements_in_bin + 1;
                         if (howmany > 1) {
@@ -304,7 +305,11 @@ namespace alps {
                         std::size_t total_bins = std::accumulate(index.begin(), index.end(), 0);
                         std::size_t perbin = total_bins < m_mn_max_number ? 1 : total_bins / m_mn_max_number;
                         typename alps::hdf5::scalar_type<typename mean_type<B>::type>::type perbin_vt = perbin;
+
                         merged_bins.resize(perbin == 1 ? total_bins : m_mn_max_number);
+                        for (typename std::vector<typename mean_type<B>::type>::iterator it = merged_bins.begin(); it != merged_bins.end(); ++it)
+                            check_size(*it, local_bins[0]);
+
                         std::size_t start = std::accumulate(index.begin(), index.begin() + comm.rank(), 0);
                         for (std::size_t i = start / perbin, j = start % perbin, k = 0; i < merged_bins.size() && k < local_bins.size(); ++k) {
                             merged_bins[i] = merged_bins[i] + local_bins[k] / perbin_vt;

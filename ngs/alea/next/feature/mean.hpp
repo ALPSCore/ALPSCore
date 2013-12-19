@@ -158,7 +158,7 @@ namespace alps {
                     ) {
                         if (comm.rank() == root) {
                             B::collective_merge(comm, root);
-                            B::reduce_if(comm, m_sum, m_sum, std::plus<typename alps::hdf5::scalar_type<T>::type>(), root);
+                            B::reduce_if(comm, T(m_sum), m_sum, std::plus<typename alps::hdf5::scalar_type<T>::type>(), root);
                         } else
                             const_cast<Accumulator<T, mean_tag, B> const *>(this)->collective_merge(comm, root);
                     }
