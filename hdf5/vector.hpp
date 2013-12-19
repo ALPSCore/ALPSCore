@@ -70,7 +70,7 @@ namespace alps {
                                        first.size() != size.size()
                                     || !std::equal(first.begin(), first.end(), size.begin())
                                 )
-                                    throw archive_error("no rectengual matrix" + ALPS_STACKTRACE);
+                                    throw archive_error("no rectangular matrix" + ALPS_STACKTRACE);
                             }
                         std::copy(first.begin(), first.end(), std::back_inserter(result));
                     }
@@ -144,7 +144,7 @@ namespace alps {
                 ar.delete_group(path);
             if (is_continuous<T>::value && value.size() == 0)
                 ar.write(path, static_cast<typename scalar_type<std::vector<T, A> >::type const *>(NULL), std::vector<std::size_t>());
-            else if (is_continuous<T>::value) {
+            else if (is_continuous<T>::value && is_vectorizable(value)) {
                 std::vector<std::size_t> extent(get_extent(value));
                 std::copy(extent.begin(), extent.end(), std::back_inserter(size));
                 std::copy(extent.begin(), extent.end(), std::back_inserter(chunk));
