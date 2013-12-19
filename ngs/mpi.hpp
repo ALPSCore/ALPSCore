@@ -43,7 +43,7 @@
                     std::vector<std::size_t> extent(get_extent(values));
                     std::size_t size = std::accumulate(extent.begin(), extent.end(), 0);
                     using alps::hdf5::get_pointer;
-                    std::memcpy(&buffer[offset], const_cast<S *>(get_pointer(values)), sizeof(typename hdf5::is_continuous<T>::type()) * size);
+                    std::memcpy(&buffer[offset], const_cast<S *>(get_pointer(values)), sizeof(typename hdf5::scalar_type<T>::type()) * size);
                     return size;
                 }
 
@@ -58,7 +58,7 @@
                     std::vector<std::size_t> extent(get_extent(values));
                     std::size_t size = std::accumulate(extent.begin(), extent.end(), 0);
                     using alps::hdf5::get_pointer;
-                    std::memcpy(const_cast<S *>(get_pointer(values)), &buffer[offset], sizeof(typename hdf5::is_continuous<T>::type()) * size);
+                    std::memcpy(const_cast<S *>(get_pointer(values)), &buffer[offset], sizeof(typename hdf5::scalar_type<T>::type()) * size);
                     return size;
                 }
 
@@ -101,7 +101,7 @@
                     if (is_vectorizable(in_values)) {
                         using alps::hdf5::get_extent;
                         std::vector<std::size_t> extent(get_extent(in_values));
-                        std::vector<typename alps::hdf5::scalar_type<T>::type> in_buffer(typename alps::hdf5::scalar_type<T>::type(), std::accumulate(extent.begin(), extent.end(), 0));
+                        std::vector<typename alps::hdf5::scalar_type<T>::type> in_buffer(std::accumulate(extent.begin(), extent.end(), 0));
                         using detail::copy_to_buffer;
                         copy_to_buffer(in_values, in_buffer, 0, typename hdf5::is_continuous<T>::type());
                         using boost::mpi::reduce;
@@ -115,7 +115,7 @@
                     if (is_vectorizable(in_values)) {
                         using alps::hdf5::get_extent;
                         std::vector<std::size_t> extent(get_extent(in_values));
-                        std::vector<typename alps::hdf5::scalar_type<T>::type> in_buffer(typename alps::hdf5::scalar_type<T>::type(), std::accumulate(extent.begin(), extent.end(), 0));
+                        std::vector<typename alps::hdf5::scalar_type<T>::type> in_buffer(std::accumulate(extent.begin(), extent.end(), 1, std::multiplies<std::size_t>()));
                         std::vector<typename alps::hdf5::scalar_type<T>::type> out_buffer(in_buffer);
                         using detail::copy_to_buffer;
                         copy_to_buffer(in_values, in_buffer, 0, typename hdf5::is_continuous<T>::type());
