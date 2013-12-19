@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2012 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2013 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -36,8 +36,10 @@ namespace alps {
 namespace parapack {
 
 struct option {
-  option(int argc, char** argv);
+  option(int argc, char** argv, bool for_evaluate = false);
   boost::program_options::options_description desc;
+  bool for_evaluate;
+  bool show_help, show_license;
   boost::posix_time::time_duration time_limit;
   boost::posix_time::time_duration check_interval, checkpoint_interval, report_interval;
   boost::posix_time::time_duration vmusage_interval;
@@ -45,25 +47,14 @@ struct option {
   bool auto_evaluate, evaluate_only;
   dump_format_t dump_format;
   dump_policy_t dump_policy;
+  task_range_t task_range;
   bool write_xml;
   bool use_mpi, default_total_threads, auto_total_threads;
   int num_total_threads, threads_per_clone;
-  task_range_t task_range;
   std::vector<std::string> jobfiles;
-  bool valid, show_help, show_license;
+  bool valid;
   void print(std::ostream& os) const;
   void print_summary(std::ostream& os, std::string const& prefix = "") const;
-};
-
-struct evaluate_option {
-  evaluate_option(int argc, char** argv);
-  boost::program_options::options_description desc;
-  bool write_xml;
-  task_range_t task_range;
-  std::vector<std::string> jobfiles;
-  bool valid, show_help, show_license;
-  std::string help() const;
-  void print(std::ostream& os) const;
 };
 
 } // end namespace parapack

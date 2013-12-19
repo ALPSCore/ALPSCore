@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2012 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2013 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -134,7 +134,7 @@ void task::load() {
   status_ = calc_status();
 }
 
-void task::save(bool write_xml) const {
+void task::save(alps::parapack::option const& opt) const {
   if (!on_memory()) boost::throw_exception(std::logic_error("task not loaded"));
   boost::filesystem::path file_out = complete(boost::filesystem::path(file_out_str_), basedir_);
   {
@@ -148,14 +148,14 @@ void task::save(bool write_xml) const {
       simulation_xml_handler handler(params_tmp, obs_tmp, clone_info_tmp);
       XMLParser parser(handler);
       parser.parse(file_out);
-      simulation_xml_writer(file_out, write_xml, true, params_, obs_tmp, clone_info_);
+      simulation_xml_writer(file_out, opt.write_xml, true, params_, obs_tmp, clone_info_);
     } else {
-      simulation_xml_writer(file_out, write_xml, true, params_, obs_, clone_info_);
+      simulation_xml_writer(file_out, opt.write_xml, true, params_, obs_, clone_info_);
     }
   }
 }
 
-void task::save_observable(bool write_xml) const {
+void task::save_observable(alps::parapack::option const& opt) const {
   if (!on_memory()) boost::throw_exception(std::logic_error("task not loaded"));
   boost::filesystem::path file_out = complete(boost::filesystem::path(file_out_str_), basedir_);
   {
@@ -171,32 +171,47 @@ void task::save_observable(bool write_xml) const {
       parser.parse(file_out);
       if (obs_.size() > 1 && !params_tmp.defined("NUM_REPLICAS"))
         params_tmp["NUM_REPLICAS"] = obs_.size();
-      simulation_xml_writer(file_out, write_xml, true, params_tmp, obs_, clone_info_tmp);
+      simulation_xml_writer(file_out, opt.write_xml, true, params_tmp, obs_, clone_info_tmp);
       if (obs_.size() == 1) {
-        #pragma omp critical (hdf5io)
-        {
-          boost::filesystem::path file = complete(boost::filesystem::path(base_ + ".out.h5"), basedir_);
-          hdf5::archive h5(file.string(), "a");
-          h5["/parameters"] << params_tmp;
-          h5["/simulation/results"] << obs_[0];
-          // for (std::size_t n = 0; n < oss.size(); ++n)
-          //   h5["/simulation/realizations/0/clones/" +
-          //      boost::lexical_cast<std::string>(n) + "/results"] << oss[n][0];
+        if (opt.dump_format == dump_format::hdf5) {
+          #pragma omp critical (hdf5io)
+          {
+            boost::filesystem::path file = complete(boost::filesystem::path(base_ + ".out.h5"),
+              basedir_);
+            hdf5::archive h5(file.string(), "a");
+            h5["/parameters"] << params_tmp;
+            h5["/simulation/results"] << obs_[0];
+            // for (std::size_t n = 0; n < oss.size(); ++n)
+            //   h5["/simulation/realizations/0/clones/" +
+            //      boost::lexical_cast<std::string>(n) + "/results"] << oss[n][0];
+          }
+        } else {
+          boost::filesystem::path file = complete(boost::filesystem::path(base_ + ".out.xdr"),
+            basedir_);
+          OXDRFileDump dp(file);
+          dp << params_tmp << obs_[0];
         }
       } else {
         for (std::size_t i = 0; i < obs_.size(); ++i) {
           Parameters p = params_tmp;
           if (!p.defined("REPLICA")) p["REPLICA"] = i+1;
-          #pragma omp critical (hdf5io)
-          {
+          if (opt.dump_format == dump_format::hdf5) {
+            #pragma omp critical (hdf5io)
+            {
+              boost::filesystem::path file = complete(boost::filesystem::path(
+                base_ + ".replica" + boost::lexical_cast<std::string>(i+1) + ".h5"), basedir_);
+              hdf5::archive h5(file.string(), "a");
+              h5["/parameters"] << p;
+              h5["/simulation/results"] << obs_[i];
+              // for (std::size_t n = 0; n < oss.size(); ++n)
+              //   h5["/simulation/realizations/0/clones/" +
+              //      boost::lexical_cast<std::string>(n) + "/results"] << oss[n][i];
+            }
+          } else {
             boost::filesystem::path file = complete(boost::filesystem::path(
-              base_ + ".replica" + boost::lexical_cast<std::string>(i+1) + ".h5"), basedir_);
-            hdf5::archive h5(file.string(), "a");
-            h5["/parameters"] << p;
-            h5["/simulation/results"] << obs_[i];
-            // for (std::size_t n = 0; n < oss.size(); ++n)
-            //   h5["/simulation/realizations/0/clones/" +
-            //      boost::lexical_cast<std::string>(n) + "/results"] << oss[n][i];
+              base_ + ".replica" + boost::lexical_cast<std::string>(i+1) + ".xdr"), basedir_);
+            OXDRFileDump dp(file);
+            dp << p << obs_[i];
           }
         }
       }
@@ -237,7 +252,7 @@ void task::halt() {
   finished_.clear();
 }
 
-void task::check_parameter(bool write_xml) {
+void task::check_parameter(alps::parapack::option const& opt) {
   // change in NUM_CLONES : keep old calculations and add new ones
   // change in SEED : ignored
   // change in other parameters : throw away all the old clones
@@ -290,7 +305,7 @@ void task::check_parameter(bool write_xml) {
       progress_ = calc_progress();
       boost::tie(weight_, dump_weight_) = calc_weight();
       status_ = calc_status();
-      save(write_xml);
+      save(opt);
     }
     halt();
   }
@@ -326,7 +341,7 @@ void task::clone_halted(cid_t cid) {
   obs_.clear();
 }
 
-void task::evaluate(bool write_xml) {
+void task::evaluate(alps::parapack::option const& opt) {
   std::cout << "evaluating " << file_out_str() << std::endl;
 
   if (!on_memory()) load();
@@ -407,7 +422,7 @@ void task::evaluate(bool write_xml) {
   std::cout << std::endl;
   if (clones.size() > 0) {
     evaluator->evaluate(obs_);
-    save_observable(write_xml);
+    save_observable(opt);
   }
   halt();
 }

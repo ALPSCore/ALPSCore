@@ -31,6 +31,7 @@
 #include "clone_info.h"
 #include "integer_range.h"
 #include "logger.h"
+#include "option.h"
 #include "types.h"
 #include <alps/parser/xmlstream.h>
 #include <alps/alea/observableset.h>
@@ -64,11 +65,11 @@ public:
   double weight() const { return weight_; }
 
   void load();
-  void save(bool write_xml) const;
-  void save_observable(bool write_xml) const;
+  void save(alps::parapack::option const& opt) const;
+  void save_observable(alps::parapack::option const& opt) const;
   void halt();
 
-  void check_parameter(bool write_xml);
+  void check_parameter(alps::parapack::option const& opt);
 
   bool can_dispatch() const;
 
@@ -139,7 +140,7 @@ public:
   }
 
   template<typename PROXY>
-  void suspend_remote_clones(PROXY& proxy, bool write_xml) {
+  void suspend_remote_clones(PROXY& proxy, alps::parapack::option const& opt) {
     if (on_memory()) {
       BOOST_FOREACH(cid_t cid, running_) {
         if (clone_status_[cid] == clone_status::Running && !proxy.is_local(clone_master_[cid])) {
@@ -148,14 +149,14 @@ public:
         }
       }
       if (num_running() == 0) {
-        save(write_xml);
+        save(opt);
         halt();
       }
     }
   }
 
   template<typename PROXY, typename GROUP>
-  void suspend_clone(PROXY& proxy, bool write_xml, cid_t cid, GROUP const& g) {
+  void suspend_clone(PROXY& proxy, alps::parapack::option const& opt, cid_t cid, GROUP const& g) {
     if (clone_status_[cid] == clone_status::Running && proxy.is_local(clone_master_[cid])) {
       clone_status_[cid] = clone_status::Stopping;
       proxy.suspend(clone_master_[cid]);
@@ -163,14 +164,14 @@ public:
       clone_suspended(cid, g, info);
       proxy.destroy(clone_master_[cid]);
       if (num_running() == 0) {
-        save(write_xml);
+        save(opt);
         halt();
       }
     }
   }
 
   template<typename PROXY, typename GROUP>
-  void halt_clone(PROXY& proxy, bool write_xml, cid_t cid, GROUP const& g) {
+  void halt_clone(PROXY& proxy, alps::parapack::option const& opt, cid_t cid, GROUP const& g) {
     if (clone_status_[cid] == clone_status::Idling) {
       std::cout << logger::header() << logger::clone(task_id_, cid) << " finished"
                 << " on " << logger::group(g) << std::endl;
@@ -182,7 +183,7 @@ public:
       }
       proxy.destroy(clone_master_[cid]);
       if (num_running() == 0) {
-        save(write_xml);
+        save(opt);
         halt();
       }
     }
@@ -205,7 +206,7 @@ public:
   void clone_halted(cid_t cid, clone_info const& info);
   void clone_halted(cid_t cid);
 
-  void evaluate(bool write_xml);
+  void evaluate(alps::parapack::option const& opt);
 
   void write_xml_summary(oxstream& os) const;
   void write_xml_archive(oxstream& os) const;

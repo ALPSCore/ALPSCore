@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2012 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2013 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -71,7 +71,12 @@ ALPS_DECL void load_version(boost::filesystem::path const& file,
 
 ALPS_DECL void load_tasks(boost::filesystem::path const& file_in,
   boost::filesystem::path const& file_out, boost::filesystem::path const& basedir,
-  std::string& simname, std::vector<alps::task>& tasks, bool check_parameter, bool write_xml);
+  std::string& simname, std::vector<alps::task>& tasks, bool check_parameter,
+  alps::parapack::option const& opt);
+
+ALPS_DECL void load_tasks(boost::filesystem::path const& file_in,
+  boost::filesystem::path const& file_out, boost::filesystem::path const& basedir,
+  std::string& simname, std::vector<alps::task>& tasks);
 
 ALPS_DECL void save_tasks(boost::filesystem::path const& file, std::string const& simname,
   std::string const& file_in_str, std::string const& file_out_str, std::vector<alps::task>& tasks);
