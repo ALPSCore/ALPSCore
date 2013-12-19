@@ -44,12 +44,12 @@ set(ALPS_SOURCES
     scheduler/serial_scheduler.C scheduler/signal.C scheduler/single_scheduler.C
     scheduler/slave_task.C scheduler/task.C scheduler/worker.C scheduler/workertask.C
     # ngs sources
-    ngs/lib/stop_callback.cpp ngs/lib/api.cpp ngs/lib/short_print.cpp ngs/lib/sleep.cpp
+    stop_callback.cpp ngs/lib/api.cpp ngs/lib/short_print.cpp ngs/lib/sleep.cpp
     # alea
     # parameters
     ngs/lib/paramvalue.cpp ngs/lib/paramproxy.cpp ngs/lib/params.cpp
     # scheduler
-    mcbase.cpp ngs/lib/parseargs.cpp
+    mcbase.cpp parseargs.cpp
 #deprecated, TODO: replace by new alea
     ngs/lib/mcoptions.cpp ngs/lib/observablewrappers.cpp ngs/lib/make_deprecated_parameters.cpp ngs/lib/make_parameters_from_xml.cpp
     ngs/lib/mcresult.cpp ngs/lib/mcresults.cpp ngs/lib/mcobservables.cpp ngs/lib/mcobservable.cpp
