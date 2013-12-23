@@ -85,7 +85,7 @@ namespace alps {
                     if (extent.size() > 1)
                         for(typename std::vector<T, A>::iterator it = value.begin(); it != value.end(); ++it)
                             set_extent(*it, std::vector<std::size_t>(extent.begin() + 1, extent.end()));
-                    else if (extent.size() == 0 && !boost::is_same<typename scalar_type<T>::type, T>::value)
+                    else if (extent.size() == 1 && !boost::is_same<typename scalar_type<T>::type, T>::value)
                         throw archive_error("dimensions do not match" + ALPS_STACKTRACE);
                 }
             };
@@ -142,9 +142,9 @@ namespace alps {
             using alps::cast;
             if (ar.is_group(path))
                 ar.delete_group(path);
-            if (is_continuous<T>::value && value.size() == 0)
+            if (is_continuous<std::vector<T, A> >::value && value.size() == 0)
                 ar.write(path, static_cast<typename scalar_type<std::vector<T, A> >::type const *>(NULL), std::vector<std::size_t>());
-            else if (is_continuous<T>::value && is_vectorizable(value)) {
+            else if (is_continuous<std::vector<T, A> >::value) {
                 std::vector<std::size_t> extent(get_extent(value));
                 std::copy(extent.begin(), extent.end(), std::back_inserter(size));
                 std::copy(extent.begin(), extent.end(), std::back_inserter(chunk));
@@ -187,7 +187,7 @@ namespace alps {
                 if (ar.is_complex(path) != has_complex_elements<T>::value)
                     throw archive_error("no complex value in archive" + ALPS_STACKTRACE);
                 std::vector<std::size_t> size(ar.extent(path));
-                if (is_continuous<T>::value) {
+                if (is_continuous<std::vector<T, A> >::value) {
                     set_extent(value, std::vector<std::size_t>(size.begin() + chunk.size(), size.end()));
                     if (value.size()) {
                         std::copy(size.begin() + chunk.size(), size.end(), std::back_inserter(chunk));
@@ -195,7 +195,7 @@ namespace alps {
                         ar.read(path, get_pointer(value), chunk, offset);
                     }
                 } else {
-                    set_extent(value, std::vector<std::size_t>(1, *(size.begin() + chunk.size())));
+                    value.resize(*(size.begin() + chunk.size()));
                     chunk.push_back(1);
                     offset.push_back(0);
                     for(typename std::vector<T, A>::iterator it = value.begin(); it != value.end(); ++it) {
