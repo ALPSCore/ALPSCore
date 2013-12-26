@@ -505,11 +505,11 @@ namespace alps {
                 void load(hdf5::archive & ar) {
                     using boost::numeric::operators::operator/;
                     data_is_analyzed_ = true;
-                    ar
-                        >> make_pvp("count", count_)
-                        >> make_pvp("mean/value", mean_)
-                        >> make_pvp("mean/error", error_)
-                    ;
+                    ar >> make_pvp("count", count_);
+                    if (ar.is_data("mean/value"))
+                        ar >> make_pvp("mean/value", mean_);
+                    if (ar.is_data("mean/error"))
+                        ar >> make_pvp("mean/error", error_);
                     if (ar.is_attribute("@nonlinearoperations"))
                         ar >> make_pvp("@nonlinearoperations", cannot_rebin_);
                     else if (ar.is_attribute("@cannotrebin"))
