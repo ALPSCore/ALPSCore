@@ -439,6 +439,7 @@ namespace alps {
         }
 
         void archive::abort() {
+            // Do not use a lock here, else deadlocking is really likly
             for (std::map<std::string, std::pair<detail::archivecontext *, std::size_t> >::iterator it = ref_cnt_.begin(); it != ref_cnt_.end(); ++it) {
                 bool replace = it->second.first->replace_;
                 std::string filename = it->second.first->filename_;

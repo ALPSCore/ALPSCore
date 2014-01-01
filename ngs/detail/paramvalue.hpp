@@ -164,7 +164,9 @@ namespace alps {
                   return *this;
                 }
                 template<typename T> T cast() const {
-                    return extract<T>(*this);
+                    paramvalue_reader< T > visitor;
+                    boost::apply_visitor(visitor, *this);
+                    return visitor.get_value();
                 }
 
                 #define ALPS_NGS_PARAMVALUE_MEMBER_DECL(T)                          \
