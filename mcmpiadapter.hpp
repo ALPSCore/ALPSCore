@@ -52,7 +52,10 @@ namespace alps {
 #ifndef ALPS_NGS_USE_NEW_ALEA
                 , binnumber(parameters["BINNUMBER"] | 128)
 #endif
-            {}
+            {
+                start_time = (unsigned long long)time(0);
+                max_time = (unsigned long long)parameters["MAX_TIME"];
+            }
 
             double fraction_completed() const {
                 return fraction;
@@ -66,8 +69,10 @@ namespace alps {
                     if (stopped || schedule_checker.pending()) {
                         stopped = stop_callback(); // TODO: do we want to check after every sweep? probably not ...
                         double local_fraction = stopped ? 1. : Base::fraction_completed();
-                        schedule_checker.update(fraction = boost::mpi::all_reduce(communicator, local_fraction, std::plus<double>()));
-                        done = fraction >= 1.;
+                        fraction = boost::mpi::all_reduce(communicator, local_fraction, std::plus<double>());
+                        double time_fraction = (time(0)-start_time)/(double)max_time;
+                        schedule_checker.update( std::max(fraction, time_fraction) );
+                        done = std::max(fraction, time_fraction) >= 1.;
                     }
                 } while(!done);
                 return !stopped;
@@ -108,6 +113,8 @@ namespace alps {
             ScheduleChecker schedule_checker;
             double fraction;
             int clone;
+            unsigned long long start_time;
+            unsigned long long max_time;
 #ifndef ALPS_NGS_USE_NEW_ALEA
             std::size_t binnumber;
 #endif
