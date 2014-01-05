@@ -71,6 +71,7 @@ namespace alps {
                         double local_fraction = stopped ? 1. : Base::fraction_completed();
                         fraction = boost::mpi::all_reduce(communicator, local_fraction, std::plus<double>());
                         double time_fraction = (time(0)-start_time)/(double)max_time;
+                        boost::mpi::broadcast(communicator, time_fraction, 0);  //Just to be sure
                         schedule_checker.update( std::max(fraction, time_fraction) );
                         done = std::max(fraction, time_fraction) >= 1.;
                     }
