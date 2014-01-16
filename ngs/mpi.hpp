@@ -103,7 +103,7 @@
                         std::vector<std::size_t> extent(get_extent(in_values));
                         std::vector<typename alps::hdf5::scalar_type<T>::type> in_buffer(std::accumulate(extent.begin(), extent.end(), 0));
                         using detail::copy_to_buffer;
-                        copy_to_buffer(in_values, in_buffer, 0, typename hdf5::is_continuous<T>::type());
+                        copy_to_buffer(in_values, in_buffer, 0, typename hdf5::is_content_continuous<T>::type());
                         using boost::mpi::reduce;
                         reduce(comm, &in_buffer.front(), in_buffer.size(), op, root);
                     } else
@@ -118,13 +118,13 @@
                         std::vector<typename alps::hdf5::scalar_type<T>::type> in_buffer(std::accumulate(extent.begin(), extent.end(), 1, std::multiplies<std::size_t>()));
                         std::vector<typename alps::hdf5::scalar_type<T>::type> out_buffer(in_buffer);
                         using detail::copy_to_buffer;
-                        copy_to_buffer(in_values, in_buffer, 0, typename hdf5::is_continuous<T>::type());
+                        copy_to_buffer(in_values, in_buffer, 0, typename hdf5::is_content_continuous<T>::type());
                         using boost::mpi::reduce;
                         reduce(comm, &in_buffer.front(), in_buffer.size(), &out_buffer.front(), op, root);
                         using alps::hdf5::set_extent;
                         set_extent(out_values, std::vector<std::size_t>(extent.begin(), extent.end()));
                         using detail::copy_from_buffer;
-                        copy_from_buffer(out_values, out_buffer, 0, typename hdf5::is_continuous<T>::type());
+                        copy_from_buffer(out_values, out_buffer, 0, typename hdf5::is_content_continuous<T>::type());
                     } else
                         throw std::logic_error("No alps::mpi::reduce available for this type " + std::string(typeid(T).name()) + ALPS_STACKTRACE);
                 }
@@ -132,12 +132,12 @@
 
             template<typename T, typename Op> void reduce(const boost::mpi::communicator & comm, T const & in_values, Op op, int root) {
                 using detail::reduce_impl;
-                reduce_impl(comm, in_values, op, root, typename boost::is_scalar<T>::type(), typename hdf5::is_continuous<T>::type());
+                reduce_impl(comm, in_values, op, root, typename boost::is_scalar<T>::type(), typename hdf5::is_content_continuous<T>::type());
             }
 
             template<typename T, typename Op> void reduce(const boost::mpi::communicator & comm, T const & in_values, T & out_values, Op op, int root) {
                 using detail::reduce_impl;
-                reduce_impl(comm, in_values, out_values, op, root, typename boost::is_scalar<T>::type(), typename hdf5::is_continuous<T>::type());
+                reduce_impl(comm, in_values, out_values, op, root, typename boost::is_scalar<T>::type(), typename hdf5::is_content_continuous<T>::type());
             }
 
         }

@@ -73,6 +73,10 @@ namespace alps {
             typedef typename scalar_type<typename alps::detail::remove_cvr<T>::type>::type type;
         };
 
+        template<typename T> struct is_content_continuous<std::pair<T *, std::vector<std::size_t> > >
+            : public is_continuous<T> 
+        {};
+
         template<typename T> struct has_complex_elements<std::pair<T *, std::vector<std::size_t> > > 
             : public has_complex_elements<typename alps::detail::remove_cvr<T>::type>
         {};

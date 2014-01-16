@@ -44,6 +44,10 @@ namespace alps {
             : public scalar_type<boost::multi_array<T, N, A> > 
         {};
 
+        template<typename T, std::size_t N, typename A> struct is_content_continuous<alps::multi_array<T, N, A> > 
+            : public is_continuous<T> 
+        {};
+
         template<typename T, std::size_t N, typename A> struct has_complex_elements<boost::multi_array<T, N, A> > 
             : public has_complex_elements<typename alps::detail::remove_cvr<T>::type>
         {};

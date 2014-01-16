@@ -42,6 +42,10 @@ namespace alps {
             typedef typename scalar_type<T>::type type;
         };
 
+        template<typename T> struct is_content_continuous<std::valarray<T> >
+            : public is_continuous<T> 
+        {};
+
         template<typename T> struct has_complex_elements<std::valarray<T> > 
             : public has_complex_elements<typename alps::detail::remove_cvr<T>::type>
         {};

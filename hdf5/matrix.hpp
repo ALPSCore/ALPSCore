@@ -153,7 +153,7 @@ namespace detail {
     template <typename T, typename MemoryBlock> void save(
           archive& ar
         , std::string const& path
-        , alps::numeric::matrix<T,MemoryBlock> const& m
+        , alps::numeric::matrix<T, MemoryBlock> const& m
         , std::vector<std::size_t> size   = std::vector<std::size_t>()
         , std::vector<std::size_t> chunk  = std::vector<std::size_t>()
         , std::vector<std::size_t> offset = std::vector<std::size_t>()
@@ -162,7 +162,9 @@ namespace detail {
         using std::fill_n;
         using alps::cast;
         typedef typename alps::numeric::matrix<T,MemoryBlock>::const_col_element_iterator col_iterator;
-        if(is_continuous<T>::value) {
+        if (is_continuous<T>::value && m.empty())
+            ar.write(path, static_cast<typename scalar_type<alps::numeric::matrix<T, MemoryBlock> >::type const *>(NULL), std::vector<std::size_t>());
+        else if (is_continuous<T>::value) {
             std::vector<std::size_t> extent(get_extent(m));
             copy(extent.begin(),extent.end(), std::back_inserter(size));
             // We want to write one column:
@@ -174,9 +176,11 @@ namespace detail {
             // Write column by column
             for(std::size_t j=0; j < num_cols(m); ++j) {
                 offset[offset_col_index] = j;
-                ar.write(path,get_pointer(*(col(m,j).first)),size,chunk,offset);
+                ar.write(path, get_pointer(*(col(m, j).first)), size, chunk, offset);
             }
-        } else if( is_vectorizable(m) ){
+        } else if (m.empty())
+            ar.write(path, static_cast<int const *>(NULL), std::vector<std::size_t>());
+        else if (is_vectorizable(m)) {
             size.push_back(num_cols(m));
             size.push_back(num_rows(m));
             // We want to write element by element:
@@ -222,7 +226,7 @@ namespace detail {
             assert(m2.capacity().first  == reserved_size1);
             copy(data.begin(), data.end(), col(m2,0).first);
             m2.resize(size1,size2);
-            swap(m,m2);
+            swap(m, m2);
             return;
         }
 
@@ -244,7 +248,11 @@ namespace detail {
             if (ar.is_complex(path) != has_complex_elements<T>::value)
                 throw archive_error("no complex value in archive" + ALPS_STACKTRACE);
             std::vector<std::size_t> size(ar.extent(path));
-            if(is_continuous<T>::value) {
+            if (size.size() == 1 && size[0] == 0)
+                m.resize(0, 0);
+            else if (size.size() < 2)
+                throw archive_error("invalid dimensions" + ALPS_STACKTRACE);
+            else if (is_continuous<T>::value) {
                 // We need to make sure that reserve() will reserve exactly the num_rows() we asked for.
                 // The only way to ensure that is by creating a new matrix which has no reserved space.
                 set_extent(m2,std::vector<std::size_t>(size.begin() + chunk.size(), size.end()));

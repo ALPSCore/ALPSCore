@@ -44,11 +44,8 @@ namespace alps {
             typedef typename scalar_type<typename std::vector<T, A>::value_type>::type type;
         };
 
-        template<typename T, typename A> struct is_continuous<std::vector<T, A> >
-            : public boost::is_scalar<T>::type
-        {};
-        template<typename T, typename A> struct is_continuous<std::vector<T, A> const>
-            : public boost::is_scalar<T>::type
+        template<typename T, typename A> struct is_content_continuous<std::vector<T, A> >
+            : public is_continuous<T> 
         {};
 
         template<typename T, typename A> struct has_complex_elements<std::vector<T, A> > 
@@ -87,7 +84,7 @@ namespace alps {
                             set_extent(*it, std::vector<std::size_t>(extent.begin() + 1, extent.end()));
                     else if (extent.size() == 1 && (
                            (!boost::is_enum<T>::value && !boost::is_same<typename scalar_type<T>::type, T>::value)
-                        || (boost::is_enum<T>::value && sizeof(T) != sizeof(typename scalar_type<T>::type))
+                        || (boost::is_enum<T>::value && is_continuous<T>::value && sizeof(T) != sizeof(typename scalar_type<T>::type))
                     ))
                         throw archive_error("dimensions do not match" + ALPS_STACKTRACE);
                 }
@@ -145,9 +142,9 @@ namespace alps {
             using alps::cast;
             if (ar.is_group(path))
                 ar.delete_group(path);
-            if (is_continuous<std::vector<T, A> >::value && value.size() == 0)
+            if (is_continuous<T>::value && value.size() == 0)
                 ar.write(path, static_cast<typename scalar_type<std::vector<T, A> >::type const *>(NULL), std::vector<std::size_t>());
-            else if (is_continuous<std::vector<T, A> >::value) {
+            else if (is_continuous<T>::value) {
                 std::vector<std::size_t> extent(get_extent(value));
                 std::copy(extent.begin(), extent.end(), std::back_inserter(size));
                 std::copy(extent.begin(), extent.end(), std::back_inserter(chunk));
@@ -190,7 +187,11 @@ namespace alps {
                 if (ar.is_complex(path) != has_complex_elements<T>::value)
                     throw archive_error("no complex value in archive" + ALPS_STACKTRACE);
                 std::vector<std::size_t> size(ar.extent(path));
-                if (is_continuous<std::vector<T, A> >::value) {
+                if (size.size() == 0)
+                    throw archive_error("invalid dimensions" + ALPS_STACKTRACE);
+                else if (size[0] == 0)
+                    value.resize(0);
+                else if (is_continuous<T>::value) {
                     set_extent(value, std::vector<std::size_t>(size.begin() + chunk.size(), size.end()));
                     if (value.size()) {
                         std::copy(size.begin() + chunk.size(), size.end(), std::back_inserter(chunk));

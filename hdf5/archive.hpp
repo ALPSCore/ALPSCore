@@ -238,6 +238,10 @@ namespace alps {
             : public boost::false_type
         {};
 
+        template<typename T> struct is_content_continuous
+            : public is_continuous<T>
+        {};
+
         template<typename T> struct has_complex_elements
             : public boost::false_type
         {};
