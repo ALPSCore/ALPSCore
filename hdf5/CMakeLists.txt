@@ -38,9 +38,12 @@ IF (ALPS_BUILD_HDF5_TESTS)
         "std::vector<std::vector<int> >" "std::vector<std::vector<double> >" "std::vector<std::vector<std::complex<double> > >" "std::vector<std::vector<std::string> >"
         "std::vector<std::vector<std::vector<int> > >" "std::vector<std::vector<std::vector<double> > >" "std::vector<std::vector<std::vector<std::complex<double> > > >" "std::vector<std::vector<std::vector<std::string> > >"
         "std::vector<std::valarray<int> >" "std::valarray<std::vector<double> >" "std::vector<boost::numeric::ublas::vector<std::complex<double> > >"
-        "std::pair<std::vector<int> *, std::vector<std::size_t> >" "std::pair<std::vector<double> *, std::vector<std::size_t> >" "std::pair<std::vector<std::complex<double> > *, std::vector<std::size_t> >" "std::pair<std::vector<std::string> *, std::vector<std::size_t> >"
+        "std::pair<std::vector<int> *, std::vector<std::size_t> >" "std::pair<std::vector<double> *, std::vector<std::size_t> >" "std::pair<std::vector<std::complex<double> > *, std::vector<std::size_t> >" 
+        "std::pair<std::vector<std::string> *, std::vector<std::size_t> >"
         enum_type std::vector<enum_type> "std::vector<std::vector<enum_type> >" "std::pair<enum_type *, std::vector<std::size_t> >" "std::vector<std::valarray<enum_type> >"
         "std::pair<std::vector<enum_type> *, std::vector<std::size_t> >" "std::pair<std::vector<std::vector<enum_type> > *, std::vector<std::size_t> >"
+        enum_vec_type std::vector<enum_vec_type> "std::vector<std::vector<enum_vec_type> >" "std::pair<enum_vec_type *, std::vector<std::size_t> >" "std::vector<std::valarray<enum_vec_type> >"
+        "std::pair<std::vector<enum_vec_type> *, std::vector<std::size_t> >" "std::pair<std::vector<std::vector<enum_vec_type> > *, std::vector<std::size_t> >"
         userdefined_class<std::size_t> userdefined_class<short> userdefined_class<int> userdefined_class<long> userdefined_class<float> userdefined_class<double> "userdefined_class<std::complex<double> >" userdefined_class<std::string>
         "std::vector<userdefined_class<double> >" "std::vector<std::vector<userdefined_class<double> > >" "std::pair<userdefined_class<double> *, std::vector<std::size_t> >" 
         "cast_type<int, long>" "cast_type<int, double>" "cast_type<double, std::string>" "cast_type<int, std::string>" "cast_type<float, double>" "cast_type<short, float>"
@@ -49,10 +52,10 @@ IF (ALPS_BUILD_HDF5_TESTS)
         "boost::numeric::ublas::matrix<double, boost::numeric::ublas::column_major>" "boost::numeric::ublas::matrix<std::complex<double>, boost::numeric::ublas::column_major>"
         "int *" "short *" "long *" "float *" "double *"
         "std::size_t *" "std::string *" "std::complex<double> *"
-        "enum_type *" "userdefined_class<double> *" "cast_type<int, double> *" "cast_type<int, std::string> *"
+        "enum_type *" "enum_vec_type *" "userdefined_class<double> *" "cast_type<int, double> *" "cast_type<int, std::string> *"
         "boost::shared_array<int>" "boost::shared_array<short>" "boost::shared_array<long>" "boost::shared_array<float>" "boost::shared_array<double>"
-        "boost::shared_array<std::size_t>" "boost::shared_array<std::string>" "boost::shared_array<std::complex<double> >"
-        "boost::shared_array<enum_type>" "boost::shared_array<userdefined_class<double> >" "boost::shared_array<cast_type<int, double> >" "boost::shared_array<cast_type<int, std::string> >"
+        "boost::shared_array<std::size_t>" "boost::shared_array<std::string>" "boost::shared_array<std::complex<double> >" "boost::shared_array<enum_type>"
+        "boost::shared_array<enum_vec_type>" "boost::shared_array<userdefined_class<double> >" "boost::shared_array<cast_type<int, double> >" "boost::shared_array<cast_type<int, std::string> >"
         "cast_type<std::vector<int>, std::valarray<int> >" "cast_type<std::vector<int>, boost::numeric::ublas::vector<int> >"
         "cast_type<std::valarray<int>, std::vector<int> >" "cast_type<std::valarray<int>, boost::numeric::ublas::vector<int> >"
         "cast_type<boost::numeric::ublas::vector<int>, std::vector<int> >" "cast_type<boost::numeric::ublas::vector<int>, std::valarray<int> >"
@@ -62,10 +65,10 @@ IF (ALPS_BUILD_HDF5_TESTS)
         "std::pair<double, int>" "std::pair<double, std::complex<double> >" "std::pair<cast_type<int, std::string>, enum_type>" "std::pair<enum_type, cast_type<int, double> >" 
         "std::pair<std::vector<cast_type<int, std::string> >, std::pair<double, int> >" "std::pair<std::pair<std::vector<enum_type> *, std::vector<std::size_t> >, enum_type>"
         "alps::numeric::matrix<unsigned int>" alps::numeric::matrix<float> alps::numeric::matrix<double> "alps::numeric::matrix<std::complex<float> >" "alps::numeric::matrix<std::complex<double> >"
-        "std::vector<alps::numeric::matrix<unsigned int> >" "std::vector<alps::numeric::matrix<float> >" "std::vector<alps::numeric::matrix<double> >" " std::vector<alps::numeric::matrix<std::complex<float> > >" "std::vector<alps::numeric::matrix<std::complex<double> > >"
-# TODO: fix this
-#        "alps::numeric::matrix<std::vector<double> >" "alps::numeric::matrix<std::vector<std::complex<float> >" "alps::numeric::matrix<alps::numeric::matrix<int> >"
-#        "alps::numeric::matrix<alps::numeric::matrix<double> >" "alps::numeric::matrix<alps::numeric::matrix<std::complex<double> > >"
+        "std::vector<alps::numeric::matrix<unsigned int> >" "std::vector<alps::numeric::matrix<float> >" "std::vector<alps::numeric::matrix<double> >" 
+        "std::vector<alps::numeric::matrix<std::complex<float> > >" "std::vector<alps::numeric::matrix<std::complex<double> > >"
+        "alps::numeric::matrix<std::vector<double> >" "alps::numeric::matrix<std::vector<std::complex<float> > >" "alps::numeric::matrix<alps::numeric::matrix<int> >"
+        "alps::numeric::matrix<alps::numeric::matrix<double> >" "alps::numeric::matrix<alps::numeric::matrix<std::complex<double> > >"
         "std::vector<std::size_t, std::allocator<std::size_t> >" "std::vector<short, std::allocator<short> >" "std::vector<int, std::allocator<int> >" "std::vector<long, std::allocator<long> >" 
         "std::vector<float, std::allocator<float> >" "std::vector<double, std::allocator<double> >" "std::vector<std::complex<double>, std::allocator<std::complex<double> > >" "std::vector<std::string, std::allocator<std::string> >"
         "std::vector<std::vector<int, std::allocator<int> > >" "std::vector<std::vector<double>, std::allocator<std::vector<double> > >"
@@ -75,18 +78,15 @@ IF (ALPS_BUILD_HDF5_TESTS)
         "boost::multi_array<double, 2>" "boost::multi_array<int, 2>" "boost::multi_array<std::complex<double>, 2>" "boost::multi_array<std::string, 2>"
         "boost::multi_array<double, 3>" "boost::multi_array<int, 3>" "boost::multi_array<std::complex<double>, 3>" "boost::multi_array<std::string, 3>"
         "std::vector<boost::multi_array<double, 2> >" "std::vector<boost::multi_array<double, 3> >" "std::vector<boost::multi_array<double, 4> >" 
-# TODO: fix this
-#           "std::pair<boost::multi_array<std::complex<double>, 3> *, std::vector<std::size_t> >" "boost::multi_array<std::complex<double>, 1> *"
+        "std::pair<boost::multi_array<std::complex<double>, 3> *, std::vector<std::size_t> >" "boost::multi_array<std::complex<double>, 1> *"
         "alps::multi_array<double, 1>" "alps::multi_array<int, 1>" "alps::multi_array<std::complex<double>, 1>" "alps::multi_array<std::string, 1>"
         "alps::multi_array<double, 2>" "alps::multi_array<int, 2>" "alps::multi_array<std::complex<double>, 2>" "alps::multi_array<std::string, 2>"
         "alps::multi_array<double, 3>" "alps::multi_array<int, 3>" "alps::multi_array<std::complex<double>, 3>" "alps::multi_array<std::string, 3>"
         "std::vector<alps::multi_array<double, 2> >" "std::vector<alps::multi_array<double, 3> >" "std::vector<alps::multi_array<double, 4> >" 
-# TODO: fix this
-#           "std::pair<alps::multi_array<std::complex<double>, 3> *, std::vector<std::size_t> >" "alps::multi_array<std::complex<double>, 1> *"
+        "std::pair<alps::multi_array<std::complex<double>, 3> *, std::vector<std::size_t> >" "alps::multi_array<std::complex<double>, 1> *"
         "boost::array<int, 20>" "boost::array<long double, 20>" "boost::array<float, 20>" "boost::array<unsigned long long, 20>" 
         "boost::array<boost::array<std::complex<double>, 20>, 20>"
-# TODO: fix this
-#        "std::vector<boost::array<int, 4> >" "boost::array<std::vector<int>, 4>" "std::vector<boost::array<std::vector<int>, 4> >"
+        "std::vector<boost::array<int, 4> >" "boost::array<std::vector<int>, 4>" "std::vector<boost::array<std::vector<int>, 4> >"
         "boost::tuple<int, double, float, std::complex<double> >" "std::vector<boost::tuple<char, bool, long long> >"
     )
     
@@ -102,6 +102,7 @@ IF (ALPS_BUILD_HDF5_TESTS)
         STRING(REGEX REPLACE "_matrix_" "_mtx_" test_name ${test_name})
         STRING(REGEX REPLACE "_size_t_" "_szt_" test_name ${test_name})
         STRING(REGEX REPLACE "_enum_type_" "_enm_" test_name ${test_name})
+        STRING(REGEX REPLACE "_enum_vec_type_" "_enmvec_" test_name ${test_name})
         STRING(REGEX REPLACE "_boost_numeric_ublas_" "_nub_" test_name ${test_name})
         STRING(REGEX REPLACE "_column_major_" "_clm_" test_name ${test_name})
         STRING(REGEX REPLACE "_complex_" "_cpx_" test_name ${test_name})
@@ -117,6 +118,8 @@ IF (ALPS_BUILD_HDF5_TESTS)
         STRING(REGEX REPLACE "_boost_array" "_barr" test_name ${test_name})
         STRING(REGEX REPLACE "_userdefined_class_" "_usrcls_" test_name ${test_name})
         STRING(REGEX REPLACE "_pair_" "_pr_" test_name ${test_name})
+        STRING(REGEX REPLACE "_multi_array_" "_mularr_" test_name ${test_name})
+        STRING(REGEX REPLACE "_aosot_" "_bst_" test_name ${test_name})
 
         set(HDF5_TEST_TYPE ${type})
         include_directories(.)

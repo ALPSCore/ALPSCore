@@ -86,6 +86,7 @@ template<class T> class custom_allocator : public std::allocator<T> {
 };
 
 typedef enum { PLUS, MINUS } enum_type;
+typedef enum { PLUS_VEC, MINUS_VEC } enum_vec_type;
 template<typename T> struct creator;
 template<typename T> class userdefined_class;
 template<typename T, typename U> class cast_type;
@@ -105,6 +106,9 @@ template<typename T> void initialize(std::complex<T> & v) {
 }
 void initialize(std::string & v) {
     v = boost::lexical_cast<std::string>(rng());
+}
+template<typename T, typename A> void initialize(std::vector<T, A> & v) {
+    v = creator<std::vector<T, A> >::random();
 }
 template<typename T, std::size_t N> void initialize(boost::array<T, N> & v) {
     for (typename boost::array<T, N>::iterator it = v.begin(); it != v.end(); ++it)
@@ -133,8 +137,17 @@ template<
     initialize_tuple_value<8, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename boost::is_same<T8, boost::tuples::null_type>::type());
     initialize_tuple_value<9, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename boost::is_same<T9, boost::tuples::null_type>::type());
 }
+template<typename T, std::size_t N, typename A> void initialize(boost::multi_array<T, N, A> & v) {
+    v = creator<boost::multi_array<T, N, A> >::random();
+}
+template<typename T, std::size_t N, typename A> void initialize(alps::multi_array<T, N, A> & v) {
+    v = creator<alps::multi_array<T, N, A> >::random();
+}
 void initialize(enum_type & v) {
     v = static_cast<std::size_t>(rng()) % 2 == 0 ? PLUS : MINUS;
+}
+void initialize(enum_vec_type & v) {
+    v = static_cast<std::size_t>(rng()) % 2 == 0 ? PLUS_VEC : MINUS_VEC;
 }
 
 template<typename T> void initialize(userdefined_class<T> & v);
@@ -286,29 +299,105 @@ template<typename T, typename U> class cast_type< std::pair<T *, std::vector<std
                 return false;
         }
 };
-void save(
-      alps::hdf5::archive & ar
-    , std::string const & path
-    , enum_type const & value
-    , std::vector<std::size_t> size = std::vector<std::size_t>()
-    , std::vector<std::size_t> chunk = std::vector<std::size_t>()
-    , std::vector<std::size_t> offset = std::vector<std::size_t>()
-) {
-    switch (value) {
-        case PLUS: ar << alps::make_pvp(path, std::string("plus")); break;
-        case MINUS: ar << alps::make_pvp(path, std::string("minus")); break;
+
+namespace alps {
+    namespace hdf5 {
+
+        void save(
+              alps::hdf5::archive & ar
+            , std::string const & path
+            , enum_type const & value
+            , std::vector<std::size_t> size = std::vector<std::size_t>()
+            , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+            , std::vector<std::size_t> offset = std::vector<std::size_t>()
+        ) {
+            switch (value) {
+                case PLUS: ar << alps::make_pvp(path, std::string("plus")); break;
+                case MINUS: ar << alps::make_pvp(path, std::string("minus")); break;
+            }
+        }
+        void load(
+              alps::hdf5::archive & ar
+            , std::string const & path
+            , enum_type & value
+            , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+            , std::vector<std::size_t> offset = std::vector<std::size_t>()
+        ) {
+            std::string s;
+            ar >> alps::make_pvp(path, s);
+            value = (s == "plus" ? PLUS : MINUS);
+        }
+
+        template<> struct scalar_type<enum_vec_type> {
+            typedef boost::int_t<sizeof(enum_vec_type) * 8>::exact type;
+        };
+
+        template<> struct is_continuous<enum_vec_type> : public boost::true_type {};
+
+        template<> struct has_complex_elements<enum_vec_type> : public boost::false_type {};
+
+        namespace detail {
+
+            template<> struct get_extent<enum_vec_type> {
+                static std::vector<std::size_t> apply(enum_vec_type const & value) {
+                    return std::vector<std::size_t>();
+                }
+            };
+
+            template<> struct set_extent<enum_vec_type> {
+                static void apply(enum_vec_type &, std::vector<std::size_t> const &) {}
+            };
+
+            template<> struct is_vectorizable<enum_vec_type> {
+                static bool apply(enum_vec_type const & value) {
+                    return true;
+                }
+            };
+
+            template<> struct get_pointer<enum_vec_type> {
+                static scalar_type<enum_vec_type>::type * apply(enum_vec_type & value) {
+                    return reinterpret_cast<scalar_type<enum_vec_type>::type *>(&value);
+                }
+            };
+        
+            template<> struct get_pointer<enum_vec_type const> {
+                static scalar_type<enum_vec_type>::type const * apply(enum_vec_type const & value) {
+                    return reinterpret_cast<scalar_type<enum_vec_type>::type const *>(&value);
+                }
+            };
+        }
+
+        void save(
+              alps::hdf5::archive & ar
+            , std::string const & path
+            , enum_vec_type const & value
+            , std::vector<std::size_t> size = std::vector<std::size_t>()
+            , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+            , std::vector<std::size_t> offset = std::vector<std::size_t>()
+        ) {
+            if (size.size() == 0) {
+                size.push_back(1);
+                chunk.push_back(1);
+                offset.push_back(0);
+            }
+            ar.write(path, (scalar_type<enum_vec_type>::type const *)get_pointer(value), size, chunk, offset);
+        }
+        
+        void load(
+              alps::hdf5::archive & ar
+            , std::string const & path
+            , enum_vec_type & value
+            , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+            , std::vector<std::size_t> offset = std::vector<std::size_t>()
+        ) {
+            if (chunk.size() == 0) {
+                chunk.push_back(1);
+                offset.push_back(0);
+            }
+            ar.read(path, (scalar_type<enum_vec_type>::type *)get_pointer(value), chunk, offset);
+        }
+
     }
-}
-void load(
-      alps::hdf5::archive & ar
-    , std::string const & path
-    , enum_type & value
-    , std::vector<std::size_t> chunk = std::vector<std::size_t>()
-    , std::vector<std::size_t> offset = std::vector<std::size_t>()
-) {
-    std::string s;
-    ar >> alps::make_pvp(path, s);
-    value = (s == "plus" ? PLUS : MINUS);
 }
 
 template<typename T> struct creator {
@@ -737,18 +826,14 @@ template<typename T> struct creator<alps::numeric::matrix<T> > {
                     value(i, j) = creator<T>::random();
         return value;
     }
-    static base_type empty() { return base_type(MATRIX_SIZE, MATRIX_SIZE); }
-    static base_type special() { return base_type(MATRIX_SIZE, MATRIX_SIZE); }
+    static base_type empty() { return base_type(); }
+    static base_type special() { return base_type(); }
     template<typename X> static base_type random(X const &) { return base_type(MATRIX_SIZE, MATRIX_SIZE); }
-    template<typename X> static base_type empty(X const &) { return base_type(MATRIX_SIZE, MATRIX_SIZE); }
-    template<typename X> static base_type special(X const &) { return base_type(MATRIX_SIZE, MATRIX_SIZE); }
+    template<typename X> static base_type empty(X const &) { return base_type(); }
+    template<typename X> static base_type special(X const &) { return base_type(); }
 };
 template<typename T> bool equal(alps::numeric::matrix<T> const & a, alps::numeric::matrix<T> const & b) {
-    for (std::size_t i = 0; i < MATRIX_SIZE; ++i)
-        for (std::size_t j = 0; j < MATRIX_SIZE; ++j)
-            if (!equal(a(i, j), b(i, j)))
-                return false;
-    return true;
+    return a == b;
 }
 
 #define HDF5_DEFINE_VECTOR_VECTOR_TYPE(C, D)                                                       \
@@ -780,7 +865,7 @@ template<typename T> struct creator< C < D <T> > > {                            
 template<typename T> bool equal( C < D <T> > const & a,  C < D <T> > const & b) {                  \
     for (std::size_t i = 0; i < a.size(); ++i)                                                     \
         if (a[i].size() != b[i].size() || (                                                        \
-            a[i].size() > 0 &&  !equal(&const_cast<C<D<T> >&>(a)[i][0],                               \
+            a[i].size() > 0 &&  !equal(&const_cast<C<D<T> >&>(a)[i][0],                            \
                         &const_cast<C<D<T> >&>(b)[i][0],                                           \
                         a[i].size())                                                               \
         ))                                                                                         \
