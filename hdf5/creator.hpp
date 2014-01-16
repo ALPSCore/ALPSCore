@@ -110,6 +110,9 @@ void initialize(std::string & v) {
 template<typename T, typename A> void initialize(std::vector<T, A> & v) {
     v = creator<std::vector<T, A> >::random();
 }
+template<typename A> void initialize(std::vector<bool, A> & v) {
+    v = creator<std::vector<bool, A> >::random();
+}
 template<typename T, std::size_t N> void initialize(boost::array<T, N> & v) {
     for (typename boost::array<T, N>::iterator it = v.begin(); it != v.end(); ++it)
         initialize(*it);
@@ -594,6 +597,27 @@ HDF5_DEFINE_VECTOR_TYPE(std::deque)
 HDF5_DEFINE_VECTOR_TYPE(boost::numeric::ublas::vector)
 #undef HDF5_DEFINE_VECTOR_TYPE
 #undef HDF5_DEFINE_MULTI_ARRAY_TYPE
+
+template<> struct creator<std::vector<bool> > {
+    typedef std::vector<bool> base_type;
+    static base_type random() {
+        base_type value(VECTOR_SIZE);
+        for (std::size_t i = 0; i < VECTOR_SIZE; ++i) {
+            bool tmp;
+            initialize(tmp);
+            value[i] = tmp;
+        }
+        return value;
+    }
+    static base_type empty() { return base_type(); }
+    static base_type special() { return base_type(); }
+    template<typename X> static base_type random(X const &) { return base_type(); }
+    template<typename X> static base_type empty(X const &) { return base_type(); }
+    template<typename X> static base_type special(X const &) { return base_type(); }
+};
+template<> bool equal(std::vector<bool> const & a, std::vector<bool> const & b) {
+    return a.size() == b.size() && (a.size() == 0 || std::equal(a.begin(), a.end(), b.begin()));
+}
 
 template<typename T, typename U> struct creator<std::pair<T, U> > {
     typedef std::pair<T, U> base_type;
