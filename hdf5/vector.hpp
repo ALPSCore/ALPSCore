@@ -47,6 +47,9 @@ namespace alps {
         template<typename T, typename A> struct is_content_continuous<std::vector<T, A> >
             : public is_continuous<T> 
         {};
+        template<typename A> struct is_content_continuous<std::vector<bool, A> >
+            : public boost::false_type
+        {};
 
         template<typename T, typename A> struct has_complex_elements<std::vector<T, A> > 
             : public has_complex_elements<typename alps::detail::remove_cvr<typename std::vector<T, A>::value_type>::type>
@@ -90,6 +93,14 @@ namespace alps {
                 }
             };
 
+            template<typename A> struct set_extent<std::vector<bool, A> > {
+                static void apply(std::vector<bool, A> & value, std::vector<std::size_t> const & extent) {
+                    if (extent.size() != 1)
+                        throw archive_error("dimensions do not match" + ALPS_STACKTRACE);
+                    value.resize(extent[0]);
+                }
+            };
+
             template<typename T, typename A> struct is_vectorizable<std::vector<T, A> > {
                 static bool apply(std::vector<T, A> const & value) {
                     using alps::hdf5::get_extent;
@@ -116,6 +127,12 @@ namespace alps {
                 }
             };
 
+            template<typename A> struct is_vectorizable<std::vector<bool, A> > {
+                static bool apply(std::vector<bool, A> const & value) {
+                    return true;
+                }
+            };
+
             template<typename T, typename A> struct get_pointer<std::vector<T, A> > {
                 static typename alps::hdf5::scalar_type<std::vector<T, A> >::type * apply(std::vector<T, A> & value) {
                     using alps::hdf5::get_pointer;
@@ -129,7 +146,23 @@ namespace alps {
                     return get_pointer(value[0]);
                 }
             };
+
+            template<typename A> struct get_pointer<std::vector<bool, A> > {
+                static typename alps::hdf5::scalar_type<std::vector<bool, A> >::type * apply(std::vector<bool, A> & value) {
+                    throw archive_error("std::vector<bool, A>[0] cannot be dereferenced" + ALPS_STACKTRACE);
+                    return NULL;
+                }
+            };
+
+            template<typename A> struct get_pointer<std::vector<bool, A> const> {
+                static typename alps::hdf5::scalar_type<std::vector<bool, A> >::type const * apply(std::vector<bool, A> const & value) {
+                    throw archive_error("std::vector<bool>[0] cannot be dereferenced" + ALPS_STACKTRACE);
+                    return NULL;
+                }
+            };
+
         }
+
 
         template<typename T, typename A> void save(
               archive & ar
@@ -170,6 +203,30 @@ namespace alps {
             }
         }
 
+        template<typename A> void save(
+              archive & ar
+            , std::string const & path
+            , std::vector<bool, A> const & value
+            , std::vector<std::size_t> size = std::vector<std::size_t>()
+            , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+            , std::vector<std::size_t> offset = std::vector<std::size_t>()
+        ) {
+            if (ar.is_group(path))
+                ar.delete_group(path);
+            if (value.size() == 0)
+                ar.write(path, static_cast<bool const *>(NULL), std::vector<std::size_t>());
+            else {
+                size.push_back(value.size());
+                chunk.push_back(1);
+                offset.push_back(0);
+                for(typename std::vector<bool, A>::const_iterator it = value.begin(); it != value.end(); ++it) {
+                    offset.back() = it - value.begin();
+                    bool const elem = *it;
+                    ar.write(path, &elem, size, chunk, offset);
+                }
+            }
+        }        
+
         template<typename T, typename A> void load(
               archive & ar
             , std::string const & path
@@ -182,7 +239,7 @@ namespace alps {
                 std::vector<std::string> children = ar.list_children(path);
                 value.resize(children.size());
                 for (typename std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)
-                    load(ar, ar.complete_path(path) + "/" + *it, value[cast<std::size_t>(*it)]);
+                   load(ar, ar.complete_path(path) + "/" + *it, value[cast<std::size_t>(*it)]);
             } else {
                 if (ar.is_complex(path) != has_complex_elements<T>::value)
                     throw archive_error("no complex value in archive" + ALPS_STACKTRACE);
@@ -209,6 +266,38 @@ namespace alps {
                 }
             }
         }
+
+        template<typename A> void load(
+              archive & ar
+            , std::string const & path
+            , std::vector<bool, A> & value
+            , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+            , std::vector<std::size_t> offset = std::vector<std::size_t>()
+        ) {
+            if (ar.is_group(path))
+                throw archive_error("invalid dimensions" + ALPS_STACKTRACE);
+            else {
+                if (ar.is_complex(path))
+                    throw archive_error("no complex value in archive" + ALPS_STACKTRACE);
+                std::vector<std::size_t> size(ar.extent(path));
+                if (size.size() == 0)
+                    throw archive_error("invalid dimensions" + ALPS_STACKTRACE);
+                else if (size[0] == 0)
+                    value.resize(0);
+                else {
+                    value.resize(*(size.begin() + chunk.size()));
+                    chunk.push_back(1);
+                    offset.push_back(0);
+                    for(typename std::vector<bool, A>::iterator it = value.begin(); it != value.end(); ++it) {
+                        offset.back() = it - value.begin();
+                        bool elem;
+                        ar.read(path, &elem, chunk, offset);
+                        *it = elem;
+                    }
+                }
+            }
+        }
+
     }
 }
 
