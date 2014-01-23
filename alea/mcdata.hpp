@@ -535,13 +535,18 @@ namespace alps {
                           >> make_pvp("timeseries/data", values_)
                           >> make_pvp("timeseries/data/@maxbinnum", max_bin_number_)
                       ;
-                      if (ar.is_attribute("timeseries/data/@binsize"))
+                      if (ar.is_attribute("timeseries/data/@binsize")) {
                           ar
                               >> make_pvp("timeseries/data/@binsize", binsize_)
                           ;
-                      else
+                      } else {
+                        if (values_.size()) {
                           binsize_ = count_ / values_.size();
-                      if (!ar.is_attribute("@cannotrebin"))
+                        } else {
+                          binsize_ = 0;
+                        }
+                      }
+                      if (!ar.is_attribute("@cannotrebin") && values_.size())
                           values_ = values_ / double(binsize_);
                     }
                     if ((jacknife_bins_valid_ = ar.is_data("jacknife/data")))
