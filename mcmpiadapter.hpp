@@ -64,7 +64,7 @@ namespace alps {
                     this->update();
                     this->measure();
                     if (stopped || schedule_checker.pending()) {
-                        stopped = stop_callback(); // TODO: do we want to check after every sweep? probably not ...
+                        stopped = stop_callback(); 
                         double local_fraction = stopped ? 1. : Base::fraction_completed();
                         schedule_checker.update(fraction = boost::mpi::all_reduce(communicator, local_fraction, std::plus<double>()));
                         done = fraction >= 1.;
