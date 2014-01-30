@@ -43,8 +43,8 @@
 
 #ifndef ALPS_NGS_SINGLE_THREAD
 
-#include <boost/thread/mutex.hpp>
 #include <boost/thread/lock_guard.hpp>
+#include <boost/thread/recursive_mutex.hpp>
 
 #endif
 
@@ -228,7 +228,7 @@ namespace alps {
                 detail::archivecontext * context_;
 
 #ifndef ALPS_NGS_SINGLE_THREAD
-                static boost::mutex mutex_;
+                static boost::recursive_mutex mutex_;
 #endif
                 static std::map<std::string, std::pair<detail::archivecontext *, std::size_t> > ref_cnt_;
 
