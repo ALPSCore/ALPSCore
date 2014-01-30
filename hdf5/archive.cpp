@@ -40,6 +40,12 @@
 #include <iostream>
 #include <typeinfo>
 
+#ifdef ALPS_NGS_SINGLE_THREAD
+    #define ALPS_HDF5_LOCK_MUTEX
+#else
+    #define ALPS_HDF5_LOCK_MUTEX boost::lock_guard<boost::mutex> guard(mutex_);
+#endif
+
 #define ALPS_NGS_HDF5_FOREACH_NATIVE_TYPE_INTEGRAL(CALLBACK, ARG)                                                                                                       \
     CALLBACK(char, ARG)                                                                                                                                                 \
     CALLBACK(signed char, ARG)                                                                                                                                          \
@@ -112,7 +118,7 @@ namespace alps {
                     }
 
             };
-            
+
             template<herr_t(*F)(hid_t)> class resource {
                 public:
                     resource(): _id(-1) {}
@@ -421,9 +427,7 @@ namespace alps {
             , context_(arg.context_)
         {
             if (context_ != NULL) {
-#ifndef ALPS_NGS_SINGLE_THREAD
-                boost::lock_guard<boost::mutex> guard(mutex_);
-#endif
+                ALPS_HDF5_LOCK_MUTEX
                 ++ref_cnt_[file_key(context_->filename_, context_->large_, context_->memory_)].second;
             }
         }
@@ -455,9 +459,7 @@ namespace alps {
             if (context_ == NULL)
                 throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
             H5Fflush(context_->file_id_, H5F_SCOPE_GLOBAL);
-#ifndef ALPS_NGS_SINGLE_THREAD
-            boost::lock_guard<boost::mutex> guard(mutex_);
-#endif
+            ALPS_HDF5_LOCK_MUTEX
             if (!--ref_cnt_[file_key(context_->filename_, context_->large_, context_->memory_)].second) {
                 ref_cnt_.erase(file_key(context_->filename_, context_->large_, context_->memory_));
                 delete context_;
@@ -1335,21 +1337,20 @@ namespace alps {
                     throw path_not_found("no valid path: " + path + ALPS_STACKTRACE);                                                                                   \
                 detail::type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND));                                                                               \
                 detail::check_type(type_id);                                                                                                                            \
+                ALPS_HDF5_LOCK_MUTEX                                                                                                                                    \
                 return detail::is_datatype_impl_compare< T >::apply(native_id);                                                                                         \
             }
         ALPS_NGS_FOREACH_NATIVE_HDF5_TYPE(ALPS_NGS_HDF5_IS_DATATYPE_IMPL_IMPL)
         #undef ALPS_NGS_HDF5_IS_DATATYPE_IMPL_IMPL
 
         void archive::construct(std::string const & filename, std::size_t props) {
+            ALPS_HDF5_LOCK_MUTEX
             detail::check_error(H5Eset_auto2(H5E_DEFAULT, NULL, NULL));
             if (props & COMPRESS) {
                 unsigned int flag;
                 detail::check_error(H5Zget_filter_info(H5Z_FILTER_SZIP, &flag));
                 props &= (flag & H5Z_FILTER_CONFIG_ENCODE_ENABLED ? ~0x00 : ~COMPRESS);
             }
-#ifndef ALPS_NGS_SINGLE_THREAD
-            boost::lock_guard<boost::mutex> guard(mutex_);
-#endif
             if (ref_cnt_.find(file_key(filename, props & LARGE, props & MEMORY)) == ref_cnt_.end())
                 ref_cnt_.insert(std::make_pair(
                       file_key(filename, props & LARGE, props & MEMORY)
