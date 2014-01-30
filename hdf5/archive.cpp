@@ -43,7 +43,13 @@
 #ifdef ALPS_NGS_SINGLE_THREAD
     #define ALPS_HDF5_LOCK_MUTEX
 #else
-    #define ALPS_HDF5_LOCK_MUTEX boost::lock_guard<boost::mutex> guard(mutex_);
+    #define ALPS_HDF5_LOCK_MUTEX boost::lock_guard<boost::recursive_mutex> guard(mutex_);
+#endif
+
+#ifdef H5_HAVE_THREADSAFE
+    #define ALPS_HDF5_FAKE_THREADSAFETY
+#else
+    #define ALPS_HDF5_FAKE_THREADSAFETY ALPS_HDF5_LOCK_MUTEX
 #endif
 
 #define ALPS_NGS_HDF5_FOREACH_NATIVE_TYPE_INTEGRAL(CALLBACK, ARG)                                                                                                       \
@@ -198,25 +204,6 @@ namespace alps {
                 if ((path = ar.complete_path(path)).find_last_of('@') == std::string::npos)
                     throw invalid_path("no attribute path: " + path + ALPS_STACKTRACE);
                 return H5Aopen_by_name(file_id, path.substr(0, path.find_last_of('@') - 1).c_str(), path.substr(path.find_last_of('@') + 1).c_str(), H5P_DEFAULT, H5P_DEFAULT);
-/*
-                hid_t parent_id, attr_id;
-                if (ar.is_group(path.substr(0, path.find_last_of('@') - 1)))
-                    parent_id = detail::check_error(H5Gopen2(file_id, path.substr(0, path.find_last_of('@') - 1).c_str(), H5P_DEFAULT));
-                else if (ar.is_data(path.substr(0, path.find_last_of('@') - 1)))
-                    parent_id = detail::check_error(H5Dopen2(file_id, path.substr(0, path.find_last_of('@') - 1).c_str(), H5P_DEFAULT));
-                else
-                    #ifdef ALPS_HDF5_READ_GREEDY
-                        return false;
-                    #else
-                        throw path_not_found("unknown path: " + path.substr(0, path.find_last_of('@') - 1) + ALPS_STACKTRACE);
-                    #endif
-                attr_id = H5Aopen(parent_id, path.substr(path.find_last_of('@') + 1).c_str(), H5P_DEFAULT);
-                if (ar.is_group(path.substr(0, path.find_last_of('@') - 1)))
-                    detail::check_group(parent_id);
-                else
-                    detail::check_data(parent_id);
-                return attr_id;
-*/
             }
 
             herr_t list_children_visitor(hid_t, char const * n, const H5L_info_t *, void * d) {
@@ -458,8 +445,8 @@ namespace alps {
         void archive::close() {
             if (context_ == NULL)
                 throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
-            H5Fflush(context_->file_id_, H5F_SCOPE_GLOBAL);
             ALPS_HDF5_LOCK_MUTEX
+            H5Fflush(context_->file_id_, H5F_SCOPE_GLOBAL);
             if (!--ref_cnt_[file_key(context_->filename_, context_->large_, context_->memory_)].second) {
                 ref_cnt_.erase(file_key(context_->filename_, context_->large_, context_->memory_));
                 delete context_;
@@ -498,6 +485,7 @@ namespace alps {
         }
     
         void archive::set_context(std::string const & context) {
+            ALPS_HDF5_LOCK_MUTEX
             current_ = complete_path(context);
         }
     
@@ -523,6 +511,7 @@ namespace alps {
                 throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
             if ((path = complete_path(path)).find_last_of('@') != std::string::npos)
                 throw invalid_path("no data path: " + path + ALPS_STACKTRACE);
+            ALPS_HDF5_FAKE_THREADSAFETY
             hid_t id = H5Dopen2(context_->file_id_, path.c_str(), H5P_DEFAULT);
             return id < 0 ? false : detail::check_data(id) != 0;
         }
@@ -532,26 +521,8 @@ namespace alps {
                 throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
             if ((path = complete_path(path)).find_last_of('@') == std::string::npos)
                 return false;
+            ALPS_HDF5_FAKE_THREADSAFETY
             return detail::check_error(H5Aexists_by_name(context_->file_id_, path.substr(0, path.find_last_of('@') - 1).c_str(), path.substr(path.find_last_of('@') + 1).c_str(), H5P_DEFAULT));
-/*
-            hid_t parent_id;
-            if (is_group(path.substr(0, path.find_last_of('@') - 1)))
-                parent_id = detail::check_error(H5Gopen2(context_->file_id_, path.substr(0, path.find_last_of('@') - 1).c_str(), H5P_DEFAULT));
-            else if (is_data(path.substr(0, path.find_last_of('@') - 1)))
-                parent_id = detail::check_error(H5Dopen2(context_->file_id_, path.substr(0, path.find_last_of('@') - 1).c_str(), H5P_DEFAULT));
-            else
-                #ifdef ALPS_HDF5_READ_GREEDY
-                    return false;
-                #else
-                    throw path_not_found("unknown path: " + path + ALPS_STACKTRACE);
-                #endif
-            bool exists = detail::check_error(H5Aexists(parent_id, path.substr(path.find_last_of('@') + 1).c_str()));
-            if (is_group(path.substr(0, path.find_last_of('@') - 1)))
-                detail::check_group(parent_id);
-            else
-                detail::check_data(parent_id);
-            return exists;
-*/
         }
     
         bool archive::is_group(std::string path) const {
@@ -559,6 +530,7 @@ namespace alps {
                 throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
             if ((path = complete_path(path)).find_last_of('@') != std::string::npos)
                 return false;
+            ALPS_HDF5_FAKE_THREADSAFETY
             hid_t id = H5Gopen2(context_->file_id_, path.c_str(), H5P_DEFAULT);
             return id < 0 ? false : detail::check_group(id) != 0;
         }
@@ -567,6 +539,7 @@ namespace alps {
             hid_t space_id;
             if (context_ == NULL)
                 throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
+            ALPS_HDF5_FAKE_THREADSAFETY
             if ((path = complete_path(path)).find_last_of('@') != std::string::npos && is_attribute(path)) {
                 detail::attribute_type attr_id(detail::open_attribute(*this, context_->file_id_, path));
                 space_id = H5Aget_space(attr_id);
@@ -590,6 +563,7 @@ namespace alps {
             hid_t space_id;
             if (context_ == NULL)
                 throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
+            ALPS_HDF5_FAKE_THREADSAFETY
             if ((path = complete_path(path)).find_last_of('@') != std::string::npos) {
                 detail::attribute_type attr_id(detail::open_attribute(*this, context_->file_id_, path));
                 space_id = H5Aget_space(attr_id);
@@ -607,6 +581,7 @@ namespace alps {
         bool archive::is_complex(std::string path) const {
             if (context_ == NULL)
                 throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
+            ALPS_HDF5_FAKE_THREADSAFETY
             if ((path = complete_path(path)).find_last_of('@') != std::string::npos)
                 return is_attribute(path.substr(0, path.find_last_of('@')) + "@__complex__:" + path.substr(path.find_last_of('@') + 1))
                     && is_scalar(path.substr(0, path.find_last_of('@')) + "@__complex__:" + path.substr(path.find_last_of('@') + 1));
@@ -626,6 +601,7 @@ namespace alps {
             if ((path = complete_path(path)).find_last_of('@') != std::string::npos)
                 throw invalid_path("no group path: " + path + ALPS_STACKTRACE);
             std::vector<std::string> list;
+            ALPS_HDF5_FAKE_THREADSAFETY
             if (!is_group(path))
                 throw path_not_found("The group '" + path + "' does not exist." + ALPS_STACKTRACE);
             detail::group_type group_id(H5Gopen2(context_->file_id_, path.c_str(), H5P_DEFAULT));
@@ -639,6 +615,7 @@ namespace alps {
             if ((path = complete_path(path)).find_last_of('@') != std::string::npos)
                 throw invalid_path("no group or data path: " + path + ALPS_STACKTRACE);
             std::vector<std::string> list;
+            ALPS_HDF5_FAKE_THREADSAFETY
             if (is_group(path)) {
                 detail::group_type id(H5Gopen2(context_->file_id_, path.c_str(), H5P_DEFAULT));
                 detail::check_error(H5Aiterate2(id, H5_INDEX_CRT_ORDER, H5_ITER_NATIVE, NULL, detail::list_attributes_visitor, &list));
@@ -659,6 +636,7 @@ namespace alps {
                 return std::vector<std::size_t>(1, 1);
             std::vector<hsize_t> buffer(dimensions(path), 0);
             hid_t space_id;
+            ALPS_HDF5_FAKE_THREADSAFETY
             if (path.find_last_of('@') != std::string::npos) {
                 detail::attribute_type attr_id(detail::open_attribute(*this, context_->file_id_, path));
                 space_id = H5Aget_space(attr_id);
@@ -675,6 +653,7 @@ namespace alps {
         std::size_t archive::dimensions(std::string path) const {
             if (context_ == NULL)
                 throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
+            ALPS_HDF5_FAKE_THREADSAFETY
             if ((path = complete_path(path)).find_last_of('@') != std::string::npos) {
                 detail::attribute_type attr_id(detail::open_attribute(*this, context_->file_id_, path));
                 return detail::check_error(H5Sget_simple_extent_dims(detail::space_type(H5Aget_space(attr_id)), NULL, NULL));
@@ -689,6 +668,7 @@ namespace alps {
                 throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
             if ((path = complete_path(path)).find_last_of('@') != std::string::npos)
                 throw invalid_path("no group path: " + path + ALPS_STACKTRACE);
+            ALPS_HDF5_FAKE_THREADSAFETY
             if (is_data(path))
                 delete_data(path);
             if (!is_group(path)) {
@@ -725,6 +705,7 @@ namespace alps {
                 throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
             if ((path = complete_path(path)).find_last_of('@') != std::string::npos)
                 throw invalid_path("no data path: " + path + ALPS_STACKTRACE);
+            ALPS_HDF5_FAKE_THREADSAFETY
             if (is_data(path))
                 detail::check_error(H5Ldelete(context_->file_id_, path.c_str(), H5P_DEFAULT));
             else if (is_group(path))
@@ -736,6 +717,7 @@ namespace alps {
                 throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
             if ((path = complete_path(path)).find_last_of('@') != std::string::npos)
                 throw invalid_path("no group path: " + path + ALPS_STACKTRACE);
+            ALPS_HDF5_FAKE_THREADSAFETY
             if (is_group(path))
                 detail::check_error(H5Ldelete(context_->file_id_, path.c_str(), H5P_DEFAULT));
             else if (is_data(path))
@@ -754,6 +736,7 @@ namespace alps {
         void archive::set_complex(std::string path) {
             if (context_ == NULL)
                 throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
+            ALPS_HDF5_FAKE_THREADSAFETY
             if (path.find_last_of('@') != std::string::npos)
                 write(path.substr(0, path.find_last_of('@')) + "@__complex__:" + path.substr(path.find_last_of('@') + 1), true);
             else {
@@ -786,6 +769,7 @@ namespace alps {
                 value = cast< T >(u);
         #define ALPS_NGS_HDF5_READ_SCALAR(T)                                                                                                                            \
             void archive::read(std::string path, T & value) const {                                                                                                     \
+                ALPS_HDF5_FAKE_THREADSAFETY                                                                                                                             \
                 if (context_ == NULL)                                                                                                                                   \
                     throw archive_closed("the archive is closed" + ALPS_STACKTRACE);                                                                                    \
                 if ((path = complete_path(path)).find_last_of('@') == std::string::npos) {                                                                              \
@@ -819,16 +803,6 @@ namespace alps {
                         , path.substr(path.find_last_of('@') + 1).c_str()                                                                                               \
                         , H5P_DEFAULT, H5P_DEFAULT                                                                                                                      \
                     ));                                                                                                                                                 \
-/*                                                                                                                                                                      \
-                    hid_t parent_id;                                                                                                                                    \
-                    if (is_group(path.substr(0, path.find_last_of('@') - 1)))                                                                                           \
-                        parent_id = detail::check_error(H5Gopen2(context_->file_id_, path.substr(0, path.find_last_of('@') - 1).c_str(), H5P_DEFAULT));                 \
-                    else if (is_data(path.substr(0, path.find_last_of('@') - 1)))                                                                                       \
-                        parent_id = detail::check_error(H5Dopen2(context_->file_id_, path.substr(0, path.find_last_of('@') - 1).c_str(), H5P_DEFAULT));                 \
-                    else                                                                                                                                                \
-                        throw path_not_found("unknown path: " + path.substr(0, path.find_last_of('@') - 1) + ALPS_STACKTRACE);                                          \
-                    detail::attribute_type attribute_id(H5Aopen(parent_id, path.substr(path.find_last_of('@') + 1).c_str(), H5P_DEFAULT));                              \
-*/                                                                                                                                                                      \
                     detail::type_type type_id(H5Aget_type(attribute_id));                                                                                               \
                     detail::type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND));                                                                           \
                     if (H5Tget_class(native_id) == H5T_STRING && !detail::check_error(H5Tis_variable_str(type_id))) {                                                   \
@@ -841,12 +815,6 @@ namespace alps {
                         value = cast< T >(std::string(raw));                                                                                                            \
                     ALPS_NGS_HDF5_FOREACH_NATIVE_TYPE_INTEGRAL(ALPS_NGS_HDF5_READ_SCALAR_ATTRIBUTE_HELPER, T)                                                           \
                     } else throw wrong_type("invalid type" + ALPS_STACKTRACE);                                                                                          \
-/*                                                                                                                                                                      \
-                    if (is_group(path.substr(0, path.find_last_of('@') - 1)))                                                                                           \
-                        detail::check_group(parent_id);                                                                                                                 \
-                    else                                                                                                                                                \
-                        detail::check_data(parent_id);                                                                                                                  \
-*/                                                                                                                                                                      \
                 }                                                                                                                                                       \
             }
         ALPS_NGS_FOREACH_NATIVE_HDF5_TYPE(ALPS_NGS_HDF5_READ_SCALAR)
@@ -889,6 +857,7 @@ namespace alps {
                     throw std::logic_error("Not Implemented, path: " + path + ALPS_STACKTRACE);
         #define ALPS_NGS_HDF5_READ_VECTOR(T)                                                                                                                            \
             void archive::read(std::string path, T * value, std::vector<std::size_t> chunk, std::vector<std::size_t> offset) const {                                    \
+                ALPS_HDF5_FAKE_THREADSAFETY                                                                                                                             \
                 if (context_ == NULL)                                                                                                                                   \
                     throw archive_closed("the archive is closed" + ALPS_STACKTRACE);                                                                                    \
                 std::vector<std::size_t> data_size = extent(path);                                                                                                      \
@@ -983,6 +952,7 @@ namespace alps {
     
         #define ALPS_NGS_HDF5_WRITE_SCALAR(T)                                                                                                                           \
             void archive::write(std::string path, T value) const {                                                                                                      \
+                ALPS_HDF5_FAKE_THREADSAFETY                                                                                                                             \
                 if (context_ == NULL)                                                                                                                                   \
                     throw archive_closed("the archive is closed" + ALPS_STACKTRACE);                                                                                    \
                 if (!context_->write_)                                                                                                                                  \
@@ -1075,6 +1045,7 @@ namespace alps {
             void archive::write(                                                                                                                                        \
                 std::string path, T const * value, std::vector<std::size_t> size, std::vector<std::size_t> chunk, std::vector<std::size_t> offset                       \
             ) const {                                                                                                                                                   \
+                ALPS_HDF5_FAKE_THREADSAFETY                                                                                                                             \
                 if (context_ == NULL)                                                                                                                                   \
                     throw archive_closed("the archive is closed" + ALPS_STACKTRACE);                                                                                    \
                 if (!context_->write_)                                                                                                                                  \
@@ -1323,6 +1294,7 @@ namespace alps {
 
         #define ALPS_NGS_HDF5_IS_DATATYPE_IMPL_IMPL(T)                                                                                                                  \
             bool archive::is_datatype_impl(std::string path, T) const {                                                                                                 \
+                ALPS_HDF5_FAKE_THREADSAFETY                                                                                                                             \
                 hid_t type_id;                                                                                                                                          \
                 path = complete_path(path);                                                                                                                             \
                 if (context_ == NULL)                                                                                                                                   \
@@ -1368,7 +1340,7 @@ namespace alps {
         }
     
 #ifndef ALPS_NGS_SINGLE_THREAD
-        boost::mutex archive::mutex_;
+        boost::recursive_mutex archive::mutex_;
 #endif
         std::map<std::string, std::pair<detail::archivecontext *, std::size_t> > archive::ref_cnt_;
     }
