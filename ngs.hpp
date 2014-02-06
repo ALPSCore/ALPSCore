@@ -52,17 +52,17 @@
 	namespace alps {
 		namespace accumulator {
 
-			typedef alps::ngs::SimpleRealObservable SimpleRealObservable;
-			typedef alps::ngs::SimpleRealVectorObservable SimpleRealVectorObservable;
+			typedef ::alps::ngs::SimpleRealObservable SimpleRealObservable;
+			typedef ::alps::ngs::SimpleRealVectorObservable SimpleRealVectorObservable;
 
-			typedef alps::ngs::RealObservable RealObservable;
-			typedef alps::ngs::RealVectorObservable RealVectorObservable;
+			typedef ::alps::ngs::RealObservable RealObservable;
+			typedef ::alps::ngs::RealVectorObservable RealVectorObservable;
 
-			typedef alps::ngs::SignedRealObservable SignedRealObservable;
-			typedef alps::ngs::SignedRealVectorObservable SignedRealVectorObservable;
+			typedef ::alps::ngs::SignedRealObservable SignedRealObservable;
+			typedef ::alps::ngs::SignedRealVectorObservable SignedRealVectorObservable;
 
-			typedef alps::ngs::SignedSimpleRealObservable SignedSimpleRealObservable;
-			typedef alps::ngs::SignedSimpleRealVectorObservable SignedSimpleRealVectorObservable;
+			typedef ::alps::ngs::SignedSimpleRealObservable SignedSimpleRealObservable;
+			typedef ::alps::ngs::SignedSimpleRealVectorObservable SignedSimpleRealVectorObservable;
 		}
 	}
 #endif
