@@ -1309,8 +1309,10 @@ namespace alps {
                     throw path_not_found("no valid path: " + path + ALPS_STACKTRACE);                                                                                   \
                 detail::type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND));                                                                               \
                 detail::check_type(type_id);                                                                                                                            \
-                ALPS_HDF5_LOCK_MUTEX                                                                                                                                    \
-                return detail::is_datatype_impl_compare< T >::apply(native_id);                                                                                         \
+                {                                                                                                                                                       \
+                    ALPS_HDF5_LOCK_MUTEX                                                                                                                                \
+                    return detail::is_datatype_impl_compare< T >::apply(native_id);                                                                                     \
+                }                                                                                                                                                       \
             }
         ALPS_NGS_FOREACH_NATIVE_HDF5_TYPE(ALPS_NGS_HDF5_IS_DATATYPE_IMPL_IMPL)
         #undef ALPS_NGS_HDF5_IS_DATATYPE_IMPL_IMPL
