@@ -28,6 +28,7 @@
 #include <alps/ngs.hpp>
 #include <alps/mcbase.hpp>
 #include <alps/stop_callback.hpp>
+#include <alps/ngs/make_parameters_from_xml.hpp>
 
 #include <boost/lambda/lambda.hpp>
 
@@ -51,13 +52,8 @@ class my_sim_type : public alps::mcbase {
             : alps::mcbase(params, comm)
             , total_count(params["COUNT"])
         {
-#ifdef ALPS_NGS_USE_NEW_ALEA
             measurements << alps::accumulator::RealObservable("SValue")
                          << alps::accumulator::RealVectorObservable("VValue");
-#else
-            measurements << alps::ngs::RealObservable("SValue")
-                         << alps::ngs::RealVectorObservable("VValue");
-#endif
         }
 
         // do the calculation in this function
@@ -87,7 +83,13 @@ int main(int argc, char *argv[]) {
 
     alps::mcoptions options(argc, argv);
 
-    alps::parameters_type<my_sim_type>::type params(alps::hdf5::archive(options.input_file));
+    alps::parameters_type<my_sim_type>::type params;
+    if (boost::filesystem::extension(options.input_file) == ".xml")
+        params = alps::make_parameters_from_xml(options.input_file);
+    else if (boost::filesystem::extension(options.input_file) == ".h5")
+        alps::hdf5::archive(options.input_file)["/parameters"] >> params;
+    else
+        params = alps::parameters_type<my_sim_type>::type(options.input_file);
 
     my_sim_type my_sim(params); // creat a simulation
     my_sim.run(alps::stop_callback(options.time_limit)); // run the simulation
