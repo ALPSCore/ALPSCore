@@ -29,7 +29,7 @@
 
 #include <alps/hdf5/array.hpp>
 #include <alps/hdf5/multi_array.hpp>
-#include <alps/ngs/alea/next/accumulator.hpp>
+#include <alps/ngs/accumulator/accumulator.hpp>
 
 #ifndef ALPS_LINK_BOOST_TEST
 #	include <boost/test/included/unit_test.hpp>
