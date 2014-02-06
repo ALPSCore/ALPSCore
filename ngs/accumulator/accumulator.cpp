@@ -4,8 +4,8 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2010 - 2011 by Lukas Gamper <gamperl@gmail.com>                   *
- *                           Matthias Troyer <troyer@comp-phys.org>                *
+ * Copyright (C) 2011 - 2013 by Mario Koenz <mkoenz@ethz.ch>                       *
+ *                              Lukas Gamper <gamperl@gmail.com>                   *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -26,44 +26,31 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_HPP
-#define ALPS_NGS_HPP
+#include <alps/ngs/accumulator/accumulator.hpp>
 
-#include <alps/hdf5/archive.hpp>
-#include <alps/hdf5/map.hpp>
-#include <alps/hdf5/pair.hpp>
-#include <alps/hdf5/vector.hpp>
-#include <alps/hdf5/pointer.hpp>
-#include <alps/hdf5/complex.hpp>
+namespace alps {
+    namespace accumulator {
 
-#include <alps/ngs/api.hpp>
-#include <alps/ngs/cast.hpp>
-#include <alps/ngs/sleep.hpp>
-#include <alps/ngs/signal.hpp>
-#include <alps/ngs/random01.hpp>
-#include <alps/ngs/boost_mpi.hpp>
-#include <alps/ngs/short_print.hpp>
-#include <alps/ngs/thread_exceptions.hpp>
-#include <alps/ngs/observablewrappers.hpp> // TODO: remove!
+        #define EXTERNAL_FUNCTION(FUN)                          \
+            result_wrapper FUN (result_wrapper const & arg) {   \
+                return arg. FUN ();                             \
+            }
+            EXTERNAL_FUNCTION(sin)
+            EXTERNAL_FUNCTION(cos)
+            EXTERNAL_FUNCTION(tan)
+            EXTERNAL_FUNCTION(sinh)
+            EXTERNAL_FUNCTION(cosh)
+            EXTERNAL_FUNCTION(tanh)
+            EXTERNAL_FUNCTION(asin)
+            EXTERNAL_FUNCTION(acos)
+            EXTERNAL_FUNCTION(atan)
+            EXTERNAL_FUNCTION(abs)
+            EXTERNAL_FUNCTION(sqrt)
+            EXTERNAL_FUNCTION(log)
+            EXTERNAL_FUNCTION(sq)
+            EXTERNAL_FUNCTION(cb)
+            EXTERNAL_FUNCTION(cbrt)
 
-// #ifdef ALPS_NGS_USE_NEW_ALEA
-// 	#include <alps/ngs/alea.hpp>
-// #endif
-
-#ifdef ALPS_NGS_USE_NEW_ALEA
-	#include <alps/ngs/accumulator/accumulator.hpp>
-#endif
-
-// #include <alps/mcbase.hpp>
-// #include <alps/parseargs.hpp>
-// #include <alps/stop_callback.hpp>
-// #include <alps/progress_callback.hpp> // TODO: remove this file!
-
-// TODO: remove these deprecated headers:
-#include <alps/ngs/mcresult.hpp>
-#include <alps/ngs/mcresults.hpp>
-#include <alps/ngs/mcoptions.hpp>
-#include <alps/ngs/mcobservable.hpp>
-#include <alps/ngs/mcobservables.hpp> // TODO: rethink this!
-
-#endif
+        #undef EXTERNAL_FUNCTION
+    }
+}

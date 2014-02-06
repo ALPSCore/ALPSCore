@@ -4,8 +4,7 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2010 - 2011 by Lukas Gamper <gamperl@gmail.com>                   *
- *                           Matthias Troyer <troyer@comp-phys.org>                *
+ * Copyright (C) 2011 - 2012 by Mario Koenz <mkoenz@ethz.ch>                       *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -26,44 +25,32 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_HPP
-#define ALPS_NGS_HPP
+#ifndef ALPS_NGS_ALEA_DETAIL_TAU_HPP
+#define ALPS_NGS_ALEA_DETAIL_TAU_HPP
 
-#include <alps/hdf5/archive.hpp>
-#include <alps/hdf5/map.hpp>
-#include <alps/hdf5/pair.hpp>
-#include <alps/hdf5/vector.hpp>
-#include <alps/hdf5/pointer.hpp>
-#include <alps/hdf5/complex.hpp>
-
-#include <alps/ngs/api.hpp>
-#include <alps/ngs/cast.hpp>
-#include <alps/ngs/sleep.hpp>
-#include <alps/ngs/signal.hpp>
-#include <alps/ngs/random01.hpp>
-#include <alps/ngs/boost_mpi.hpp>
-#include <alps/ngs/short_print.hpp>
-#include <alps/ngs/thread_exceptions.hpp>
-#include <alps/ngs/observablewrappers.hpp> // TODO: remove!
-
-// #ifdef ALPS_NGS_USE_NEW_ALEA
-// 	#include <alps/ngs/alea.hpp>
-// #endif
-
-#ifdef ALPS_NGS_USE_NEW_ALEA
-	#include <alps/ngs/accumulator/accumulator.hpp>
-#endif
-
-// #include <alps/mcbase.hpp>
-// #include <alps/parseargs.hpp>
-// #include <alps/stop_callback.hpp>
-// #include <alps/progress_callback.hpp> // TODO: remove this file!
-
-// TODO: remove these deprecated headers:
-#include <alps/ngs/mcresult.hpp>
-#include <alps/ngs/mcresults.hpp>
-#include <alps/ngs/mcoptions.hpp>
-#include <alps/ngs/mcobservable.hpp>
-#include <alps/ngs/mcobservables.hpp> // TODO: rethink this!
-
+namespace alps {
+    namespace accumulator {
+        // = = = = = = = = = = I M P L E M E N T A T I O N   D E F I N I T I O N = = = = = = = = = =
+        namespace tag {
+            struct mean;
+            struct error;
+            struct fixed_size_binning;
+            struct max_num_binning;
+            struct log_binning;
+            struct autocorrelation;
+            namespace detail {
+                struct converged;
+                struct tau;
+                struct weight;
+            }
+            struct histogram;
+        }
+        namespace detail
+        {
+            struct no_weight_value_type {}; //has to be full type because of typeid
+            //one cannot use void as wvt-default because of has_method in derived wrapper that checks if
+            //there is an void op(vt, wvt) and void cannot be an argument-type
+        }
+    }
+}
 #endif

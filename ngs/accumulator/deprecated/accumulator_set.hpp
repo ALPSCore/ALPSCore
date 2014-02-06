@@ -4,8 +4,7 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2010 - 2011 by Lukas Gamper <gamperl@gmail.com>                   *
- *                           Matthias Troyer <troyer@comp-phys.org>                *
+ * Copyright (C) 2011 - 2012 by Mario Koenz <mkoenz@ethz.ch>                       *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -26,44 +25,69 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_HPP
-#define ALPS_NGS_HPP
+#ifndef ALPS_NGS_ALEA_ACCUMULATOR_SET_HEADER
+#define ALPS_NGS_ALEA_ACCUMULATOR_SET_HEADER
 
 #include <alps/hdf5/archive.hpp>
-#include <alps/hdf5/map.hpp>
-#include <alps/hdf5/pair.hpp>
-#include <alps/hdf5/vector.hpp>
-#include <alps/hdf5/pointer.hpp>
-#include <alps/hdf5/complex.hpp>
+#include <alps/ngs/alea/accumulator.hpp>
+#include <alps/ngs/alea/wrapper/accumulator_wrapper.hpp>
 
-#include <alps/ngs/api.hpp>
-#include <alps/ngs/cast.hpp>
-#include <alps/ngs/sleep.hpp>
-#include <alps/ngs/signal.hpp>
-#include <alps/ngs/random01.hpp>
-#include <alps/ngs/boost_mpi.hpp>
-#include <alps/ngs/short_print.hpp>
-#include <alps/ngs/thread_exceptions.hpp>
-#include <alps/ngs/observablewrappers.hpp> // TODO: remove!
+#include <map>
+#include <string>
 
-// #ifdef ALPS_NGS_USE_NEW_ALEA
-// 	#include <alps/ngs/alea.hpp>
-// #endif
+namespace alps {
+    namespace accumulator {
 
-#ifdef ALPS_NGS_USE_NEW_ALEA
-	#include <alps/ngs/accumulator/accumulator.hpp>
-#endif
+        struct make_accumulator {
+            template<typename T>
+            make_accumulator(std::string const name, T const & accum): acc_wrapper(accum), name(name) {}
 
-// #include <alps/mcbase.hpp>
-// #include <alps/parseargs.hpp>
-// #include <alps/stop_callback.hpp>
-// #include <alps/progress_callback.hpp> // TODO: remove this file!
+            detail::accumulator_wrapper acc_wrapper;
+            std::string name;
+        };
 
-// TODO: remove these deprecated headers:
-#include <alps/ngs/mcresult.hpp>
-#include <alps/ngs/mcresults.hpp>
-#include <alps/ngs/mcoptions.hpp>
-#include <alps/ngs/mcobservable.hpp>
-#include <alps/ngs/mcobservables.hpp> // TODO: rethink this!
+        class ALPS_DECL accumulator_set {
+
+            public: 
+                typedef std::map<std::string, boost::shared_ptr<detail::accumulator_wrapper> > map_type;
+
+                typedef map_type::iterator iterator;
+                typedef map_type::const_iterator const_iterator;
+
+                detail::accumulator_wrapper & operator[](std::string const & name);
+
+                detail::accumulator_wrapper const & operator[](std::string const & name) const;
+
+                bool has(std::string const & name) const;
+
+                void insert(std::string const & name, boost::shared_ptr<detail::accumulator_wrapper> ptr);
+
+                void save(hdf5::archive & ar) const;
+
+                void load(hdf5::archive & ar);
+
+                void reset(bool equilibrated = false);
+
+                //~ template<typename T, typename Features>
+                accumulator_set & operator<< (make_accumulator const & make_acc) {
+                    insert(make_acc.name, boost::shared_ptr<detail::accumulator_wrapper>(new detail::accumulator_wrapper(make_acc.acc_wrapper)));
+                    return *this;
+                }
+
+                void merge(accumulator_set const &);
+
+                void print(std::ostream & os) const;
+
+                iterator begin();
+                iterator end();
+                const_iterator begin() const;
+                const_iterator end() const;
+                void clear();
+
+            private:
+                map_type storage;
+        };
+    } 
+}
 
 #endif

@@ -67,7 +67,7 @@ set(ALPS_SOURCES
   # new alea
   if (ALPS_NGS_USE_NEW_ALEA)
 #    set(ALPS_SOURCES ${ALPS_SOURCES} ngs/lib/alea/accumulator_set.cpp ngs/lib/alea/result_set.cpp)
-    set(ALPS_SOURCES ${ALPS_SOURCES} ngs/alea/next/accumulator.cpp)
+    set(ALPS_SOURCES ${ALPS_SOURCES} ngs/accumulator/accumulator.cpp)
   endif (ALPS_NGS_USE_NEW_ALEA)
 
 if (NOT ALPS_FOR_VISTRAILS)
