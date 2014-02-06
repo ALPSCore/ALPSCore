@@ -41,13 +41,8 @@ class my_sim_type : public alps::mcbase {
             , total_count(params["COUNT"])
 
         {
-#ifdef ALPS_NGS_USE_NEW_ALEA
             measurements << alps::accumulator::RealObservable("SValue")
                          << alps::accumulator::RealVectorObservable("VValue");
-#else
-            measurements << alps::ngs::RealObservable("SValue")
-                         << alps::ngs::RealVectorObservable("VValue");
-#endif
         }
 
         // if not compiled with mpi boost::mpi::communicator does not exists, 
