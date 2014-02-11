@@ -78,6 +78,11 @@ namespace alps {
         typedef typename std::vector<T>::iterator       diagonal_iterator;
         typedef typename std::vector<T>::const_iterator const_diagonal_iterator;
 
+        static diagonal_matrix identity_matrix(size_type n)
+        {
+            return diagonal_matrix(n, value_type(1));
+        }
+
         diagonal_matrix()
         {
         }
