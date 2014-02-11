@@ -36,4 +36,6 @@ int main(int argc, char **argv) {
   alps::RealObsevaluator two = obs["two"];
   make_obs(4.0 / two);
   std::cout << obs;
+
+  return 0;
 }
