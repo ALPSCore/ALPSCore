@@ -188,6 +188,12 @@ namespace alps {
         }
 #endif
         
+        template <class Archive>
+        void serialize(Archive & ar, unsigned int version)
+        {
+            ar & data_;
+        }
+        
         friend void swap(diagonal_matrix & x, diagonal_matrix & y)
         {
             swap(x.data_, y.data_);
