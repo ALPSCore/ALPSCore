@@ -3,7 +3,7 @@
 #      (See accompanying file LICENSE_1_0.txt or copy at
 #          http://www.boost.org/LICENSE_1_0.txt)
 
-file(WRITE tmp_${cmd}.sh "PYTHONPATH=\$PYTHONPATH:${binarydir}/lib/pyalps:${sourcedir}/lib ${python_interpreter} ${cmddir}/${cmd}")
+file(WRITE tmp_${cmd}.sh "PYTHONPATH=\$PYTHONPATH:${pythonpath} ${python_interpreter} ${cmddir}/${cmd}")
 
 find_file(input_path ${input}.input ${binarydir} ${sourcedir})
 find_file(output_path ${output}.output ${binarydir} ${sourcedir})

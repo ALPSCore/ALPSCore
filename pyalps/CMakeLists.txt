@@ -22,8 +22,9 @@ if (ALPS_BUILD_PYTHON AND BUILD_SHARED_LIBS)
                 -Dcmd=${name}.py
                 -Dinput=${name}
                 -Doutput=${name}
-                -Dsourcedir=${PROJECT_SOURCE_DIR}
-                -Dbinarydir=${PROJECT_BINARY_DIR}
+                -Dpythonpath=${PROJECT_BINARY_DIR}/lib/pyalps:${PROJECT_SOURCE_DIR}/lib
+                -Dsourcedir=${CMAKE_CURRENT_SOURCE_DIR}
+                -Dbinarydir=${CMAKE_CURRENT_BINARY_DIR}
                 -Dcmddir=${CMAKE_CURRENT_SOURCE_DIR}
                 -P ${CMAKE_CURRENT_SOURCE_DIR}/run_python_test.cmake
         )
