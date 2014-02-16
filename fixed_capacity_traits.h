@@ -31,19 +31,10 @@
 #define ALPS_FIXED_CAPACITY_TRAITS_H
 
 #include <cstddef>
+#include <queue>
+#include <stack>
 #include <boost/config.hpp>
 #include <alps/fixed_capacity_fwd.h>
-
-namespace std {
-
-// forward declarations of std::stack, std::queue and std::priority_queue ---//
-
-template<class T, class C> class stack;
-template<class T, class C> class queue;
-template<class T, class C, class Cmp> class priority_queue;
-
-} // namespace std
-
 
 namespace alps {
 
