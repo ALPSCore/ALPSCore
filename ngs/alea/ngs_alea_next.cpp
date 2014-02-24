@@ -284,23 +284,89 @@ BOOST_AUTO_TEST_CASE(ngs_alea_next) {
 	std::cout << "> \"vector\" * \"vector\":  " << results["vector"] * results["vector"] << std::endl;
 	std::cout << "> \"vector\" / \"vector\":  " << results["vector"] / results["vector"] << std::endl;
 
-	// std::cout << "> \"vector\" + \"vector\":  " << results["vector"] + 1 << std::endl;
-	
-	std::cout << "> sin(\"vector\"):  " << sin(results["vector"]) << std::endl;
-	std::cout << "> cos(\"vector\"):  " << cos(results["vector"]) << std::endl;
-	std::cout << "> tan(\"vector\"):  " << tan(results["vector"]) << std::endl;
-	std::cout << "> sinh(\"vector\"): " << sinh(results["vector"]) << std::endl;
-	std::cout << "> cosh(\"vector\"): " << cosh(results["vector"]) << std::endl;
-	std::cout << "> tanh(\"vector\"): " << tanh(results["vector"]) << std::endl;
-	std::cout << "> asin(\"vector\"): " << asin(results["vector"]) << std::endl;
-	std::cout << "> acos(\"vector\"): " << acos(results["vector"]) << std::endl;
-	std::cout << "> atan(\"vector\"): " << atan(results["vector"]) << std::endl;
-	std::cout << "> abs(\"vector\"):  " << abs(results["vector"]) << std::endl;
-	std::cout << "> sqrt(\"vector\"): " << sqrt(results["vector"]) << std::endl;
-	std::cout << "> log(\"vector\"):  " << log(results["vector"]) << std::endl;
-	std::cout << "> sq(\"vector\"):   " << sq(results["vector"]) << std::endl;
-	std::cout << "> cb(\"vector\"):   " << cb(results["vector"]) << std::endl;
-	std::cout << "> cbrt(\"vector\"): " << cbrt(results["vector"]) << std::endl << std::endl;
+	// std::cout << "> \"vector\" + 1:  " << results["vector"] + 1 << std::endl;
+	// std::cout << "> \"vector\" - 1:  " << results["vector"] - 1 << std::endl;
+	// std::cout << "> \"vector\" * 1:  " << results["vector"] * 1 << std::endl;
+	// std::cout << "> \"vector\" / 1:  " << results["vector"] / 1 << std::endl;
+	std::cout << std::endl;
+
+	{
+		std::cout << "> sin(\"vector\"):  " << sin(results["vector"]) << std::endl;
+	    std::vector<double> required(3, std::sin(6.2));
+	    BOOST_REQUIRE(std::equal(required.begin(), required.end(), mean(sin(results["vector"]).get<std::vector<double> >()).begin()));
+	}
+	{
+		std::cout << "> cos(\"vector\"):  " << cos(results["vector"]) << std::endl;
+	    std::vector<double> required(3, std::cos(6.2));
+	    BOOST_REQUIRE(std::equal(required.begin(), required.end(), mean(cos(results["vector"]).get<std::vector<double> >()).begin()));
+	}
+	{
+		std::cout << "> tan(\"vector\"):  " << tan(results["vector"]) << std::endl;
+	    std::vector<double> required(3, std::tan(6.2));
+	    BOOST_REQUIRE(std::equal(required.begin(), required.end(), mean(tan(results["vector"]).get<std::vector<double> >()).begin()));
+	}
+	{
+		std::cout << "> sinh(\"vector\"):  " << sinh(results["vector"]) << std::endl;
+	    std::vector<double> required(3, std::sinh(6.2));
+	    BOOST_REQUIRE(std::equal(required.begin(), required.end(), mean(sinh(results["vector"]).get<std::vector<double> >()).begin()));
+	}
+	{
+		std::cout << "> cosh(\"vector\"):  " << cosh(results["vector"]) << std::endl;
+	    std::vector<double> required(3, std::cosh(6.2));
+	    BOOST_REQUIRE(std::equal(required.begin(), required.end(), mean(cosh(results["vector"]).get<std::vector<double> >()).begin()));
+	}
+	{
+		std::cout << "> tanh(\"vector\"):  " << tanh(results["vector"]) << std::endl;
+	    std::vector<double> required(3, std::tanh(6.2));
+	    BOOST_REQUIRE(std::equal(required.begin(), required.end(), mean(tanh(results["vector"]).get<std::vector<double> >()).begin()));
+	}
+	// TODO: make asin(1. / results["vector"]) ...
+	// {
+	// 	std::cout << "> asin(\"vector\"):  " << asin(results["vector"]) << std::endl;
+	//     std::vector<double> required(3, std::asin(6.2));
+	//     BOOST_REQUIRE(std::equal(required.begin(), required.end(), mean(asin(results["vector"]).get<std::vector<double> >()).begin()));
+	// }
+	// {
+	// 	std::cout << "> acos(\"vector\"):  " << acos(results["vector"]) << std::endl;
+	//     std::vector<double> required(3, std::acos(6.2));
+	//     BOOST_REQUIRE(std::equal(required.begin(), required.end(), mean(acos(results["vector"]).get<std::vector<double> >()).begin()));
+	// }
+	// {
+	// 	std::cout << "> atan(\"vector\"):  " << atan(results["vector"]) << std::endl;
+	//     std::vector<double> required(3, std::atan(6.2));
+	//     BOOST_REQUIRE(std::equal(required.begin(), required.end(), mean(atan(results["vector"]).get<std::vector<double> >()).begin()));
+	// }
+	{
+		std::cout << "> abs(\"vector\"):  " << abs(results["vector"]) << std::endl;
+	    std::vector<double> required(3, std::abs(6.2));
+	    BOOST_REQUIRE(std::equal(required.begin(), required.end(), mean(abs(results["vector"]).get<std::vector<double> >()).begin()));
+	}
+	{
+		std::cout << "> sqrt(\"vector\"):  " << sqrt(results["vector"]) << std::endl;
+	    std::vector<double> required(3, std::sqrt(6.2));
+	    BOOST_REQUIRE(std::equal(required.begin(), required.end(), mean(sqrt(results["vector"]).get<std::vector<double> >()).begin()));
+	}
+	{
+		std::cout << "> log(\"vector\"):  " << log(results["vector"]) << std::endl;
+	    std::vector<double> required(3, std::log(6.2));
+	    BOOST_REQUIRE(std::equal(required.begin(), required.end(), mean(log(results["vector"]).get<std::vector<double> >()).begin()));
+	}
+	{
+		std::cout << "> sq(\"vector\"):  " << sq(results["vector"]) << std::endl;
+	    std::vector<double> required(3, 6.2 * 6.2);
+	    BOOST_REQUIRE(std::equal(required.begin(), required.end(), mean(sq(results["vector"]).get<std::vector<double> >()).begin()));
+	}
+	{
+		std::cout << "> cb(\"vector\"):  " << cb(results["vector"]) << std::endl;
+	    std::vector<double> required(3, 6.2 * 6.2 * 6.2);
+	    BOOST_REQUIRE(std::equal(required.begin(), required.end(), mean(cb(results["vector"]).get<std::vector<double> >()).begin()));
+	}
+	{
+		std::cout << "> cbrt(\"vector\"):  " << cbrt(results["vector"]) << std::endl;
+	    std::vector<double> required(3, std::pow(6.2, 1./3.));
+	    BOOST_REQUIRE(std::equal(required.begin(), required.end(), mean(cbrt(results["vector"]).get<std::vector<double> >()).begin()));
+	}
+	std::cout << std::endl;
 
 	{
 		alps::hdf5::archive ar("test.h5", "w");

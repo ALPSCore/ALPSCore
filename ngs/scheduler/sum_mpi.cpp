@@ -110,7 +110,14 @@ int main(int argc, char *argv[]) {
             alps::results_type<alps::mcmpiadapter<my_sim_type> >::type results = collect_results(my_sim);
             std::cout << "e^(-x*x): " << results["SValue"] << std::endl;
             std::cout << "e^(-x*x): " << results["VValue"] << std::endl;
-            // std::cout << results["Value"] << " " << 2. * results["Value"] / 2.  << std::endl;
+            using std::sin;
+            std::cout << results["SValue"] + 1 << std::endl;
+            std::cout << results["SValue"] + results["SValue"] << std::endl;
+            // std::cout << results["SValue"] << " " << results["SValue"] * results["SValue"] << sin(results["SValue"]) << std::endl;
+            // std::cout << results["SValue"] * results["SValue"] << std::endl;
+            // std::cout << << 2. * results["SValue"] / 2. << std::endl;
+            // std::cout << sin(results["SValue"]) << std::endl;
+            // std::cout << results["VValue"] << " " << 2. * results["VValue"] / 2. << sin(results["SValue"]) << std::endl;
             save_results(results, params, options.output_file, "/simulation/results");
         } else
             collect_results(my_sim);

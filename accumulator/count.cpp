@@ -31,11 +31,17 @@
 #error "This test only works with new alea library"
 #endif
 
+#define BOOST_TEST_MODULE alps::ngs::accumulator
+
 #include <alps/ngs/accumulator/accumulator.hpp>
 
-#include <cassert>
+#ifndef ALPS_LINK_BOOST_TEST
+#	include <boost/test/included/unit_test.hpp>
+#else
+#	include <boost/test/unit_test.hpp>
+#endif
 
-int main() {
+BOOST_AUTO_TEST_CASE(count_feature) {
 
 	alps::accumulator::accumulator_set measurements;
 	measurements << alps::accumulator::RealObservable("scalar")
@@ -43,14 +49,12 @@ int main() {
 
 	for (int i = 1; i < 1001; ++i) {
 		measurements["scalar"] << i;
-		assert(count(measurements["scalar"]) == i);
+		BOOST_REQUIRE(count(measurements["scalar"]) == i);
 		measurements["vector"] << std::vector<double>(10, i);
-		assert(count(measurements["vector"]) == i);
+		BOOST_REQUIRE(count(measurements["vector"]) == i);
 	}
 
 	alps::accumulator::result_set results(measurements);
-	assert(count(results["scalar"]) == 1000);
-	assert(count(results["vector"]) == 1000);
-
-    return EXIT_SUCCESS;
+	BOOST_REQUIRE(count(results["scalar"]) == 1000);
+	BOOST_REQUIRE(count(results["vector"]) == 1000);
 }

@@ -3,6 +3,7 @@
 #      (See accompanying file LICENSE_1_0.txt or copy at
 #          http://www.boost.org/LICENSE_1_0.txt)
 
+add_subdirectory(accumulator)
 add_subdirectory(alea)
 add_subdirectory(fixed_capacity)
 add_subdirectory(graph)
