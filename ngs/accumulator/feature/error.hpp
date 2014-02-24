@@ -289,9 +289,9 @@ namespace alps {
                     #undef NUMERIC_FUNCTION_OPERATOR
 */
                     #define NUMERIC_FUNCTION_IMPLEMENTATION(FUNCTION_NAME, ERROR)    \
-                        void FUNCTION_NAME () {                                        \
+                        void FUNCTION_NAME () {                                      \
                             B:: FUNCTION_NAME ();                                    \
-                            NUMERIC_FUNCTION_USEING                                    \
+                            NUMERIC_FUNCTION_USEING                                  \
                             m_error = ERROR ;                                        \
                         }
 
