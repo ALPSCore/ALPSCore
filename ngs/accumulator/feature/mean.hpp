@@ -229,18 +229,7 @@ namespace alps {
                     }
 
                     // TODO: implement -=, *=, /=
-                    template<typename U> void operator+=(U const & arg) {
-
-                        using alps::ngs::numeric::operator+;
-                        using alps::ngs::numeric::operator*;
-                        using alps::ngs::numeric::operator/;
-
-                        // TODO: make library for scalar type
-                        typename alps::hdf5::scalar_type<mean_type>::type cnt = B::count(), argcnt = arg.count();
-
-                        m_mean = (cnt * m_mean + argcnt * arg.mean()) / (cnt + argcnt);
-                        B::operator+=(arg);
-                    }
+                    template<typename U> void operator+=(U const & arg) { augadd(arg); }
 
 /*
                     #define NUMERIC_FUNCTION_OPERATOR(OP_NAME, OP_USING, OP_SYMBOL)    \
@@ -254,7 +243,7 @@ namespace alps {
                             m_mean OP_SYMBOL arg;                                    \
                         }
 
-                    NUMERIC_FUNCTION_OPERATOR(addeq, operator+=, +=)
+                    NUMERIC_FUNCTION_OPERATOR(augadd, operator+=, +=)
                     NUMERIC_FUNCTION_OPERATOR(subeq, operator-=, -=)
                     NUMERIC_FUNCTION_OPERATOR(muleq, operator*=, *=)
                     NUMERIC_FUNCTION_OPERATOR(diveq, operator/=, /=)
@@ -301,6 +290,32 @@ namespace alps {
                 private:
 
                     mean_type m_mean;
+
+                    template<typename U> void augadd(U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {
+                        using alps::ngs::numeric::operator+;
+                        using alps::ngs::numeric::operator*;
+                        using alps::ngs::numeric::operator/;
+
+                        // TODO: make library for scalar type
+                        typename alps::hdf5::scalar_type<mean_type>::type cnt = B::count(), argcnt = arg.count();
+
+                        m_mean = (cnt * m_mean + argcnt * arg.mean()) / (cnt + argcnt);
+                        B::operator+=(arg);
+                    }
+                    template<typename U> void augadd(U const & arg, typename boost::enable_if<boost::mpl::and_<
+                          boost::is_scalar<U>
+                        , typename has_operator_add<mean_type, U>::type
+                    >, int>::type = 0) {
+                        using alps::ngs::numeric::operator+;
+                        m_mean = m_mean + arg;
+                        B::operator+=(arg);
+                    }
+                    template<typename U> void augadd(U const & arg, typename boost::enable_if<boost::mpl::and_<
+                          boost::is_scalar<U>
+                        , boost::mpl::not_<typename has_operator_add<mean_type, U>::type>
+                    >, int>::type = 0) {
+                        throw std::runtime_error(std::string(typeid(mean_type).name()) + " has no operator + with " + typeid(U).name() + ALPS_STACKTRACE);
+                    }
 
                     // #define NUMERIC_FUNCTION_OPERATOR_IMPL(OP_NAME, OP_USING, OP_SYMBOL)                    \
                     //     template<typename U> void OP_NAME ## _impl(typename boost::disable_if<                \

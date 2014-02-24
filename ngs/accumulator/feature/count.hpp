@@ -119,10 +119,7 @@ namespace alps {
                     }
 
                     // TODO: implement -=, *=, /=
-                    template<typename U> void operator+=(U const & arg) {
-                        m_count += arg.count();
-                        B::operator+=(arg);
-                    }
+                    template<typename U> void operator+=(U const & arg) { augadd(arg); }
                     // TODO: how we implement operators
 
                     inline void reset() {
@@ -130,6 +127,15 @@ namespace alps {
                     }
 
                 private:
+
+                    template<typename U> void augadd(U const & arg, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {
+                        B::operator+=(arg);
+                    }
+                    template<typename U> void augadd(U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {
+                        m_count += arg.count();
+                        B::operator+=(arg);
+                    }
+
                     count_type m_count;
             };
 

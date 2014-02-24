@@ -90,6 +90,11 @@ namespace alps {
                 virtual void operator*=(base_wrapper const &) = 0;
                 virtual void operator/=(base_wrapper const &) = 0;
 
+                virtual void operator+=(double) = 0;
+                virtual void operator-=(double) = 0;
+                virtual void operator*=(double) = 0;
+                virtual void operator/=(double) = 0;
+
                 virtual void sin() = 0;
                 virtual void cos() = 0;
                 virtual void tan() = 0;
@@ -288,6 +293,9 @@ namespace alps {
                 #define OPERATOR_PROXY(AUGOPNAME, AUGOP)            \
                     void AUGOPNAME(base_wrapper const & arg) {      \
                         this->m_data AUGOP arg.extract<A>();        \
+                    }                                               \
+                    void AUGOPNAME(double arg) {                    \
+                        this->m_data AUGOP arg;                     \
                     }
                 OPERATOR_PROXY(operator+=, +=)
                 OPERATOR_PROXY(operator-=, -=)
@@ -336,13 +344,26 @@ namespace alps {
                     throw std::runtime_error("The Operator += is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
                 }
                 void operator-=(base_wrapper const &) {
-                    throw std::runtime_error("The Operator += is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
+                    throw std::runtime_error("The Operator -= is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
                 }
                 void operator*=(base_wrapper const &) {
-                    throw std::runtime_error("The Operator += is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
+                    throw std::runtime_error("The Operator *= is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
                 }
                 void operator/=(base_wrapper const &) {
+                    throw std::runtime_error("The Operator /= is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
+                }
+
+                void operator+=(double) {
                     throw std::runtime_error("The Operator += is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
+                }
+                void operator-=(double) {
+                    throw std::runtime_error("The Operator -= is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
+                }
+                void operator*=(double) {
+                    throw std::runtime_error("The Operator *= is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
+                }
+                void operator/=(double) {
+                    throw std::runtime_error("The Operator /= is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
                 }
 
                 #define FUNCTION_PROXY(FUN)                                                                                                           \

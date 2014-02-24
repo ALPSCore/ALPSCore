@@ -50,6 +50,13 @@ namespace alps {
             typedef boost::integral_constant<bool, sizeof(char) == sizeof(check<T>(0))> type;
         };
 
+        template<typename T, typename U> struct has_operator_add {
+            template<typename R> static char helper(R);
+            template<typename C, typename D> static char check(boost::integral_constant<std::size_t, sizeof(helper(C() + D()))>*);
+            template<typename C, typename D> static double check(...);
+            typedef boost::integral_constant<bool, sizeof(char) == sizeof(check<T, U>(0))> type;
+        };
+
         template<typename T> struct value_type {
             typedef typename T::value_type type;
         };

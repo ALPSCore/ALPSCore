@@ -230,17 +230,8 @@ namespace alps {
                     }
 
                     // TODO: implement -=, *=, /=
-                    template<typename U> void operator+=(U const & arg) {
-
-                        using alps::numeric::sq;
-                        using std::sqrt;
-                        using alps::ngs::numeric::sqrt;
-
-                        using alps::ngs::numeric::operator+;
-
-                        m_error = sqrt(sq(m_error) + sq(arg.error()));
-                        B::operator+=(arg);
-                    }
+                    // TODO: implement operators with double
+                    template<typename U> void operator+=(U const & arg) { augadd(arg); }
 
                     #define NUMERIC_FUNCTION_USEING                                 \
                         using alps::numeric::sq;                                    \
@@ -326,6 +317,20 @@ namespace alps {
                 private:
 
                     error_type m_error;
+
+                    template<typename U> void augadd(U const & arg, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {
+                        B::operator+=(arg);
+                    }
+                    template<typename U> void augadd(U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {
+                        using alps::numeric::sq;
+                        using std::sqrt;
+                        using alps::ngs::numeric::sqrt;
+
+                        using alps::ngs::numeric::operator+;
+
+                        m_error = sqrt(sq(m_error) + sq(arg.error()));
+                        B::operator+=(arg);
+                    }
 
                     // #define NUMERIC_FUNCTION_OPERATOR_IMPL(OP_NAME, OP_T, OP_ARG)                            \
                     //     template<typename U> void OP_NAME ## _impl(typename boost::disable_if<                \

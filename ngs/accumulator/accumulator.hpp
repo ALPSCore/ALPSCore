@@ -128,6 +128,15 @@ namespace alps {
                         result_wrapper clone(*this);                                    \
                         clone AUGOP arg;                                                \
                         return clone;                                                   \
+                    }                                                                   \
+                    result_wrapper & AUGOPNAME (double arg) {                           \
+                        *this->m_base AUGOP arg;                                        \
+                        return *this;                                                   \
+                    }                                                                   \
+                    result_wrapper OPNAME (double arg) {                                \
+                        result_wrapper clone(*this);                                    \
+                        clone AUGOP arg;                                                \
+                        return clone;                                                   \
                     }
                 OPERATOR_PROXY(operator+, operator+=, +=)
                 OPERATOR_PROXY(operator-, operator-=, -=)
@@ -237,6 +246,12 @@ namespace alps {
                 boost::uint64_t count() const {
                     return m_base->count();
                 }
+
+                // TODO: add all member functions
+                template<typename T> typename mean_type<result_type_wrapper<T> >::type mean() const { return get<T>().mean(); }
+                template<typename T> typename error_type<result_type_wrapper<T> >::type error() const { return get<T>().error(); }
+                template<typename T> typename covariance_type<T>::type accurate_covariance(result_wrapper const & rhs) const { return typename covariance_type<T>::type(); } // TODO: implement!
+                template<typename T> typename covariance_type<T>::type covariance(result_wrapper const & rhs) const { return typename covariance_type<T>::type(); } // TODO: implement!
 
                 void save(hdf5::archive & ar) const {
                     ar[""] = *m_base;
