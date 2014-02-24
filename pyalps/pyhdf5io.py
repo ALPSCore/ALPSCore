@@ -51,6 +51,9 @@ ar["/string"] = "str"
 ar["/stringlist"] = ['a','list','of','strings']
 ar["/inhomogenious"] = [[1, 2, 3], a, "gurke", [[a, 2, 3], ["x", complex(1, 1)]]]
 ar["/inhomogenious2"] = [[[1, 2], [3, 4]], [[1, 2], [3, 4]], [[1, 2], [3, 4]], [[1, 2], [3]]]
+ar["/inhomogenious3"] = [np.arange(3), np.arange(5)]
+ar["/inhomogenious4"] = [np.arange(3), 10 * np.arange(3)]
+ar["/inhomogenious5"] = [range(3), range(5), range(3)]
 ar["/numpylist1"] = [np.arange(5), np.arange(5,10)]
 ar["/numpylist2"] = [np.arange(5), np.arange(10)]
 
@@ -76,6 +79,9 @@ s5 = ar["/string"]
 ls = ar["/stringlist"]
 i1 = ar["/inhomogenious"]
 i2 = ar["/inhomogenious2"]
+i3 = ar["/inhomogenious2"]
+i4 = ar["/inhomogenious2"]
+i5 = ar["/inhomogenious2"]
 nl1 = ar["/numpylist1"]
 nl2 = ar["/numpylist2"]
 
@@ -97,6 +103,9 @@ print repr(s4)
 print repr(s5)
 print repr(i1)
 print repr(i2)
+print repr(i3)
+print repr(i4)
+print repr(i5)
 print repr(nl1)
 print repr(nl2)
 

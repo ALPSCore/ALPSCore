@@ -284,10 +284,27 @@ BOOST_AUTO_TEST_CASE(ngs_alea_next) {
 	std::cout << "> \"vector\" * \"vector\":  " << results["vector"] * results["vector"] << std::endl;
 	std::cout << "> \"vector\" / \"vector\":  " << results["vector"] / results["vector"] << std::endl;
 
-	// std::cout << "> \"vector\" + 1:  " << results["vector"] + 1 << std::endl;
-	// std::cout << "> \"vector\" - 1:  " << results["vector"] - 1 << std::endl;
-	// std::cout << "> \"vector\" * 1:  " << results["vector"] * 1 << std::endl;
-	// std::cout << "> \"vector\" / 1:  " << results["vector"] / 1 << std::endl;
+	{
+		std::cout << "> \"vector\" + 1:  " << results["vector"] + 1 << std::endl;
+	    std::vector<double> required(3, 6.2 + 1);
+	    BOOST_REQUIRE(std::equal(required.begin(), required.end(), mean((results["vector"] + 1).get<std::vector<double> >()).begin()));
+	}
+	// {
+	// 	std::cout << "> \"vector\" - 1:  " << results["vector"] - 1 << std::endl;
+	//     std::vector<double> required(3, 6.2 - 1);
+	//     BOOST_REQUIRE(std::equal(required.begin(), required.end(), mean(results["vector"] - 1).get<std::vector<double> >()).begin()));
+	// }
+	// {
+	// 	std::cout << "> \"vector\" * 2:  " << results["vector"] * 2 << std::endl;
+	//     std::vector<double> required(3, 6.2 * 2);
+	//     BOOST_REQUIRE(std::equal(required.begin(), required.end(), mean((results["vector"] * 2).get<std::vector<double> >()).begin()));
+	// }
+	// {
+	// 	std::cout << "> \"vector\" / 2:  " << results["vector"] / 2 << std::endl;
+	//     std::vector<double> required(3, 6.2 / 2);
+	//     BOOST_REQUIRE(std::equal(required.begin(), required.end(), mean((results["vector"] / 2).get<std::vector<double> >()).begin()));
+	// }
+
 	std::cout << std::endl;
 
 	{
