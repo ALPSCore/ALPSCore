@@ -30,6 +30,7 @@
 #define ALPS_NGS_ACCUMULATOR_FEATURE_HPP
 
 #include <alps/ngs/config.hpp>
+#include <alps/ngs/numeric.hpp>
 
 #include <boost/utility.hpp>
 
@@ -50,12 +51,16 @@ namespace alps {
             typedef boost::integral_constant<bool, sizeof(char) == sizeof(check<T>(0))> type;
         };
 
-        template<typename T, typename U> struct has_operator_add {
-            template<typename R> static char helper(R);
-            template<typename C, typename D> static char check(boost::integral_constant<std::size_t, sizeof(helper(C() + D()))>*);
-            template<typename C, typename D> static double check(...);
-            typedef boost::integral_constant<bool, sizeof(char) == sizeof(check<T, U>(0))> type;
-        };
+        namespace detail {
+            using ::alps::ngs::numeric::operator+;
+            template<typename T, typename U> struct has_operator_add {
+                template<typename R> static char helper(R);
+                template<typename C, typename D> static char check(boost::integral_constant<std::size_t, sizeof(helper(C() + D()))>*);
+                template<typename C, typename D> static double check(...);
+                typedef boost::integral_constant<bool, sizeof(char) == sizeof(check<T, U>(0))> type;
+            };            
+        }
+        template<typename T, typename U> struct has_operator_add : public detail::has_operator_add<T, U> {};
 
         template<typename T> struct value_type {
             typedef typename T::value_type type;

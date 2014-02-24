@@ -120,7 +120,9 @@ namespace alps {
 
                     // TODO: implement -=, *=, /=
                     template<typename U> void operator+=(U const & arg) { augadd(arg); }
-                    // TODO: how we implement operators
+                    template<typename U> void operator-=(U const & arg) { augsub(arg); }
+                    template<typename U> void operator*=(U const & arg) { augmul(arg); }
+                    template<typename U> void operator/=(U const & arg) { augdiv(arg); }
 
                     inline void reset() {
                         throw std::runtime_error("A result cannot be reseted" + ALPS_STACKTRACE);
@@ -132,8 +134,33 @@ namespace alps {
                         B::operator+=(arg);
                     }
                     template<typename U> void augadd(U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {
+                        // TODO: what do we do here?
                         m_count += arg.count();
                         B::operator+=(arg);
+                    }
+
+                    template<typename U> void augsub(U const & arg, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {
+                        B::operator-=(arg);
+                    }
+                    template<typename U> void augsub(U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {
+                        // TODO: what do we do here?
+                        B::operator-=(arg);
+                    }
+
+                    template<typename U> void augmul(U const & arg, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {
+                        B::operator*=(arg);
+                    }
+                    template<typename U> void augmul(U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {
+                        // TODO: what do we do here?
+                        B::operator*=(arg);
+                    }
+
+                    template<typename U> void augdiv(U const & arg, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {
+                        B::operator/=(arg);
+                    }
+                    template<typename U> void augdiv(U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {
+                        // TODO: what do we do here?
+                        B::operator/=(arg);
                     }
 
                     count_type m_count;
