@@ -245,7 +245,7 @@ namespace detail {
                 max_degree_ = (std::max)(max_degree_,degree(*v_it, g));
 
             // Analyse edges
-            edge_colors_ = get_edge_color_list(g);
+            edge_colors_ = get_color_list(alps::edge_type_t(),g);
         }
 
         void initialize()
