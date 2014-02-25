@@ -55,7 +55,7 @@ class matrix_element_iterator : public boost::iterator_facade<
 #ifndef ALPS_DISABLE_MATRIX_ELEMENT_ITERATOR_WARNING
             std::cerr<<"WARNING: matrix_element_iterators are very slow!"<<std::endl;
             std::cerr<<"You should use strided_iterators (eg. row_iterator) instead, unless you really don't care."<<std::endl;
-            std::cerr<<"To disable this warning compile with -DDISABLE_MATRIX_ELEMENT_ITERATOR_WARNING ."<<std::endl;
+            std::cerr<<"To disable this warning compile with -DALPS_DISABLE_MATRIX_ELEMENT_ITERATOR_WARNING ."<<std::endl;
 #endif //ALPS_DISABLE_MATRIX_ELEMENT_ITERATOR_WARNING
         }
 
