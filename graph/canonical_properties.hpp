@@ -48,6 +48,7 @@
 #include <boost/container/flat_set.hpp>
 
 #include <alps/graph/canonical_properties_traits.hpp>
+#include <alps/graph/utils.hpp>
 
 #include <map>
 #include <vector>
@@ -56,45 +57,472 @@
 namespace alps {
     namespace graph {
         namespace detail {
+            namespace label {
+                struct plain_label  : public graph_label_matrix_type { };
+                struct vertex_label : public graph_label_matrix_type { };
+                struct edge_label   : public graph_label_matrix_type { };
+                struct hidden_vertex_label : public graph_label_matrix_type { };
+                struct hidden_edge_label   : public graph_label_matrix_type { };
 
-            template <typename Graph>
-            struct internal_graph_label_impl :  boost::tuple<
-                      // #vertices * (#vertices + 1) / 2 bits: triangular adjacency matrix
-                      graph_label_matrix_type
-                      // #edge * (#edge colors) bits: edge vs color matrix
-                    , graph_label_matrix_type
-                      // edge color list
-                    , graph_label_color_vector<typename has_property<alps::edge_type_t,Graph>::edge_property_type>
-                    , graph_label_matrix_type
-                >
-            {
-            };
+                namespace helper {
+                    template <typename Graph, bool VertexColors, bool VertexHiddenLabel, bool EdgeColors, bool EdgeHiddenLabel>
+                    struct internal_graph_label_helper;
+
+                    template <typename Graph>
+                    struct internal_graph_label_helper<Graph, false, false, false, false>
+                    {
+                        typedef boost::tuple< plain_label > type;
+                    };
+
+                    template <typename Graph>
+                    struct internal_graph_label_helper<Graph, true, false, false, false>
+                    {
+                        typedef boost::tuple< plain_label, vertex_label > type;
+                    };
+
+                    template <typename Graph>
+                    struct internal_graph_label_helper<Graph, false, false, true, false>
+                    {
+                        typedef boost::tuple< plain_label, edge_label > type;
+                    };
+
+                    template <typename Graph>
+                    struct internal_graph_label_helper<Graph, false, false, true, true>
+                    {
+                        typedef boost::tuple< plain_label, edge_label, hidden_edge_label > type;
+                    };
+
+                    template <typename Graph>
+                    struct internal_graph_label_helper<Graph, true, false, true, false>
+                    {
+                        typedef boost::tuple< plain_label, vertex_label, edge_label > type;
+                    };
+
+                    /* NOT TESTED YET
+                    template <typename Graph>
+                    struct internal_graph_label_helper<Graph, true, false, true, true>
+                    {
+                        typedef boost::tuple< plain_label, vertex_label, edge_label, hidden_edge_label> type;
+                    };
+
+                    template <typename Graph>
+                    struct internal_graph_label_helper<Graph, true, true, false, false>
+                    {
+                        typedef boost::tuple< plain_label, vertex_label, hidden_vertex_label > type;
+                    };
+
+                    template <typename Graph>
+                    struct internal_graph_label_helper<Graph, true, true, true, false>
+                    {
+                        typedef boost::tuple< plain_label, vertex_label, hidden_vertex_label, edge_label > type;
+                    };
+
+                    template <typename Graph>
+                    struct internal_graph_label_helper<Graph, true, true, true, true>
+                    {
+                        typedef boost::tuple< plain_label, vertex_label, hidden_vertex_label, edge_label, hidden_edge_label> type;
+                    };
+                    */
+                } // end namespace helper
+
+                namespace get_part_helper {
+                    template <typename T, typename T2, typename Tuple, int N>
+                    struct position_helper
+                    {
+                        BOOST_STATIC_CONSTANT(int, value = (position_helper<T, typename ::boost::tuples::element<N+1,Tuple>::type, Tuple, N+1>::value));
+                    };
+
+                    template <typename T, typename Tuple, int N>
+                    struct position_helper<T,T,Tuple,N>
+                    {
+                        BOOST_STATIC_CONSTANT(int, value = N);
+                    };
+
+                    template <typename T, typename T2, typename Tuple>
+                    struct position_helper<T,T2,Tuple,5>
+                    {
+                        // not found
+                    };
+
+                    template <typename T, typename Tuple>
+                    struct position
+                    {
+                        BOOST_STATIC_CONSTANT(int, value = (position_helper<T, typename ::boost::tuples::element<0,Tuple>::type, Tuple, 0>::value) );
+                    };
+                } // end get_part_helper
+
+                template <typename T,typename Tuple>
+                T& get_part(Tuple & tpl)
+                {
+                    return get< get_part_helper::position<T,Tuple>::value >(tpl);
+                }
+
+                template <typename T,typename Tuple>
+                T const& get_part(Tuple const& tpl)
+                {
+                    return get< get_part_helper::position<T,Tuple>::value >(tpl);
+                }
+
+                template <typename Graph, bool VertexHiddenLabel, bool EdgeHiddenLabel>
+                struct internal_graph_label
+                {
+                    typedef typename helper::internal_graph_label_helper<
+                          Graph
+                        , has_property<alps::vertex_type_t,Graph>::vertex_property
+                        , VertexHiddenLabel // e.g. for vertex color symmetries
+                        , has_property<alps::edge_type_t,Graph>::edge_property
+                        , EdgeHiddenLabel   // e.g. for edge color symmetries
+                        >::type type;
+                };
 
 
-            template <typename Graph, bool EdgeColorSymmetries>
-            struct internal_graph_label
-            {
-                typedef typename graph_label<Graph>::type type;
-            };
+                //
+                // Label policy classes
+                //
 
-            template <typename Graph>
-            struct internal_graph_label<Graph,true>
-            {
-                typedef internal_graph_label_impl<Graph> type;
-            };
+                // The default label policy (which implements the minimal interface)
+                struct no_coloring_policy
+                {
+                    template <typename Graph, bool EdgeVertex>
+                    class impl {
+                      public:
+                        BOOST_STATIC_CONSTANT(bool, needs_hidden_label = false );
+                        impl(Graph const&) {}
+                        template <typename InternalLabel>
+                        void update_graph_label( InternalLabel &, typename partition_type<Graph>::type const &, Graph const &) const {}
+                        template <typename FinalLabel, typename InternalLabel>
+                        void finalize_graph_label( FinalLabel&, InternalLabel const &, typename partition_type<Graph>::type const &, Graph const &) const {}
+                    };
+                };
 
-            template <typename Graph, typename GraphLabel>
-            typename graph_label<Graph>::type graph_label_from_internal(GraphLabel const& igl, Graph const&)
-            {
-                return igl;
+                struct simple_vertex_coloring_policy
+                {
+                    template <typename Graph, bool EdgeVertex>
+                    class impl {
+                      public:
+                        BOOST_STATIC_CONSTANT(bool, needs_hidden_label = false );
+                        typedef Graph                                                                          graph_type;
+                        typedef typename boost::property_map<graph_type,alps::vertex_type_t>::type::value_type color_type;
+
+                        impl(graph_type const& g)
+                        : colors_(get_color_list(alps::vertex_type_t(),g))
+                        {
+                        }
+
+                        template <typename InternalLabel>
+                        void update_graph_label(InternalLabel & l, typename partition_type<graph_type>::type const & pi, graph_type const & G) const {
+                            assert(( colors_ == get_color_list(alps::vertex_type_t(),G) ));
+                            get_part<vertex_label>(l).clear();
+                            get_part<vertex_label>(l).resize(num_vertices(G) * colors_.size());
+                            std::size_t index = 0;
+                            for (typename partition_type<graph_type>::type::const_iterator jt = pi.begin(); jt != pi.end(); ++jt)
+                                for (typename partition_type<graph_type>::type::value_type::const_iterator kt = jt->begin(); kt != jt->end(); ++kt)
+                                    get_part<vertex_label>(l).set((std::find(colors_.begin(), colors_.end(), get(alps::vertex_type_t(), G)[*kt]) - colors_.begin()) * num_vertices(G) + index++);
+                        }
+
+                        template <typename FinalLabel, typename InternalLabel>
+                        void finalize_graph_label(FinalLabel & fl, InternalLabel const & internal_label, typename partition_type<graph_type>::type const & pi, graph_type const & G) const {
+                            using boost::get;
+                            get<1>(fl) = get_part<vertex_label>(internal_label);
+                            get<2>(fl) = colors_;
+                        }
+                      private:
+                        std::vector<color_type> colors_;
+                    };
+                };
+
+                struct simple_edge_coloring_policy
+                {
+                    template <typename Graph, bool EdgeVertex>
+                    class impl {
+                      public:
+                        BOOST_STATIC_CONSTANT(bool, needs_hidden_label = false );
+                        typedef Graph                                                                        graph_type;
+                        typedef typename boost::property_map<graph_type,alps::edge_type_t>::type::value_type color_type;
+                      private:
+                        typedef typename boost::graph_traits<graph_type>::edge_descriptor                    edge_descriptor;
+
+                        // Sort edges acoring to the given partition
+                        struct apply_label_edge_comp {
+                            // Input: pi = (V1, V2, ..., Vr)
+                            apply_label_edge_comp (typename partition_type<graph_type>::type const & pi, graph_type const & g)
+                                : G(g)
+                            {
+                                ordering.reserve(num_vertices(g));
+                                for (typename partition_type<graph_type>::type::const_iterator it = pi.begin(); it != pi.end(); ++it)
+                                    for (typename partition_type<graph_type>::type::value_type::const_iterator jt = it->begin(); jt != it->end(); ++jt)
+                                        ordering.push_back(*jt);
+                            }
+
+                            // Comparison operator
+                            bool operator() (
+                                  edge_descriptor const & i
+                                , edge_descriptor const & j
+                            ) {
+                                std::size_t Ai, Bi, Aj, Bj;
+                                Ai = std::find(ordering.begin(), ordering.end(), source(i, G)) - ordering.begin();
+                                Bi = std::find(ordering.begin(), ordering.end(), target(i, G)) - ordering.begin();
+                                Aj = std::find(ordering.begin(), ordering.end(), source(j, G)) - ordering.begin();
+                                Bj = std::find(ordering.begin(), ordering.end(), target(j, G)) - ordering.begin();
+                                return std::min(Ai, Bi) == std::min(Aj, Bj)
+                                    ? std::max(Ai, Bi) < std::max(Aj, Bj)
+                                    : std::min(Ai, Bi) < std::min(Aj, Bj)
+                                ;
+                            }
+
+                            graph_type const & G;
+                            std::vector<typename boost::graph_traits<graph_type>::vertex_descriptor> ordering;
+                        };
+
+                      public:
+                        impl(graph_type const& G)
+                        : colors_(get_color_list(alps::edge_type_t(),G))
+                        {
+                        }
+
+                        // Edge colored graph label
+                        // Input: pi = (V1, V2, ..., Vr)
+                        // Output: comparable graph label l(pi)
+                        // TODO: only add one edge from orbit to orbit not all edges
+                        template <typename InternalLabel>
+                        void update_graph_label(InternalLabel & l, typename partition_type<graph_type>::type const & pi, graph_type const & G) const {
+                            typename boost::graph_traits<graph_type>::edge_iterator it, end;
+                            boost::tie(it, end) = edges(G);
+                            std::vector<edge_descriptor> edge_list(it,end);
+                            std::sort(edge_list.begin(), edge_list.end(), apply_label_edge_comp(pi, G));
+                            // TODO: just make one row per orbit, not per vertex
+                            get_part<edge_label>(l).clear();
+                            get_part<edge_label>(l).resize(num_edges(G) * colors_.size());
+                            for (typename std::vector<edge_descriptor>::const_iterator jt = edge_list.begin(); jt != edge_list.end(); ++jt)
+                                get_part<edge_label>(l).set((std::find(colors_.begin(), colors_.end(), get(alps::edge_type_t(), G)[*jt]) - colors_.begin()) * num_edges(G) + (jt - edge_list.begin()));
+                        }
+
+                        template <typename FinalLabel, typename InternalLabel>
+                        void finalize_graph_label( FinalLabel & l, InternalLabel const & internal_label, typename partition_type<graph_type>::type const & pi, graph_type const & G) const {
+                            using boost::get;
+                            static std::size_t const end = boost::tuples::length<FinalLabel>::value;
+                            get<end-2>(l) = get_part<edge_label>(internal_label);
+                            get<end-1>(l) = colors_;
+                        }
+                      private:
+                        graph_label_color_vector<color_type> colors_;
+                    };
+                };
+
+                struct edge_coloring_with_symmetries_policy
+                {
+                    template <typename Graph, bool EdgeVertex>
+                    class impl {
+                      public:
+                        BOOST_STATIC_CONSTANT(bool, needs_hidden_label = true );
+                        typedef Graph                                                                        graph_type;
+                        typedef typename boost::property_map<graph_type,alps::edge_type_t>::type::value_type color_type;
+
+                      private:
+                        typedef typename color_partition<graph_type>::type                color_partition_type;
+                        typedef typename boost::graph_traits<graph_type>::edge_descriptor edge_descriptor;
+                        // Sort edges acoring to the given partition
+                        struct apply_label_edge_comp {
+                            // Input: pi = (V1, V2, ..., Vr)
+                            apply_label_edge_comp (typename partition_type<graph_type>::type const & pi, graph_type const & g)
+                                : G(g)
+                            {
+                                ordering.reserve(num_vertices(g));
+                                for (typename partition_type<graph_type>::type::const_iterator it = pi.begin(); it != pi.end(); ++it)
+                                    for (typename partition_type<graph_type>::type::value_type::const_iterator jt = it->begin(); jt != it->end(); ++jt)
+                                        ordering.push_back(*jt);
+                            }
+
+                            // Comparison operator
+                            bool operator() (
+                                  edge_descriptor const & i
+                                , edge_descriptor const & j
+                            ) {
+                                std::size_t Ai, Bi, Aj, Bj;
+                                Ai = std::find(ordering.begin(), ordering.end(), source(i, G)) - ordering.begin();
+                                Bi = std::find(ordering.begin(), ordering.end(), target(i, G)) - ordering.begin();
+                                Aj = std::find(ordering.begin(), ordering.end(), source(j, G)) - ordering.begin();
+                                Bj = std::find(ordering.begin(), ordering.end(), target(j, G)) - ordering.begin();
+                                return std::min(Ai, Bi) == std::min(Aj, Bj)
+                                    ? std::max(Ai, Bi) < std::max(Aj, Bj)
+                                    : std::min(Ai, Bi) < std::min(Aj, Bj)
+                                ;
+                            }
+
+                            graph_type const & G;
+                            std::vector<typename boost::graph_traits<graph_type>::vertex_descriptor> ordering;
+                        };
+
+                        void canonicalize_colors(
+                              boost::container::flat_map<color_type, color_type> & color_map
+                            , std::vector<edge_descriptor> & edge_list
+                            , graph_type const& G
+                        ) const {
+                            typedef boost::container::flat_map<color_type,color_type> color_map_type;
+
+                            for(typename std::vector<edge_descriptor>::const_iterator jt = edge_list.begin(); jt != edge_list.end(); ++jt) {
+                                typename color_map_type::iterator it = color_map.find(get(alps::edge_type_t(),G)[*jt]);
+                                if(it == color_map.end()) {
+                                    color_type   const c  = get(alps::edge_type_t(),G)[*jt];
+                                    assert(color_partition_.find(c) != color_partition_.end());
+                                    unsigned int const cp = color_partition_.find(c)->second;
+                                    // Find a color of the same group which is not mapped to yet
+                                    bool found_mapping = false;
+                                    for(typename color_partition_type::const_iterator cit = color_partition_.begin(); cit != color_partition_.end(); ++cit) {
+                                        if(cit->second == cp) {
+                                            bool is_mapped_to = false;
+                                            for(typename color_map_type::iterator cmit = color_map.begin(); cmit != color_map.end(); ++cmit) {
+                                                if(cmit->second == cit->first)
+                                                    is_mapped_to = true;
+                                            }
+                                            if(!is_mapped_to) {
+                                                color_map.insert(std::make_pair(c,cit->first));
+                                                found_mapping = true;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    assert(found_mapping);
+                                }
+                            }
+                        }
+
+                      public:
+                        impl(graph_type const& G)
+                        : color_partition_()
+                        {
+                        }
+
+                        void set_color_partition(color_partition_type const& color_partition)
+                        {
+                            color_partition_ = color_partition;
+                        }
+
+                        color_partition_type const& get_color_partition() const
+                        {
+                            return color_partition_;
+                        }
+
+                        // Edge colored graph label
+                        // Input: pi = (V1, V2, ..., Vr)
+                        // Output: comparable graph label l(pi)
+                        // TODO: only add one edge from orbit to orbit not all edges
+                        template <typename InternalLabel>
+                        void update_graph_label(InternalLabel & l, typename partition_type<graph_type>::type const & pi, graph_type const & G) const {
+                            assert( !color_partition_.empty() );
+#ifndef NDEBUG
+                            {
+                                // Check if all edge colors occuring in the graph are also in the color_partition
+                                typename boost::graph_traits<graph_type>::edge_iterator it, end;
+                                bool partitions_are_complete = true;
+                                for (boost::tie(it, end) = edges(G); it != end; ++it)
+                                    partitions_are_complete = partitions_are_complete && color_partition_.find(get(alps::edge_type_t(),G)[*it]) != color_partition_.end();
+                                assert(partitions_are_complete);
+                            }
+#endif //NDEBUG
+                            // The edge_label considers the symmetry,
+                            // the hidden_edge_label ignores the symmetry to distinguish different realizations.
+                            typename boost::graph_traits<graph_type>::edge_iterator it, end;
+                            boost::tie(it, end) = edges(G);
+                            std::vector<edge_descriptor> edge_list(it,end);
+                            std::sort(edge_list.begin(), edge_list.end(), apply_label_edge_comp(pi, G));
+
+                            boost::container::flat_map<color_type,color_type> color_map;
+                            color_map.reserve(color_partition_.size());
+                            canonicalize_colors(color_map, edge_list, G);
+                            get_part<edge_label>(l).clear();
+                            get_part<edge_label>(l).resize(num_edges(G) * color_partition_.size());
+                            get_part<hidden_edge_label>(l).clear();
+                            get_part<hidden_edge_label>(l).resize(num_edges(G) * color_partition_.size());
+                            for (typename std::vector<edge_descriptor>::const_iterator jt = edge_list.begin(); jt != edge_list.end(); ++jt)
+                            {
+                                get_part<edge_label>(l).set((color_partition_.find(color_map[get(alps::edge_type_t(), G)[*jt]]) - color_partition_.begin()) * num_edges(G) + (jt - edge_list.begin()));
+                                get_part<hidden_edge_label>(l).set((color_partition_.find(get(alps::edge_type_t(), G)[*jt]) - color_partition_.begin()) * num_edges(G) + (jt - edge_list.begin()));
+                            }
+                        }
+
+                        template <typename FinalLabel, typename InternalLabel>
+                        void finalize_graph_label(FinalLabel & l, InternalLabel const & internal_label, typename partition_type<graph_type>::type const & pi, graph_type const & G) const {
+                            using boost::get;
+                            static std::size_t const end = boost::tuples::length<FinalLabel>::value;
+                            graph_label_color_vector<color_type> colors;
+                            colors.reserve(color_partition_.size());
+                            for(typename color_partition_type::const_iterator it = color_partition_.begin(); it != color_partition_.end(); ++it)
+                                colors.push_back(it->first);
+                            get<end-2>(l) = get_part<edge_label>(internal_label);
+                            swap(get<end-1>(l), colors);
+                        }
+                      private:
+                        color_partition_type color_partition_;
+                    };
+                };
+
+                //
+                // The label creator (policy host class)
+                //
+
+                template <typename Graph, typename VertexLabelPolicy = no_coloring_policy, typename EdgeLabelPolicy = no_coloring_policy>
+                class graph_label_creator : public VertexLabelPolicy::template impl<Graph,true>, public EdgeLabelPolicy::template impl<Graph,false>
+                {
+                  private:
+                    typedef typename VertexLabelPolicy::template impl<Graph,true> vertex_label_policy;
+                    typedef typename EdgeLabelPolicy::template impl<Graph,false>   edge_label_policy;
+                  public:
+                    typedef Graph graph_type;
+                    typedef typename internal_graph_label<Graph, vertex_label_policy::needs_hidden_label, edge_label_policy::needs_hidden_label>::type internal_label_type;
+                    typedef typename graph_label<Graph>::type                                                                                          final_label_type;
+
+                    graph_label_creator(graph_type const& g)
+                    : vertex_label_policy(g), edge_label_policy(g)
+                    {
+                    }
+
+                    void update_graph_label(
+                          internal_label_type & l
+                        , typename partition_type<graph_type>::type const & pi
+                        , graph_type const & G
+                    ) const {
+                        update_plain_label(l,pi,G);
+                        vertex_label_policy::update_graph_label(l,pi,G);
+                        edge_label_policy::update_graph_label(l,pi,G);
+                    }
+
+                    final_label_type get_final_graph_label(
+                          internal_label_type const & il
+                        , typename partition_type<graph_type>::type const & pi
+                        , graph_type const & G
+                    ) const {
+                        final_label_type fl;
+                        get<0>(fl) = get_part<plain_label>(il);
+                        vertex_label_policy::finalize_graph_label(fl,il,pi,G);
+                        edge_label_policy::finalize_graph_label(fl,il,pi,G);
+                        return fl;
+                    }
+                  private:
+                    // The not colored graph label is a triangular bit matrix
+                    // Input: pi = (V1, V2, ..., Vr)
+                    // Output: comparable graph label for uncolored graphs l(pi)
+                    void update_plain_label(
+                              internal_label_type & l
+                            , typename partition_type<Graph>::type const& pi
+                            , Graph const & G
+                    ) const {
+                        // pi should be a discrete partition
+                        assert( pi.size() == num_vertices(G) );
+                        // N = #of parts of pi
+                        get_part<plain_label>(l).clear();
+                        get_part<plain_label>(l).resize(pi.size() * (pi.size() + 1) / 2);
+                        typename boost::graph_traits<Graph>::adjacency_iterator ai, ae;
+                        std::map<typename boost::graph_traits<Graph>::vertex_descriptor, std::size_t> I;
+                        // I = {(ni, j) : ni element of Vj (which has only a single element, since pi is discrete)
+                        partition_indeces(I, pi, G);
+                        for (typename std::map<typename boost::graph_traits<Graph>::vertex_descriptor, std::size_t>::const_iterator it = I.begin(); it != I.end(); ++it)
+                            for (boost::tie(ai, ae) = adjacent_vertices(it->first, G); ai != ae; ++ai)
+                                if (I[*ai] <= it->second)
+                                    get_part<plain_label>(l).set(I[*ai] * pi.size() - (I[*ai] - 1) * I[*ai] / 2 + it->second - I[*ai]);
+                    }
+                };
             }
-
-            template <typename Graph>
-            typename graph_label<Graph>::type graph_label_from_internal(internal_graph_label_impl<Graph> const& igl, Graph const&)
-            {
-                return boost::make_tuple(get<0>(igl),get<1>(igl),get<2>(igl));
-            }
-
 
             // Checks if the Graph g has a Vertex labeled v
             template <typename Graph>
@@ -263,366 +691,6 @@ namespace alps {
                 }
             }
 
-            // The not colored graph label is a triangular bit matrix
-            // Input: pi = (V1, V2, ..., Vr)
-            // Output: comparable graph label l(pi)
-            template<typename Graph, typename GraphLabel> void apply_label_no_coloring (
-//                  typename graph_label<Graph>::type & l
-                  GraphLabel & l
-                , typename partition_type<Graph>::type const & pi
-                , Graph const & G
-            ) {
-                using boost::get;
-                // pi should be a discrete partition
-                assert( pi.size() == num_vertices(G) );
-                // N = #of parts of pi
-                get<0>(l).clear();
-                get<0>(l).resize(pi.size() * (pi.size() + 1) / 2);
-                typename boost::graph_traits<Graph>::adjacency_iterator ai, ae;
-                std::map<typename boost::graph_traits<Graph>::vertex_descriptor, std::size_t> I;
-                // I = {(ni, j) : ni element of Vj (which has only a single element, since pi is discrete)
-                partition_indeces(I, pi, G);
-                for (typename std::map<typename boost::graph_traits<Graph>::vertex_descriptor, std::size_t>::const_iterator it = I.begin(); it != I.end(); ++it)
-                    for (boost::tie(ai, ae) = adjacent_vertices(it->first, G); ai != ae; ++ai)
-                        if (I[*ai] <= it->second)
-                            get<0>(l).set(I[*ai] * pi.size() - (I[*ai] - 1) * I[*ai] / 2 + it->second - I[*ai]);
-            }
-
-
-
-            namespace label_helpers {
-                struct label_no_coloring_helper
-                {
-                    label_no_coloring_helper() {};
-                    template <typename T>
-                    label_no_coloring_helper(T const&) {};
-                    template <typename T1, typename T2, typename T3>
-                    inline void operator()(T1 const&, T2 const&, T3 const&) const {}
-                    static bool const symmetry = false;
-                };
-
-                template <typename Graph>
-                struct label_vertex_coloring_helper
-                {
-                    typedef typename boost::property_map<Graph,alps::vertex_type_t>::type::value_type color_type;
-                    // Vertex colored graph label
-                    // Input: pi = (V1, V2, ..., Vr)
-                    // Output: comparable graph label l(pi)
-                    // TODO: only one vertex per orbit in matrix
-                    void operator() (
-                          typename graph_label<Graph>::type & l
-                        , typename partition_type<Graph>::type const & pi
-                        , Graph const & G
-                    ) const {
-                        using boost::get;
-                        boost::container::flat_set<color_type> colors;
-                        typename boost::graph_traits<Graph>::vertex_iterator it, end;
-                        for (boost::tie(it, end) = vertices(G); it != end; ++it)
-                            colors.insert(get(alps::vertex_type_t(), G)[*it]);
-                        get<2>(l).clear();
-                        get<2>(l).insert(get<2>(l).end(), colors.begin(), colors.end());
-                        get<1>(l).clear();
-                        get<1>(l).resize(num_vertices(G) * get<2>(l).size());
-                        // TODO: just make one row per orbit, not per vertex
-                        std::size_t index = 0;
-                        for (typename partition_type<Graph>::type::const_iterator jt = pi.begin(); jt != pi.end(); ++jt)
-                            for (typename partition_type<Graph>::type::value_type::const_iterator kt = jt->begin(); kt != jt->end(); ++kt)
-                                get<1>(l).set((std::find(get<2>(l).begin(), get<2>(l).end(), get(alps::vertex_type_t(), G)[*kt]) - get<2>(l).begin()) * num_vertices(G) + index++);
-                    }
-                };
-
-
-                template <typename Graph, bool EdgeColorSymmetries = false>
-                struct label_edge_coloring_helper
-                {
-                  private:
-                    typedef typename boost::property_map<Graph,alps::edge_type_t>::type::value_type color_type;
-                    typedef typename color_partition<Graph>::type                                   color_partition_type;
-                    typedef typename boost::graph_traits<Graph>::edge_descriptor                    edge_descriptor;
-
-                    // Sort edges acoring to the given partition
-                    struct apply_label_edge_comp {
-                        // Input: pi = (V1, V2, ..., Vr)
-                        apply_label_edge_comp (typename partition_type<Graph>::type const & pi, Graph const & g)
-                            : G(g)
-                        {
-                            ordering.reserve(num_vertices(g));
-                            for (typename partition_type<Graph>::type::const_iterator it = pi.begin(); it != pi.end(); ++it)
-                                for (typename partition_type<Graph>::type::value_type::const_iterator jt = it->begin(); jt != it->end(); ++jt)
-                                    ordering.push_back(*jt);
-                        }
-
-                        // Comparison operator
-                        bool operator() (
-                              edge_descriptor const & i
-                            , edge_descriptor const & j
-                        ) {
-                            std::size_t Ai, Bi, Aj, Bj;
-                            Ai = std::find(ordering.begin(), ordering.end(), source(i, G)) - ordering.begin();
-                            Bi = std::find(ordering.begin(), ordering.end(), target(i, G)) - ordering.begin();
-                            Aj = std::find(ordering.begin(), ordering.end(), source(j, G)) - ordering.begin();
-                            Bj = std::find(ordering.begin(), ordering.end(), target(j, G)) - ordering.begin();
-                            return std::min(Ai, Bi) == std::min(Aj, Bj)
-                                ? std::max(Ai, Bi) < std::max(Aj, Bj)
-                                : std::min(Ai, Bi) < std::min(Aj, Bj)
-                            ;
-                        }
-
-                        Graph const & G;
-                        std::vector<typename boost::graph_traits<Graph>::vertex_descriptor> ordering;
-                    };
-
-                    void canonicalize_colors(
-                          boost::container::flat_map<color_type, color_type> & color_map
-                        , std::vector<edge_descriptor> & edge_list
-                        , Graph const& G
-                    ) const {
-                        typedef boost::container::flat_map<color_type,color_type> color_map_type;
-
-                        for(typename std::vector<edge_descriptor>::const_iterator jt = edge_list.begin(); jt != edge_list.end(); ++jt) {
-                            typename color_map_type::iterator it = color_map.find(get(alps::edge_type_t(),G)[*jt]);
-                            if(it == color_map.end()) {
-                                color_type   const c  = get(alps::edge_type_t(),G)[*jt];
-                                assert(color_partition_.find(c) != color_partition_.end());
-                                unsigned int const cp = color_partition_.find(c)->second;
-                                // Find a color of the same group which is not mapped to yet
-                                bool found_mapping = false;
-                                for(typename color_partition_type::const_iterator cit = color_partition_.begin(); cit != color_partition_.end(); ++cit) {
-                                    if(cit->second == cp) {
-                                        bool is_mapped_to = false;
-                                        for(typename color_map_type::iterator cmit = color_map.begin(); cmit != color_map.end(); ++cmit) {
-                                            if(cmit->second == cit->first)
-                                                is_mapped_to = true;
-                                        }
-                                        if(!is_mapped_to) {
-                                            color_map.insert(std::make_pair(c,cit->first));
-                                            found_mapping = true;
-                                            break;
-                                        }
-                                    }
-                                }
-                                assert(found_mapping);
-                            }
-                        }
-                    }
-
-                  public:
-                    static bool const symmetry = false;
-                    // Create a simple label_edge_coloring_helper
-                    label_edge_coloring_helper(Graph const& G)
-                    {
-                        // Create an identity color symmetry partition...
-                        typename boost::graph_traits<Graph>::edge_iterator it, end;
-                        for (boost::tie(it, end) = edges(G); it != end; ++it)
-                            color_partition_.insert(std::make_pair(get(alps::edge_type_t(), G)[*it], get(alps::edge_type_t(),G)[*it]));
-                    }
-
-                    // Create a label_edge_coloring_helper with a color symmetry partition
-                    label_edge_coloring_helper(Graph const& G, color_partition_type const& color_partition)
-                    : color_partition_(color_partition)
-                    {
-#ifndef NDEBUG
-                        // Check if all edge colors occuring in the graph are also in the color_partition
-                        typename boost::graph_traits<Graph>::edge_iterator it, end;
-                        bool partitions_are_complete = true;
-                        for (boost::tie(it, end) = edges(G); it != end; ++it)
-                            partitions_are_complete = partitions_are_complete && color_partition_.find(get(alps::edge_type_t(),G)[*it]) != color_partition_.end();
-                        assert(partitions_are_complete);
-#endif //NDEBUG
-                    }
-
-                    // Edge colored graph label
-                    // Input: pi = (V1, V2, ..., Vr)
-                    // Output: comparable graph label l(pi)
-                    // TODO: only add one edge from orbit to orbit not all edges
-                    void operator()(
-                          typename internal_graph_label<Graph,EdgeColorSymmetries>::type & l
-                        , typename partition_type<Graph>::type const & pi
-                        , Graph const & G
-                    ) const {
-                        using boost::get;
-                        static std::size_t const Base = boost::tuples::length<typename graph_label<Graph>::type>::value - 2;
-                        typename boost::graph_traits<Graph>::edge_iterator it, end;
-                        boost::tie(it, end) = edges(G);
-                        std::vector<edge_descriptor> edge_list(it,end);
-
-                        get<Base + 1>(l).clear();
-                        get<Base + 1>(l).reserve(color_partition_.size());
-                        typename color_partition_type::const_iterator cit(color_partition_.begin()), cend(color_partition_.end());
-                        for(; cit != cend; ++cit)
-                            get<Base + 1>(l).push_back(cit->first);
-
-                        std::sort(edge_list.begin(), edge_list.end(), apply_label_edge_comp(pi, G));
-                        boost::container::flat_map<color_type,color_type> color_map;
-                        color_map.reserve(color_partition_.size());
-                        canonicalize_colors(color_map, edge_list, G);
-                        // TODO: just make one row per orbit, not per vertex
-                        get<Base>(l).clear();
-                        get<Base>(l).resize(num_edges(G) * get<Base + 1>(l).size());
-                        for (typename std::vector<edge_descriptor>::const_iterator jt = edge_list.begin(); jt != edge_list.end(); ++jt)
-                            get<Base>(l).set((std::find(get<Base + 1>(l).begin(), get<Base + 1>(l).end(), color_map[get(alps::edge_type_t(), G)[*jt]] ) - get<Base + 1>(l).begin()) * num_edges(G) + (jt - edge_list.begin()));
-                    }
-
-                  private:
-                    color_partition_type color_partition_;
-                };
-                template <typename Graph>
-                struct label_edge_coloring_helper<Graph,true>
-                {
-                  private:
-                    typedef typename boost::property_map<Graph,alps::edge_type_t>::type::value_type color_type;
-                    typedef typename color_partition<Graph>::type                                   color_partition_type;
-                    typedef typename boost::graph_traits<Graph>::edge_descriptor                    edge_descriptor;
-
-                    // Sort edges acoring to the given partition
-                    struct apply_label_edge_comp {
-                        // Input: pi = (V1, V2, ..., Vr)
-                        apply_label_edge_comp (typename partition_type<Graph>::type const & pi, Graph const & g)
-                            : G(g)
-                        {
-                            ordering.reserve(num_vertices(g));
-                            for (typename partition_type<Graph>::type::const_iterator it = pi.begin(); it != pi.end(); ++it)
-                                for (typename partition_type<Graph>::type::value_type::const_iterator jt = it->begin(); jt != it->end(); ++jt)
-                                    ordering.push_back(*jt);
-                        }
-
-                        // Comparison operator
-                        bool operator() (
-                              edge_descriptor const & i
-                            , edge_descriptor const & j
-                        ) {
-                            std::size_t Ai, Bi, Aj, Bj;
-                            Ai = std::find(ordering.begin(), ordering.end(), source(i, G)) - ordering.begin();
-                            Bi = std::find(ordering.begin(), ordering.end(), target(i, G)) - ordering.begin();
-                            Aj = std::find(ordering.begin(), ordering.end(), source(j, G)) - ordering.begin();
-                            Bj = std::find(ordering.begin(), ordering.end(), target(j, G)) - ordering.begin();
-                            return std::min(Ai, Bi) == std::min(Aj, Bj)
-                                ? std::max(Ai, Bi) < std::max(Aj, Bj)
-                                : std::min(Ai, Bi) < std::min(Aj, Bj)
-                            ;
-                        }
-
-                        Graph const & G;
-                        std::vector<typename boost::graph_traits<Graph>::vertex_descriptor> ordering;
-                    };
-
-                    void canonicalize_colors(
-                          boost::container::flat_map<color_type, color_type> & color_map
-                        , std::vector<edge_descriptor> & edge_list
-                        , Graph const& G
-                    ) const {
-                        typedef boost::container::flat_map<color_type,color_type> color_map_type;
-
-                        for(typename std::vector<edge_descriptor>::const_iterator jt = edge_list.begin(); jt != edge_list.end(); ++jt) {
-                            typename color_map_type::iterator it = color_map.find(get(alps::edge_type_t(),G)[*jt]);
-                            if(it == color_map.end()) {
-                                color_type   const c  = get(alps::edge_type_t(),G)[*jt];
-                                assert(color_partition_.find(c) != color_partition_.end());
-                                unsigned int const cp = color_partition_.find(c)->second;
-                                // Find a color of the same group which is not mapped to yet
-                                bool found_mapping = false;
-                                for(typename color_partition_type::const_iterator cit = color_partition_.begin(); cit != color_partition_.end(); ++cit) {
-                                    if(cit->second == cp) {
-                                        bool is_mapped_to = false;
-                                        for(typename color_map_type::iterator cmit = color_map.begin(); cmit != color_map.end(); ++cmit) {
-                                            if(cmit->second == cit->first)
-                                                is_mapped_to = true;
-                                        }
-                                        if(!is_mapped_to) {
-                                            color_map.insert(std::make_pair(c,cit->first));
-                                            found_mapping = true;
-                                            break;
-                                        }
-                                    }
-                                }
-                                assert(found_mapping);
-                            }
-                        }
-                    }
-
-                  public:
-                    static bool const symmetry = true;
-                    // Create a simple label_edge_coloring_helper
-                    label_edge_coloring_helper(Graph const& G)
-                    {
-                        // Create an identity color symmetry partition...
-                        typename boost::graph_traits<Graph>::edge_iterator it, end;
-                        for (boost::tie(it, end) = edges(G); it != end; ++it)
-                            color_partition_.insert(std::make_pair(get(alps::edge_type_t(), G)[*it], get(alps::edge_type_t(),G)[*it]));
-                    }
-
-                    // Create a label_edge_coloring_helper with a color symmetry partition
-                    label_edge_coloring_helper(Graph const& G, color_partition_type const& color_partition)
-                    : color_partition_(color_partition)
-                    {
-#ifndef NDEBUG
-                        // Check if all edge colors occuring in the graph are also in the color_partition
-                        typename boost::graph_traits<Graph>::edge_iterator it, end;
-                        bool partitions_are_complete = true;
-                        for (boost::tie(it, end) = edges(G); it != end; ++it)
-                            partitions_are_complete = partitions_are_complete && color_partition_.find(get(alps::edge_type_t(),G)[*it]) != color_partition_.end();
-                        assert(partitions_are_complete);
-#endif //NDEBUG
-                    }
-
-                    // Edge colored graph label
-                    // Input: pi = (V1, V2, ..., Vr)
-                    // Output: comparable graph label l(pi)
-                    // TODO: only add one edge from orbit to orbit not all edges
-                    void operator()(
-                          typename internal_graph_label<Graph,true>::type & l
-                        , typename partition_type<Graph>::type const & pi
-                        , Graph const & G
-                    ) const {
-                        using boost::get;
-                        static std::size_t const Base = boost::tuples::length<typename internal_graph_label<Graph,true>::type>::value - 3;
-                        typename boost::graph_traits<Graph>::edge_iterator it, end;
-                        boost::tie(it, end) = edges(G);
-                        std::vector<edge_descriptor> edge_list(it,end);
-
-                        get<Base + 1>(l).clear();
-                        get<Base + 1>(l).reserve(color_partition_.size());
-                        typename color_partition_type::const_iterator cit(color_partition_.begin()), cend(color_partition_.end());
-                        for(; cit != cend; ++cit)
-                            get<Base + 1>(l).push_back(cit->first);
-
-                        std::sort(edge_list.begin(), edge_list.end(), apply_label_edge_comp(pi, G));
-                        boost::container::flat_map<color_type,color_type> color_map;
-                        color_map.reserve(color_partition_.size());
-                        canonicalize_colors(color_map, edge_list, G);
-                        // TODO: just make one row per orbit, not per vertex
-                        get<Base>(l).clear();
-                        get<Base>(l).resize(num_edges(G) * get<Base + 1>(l).size());
-                        get<Base+2>(l).clear();
-                        get<Base+2>(l).resize(num_edges(G) * get<Base + 1>(l).size());
-                        for (typename std::vector<edge_descriptor>::const_iterator jt = edge_list.begin(); jt != edge_list.end(); ++jt)
-                        {
-                            get<Base>(l).set((std::find(get<Base + 1>(l).begin(), get<Base + 1>(l).end(), color_map[get(alps::edge_type_t(), G)[*jt]] ) - get<Base + 1>(l).begin()) * num_edges(G) + (jt - edge_list.begin()));
-                            get<Base+2>(l).set((std::find(get<Base + 1>(l).begin(), get<Base + 1>(l).end(), get(alps::edge_type_t(), G)[*jt] ) - get<Base + 1>(l).begin()) * num_edges(G) + (jt - edge_list.begin()));
-                        }
-                    }
-
-                  private:
-                    color_partition_type color_partition_;
-                };
-            }
-
-            // The graph label is a triangular bit matrix with a 
-            // Input: pi = (V1, V2, ..., Vr)
-            // Output: comparable graph label l(pi)
-            template<typename Graph, typename LabelVertexColoringHelper, typename LabelEdgeColoringHelper, typename GraphLabel> void assemble_label(
-//                  typename internal_graph_label<Graph,EdgeColorSymmetry>::type & l
-                  GraphLabel & l
-                , typename partition_type<Graph>::type const & pi
-                , Graph const & G
-                , LabelVertexColoringHelper const& apply_label_vertex_coloring
-                , LabelEdgeColoringHelper const& apply_label_edge_coloring
-            ) {
-                apply_label_no_coloring(l, pi, G);
-                apply_label_vertex_coloring(l, pi, G);
-                apply_label_edge_coloring(l, pi, G);
-            }
-
             // If an ni
             // Input: pi = (V1, V2, ..., Vr), Vi = (n1, n2, ..., nk), ni element of G
             //        tau = (W1, W2, ..., Wr), Wi = (m1, m2, ..., mk), mi element of G 
@@ -719,13 +787,13 @@ namespace alps {
 
             // Input: graph G, inital partition pi
             // Output: canonical ordering, canonical label and orbit of G
-            template<typename Graph, typename LabelVertexColoringHelper, typename LabelEdgeColoringHelper>
+            template<typename Graph, typename LabelCreator>
             typename canonical_properties_type<Graph>::type
-            canonical_properties_impl(Graph const & G, typename partition_type<Graph>::type const& pi, LabelVertexColoringHelper const& lvch, LabelEdgeColoringHelper const& lech) {
+            canonical_properties_impl(Graph const & G, typename partition_type<Graph>::type const& pi, LabelCreator const& label_creator) {
                 using boost::get;
                 using boost::make_tuple;
                 typename partition_type<Graph>::type orbit, canonical_partition, first_partition;
-                typename internal_graph_label<Graph, LabelEdgeColoringHelper::symmetry>::type canonical_label, first_label, current_label;
+                typename LabelCreator::internal_label_type canonical_label, first_label, current_label;
                 // A map assigning each vertex to an orbit
                 std::map<typename boost::graph_traits<Graph>::vertex_descriptor, std::size_t> Io;
                 // The orbit starts with a discrete partition (a partition with only trivial parts)
@@ -751,7 +819,7 @@ namespace alps {
                 detail::terminal_node(T, G);
                 // Initialize partitions and labels
                 first_partition = canonical_partition = get<0>(T.back());
-                detail::assemble_label(canonical_label, canonical_partition, G, lvch, lech);
+                label_creator.update_graph_label(canonical_label, canonical_partition, G);
                 first_label = current_label = canonical_label;
 
                 // Perform an depth first search by trying to increment j
@@ -784,7 +852,7 @@ namespace alps {
                     // TODO: add edge coloring to algorithym
                     // Grow new branch with j=get<2>(T.back())
                     detail::terminal_node(T, G);
-                    detail::assemble_label(current_label, get<0>(T.back()), G, lvch, lech);
+                    label_creator.update_graph_label(current_label, get<0>(T.back()), G);
                     // If two labels are the same we found an automorphism -> coarse orbit
                     if(first_label == current_label)
                         detail::coarse_orbit(orbit, Io, first_partition, get<0>(T.back()), G);
@@ -804,7 +872,7 @@ namespace alps {
 
                 return boost::make_tuple(
                       canonical_ordering
-                    , graph_label_from_internal(canonical_label,G)
+                    , label_creator.get_final_graph_label(canonical_label,canonical_partition,G)
                     , orbit
                 );
             }
@@ -823,18 +891,20 @@ namespace alps {
             // uncolored graphs: pi is a unit partition (pi has only one part)
             // vertex colored graphs: pi has for each color one part
             detail::initial_partition(G, pi, boost::mpl::bool_<has_property<alps::vertex_type_t, Graph>::vertex_property>());
-            typename boost::mpl::if_c<
+            typedef typename boost::mpl::if_c<
                   has_property<alps::vertex_type_t, Graph>::vertex_property
-                , detail::label_helpers::label_vertex_coloring_helper<Graph>
-                , detail::label_helpers::label_no_coloring_helper
-            >::type lvch;
-            typename boost::mpl::if_c<
+                , detail::label::simple_vertex_coloring_policy
+                , detail::label::no_coloring_policy
+            >::type vertex_policy;
+            typedef typename boost::mpl::if_c<
                   has_property<alps::edge_type_t, Graph>::edge_property
-                , detail::label_helpers::label_edge_coloring_helper<Graph>
-                , detail::label_helpers::label_no_coloring_helper
-            >::type lech(G);
+                , detail::label::simple_edge_coloring_policy
+                , detail::label::no_coloring_policy
+            >::type edge_policy;
+
+            detail::label::graph_label_creator<Graph,vertex_policy,edge_policy> label_creator(G);
             // create canonical properties
-            return detail::canonical_properties_impl(G, pi, lvch, lech);
+            return detail::canonical_properties_impl(G, pi, label_creator);
         }
 
         // McKay’s canonical isomorph function Cm(G) is deﬁned to be
@@ -851,18 +921,16 @@ namespace alps {
             detail::initial_partition(G, pi, boost::mpl::bool_<has_property<alps::vertex_type_t, Graph>::vertex_property>());
 
             // Build the label coloring helpers
-            typename boost::mpl::if_c<
+            BOOST_STATIC_ASSERT(( has_property<alps::edge_type_t, Graph>::edge_property ));
+            typedef typename boost::mpl::if_c<
                   has_property<alps::vertex_type_t, Graph>::vertex_property
-                , detail::label_helpers::label_vertex_coloring_helper<Graph>
-                , detail::label_helpers::label_no_coloring_helper
-            >::type lvch;
-            typename boost::mpl::if_c<
-                  has_property<alps::edge_type_t, Graph>::edge_property
-                , detail::label_helpers::label_edge_coloring_helper<Graph,true>
-                , detail::label_helpers::label_no_coloring_helper
-            >::type lech(G,c);
+                , detail::label::simple_vertex_coloring_policy
+                , detail::label::no_coloring_policy
+            >::type vertex_policy;
+            detail::label::graph_label_creator<Graph, vertex_policy, detail::label::edge_coloring_with_symmetries_policy> label_creator(G);
+            label_creator.set_color_partition(c);
             // create canonical properties
-            return detail::canonical_properties_impl(G, pi, lvch, lech);
+            return detail::canonical_properties_impl(G, pi, label_creator);
         }
 
         // McKay’s canonical isomorph function Cm(G) is deﬁned to be
@@ -878,18 +946,20 @@ namespace alps {
             // uncolored graphs: pi is a unit partition (pi has only one part)
             // vertex colored graphs: pi has for each color one part
             detail::initial_partition(G, pi, v, boost::mpl::bool_<has_property<alps::vertex_type_t, Graph>::vertex_property>());
-            typename boost::mpl::if_c<
+            typedef typename boost::mpl::if_c<
                   has_property<alps::vertex_type_t, Graph>::vertex_property
-                , detail::label_helpers::label_vertex_coloring_helper<Graph>
-                , detail::label_helpers::label_no_coloring_helper
-            >::type lvch;
-            typename boost::mpl::if_c<
+                , detail::label::simple_vertex_coloring_policy
+                , detail::label::no_coloring_policy
+            >::type vertex_policy;
+            typedef typename boost::mpl::if_c<
                   has_property<alps::edge_type_t, Graph>::edge_property
-                , detail::label_helpers::label_edge_coloring_helper<Graph>
-                , detail::label_helpers::label_no_coloring_helper
-            >::type lech(G);
+                , detail::label::simple_edge_coloring_policy
+                , detail::label::no_coloring_policy
+            >::type edge_policy;
+
+            detail::label::graph_label_creator<Graph,vertex_policy,edge_policy> label_creator(G);
             // create canonical properties
-            return detail::canonical_properties_impl(G, pi, lvch, lech);
+            return detail::canonical_properties_impl(G, pi, label_creator);
         }
     }
 }

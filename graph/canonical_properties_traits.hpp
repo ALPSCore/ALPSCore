@@ -55,7 +55,12 @@ namespace detail {
     };
 
     // printable color list
-    template<typename Value> class graph_label_color_vector : public std::vector<Value> {};
+    template<typename Value> class graph_label_color_vector : public std::vector<Value>
+    {
+      public:
+        graph_label_color_vector() {}
+        template<typename A> graph_label_color_vector(std::vector<Value,A> const& v) : std::vector<Value>(v) {}
+    };
 
     // ostream operator for color list
     template<typename Stream, typename Value> Stream & operator<< (Stream & os, graph_label_color_vector<Value> const & vec) {
