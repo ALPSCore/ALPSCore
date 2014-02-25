@@ -272,7 +272,7 @@ bool colored_edges_with_color_symmetry_test3() {
     return true;
 }
 
-bool colored_edges_with_color_symmetry_test4() {
+void colored_edges_with_color_symmetry_test4() {
     std::cout << "colored_edges_with_color_symmetry_test4()" << std::endl;
     typedef alps::graph::graph_label<graph_type>::type label_type;
     using alps::graph::canonical_properties;
