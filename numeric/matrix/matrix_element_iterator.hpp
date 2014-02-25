@@ -52,11 +52,11 @@ class matrix_element_iterator : public boost::iterator_facade<
             // The value_type of the iterator must be the value_type of the matrix or const Matrix::value_type
             BOOST_STATIC_ASSERT( (boost::is_same<typename Matrix::value_type, T>::value
                                  || boost::is_same<const typename Matrix::value_type,T>::value) );
-#ifndef DISABLE_MATRIX_ELEMENT_ITERATOR_WARNING
+#ifndef ALPS_DISABLE_MATRIX_ELEMENT_ITERATOR_WARNING
             std::cerr<<"WARNING: matrix_element_iterators are very slow!"<<std::endl;
             std::cerr<<"You should use strided_iterators (eg. row_iterator) instead, unless you really don't care."<<std::endl;
             std::cerr<<"To disable this warning compile with -DDISABLE_MATRIX_ELEMENT_ITERATOR_WARNING ."<<std::endl;
-#endif //DISABLE_MATRIX_ELEMENT_ITERATOR_WARNING
+#endif //ALPS_DISABLE_MATRIX_ELEMENT_ITERATOR_WARNING
         }
 
         template<typename Matrix2, typename U>
