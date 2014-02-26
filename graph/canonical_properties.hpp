@@ -61,6 +61,265 @@
 namespace alps {
     namespace graph {
         namespace detail {
+
+            // Checks if the Graph g has a Vertex labeled v
+            template <typename Graph>
+            bool graph_has_vertex(Graph const& g, typename boost::graph_traits<Graph>::vertex_descriptor v)
+            {
+                typename boost::graph_traits<Graph>::vertex_iterator vb,ve;
+                boost::tie(vb,ve) = vertices(g);
+                return (std::find(vb,ve,v) != ve);
+            }
+
+            // Input: pi = (V1, V2, ..., Vr)
+            // Output: I = {(ni, j) : ni element of Vj
+            template<typename Graph> void partition_indeces(
+                  std::map<typename boost::graph_traits<Graph>::vertex_descriptor, std::size_t> & I
+                , typename partition_type<Graph>::type const & pi
+                , Graph const & G
+            ) {
+                for (typename partition_type<Graph>::type::const_iterator it = pi.begin(); it != pi.end(); ++it)
+                    for (typename partition_type<Graph>::type::value_type::const_iterator jt = it->begin(); jt != it->end(); ++jt)
+                        I[*jt] = it - pi.begin();
+            }
+
+            // Given an inequitable ordered partition pi = (V1, V2, . . . , Vr ), we say that Vj shatters Vi 
+            // if there exist two vertices v, w element of Vi such that deg(v, Vj ) != deg(w, Vj ).
+            // Input: pi = (V1, V2, ..., Vr)
+            // Output: i, j; Vj shatters Vi and (i, j) is the minimum element of B under the lexicographic order
+            template<typename Graph> std::pair<std::size_t, std::size_t> shattering(
+                  typename partition_type<Graph>::type const & pi
+                , std::map<typename boost::graph_traits<Graph>::vertex_descriptor, std::size_t> const & I
+                , Graph const & G
+            ) {
+                using boost::make_tuple;
+                using std::make_pair;
+                // B = {(i, j): Vj shatters Vi}
+                std::size_t maxsize = 0;
+                for (typename partition_type<Graph>::type::const_iterator it = pi.begin(); it != pi.end(); ++it)
+                    maxsize = std::max(maxsize,it->size());
+                boost::multi_array<std::size_t,2> adjacent_numbers(boost::extents[pi.size()][maxsize]);
+                // For each Vi
+                for (typename partition_type<Graph>::type::const_iterator it = pi.begin(); it != pi.end(); ++it) {
+                    std::fill_n(adjacent_numbers.data(),adjacent_numbers.num_elements(),0);
+                    // Get the deg(v,Vj) for all Vj, for all v in Vi
+                    for (typename partition_type<Graph>::type::value_type::const_iterator jt = it->begin(); jt != it->end(); ++jt) {
+                        typename boost::graph_traits<Graph>::adjacency_iterator ai, ae;
+                        for (boost::tie(ai, ae) = adjacent_vertices(*jt, G); ai != ae; ++ai)
+                            ++adjacent_numbers[I.find(*ai)->second][jt - it->begin()];
+                    }
+                    // Return the earliest i,j for which deg(v0,Vj) != deg(v1,Vj) where {v0,v1} in Vi
+                    for (boost::multi_array<std::size_t,2>::const_iterator jt = adjacent_numbers.begin(); jt != adjacent_numbers.end(); ++jt)
+                    {
+                        for (std::size_t k = 0; k < it->size(); ++k)
+                            if( *(jt->begin() + k) != *jt->begin() )
+                                // Return the minimum element of B under the lexicographic order
+                                return make_pair(it - pi.begin(), jt - adjacent_numbers.begin());
+                    }
+                }
+
+                // no shattering found
+                return std::make_pair(pi.size(), 0);
+            }
+
+            // Input: pi = (V1, V2, ..., Vr)
+            // Output: An ordered partition R(pi)
+            template<typename Graph> void equitable_refinement(
+                  typename partition_type<Graph>::type & pi
+                , Graph const & G
+            ) {
+                using boost::tie;
+                using std::make_pair;
+                // If we don't have a discrete partition pi (i.e. only trivial parts)
+                if (pi.size() < num_vertices(G))
+                    while(true) {
+                        // OPTIMIZE move map outside
+                        std::map<typename boost::graph_traits<Graph>::vertex_descriptor, std::size_t> I;
+                        // I = {(ni, j) : ni element of Vj
+                        partition_indeces(I, pi, G);
+                        std::size_t i, j;
+                        boost::tie(i, j) = shattering(pi, I, G);
+                        // If B is empty, then stop, reporting pi as the output R(pi)
+                        if (i == pi.size())
+                            break;
+                        // Let (X1, X2, . . . , Xt) be the shattering of Vi by Vj
+                        // Replace pi by the ordered partition where Vi is replaced by X1, X2, ..., Xt;
+                        // that is, replace pi = (V1, V2, ..., Vr) with (V1, V2, ..., Vi−1, X1, X2, ..., Xt, Vi+1, ..., Vr).
+                        typename partition_type<Graph>::type tau(pi.begin(), pi.begin() + i);
+                        // O = {(k, l) : nl element of Vi with k adjacents in Vj}
+                        // OPTIMIZE move vector outside
+                        std::vector<std::pair<std::size_t, std::size_t> > O;
+                        // Note: one could optimize the following loop by combining it with the shattering function
+                        for (typename partition_type<Graph>::type::value_type::const_iterator it = pi[i].begin(); it != pi[i].end(); ++it) {
+                            O.push_back(make_pair(0, *it));
+                            typename boost::graph_traits<Graph>::adjacency_iterator ai, ae;
+                            for (boost::tie(ai, ae) = adjacent_vertices(*it, G); ai != ae; ++ai)
+                                if (I[*ai] == j)
+                                    ++O.back().first;
+                        }
+                        std::sort(O.begin(), O.end());
+                        // The shattering of Vi by Vj is the ordered partition (X1, X2, . . . , Xt) of
+                        // Vi such that if v in Xk and w in Xl then k < l if and only if deg(v, Vj) < deg(w, Vj).
+                        // Thus, (X1, X2, . . . , Xt) sorts the vertices of Vi by their degree to Vj
+                        tau.push_back(typename partition_type<Graph>::type::value_type(1, O.front().second));
+                        std::size_t counter = O.front().first;
+                        for (std::vector<std::pair<std::size_t, std::size_t> >::const_iterator it = O.begin() + 1; it != O.end(); ++it)
+                            if (counter < it->first) {
+                                tau.push_back(typename partition_type<Graph>::type::value_type(1, it->second));
+                                counter = it->first;
+                            } else
+                                tau.back().push_back(it->second);
+                        // pi = (V1, V2, ..., Vi−1, X1, X2, ..., Xt, Vi+1, ..., Vr).
+                        if (i + 1 < pi.size())
+                            std::copy(pi.begin() + i + 1, pi.end(), std::back_inserter(tau));
+                        swap(pi,tau);
+                    }
+            }
+
+            // The search tree T(G) is the rooted tree whose nodes
+            // {(pi, u) : pi is an ordered partition of [n]; u = (u1, u2, ..., uk) is a sequence of distinct vertices;
+            //   pi = (...     (R(mu) ⊥ u1) ⊥ u2) ... ) ⊥ uk;
+            //   ui is in the ﬁrst non-trivial part of (... (R(mu) ⊥ u1) ⊥ u2) ...) ⊥ ui−1 for each i.
+            // Input: incomplete trace of T(G)
+            //        remaining arches
+            // Output: trace from root to a terminal node of T(G)
+            template<typename Graph> void terminal_node(
+                  std::vector<boost::tuple<typename partition_type<Graph>::type, std::size_t, std::size_t> > & T
+                , Graph const & G
+            ) {
+                using boost::get;
+                using boost::make_tuple;
+                assert(T.size() >= 2);
+                typename partition_type<Graph>::type const & tau = get<0>(*(T.rbegin() + 1));
+                typename partition_type<Graph>::type & pi        = get<0>(T.back());
+                assert(pi.empty());
+                std::size_t i = get<1>(T.back());
+                // u = nj, nj is j-th element of Vi
+                std::size_t j = get<2>(T.back());
+                // Let pi be an equitable ordered partition of [n] with a nontrivial
+                // part Vi, and let u be an element of Vi. The splitting of pi by u, 
+                // denoted by pi ⊥ u, is the equitable reﬁnement R(pi) of the ordered partition 
+                // pi = (V1, V2, ..., {u}, Vi \ {u}, Vi+1, ..., Vr).
+                // u = j-th element of part Vi
+                pi.reserve(tau.size()+2);
+                std::copy(tau.begin(), tau.begin() + i, std::back_inserter(pi));
+                pi.push_back(typename partition_type<Graph>::type::value_type(1, tau[i][j]));
+                pi.push_back(typename partition_type<Graph>::type::value_type(tau[i].begin(), tau[i].begin() + j));
+                if (j + 1 < tau[i].size())
+                    std::copy(tau[i].begin() + j + 1, tau[i].end(), std::back_inserter(pi.back()));
+                if (pi.back().empty())
+                    pi.pop_back();
+                if (i + 1 < tau.size())
+                    std::copy(tau.begin() + i + 1, tau.end(), std::back_inserter(pi));
+                equitable_refinement(pi, G);
+                // To reduce the branching factor, McKay actually chooses the ﬁrst smallest part of pi. The
+                // method of choosing the part for splitting pi is irrelevant as long as it is an isomorphism invariant
+                // of unordered partitions. That is to say, that if the i-th part of pi is chosen, then also the i-th part
+                // of pi^ny is chosen for any nu element of Sigma_n.
+                std::size_t n = num_vertices(G) + 1;
+                i = 0;
+                for (typename partition_type<Graph>::type::iterator it = pi.begin(); it != pi.end(); ++it)
+                    if (it->size() > 1 && n > it->size()) {
+                        n = it->size();
+                        i = it - pi.begin();
+                    }
+                if (n < num_vertices(G) + 1u) {
+                    T.push_back(boost::make_tuple(typename partition_type<Graph>::type(), i, 0));
+                    terminal_node(T, G);
+                }
+            }
+
+            // If an ni
+            // Input: pi = (V1, V2, ..., Vr), Vi = (n1, n2, ..., nk), ni element of G
+            //        tau = (W1, W2, ..., Wr), Wi = (m1, m2, ..., mk), mi element of G 
+            //        orbit = (Q1, Q2, ..., Qr), Qi = (o1, o2, ..., ok), oi element of G 
+            // Output: coarsed orbit, Io updated map (vertex -> orbit)
+            template<typename Graph> void coarse_orbit(
+                  typename partition_type<Graph>::type & orbit
+                , std::map<typename boost::graph_traits<Graph>::vertex_descriptor, std::size_t> & Io
+                , typename partition_type<Graph>::type const & pi
+                , typename partition_type<Graph>::type const & tau
+                , Graph const & G
+            ) {
+                assert( pi.size() == tau.size() );
+                if (pi != tau)
+                    for (typename partition_type<Graph>::type::const_iterator it = pi.begin(), jt = tau.begin(); it != pi.end(); ++it, ++jt)
+                    {
+                        // If Vi != Wi and {Qa: oj = n1, oj element of Qa, n1 element of Vi} != {Qb: oj = m1, oj element of Qb, m1 element of Wi} 
+                        // merge Qa and Qb into Qa and remove Qb
+                        std::size_t const orbit_n = Io[it->front()];
+                        std::size_t const orbit_m = Io[jt->front()];
+                        if (*it != *jt && orbit_n != orbit_m ) {
+                            std::size_t a,b;
+                            boost::tie(a,b) = boost::minmax(orbit_n, orbit_m);
+                            std::copy(orbit[b].begin(), orbit[b].end(), std::back_inserter(orbit[a]));
+                            std::sort(orbit[a].begin(), orbit[a].end());
+                            orbit.erase(orbit.begin() + b);
+                            detail::partition_indeces(Io, orbit, G);
+                        }
+                    }
+            }
+
+            // uncolored initial partition
+            template<typename Graph> void initial_partition(
+                  Graph const & G
+                , typename partition_type<Graph>::type & pi
+                , boost::mpl::false_
+            ) {
+                pi.resize(1);
+                typename boost::graph_traits<Graph>::vertex_iterator it, end;
+                for (boost::tie(it, end) = vertices(G); it != end; ++it)
+                    pi.front().push_back(*it);
+            }
+
+            // vertex colored initial partition
+            template<typename Graph> void initial_partition(
+                  Graph const & G
+                , typename partition_type<Graph>::type & pi
+                , boost::mpl::true_
+            ) {
+                boost::container::flat_set<typename boost::property_map<Graph, alps::vertex_type_t>::type::value_type> color_set;
+                typename boost::graph_traits<Graph>::vertex_iterator it, end;
+                for (boost::tie(it, end) = vertices(G); it != end; ++it)
+                    color_set.insert(get(alps::vertex_type_t(), G)[*it]);
+                pi.resize(color_set.size());
+                for (boost::tie(it, end) = vertices(G); it != end; ++it)
+                    pi[std::find(color_set.begin(), color_set.end(), get(alps::vertex_type_t(), G)[*it]) - color_set.begin()].push_back(*it);
+            }
+
+            // uncolored initial partition with symmetry breaking vertex v
+            template<typename Graph> void initial_partition(
+                  Graph const & G
+                , typename partition_type<Graph>::type & pi
+                , typename boost::graph_traits<Graph>::vertex_descriptor v
+                , boost::mpl::false_
+            ) {
+                pi.resize(2);
+                pi.back().push_back(v);
+                typename boost::graph_traits<Graph>::vertex_iterator it, end;
+                for (boost::tie(it, end) = vertices(G); it != end; ++it)
+                    if (*it != v)
+                        pi.front().push_back(*it);
+            }
+
+            // vertex colored initial partition with symmetry breaking vertex v
+            template<typename Graph> void initial_partition(
+                  Graph const & G
+                , typename partition_type<Graph>::type & pi
+                , typename boost::graph_traits<Graph>::vertex_descriptor v
+                , boost::mpl::true_
+            ) {
+                boost::container::flat_set<typename boost::property_map<Graph, alps::vertex_type_t>::type::value_type> color_set;
+                typename boost::graph_traits<Graph>::vertex_iterator it, end;
+                for (boost::tie(it, end) = vertices(G); it != end; ++it)
+                    color_set.insert(get(alps::vertex_type_t(), G)[*it]);
+                pi.resize(color_set.size() + 1);
+                pi.back().push_back(v);
+                for (boost::tie(it, end) = vertices(G); it != end; ++it)
+                    if (*it != v)
+                        pi[std::find(color_set.begin(), color_set.end(), get(alps::vertex_type_t(), G)[*it]) - color_set.begin()].push_back(*it);
+            }
+
             namespace label {
                 struct plain_label  : public graph_label_matrix_type { };
                 struct vertex_label : public graph_label_matrix_type { };
@@ -525,266 +784,8 @@ namespace alps {
                                     get_part<plain_label>(l).set(I[*ai] * pi.size() - (I[*ai] - 1) * I[*ai] / 2 + it->second - I[*ai]);
                     }
                 };
-            }
-
-            // Checks if the Graph g has a Vertex labeled v
-            template <typename Graph>
-            bool graph_has_vertex(Graph const& g, typename boost::graph_traits<Graph>::vertex_descriptor v)
-            {
-                typename boost::graph_traits<Graph>::vertex_iterator vb,ve;
-                boost::tie(vb,ve) = vertices(g);
-                return (std::find(vb,ve,v) != ve);
-            }
-
-            // Input: pi = (V1, V2, ..., Vr)
-            // Output: I = {(ni, j) : ni element of Vj
-            template<typename Graph> void partition_indeces(
-                  std::map<typename boost::graph_traits<Graph>::vertex_descriptor, std::size_t> & I
-                , typename partition_type<Graph>::type const & pi
-                , Graph const & G
-            ) {
-                for (typename partition_type<Graph>::type::const_iterator it = pi.begin(); it != pi.end(); ++it)
-                    for (typename partition_type<Graph>::type::value_type::const_iterator jt = it->begin(); jt != it->end(); ++jt)
-                        I[*jt] = it - pi.begin();
-            }
-
-            // Given an inequitable ordered partition pi = (V1, V2, . . . , Vr ), we say that Vj shatters Vi 
-            // if there exist two vertices v, w element of Vi such that deg(v, Vj ) != deg(w, Vj ).
-            // Input: pi = (V1, V2, ..., Vr)
-            // Output: i, j; Vj shatters Vi and (i, j) is the minimum element of B under the lexicographic order
-            template<typename Graph> std::pair<std::size_t, std::size_t> shattering(
-                  typename partition_type<Graph>::type const & pi
-                , std::map<typename boost::graph_traits<Graph>::vertex_descriptor, std::size_t> const & I
-                , Graph const & G
-            ) {
-                using boost::make_tuple;
-                using std::make_pair;
-                // B = {(i, j): Vj shatters Vi}
-                std::size_t maxsize = 0;
-                for (typename partition_type<Graph>::type::const_iterator it = pi.begin(); it != pi.end(); ++it)
-                    maxsize = std::max(maxsize,it->size());
-                boost::multi_array<std::size_t,2> adjacent_numbers(boost::extents[pi.size()][maxsize]);
-                // For each Vi
-                for (typename partition_type<Graph>::type::const_iterator it = pi.begin(); it != pi.end(); ++it) {
-                    std::fill_n(adjacent_numbers.data(),adjacent_numbers.num_elements(),0);
-                    // Get the deg(v,Vj) for all Vj, for all v in Vi
-                    for (typename partition_type<Graph>::type::value_type::const_iterator jt = it->begin(); jt != it->end(); ++jt) {
-                        typename boost::graph_traits<Graph>::adjacency_iterator ai, ae;
-                        for (boost::tie(ai, ae) = adjacent_vertices(*jt, G); ai != ae; ++ai)
-                            ++adjacent_numbers[I.find(*ai)->second][jt - it->begin()];
-                    }
-                    // Return the earliest i,j for which deg(v0,Vj) != deg(v1,Vj) where {v0,v1} in Vi
-                    for (boost::multi_array<std::size_t,2>::const_iterator jt = adjacent_numbers.begin(); jt != adjacent_numbers.end(); ++jt)
-                    {
-                        for (std::size_t k = 0; k < it->size(); ++k)
-                            if( *(jt->begin() + k) != *jt->begin() )
-                                // Return the minimum element of B under the lexicographic order
-                                return make_pair(it - pi.begin(), jt - adjacent_numbers.begin());
-                    }
-                }
-
-                // no shattering found
-                return std::make_pair(pi.size(), 0);
-            }
-
-            // Input: pi = (V1, V2, ..., Vr)
-            // Output: An ordered partition R(pi)
-            template<typename Graph> void equitable_refinement(
-                  typename partition_type<Graph>::type & pi
-                , Graph const & G
-            ) {
-                using boost::tie;
-                using std::make_pair;
-                // If we don't have a discrete partition pi (i.e. only trivial parts)
-                if (pi.size() < num_vertices(G))
-                    while(true) {
-                        // OPTIMIZE move map outside
-                        std::map<typename boost::graph_traits<Graph>::vertex_descriptor, std::size_t> I;
-                        // I = {(ni, j) : ni element of Vj
-                        partition_indeces(I, pi, G);
-                        std::size_t i, j;
-                        boost::tie(i, j) = shattering(pi, I, G);
-                        // If B is empty, then stop, reporting pi as the output R(pi)
-                        if (i == pi.size())
-                            break;
-                        // Let (X1, X2, . . . , Xt) be the shattering of Vi by Vj
-                        // Replace pi by the ordered partition where Vi is replaced by X1, X2, ..., Xt;
-                        // that is, replace pi = (V1, V2, ..., Vr) with (V1, V2, ..., Vi−1, X1, X2, ..., Xt, Vi+1, ..., Vr).
-                        typename partition_type<Graph>::type tau(pi.begin(), pi.begin() + i);
-                        // O = {(k, l) : nl element of Vi with k adjacents in Vj}
-                        // OPTIMIZE move vector outside
-                        std::vector<std::pair<std::size_t, std::size_t> > O;
-                        // Note: one could optimize the following loop by combining it with the shattering function
-                        for (typename partition_type<Graph>::type::value_type::const_iterator it = pi[i].begin(); it != pi[i].end(); ++it) {
-                            O.push_back(make_pair(0, *it));
-                            typename boost::graph_traits<Graph>::adjacency_iterator ai, ae;
-                            for (boost::tie(ai, ae) = adjacent_vertices(*it, G); ai != ae; ++ai)
-                                if (I[*ai] == j)
-                                    ++O.back().first;
-                        }
-                        std::sort(O.begin(), O.end());
-                        // The shattering of Vi by Vj is the ordered partition (X1, X2, . . . , Xt) of
-                        // Vi such that if v in Xk and w in Xl then k < l if and only if deg(v, Vj) < deg(w, Vj).
-                        // Thus, (X1, X2, . . . , Xt) sorts the vertices of Vi by their degree to Vj
-                        tau.push_back(typename partition_type<Graph>::type::value_type(1, O.front().second));
-                        std::size_t counter = O.front().first;
-                        for (std::vector<std::pair<std::size_t, std::size_t> >::const_iterator it = O.begin() + 1; it != O.end(); ++it)
-                            if (counter < it->first) {
-                                tau.push_back(typename partition_type<Graph>::type::value_type(1, it->second));
-                                counter = it->first;
-                            } else
-                                tau.back().push_back(it->second);
-                        // pi = (V1, V2, ..., Vi−1, X1, X2, ..., Xt, Vi+1, ..., Vr).
-                        if (i + 1 < pi.size())
-                            std::copy(pi.begin() + i + 1, pi.end(), std::back_inserter(tau));
-                        swap(pi,tau);
-                    }
-            }
-
-            // The search tree T(G) is the rooted tree whose nodes
-            // {(pi, u) : pi is an ordered partition of [n]; u = (u1, u2, ..., uk) is a sequence of distinct vertices;
-            //   pi = (...     (R(mu) ⊥ u1) ⊥ u2) ... ) ⊥ uk;
-            //   ui is in the ﬁrst non-trivial part of (... (R(mu) ⊥ u1) ⊥ u2) ...) ⊥ ui−1 for each i.
-            // Input: incomplete trace of T(G)
-            //        remaining arches
-            // Output: trace from root to a terminal node of T(G)
-            template<typename Graph> void terminal_node(
-                  std::vector<boost::tuple<typename partition_type<Graph>::type, std::size_t, std::size_t> > & T
-                , Graph const & G
-            ) {
-                using boost::get;
-                using boost::make_tuple;
-                assert(T.size() >= 2);
-                typename partition_type<Graph>::type const & tau = get<0>(*(T.rbegin() + 1));
-                typename partition_type<Graph>::type & pi        = get<0>(T.back());
-                assert(pi.empty());
-                std::size_t i = get<1>(T.back());
-                // u = nj, nj is j-th element of Vi
-                std::size_t j = get<2>(T.back());
-                // Let pi be an equitable ordered partition of [n] with a nontrivial
-                // part Vi, and let u be an element of Vi. The splitting of pi by u, 
-                // denoted by pi ⊥ u, is the equitable reﬁnement R(pi) of the ordered partition 
-                // pi = (V1, V2, ..., {u}, Vi \ {u}, Vi+1, ..., Vr).
-                // u = j-th element of part Vi
-                pi.reserve(tau.size()+2);
-                std::copy(tau.begin(), tau.begin() + i, std::back_inserter(pi));
-                pi.push_back(typename partition_type<Graph>::type::value_type(1, tau[i][j]));
-                pi.push_back(typename partition_type<Graph>::type::value_type(tau[i].begin(), tau[i].begin() + j));
-                if (j + 1 < tau[i].size())
-                    std::copy(tau[i].begin() + j + 1, tau[i].end(), std::back_inserter(pi.back()));
-                if (pi.back().empty())
-                    pi.pop_back();
-                if (i + 1 < tau.size())
-                    std::copy(tau.begin() + i + 1, tau.end(), std::back_inserter(pi));
-                equitable_refinement(pi, G);
-                // To reduce the branching factor, McKay actually chooses the ﬁrst smallest part of pi. The
-                // method of choosing the part for splitting pi is irrelevant as long as it is an isomorphism invariant
-                // of unordered partitions. That is to say, that if the i-th part of pi is chosen, then also the i-th part
-                // of pi^ny is chosen for any nu element of Sigma_n.
-                std::size_t n = num_vertices(G) + 1;
-                i = 0;
-                for (typename partition_type<Graph>::type::iterator it = pi.begin(); it != pi.end(); ++it)
-                    if (it->size() > 1 && n > it->size()) {
-                        n = it->size();
-                        i = it - pi.begin();
-                    }
-                if (n < num_vertices(G) + 1u) {
-                    T.push_back(boost::make_tuple(typename partition_type<Graph>::type(), i, 0));
-                    terminal_node(T, G);
-                }
-            }
-
-            // If an ni
-            // Input: pi = (V1, V2, ..., Vr), Vi = (n1, n2, ..., nk), ni element of G
-            //        tau = (W1, W2, ..., Wr), Wi = (m1, m2, ..., mk), mi element of G 
-            //        orbit = (Q1, Q2, ..., Qr), Qi = (o1, o2, ..., ok), oi element of G 
-            // Output: coarsed orbit, Io updated map (vertex -> orbit)
-            template<typename Graph> void coarse_orbit(
-                  typename partition_type<Graph>::type & orbit
-                , std::map<typename boost::graph_traits<Graph>::vertex_descriptor, std::size_t> & Io
-                , typename partition_type<Graph>::type const & pi
-                , typename partition_type<Graph>::type const & tau
-                , Graph const & G
-            ) {
-                assert( pi.size() == tau.size() );
-                if (pi != tau)
-                    for (typename partition_type<Graph>::type::const_iterator it = pi.begin(), jt = tau.begin(); it != pi.end(); ++it, ++jt)
-                    {
-                        // If Vi != Wi and {Qa: oj = n1, oj element of Qa, n1 element of Vi} != {Qb: oj = m1, oj element of Qb, m1 element of Wi} 
-                        // merge Qa and Qb into Qa and remove Qb
-                        std::size_t const orbit_n = Io[it->front()];
-                        std::size_t const orbit_m = Io[jt->front()];
-                        if (*it != *jt && orbit_n != orbit_m ) {
-                            std::size_t a,b;
-                            boost::tie(a,b) = boost::minmax(orbit_n, orbit_m);
-                            std::copy(orbit[b].begin(), orbit[b].end(), std::back_inserter(orbit[a]));
-                            std::sort(orbit[a].begin(), orbit[a].end());
-                            orbit.erase(orbit.begin() + b);
-                            detail::partition_indeces(Io, orbit, G);
-                        }
-                    }
-            }
-
-            // uncolored initial partition
-            template<typename Graph> void initial_partition(
-                  Graph const & G
-                , typename partition_type<Graph>::type & pi
-                , boost::mpl::false_
-            ) {
-                pi.resize(1);
-                typename boost::graph_traits<Graph>::vertex_iterator it, end;
-                for (boost::tie(it, end) = vertices(G); it != end; ++it)
-                    pi.front().push_back(*it);
-            }
-
-            // vertex colored initial partition
-            template<typename Graph> void initial_partition(
-                  Graph const & G
-                , typename partition_type<Graph>::type & pi
-                , boost::mpl::true_
-            ) {
-                boost::container::flat_set<typename boost::property_map<Graph, alps::vertex_type_t>::type::value_type> color_set;
-                typename boost::graph_traits<Graph>::vertex_iterator it, end;
-                for (boost::tie(it, end) = vertices(G); it != end; ++it)
-                    color_set.insert(get(alps::vertex_type_t(), G)[*it]);
-                pi.resize(color_set.size());
-                for (boost::tie(it, end) = vertices(G); it != end; ++it)
-                    pi[std::find(color_set.begin(), color_set.end(), get(alps::vertex_type_t(), G)[*it]) - color_set.begin()].push_back(*it);
-            }
-
-            // uncolored initial partition with symmetry breaking vertex v
-            template<typename Graph> void initial_partition(
-                  Graph const & G
-                , typename partition_type<Graph>::type & pi
-                , typename boost::graph_traits<Graph>::vertex_descriptor v
-                , boost::mpl::false_
-            ) {
-                pi.resize(2);
-                pi.back().push_back(v);
-                typename boost::graph_traits<Graph>::vertex_iterator it, end;
-                for (boost::tie(it, end) = vertices(G); it != end; ++it)
-                    if (*it != v)
-                        pi.front().push_back(*it);
-            }
-
-            // vertex colored initial partition with symmetry breaking vertex v
-            template<typename Graph> void initial_partition(
-                  Graph const & G
-                , typename partition_type<Graph>::type & pi
-                , typename boost::graph_traits<Graph>::vertex_descriptor v
-                , boost::mpl::true_
-            ) {
-                boost::container::flat_set<typename boost::property_map<Graph, alps::vertex_type_t>::type::value_type> color_set;
-                typename boost::graph_traits<Graph>::vertex_iterator it, end;
-                for (boost::tie(it, end) = vertices(G); it != end; ++it)
-                    color_set.insert(get(alps::vertex_type_t(), G)[*it]);
-                pi.resize(color_set.size() + 1);
-                pi.back().push_back(v);
-                for (boost::tie(it, end) = vertices(G); it != end; ++it)
-                    if (*it != v)
-                        pi[std::find(color_set.begin(), color_set.end(), get(alps::vertex_type_t(), G)[*it]) - color_set.begin()].push_back(*it);
-            }
-        }
+            } // end namespace label
+        } // end namespace detail
 
         namespace detail {
 
@@ -964,7 +965,7 @@ namespace alps {
             // create canonical properties
             return detail::canonical_properties_impl(G, pi, label_creator);
         }
-    }
-}
+    } // end namespace graph
+} // end namespace alps
 
 #endif // ALPS_GRAPH_CANONICAL_PROPERTIES_HPP
