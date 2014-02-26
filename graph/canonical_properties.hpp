@@ -4,7 +4,7 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2010 - 2013 by Lukas Gamper <gamperl@gmail.com>                   *
+ * Copyright (C) 2010 - 2014 by Lukas Gamper <gamperl@gmail.com>                   *
  *                              Andreas Hehn <hehn@phys.ethz.ch>                   *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
@@ -53,6 +53,10 @@
 #include <map>
 #include <vector>
 #include <algorithm>
+
+#ifndef NDEBUG
+#include <alps/graph/detail/assert_helpers.hpp>
+#endif //NDEBUG
 
 namespace alps {
     namespace graph {
@@ -278,23 +282,27 @@ namespace alps {
                         impl(graph_type const& G)
                         : colors_(get_color_list(alps::edge_type_t(),G))
                         {
+                            typename boost::graph_traits<graph_type>::edge_iterator it, end;
+                            boost::tie(it, end) = edges(G);
+                            edge_list_ = std::vector<edge_descriptor>(it,end);
                         }
 
                         // Edge colored graph label
                         // Input: pi = (V1, V2, ..., Vr)
                         // Output: comparable graph label l(pi)
+                        // IMPORTANT: The class assumes that the Graph G is not altered as long as the object exists,
+                        //            i.e. the Graph G should not be altered between calls of update_graph_label().
                         // TODO: only add one edge from orbit to orbit not all edges
                         template <typename InternalLabel>
                         void update_graph_label(InternalLabel & l, typename partition_type<graph_type>::type const & pi, graph_type const & G) const {
-                            typename boost::graph_traits<graph_type>::edge_iterator it, end;
-                            boost::tie(it, end) = edges(G);
-                            std::vector<edge_descriptor> edge_list(it,end);
-                            std::sort(edge_list.begin(), edge_list.end(), apply_label_edge_comp(pi, G));
+                            assert(( assert_helpers::edge_list_matches_graph(edge_list_,G) ));
+                            assert(( colors_ == get_color_list(alps::edge_type_t(),G) ));
+                            std::sort(edge_list_.begin(), edge_list_.end(), apply_label_edge_comp(pi, G));
                             // TODO: just make one row per orbit, not per vertex
                             get_part<edge_label>(l).clear();
                             get_part<edge_label>(l).resize(num_edges(G) * colors_.size());
-                            for (typename std::vector<edge_descriptor>::const_iterator jt = edge_list.begin(); jt != edge_list.end(); ++jt)
-                                get_part<edge_label>(l).set((std::find(colors_.begin(), colors_.end(), get(alps::edge_type_t(), G)[*jt]) - colors_.begin()) * num_edges(G) + (jt - edge_list.begin()));
+                            for (typename std::vector<edge_descriptor>::const_iterator jt = edge_list_.begin(); jt != edge_list_.end(); ++jt)
+                                get_part<edge_label>(l).set((std::find(colors_.begin(), colors_.end(), get(alps::edge_type_t(), G)[*jt]) - colors_.begin()) * num_edges(G) + (jt - edge_list_.begin()));
                         }
 
                         template <typename FinalLabel, typename InternalLabel>
@@ -306,6 +314,7 @@ namespace alps {
                         }
                       private:
                         graph_label_color_vector<color_type> colors_;
+                        mutable std::vector<edge_descriptor> edge_list_;
                     };
                 };
 
@@ -321,6 +330,7 @@ namespace alps {
                       private:
                         typedef typename color_partition<graph_type>::type                color_partition_type;
                         typedef typename boost::graph_traits<graph_type>::edge_descriptor edge_descriptor;
+                        typedef boost::container::flat_map<color_type,color_type>         color_map_type;
                         // Sort edges acoring to the given partition
                         struct apply_label_edge_comp {
                             // Input: pi = (V1, V2, ..., Vr)
@@ -354,12 +364,10 @@ namespace alps {
                         };
 
                         void canonicalize_colors(
-                              boost::container::flat_map<color_type, color_type> & color_map
+                              color_map_type & color_map
                             , std::vector<edge_descriptor> & edge_list
                             , graph_type const& G
                         ) const {
-                            typedef boost::container::flat_map<color_type,color_type> color_map_type;
-
                             for(typename std::vector<edge_descriptor>::const_iterator jt = edge_list.begin(); jt != edge_list.end(); ++jt) {
                                 typename color_map_type::iterator it = color_map.find(get(alps::edge_type_t(),G)[*jt]);
                                 if(it == color_map.end()) {
@@ -391,6 +399,9 @@ namespace alps {
                         impl(graph_type const& G)
                         : color_partition_()
                         {
+                            typename boost::graph_traits<graph_type>::edge_iterator it, end;
+                            boost::tie(it, end) = edges(G);
+                            edge_list_ = std::vector<edge_descriptor>(it,end);
                         }
 
                         void set_color_partition(color_partition_type const& color_partition)
@@ -406,38 +417,28 @@ namespace alps {
                         // Edge colored graph label
                         // Input: pi = (V1, V2, ..., Vr)
                         // Output: comparable graph label l(pi)
+                        // IMPORTANT: The class assumes that the Graph G is not altered as long as the object exists,
+                        //            i.e. the Graph G should not be altered between calls of update_graph_label().
                         // TODO: only add one edge from orbit to orbit not all edges
                         template <typename InternalLabel>
                         void update_graph_label(InternalLabel & l, typename partition_type<graph_type>::type const & pi, graph_type const & G) const {
-                            assert( !color_partition_.empty() );
-#ifndef NDEBUG
-                            {
-                                // Check if all edge colors occuring in the graph are also in the color_partition
-                                typename boost::graph_traits<graph_type>::edge_iterator it, end;
-                                bool partitions_are_complete = true;
-                                for (boost::tie(it, end) = edges(G); it != end; ++it)
-                                    partitions_are_complete = partitions_are_complete && color_partition_.find(get(alps::edge_type_t(),G)[*it]) != color_partition_.end();
-                                assert(partitions_are_complete);
-                            }
-#endif //NDEBUG
+                            assert(( assert_helpers::edge_list_matches_graph(edge_list_, G) ));
+                            assert(( !color_partition_.empty() ));
+                            assert(( assert_helpers::color_partitions_are_complete(color_partition_, G) ));
                             // The edge_label considers the symmetry,
                             // the hidden_edge_label ignores the symmetry to distinguish different realizations.
-                            typename boost::graph_traits<graph_type>::edge_iterator it, end;
-                            boost::tie(it, end) = edges(G);
-                            std::vector<edge_descriptor> edge_list(it,end);
-                            std::sort(edge_list.begin(), edge_list.end(), apply_label_edge_comp(pi, G));
+                            std::sort(edge_list_.begin(), edge_list_.end(), apply_label_edge_comp(pi, G));
 
-                            boost::container::flat_map<color_type,color_type> color_map;
-                            color_map.reserve(color_partition_.size());
-                            canonicalize_colors(color_map, edge_list, G);
+                            color_map_cached_.clear();
+                            canonicalize_colors(color_map_cached_, edge_list_, G);
                             get_part<edge_label>(l).clear();
                             get_part<edge_label>(l).resize(num_edges(G) * color_partition_.size());
                             get_part<hidden_edge_label>(l).clear();
                             get_part<hidden_edge_label>(l).resize(num_edges(G) * color_partition_.size());
-                            for (typename std::vector<edge_descriptor>::const_iterator jt = edge_list.begin(); jt != edge_list.end(); ++jt)
+                            for (typename std::vector<edge_descriptor>::const_iterator jt = edge_list_.begin(); jt != edge_list_.end(); ++jt)
                             {
-                                get_part<edge_label>(l).set((color_partition_.find(color_map[get(alps::edge_type_t(), G)[*jt]]) - color_partition_.begin()) * num_edges(G) + (jt - edge_list.begin()));
-                                get_part<hidden_edge_label>(l).set((color_partition_.find(get(alps::edge_type_t(), G)[*jt]) - color_partition_.begin()) * num_edges(G) + (jt - edge_list.begin()));
+                                get_part<edge_label>(l).set((color_partition_.find(color_map_cached_[get(alps::edge_type_t(), G)[*jt]]) - color_partition_.begin()) * num_edges(G) + (jt - edge_list_.begin()));
+                                get_part<hidden_edge_label>(l).set((color_partition_.find(           get(alps::edge_type_t(), G)[*jt])  - color_partition_.begin()) * num_edges(G) + (jt - edge_list_.begin()));
                             }
                         }
 
@@ -453,14 +454,16 @@ namespace alps {
                             swap(get<end-1>(l), colors);
                         }
                       private:
-                        color_partition_type color_partition_;
+                        color_partition_type                    color_partition_;
+                        mutable std::vector<edge_descriptor>    edge_list_;
+                        mutable color_map_type                  color_map_cached_;
                     };
                 };
 
                 //
                 // The label creator (policy host class)
                 //
-
+                // IMPORTANT: The graph passed to the constructor must not be altered during the lifetime of the graph_label_creator object!
                 template <typename Graph, typename VertexLabelPolicy = no_coloring_policy, typename EdgeLabelPolicy = no_coloring_policy>
                 class graph_label_creator : public VertexLabelPolicy::template impl<Graph,true>, public EdgeLabelPolicy::template impl<Graph,false>
                 {
