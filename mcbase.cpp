@@ -40,12 +40,12 @@ namespace alps {
 
     void mcbase::save(boost::filesystem::path const & filename) const {
         alps::hdf5::archive ar(filename, "w");
-        ar["/"] << *this;
+        ar["/simulation/realizations/0/clones/0"] << *this;
     }
 
     void mcbase::load(boost::filesystem::path const & filename) {
         alps::hdf5::archive ar(filename);
-        ar["/"] >> *this;
+        ar["/simulation/realizations/0/clones/0"] >> *this;
     }
 
     bool mcbase::run(boost::function<bool ()> const & stop_callback) {
@@ -86,14 +86,14 @@ namespace alps {
 
     void mcbase::save(alps::hdf5::archive & ar) const {
         ar["/parameters"] << parameters;
-        ar["/simulation/realizations/0/clones/0/measurements"] << measurements;
-        ar["/simulation/realizations/0/clones/0/checkpoint/engine"] << random;
+        ar["measurements"] << measurements;
+        ar["checkpoint/engine"] << random;
     }
 
     void mcbase::load(alps::hdf5::archive & ar) {
         ar["/parameters"] >> parameters;
-        ar["/simulation/realizations/0/clones/0/measurements"] >> measurements;
-        ar["/simulation/realizations/0/clones/0/checkpoint/engine"] >> random;
+        ar["measurements"] >> measurements;
+        ar["checkpoint/engine"] >> random;
     }
 
 }
