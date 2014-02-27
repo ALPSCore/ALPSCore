@@ -1,6 +1,6 @@
-19
-array([1, 2, 3], dtype=int32)
-array([[[1, 2],
+childs:  22
+/list:  array([1, 2, 3], dtype=int32)
+/list2:  array([[[1, 2],
         [3, 4]],
 
        [[1, 2],
@@ -11,32 +11,28 @@ array([[[1, 2],
 
        [[1, 2],
         [3, 4]]], dtype=int32)
-{'string': 'str', 'numpycpx': array([ 1.1+1.j,  0.0+2.j,  3.5+0.j]), 'list': array([1, 2, 3], dtype=int32), '1': 1, 'scalar': 1, '4': {'a': array([1, 2, 3]), '(2+3j)': 'foo'}, 'numpy': array([1, 2, 3])}
-array([1, 2, 3])
-array([ 1.1,  2. ,  3.5])
-array([ 1.1+1.j,  0.0+2.j,  3.5+0.j])
-1
-1.1
-(1.1+1j)
-['a', 'list', 'of', 'strings']
-1
-1
-1.0
-(1+1j)
-'str'
-[array([1, 2, 3], dtype=int32), array([1, 2, 3]), 'gurke', [[array([1, 2, 3]), 2, 3], ['x', (1+1j)]]]
-array([[[0],
-        [0]],
-
-       [[0],
-        [0]],
-
-       [[0],
-        [0]],
-
-       [[0],
-        [3]]], dtype=int32)
-array([[0, 1, 2, 3, 4],
+/dict:  {'string': 'str', 'numpycpx': array([ 1.1+1.j,  0.0+2.j,  3.5+0.j]), 'list': array([1, 2, 3], dtype=int32), '1': 1, 'scalar': 1, '4': {'a': array([1, 2, 3]), '(2+3j)': 'foo'}, 'numpy': array([1, 2, 3])}
+/numpy:  array([1, 2, 3])
+/numpy2:  array([ 1.1,  2. ,  3.5])
+/numpy3:  array([ 1.1+1.j,  0.0+2.j,  3.5+0.j])
+/numpyel:  1
+/numpyel2:  1.1
+/numpyel3:  (1.1+1j)
+/int:  ['a', 'list', 'of', 'strings']
+/long:  1
+/double:  1
+/complex:  1.0
+/string:  (1+1j)
+/stringlist:  'str'
+/inhomogenious:  [array([1, 2, 3], dtype=int32), array([1, 2, 3]), 'gurke', [[array([1, 2, 3]), 2, 3], ['x', (1+1j)]]]
+/inhomogenious2:  [array([[1, 2],
+       [3, 4]], dtype=int32), array([[1, 2],
+       [3, 4]], dtype=int32), array([[1, 2],
+       [3, 4]], dtype=int32), [array([1, 2], dtype=int32), array([3], dtype=int32)]]
+/inhomogenious3:  [array([0, 1, 2]), array([0, 1, 2, 3, 4])]
+/inhomogenious4:  array([[ 0,  1,  2],
+       [ 0, 10, 20]])
+/inhomogenious5:  [array([0, 1, 2], dtype=int32), array([0, 1, 2, 3, 4], dtype=int32), array([0, 1, 2], dtype=int32)]
+/numpylist1:  array([[0, 1, 2, 3, 4],
        [5, 6, 7, 8, 9]])
-array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]])
+/numpylist2:  [array([0, 1, 2, 3, 4]), array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])]

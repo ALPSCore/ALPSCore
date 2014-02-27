@@ -79,34 +79,34 @@ s5 = ar["/string"]
 ls = ar["/stringlist"]
 i1 = ar["/inhomogenious"]
 i2 = ar["/inhomogenious2"]
-i3 = ar["/inhomogenious2"]
-i4 = ar["/inhomogenious2"]
-i5 = ar["/inhomogenious2"]
+i3 = ar["/inhomogenious3"]
+i4 = ar["/inhomogenious4"]
+i5 = ar["/inhomogenious5"]
 nl1 = ar["/numpylist1"]
 nl2 = ar["/numpylist2"]
 
-print len(childs)
-print repr(l1)
-print repr(l2)
-print repr(d1)
-print repr(n1)
-print repr(n2)
-print repr(n3)
-print repr(e1)
-print repr(e2)
-print repr(e3)
-print repr(ls)
-print repr(s1)
-print repr(s2)
-print repr(s3)
-print repr(s4)
-print repr(s5)
-print repr(i1)
-print repr(i2)
-print repr(i3)
-print repr(i4)
-print repr(i5)
-print repr(nl1)
-print repr(nl2)
+print "childs: ", len(childs)
+print "/list: ", repr(l1)
+print "/list2: ", repr(l2)
+print "/dict: ", repr(d1)
+print "/numpy: ", repr(n1)
+print "/numpy2: ", repr(n2)
+print "/numpy3: ", repr(n3)
+print "/numpyel: ", repr(e1)
+print "/numpyel2: ", repr(e2)
+print "/numpyel3: ", repr(e3)
+print "/int: ", repr(ls)
+print "/long: ", repr(s1)
+print "/double: ", repr(s2)
+print "/complex: ", repr(s3)
+print "/string: ", repr(s4)
+print "/stringlist: ", repr(s5)
+print "/inhomogenious: ", repr(i1)
+print "/inhomogenious2: ", repr(i2)
+print "/inhomogenious3: ", repr(i3)
+print "/inhomogenious4: ", repr(i4)
+print "/inhomogenious5: ", repr(i5)
+print "/numpylist1: ", repr(nl1)
+print "/numpylist2: ", repr(nl2)
 
 del ar
