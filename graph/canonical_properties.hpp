@@ -650,6 +650,7 @@ namespace alps {
                                         }
                                     }
                                     assert(found_mapping);
+                                    static_cast<void>(found_mapping); // avoid unused variable warning
                                 }
                             }
                         }
