@@ -43,8 +43,7 @@
 
 #ifndef ALPS_NGS_SINGLE_THREAD
 
-#include <boost/thread/lock_guard.hpp>
-#include <boost/thread/recursive_mutex.hpp>
+#include <boost/thread.hpp>
 
 #endif
 
