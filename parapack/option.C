@@ -34,15 +34,15 @@ namespace po = boost::program_options;
 namespace pt = boost::posix_time;
 
 option::option(int argc, char** argv, bool eval)
-  : desc("Allowed options"), for_evaluate(eval),
-    time_limit(pt::pos_infin), check_interval(pt::millisec(100)),
-    checkpoint_interval(pt::seconds(3600)), report_interval(pt::seconds(600)),
-    vmusage_interval(pt::pos_infin),
+  : desc("Allowed options"), for_evaluate(eval), show_help(false),
+    show_license(false), time_limit(pt::pos_infin),
+    check_interval(pt::millisec(100)), checkpoint_interval(pt::seconds(3600)),
+    report_interval(pt::seconds(600)), vmusage_interval(pt::pos_infin),
     use_termfile(false), auto_evaluate(true), evaluate_only(false),
-    dump_format(dump_format::hdf5), dump_policy(dump_policy::RunningOnly), write_xml(false),
-    use_mpi(false), default_total_threads(true), auto_total_threads(false), 
-    num_total_threads(1), threads_per_clone(1), task_range(),
-    jobfiles(), valid(true), show_help(false), show_license(false) {
+    dump_format(dump_format::hdf5), dump_policy(dump_policy::RunningOnly),
+    task_range(), write_xml(false),
+    use_mpi(false), default_total_threads(true), auto_total_threads(false),
+    num_total_threads(1), threads_per_clone(1), jobfiles(), valid(true) {
   desc.add_options()
     ("help,h", "produce help message")
     ("license,l", "print license conditions")
