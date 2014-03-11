@@ -235,7 +235,6 @@ std::string convert2xml(std::string const& inname)
     case scheduler::MCDump_scheduler:
       convert_scheduler(inname);
       return inname+".xml";
-      break;
     case scheduler::MCDump_task:
       convert_simulation(inname);
       return inname+".xml";
