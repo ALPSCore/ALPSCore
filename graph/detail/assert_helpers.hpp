@@ -29,14 +29,21 @@
 
 #include <algorithm>
 #include <vector>
-#include <boost/minmax.hpp>
+#include <boost/algorithm/minmax.hpp>
 #include <boost/tuple/tuple.hpp>
+#include <boost/tuple/tuple_comparison.hpp>
 #include <boost/graph/graph_traits.hpp>
 
 namespace alps {
 namespace graph {
 namespace detail {
 namespace assert_helpers {
+
+struct tuple_0th_equals_1st
+{
+    template <typename T1, typename T2>
+    bool operator()(boost::tuple<T1,T2> const& t) { return get<0>(t) == get<1>(t); }
+};
 
 template <typename Graph>
 bool edge_list_matches_graph(std::vector<typename boost::graph_traits<Graph>::edge_descriptor> edge_list, Graph const& g)
@@ -71,25 +78,17 @@ bool color_partitions_are_complete(typename color_partition<Graph>::type const& 
 template <typename Graph>
 bool is_simple_graph(Graph const& g)
 {
-    struct pair_first_equals_second
-    {
-        template <typename T1, typename T2>
-        bool operator()(std::pair<T1,T2> const& p)
-        {
-            return p.first == p.second;
-        }
-    };
     using std::sort;
     using std::adjacent_find;
-    using std::find;
+    using std::find_if;
     typedef typename boost::graph_traits<Graph>::vertex_descriptor vertex_descriptor;
     typename boost::graph_traits<Graph>::edge_iterator it, end;
-    std::vector<std::pair<vertex_descriptor,vertex_descriptor> > edge_list;
+    std::vector<boost::tuple<vertex_descriptor,vertex_descriptor> > edge_list;
     edge_list.reserve(num_edges(g));
     for (boost::tie(it, end) = edges(g); it != end; ++it)
         edge_list.push_back(boost::minmax(source(*it,g), target(*it,g)));
     sort(edge_list.begin(),edge_list.end());
-    return (find(edge_list.begin(),edge_list.end(), first_equals_second()) == edge_list.end() ) // no loop edge
+    return (find_if(edge_list.begin(),edge_list.end(), tuple_0th_equals_1st()) == edge_list.end() ) // no loop edge
          && (adjacent_find(edge_list.begin(),edge_list.end()) == edge_list.end()); // no more than one edge between two vertices
 }
 

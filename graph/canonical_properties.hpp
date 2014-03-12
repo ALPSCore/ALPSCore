@@ -891,7 +891,10 @@ namespace alps {
         template<typename Graph>
         typename canonical_properties_type<Graph>::type
         canonical_properties(Graph const & G) {
-            assert( assert_helpers::is_simple_graph(G) ); // The McKay Algorithm works for simple graphs only
+            // The McKay Algorithm works for simple graphs only!
+            // (Note: Edges connected to the same vertex on both sides might work,
+            // but were not considered in the papers and not tested here.)
+            assert( detail::assert_helpers::is_simple_graph(G) );
             typename partition_type<Graph>::type pi;
             // pi = (V1, V2, ..., Vr), Vi = (n1, n2, ..., nk), ni element of G
             // uncolored graphs: pi is a unit partition (pi has only one part)
@@ -920,7 +923,10 @@ namespace alps {
         template<typename Graph>
         typename canonical_properties_type<Graph>::type
         canonical_properties(Graph const & G, typename color_partition<Graph>::type const& c) {
-            assert( assert_helpers::is_simple_graph(G) ); // The McKay Algorithm works for simple graphs only
+            // The McKay Algorithm works for simple graphs only!
+            // (Note: Edges connected to the same vertex on both sides might work,
+            // but were not considered in the papers and not tested here.)
+            assert( detail::assert_helpers::is_simple_graph(G) );
             typename partition_type<Graph>::type pi;
             // pi = (V1, V2, ..., Vr), Vi = (n1, n2, ..., nk), ni element of G
             // uncolored graphs: pi is a unit partition (pi has only one part)
@@ -947,7 +953,10 @@ namespace alps {
         template<typename Graph>
         typename canonical_properties_type<Graph>::type
         canonical_properties(Graph const & G, typename boost::graph_traits<Graph>::vertex_descriptor v) {
-            assert( assert_helpers::is_simple_graph(G) ); // The McKay Algorithm works for simple graphs only
+            // The McKay Algorithm works for simple graphs only!
+            // (Note: Edges connected to the same vertex on both sides might work,
+            // but were not considered in the papers and not tested here.)
+            assert( detail::assert_helpers::is_simple_graph(G) );
             assert( detail::graph_has_vertex(G,v));
             typename partition_type<Graph>::type pi;
             // pi = (V1, V2, ..., Vr), Vi = (n1, n2, ..., nk), ni element of G
