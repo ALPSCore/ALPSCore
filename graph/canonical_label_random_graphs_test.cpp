@@ -34,14 +34,13 @@
 
 
 template <typename Graph, typename RNG>
-Graph generate_random_graph(RNG& rng, unsigned int max_vertices, double max_connectivity)
+Graph generate_random_simple_graph(RNG& rng, unsigned int max_vertices, double max_connectivity)
 {
     boost::random::uniform_int_distribution<unsigned int> rnd_nv(0,max_vertices-1);
     unsigned int num_vertices = rnd_nv(rng)+1;
     unsigned int max_edges = static_cast<unsigned int>(max_connectivity * (num_vertices * num_vertices))+1;
     boost::random::uniform_int_distribution<unsigned int> rnd_edges(0,max_edges-1);
     unsigned int num_edges = rnd_edges(rng)+1;
-    boost::random::uniform_int_distribution<unsigned int> rnd_vtx(0,num_vertices-1);
 
 
     unsigned int n = 1;
@@ -49,7 +48,9 @@ Graph generate_random_graph(RNG& rng, unsigned int max_vertices, double max_conn
     for(unsigned int i=0; i < num_edges; ++i)
     {
         unsigned int vtx1 = rng() % n;
-        unsigned int vtx2 = rng() % max_vertices;
+        unsigned int vtx2 = vtx1;
+        while(vtx2 == vtx1)
+            vtx2 = rng() % max_vertices; // vtx2 has to be different from vtx1
         if(vtx2 >= n)
             vtx2 = n++;
         edges.push_back(boost::minmax(vtx1,vtx2));
@@ -115,7 +116,7 @@ int main()
     bool ok = true;
     for(unsigned int i=0; i < 50; ++i)
     {
-        graph_type g = generate_random_graph<graph_type>(rng, 20, 0.6);
+        graph_type g = generate_random_simple_graph<graph_type>(rng, 20, 0.6);
         std::cout << "#v = " << num_vertices(g) << " #e = " << num_edges(g) << "\t";
         std::cout << get<alps::graph::label>(alps::graph::canonical_properties(g)) << std::endl;
         ok = ok && canonical_label_test(rng,g);

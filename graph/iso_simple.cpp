@@ -321,7 +321,7 @@ int main() {
     // 2 . . .
     // 3 . . . .
     // 4 . . . x .
-    // 5 . . . . . x
+    // 5 . . . . . .
     // 6 . . . x x . .
     // 7 x x x . . . . .
     // 8 . . x . . x x . .
@@ -329,7 +329,6 @@ int main() {
 
         graph_type g;
         add_edge(4,3,g);
-        add_edge(5,5,g);
         add_edge(6,3,g);
         add_edge(6,4,g);
         add_edge(7,0,g);
