@@ -235,27 +235,28 @@ void AbstractSimpleObservable<T>::write_xml_scalar(oxstream& oxs, const boost::f
     if (mm != "")
       oxs << attribute("method", mm);
 
-    int prec=int(4-std::log10(std::abs(error()/mean())));
+    // TODO: what do we do if error/mean are valarrays?
+    int prec=(int)slices(4-std::log10(std::abs(error()/mean()))).first;
     prec = (prec>=3 && prec<20 ? prec : 8);
-    oxs << precision(mean(),prec) << end_tag("MEAN");
+    oxs << precision(slice_value(mean(), 0),prec) << end_tag("MEAN");
 
     oxs << start_tag("ERROR") << attribute("converged", convergence_to_text(converged_errors())) ;
-    if (error_underflow(mean(),error()))
+    if (error_underflow(slice_value(mean(), 0),slice_value(error(), 0)))
       oxs << attribute("underflow","true");
     if (em != "")
       oxs << attribute("method", em);
     oxs << no_linebreak;
-    oxs << precision(error(), 3) << end_tag("ERROR");
+    oxs << precision(slice_value(error(), 0), 3) << end_tag("ERROR");
 
     if (has_variance()) {
       oxs << start_tag("VARIANCE") << no_linebreak;
       if (vm != "") oxs << attribute("method", vm);
-      oxs << precision(variance(), 3) << end_tag("VARIANCE");
+      oxs << precision(slice_value(variance(), 0), 3) << end_tag("VARIANCE");
     }
     if (has_tau()) {
       oxs << start_tag("AUTOCORR") << no_linebreak;
       if (tm != "") oxs << attribute("method", tm);
-      oxs << precision(tau(), 3) << end_tag("AUTOCORR");
+      oxs << precision(slice_value(tau(), 0), 3) << end_tag("AUTOCORR");
     }
     write_more_xml(oxs);
     oxs << end_tag("SCALAR_AVERAGE");
@@ -263,7 +264,7 @@ void AbstractSimpleObservable<T>::write_xml_scalar(oxstream& oxs, const boost::f
 }
 
 template <class T>
-void AbstractSimpleObservable<T>::write_xml_vector(oxstream& oxs, const boost::filesystem::path&) const {
+void AbstractSimpleObservable<T>::write_xml_vector(oxstream& oxs, boost::filesystem::path const &) const {
   if(count())
   {
     std::string mm = evaluation_method(Mean);
@@ -296,7 +297,7 @@ void AbstractSimpleObservable<T>::write_xml_vector(oxstream& oxs, const boost::f
     typename alps::slice_index<label_type>::type it2=slices(label()).first;
     while (it!=end)
     {
-      std::string lab=slice_value(label(),it2);
+      std::string lab(slice_value(label(), it2));
       if (lab=="")
         lab=slice_name(mean_,it);
       oxs << start_tag("SCALAR_AVERAGE")
@@ -305,7 +306,7 @@ void AbstractSimpleObservable<T>::write_xml_vector(oxstream& oxs, const boost::f
       oxs << no_linebreak;
       oxs << count();
       oxs << end_tag("COUNT");
-      int prec=(count()==1) ? 19 : int(4-std::log10(std::abs(slice_value(error_,it)/slice_value(mean_,it))));
+      int prec=(count()==1) ? 19 : (int)(4-std::log10(std::abs(slice_value(error_,it)/slice_value(mean_,it))));
       prec = (prec>=3 && prec<20 ? prec : 8);
       oxs << start_tag("MEAN") << no_linebreak;
       if (mm != "") oxs << attribute("method", mm);

@@ -36,10 +36,14 @@
 #include <alps/config.h>
 #include <string>
 
-
 namespace alps {
 
 enum error_convergence {CONVERGED, MAYBE_CONVERGED, NOT_CONVERGED};
+
+template<typename T> inline std::string convergence_to_text(T) {
+	boost::throw_exception(std::logic_error("Not Implemented"));
+	return std::string();
+}
 
 inline std::string convergence_to_text(int c)
 {

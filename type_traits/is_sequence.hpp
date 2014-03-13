@@ -50,6 +50,8 @@ struct is_sequence<std::valarray<T> > : public boost::mpl::true_ {};
 template <class T>
 struct is_sequence<std::complex<T> > : public boost::mpl::false_ {};
  
+template <>
+struct is_sequence<std::string> : public boost::mpl::false_ {};
 
 } // end namespace alps
 

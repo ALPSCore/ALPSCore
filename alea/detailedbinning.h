@@ -111,7 +111,7 @@ template<class T> class DetailedBinning : public BasicDetailedBinning<T>
 public:
   typedef T value_type;
   BOOST_STATIC_CONSTANT(int, magic_id=4);
-  DetailedBinning(uint32_t binnum=128) 
+  DetailedBinning(uint32_t binnum=128, uint32_t = 0) 
   : BasicDetailedBinning<T>(1,binnum==0 ? 128 : binnum) {}
 };
 
@@ -120,7 +120,7 @@ template<class T> class FixedBinning : public BasicDetailedBinning<T>
 public:
   typedef T value_type;
   BOOST_STATIC_CONSTANT(int, magic_id=5);
-  FixedBinning(uint32_t binsize=1) 
+  FixedBinning(uint32_t binsize=1, uint32_t = 0)
   : BasicDetailedBinning<T>(binsize,std::numeric_limits<uint32_t>::max BOOST_PREVENT_MACRO_SUBSTITUTION ()) {}
 };
 

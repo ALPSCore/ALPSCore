@@ -458,16 +458,16 @@ void SimpleObservableEvaluator<T>::output_scalar(std::ostream& out) const
     out << " no measurements.\n";
   else
   {
-    out << ": " << std::setprecision(6) << alps::numeric::round<2>(mean()) << " +/- "
-        << std::setprecision(3) << alps::numeric::round<2>(error());
+    out << ": " << std::setprecision(6) << alps::numeric::round<2>(slice_value(mean(), 0)) << " +/- "
+        << std::setprecision(3) << alps::numeric::round<2>(slice_value(error(), 0));
     if(has_tau())
-      out << std::setprecision(3) <<  "; tau = " << (alps::numeric::is_nonzero<2>(error()) ? tau() : 0);
-    if (alps::numeric::is_nonzero<2>(error())) {
-      if (converged_errors()==MAYBE_CONVERGED)
+      out << std::setprecision(3) <<  "; tau = " << (alps::numeric::is_nonzero<2>(slice_value(error(), 0)) ? slice_value(tau(), 0) : 0);
+    if (alps::numeric::is_nonzero<2>(slice_value(error(), 0))) {
+      if (slice_value(converged_errors(), 0)==MAYBE_CONVERGED)
         out << " WARNING: check error convergence";
-      if (converged_errors()==NOT_CONVERGED)
+      if (slice_value(converged_errors(), 0)==NOT_CONVERGED)
         out << " WARNING: ERRORS NOT CONVERGED!!!";
-      if (error_underflow(mean(),error()))
+      if (error_underflow(slice_value(mean(), 0),slice_value(error(), 0)))
         out << " Warning: potential error underflow. Errors might be smaller";
     }
     out << std::setprecision(6) << std::endl;
