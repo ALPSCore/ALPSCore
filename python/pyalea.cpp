@@ -52,11 +52,6 @@
 #include <vector>
 #include <string>
 
-// fix for clang > 3.3
-#include <alps/alea/simpleobseval.ipp>
-#include <alps/alea/simpleobservable.ipp>
-#include <alps/alea/abstractsimpleobservable.ipp>
-
 using namespace boost::python;
 
 namespace alps { 
@@ -266,18 +261,6 @@ Returns the running mean of the timeseries in a MCTimeseries object.";
 const char reverse_running_mean_docstring[] =
 "Takes any MCTimeseries or MCData object as argument. \n\
 Returns the reverse running mean of the timeseries in a MCTimeseries object.";
-
-// clang > 3.3 does not find the observable typedef, so instanciat it here ...  
-template class alps::SimpleObservable<double, alps::DetailedBinning<double> >; // RealObservable
-template class alps::SimpleObservable<double, alps::FixedBinning<double> >; // RealTimeSeriesObservable;
-template class alps::SimpleObservable< std::valarray<double>, alps::DetailedBinning<std::valarray<double> > >; // RealVectorObservable;
-template class alps::SimpleObservable< std::valarray<double>, alps::FixedBinning<std::valarray<double> > >; // RealVectorTimeSeriesObservable;
-// instanciate the base classes of the observables
-template class alps::AbstractSimpleObservable<double>;
-template class alps::AbstractSimpleObservable<std::valarray<double> >;
-// instanciate evaluators
-template class alps::SimpleObservableEvaluator<double>;
-template class alps::SimpleObservableEvaluator<std::valarray<double> >;
 
 BOOST_PYTHON_MODULE(pyalea_c) {
 #define ALPS_PY_EXPORT_VECTOROBSERVABLE(class_name, class_docstring, init_docstring)                                            \

@@ -72,7 +72,7 @@ class NoBinning : public AbstractBinning<T>
   BOOST_STATIC_CONSTANT(bool, has_tau=false);
   BOOST_STATIC_CONSTANT(int, magic_id=1);
 
-  NoBinning(uint32_t=0);
+  NoBinning(uint32_t=0, uint32_t=0);
 
   void reset(bool=true);
 
@@ -80,10 +80,13 @@ class NoBinning : public AbstractBinning<T>
 
   result_type mean() const;
   result_type variance() const;
-  result_type error() const;
+  result_type error(uint32_t=0) const;
   convergence_type converged_errors() const;
 
   uint32_t count() const { return  count_;}
+
+  void set_bin_size(count_type=0.) { boost::throw_exception(std::logic_error("set_bin_size not valid for NoBinning.")); }
+  void set_bin_number(count_type=0.) { boost::throw_exception(std::logic_error("set_bin_number not valid for NoBinning.")); }
 
   void output_scalar(std::ostream& out) const;
   template <class L> void output_vector(std::ostream& out, const L& l) const;
@@ -116,7 +119,7 @@ typedef SimpleObservable< std::valarray<std::complex<double> > ,
 //=======================================================================
 
 template <class T>
-inline NoBinning<T>::NoBinning(uint32_t)
+inline NoBinning<T>::NoBinning(uint32_t, uint32_t)
  : count_(0)
 {
   reset();
@@ -195,7 +198,7 @@ inline typename NoBinning<T>::result_type NoBinning<T>::variance() const
 }
 
 template <class T>
-inline typename NoBinning<T>::result_type NoBinning<T>::error() const
+inline typename NoBinning<T>::result_type NoBinning<T>::error(uint32_t) const
 {
   using std::sqrt;
   result_type tmp(variance());

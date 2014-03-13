@@ -43,6 +43,46 @@
 
 namespace alps {
 
+// clang > 3.3 does not find the observable typedef, so instanciat it here ...  
+template class SimpleObservable<int32_t,DetailedBinning<int32_t> >; // IntObservable;
+template class SimpleObservable<double,DetailedBinning<double> >; // RealObservable;
+// template class SimpleObservable<float,DetailedBinning<float> >; // FloatObservable;
+// template class SimpleObservable<std::complex<double>,DetailedBinning<std::complex<double> > >; // ComplexObservable;
+template class SimpleObservable<double,FixedBinning<double> >; // RealTimeSeriesObservable;
+template class SimpleObservable<int32_t,FixedBinning<int32_t> >; // IntTimeSeriesObservable;
+template class SimpleObservable< std::valarray<int32_t> , 
+                         DetailedBinning<std::valarray<int32_t> > >; // IntVectorObservable;
+template class SimpleObservable< std::valarray<double> , 
+                         DetailedBinning<std::valarray<double> > >; // RealVectorObservable;
+// template class SimpleObservable< std::valarray<float> , 
+                         // DetailedBinning<std::valarray<float> > >; // FloatVectorObservable;
+//template class SimpleObservable< std::valarray<std::complex<double> > , 
+//                         DetailedBinning<std::valarray<std::complex<double> > > >; // ComplexVectorObservable;
+template class SimpleObservable< std::valarray<int32_t> , 
+                         FixedBinning<std::valarray<int32_t> > >; // IntVectorTimeSeriesObservable;
+template class SimpleObservable< std::valarray<double> , 
+                         FixedBinning<std::valarray<double> > >; // RealVectorTimeSeriesObservable;
+//template class SimpleObservable< std::valarray<std::complex<double> > , 
+//                         FixedBinning<std::valarray<std::complex<double> > > >; // ComplexVectorTimeSeriesObservable;
+
+template class SimpleObservable<int32_t,NoBinning<int32_t> >; // SimpleIntObservable;
+template class SimpleObservable<double,NoBinning<double> >; // SimpleRealObservable;
+// template class SimpleObservable<float,NoBinning<float> >; // SimpleFloatObservable;
+// template class SimpleObservable<std::complex<double>,NoBinning<std::complex<double> > >; // SimpleComplexObservable;
+template class SimpleObservable< std::valarray<int32_t> , NoBinning<std::valarray<int32_t> > >; // SimpleIntVectorObservable;
+template class SimpleObservable< std::valarray<double> , NoBinning<std::valarray<double> > >; // SimpleRealVectorObservable;
+// template class SimpleObservable< std::valarray<float> , NoBinning<std::valarray<float> > >; // SimpleFloatVectorObservable;
+// template class SimpleObservable< std::valarray<std::complex<double> > ,
+//                          NoBinning<std::valarray<std::complex<double> > > >; // SimpleComplexVectorObservable;
+
+// instanciate the base classes of the observables
+template class AbstractSimpleObservable<double>;
+template class AbstractSimpleObservable<std::valarray<double> >;
+// instanciate evaluators
+template class SimpleObservableEvaluator<double>;
+template class SimpleObservableEvaluator<std::valarray<double> >;
+
+
 ObservableFactory::ObservableFactory()
 {
   register_observable<IntObsevaluator>();
