@@ -41,6 +41,11 @@
 
 #include <valarray>
 
+// fix for clang > 3.3
+#include <alps/alea/simpleobseval.ipp>
+#include <alps/alea/simpleobservable.ipp>
+#include <alps/alea/abstractsimpleobservable.ipp>
+
 namespace alps {
     namespace detail {
 
@@ -80,6 +85,18 @@ namespace alps {
         }
     }
 }
+
+// clang > 3.3 does not find the observable typedef, so instanciat it here ...  
+template class alps::SimpleObservable<double, alps::DetailedBinning<double> >; // RealObservable
+template class alps::SimpleObservable<double, alps::FixedBinning<double> >; // RealTimeSeriesObservable;
+template class alps::SimpleObservable< std::valarray<double>, alps::DetailedBinning<std::valarray<double> > >; // RealVectorObservable;
+template class alps::SimpleObservable< std::valarray<double>, alps::FixedBinning<std::valarray<double> > >; // RealVectorTimeSeriesObservable;
+// instanciate the base classes of the observables
+template class alps::AbstractSimpleObservable<double>;
+template class alps::AbstractSimpleObservable<std::valarray<double> >;
+// instanciate evaluators
+template class alps::SimpleObservableEvaluator<double>;
+template class alps::SimpleObservableEvaluator<std::valarray<double> >;
 
 BOOST_PYTHON_MODULE(pyngsobservable_c) {
 
