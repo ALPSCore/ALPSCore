@@ -235,8 +235,7 @@ void AbstractSimpleObservable<T>::write_xml_scalar(oxstream& oxs, const boost::f
     if (mm != "")
       oxs << attribute("method", mm);
 
-    // TODO: what do we do if error/mean are valarrays?
-    int prec=(int)slices(4-std::log10(std::abs(error()/mean()))).first;
+    int prec=(int)slice_value(4-std::log10(std::abs(error()/mean())), 0);
     prec = (prec>=3 && prec<20 ? prec : 8);
     oxs << precision(slice_value(mean(), 0),prec) << end_tag("MEAN");
 
