@@ -172,8 +172,8 @@ bool xdr_long_double(XDR *xdrs, long double *ldp)
     double low  = (*ldp-high);
     return xdr_double(xdrs, &high) && xdr_double(xdrs, &low);
   } else if (xdrs->x_op == XDR_DECODE) {
-    double high;
-    double low;
+    double high = 0.;
+    double low  = 0.;
     bool retval = xdr_double(xdrs, &high) && xdr_double(xdrs, &low); 
     *ldp = low + high;
     return retval;
