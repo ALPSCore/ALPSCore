@@ -279,20 +279,26 @@ BOOST_AUTO_TEST_CASE(ngs_alea_next) {
 
 	std::cout << "> results: " << std::endl << results << std::endl;
 
-	std::cout << "> \"vector\" + \"vector\":  " << results["vector"] + results["vector"] << std::endl;
-	std::cout << "> \"vector\" - \"vector\":  " << results["vector"] - results["vector"] << std::endl;
-	std::cout << "> \"vector\" * \"vector\":  " << results["vector"] * results["vector"] << std::endl;
-	std::cout << "> \"vector\" / \"vector\":  " << results["vector"] / results["vector"] << std::endl;
+	// TODO: implement!
+	// {
+	// 	std::cout << "> \"vector\" + \"vector\":  " << results["vector"] + results["vector"] << std::endl;
+	//     std::vector<double> required(3, 6.2 + 6.2);
+	//     BOOST_REQUIRE(std::equal(required.begin(), required.end(), mean((results["vector"] + results["vector"]).get<std::vector<double> >()).begin()));
+	// }
+	// std::cout << "> \"vector\" - \"vector\":  " << results["vector"] - results["vector"] << std::endl;
+	// std::cout << "> \"vector\" * \"vector\":  " << results["vector"] * results["vector"] << std::endl;
+	// std::cout << "> \"vector\" / \"vector\":  " << results["vector"] / results["vector"] << std::endl;
 
 	{
 		std::cout << "> \"vector\" + 1:  " << results["vector"] + 1 << std::endl;
 	    std::vector<double> required(3, 6.2 + 1);
 	    BOOST_REQUIRE(std::equal(required.begin(), required.end(), mean((results["vector"] + 1).get<std::vector<double> >()).begin()));
 	}
+	// TODO: implement!
 	// {
 	// 	std::cout << "> \"vector\" - 1:  " << results["vector"] - 1 << std::endl;
-	//     std::vector<double> required(3, 6.2 - 1);
-	//     BOOST_REQUIRE(std::equal(required.begin(), required.end(), mean(results["vector"] - 1).get<std::vector<double> >()).begin()));
+	// 	std::vector<double> required(3, 6.2 - 1);
+	// 	BOOST_REQUIRE(std::equal(required.begin(), required.end(), mean(results["vector"] - 1).get<std::vector<double> >()).begin()));
 	// }
 	// {
 	// 	std::cout << "> \"vector\" * 2:  " << results["vector"] * 2 << std::endl;
@@ -409,16 +415,30 @@ BOOST_AUTO_TEST_CASE(ngs_alea_next) {
 		    BOOST_REQUIRE(sa.str() == sa2.str());
 	    }
 	    std::cout << std::endl;
+	}
 
+	{
+		accumulator_set accumulators;
+		accumulators << alps::accumulator::RealObservable("obs1");
+		accumulators << alps::accumulator::RealObservable("obs2", max_bin_number = 4);
+
+		for (int i = 0; i < 16; ++i) {
+			accumulators["obs1"] << 1.;
+			accumulators["obs2"] << 1.;
+		}
+
+		std::cout << "bin number: obs(): " << max_num_binning(accumulators["obs1"].get<double>()).bins().size() << ", "
+				  << "obs(max_bin_number = 4): " << max_num_binning(accumulators["obs1"].get<double>()).bins().size() << std::endl;
+		BOOST_REQUIRE(accumulators["obs1"].count() == 16);
+		BOOST_REQUIRE(max_num_binning(accumulators["obs1"].get<double>()).bins().size() == 16);
+		BOOST_REQUIRE(accumulators["obs2"].count() == 16);
+		BOOST_REQUIRE(max_num_binning(accumulators["obs2"].get<double>()).bins().size() == 4);
 	}
 
 /* TODO:
-- implement operators for tow results correctly
+- implement operators for two results correctly
 - implement operators with scalars
-- implement jacknife for results
 - implement boost::ArgPack for external weight
-- implement tag-magic
-- add has hdf5
-- plug it into the easy examples
+- implement jacknife for results
 */
 }
