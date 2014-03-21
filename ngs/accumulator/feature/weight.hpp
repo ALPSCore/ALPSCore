@@ -30,6 +30,7 @@
 #define ALPS_NGS_ACCUMULATOR_WEIGHT_HPP
 
 #include <alps/ngs/accumulator/feature.hpp>
+#include <alps/ngs/accumulator/parameter.hpp>
 #include <alps/ngs/accumulator/feature/count.hpp>
 
 #include <alps/hdf5/archive.hpp>

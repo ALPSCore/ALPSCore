@@ -51,16 +51,23 @@ namespace alps {
             typedef boost::integral_constant<bool, sizeof(char) == sizeof(check<T>(0))> type;
         };
 
-        namespace detail {
-            using ::alps::ngs::numeric::operator+;
-            template<typename T, typename U> struct has_operator_add {
-                template<typename R> static char helper(R);
-                template<typename C, typename D> static char check(boost::integral_constant<std::size_t, sizeof(helper(C() + D()))>*);
-                template<typename C, typename D> static double check(...);
-                typedef boost::integral_constant<bool, sizeof(char) == sizeof(check<T, U>(0))> type;
-            };            
-        }
-        template<typename T, typename U> struct has_operator_add : public detail::has_operator_add<T, U> {};
+        #define NUMERIC_FUNCTION_OPERATOR(OP_NAME, OP, OP_TOKEN)                                                                               \
+            namespace detail {                                                                                                                 \
+                using ::alps::ngs::numeric:: OP_NAME ;                                                                                         \
+                template<typename T, typename U> struct has_operator_ ## OP_TOKEN ## _impl {                                                   \
+                    template<typename R> static char helper(R);                                                                                \
+                    template<typename C, typename D> static char check(boost::integral_constant<std::size_t, sizeof(helper(C() OP D()))>*);    \
+                    template<typename C, typename D> static double check(...);                                                                 \
+                    typedef boost::integral_constant<bool, sizeof(char) == sizeof(check<T, U>(0))> type;                                       \
+                };                                                                                                                             \
+            }                                                                                                                                  \
+            template<typename T, typename U> struct has_operator_ ## OP_TOKEN : public detail::has_operator_ ## OP_TOKEN ## _impl<T, U> {};
+
+        NUMERIC_FUNCTION_OPERATOR(operator+, +, add)
+        NUMERIC_FUNCTION_OPERATOR(operator-, -, sub)
+        NUMERIC_FUNCTION_OPERATOR(operator*, *, mul)
+        NUMERIC_FUNCTION_OPERATOR(operator/, /, div)
+        #undef NUMERIC_FUNCTION_OPERATOR
 
         template<typename T> struct value_type {
             typedef typename T::value_type type;
@@ -84,6 +91,7 @@ namespace alps {
                 template<typename U> void operator-=(U const &) {}
                 template<typename U> void operator*=(U const &) {}
                 template<typename U> void operator/=(U const &) {}
+                void inverse() {}
 
                 void sin() {}
                 void cos() {}
@@ -119,6 +127,9 @@ namespace alps {
                     }
                     template<typename U> void operator/=(U) {
                         throw std::runtime_error("The Function operator /= is not implemented for accumulators, only for results" + ALPS_STACKTRACE); 
+                    }
+                    void inverse() {
+                        throw std::runtime_error("The Function inverseis not implemented for accumulators, only for results" + ALPS_STACKTRACE); 
                     }
 
                     void sin() { throw std::runtime_error("The Function sin is not implemented for accumulators, only for results" + ALPS_STACKTRACE); }
@@ -187,6 +198,9 @@ namespace alps {
             template<typename T, typename F, typename B> class ResultTypeWrapper {};
 
             template<typename A, typename F, typename B> class DerivedWrapper {};
+
+            template<typename T> struct is_accumulator : public boost::false_type {};
+            template<typename T, typename tag, typename B> struct is_accumulator<Accumulator<T, tag, B> > : public boost::true_type {};
 
         }
     }

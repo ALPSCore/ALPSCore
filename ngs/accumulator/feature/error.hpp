@@ -30,6 +30,7 @@
 #define ALPS_NGS_ACCUMULATOR_ERROR_HPP
 
 #include <alps/ngs/accumulator/feature.hpp>
+#include <alps/ngs/accumulator/parameter.hpp>
 #include <alps/ngs/accumulator/feature/mean.hpp>
 #include <alps/ngs/accumulator/feature/count.hpp>
 
@@ -90,11 +91,13 @@ namespace alps {
                     typedef typename alps::accumulator::error_type<B>::type error_type;
                     typedef Result<T, error_tag, typename B::result_type> result_type;
 
-                    // TODO: implement using disable_if<Accumulator<...> > ...
-                    // template<typename ArgumentPack> Accumulator(ArgumentPack const & args): B(args), m_sum2(T()) {}
-
                     Accumulator(): B(), m_sum2(T()) {}
+
                     Accumulator(Accumulator const & arg): B(arg), m_sum2(arg.m_sum2) {}
+
+                    template<typename ArgumentPack> Accumulator(ArgumentPack const & args, typename boost::disable_if<is_accumulator<ArgumentPack>, int>::type = 0)
+                        : B(args), m_sum2(T())
+                    {}
 
                     error_type const error() const {
                         using std::sqrt;
@@ -229,9 +232,17 @@ namespace alps {
                         ;
                     }
 
-                    // TODO: implement -=, *=, /=
-                    // TODO: implement operators with double
-                    template<typename U> void operator+=(U const & arg) { augadd(arg); }
+                    template<typename U> void operator+=(U const & arg) { augaddsub(arg); B::operator+=(arg); }
+                    template<typename U> void operator-=(U const & arg) { augaddsub(arg); B::operator-=(arg); }
+                    template<typename U> void operator*=(U const & arg) { augmul(arg); }
+                    template<typename U> void operator/=(U const & arg) { augdiv(arg); }
+                    void inverse() {
+                        using alps::ngs::numeric::operator*;
+                        using alps::ngs::numeric::operator/;
+                        m_error = this->error() / (this->mean() * this->mean());
+                        B::inverse();
+
+                    }
 
                     #define NUMERIC_FUNCTION_USEING                                 \
                         using alps::numeric::sq;                                    \
@@ -269,25 +280,7 @@ namespace alps {
                         using alps::ngs::numeric::operator-;                        \
                         using alps::ngs::numeric::operator*;                        \
                         using alps::ngs::numeric::operator/;
-/*
-                    #define NUMERIC_FUNCTION_OPERATOR(OP_NAME, OP_ARG)                \
-                        template<typename U> void OP_NAME (U const & arg) {         \
-                            B:: OP_NAME (arg);                                      \
-                            OP_NAME ## _impl(arg);                                  \
-                        }                                                           \
-                        void OP_NAME (T const & arg) {                              \
-                            B:: OP_NAME (arg);                                      \
-                            NUMERIC_FUNCTION_USEING                                 \
-                            m_error = OP_ARG;                                       \
-                        }                                                           \
 
-                    // addig does not change the error, so nothing has to be done ...
-                    // substract does not change the error, so nothing has to be done ...
-                    NUMERIC_FUNCTION_OPERATOR(muleq, sqrt(sq(arg) * sq(error())))
-                    NUMERIC_FUNCTION_OPERATOR(diveq, sqrt(sq(arg) * sq(error())) / sq(arg))
-
-                    #undef NUMERIC_FUNCTION_OPERATOR
-*/
                     #define NUMERIC_FUNCTION_IMPLEMENTATION(FUNCTION_NAME, ERROR)    \
                         void FUNCTION_NAME () {                                      \
                             B:: FUNCTION_NAME ();                                    \
@@ -296,14 +289,14 @@ namespace alps {
                         }
 
                     NUMERIC_FUNCTION_IMPLEMENTATION(sin, abs(cos(this->mean()) * m_error))
-                    // NUMERIC_FUNCTION_IMPLEMENTATION(cos, abs(-sin(this->mean()) * m_error)) // TODO: unary minus is missing
-                    // NUMERIC_FUNCTION_IMPLEMENTATION(tan, abs(1. / (cos(this->mean()) * cos(this->mean())) * m_error)) // TODO: scalar devided by data missing
+                    NUMERIC_FUNCTION_IMPLEMENTATION(cos, abs(-sin(this->mean()) * m_error))
+                    NUMERIC_FUNCTION_IMPLEMENTATION(tan, abs(1. / (cos(this->mean()) * cos(this->mean())) * m_error))
                     NUMERIC_FUNCTION_IMPLEMENTATION(sinh, abs(cosh(this->mean()) * m_error))
                     NUMERIC_FUNCTION_IMPLEMENTATION(cosh, abs(sinh(this->mean()) * m_error))
-                    // NUMERIC_FUNCTION_IMPLEMENTATION(tanh, abs(1. / (cosh(this->mean()) * cosh(this->mean())) * m_error)) // TODO: scalar devided by data missing
-                    // NUMERIC_FUNCTION_IMPLEMENTATION(asin, abs(1. / sqrt(1. - this->mean() * this->mean()) * m_error)) // TODO: substraction of scalar is missing
-                    // NUMERIC_FUNCTION_IMPLEMENTATION(acos, abs(-1. / sqrt(1. - this->mean() * this->mean()) * m_error)) // TODO: substraction of scalar is missing
-                    // NUMERIC_FUNCTION_IMPLEMENTATION(atan, abs(1. / (1. + this->mean() * this->mean()) * m_error)) // TODO: addition of scalar is missing
+                    NUMERIC_FUNCTION_IMPLEMENTATION(tanh, abs(1. / (cosh(this->mean()) * cosh(this->mean())) * m_error))
+                    NUMERIC_FUNCTION_IMPLEMENTATION(asin, abs(1. / sqrt(1. - this->mean() * this->mean()) * m_error))
+                    NUMERIC_FUNCTION_IMPLEMENTATION(acos, abs(-1. / sqrt(1. - this->mean() * this->mean()) * m_error))
+                    NUMERIC_FUNCTION_IMPLEMENTATION(atan, abs(1. / (1. + this->mean() * this->mean()) * m_error))
                     // abs does not change the error, so nothing has to be done ...
                     NUMERIC_FUNCTION_IMPLEMENTATION(sq, abs(2. * this->mean() * m_error))
                     NUMERIC_FUNCTION_IMPLEMENTATION(sqrt, abs(m_error / (2. * sqrt(this->mean()))))
@@ -318,43 +311,63 @@ namespace alps {
 
                     error_type m_error;
 
-                    template<typename U> void augadd(U const & arg, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {
-                        B::operator+=(arg);
-                    }
-                    template<typename U> void augadd(U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {
-                        using alps::numeric::sq;
-                        using std::sqrt;
-                        using alps::ngs::numeric::sqrt;
-
+                    template<typename U> void augaddsub (U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {
                         using alps::ngs::numeric::operator+;
-
-                        m_error = sqrt(sq(m_error) + sq(arg.error()));
-                        B::operator+=(arg);
+                        m_error = m_error + arg.error();
+                    }
+                    template<typename U> void augaddsub (U const & arg, typename boost::enable_if<boost::mpl::and_<
+                          boost::is_scalar<U>
+                        , typename has_operator_add<error_type, U>::type
+                    >, int>::type = 0) {}
+                    template<typename U> void augaddsub (U const & arg, typename boost::enable_if<boost::mpl::and_<
+                          boost::is_scalar<U>
+                        , boost::mpl::not_<typename has_operator_add<error_type, U>::type>
+                    >, int>::type = 0) {
+                        throw std::runtime_error(std::string(typeid(error_type).name()) + " has no operator + " + typeid(U).name() + ALPS_STACKTRACE);
                     }
 
-                    // #define NUMERIC_FUNCTION_OPERATOR_IMPL(OP_NAME, OP_T, OP_ARG)                            \
-                    //     template<typename U> void OP_NAME ## _impl(typename boost::disable_if<                \
-                    //           typename boost::is_same<typename alps::hdf5::scalar_type<T>::type, U>::type     \
-                    //         , U                                                                                \
-                    //     >::type const & arg) {                                                                \
-                    //         NUMERIC_FUNCTION_USEING                                                            \
-                    //         m_error = OP_T;                                                                    \
-                    //     }                                                                                    \
-                    //     template<typename U> void OP_NAME ## _impl(typename boost::enable_if<                \
-                    //           typename boost::is_same<typename alps::hdf5::scalar_type<T>::type, U>::type    \
-                    //         , U                                                                                \
-                    //     >::type arg) {                                                                        \
-                    //         NUMERIC_FUNCTION_USEING                                                            \
-                    //         m_error = OP_ARG;                                                                \
-                    //     }
+                    template<typename U> void augmul (U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {
+                        using alps::ngs::numeric::operator*;
+                        using alps::ngs::numeric::operator+;
+                        m_error = arg.mean() * m_error + this->mean() * arg.error();
+                        B::operator*=(arg);
+                    }
+                    template<typename U> void augmul (U const & arg, typename boost::enable_if<boost::mpl::and_<
+                          boost::is_scalar<U>
+                        , typename has_operator_mul<error_type, U>::type
+                    >, int>::type = 0) {
+                        using alps::ngs::numeric::operator*;
+                        m_error = m_error * arg;
+                        B::operator*=(arg);
+                    }
+                    template<typename U> void augmul (U const & arg, typename boost::enable_if<boost::mpl::and_<
+                          boost::is_scalar<U>
+                        , boost::mpl::not_<typename has_operator_mul<error_type, U>::type>
+                    >, int>::type = 0) {
+                        throw std::runtime_error(std::string(typeid(error_type).name()) + " has no operator * " + typeid(U).name() + ALPS_STACKTRACE);
+                    }
 
-                    // NUMERIC_FUNCTION_OPERATOR_IMPL(addeq, sqrt(sq(error()) + sq(arg.error())), error())
-                    // NUMERIC_FUNCTION_OPERATOR_IMPL(subeq, sqrt(sq(error()) + sq(arg.error())), error())
-                    // NUMERIC_FUNCTION_OPERATOR_IMPL(muleq, sqrt(sq(arg.mean()) * sq(error()) + sq(B::mean()) * sq(arg.error())), sqrt(sq(arg) * sq(error())))
-                    // NUMERIC_FUNCTION_OPERATOR_IMPL(diveq, sqrt(sq(arg.mean()) * sq(error()) + sq(B::mean()) * sq(arg.error())) / sq(arg.mean()), sqrt(sq(arg) * sq(error())) / sq(arg))
-
-                    // #undef NUMERIC_FUNCTION_USEING
-                    // #undef NUMERIC_FUNCTION_OPERATOR_IMPL
+                    template<typename U> void augdiv (U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {
+                        using alps::ngs::numeric::operator*;
+                        using alps::ngs::numeric::operator/;
+                        using alps::ngs::numeric::operator+;
+                        m_error = m_error / arg.mean() + this->mean() * arg.error() / (arg.mean() * arg.mean());
+                        B::operator/=(arg);
+                    }
+                    template<typename U> void augdiv (U const & arg, typename boost::enable_if<boost::mpl::and_<
+                          boost::is_scalar<U>
+                        , typename has_operator_div<error_type, U>::type
+                    >, int>::type = 0) {
+                        using alps::ngs::numeric::operator/;
+                        m_error = m_error / arg;
+                        B::operator/=(arg);
+                    }
+                    template<typename U> void augdiv (U const & arg, typename boost::enable_if<boost::mpl::and_<
+                          boost::is_scalar<U>
+                        , boost::mpl::not_<typename has_operator_div<error_type, U>::type>
+                    >, int>::type = 0) {
+                        throw std::runtime_error(std::string(typeid(error_type).name()) + " has no operator / " + typeid(U).name() + ALPS_STACKTRACE);
+                    }
             };
 
             template<typename B> class BaseWrapper<error_tag, B> : public B {

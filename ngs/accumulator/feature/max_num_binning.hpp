@@ -30,6 +30,7 @@
 #define ALPS_NGS_ACCUMULATOR_MAX_NUM_BINNING_HPP
 
 #include <alps/ngs/accumulator/feature.hpp>
+#include <alps/ngs/accumulator/parameter.hpp>
 #include <alps/ngs/accumulator/feature/mean.hpp>
 #include <alps/ngs/accumulator/feature/count.hpp>
 #include <alps/ngs/accumulator/feature/error.hpp>
@@ -129,19 +130,10 @@ namespace alps {
                 public:
                     typedef typename alps::accumulator::max_num_binning_type<B>::type max_num_binning_type;
                     typedef Result<T, max_num_binning_tag, typename B::result_type> result_type;
-/*
-                    // TODO: implement using disable_if<Accumulator<...> > ...
-                    template<typename ArgumentPack> Accumulator(ArgumentPack const & args)
-                        : B(args)
-                        , m_mn_max_number(128) // TODO: make this a parameter
-                        , m_mn_elements_in_bin(0)
-                        , m_mn_elements_in_partial(0)
-                        , m_mn_partial(T())
-                    {}
-*/
+
                     Accumulator()
                         : B()
-                        , m_mn_max_number(128) // TODO: make this a parameter
+                        , m_mn_max_number(128)
                         , m_mn_elements_in_bin(0)
                         , m_mn_elements_in_partial(0)
                         , m_mn_partial(T())
@@ -154,6 +146,14 @@ namespace alps {
                         , m_mn_elements_in_partial(arg.m_mn_elements_in_partial)
                         , m_mn_partial(arg.m_mn_partial)
                         , m_mn_bins(arg.m_mn_bins)
+                    {}
+
+                    template<typename ArgumentPack> Accumulator(ArgumentPack const & args, typename boost::disable_if<is_accumulator<ArgumentPack>, int>::type = 0)
+                        : B(args)
+                        , m_mn_max_number(args[max_bin_number | 128])
+                        , m_mn_elements_in_bin(0)
+                        , m_mn_elements_in_partial(0)
+                        , m_mn_partial(T())
                     {}
 
                     max_num_binning_type const max_num_binning() const {

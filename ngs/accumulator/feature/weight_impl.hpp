@@ -56,11 +56,14 @@ namespace alps {
                     typedef Result<T, weight_holder_tag<W>, typename B::result_type> result_type;
 
                     // TODO: add external weight!
-                    // TODO: implement using disable_if<Accumulator<...> > ...
-                    // template<typename ArgumentPack> Accumulator(ArgumentPack const & args): B(args) {}
 
                     Accumulator(): B(), m_owner(true), m_weight(new ::alps::accumulator::derived_accumulator_wrapper<W>(W())) {}
+
                     Accumulator(Accumulator const & arg): B(arg), m_owner(arg.m_owner), m_weight(arg.m_weight) {}
+
+                    template<typename ArgumentPack> Accumulator(ArgumentPack const & args, typename boost::disable_if<is_accumulator<ArgumentPack>, int>::type = 0)
+                        : B(args), m_owner(true), m_weight(new ::alps::accumulator::derived_accumulator_wrapper<W>(W()))
+                    {}
 
                     base_wrapper const * weight() const {
                         // TODO: make library for scalar type

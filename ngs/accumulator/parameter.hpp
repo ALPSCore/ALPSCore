@@ -4,8 +4,8 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2011 - 2012 by Mario Koenz <mkoenz@ethz.ch>                       *
- * Copyright (C) 2012 - 2014 by Lukas Gamper <gamperl@gmail.com>                   *
+ * Copyright (C) 2011 - 2013 by Mario Koenz <mkoenz@ethz.ch>                       *
+ *                              Lukas Gamper <gamperl@gmail.com>                   *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -26,49 +26,17 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_NUMERIC_DETAIL_HEADER
-#define ALPS_NGS_NUMERIC_DETAIL_HEADER
+#ifndef ALPS_NGS_ACCUMULATOR_PARAMETER_HPP
+#define ALPS_NGS_ACCUMULATOR_PARAMETER_HPP
 
-#include <alps/ngs/stacktrace.hpp>
-#include <alps/utility/resize.hpp>
-
-#include <alps/multi_array.hpp>
-
-#include <boost/array.hpp>
-
-#include <vector>
-#include <stdexcept>
+#include <boost/parameter.hpp>
 
 namespace alps {
-    namespace ngs { //merged with alps/numerics/vector_function.hpp
-        namespace numeric {
-            namespace detail {
+    namespace accumulator  {
 
-                template<typename T, typename U>
-                inline void check_size(T & a, U const & b) {}
+        BOOST_PARAMETER_NAME((accumulator_name, accumulator_keywords) _accumulator_name)
+        BOOST_PARAMETER_NAME((max_bin_number, accumulator_keywords) _max_bin_number)
 
-                template<typename T, typename U>
-                inline void check_size(std::vector<T> & a, std::vector<U> const & b) {
-                    if(a.size() == 0)
-                        alps::resize_same_as(a, b);
-                    else if(a.size() != b.size())
-                        boost::throw_exception(std::runtime_error("vectors must have the same size!" + ALPS_STACKTRACE));
-                }
-
-                template<typename T, typename U, std::size_t N, std::size_t M>
-                inline void check_size(boost::array<T, N> & a, boost::array<U, M> const & b) {
-                    boost::throw_exception(std::runtime_error("boost::array s must have the same size!" + ALPS_STACKTRACE));
-                }
-
-                template<typename T, typename U, std::size_t N>
-                inline void check_size(boost::array<T, N> & a, boost::array<U, N> const & b) {}
-
-                template<typename T, typename U, std::size_t D>
-                inline void check_size(alps::multi_array<T, D> & a, alps::multi_array<U, D> const & b) {}
-                
-            }
-        }
     }
 }
-
 #endif

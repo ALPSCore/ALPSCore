@@ -5,6 +5,7 @@
  * ALPS Libraries                                                                  *
  *                                                                                 *
  * Copyright (C) 2011 - 2012 by Mario Koenz <mkoenz@ethz.ch>                       *
+ * Copyright (C) 2012 - 2014 by Lukas Gamper <gamperl@gmail.com>                   *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -67,6 +68,13 @@ namespace alps {
             ALPS_NUMERIC_OPERATOR_EQ(operator/=, divides)
 
             #undef ALPS_NUMERIC_OPERATOR_EQ
+
+            //------------------- unary operator - -------------------
+            template<typename T>
+            std::vector<T> operator - (std::vector<T> lhs) {
+                std::transform(lhs.begin(), lhs.end(), lhs.begin(), std::negate<T>());
+                return lhs;
+            }
 
             //------------------- operator + -------------------
             template<typename T, typename U>
@@ -131,6 +139,11 @@ namespace alps {
             std::vector<T> operator / (std::vector<T> const & lhs, T const & scalar) {
                 using boost::numeric::operators::operator/;
                 return lhs / scalar;
+            }
+            template<typename T>
+            std::vector<T> operator / (T const & scalar, std::vector<T> rhs) {
+                std::transform(rhs.begin(), rhs.end(), rhs.begin(), scalar / boost::lambda::_1);
+                return rhs;
             }
 
             //------------------- numeric functions -------------------

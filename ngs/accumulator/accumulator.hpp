@@ -144,6 +144,12 @@ namespace alps {
                 OPERATOR_PROXY(operator/, operator/=, /=)
                 #undef OPERATOR_PROXY
 
+                result_wrapper inverse() {
+                    result_wrapper clone(*this);
+                    clone.inverse();
+                    return clone;
+                }
+
                 #define FUNCTION_PROXY(FUN)            \
                     result_wrapper FUN () const {      \
                         result_wrapper clone(*this);   \
@@ -448,18 +454,37 @@ namespace alps {
         typedef impl::wrapper_set<accumulator_wrapper> accumulator_set;
         typedef impl::wrapper_set<result_wrapper> result_set;
 
-        // TODO: make this nicer ... move it to deprecated file ...
+        // TODO: make this nicer ...
         namespace detail {
     
-            template<typename T> struct PredefinedObservable {
+            template<typename T> struct PredefinedObservableBase {
                 typedef T accumulator_type;
                 typedef typename T::result_type result_type;
-                PredefinedObservable(std::string arg) : name(arg) {}
+
+                template<typename ArgumentPack> PredefinedObservableBase(ArgumentPack const& args) 
+                    : name(args[accumulator_name])
+                    , wrapper(new accumulator_wrapper(T(args)))
+                {}
+
                 std::string name;
+                boost::shared_ptr<accumulator_wrapper> wrapper;
+            };
+
+
+            template<typename T> struct PredefinedObservable : public PredefinedObservableBase<T> {
+                BOOST_PARAMETER_CONSTRUCTOR(
+                    PredefinedObservable, 
+                    (PredefinedObservableBase<T>),
+                    accumulator_keywords,
+                        (required (_accumulator_name, (std::string)))
+                        (optional 
+                            (_max_bin_number, (std::size_t))
+                        )
+                )
             };
 
             template<typename T> inline accumulator_set & operator<<(accumulator_set & set, const PredefinedObservable<T> & arg) {
-                set.insert(arg.name, boost::shared_ptr<accumulator_wrapper>(new accumulator_wrapper(T())));
+                set.insert(arg.name, arg.wrapper);
                 return set;
             }
 
@@ -476,7 +501,7 @@ namespace alps {
                 : public impl::Accumulator<T, autocorrelation_tag, impl::Accumulator<T, max_num_binning_tag, simple_observable_type<T> > >
             {
                 observable_type(): base_type() {}
-                template<typename A> observable_type(A  const & arg): base_type(arg) {}
+                template<typename A> observable_type(A const & arg): base_type(arg) {}
                 private:
                     typedef impl::Accumulator<T, autocorrelation_tag, impl::Accumulator<T, max_num_binning_tag, simple_observable_type<T> > > base_type;
             };
@@ -485,7 +510,7 @@ namespace alps {
                 : public impl::Accumulator<T, weight_holder_tag<simple_observable_type<T> >, observable_type<T> >
             {
                 signed_observable_type(): base_type() {}
-                template<typename A> signed_observable_type(A  const & arg): base_type(arg) {}
+                template<typename A> signed_observable_type(A const & arg): base_type(arg) {}
                 private:
                     typedef impl::Accumulator<T, weight_holder_tag<simple_observable_type<T> >, observable_type<T> > base_type;
             };
@@ -494,7 +519,7 @@ namespace alps {
                 : public impl::Accumulator<T, weight_holder_tag<simple_observable_type<T> >, simple_observable_type<T> >
             {
                 signed_simple_observable_type(): base_type() {}
-                template<typename A> signed_simple_observable_type(A  const & arg): base_type(arg) {}
+                template<typename A> signed_simple_observable_type(A const & arg): base_type(arg) {}
                 private:
                     typedef impl::Accumulator<T, weight_holder_tag<simple_observable_type<T> >, simple_observable_type<T> > base_type;
             };

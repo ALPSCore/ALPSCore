@@ -96,10 +96,22 @@ namespace alps{
             return *this;
         }
 
+        array_type& operator+=(const T s)
+        {
+            std::transform((*this).data(),(*this).data()+(*this).num_elements(),(*this).data(),std::bind2nd(std::plus<T>(),s));
+            return *this;
+        }
+
         array_type& operator-=(const array_type& a)
         {
             assert(std::equal(this->shape(),this->shape()+D,a.shape()));
             std::transform((*this).data(),(*this).data()+(*this).num_elements(),a.data(),(*this).data(),std::minus<T>());
+            return *this;
+        }
+
+        array_type& operator-=(const T s)
+        {
+            std::transform((*this).data(),(*this).data()+(*this).num_elements(),(*this).data(),std::bind2nd(std::minus<T>(),s));
             return *this;
         }
 

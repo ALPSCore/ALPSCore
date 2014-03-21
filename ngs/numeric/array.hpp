@@ -5,6 +5,7 @@
  * ALPS Libraries                                                                  *
  *                                                                                 *
  * Copyright (C) 2011 - 2012 by Mario Koenz <mkoenz@ethz.ch>                       *
+ * Copyright (C) 2012 - 2014 by Lukas Gamper <gamperl@gmail.com>                   *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -63,32 +64,37 @@ namespace alps {
 
             #undef ALPS_NUMERIC_OPERATOR_EQ
 
+            //------------------- unary operator - -------------------
+            template<typename T, typename U, std::size_t N>
+            boost::array<T, N> operator - (boost::array<T, N> lhs) {
+                std::transform(lhs.begin(), lhs.end(), lhs.begin(), std::negate<T>());
+                return lhs;
+            }
+
             //------------------- operator + -------------------
             template<typename T, typename U, std::size_t N>
             boost::array<T, N> operator + (boost::array<T, N> lhs, boost::array<U, N> const & rhs) {
-                if(lhs.size() != rhs.size())
-                    boost::throw_exception(std::runtime_error("arrays must have the same size!" + ALPS_STACKTRACE));
-                else
-                    std::transform(lhs.begin(), lhs.end(), rhs.begin(), lhs.begin(), std::plus<T>() );
+                std::transform(lhs.begin(), lhs.end(), rhs.begin(), lhs.begin(), std::plus<T>() );
                 return lhs;
             }
             //------------------- operator - -------------------
             template<typename T, typename U, std::size_t N>
             boost::array<T, N> operator - (boost::array<T, N> lhs, boost::array<U, N> const & rhs) {
-                if(lhs.size() != rhs.size())
-                    boost::throw_exception(std::runtime_error("arrays must have the same size!" + ALPS_STACKTRACE));
-                else
-                    std::transform(lhs.begin(), lhs.end(), rhs.begin(), lhs.begin(), std::minus<T>() );
+                std::transform(lhs.begin(), lhs.end(), rhs.begin(), lhs.begin(), std::minus<T>() );
                 return lhs;
             }
             //------------------- operator * vector-vector-------------------
             template<typename T, typename U, std::size_t N>
             boost::array<T, N> operator * (boost::array<T, N> lhs, boost::array<U, N> const & rhs)
             {
-                if(lhs.size() != rhs.size())
-                    boost::throw_exception(std::runtime_error("arrays must have the same size!" + ALPS_STACKTRACE));
-                else
-                    std::transform(lhs.begin(), lhs.end(), rhs.begin(), lhs.begin(), std::multiplies<T>());
+                std::transform(lhs.begin(), lhs.end(), rhs.begin(), lhs.begin(), std::multiplies<T>());
+                return lhs;
+            }
+            //------------------- operator / vector-vector-------------------
+            template<typename T, typename U, std::size_t N>
+            boost::array<T, N> operator / (boost::array<T, N> lhs, boost::array<U, N> const & rhs)
+            {
+                std::transform(lhs.begin(), lhs.end(), rhs.begin(), lhs.begin(), std::multiplies<T>());
                 return lhs;
             }
 
@@ -107,8 +113,13 @@ namespace alps {
             //------------------- operator / with scalar -------------------
             template<typename T, std::size_t N>
             boost::array<T, N> operator / (boost::array<T, N> lhs, T const & scalar) {
-                std::transform(lhs.begin(), lhs.end(), lhs.begin(), boost::lambda::_1 * scalar);
+                std::transform(lhs.begin(), lhs.end(), lhs.begin(), boost::lambda::_1 / scalar);
                 return lhs;
+            }
+            template<typename T, std::size_t N>
+            boost::array<T, N> operator / (T const & scalar, boost::array<T, N> rhs) {
+                std::transform(rhs.begin(), rhs.end(), rhs.begin(), scalar / boost::lambda::_1);
+                return rhs;
             }
 
             //------------------- numeric functions -------------------

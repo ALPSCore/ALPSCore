@@ -30,6 +30,7 @@
 #define ALPS_NGS_ACCUMULATOR_COUNT_HPP
 
 #include <alps/ngs/accumulator/feature.hpp>
+#include <alps/ngs/accumulator/parameter.hpp>
 
 #include <alps/hdf5/archive.hpp>
 #include <alps/ngs/stacktrace.hpp>
@@ -118,7 +119,6 @@ namespace alps {
                         return ar.is_data("count");
                     }
 
-                    // TODO: implement -=, *=, /=
                     template<typename U> void operator+=(U const & arg) { augadd(arg); }
                     template<typename U> void operator-=(U const & arg) { augsub(arg); }
                     template<typename U> void operator*=(U const & arg) { augmul(arg); }
@@ -130,12 +130,12 @@ namespace alps {
 
                 private:
 
+                    // TODO: make macro ...
                     template<typename U> void augadd(U const & arg, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {
                         B::operator+=(arg);
                     }
                     template<typename U> void augadd(U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {
-                        // TODO: what do we do here?
-                        m_count += arg.count();
+                        m_count = std::min(m_count,  arg.count());
                         B::operator+=(arg);
                     }
 
@@ -143,7 +143,7 @@ namespace alps {
                         B::operator-=(arg);
                     }
                     template<typename U> void augsub(U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {
-                        // TODO: what do we do here?
+                        m_count = std::min(m_count,  arg.count());
                         B::operator-=(arg);
                     }
 
@@ -151,7 +151,7 @@ namespace alps {
                         B::operator*=(arg);
                     }
                     template<typename U> void augmul(U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {
-                        // TODO: what do we do here?
+                        m_count = std::min(m_count,  arg.count());
                         B::operator*=(arg);
                     }
 
@@ -159,7 +159,7 @@ namespace alps {
                         B::operator/=(arg);
                     }
                     template<typename U> void augdiv(U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {
-                        // TODO: what do we do here?
+                        m_count = std::min(m_count,  arg.count());
                         B::operator/=(arg);
                     }
 
@@ -172,13 +172,13 @@ namespace alps {
                     typedef typename count_type<T>::type count_type;
                     typedef Result<T, count_tag, typename B::result_type> result_type;
 
-                    // TODO: implement using disable_if<Accumulator<...> > ...
-                    // template<typename ArgumentPack> Accumulator(ArgumentPack const & args)
-                    //     : m_count(count_type())
-                    // {}
-
                     Accumulator(): m_count(count_type()) {}
+
                     Accumulator(Accumulator const & arg): m_count(arg.m_count) {}
+
+                    template<typename ArgumentPack> Accumulator(ArgumentPack const & args, typename boost::disable_if<is_accumulator<ArgumentPack>, int>::type = 0)
+                        : m_count(count_type())
+                    {}
 
                     count_type count() const {
                         return m_count;

@@ -43,7 +43,7 @@
                     std::vector<std::size_t> extent(get_extent(values));
                     std::size_t size = std::accumulate(extent.begin(), extent.end(), 0);
                     using alps::hdf5::get_pointer;
-                    std::memcpy(&buffer[offset], const_cast<S *>(get_pointer(values)), sizeof(typename hdf5::scalar_type<T>::type()) * size);
+                    std::memcpy(&buffer[offset], const_cast<S *>(get_pointer(values)), sizeof(typename hdf5::scalar_type<T>::type) * size);
                     return size;
                 }
 
@@ -58,7 +58,7 @@
                     std::vector<std::size_t> extent(get_extent(values));
                     std::size_t size = std::accumulate(extent.begin(), extent.end(), 0);
                     using alps::hdf5::get_pointer;
-                    std::memcpy(const_cast<S *>(get_pointer(values)), &buffer[offset], sizeof(typename hdf5::scalar_type<T>::type()) * size);
+                    std::memcpy(const_cast<S *>(get_pointer(values)), &buffer[offset], sizeof(typename hdf5::scalar_type<T>::type) * size);
                     return size;
                 }
 

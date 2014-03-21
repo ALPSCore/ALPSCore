@@ -30,6 +30,7 @@
 #define ALPS_NGS_ACCUMULATOR_AUTOCORRELATION_HPP
 
 #include <alps/ngs/accumulator/feature.hpp>
+#include <alps/ngs/accumulator/parameter.hpp>
 #include <alps/ngs/accumulator/feature/mean.hpp>
 #include <alps/ngs/accumulator/feature/count.hpp>
 
@@ -91,14 +92,6 @@ namespace alps {
                 public:
                     typedef Result<T, autocorrelation_tag, typename B::result_type> result_type;
 
-                    // TODO: implement using disable_if<Accumulator<...> > ...
-                    // template<typename ArgumentPack> Accumulator(ArgumentPack const & args)
-                    //     : B(args)
-                    //     , m_ac_sum()
-                    //     , m_ac_sum2()
-                    //     , m_ac_count()
-                    // {}
-
                     Accumulator()
                         : B()
                         , m_ac_sum()
@@ -114,6 +107,14 @@ namespace alps {
                         , m_ac_partial(arg.m_ac_partial)
                         , m_ac_count(arg.m_ac_count)
                     {}
+
+                    template<typename ArgumentPack> Accumulator(ArgumentPack const & args, typename boost::disable_if<is_accumulator<ArgumentPack>, int>::type = 0)
+                        : B(args)
+                        , m_ac_sum()
+                        , m_ac_sum2()
+                        , m_ac_partial()
+                        , m_ac_count()
+                    {}                    
 
                     std::vector<typename mean_type<B>::type> const autocorrelation() const {
                         using alps::ngs::numeric::operator*;
