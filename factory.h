@@ -66,9 +66,9 @@ class creator : public abstract_creator<BASE>
 public:
   /// the type of the abse class
   typedef BASE base_type;
-  ~creator() {}
+  virtual ~creator() {}
   /// create and default-construct an object of type T
-  base_type* create() const { return new T();}
+  virtual base_type* create() const { return new T();}
 };
 
 }
