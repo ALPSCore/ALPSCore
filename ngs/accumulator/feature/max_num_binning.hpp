@@ -58,8 +58,12 @@ namespace alps {
                 typedef typename std::size_t size_type;
 
                 public:
-                    max_num_binning_proxy(std::vector<M> const & bins, C const & num_elements, size_type const & max_number)
-                        : m_max_number(max_number), m_num_elements(num_elements), m_bins(bins)
+                    max_num_binning_proxy(std::vector<M> const & bins, C const & num_elements, size_type const & max_number, bool jackknife_valid, bool cannot_rebin)
+                        : m_max_number(max_number)
+                        , m_jackknife_valid(jackknife_valid)
+                        , m_cannot_rebin(cannot_rebin)
+                        , m_num_elements(num_elements)
+                        , m_bins(bins)
                     {}
 
                     std::vector<M> const & bins() const {
@@ -74,9 +78,19 @@ namespace alps {
                         return m_max_number;
                     }
 
+                    bool jackknife_valid() const {
+                        return m_jackknife_valid;
+                    }
+
+
+                    bool cannot_rebin() const {
+                        return m_cannot_rebin;
+                    }
+
                 private:
 
                     size_type m_max_number;
+                    bool m_jackknife_valid, m_cannot_rebin;
                     C m_num_elements;
                     std::vector<M> const & m_bins;
             };
@@ -157,7 +171,7 @@ namespace alps {
                     {}
 
                     max_num_binning_type const max_num_binning() const {
-                        return max_num_binning_type(m_mn_bins, m_mn_elements_in_bin, m_mn_max_number);
+                        return max_num_binning_type(m_mn_bins, m_mn_elements_in_bin, m_mn_max_number, false, false);
                     }
 
                     void operator()(T const & val) {
@@ -336,6 +350,10 @@ namespace alps {
                         : B()
                         , m_mn_max_number(0) 
                         , m_mn_elements_in_bin(0)
+                        , m_mn_cannot_rebin(false)
+                        , m_mn_jackknife_valid(false)
+                        , m_mn_data_is_analyzed(false)
+                        , m_mn_jackknife_bins(0)
                     {}
 
                     template<typename A> Result(A const & acc)
@@ -343,10 +361,30 @@ namespace alps {
                         , m_mn_max_number(detail::max_num_binning_impl(acc).max_number())
                         , m_mn_elements_in_bin(detail::max_num_binning_impl(acc).num_elements())
                         , m_mn_bins(detail::max_num_binning_impl(acc).bins())
+                        , m_mn_cannot_rebin(detail::max_num_binning_impl(acc).cannot_rebin())
+                        , m_mn_jackknife_valid(false)
+                        , m_mn_data_is_analyzed(false)
+                        , m_mn_jackknife_bins(0) // TODO: copy bins if A is a result ...
                     {}
 
+
+                    typename B::count_type count() const { 
+                        analyze();
+                        return m_mn_count;
+                    }
+
+                    typename mean_type<B>::type const & mean() const {
+                        analyze();
+                        return m_mn_mean;
+                    }
+
+                    typename error_type<B>::type const & error() const {
+                        analyze();
+                        return m_mn_error;
+                    }
+
                     max_num_binning_type const max_num_binning() const {
-                        return max_num_binning_type(m_mn_bins, m_mn_elements_in_bin, m_mn_max_number); 
+                        return max_num_binning_type(m_mn_bins, m_mn_elements_in_bin, m_mn_max_number, m_mn_jackknife_valid, m_mn_cannot_rebin); 
                     }
 
                     template<typename S> void print(S & os) const {
@@ -356,6 +394,7 @@ namespace alps {
 
                     void save(hdf5::archive & ar) const {
                         B::save(ar);
+                        // TODO: save jacknife informations ...
                         ar["timeseries/data"] = m_mn_bins;
                         ar["timeseries/data/@binningtype"] = "linear";
                         ar["timeseries/data/@minbinsize"] = 0; // TODO: what should we put here?
@@ -382,12 +421,119 @@ namespace alps {
                         ;
                     }
 
-                    // TODO: add functions and operators
+                    template<typename U> void operator+=(U const & arg) { augadd(arg); }
+                    template<typename U> void operator-=(U const & arg) { augsub(arg); }
+                    template<typename U> void operator*=(U const & arg) { augmul(arg); }
+                    template<typename U> void operator/=(U const & arg) { augdiv(arg); }
+
+                    // TODO: add operators
 
                 private:
                     std::size_t m_mn_max_number;
                     typename B::count_type m_mn_elements_in_bin;
                     std::vector<typename mean_type<B>::type> m_mn_bins;
+                    mutable typename B::count_type m_mn_count;
+                    mutable typename mean_type<B>::type m_mn_mean;
+                    mutable typename error_type<B>::type m_mn_error;
+                    mutable bool m_mn_cannot_rebin;
+                    mutable bool m_mn_jackknife_valid;
+                    mutable bool m_mn_data_is_analyzed;
+                    mutable std::vector<typename mean_type<B>::type> m_mn_jackknife_bins;
+
+                    void generate_jackknife() const {
+                        using alps::ngs::numeric::operator-;
+                        using alps::ngs::numeric::operator+;
+                        using alps::ngs::numeric::operator*;
+                        using alps::ngs::numeric::operator/;
+                        // build jackknife data structure
+                        if (!m_mn_bins.empty() && !m_mn_jackknife_valid) {
+                            if (m_mn_cannot_rebin)
+                                throw std::runtime_error("Cannot build jackknife data structure after nonlinear operations" + ALPS_STACKTRACE);
+                            m_mn_jackknife_bins.clear();
+                            m_mn_jackknife_bins.resize(m_mn_bins.size() + 1);
+                            // Order-N initialization of jackknife data structure
+                            for(std::size_t j = 0; j < m_mn_bins.size(); ++j) // to this point, m_mn_jackknife_bins[0] = \sum_{j} m_mn_bins[j]
+                                m_mn_jackknife_bins[0] = m_mn_jackknife_bins[0] + m_mn_bins[j];
+                            for(std::size_t i = 0; i < m_mn_bins.size(); ++i) // to this point, m_mn_jackknife_bins[i+1] = \sum_{j != i} m_mn_bins[j]
+                                m_mn_jackknife_bins[i + 1] = m_mn_jackknife_bins[0] - m_mn_bins[i];
+                            //  Next, we want the following:
+                            //    a)  m_mn_jackknife_bins[0]   =  <x>
+                            //    b)  m_mn_jackknife_bins[i+1] =  <x_i>_{jacknife}
+                            typename alps::hdf5::scalar_type<typename mean_type<B>::type>::type bin_number = m_mn_bins.size();
+                            m_mn_jackknife_bins[0] = m_mn_jackknife_bins[0] / bin_number; // up to this point, m_mn_jackknife_bins[0] is the jacknife mean...
+                            for (std::size_t j = 0; j < m_mn_bins.size(); ++j)  
+                                m_mn_jackknife_bins[j + 1] = m_mn_jackknife_bins[j + 1] / (bin_number - 1);
+                        }
+                        m_mn_jackknife_valid = true;
+                    }
+
+                    void analyze() const {
+                        using std::sqrt;
+                        using alps::numeric::sqrt;
+                        using alps::ngs::numeric::operator-;
+                        using alps::ngs::numeric::operator+;
+                        using alps::ngs::numeric::operator*;
+                        using alps::ngs::numeric::operator/;
+                        if (m_mn_bins.empty())
+                            throw std::runtime_error("No Measurement" + ALPS_STACKTRACE);
+                        if (!m_mn_bins.empty() && !m_mn_data_is_analyzed) {
+                            m_mn_count = m_mn_elements_in_bin * m_mn_bins.size();
+                            generate_jackknife();
+                            if (m_mn_jackknife_bins.size()) {
+                                typename mean_type<B>::type unbiased_mean;
+                                typename alps::hdf5::scalar_type<typename mean_type<B>::type>::type bin_number = m_mn_bins.size();
+                                for (typename std::vector<typename mean_type<B>::type>::const_iterator it = m_mn_jackknife_bins.begin() + 1; it != m_mn_jackknife_bins.end(); ++it)
+                                    unbiased_mean = unbiased_mean + *it / bin_number;
+                                m_mn_mean = m_mn_jackknife_bins[0] - (unbiased_mean - m_mn_jackknife_bins[0]) * (bin_number - 1);
+                                m_mn_error = B::error();
+                                for (std::size_t i = 0; i < m_mn_bins.size(); ++i)
+                                    m_mn_error = m_mn_error + (m_mn_jackknife_bins[i+1] - unbiased_mean) * (m_mn_jackknife_bins[i + 1] - unbiased_mean);
+                                m_mn_error = sqrt(m_mn_error / bin_number *  (bin_number - 1));
+                            }
+                        }
+                        m_mn_data_is_analyzed = true;
+                    }
+
+                    #define NUMERIC_FUNCTION_OPERATOR(OP_NAME, OPEQ_NAME, OP, OP_TOKEN)                                                                                         \
+                        template<typename U> void aug ## OP_TOKEN (U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {                             \
+                            using alps::ngs::numeric:: OP_NAME ;                                                                                                                \
+                            generate_jackknife();                                                                                                                               \
+                            arg.generate_jackknife(); /* TODO: make this more generic */                                                                                        \
+                            if (arg.m_mn_jackknife_bins.size() != m_mn_jackknife_bins.size()) /* TODO: make this more generic */                                                \
+                                throw std::runtime_error("Unable to transform: unequal number of bins" + ALPS_STACKTRACE);                                                      \
+                            m_mn_cannot_rebin = true;                                                                                                                           \
+                            m_mn_data_is_analyzed = false;                                                                                                                      \
+                            typename std::vector<typename mean_type<U>::type>::iterator it;                                                                                     \
+                            typename std::vector<typename mean_type<U>::type>::const_iterator jt;                                                                               \
+                            for (it = m_mn_bins.begin(), jt = arg.m_mn_bins.begin(); it != m_mn_bins.end(); ++it, ++jt)                                                         \
+                                *it = *it OP *jt;                                                                                                                               \
+                            for (it = m_mn_jackknife_bins.begin(), jt = arg.m_mn_jackknife_bins.begin(); it != m_mn_jackknife_bins.end(); ++it, ++jt)                           \
+                                *it = *it OP *jt;                                                                                                                               \
+                            B:: OPEQ_NAME (arg);                                                                                                                                \
+                        }                                                                                                                                                       \
+                        template<typename U> void aug ## OP_TOKEN (U const & arg, typename boost::enable_if<boost::mpl::and_<                                                   \
+                              boost::is_scalar<U>                                                                                                                               \
+                            , typename has_operator_ ## OP_TOKEN <typename mean_type<B>::type, U>::type                                                                         \
+                        >, int>::type = 0) {                                                                                                                                    \
+                            using alps::ngs::numeric:: OP_NAME ;                                                                                                                \
+                            for (typename std::vector<typename mean_type<B>::type>::iterator it = m_mn_bins.begin(); it != m_mn_bins.end(); ++it)                               \
+                                *it = *it OP arg;                                                                                                                               \
+                            B:: OPEQ_NAME (arg);                                                                                                                                \
+                        }                                                                                                                                                       \
+                        template<typename U> void aug ## OP_TOKEN (U const & arg, typename boost::enable_if<boost::mpl::and_<                                                   \
+                              boost::is_scalar<U>                                                                                                                               \
+                            , boost::mpl::not_<typename has_operator_ ## OP_TOKEN <typename mean_type<B>::type, U>::type>                                                       \
+                        >, int>::type = 0) {                                                                                                                                    \
+                            throw std::runtime_error(std::string(typeid(typename mean_type<B>::type).name())                                                                    \
+                                + " has no operator " #OP " with " + typeid(U).name() + ALPS_STACKTRACE);                                                                       \
+                        }
+
+                    NUMERIC_FUNCTION_OPERATOR(operator+, operator+=, +, add)
+                    NUMERIC_FUNCTION_OPERATOR(operator-, operator-=, -, sub)
+                    NUMERIC_FUNCTION_OPERATOR(operator*, operator*=, *, mul)
+                    NUMERIC_FUNCTION_OPERATOR(operator/, operator/=, /, div)
+
+                    #undef NUMERIC_FUNCTION_OPERATOR                    
             };
 
             template<typename B> class BaseWrapper<max_num_binning_tag, B> : public B {
