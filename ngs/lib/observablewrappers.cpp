@@ -142,6 +142,10 @@ namespace alps {
             return set;
         }
 
+        alps::mcobservables & operator<< (alps::mcobservables & set, RealVectorTimeSeriesObservable const & obs) {
+          set.create_RealTimeSeriesObservable(obs.getName());
+          return set;
+        }
     };
 
 }

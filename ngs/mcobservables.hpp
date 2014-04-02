@@ -98,6 +98,9 @@ namespace alps {
             // DO NOT USE! use set << ngs::RealTimeSeriesObservable(name);
             // TODO: shold be solved using friends
             void create_RealTimeSeriesObservable(std::string const & name);
+            // DO NOT USE! use set << ngs::RealTimeSeriesObservable(name);
+            // TODO: shold be solved using friends
+            void create_RealVectorTimeSeriesObservable(std::string const & name);
     };
 
     std::ostream & operator<<(std::ostream & os, mcobservables const & observables);
