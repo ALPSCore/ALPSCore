@@ -50,10 +50,10 @@ namespace alps {
 
     bool mcbase::run(boost::function<bool ()> const & stop_callback) {
         bool stopped = false;
-        do {
+        while(!(stopped = stop_callback()) && fraction_completed() < 1.) {
             update();
             measure();
-        } while(!(stopped = stop_callback()) && fraction_completed() < 1.);
+        }
         return !stopped;
     }
 

@@ -55,11 +55,13 @@ namespace alps {
             NGS_PYTHON_HDF5_CHECK_SCALAR("float")
             NGS_PYTHON_HDF5_CHECK_SCALAR("numpy.float64")
             else if (std::string(data.ptr()->ob_type->tp_name) == "numpy.ndarray" && PyArray_Check(data.ptr())) {
-                if (!PyArray_ISCONTIGUOUS(data.ptr()))
-                    throw std::runtime_error("numpy array is not continous");
-                else if (!PyArray_ISNOTSWAPPED(data.ptr()))
-                    throw std::runtime_error("numpy array is not native");
-                self << std::valarray< double >(static_cast< double const *>(PyArray_DATA(data.ptr())), *PyArray_DIMS(data.ptr()));
+                PyArrayObject * ptr = (PyArrayObject *)data.ptr();
+                if (!PyArray_ISNOTSWAPPED(ptr))
+                    throw std::runtime_error("numpy array is not native" + ALPS_STACKTRACE);
+                else if (!(ptr = PyArray_GETCONTIGUOUS(ptr)))
+                    throw std::runtime_error("numpy array cannot be converted to continous array" + ALPS_STACKTRACE);
+                self << std::valarray< double >(static_cast< double const *>(PyArray_DATA(ptr)), *PyArray_DIMS(ptr));
+                Py_DECREF((PyObject *)ptr);
             } else
                 throw std::runtime_error("unsupported type");
         }

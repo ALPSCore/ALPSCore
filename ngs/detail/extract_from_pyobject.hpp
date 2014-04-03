@@ -79,22 +79,24 @@
                         , boost::python::call_method<double>(PyObject_GetAttr(data.ptr(), boost::python::str("imag").ptr()), "__float__")
                     ));
                 else if (dtype == "numpy.ndarray") {
-                    if (!PyArray_Check(data.ptr()))
+                    PyArrayObject * ptr = (PyArrayObject *)data.ptr();
+                    if (!PyArray_Check(ptr))
                         throw std::runtime_error("invalid numpy data" + ALPS_STACKTRACE);
-                    else if (!PyArray_ISCONTIGUOUS(data.ptr()))
-                        throw std::runtime_error("numpy array is not continous" + ALPS_STACKTRACE);
-                    else if (!PyArray_ISNOTSWAPPED(data.ptr()))
+                    else if (!PyArray_ISNOTSWAPPED(ptr))
                         throw std::runtime_error("numpy array is not native" + ALPS_STACKTRACE);
+                    else if (!(ptr = PyArray_GETCONTIGUOUS(ptr)))
+                        throw std::runtime_error("numpy array cannot be converted to continous array" + ALPS_STACKTRACE);
                     #define ALPS_NGS_EXTRACT_FROM_PYOBJECT_CHECK_NUMPY(T)                                                                               \
-                        else if (PyArray_DESCR(data.ptr())->type_num == detail::get_numpy_type(type_wrapper< T >::type()))                              \
+                        else if (PyArray_DESCR(ptr)->type_num == detail::get_numpy_type(type_wrapper< T >::type()))                                     \
                             visitor(                                                                                                                    \
-                                  static_cast< T const *>(PyArray_DATA(data.ptr()))                                                                     \
-                                , std::vector<std::size_t>(PyArray_DIMS(data.ptr()), PyArray_DIMS(data.ptr()) + PyArray_NDIM(data.ptr()))               \
+                                  static_cast< T const *>(PyArray_DATA(ptr))                                                                            \
+                                , std::vector<std::size_t>(PyArray_DIMS(ptr), PyArray_DIMS(ptr) + PyArray_NDIM(ptr))                                    \
                             );
                     ALPS_NGS_FOREACH_NATIVE_NUMPY_TYPE(ALPS_NGS_EXTRACT_FROM_PYOBJECT_CHECK_NUMPY)
                     #undef ALPS_NGS_EXTRACT_FROM_PYOBJECT_CHECK_NUMPY
                     else
-                        throw std::runtime_error("Unknown numpy element type: " + cast<std::string>(PyArray_DESCR(data.ptr())->type_num) + ALPS_STACKTRACE);
+                        throw std::runtime_error("Unknown numpy element type: " + cast<std::string>(PyArray_DESCR(ptr)->type_num) + ALPS_STACKTRACE);
+                    Py_DECREF((PyObject *)ptr);
                 } else
                     throw std::runtime_error("Unsupported type: " + dtype + ALPS_STACKTRACE);
             }

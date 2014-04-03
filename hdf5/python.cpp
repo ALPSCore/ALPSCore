@@ -200,20 +200,21 @@ namespace alps {
             import_numpy();
             if (ar.is_group(path))
                 ar.delete_group(path);
-            if (!PyArray_Check(value.ptr()))
+            PyArrayObject * ptr = (PyArrayObject *)value.ptr();
+            if (!PyArray_Check(ptr))
                 throw std::runtime_error("invalid numpy data" + ALPS_STACKTRACE);
-            else if (!PyArray_ISCONTIGUOUS(value.ptr()))
-                throw std::runtime_error("numpy array is not continous" + ALPS_STACKTRACE);
-            else if (!PyArray_ISNOTSWAPPED(value.ptr()))
+            else if (!PyArray_ISNOTSWAPPED(ptr))
                 throw std::runtime_error("numpy array is not native" + ALPS_STACKTRACE);
-            std::vector<std::size_t> extent(PyArray_DIMS(value.ptr()), PyArray_DIMS(value.ptr()) + PyArray_NDIM(value.ptr()));
+            else if (!(ptr = PyArray_GETCONTIGUOUS(ptr)))
+                throw std::runtime_error("numpy array cannot be converted to continous array" + ALPS_STACKTRACE);
+            std::vector<std::size_t> extent(PyArray_DIMS(ptr), PyArray_DIMS(ptr) + PyArray_NDIM(ptr));
             std::copy(extent.begin(), extent.end(), std::back_inserter(size));
             std::copy(extent.begin(), extent.end(), std::back_inserter(chunk));
             std::fill_n(std::back_inserter(offset), extent.size(), 0);
             if (false);
             #define NGS_PYTHON_HDF5_CHECK_NUMPY(T)                                                                                          \
-                else if (PyArray_DESCR(value.ptr())->type_num == ::alps::detail::get_numpy_type(alps::detail::type_wrapper< T >::type())) { \
-                    save(ar, path, *static_cast< T const *>(PyArray_DATA(value.ptr())), size, chunk, offset);                               \
+                else if (PyArray_DESCR(ptr)->type_num == ::alps::detail::get_numpy_type(alps::detail::type_wrapper< T >::type())) {         \
+                    save(ar, path, *static_cast< T const *>(PyArray_DATA(ptr)), size, chunk, offset);                                       \
                     if (has_complex_elements< T >::value)                                                                                   \
                         ar.set_complex(path);                                                                                               \
                 }
@@ -221,6 +222,7 @@ namespace alps {
             #undef NGS_PYTHON_HDF5_CHECK_NUMPY
             else
                 throw std::runtime_error("unknown numpy element type" + ALPS_STACKTRACE);
+            Py_DECREF((PyObject *)ptr);
         }
 
         void load(
