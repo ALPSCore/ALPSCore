@@ -9,7 +9,7 @@ include_directories(${PROJECT_SOURCE_DIR}/src)
 include_directories(${Boost_ROOT_DIR})
 
 IF(ALPS_NGS_USE_NEW_ALEA)
-    FOREACH (name ngs_alea_next)
+    FOREACH (name ngs_alea_next ngs_alea_compare)
         add_executable(${name} ${name}.cpp)
         add_dependencies(${name} alps)
         target_link_libraries(${name} alps)
