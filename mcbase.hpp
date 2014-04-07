@@ -32,8 +32,6 @@
 
 #include <boost/function.hpp>
 #include <boost/filesystem/path.hpp>
-#include <boost/random/uniform_real.hpp>
-#include <boost/random/variate_generator.hpp>
 
 #include <vector>
 #include <string>
