@@ -134,18 +134,14 @@ namespace alps {
                         mean_scalar_type one = 1;
 
                         mean_scalar_type N_0 = m_ac_count[0];
-                        mean_type sum_0 = m_ac_sum[0];
-                        mean_type sum2_0 = m_ac_sum2[0];
-                        mean_type delta_0 = sqrt((sum2_0 - sum_0 * sum_0 / N_0) / (N_0 * (N_0 - one)));
-
-                        std::vector<mean_type> acorr(m_ac_sum2.size() - 1);
+                        std::vector<mean_type> acorr(m_ac_sum2.size() < 7 ? 0 : m_ac_sum2.size() - 7);
                         for (std::size_t i = 0; i < acorr.size(); ++i) {
                             mean_scalar_type binlen = 1ll << i;
                             mean_scalar_type N_i = m_ac_count[i];
-                            mean_type sum_i = m_ac_sum[i] / binlen;
-                            mean_type sum2_i = m_ac_sum2[i] / (binlen * binlen);
-                            mean_type delta_i = sqrt((sum2_i - sum_i * sum_i / N_i) / (N_i * (N_i - one)));
-                            acorr[i] = 0.5 * (delta_i / delta_0 - one);
+                            mean_type sum_i = m_ac_sum[i];
+                            mean_type sum2_i = m_ac_sum2[i];
+                            mean_type var_i = (sum2_i / binlen - sum_i * sum_i / (N_i * binlen)) / (N_i * binlen);
+                            acorr[i] = sqrt(var_i / N_0 * (N_0 - one) / (N_i - one));
                         }
                         return acorr;
                     }
@@ -161,7 +157,7 @@ namespace alps {
                             check_size(m_ac_sum2.back(), val);
                             m_ac_sum.push_back(T());
                             check_size(m_ac_sum.back(), val);
-                            m_ac_partial.push_back(T());
+                            m_ac_partial.push_back(m_ac_sum[0]);
                             check_size(m_ac_partial.back(), val);
                             m_ac_count.push_back(typename count_type<B>::type());
                         }
@@ -173,13 +169,20 @@ namespace alps {
                                 m_ac_count[i]++;
                                 m_ac_partial[i] = T();
                                 check_size(m_ac_partial[i], val);
-                            }
+                            }                            
                         }
                     }
 
                     template<typename S> void print(S & os) const {
                         B::print(os);
                         os << " Tau: " << short_print(autocorrelation());
+
+                        std::vector<typename mean_type<B>::type> acorr = autocorrelation();
+                        for (std::size_t i = 0; i < acorr.size(); ++i)
+                            os << std::endl
+                                << "    bin #" << std::setw(3) <<  i + 1
+                                << " : " << std::setw(8) << m_ac_count[i]
+                                << " entries: error = " << short_print(acorr[i]);
                     }
 
                     void save(hdf5::archive & ar) const {
