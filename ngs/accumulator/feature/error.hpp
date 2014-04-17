@@ -56,6 +56,7 @@ namespace alps {
 
         template<typename T> struct has_feature<T, error_tag> {
             template<typename R, typename C> static char helper(R(C::*)() const);
+            template<typename R, typename C> static char helper(R(C::*)(std::size_t) const);
             template<typename C> static char check(boost::integral_constant<std::size_t, sizeof(helper(&C::error))>*);
             template<typename C> static double check(...);
             typedef boost::integral_constant<bool, sizeof(char) == sizeof(check<T>(0))> type;

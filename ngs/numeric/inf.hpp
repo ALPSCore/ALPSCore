@@ -5,6 +5,7 @@
  * ALPS Libraries                                                                  *
  *                                                                                 *
  * Copyright (C) 2011 - 2012 by Mario Koenz <mkoenz@ethz.ch>                       *
+ * Copyright (C) 2012 - 2014 by Lukas Gamper <gamperl@gmail.com>                   *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -25,12 +26,25 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_NUMERIC_HPP
-#define ALPS_NGS_NUMERIC_HPP
+#ifndef ALPS_NGS_NUMERIC_INF_HEADER
+#define ALPS_NGS_NUMERIC_INF_HEADER
 
-#include <alps/ngs/numeric/inf.hpp>
-#include <alps/ngs/numeric/array.hpp>
-#include <alps/ngs/numeric/detail.hpp>
-#include <alps/ngs/numeric/vector.hpp>
+#include <limits>
 
-#endif //ALPS_NGS_ALEA_HPP
+namespace alps {
+    namespace ngs {
+        namespace numeric {
+
+			template<typename T> struct inf {};
+
+			template<> struct inf<double> {
+        		operator double() const {
+        			return std::numeric_limits<double>::infinity();
+        		}
+        	};
+
+		}
+	}
+}
+
+#endif

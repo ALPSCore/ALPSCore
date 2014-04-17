@@ -498,12 +498,12 @@ namespace alps {
             };
 
             template<typename T> struct observable_type
-                : public impl::Accumulator<T, autocorrelation_tag, impl::Accumulator<T, max_num_binning_tag, simple_observable_type<T> > >
+                : public impl::Accumulator<T, binning_analysis_tag, impl::Accumulator<T, max_num_binning_tag, simple_observable_type<T> > >
             {
                 observable_type(): base_type() {}
                 template<typename A> observable_type(A const & arg): base_type(arg) {}
                 private:
-                    typedef impl::Accumulator<T, autocorrelation_tag, impl::Accumulator<T, max_num_binning_tag, simple_observable_type<T> > > base_type;
+                    typedef impl::Accumulator<T, binning_analysis_tag, impl::Accumulator<T, max_num_binning_tag, simple_observable_type<T> > > base_type;
             };
 
             template<typename T> struct signed_observable_type

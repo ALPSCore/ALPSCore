@@ -30,11 +30,13 @@
 #define ALPS_NGS_NUMERIC_ARRAY_HEADER
 
 #include <alps/ngs/stacktrace.hpp>
+#include <alps/ngs/numeric/inf.hpp>
 
 #include <alps/numeric/special_functions.hpp>
 
 #include <boost/throw_exception.hpp>
 #include <boost/lambda/lambda.hpp>
+#include <boost/foreach.hpp>
 #include <boost/array.hpp>
 
 #include <algorithm>
@@ -64,6 +66,17 @@ namespace alps {
 
             #undef ALPS_NUMERIC_OPERATOR_EQ
 
+            //------------------- infinity -------------------
+            template<std::size_t N> struct inf<boost::array<double, N> > {
+                operator boost::array<double, N> const() {
+                    boost::array<double, N> retval;
+                    BOOST_FOREACH(double & arg, retval) {
+                        arg = std::numeric_limits<double>::infinity();
+                    }
+                    return retval;
+                }
+            };
+
             //------------------- unary operator - -------------------
             template<typename T, typename U, std::size_t N>
             boost::array<T, N> operator - (boost::array<T, N> lhs) {
@@ -77,12 +90,36 @@ namespace alps {
                 std::transform(lhs.begin(), lhs.end(), rhs.begin(), lhs.begin(), std::plus<T>() );
                 return lhs;
             }
+            //------------------- operator + with scalar -------------------
+            template<typename T, std::size_t N>
+            boost::array<T, N> operator + (boost::array<T, N> arg, T const & scalar) {
+                std::transform(arg.begin(), arg.end(), arg.begin(), boost::lambda::_1 + scalar);
+                return arg;
+            }
+            template<typename T, std::size_t N>
+            boost::array<T, N> operator + (T const & scalar, boost::array<T, N> arg) {
+                std::transform(arg.begin(), arg.end(), arg.begin(), scalar + boost::lambda::_1);
+                return arg;
+            }
+
             //------------------- operator - -------------------
             template<typename T, typename U, std::size_t N>
             boost::array<T, N> operator - (boost::array<T, N> lhs, boost::array<U, N> const & rhs) {
                 std::transform(lhs.begin(), lhs.end(), rhs.begin(), lhs.begin(), std::minus<T>() );
                 return lhs;
             }
+            //------------------- operator - with scalar -------------------
+            template<typename T, std::size_t N>
+            boost::array<T, N> operator - (boost::array<T, N> arg, T const & scalar) {
+                std::transform(arg.begin(), arg.end(), arg.begin(), boost::lambda::_1 - scalar);
+                return arg;
+            }
+            template<typename T, std::size_t N>
+            boost::array<T, N> operator - (T const & scalar, boost::array<T, N> arg) {
+                std::transform(arg.begin(), arg.end(), arg.begin(), scalar - boost::lambda::_1);
+                return arg;
+            }
+
             //------------------- operator * vector-vector-------------------
             template<typename T, typename U, std::size_t N>
             boost::array<T, N> operator * (boost::array<T, N> lhs, boost::array<U, N> const & rhs)

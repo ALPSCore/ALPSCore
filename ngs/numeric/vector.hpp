@@ -30,6 +30,7 @@
 #define ALPS_NGS_NUMERIC_VECTOR_HEADER
 
 #include <alps/ngs/stacktrace.hpp>
+#include <alps/ngs/numeric/inf.hpp>
 
 #include <alps/numeric/vector_functions.hpp>
 #include <alps/numeric/special_functions.hpp>
@@ -69,6 +70,17 @@ namespace alps {
 
             #undef ALPS_NUMERIC_OPERATOR_EQ
 
+            //------------------- infinity -------------------
+            template<> struct inf<std::vector<double> > {
+                operator std::vector<double> const() {
+                    std::vector<double> retval;
+                    BOOST_FOREACH(double & arg, retval) {
+                        arg = std::numeric_limits<double>::infinity();
+                    }
+                    return retval;
+                }
+            };
+
             //------------------- unary operator - -------------------
             template<typename T>
             std::vector<T> operator - (std::vector<T> lhs) {
@@ -82,12 +94,36 @@ namespace alps {
                 using boost::numeric::operators::operator+;
                 return lhs + rhs;
             }
+            //------------------- operator + with scalar -------------------
+            template<typename T, std::size_t N>
+            std::vector<T> operator + (std::vector<T> arg, T const & scalar) {
+                std::transform(arg.begin(), arg.end(), arg.begin(), boost::lambda::_1 + scalar);
+                return arg;
+            }
+            template<typename T, std::size_t N>
+            std::vector<T> operator + (T const & scalar, std::vector<T> arg) {
+                std::transform(arg.begin(), arg.end(), arg.begin(), scalar + boost::lambda::_1);
+                return arg;
+            }
+
             //------------------- operator - -------------------
             template<typename T, typename U>
             std::vector<T> operator - (std::vector<T> const & lhs, std::vector<U> const & rhs) {
                 using boost::numeric::operators::operator-;
                 return lhs - rhs;
             }
+            //------------------- operator + with scalar -------------------
+            template<typename T, std::size_t N>
+            std::vector<T> operator - (std::vector<T> arg, T const & scalar) {
+                std::transform(arg.begin(), arg.end(), arg.begin(), boost::lambda::_1 + scalar);
+                return arg;
+            }
+            template<typename T, std::size_t N>
+            std::vector<T> operator - (T const & scalar, std::vector<T> arg) {
+                std::transform(arg.begin(), arg.end(), arg.begin(), scalar + boost::lambda::_1);
+                return arg;
+            }
+
             //------------------- operator * vector-vector-------------------
             template<typename T, typename U>
             std::vector<T> operator * (std::vector<T> const & lhs, std::vector<U> const & rhs) {

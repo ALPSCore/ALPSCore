@@ -34,7 +34,7 @@
 #include <alps/ngs/accumulator/feature/count.hpp>
 #include <alps/ngs/accumulator/feature/weight.hpp>
 #include <alps/ngs/accumulator/feature/max_num_binning.hpp>
-#include <alps/ngs/accumulator/feature/autocorrelation.hpp>
+#include <alps/ngs/accumulator/feature/binning_analysis.hpp>
 
 #include <alps/hdf5/archive.hpp>
 

@@ -26,37 +26,40 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_ACCUMULATOR_AUTOCORRELATION_HPP
-#define ALPS_NGS_ACCUMULATOR_AUTOCORRELATION_HPP
+#ifndef ALPS_NGS_ACCUMULATOR_BINNING_ANALYSIS_HPP
+#define ALPS_NGS_ACCUMULATOR_BINNING_ANALYSIS_HPP
 
 #include <alps/ngs/accumulator/feature.hpp>
 #include <alps/ngs/accumulator/parameter.hpp>
 #include <alps/ngs/accumulator/feature/mean.hpp>
 #include <alps/ngs/accumulator/feature/count.hpp>
 
-#include <alps/hdf5/archive.hpp>
 #include <alps/ngs/numeric.hpp>
+#include <alps/hdf5/archive.hpp>
 #include <alps/ngs/stacktrace.hpp>
 #include <alps/ngs/short_print.hpp>
+
+#include <alps/numeric/set_negative_0.hpp>
 
 #include <boost/mpl/if.hpp>
 #include <boost/utility.hpp>
 #include <boost/type_traits/is_scalar.hpp>
 #include <boost/type_traits/is_integral.hpp>
 
+#include <limits>
 #include <stdexcept>
 
 namespace alps {
     namespace accumulator {
-        // this should be called namespace tag { struct autocorrelation; }
+        // this should be called namespace tag { struct binning_analysis; }
         // but gcc <= 4.4 has lookup error, so name it different
-        struct autocorrelation_tag;
+        struct binning_analysis_tag;
 
-        template<typename T> struct autocorrelation_type {
-            typedef std::vector<typename value_type<T>::type> type;
-        };
+        template<typename T> struct autocorrelation_type
+            : public boost::mpl::if_<boost::is_integral<typename value_type<T>::type>, double, typename value_type<T>::type>
+        {};
 
-        template<typename T> struct has_feature<T, autocorrelation_tag> {
+        template<typename T> struct has_feature<T, binning_analysis_tag> {
             template<typename R, typename C> static char helper(R(C::*)() const);
             template<typename C> static char check(boost::integral_constant<std::size_t, sizeof(helper(&C::autocorrelation))>*);
             template<typename C> static double check(...);
@@ -70,14 +73,14 @@ namespace alps {
         namespace detail {
 
             template<typename A> typename boost::enable_if<
-                  typename has_feature<A, autocorrelation_tag>::type
+                  typename has_feature<A, binning_analysis_tag>::type
                 , typename autocorrelation_type<A>::type
             >::type autocorrelation_impl(A const & acc) {
                 return autocorrelation(acc);
             }
 
             template<typename A> typename boost::disable_if<
-                  typename has_feature<A, autocorrelation_tag>::type
+                  typename has_feature<A, binning_analysis_tag>::type
                 , typename autocorrelation_type<A>::type
             >::type autocorrelation_impl(A const & acc) {
                 throw std::runtime_error(std::string(typeid(A).name()) + " has no autocorrelation-method" + ALPS_STACKTRACE);
@@ -87,10 +90,10 @@ namespace alps {
 
         namespace impl {
 
-            template<typename T, typename B> struct Accumulator<T, autocorrelation_tag, B> : public B {
+            template<typename T, typename B> struct Accumulator<T, binning_analysis_tag, B> : public B {
 
                 public:
-                    typedef Result<T, autocorrelation_tag, typename B::result_type> result_type;
+                    typedef Result<T, binning_analysis_tag, typename B::result_type> result_type;
 
                     Accumulator()
                         : B()
@@ -116,34 +119,88 @@ namespace alps {
                         , m_ac_count()
                     {}                    
 
-                    std::vector<typename mean_type<B>::type> const autocorrelation() const {
+                    typedef typename alps::accumulator::error_type<B>::type error_type;
+
+                    typename alps::accumulator::error_type<B>::type const error(std::size_t bin_level = std::numeric_limits<std::size_t>::max()) const {
                         using alps::ngs::numeric::operator*;
                         using alps::ngs::numeric::operator-;
                         using alps::ngs::numeric::operator/;
                         using std::sqrt;
                         using alps::ngs::numeric::sqrt;
 
+                        if (bin_level > m_ac_sum2.size() - 8)
+                            bin_level = m_ac_sum2.size() < 8 ? 0 : m_ac_sum2.size() - 8;
+
+                        typedef typename alps::accumulator::error_type<B>::type error_type;
+                        typedef typename alps::hdf5::scalar_type<error_type>::type error_scalar_type;
+
+                        // TODO: if not enoght bins are available, return infinity
+                        if (m_ac_sum2.size() < 2)
+                            return alps::ngs::numeric::inf<error_type>();
+
+                        // TODO: make library for scalar type
+                        error_scalar_type one = 1;
+
+                        error_scalar_type binlen = 1ll << bin_level;
+                        error_scalar_type N_0 = m_ac_count[0];
+                        error_scalar_type N_i = m_ac_count[bin_level];
+                        error_type sum_i = m_ac_sum[bin_level];
+                        error_type sum2_i = m_ac_sum2[bin_level];
+                        error_type var_i = (sum2_i / binlen - sum_i * sum_i / (N_i * binlen)) / (N_i * binlen);
+                        return sqrt(var_i / (N_i - one));
+                    }
+
+                    // TODO: remove since 
+                    typename autocorrelation_type<B>::type const autocorrelation() const {
+                        using alps::ngs::numeric::operator*;
+                        using alps::ngs::numeric::operator-;
+                        using alps::ngs::numeric::operator/;
+
                         typedef typename mean_type<B>::type mean_type;
                         typedef typename alps::hdf5::scalar_type<mean_type>::type mean_scalar_type;
 
                         // TODO: if not enoght bins are available, return infinity
-                        if (m_ac_sum2.size() == 0)
-                            return std::vector<mean_type>();
+                        if (m_ac_sum2.size() < 2)
+                            return alps::ngs::numeric::inf<mean_type>();
+
+                        std::size_t bin_level = m_ac_sum2.size() < 6 ? 0 : m_ac_sum2.size() - 8;
 
                         // TODO: make library for scalar type
                         mean_scalar_type one = 1;
-
+                        mean_scalar_type two = 2;
+                        // mean_scalar_type binlen = 1ll << bin_level;
                         mean_scalar_type N_0 = m_ac_count[0];
-                        std::vector<mean_type> acorr(m_ac_sum2.size() < 7 ? 0 : m_ac_sum2.size() - 7);
-                        for (std::size_t i = 0; i < acorr.size(); ++i) {
-                            mean_scalar_type binlen = 1ll << i;
-                            mean_scalar_type N_i = m_ac_count[i];
-                            mean_type sum_i = m_ac_sum[i];
-                            mean_type sum2_i = m_ac_sum2[i];
-                            mean_type var_i = (sum2_i / binlen - sum_i * sum_i / (N_i * binlen)) / (N_i * binlen);
-                            acorr[i] = sqrt(var_i / N_0 * (N_0 - one) / (N_i - one));
-                        }
-                        return acorr;
+                        // mean_scalar_type N_i = m_ac_count[bin_level];
+                        mean_type sum_0 = m_ac_sum[0];
+                        // mean_type sum_i = m_ac_sum[bin_level];
+                        mean_type sum2_0 = m_ac_sum2[0];
+                        // mean_type sum2_i = m_ac_sum2[bin_level];
+                        mean_type var_0 = (sum2_0 - sum_0 * sum_0 / N_0) / N_0;
+                        // mean_type var_i = (sum2_i / binlen - sum_i * sum_i / (N_i * binlen)) / (N_i * binlen);
+                        alps::numeric::set_negative_0(var_0);
+                        // return (var_i / var_0 - one) / 2.;
+
+
+
+                        mean_scalar_type fac = B::count() - 1;
+                        mean_type err = error();
+
+                        // mean_type var = (m_ac_sum2[0] - sum_0 * sum_0 / N_0) / (N_0 - 1);
+                        // numeric::set_negative_0(var_0);
+                        return (err * err * fac / var_0 - one) / two;
+
+
+
+
+
+    // count_type factor =count()-1;
+    // time_type er(std::abs(error()));
+    // er *=er*factor;
+    // er /= std::abs(variance());
+    // er -=1.;
+    // return 0.5*er;
+
+
                     }
 
                     void operator()(T const & val) {
@@ -175,14 +232,12 @@ namespace alps {
 
                     template<typename S> void print(S & os) const {
                         B::print(os);
-                        os << " Tau: " << short_print(autocorrelation());
-
-                        std::vector<typename mean_type<B>::type> acorr = autocorrelation();
-                        for (std::size_t i = 0; i < acorr.size(); ++i)
+                        os << " Autocorrelation: " << short_print(autocorrelation());
+                        for (std::size_t i = 0; i < (m_ac_sum2.size() < 8 ? 1 : m_ac_sum2.size() - 7); ++i)
                             os << std::endl
                                 << "    bin #" << std::setw(3) <<  i + 1
                                 << " : " << std::setw(8) << m_ac_count[i]
-                                << " entries: error = " << short_print(acorr[i]);
+                                << " entries: error = " << short_print(error(i));
                     }
 
                     void save(hdf5::archive & ar) const {
@@ -235,7 +290,7 @@ namespace alps {
                             B::reduce_if(comm, std::vector<T>(m_ac_sum2), m_ac_sum2, std::plus<mean_scalar_type>(), root);
 
                         } else
-                            const_cast<Accumulator<T, autocorrelation_tag, B> const *>(this)->collective_merge(comm, root);
+                            const_cast<Accumulator<T, binning_analysis_tag, B> const *>(this)->collective_merge(comm, root);
                     }
 
                     void collective_merge(
@@ -276,7 +331,7 @@ namespace alps {
                     std::vector<typename count_type<B>::type> m_ac_count;
             };
 
-            template<typename T, typename B> class Result<T, autocorrelation_tag, B> : public B {
+            template<typename T, typename B> class Result<T, binning_analysis_tag, B> : public B {
 
                 public:
                     typedef typename alps::accumulator::autocorrelation_type<B>::type autocorrelation_type;
@@ -323,25 +378,25 @@ namespace alps {
                     // TODO: add functions and operators
 
                 private:
-                    std::vector<typename mean_type<B>::type> m_ac_autocorrelation;
+                    typename mean_type<B>::type m_ac_autocorrelation;
             };
 
-            template<typename B> class BaseWrapper<autocorrelation_tag, B> : public B {
+            template<typename B> class BaseWrapper<binning_analysis_tag, B> : public B {
                 public:
                     virtual bool has_autocorrelation() const = 0;
             };
 
-            template<typename T, typename B> class ResultTypeWrapper<T, autocorrelation_tag, B> : public B {
+            template<typename T, typename B> class ResultTypeWrapper<T, binning_analysis_tag, B> : public B {
                 public:
                     virtual typename autocorrelation_type<B>::type autocorrelation() const = 0;
             };
 
-            template<typename T, typename B> class DerivedWrapper<T, autocorrelation_tag, B> : public B {
+            template<typename T, typename B> class DerivedWrapper<T, binning_analysis_tag, B> : public B {
                 public:
                     DerivedWrapper(): B() {}
                     DerivedWrapper(T const & arg): B(arg) {}
 
-                    bool has_autocorrelation() const { return has_feature<T, autocorrelation_tag>::type::value; }
+                    bool has_autocorrelation() const { return has_feature<T, binning_analysis_tag>::type::value; }
 
                     typename autocorrelation_type<B>::type autocorrelation() const { return detail::autocorrelation_impl(this->m_data); }
             };
