@@ -39,6 +39,7 @@
 #include <alps/ngs/stacktrace.hpp>
 #include <alps/ngs/short_print.hpp>
 
+#include <alps/alea/convergence.hpp>
 #include <alps/numeric/set_negative_0.hpp>
 
 #include <boost/mpl/if.hpp>
@@ -119,7 +120,35 @@ namespace alps {
                         , m_ac_count()
                     {}                    
 
-                    typedef typename alps::accumulator::error_type<B>::type error_type;
+                    error_convergence converged_errors() const {
+                        error_convergence conv = MAYBE_CONVERGED;
+                        // TODO: implement!
+                        // typename alps::accumulator::mean_type<B>::type err = error();
+                        // resize_same_as(conv,err);
+                        // const unsigned int range = 4;
+                        // typename slice_index<convergence_type>::type it;
+                        // if (binning_depth()<range) {
+                        //     for (it= slices(conv).first; it!= slices(conv).second; ++it)
+                        //         slice_value(conv,it) = MAYBE_CONVERGED;
+                        // }
+                        // else {
+                        //     for (it= slices(conv).first; it!= slices(conv).second; ++it)
+                        //         slice_value(conv,it) = CONVERGED;
+
+                        //     for (unsigned int i=binning_depth()-range;i<binning_depth()-1;++i) {
+                        //         result_type this_err(error(i));
+                        //         for (it= slices(conv).first; it!= slices(conv).second; ++it)
+                        //             if (std::abs(slice_value(this_err,it)) >= std::abs(slice_value(err,it)))
+                        //                 slice_value(conv,it)=CONVERGED;
+                        //             else if (std::abs(slice_value(this_err,it)) < 0.824 * std::abs(slice_value(err,it)))
+                        //                 slice_value(conv,it)=NOT_CONVERGED;
+                        //             else if (std::abs(slice_value(this_err,it)) <0.9* std::abs(slice_value(err,it))  &&
+                        //                 slice_value(conv,it)!=NOT_CONVERGED)
+                        //             slice_value(conv,it)=MAYBE_CONVERGED;
+                        //     }
+                        // }
+                        // return conv;
+                    }
 
                     typename alps::accumulator::error_type<B>::type const error(std::size_t bin_level = std::numeric_limits<std::size_t>::max()) const {
                         using alps::ngs::numeric::operator*;
@@ -157,50 +186,25 @@ namespace alps {
                         using alps::ngs::numeric::operator/;
 
                         typedef typename mean_type<B>::type mean_type;
+
+                        // TODO: make library for scalar type
                         typedef typename alps::hdf5::scalar_type<mean_type>::type mean_scalar_type;
 
                         // TODO: if not enoght bins are available, return infinity
                         if (m_ac_sum2.size() < 2)
                             return alps::ngs::numeric::inf<mean_type>();
 
-                        std::size_t bin_level = m_ac_sum2.size() < 6 ? 0 : m_ac_sum2.size() - 8;
-
-                        // TODO: make library for scalar type
                         mean_scalar_type one = 1;
                         mean_scalar_type two = 2;
-                        // mean_scalar_type binlen = 1ll << bin_level;
+
                         mean_scalar_type N_0 = m_ac_count[0];
-                        // mean_scalar_type N_i = m_ac_count[bin_level];
                         mean_type sum_0 = m_ac_sum[0];
-                        // mean_type sum_i = m_ac_sum[bin_level];
                         mean_type sum2_0 = m_ac_sum2[0];
-                        // mean_type sum2_i = m_ac_sum2[bin_level];
                         mean_type var_0 = (sum2_0 - sum_0 * sum_0 / N_0) / N_0;
-                        // mean_type var_i = (sum2_i / binlen - sum_i * sum_i / (N_i * binlen)) / (N_i * binlen);
                         alps::numeric::set_negative_0(var_0);
-                        // return (var_i / var_0 - one) / 2.;
-
-
-
                         mean_scalar_type fac = B::count() - 1;
                         mean_type err = error();
-
-                        // mean_type var = (m_ac_sum2[0] - sum_0 * sum_0 / N_0) / (N_0 - 1);
-                        // numeric::set_negative_0(var_0);
                         return (err * err * fac / var_0 - one) / two;
-
-
-
-
-
-    // count_type factor =count()-1;
-    // time_type er(std::abs(error()));
-    // er *=er*factor;
-    // er /= std::abs(variance());
-    // er -=1.;
-    // return 0.5*er;
-
-
                     }
 
                     void operator()(T const & val) {

@@ -51,10 +51,11 @@ namespace alps {
         class base_wrapper : public 
             impl::BaseWrapper<weight_tag, 
             impl::BaseWrapper<max_num_binning_tag, 
+            impl::BaseWrapper<binning_analysis_tag, 
             impl::BaseWrapper<error_tag, 
             impl::BaseWrapper<mean_tag, 
             impl::BaseWrapper<count_tag, 
-        impl::BaseWrapper<void, void> > > > > > {
+        impl::BaseWrapper<void, void> > > > > > > {
             public:
                 virtual ~base_wrapper() {}
 
@@ -123,10 +124,11 @@ namespace alps {
         template<typename T> class result_type_wrapper : public 
             impl::ResultTypeWrapper<T, weight_tag, 
             impl::ResultTypeWrapper<T, max_num_binning_tag, 
+            impl::ResultTypeWrapper<T, binning_analysis_tag, 
             impl::ResultTypeWrapper<T, error_tag, 
             impl::ResultTypeWrapper<T, mean_tag, 
             impl::ResultTypeWrapper<T, count_tag, 
-        detail::value_type_wrapper<T, base_wrapper> > > > > > {};
+        detail::value_type_wrapper<T, base_wrapper> > > > > > >{};
 
         namespace detail {
             template<typename A> class foundation_wrapper : public result_type_wrapper<typename value_type<A>::type> {
@@ -150,29 +152,32 @@ namespace alps {
          template<typename A> class derived_wrapper : public 
             impl::DerivedWrapper<A, weight_tag, 
             impl::DerivedWrapper<A, max_num_binning_tag, 
+            impl::DerivedWrapper<A, binning_analysis_tag, 
             impl::DerivedWrapper<A, error_tag, 
             impl::DerivedWrapper<A, mean_tag, 
             impl::DerivedWrapper<A, count_tag, 
-         detail::foundation_wrapper<A> > > > > > {
+         detail::foundation_wrapper<A> > > > > > > {
             public:
                 derived_wrapper()
                     : 
                         impl::DerivedWrapper<A, weight_tag, 
                         impl::DerivedWrapper<A, max_num_binning_tag, 
+                        impl::DerivedWrapper<A, binning_analysis_tag, 
                         impl::DerivedWrapper<A, error_tag, 
                         impl::DerivedWrapper<A, mean_tag, 
                         impl::DerivedWrapper<A, count_tag, 
-                    detail::foundation_wrapper<A> > > > > >() 
+                    detail::foundation_wrapper<A> > > > > > >() 
                 {}
 
                 derived_wrapper(A const & arg)
                     : 
                         impl::DerivedWrapper<A, weight_tag, 
                         impl::DerivedWrapper<A, max_num_binning_tag, 
+                        impl::DerivedWrapper<A, binning_analysis_tag, 
                         impl::DerivedWrapper<A, error_tag, 
                         impl::DerivedWrapper<A, mean_tag, 
                         impl::DerivedWrapper<A, count_tag, 
-                    detail::foundation_wrapper<A> > > > > >(arg) 
+                    detail::foundation_wrapper<A> > > > > > >(arg) 
                 {}
 
                 A & extract() {
