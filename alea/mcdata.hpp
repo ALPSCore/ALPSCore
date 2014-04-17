@@ -804,11 +804,12 @@ namespace alps {
                     , boost::optional<result_type> const & variance_opt
                     , boost::optional<time_type> const & tau_opt
                     , uint64_t binsize
+                    , uint64_t max_bin_number
                     , std::vector<value_type> const & values
                 )
                     : count_(count)
                     , binsize_(binsize)
-                    , max_bin_number_(0)
+                    , max_bin_number_(max_bin_number)
                     , data_is_analyzed_(true)
                     , jacknife_bins_valid_(false)
                     , cannot_rebin_(false)

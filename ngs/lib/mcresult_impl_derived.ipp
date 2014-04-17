@@ -81,9 +81,10 @@ namespace alps {
                     , boost::optional<T> const & variance_opt
                     , boost::optional<T> const & tau_opt
                     , uint64_t binsize
+                    , uint64_t max_bin_number
                     , std::vector<T> const & values
                 ): alea::mcdata<T>(
-                    count, mean, error, variance_opt, tau_opt, binsize, values
+                    count, mean, error, variance_opt, tau_opt, binsize, max_bin_number, values
                 ) {}
 
                 bool can_rebin() const {
@@ -381,10 +382,10 @@ namespace alps {
                             global_tau_opt = global_tau / static_cast<double>(global_count);
                         }
                         std::vector<T> global_bins;
-                        std::size_t binsize = 0;
+                        std::size_t binsize_times = 1;
                         if (alea::mcdata<T>::bin_number() > 0) {
                             std::vector<T> local_bins(binnumber);
-                            binsize = partition_bins(local_bins, communicator);
+                            binsize_times = partition_bins(local_bins, communicator);
                             global_bins.resize(local_bins.size());
                             boost::mpi::reduce(communicator, local_bins, global_bins, std::plus<T>(), 0);
                         }
@@ -394,7 +395,8 @@ namespace alps {
                             , sqrt(global[1]) / static_cast<double>(global_count)
                             , global_variance_opt
                             , global_tau_opt
-                            , binsize
+                            , binsize_times * alea::mcdata<T>::bin_size()
+                            , alea::mcdata<T>::max_bin_number()
                             , global_bins
                         );
                     }
@@ -447,6 +449,7 @@ namespace alps {
                             , global_variance_opt
                             , global_tau_opt
                             , elementsize * binsize
+                            , alea::mcdata<T>::max_bin_number()
                             , global_bins
                         );
                     }
