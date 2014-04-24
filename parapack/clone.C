@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2012 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2014 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -148,7 +148,8 @@ clone::clone(boost::filesystem::path const& basedir, alps::parapack::option opt,
   if (!is_new) {
     bool exists = 
       boost::filesystem::exists(complete(boost::filesystem::path(info_.dumpfile()), basedir_)) &&
-      boost::filesystem::exists(complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_));
+      (boost::filesystem::exists(complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_)) ||
+       boost::filesystem::exists(complete(boost::filesystem::path(info_.dumpfile_xdr()), basedir_)));
     if (exists) {
       this->load();
     } else {
@@ -316,7 +317,8 @@ clone_mpi::clone_mpi(boost::mpi::communicator const& ctrl, boost::mpi::communica
   if (!is_new) {
     bool exists = 
       boost::filesystem::exists(complete(boost::filesystem::path(info_.dumpfile()), basedir_)) &&
-      boost::filesystem::exists(complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_));
+      (boost::filesystem::exists(complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_)) ||
+       boost::filesystem::exists(complete(boost::filesystem::path(info_.dumpfile_xdr()), basedir_)));
     exists = boost::mpi::all_reduce(work_, exists, boost::mpi::bitwise_and<bool>());
     if (exists) {
       this->load();
