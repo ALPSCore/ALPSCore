@@ -76,7 +76,7 @@ std::vector<typename boost::property_map<Graph,PropertyTag>::type::value_type> g
     // We expect only a small number of different types
     for(boost::tie(it,end) = detail::iteration_selector<Graph,PropertyTag>::range(g); it != end; ++it)
     {
-        typename boost::property_map<Graph,PropertyTag>::type::value_type ep = get(tag, g, *it);
+        typename boost::property_map<Graph,PropertyTag>::type::value_type ep = get(tag, g)[*it];
         if( find(colors.begin(),colors.end(),ep) == colors.end() )
             colors.push_back(ep);
     }
