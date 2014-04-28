@@ -147,6 +147,11 @@ BOOST_AUTO_TEST_CASE(ngs_alea_compare) {
 			<< (error(transformed_correlated_new.get<double>()) - transformed_correlated_old.error()) << std::endl;
 
 		{
+			result_set::value_type sin_scalar_new = results["Correlated"].transform<double>((double(*)(double))&std::sin);
+			std::cout << "sin(correlated mean): " << sin_scalar_new.mean<double>() << std::endl;
+		}
+
+		{
 			boost::function<double(double)> fkt_p((double(*)(double))&std::sin);
 			result_set::value_type sin_scalar_new = results["Correlated"].transform(fkt_p);
 			mcdata<double> sin_scalar_old = sin(correlated_result);
