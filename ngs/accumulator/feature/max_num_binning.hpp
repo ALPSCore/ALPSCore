@@ -35,10 +35,11 @@
 #include <alps/ngs/accumulator/feature/count.hpp>
 #include <alps/ngs/accumulator/feature/error.hpp>
 
-#include <alps/hdf5/archive.hpp>
 #include <alps/ngs/numeric.hpp>
+#include <alps/hdf5/archive.hpp>
 #include <alps/ngs/stacktrace.hpp>
 #include <alps/ngs/short_print.hpp>
+#include <alps/numeric/functional.hpp>
 
 #include <boost/mpl/if.hpp>
 #include <boost/utility.hpp>
@@ -470,7 +471,7 @@ namespace alps {
                         generate_jackknife();
                         m_mn_data_is_analyzed = false;
                         m_mn_cannot_rebin = true;
-                        typename std::vector<typename mean_type<B >::type>::iterator it;
+                        typename std::vector<typename mean_type<B>::type>::iterator it;
                         for (it = m_mn_bins.begin(); it != m_mn_bins.end(); ++it)
                             *it = op(*it);
                         for (it = m_mn_jackknife_bins.begin(); it != m_mn_jackknife_bins.end(); ++it)
@@ -493,7 +494,64 @@ namespace alps {
                             *it = op(*it, *jt);
                     }
 
-                    // TODO: add functions
+                    #define NUMERIC_FUNCTION_IMPLEMENTATION(FUNCTION_NAME)                                                              \
+                        void FUNCTION_NAME () {                                                                                         \
+                            using alps::numeric::sq;                                                                                    \
+                            using alps::ngs::numeric::sq;                                                                               \
+                            using alps::numeric::cbrt;                                                                                  \
+                            using alps::ngs::numeric::cbrt;                                                                             \
+                            using alps::numeric::cb;                                                                                    \
+                            using alps::ngs::numeric::cb;                                                                               \
+                            using std::sqrt;                                                                                            \
+                            using alps::ngs::numeric::sqrt;                                                                             \
+                            using std::exp;                                                                                             \
+                            using alps::ngs::numeric::exp;                                                                              \
+                            using std::log;                                                                                             \
+                            using alps::ngs::numeric::log;                                                                              \
+                            using std::abs;                                                                                             \
+                            using alps::ngs::numeric::abs;                                                                              \
+                            using std::pow;                                                                                             \
+                            using alps::ngs::numeric::pow;                                                                              \
+                            using std::sin;                                                                                             \
+                            using alps::ngs::numeric::sin;                                                                              \
+                            using std::cos;                                                                                             \
+                            using alps::ngs::numeric::cos;                                                                              \
+                            using std::tan;                                                                                             \
+                            using alps::ngs::numeric::tan;                                                                              \
+                            using std::sinh;                                                                                            \
+                            using alps::ngs::numeric::sinh;                                                                             \
+                            using std::cosh;                                                                                            \
+                            using alps::ngs::numeric::cosh;                                                                             \
+                            using std::tanh;                                                                                            \
+                            using alps::ngs::numeric::tanh;                                                                             \
+                            using std::asin;                                                                                            \
+                            using alps::ngs::numeric::asin;                                                                             \
+                            using std::acos;                                                                                            \
+                            using alps::ngs::numeric::acos;                                                                             \
+                            using std::atan;                                                                                            \
+                            using alps::ngs::numeric::atan;                                                                             \
+                            transform((typename value_type<B>::type(*)(typename value_type<B>::type))& FUNCTION_NAME );                 \
+                            B:: FUNCTION_NAME ();                                                                                       \
+                        }
+
+                    NUMERIC_FUNCTION_IMPLEMENTATION(sin)
+                    NUMERIC_FUNCTION_IMPLEMENTATION(cos)
+                    NUMERIC_FUNCTION_IMPLEMENTATION(tan)
+                    NUMERIC_FUNCTION_IMPLEMENTATION(sinh)
+                    NUMERIC_FUNCTION_IMPLEMENTATION(cosh)
+                    NUMERIC_FUNCTION_IMPLEMENTATION(tanh)
+                    NUMERIC_FUNCTION_IMPLEMENTATION(asin)
+                    NUMERIC_FUNCTION_IMPLEMENTATION(acos)
+                    NUMERIC_FUNCTION_IMPLEMENTATION(atan)
+                    NUMERIC_FUNCTION_IMPLEMENTATION(abs)
+                    NUMERIC_FUNCTION_IMPLEMENTATION(sq)
+                    NUMERIC_FUNCTION_IMPLEMENTATION(sqrt)
+                    NUMERIC_FUNCTION_IMPLEMENTATION(cb)
+                    NUMERIC_FUNCTION_IMPLEMENTATION(cbrt)
+                    NUMERIC_FUNCTION_IMPLEMENTATION(exp)
+                    NUMERIC_FUNCTION_IMPLEMENTATION(log)
+
+                    #undef NUMERIC_FUNCTION_IMPLEMENTATION
 
                 private:
                     std::size_t m_mn_max_number;
@@ -559,29 +617,11 @@ namespace alps {
                         m_mn_data_is_analyzed = true;
                     }
 
-                    #define NUMERIC_FUNCTION_OPERATOR(OP_NAME, OPEQ_NAME, OP, OP_TOKEN, OP_ERROR)                                                                               \
+                    #define NUMERIC_FUNCTION_OPERATOR(OP_NAME, OPEQ_NAME, OP, OP_TOKEN, OP_STD)                                                                                 \
                         template<typename U> void aug ## OP_TOKEN (U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {                             \
-                            using alps::ngs::numeric::operator+;                                                                                                                \
-                            using alps::ngs::numeric::operator-;                                                                                                                \
-                            using alps::ngs::numeric::operator*;                                                                                                                \
-                            using alps::ngs::numeric::operator/;                                                                                                                \
-                            using alps::numeric::sq;                                                                                                                            \
-                            using std::sqrt;                                                                                                                                    \
-                            using alps::ngs::numeric::sqrt;                                                                                                                     \
-                            generate_jackknife();                                                                                                                               \
-                            arg.generate_jackknife(); /* TODO: make this more generic */                                                                                        \
-                            if (arg.m_mn_jackknife_bins.size() != m_mn_jackknife_bins.size()) /* TODO: make this more generic */                                                \
-                                throw std::runtime_error("Unable to transform: unequal number of bins" + ALPS_STACKTRACE);                                                      \
-                            m_mn_data_is_analyzed = false;                                                                                                                      \
-                            m_mn_cannot_rebin = true;                                                                                                                           \
-                            m_mn_error = OP_ERROR;                                                                                                                              \
-                            m_mn_mean = m_mn_mean OP arg.m_mn_mean;                                                                                                             \
-                            typename std::vector<typename mean_type<U>::type>::iterator it;                                                                                     \
-                            typename std::vector<typename mean_type<U>::type>::const_iterator jt;                                                                               \
-                            for (it = m_mn_bins.begin(), jt = arg.m_mn_bins.begin(); it != m_mn_bins.end(); ++it, ++jt)                                                         \
-                                *it = *it OP *jt;                                                                                                                               \
-                            for (it = m_mn_jackknife_bins.begin(), jt = arg.m_mn_jackknife_bins.begin(); it != m_mn_jackknife_bins.end(); ++it, ++jt)                           \
-                                *it = *it OP *jt;                                                                                                                               \
+                            typedef typename value_type<B>::type self_value_type;                                                                                               \
+                            typedef typename value_type<U>::type arg_value_type;                                                                                                \
+                            transform(boost::function<self_value_type(self_value_type, arg_value_type)>( OP_STD <self_value_type, self_value_type, arg_value_type>()), arg);    \
                             B:: OPEQ_NAME (arg);                                                                                                                                \
                         }                                                                                                                                                       \
                         template<typename U> void aug ## OP_TOKEN (U const & arg, typename boost::enable_if<boost::mpl::and_<                                                   \
@@ -589,8 +629,15 @@ namespace alps {
                             , typename has_operator_ ## OP_TOKEN <typename mean_type<B>::type, U>::type                                                                         \
                         >, int>::type = 0) {                                                                                                                                    \
                             using alps::ngs::numeric:: OP_NAME ;                                                                                                                \
-                            for (typename std::vector<typename mean_type<B>::type>::iterator it = m_mn_bins.begin(); it != m_mn_bins.end(); ++it)                               \
+                            generate_jackknife();                                                                                                                               \
+                            m_mn_data_is_analyzed = false;                                                                                                                      \
+                            m_mn_cannot_rebin = true;                                                                                                                           \
+                            typename std::vector<typename mean_type<B>::type>::iterator it;                                                                                     \
+                            for (it = m_mn_bins.begin(); it != m_mn_bins.end(); ++it)                                                                                           \
                                 *it = *it OP arg;                                                                                                                               \
+                            for (it = m_mn_jackknife_bins.begin(); it != m_mn_jackknife_bins.end(); ++it)                                                                       \
+                                *it = *it OP arg;                                                                                                                               \
+                            analyze();                                                                                                                                          \
                             B:: OPEQ_NAME (arg);                                                                                                                                \
                         }                                                                                                                                                       \
                         template<typename U> void aug ## OP_TOKEN (U const & arg, typename boost::enable_if<boost::mpl::and_<                                                   \
@@ -601,12 +648,12 @@ namespace alps {
                                 + " has no operator " #OP " with " + typeid(U).name() + ALPS_STACKTRACE);                                                                       \
                         }
 
-                    NUMERIC_FUNCTION_OPERATOR(operator+, operator+=, +, add, sqrt(sq(m_mn_error) + sq(arg.m_mn_error)))
-                    NUMERIC_FUNCTION_OPERATOR(operator-, operator-=, -, sub, sqrt(sq(m_mn_error) + sq(arg.m_mn_error)))
-                    NUMERIC_FUNCTION_OPERATOR(operator*, operator*=, *, mul, sqrt(sq(arg.m_mn_mean) * sq(m_mn_error) + sq(m_mn_mean) * sq(arg.m_mn_error)))
-                    NUMERIC_FUNCTION_OPERATOR(operator/, operator/=, /, div, sqrt(sq(arg.m_mn_mean) * sq(m_mn_error) + sq(m_mn_mean) * sq(arg.m_mn_error)) / sq(arg.m_mn_mean))
+                    NUMERIC_FUNCTION_OPERATOR(operator+, operator+=, +, add, alps::numeric::plus)
+                    NUMERIC_FUNCTION_OPERATOR(operator-, operator-=, -, sub, alps::numeric::minus)
+                    NUMERIC_FUNCTION_OPERATOR(operator*, operator*=, *, mul, alps::numeric::multiplies)
+                    NUMERIC_FUNCTION_OPERATOR(operator/, operator/=, /, div, alps::numeric::divides)
 
-                    #undef NUMERIC_FUNCTION_OPERATOR                    
+                    #undef NUMERIC_FUNCTION_OPERATOR
             };
 
             template<typename B> class BaseWrapper<max_num_binning_tag, B> : public B {

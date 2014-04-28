@@ -335,6 +335,7 @@ namespace alps {
                     std::vector<typename count_type<B>::type> m_ac_count;
             };
 
+            // TODO: remove autocorrelation on any transform
             template<typename T, typename B> class Result<T, binning_analysis_tag, B> : public B {
 
                 public:

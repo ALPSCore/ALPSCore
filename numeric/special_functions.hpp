@@ -55,7 +55,7 @@ namespace alps {
 
     template<class T>
     inline T cbrt(T value) { 
-        return std::pow(value,1./3); 
+        return std::pow(value,1./3.); 
     }
 
     // define norm and r
