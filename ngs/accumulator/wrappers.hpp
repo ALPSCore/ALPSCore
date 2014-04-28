@@ -75,6 +75,9 @@ namespace alps {
                 virtual base_wrapper * clone() const = 0;
                 virtual base_wrapper * result() const = 0;
 
+                template<typename T> result_type_wrapper<T> & get() {
+                    return dynamic_cast<result_type_wrapper<T> &>(*this);
+                }
                 template<typename T> result_type_wrapper<T> const & get() const {
                     return dynamic_cast<result_type_wrapper<T> const &>(*this);
                 }

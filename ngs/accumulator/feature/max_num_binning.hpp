@@ -42,6 +42,7 @@
 
 #include <boost/mpl/if.hpp>
 #include <boost/utility.hpp>
+#include <boost/function.hpp>
 #include <boost/type_traits/is_scalar.hpp>
 #include <boost/type_traits/is_integral.hpp>
 
@@ -115,13 +116,27 @@ namespace alps {
             >::type max_num_binning_impl(A const & acc) {
                 return max_num_binning(acc);
             }
-
             template<typename A> typename boost::disable_if<
                   typename has_feature<A, max_num_binning_tag>::type
                 , typename max_num_binning_type<A>::type
             >::type max_num_binning_impl(A const & acc) {
                 throw std::runtime_error(std::string(typeid(A).name()) + " has no max_num_binning-method" + ALPS_STACKTRACE);
                 return *static_cast<typename max_num_binning_type<A>::type *>(NULL);
+            }
+
+            template<typename A, typename OP> void transform_impl(
+                  A & acc
+                , OP op
+                , typename boost::enable_if<typename has_feature<A, max_num_binning_tag>::type, int>::type = 0
+            ) {
+                acc.transform(op);
+            }
+            template<typename A, typename OP> void transform_impl(
+                  A & acc
+                , OP op
+                , typename boost::disable_if<typename has_feature<A, max_num_binning_tag>::type, int>::type = 0
+            ) {
+                throw std::runtime_error(std::string(typeid(A).name()) + " has no transform-method" + ALPS_STACKTRACE);
             }
         }
 
@@ -160,6 +175,14 @@ namespace alps {
 
                     max_num_binning_type const max_num_binning() const {
                         return max_num_binning_type(m_mn_bins, m_mn_elements_in_bin, m_mn_max_number);
+                    }
+
+                    template <typename OP> void transform(OP) {
+                        throw std::runtime_error("Transform can only be applied to a result" + ALPS_STACKTRACE);
+                    }
+
+                    template <typename U, typename OP> void transform(U const &, OP) {
+                        throw std::runtime_error("Transform can only be applied to a result" + ALPS_STACKTRACE);
                     }
 
                     void operator()(T const & val) {
@@ -443,6 +466,33 @@ namespace alps {
                     template<typename U> void operator*=(U const & arg) { augmul(arg); }
                     template<typename U> void operator/=(U const & arg) { augdiv(arg); }
 
+                    template <typename OP> void transform(OP op) {
+                        generate_jackknife();
+                        m_mn_data_is_analyzed = false;
+                        m_mn_cannot_rebin = true;
+                        typename std::vector<typename mean_type<B >::type>::iterator it;
+                        for (it = m_mn_bins.begin(); it != m_mn_bins.end(); ++it)
+                            *it = op(*it);
+                        for (it = m_mn_jackknife_bins.begin(); it != m_mn_jackknife_bins.end(); ++it)
+                            *it = op(*it);
+                        analyze();
+                    }
+
+                    template <typename OP, typename U> void transform(OP op, U const & arg) {
+                        generate_jackknife();
+                        arg.generate_jackknife(); /* TODO: make this more generic */
+                        if (arg.m_mn_jackknife_bins.size() != m_mn_jackknife_bins.size()) /* TODO: make this more generic */
+                            throw std::runtime_error("Unable to transform: unequal number of bins" + ALPS_STACKTRACE);
+                        m_mn_data_is_analyzed = false;
+                        m_mn_cannot_rebin = true;
+                        typename std::vector<typename mean_type<B>::type>::iterator it;
+                        typename std::vector<typename mean_type<U>::type>::const_iterator jt;
+                        for (it = m_mn_bins.begin(), jt = arg.m_mn_bins.begin(); it != m_mn_bins.end(); ++it, ++jt)
+                            *it = op(*it, *jt);
+                        for (it = m_mn_jackknife_bins.begin(), jt = arg.m_mn_jackknife_bins.begin(); it != m_mn_jackknife_bins.end(); ++it, ++jt)
+                            *it = op(*it, *jt);
+                    }
+
                     // TODO: add functions
 
                 private:
@@ -491,7 +541,7 @@ namespace alps {
                         using alps::ngs::numeric::operator/;
                         if (m_mn_bins.empty())
                             throw std::runtime_error("No Measurement" + ALPS_STACKTRACE);
-                        if (!m_mn_bins.empty() && !m_mn_data_is_analyzed) {
+                        if (!m_mn_data_is_analyzed) {
                             m_mn_count = m_mn_elements_in_bin * m_mn_bins.size();
                             generate_jackknife();
                             if (m_mn_jackknife_bins.size()) {
@@ -567,6 +617,7 @@ namespace alps {
             template<typename T, typename B> class ResultTypeWrapper<T, max_num_binning_tag, B> : public B {
                 public:
                     virtual typename max_num_binning_type<B>::type max_num_binning() const = 0;
+                    virtual void transform(boost::function<typename value_type<B>::type(typename value_type<B>::type)>) = 0;
             };
 
             template<typename T, typename B> class DerivedWrapper<T, max_num_binning_tag, B> : public B {
@@ -575,8 +626,10 @@ namespace alps {
                     DerivedWrapper(T const & arg): B(arg) {}
 
                     bool has_max_num_binning() const { return has_feature<T, max_num_binning_tag>::type::value; }
+                    bool has_transform() const { return has_feature<T, max_num_binning_tag>::type::value; }
 
                     typename max_num_binning_type<B>::type max_num_binning() const { return detail::max_num_binning_impl(this->m_data); }
+                    void transform(boost::function<typename value_type<B>::type(typename value_type<B>::type)> op) { return detail::transform_impl(this->m_data, op); }
             };
 
         }
