@@ -487,7 +487,7 @@ namespace alps {
                         void finalize_graph_label(FinalLabel & fl, InternalLabel const & internal_label, typename partition_type<graph_type>::type const & pi, graph_type const & G) const {
                             using boost::get;
                             get<1>(fl) = get_part<vertex_label>(internal_label);
-                            get<2>(fl) = colors_;
+                            get<2>(fl).assign(colors_.begin(),colors_.end());
                         }
                       private:
                         std::vector<color_type> colors_;
@@ -569,7 +569,7 @@ namespace alps {
                             using boost::get;
                             static std::size_t const end = boost::tuples::length<FinalLabel>::value;
                             get<end-2>(l) = get_part<edge_label>(internal_label);
-                            get<end-1>(l) = colors_;
+                            get<end-1>(l).assign(colors_.begin(),colors_.end());
                         }
                       private:
                         graph_label_color_vector<color_type> colors_;
