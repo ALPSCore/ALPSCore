@@ -114,13 +114,13 @@ BOOST_AUTO_TEST_CASE(ngs_alea_compare) {
 		std::cout << std::endl << "result" << std::endl;
 
 		std::cout << "uncorrelated mean  new: " << mean(results["Scalar"].get<double>()) << "\told: " << scalar_result.mean() << "\tdiff: "
-			<< mean(results["Scalar"].get<double>()) - scalar_result.mean() << std::endl;
+			<< results["Scalar"].mean<double>() - scalar_result.mean() << std::endl;
 		std::cout << "uncorrelated error new: " << error(results["Scalar"].get<double>()) << "\told: " << scalar_result.error() << "\tdiff: "
-			<< error(results["Scalar"].get<double>()) - scalar_result.error() << std::endl;
+			<< results["Scalar"].error<double>() - scalar_result.error() << std::endl;
 		std::cout << "correlated mean  new: " << mean(results["Correlated"].get<double>()) << "\told: " << correlated_result.mean() << "\tdiff: "
-			<< mean(results["Correlated"].get<double>()) - correlated_result.mean() << std::endl;
+			<< results["Correlated"].mean<double>() - correlated_result.mean() << std::endl;
 		std::cout << "correlated error new: " << error(results["Correlated"].get<double>()) << "\told: " << correlated_result.error() << "\tdiff: "
-			<< error(results["Correlated"].get<double>()) - correlated_result.error() << std::endl;
+			<< results["Correlated"].error<double>() - correlated_result.error() << std::endl;
 
 		BOOST_REQUIRE_SMALL((error(results["Scalar"].get<double>()) - scalar_result.error()) / scalar_result.mean(), 1e-3);
 		BOOST_REQUIRE_SMALL((mean(results["Scalar"].get<double>()) - scalar_result.mean()) / scalar_result.mean(), 1e-3);
@@ -138,13 +138,45 @@ BOOST_AUTO_TEST_CASE(ngs_alea_compare) {
 		BOOST_REQUIRE_SMALL((mean(transformed_scalar_new.get<double>()) - transformed_scalar_old.mean()) / transformed_scalar_old.mean(), 1e-3);
 		BOOST_REQUIRE_SMALL((error(transformed_scalar_new.get<double>()) - transformed_scalar_old.error()) / transformed_scalar_old.error(), 1e-3);
 
-		result_set::value_type transformed_correlated_new = results["Scalar"] * results["Scalar"];
-		mcdata<double> transformed_correlated_old = scalar_result * scalar_result;
+		result_set::value_type transformed_correlated_new = results["Correlated"] * results["Correlated"];
+		mcdata<double> transformed_correlated_old = correlated_result * correlated_result;
 
 		std::cout << "correlated mean  new: " << mean(transformed_correlated_new.get<double>()) << "\told: " << transformed_correlated_old.mean() << "\tdiff: "
 			<< (mean(transformed_correlated_new.get<double>()) - transformed_correlated_old.mean()) << std::endl;
 		std::cout << "correlated error new: " << error(transformed_correlated_new.get<double>()) << "\told: " << transformed_correlated_old.error() << "\tdiff: "
 			<< (error(transformed_correlated_new.get<double>()) - transformed_correlated_old.error()) << std::endl;
+
+		{
+			boost::function<double(double)> fkt_p((double(*)(double))&std::sin);
+			result_set::value_type sin_scalar_new = results["Correlated"].transform(fkt_p);
+			mcdata<double> sin_scalar_old = sin(correlated_result);
+
+			std::cout << "sin(correlated mean)  new: " << sin_scalar_new.mean<double>() << "\told: " << sin_scalar_old.mean() << "\tdiff: "
+				<< (sin_scalar_new.mean<double>() - sin_scalar_old.mean()) << std::endl;
+			std::cout << "sin(correlated error)  new: " << sin_scalar_new.error<double>() << "\told: " << sin_scalar_old.error() << "\tdiff: "
+				<< (sin_scalar_new.error<double>() - sin_scalar_old.error()) << std::endl;
+
+			BOOST_REQUIRE_SMALL((sin_scalar_new.mean<double>() - sin_scalar_old.mean()) / sin_scalar_old.mean(), 1e-3);
+			BOOST_REQUIRE_SMALL((sin_scalar_new.error<double>() - sin_scalar_old.error()) / sin_scalar_old.error(), 1e-3);
+		}
+
+		{
+			boost::function<double(double, double)> fkt_p = alps::numeric::plus<double, double, double>();
+			alps::accumulator::RealObservable::result_type add_scalar_new_acc = results["Correlated"].extract<alps::accumulator::RealObservable::result_type>();
+			add_scalar_new_acc.transform(fkt_p, add_scalar_new_acc);
+			result_set::value_type add_scalar_new(add_scalar_new_acc);
+
+			mcdata<double> add_scalar_old = correlated_result + correlated_result;
+
+			std::cout << "2 * (correlated mean)  new: " << add_scalar_new.mean<double>() << "\told: " << add_scalar_old.mean() << "\tdiff: "
+				<< (add_scalar_new.mean<double>() - add_scalar_old.mean()) << std::endl;
+
+			std::cout << "2 * (correlated error)  new: " << add_scalar_new.error<double>() << "\told: " << add_scalar_old.error() << "\tdiff: "
+				<< (add_scalar_new.error<double>() - add_scalar_old.error()) << std::endl;
+
+			BOOST_REQUIRE_SMALL((add_scalar_new.mean<double>() - add_scalar_old.mean()) / add_scalar_old.mean(), 1e-3);
+			BOOST_REQUIRE_SMALL((add_scalar_new.error<double>() - add_scalar_old.error()) / add_scalar_old.error(), 1e-3);
+		}
 	}
 
 }
