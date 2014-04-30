@@ -4,7 +4,7 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2011 - 2012 by Mario Koenz <mkoenz@ethz.ch>                       *
+ * Copyright (C) 2014 by Jan Gukelberger <gukelberger@phys.ethz.ch>                *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -25,13 +25,39 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_NUMERIC_HPP
-#define ALPS_NGS_NUMERIC_HPP
+#ifndef ALPS_NGS_NUMERIC_MULTIARRAY_HEADER
+#define ALPS_NGS_NUMERIC_MULTIARRAY_HEADER
 
-#include <alps/ngs/numeric/inf.hpp>
-#include <alps/ngs/numeric/array.hpp>
-#include <alps/ngs/numeric/detail.hpp>
-#include <alps/ngs/numeric/vector.hpp>
-#include <alps/ngs/numeric/multi_array.hpp>
+#include <alps/multi_array/functions.hpp>
 
-#endif //ALPS_NGS_ALEA_HPP
+// Import multi_array functions into ngs::numeric namespace.
+namespace alps {
+    namespace ngs {
+        namespace numeric {
+            
+            using alps::sin;
+            using alps::cos;
+            using alps::tan;
+            using alps::sinh;
+            using alps::cosh;
+            using alps::tanh;
+            using alps::asin;
+            using alps::acos;
+            using alps::atan;
+            using alps::abs;
+            using alps::sqrt;
+            using alps::exp;
+            using alps::log;
+            using alps::fabs;
+
+            using alps::sq;
+            using alps::cb;
+            using alps::cbrt;
+            
+            using alps::pow;
+            using alps::sum;
+        }
+    }
+}
+
+#endif
