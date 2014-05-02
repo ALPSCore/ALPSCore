@@ -25,6 +25,8 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#ifndef ALPS_HDF5_HPP
+#define ALPS_HDF5_HPP
 #include <alps/hdf5/archive.hpp>
 #include <alps/hdf5/map.hpp>
 #include <alps/hdf5/pair.hpp>
@@ -36,3 +38,5 @@
 #include <alps/hdf5/shared_array.hpp>
 #include <alps/hdf5/ublas/matrix.hpp>
 #include <alps/hdf5/ublas/vector.hpp>
+
+#endif //ALPS_HDF5_HPP
