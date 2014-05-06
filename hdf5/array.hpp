@@ -174,7 +174,7 @@ namespace alps {
                 if (ar.is_complex(path) != has_complex_elements<T>::value)
                     throw archive_error("no complex value in archive" + ALPS_STACKTRACE);
                 std::vector<std::size_t> size(ar.extent(path));
-                if (size.size() > 0 && N != size[0] && (is_continuous<T>::value || size[0] > 0))
+                if (size.size() > 0 && N != *(size.begin() + chunk.size()) && (is_continuous<T>::value || *(size.begin() + chunk.size()) > 0))
                     throw archive_error("dimensions do not match" + ALPS_STACKTRACE);
                 if (is_continuous<T>::value) {
                     set_extent(value, std::vector<std::size_t>(size.begin() + chunk.size(), size.end()));

@@ -1214,8 +1214,8 @@ namespace alps {
                             detail::attribute_type raii_id(data_id);                                                                                                    \
                             if (std::equal(chunk.begin(), chunk.end(), size.begin())) {                                                                                 \
                                 detail::native_ptr_converter<T> converter(                                                                                              \
-                                                                        std::accumulate(chunk.begin(), chunk.end(), std::size_t(1), std::multiplies<std::size_t>())     \
-                                                                );                                                                                                      \
+                                   std::accumulate(chunk.begin(), chunk.end(), std::size_t(1), std::multiplies<std::size_t>())                                          \
+                                );                                                                                                                                      \
                                 detail::check_error(H5Awrite(raii_id, type_id, converter.apply(value)));                                                                \
                             } else                                                                                                                                      \
                                 throw std::logic_error("Not Implemented, path: " + path + ALPS_STACKTRACE);                                                             \
