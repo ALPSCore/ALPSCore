@@ -140,12 +140,39 @@ template<
     initialize_tuple_value<8, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename boost::is_same<T8, boost::tuples::null_type>::type());
     initialize_tuple_value<9, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename boost::is_same<T9, boost::tuples::null_type>::type());
 }
-template<typename T, std::size_t N, typename A> void initialize(boost::multi_array<T, N, A> & v) {
-    v = creator<boost::multi_array<T, N, A> >::random();
+template<typename T, typename A> void initialize(boost::multi_array<T, 1, A> & v) {
+    v.resize(boost::extents[VECTOR_SIZE]);
+    v = creator<boost::multi_array<T, 1, A> >::random();
 }
-template<typename T, std::size_t N, typename A> void initialize(alps::multi_array<T, N, A> & v) {
-    v = creator<alps::multi_array<T, N, A> >::random();
+template<typename T,  typename A> void initialize(alps::multi_array<T, 1, A> & v) {
+    v.resize(boost::extents[VECTOR_SIZE]);
+    v = creator<alps::multi_array<T, 1, A> >::random();
 }
+template<typename T, typename A> void initialize(boost::multi_array<T, 2, A> & v) {
+    v.resize(boost::extents[MATRIX_SIZE][MATRIX_SIZE]);
+    v = creator<boost::multi_array<T, 2, A> >::random();
+}
+template<typename T,  typename A> void initialize(alps::multi_array<T, 2, A> & v) {
+    v.resize(boost::extents[MATRIX_SIZE][MATRIX_SIZE]);
+    v = creator<alps::multi_array<T, 2, A> >::random();
+}
+template<typename T, typename A> void initialize(boost::multi_array<T, 3, A> & v) {
+    v.resize(boost::extents[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE]);
+    v = creator<boost::multi_array<T, 3, A> >::random();
+}
+template<typename T,  typename A> void initialize(alps::multi_array<T, 3, A> & v) {
+    v.resize(boost::extents[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE]);
+    v = creator<alps::multi_array<T, 3, A> >::random();
+}
+template<typename T, typename A> void initialize(boost::multi_array<T, 4, A> & v) {
+    v.resize(boost::extents[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE]);
+    v = creator<boost::multi_array<T, 4, A> >::random();
+}
+template<typename T,  typename A> void initialize(alps::multi_array<T, 4, A> & v) {
+    v.resize(boost::extents[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE]);
+    v = creator<alps::multi_array<T, 4, A> >::random();
+}
+
 void initialize(enum_type & v) {
     v = static_cast<std::size_t>(rng()) % 2 == 0 ? PLUS : MINUS;
 }

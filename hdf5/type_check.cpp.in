@@ -227,6 +227,7 @@ template<typename T> struct skip_attribute<userdefined_class<T> >: public boost:
 template<typename T, typename U> struct skip_attribute<cast_type<T, U> >: public boost::mpl::true_ {};
 template<> struct skip_attribute<enum_type>: public boost::mpl::true_ {};
 
+template<> struct skip_attribute<std::vector<bool> >: public boost::mpl::true_ {};
 template<typename T> struct skip_attribute<std::vector<std::vector<T> > >: public boost::mpl::true_ {};
 template<typename T> struct skip_attribute<std::valarray<std::vector<T> > >: public boost::mpl::true_ {}; 
 template<typename T> struct skip_attribute<std::vector<std::valarray<T> > >: public boost::mpl::true_ {}; 
@@ -237,8 +238,13 @@ template<typename T> struct skip_attribute<std::vector<boost::numeric::ublas::ve
 template<typename T> struct skip_attribute<boost::numeric::ublas::vector<std::vector<T> > >: public boost::mpl::true_ {};
 template<typename T> struct skip_attribute<boost::numeric::ublas::vector<std::valarray<T> > >: public boost::mpl::true_ {};
 
+template<typename T, std::size_t N> struct skip_attribute<boost::array<std::vector<T>, N> >: public boost::mpl::true_ {};
+
 template<typename T, std::size_t N, typename A> struct skip_attribute<std::vector<boost::multi_array<T, N, A> > >: public boost::mpl::true_ {};
 template<typename T, std::size_t N, typename A> struct skip_attribute<std::vector<alps::multi_array<T, N, A> > >: public boost::mpl::true_ {};
+
+template<typename T, std::size_t N, typename A> struct skip_attribute<boost::multi_array<T, N, A> * >: public boost::mpl::true_ {};
+template<typename T, std::size_t N, typename A> struct skip_attribute<alps::multi_array<T, N, A> * >: public boost::mpl::true_ {};
 
 template <
     typename T0, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9
@@ -250,8 +256,12 @@ template<typename T> struct skip_attribute<T *>: public skip_attribute<T> {};
 template<typename T> struct skip_attribute<std::vector<T> >: public skip_attribute<T> {};
 template<typename T> struct skip_attribute<std::valarray<T> >: public skip_attribute<T> {};
 template<typename T, typename U> struct skip_attribute<std::pair<T, U> >: public boost::mpl::or_<skip_attribute<T>, skip_attribute<U> >::type {};
+
 template<typename T> struct skip_attribute<std::pair<T *, std::vector<std::size_t> > >: public skip_attribute<T> {};
 template<typename T> struct skip_attribute<std::pair<std::vector<T> *, std::vector<std::size_t> > >: public boost::mpl::true_ {};
+template<typename T, std::size_t N, typename A> struct skip_attribute<std::pair<boost::multi_array<T, N, A> *, std::vector<std::size_t> > >: public boost::mpl::true_ {};
+template<typename T, std::size_t N, typename A> struct skip_attribute<std::pair<alps::multi_array<T, N, A> *, std::vector<std::size_t> > >: public boost::mpl::true_ {};
+
 template<typename T> struct skip_attribute<boost::shared_array<T> >: public skip_attribute<T> {};
 
 int main(int argc, char * argv[]) {
