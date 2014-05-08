@@ -676,10 +676,7 @@ template<typename T, typename U> struct creator<std::pair<T *, std::vector<U> > 
     static base_type random() {
         base_type value = std::make_pair(new typename boost::remove_const<T>::type[VECTOR_SIZE], std::vector<U>(1, VECTOR_SIZE));
         for (std::size_t i = 0; i < VECTOR_SIZE; ++i)
-            if (boost::is_scalar<T>::value)
-                initialize(const_cast<typename boost::remove_const<T>::type &>(value.first[i]));
-            else
-                const_cast<typename boost::remove_const<T>::type &>(value.first[i]) = creator<T>::random();
+            initialize(const_cast<typename boost::remove_const<T>::type &>(value.first[i]));
         return value;
     }
     static base_type empty() {
@@ -688,10 +685,7 @@ template<typename T, typename U> struct creator<std::pair<T *, std::vector<U> > 
     static base_type special() {
         base_type value = std::make_pair(new typename boost::remove_const<T>::type[MATRIX_SIZE * MATRIX_SIZE * MATRIX_SIZE], std::vector<U>(3, MATRIX_SIZE));
         for (std::size_t i = 0; i < MATRIX_SIZE * MATRIX_SIZE * MATRIX_SIZE; ++i)
-            if (boost::is_scalar<T>::value)
-                initialize(const_cast<typename boost::remove_const<T>::type &>(value.first[i]));
-            else
-                const_cast<typename boost::remove_const<T>::type &>(value.first[i]) = creator<T>::random();
+            initialize(const_cast<typename boost::remove_const<T>::type &>(value.first[i]));
         return value;
     }
     template<typename X> static base_type random(X const &) {
