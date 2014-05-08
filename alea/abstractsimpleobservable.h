@@ -235,7 +235,7 @@ void AbstractSimpleObservable<T>::write_xml_scalar(oxstream& oxs, const boost::f
     if (mm != "")
       oxs << attribute("method", mm);
 
-    int prec=(int)slice_value(4-std::log10(std::abs(error()/mean())), 0);
+    int prec=(int)(4-slice_value(std::log10(std::abs(error()/mean())), 0));
     prec = (prec>=3 && prec<20 ? prec : 8);
     oxs << precision(slice_value(mean(), 0),prec) << end_tag("MEAN");
 
