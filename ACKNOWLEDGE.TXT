@@ -1,0 +1,5 @@
+Whenever scientific publications result from a program based on ALPS we kindly ask for an acknowledgment of ALPS and a citation to the most current ALPS paper:
+
+B. Bauer et al., J. Stat. Mech. (2011) P05001.
+http://iopscience.iop.org/1742-5468/2011/05/P05001/
+http://dx.doi.org/10.1088/1742-5468/2011/05/P05001
