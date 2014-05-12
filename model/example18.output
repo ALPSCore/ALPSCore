@@ -1,0 +1,106 @@
+Model: spin
+Operator names:
+Sminus
+Splus
+Sz
+
+Split terms:
+
+Prefactor: 0.5 * Jxy0
+Site 1: Sminus(i)
+Site 2: Splus(j)
+
+Prefactor: 0.5 * Jxy0
+Site 1: Splus(i)
+Site 2: Sminus(j)
+
+Prefactor: Jz0
+Site 1: Sz(i)
+Site 2: Sz(j)
+
+Prefactor: 0.25 * K0
+Site 1: Sminus(i) * Sminus(i)
+Site 2: Splus(j) * Splus(j)
+
+Prefactor: 0.25 * K0
+Site 1: Splus(i) * Sminus(i)
+Site 2: Sminus(j) * Splus(j)
+
+Prefactor: 0.5 * K0
+Site 1: Sz(i) * Sminus(i)
+Site 2: Sz(j) * Splus(j)
+
+Prefactor: 0.25 * K0
+Site 1: Sminus(i) * Splus(i)
+Site 2: Splus(j) * Sminus(j)
+
+Prefactor: 0.25 * K0
+Site 1: Splus(i) * Splus(i)
+Site 2: Sminus(j) * Sminus(j)
+
+Prefactor: 0.5 * K0
+Site 1: Sz(i) * Splus(i)
+Site 2: Sz(j) * Sminus(j)
+
+Prefactor: 0.5 * K0
+Site 1: Sminus(i) * Sz(i)
+Site 2: Splus(j) * Sz(j)
+
+Prefactor: 0.5 * K0
+Site 1: Splus(i) * Sz(i)
+Site 2: Sminus(j) * Sz(j)
+
+Prefactor: K0
+Site 1: Sz(i) * Sz(i)
+Site 2: Sz(j) * Sz(j)
+
+Model: spinless fermions
+Operator names:
+c
+cdag
+n
+
+Split terms:
+
+Prefactor: V0
+Site 1: n(i)
+Site 2: n(j)
+
+Prefactor:  - t0
+Site 1: cdag(i)
+Site 2: c(j)
+
+Prefactor: t0
+Site 1: c(i)
+Site 2: cdag(j)
+
+Model: fermion Hubbard
+Operator names:
+c_down
+c_up
+cdag_down
+cdag_up
+n
+
+Split terms:
+
+Prefactor: V0
+Site 1: n(i)
+Site 2: n(j)
+
+Prefactor:  - t0
+Site 1: cdag_down(i)
+Site 2: c_down(j)
+
+Prefactor: t0
+Site 1: c_down(i)
+Site 2: cdag_down(j)
+
+Prefactor:  - t0
+Site 1: cdag_up(i)
+Site 2: c_up(j)
+
+Prefactor: t0
+Site 1: c_up(i)
+Site 2: cdag_up(j)
+

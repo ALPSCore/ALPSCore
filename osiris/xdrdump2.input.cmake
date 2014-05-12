@@ -1,0 +1,1 @@
+@CMAKE_CURRENT_SOURCE_DIR@/xdrdump2.dump

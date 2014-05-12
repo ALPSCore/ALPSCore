@@ -1,0 +1,5 @@
+"10%" is parsed as 0.1
+"10 %" is parsed as 0.1
+" 10%" is parsed as 0.1
+" 10 %  " is parsed as 0.1
+"0.1%" is parsed as 0.001

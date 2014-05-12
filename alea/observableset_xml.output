@@ -1,0 +1,79 @@
+<AVERAGES>
+  <SCALAR_AVERAGE name="a/b">
+    <COUNT>9984</COUNT>
+    <MEAN method="jackknife">0.333011</MEAN>
+    <ERROR converged="yes" method="jackknife">0.00174</ERROR>
+  </SCALAR_AVERAGE>
+  <HISTOGRAM name="histogram 1" nvalues="10">
+    <ENTRY indexvalue="0">
+      <COUNT>4096</COUNT>
+      <VALUE>384</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="1">
+      <COUNT>4096</COUNT>
+      <VALUE>440</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="2">
+      <COUNT>4096</COUNT>
+      <VALUE>413</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="3">
+      <COUNT>4096</COUNT>
+      <VALUE>389</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="4">
+      <COUNT>4096</COUNT>
+      <VALUE>431</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="5">
+      <COUNT>4096</COUNT>
+      <VALUE>443</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="6">
+      <COUNT>4096</COUNT>
+      <VALUE>406</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="7">
+      <COUNT>4096</COUNT>
+      <VALUE>387</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="8">
+      <COUNT>4096</COUNT>
+      <VALUE>403</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="9">
+      <COUNT>4096</COUNT>
+      <VALUE>400</VALUE>
+    </ENTRY>
+  </HISTOGRAM>
+  <SCALAR_AVERAGE name="observable a">
+    <COUNT>10000</COUNT>
+    <MEAN method="binning">0.499479</MEAN>
+    <ERROR converged="yes" method="binning">0.00283</ERROR>
+    <VARIANCE method="simple">0.0844</VARIANCE>
+    <AUTOCORR method="binning">-0.0261</AUTOCORR>
+  </SCALAR_AVERAGE>
+  <SCALAR_AVERAGE name="observable b">
+    <COUNT>10000</COUNT>
+    <MEAN method="binning">1.49968</MEAN>
+    <ERROR converged="yes" method="binning">0.00275</ERROR>
+    <VARIANCE method="simple">0.0833</VARIANCE>
+    <AUTOCORR method="binning">nan</AUTOCORR>
+  </SCALAR_AVERAGE>
+  <VECTOR_AVERAGE name="vector observable" nvalues="2">
+    <SCALAR_AVERAGE indexvalue="a">
+      <COUNT>65911</COUNT>
+      <MEAN method="binning">0.0004079</MEAN>
+      <ERROR converged="yes" method="binning">0.000197</ERROR>
+      <VARIANCE method="simple">0.000551</VARIANCE>
+      <AUTOCORR method="binning">1.82</AUTOCORR>
+    </SCALAR_AVERAGE>
+    <SCALAR_AVERAGE indexvalue="b">
+      <COUNT>65911</COUNT>
+      <MEAN method="binning">-0.001468</MEAN>
+      <ERROR converged="yes" method="binning">0.000186</ERROR>
+      <VARIANCE method="simple">0.00044</VARIANCE>
+      <AUTOCORR method="binning">2.09</AUTOCORR>
+    </SCALAR_AVERAGE>
+  </VECTOR_AVERAGE>
+</AVERAGES>

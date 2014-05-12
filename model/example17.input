@@ -1,0 +1,13 @@
+MODEL_LIBRARY = "../../lib/xml/models.xml"
+MODEL = "spin"
+J = 1
+L=4
+LATTICE_LIBRARY = "../../lib/xml/lattices.xml"
+{ LATTICE = "square lattice" }
+{ LATTICE = "frustrated square lattice" }
+{ J'=1, LATTICE = "frustrated square lattice" }
+{ J'=-1, LATTICE = "frustrated square lattice" }
+{ LATTICE = "triangular lattice" }
+{ LATTICE = "chain lattice" }
+{ Gamma = 1, LATTICE = "chain lattice" }
+{ J = -1, Gamma = 1, LATTICE = "chain lattice" }

@@ -1,0 +1,32 @@
+[output from rank 0]
+(observable a) / (observable b): 0.992046 +/- 0.0139
+observable a: 0.5009 +/- 0.00482; tau = 0.0622
+    bin #1   : 4096     entries: error = 0.00454298
+    bin #2   : 2048     entries: error = 0.00450135
+    bin #3   : 1024     entries: error = 0.00451505
+    bin #4   : 512      entries: error = 0.00452936
+    bin #5   : 256      entries: error = 0.00444092
+    bin #6   : 128      entries: error = 0.00481723
+observable b: 0.504867 +/- 0.00483; tau = 0.0654
+    bin #1   : 4096     entries: error = 0.00454103
+    bin #2   : 2048     entries: error = 0.00454096
+    bin #3   : 1024     entries: error = 0.00448772
+    bin #4   : 512      entries: error = 0.00449454
+    bin #5   : 256      entries: error = 0.00460777
+    bin #6   : 128      entries: error = 0.00482904
+[output from rank 1]
+(observable a) / (observable b): 0.992046 +/- 0.0139
+observable a: 0.5009 +/- 0.00482; tau = 0.0622
+    bin #1   : 4096     entries: error = 0.00454298
+    bin #2   : 2048     entries: error = 0.00450135
+    bin #3   : 1024     entries: error = 0.00451505
+    bin #4   : 512      entries: error = 0.00452936
+    bin #5   : 256      entries: error = 0.00444092
+    bin #6   : 128      entries: error = 0.00481723
+observable b: 0.504867 +/- 0.00483; tau = 0.0654
+    bin #1   : 4096     entries: error = 0.00454103
+    bin #2   : 2048     entries: error = 0.00454096
+    bin #3   : 1024     entries: error = 0.00448772
+    bin #4   : 512      entries: error = 0.00449454
+    bin #5   : 256      entries: error = 0.00460777
+    bin #6   : 128      entries: error = 0.00482904

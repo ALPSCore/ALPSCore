@@ -1,0 +1,92 @@
+Histogram:
+0: 966 entries.
+1: 1012 entries.
+2: 998 entries.
+3: 988 entries.
+4: 951 entries.
+5: 1060 entries.
+6: 1060 entries.
+7: 988 entries.
+8: 1009 entries.
+9: 968 entries.
+Ratio: 0.970608 +/- 0.00847
+Sign: 1 +/- 0; tau = 0
+    bin #1   : 10000    entries: error = 0
+    bin #2   : 5000     entries: error = 0
+    bin #3   : 2500     entries: error = 0
+    bin #4   : 1250     entries: error = 0
+    bin #5   : 625      entries: error = 0
+    bin #6   : 312      entries: error = 0
+    bin #7   : 156      entries: error = 0
+Test: 0.500296 +/- 0.0030556; sign in observable "Sign"
+Sign * Test: 0.500301 +/- 0.00282; tau = -0.0227
+    bin #1   : 10000    entries: error = 0.00288344
+    bin #2   : 5000     entries: error = 0.00287294
+    bin #3   : 2500     entries: error = 0.00288716
+    bin #4   : 1250     entries: error = 0.00288336
+    bin #5   : 625      entries: error = 0.00291027
+    bin #6   : 312      entries: error = 0.00294589
+    bin #7   : 156      entries: error = 0.00281725
+Test 2: 0.493208 +/- 0.00277; tau = -0.0374
+    bin #1   : 10000    entries: error = 0.0028763
+    bin #2   : 5000     entries: error = 0.00288887
+    bin #3   : 2500     entries: error = 0.00290494
+    bin #4   : 1250     entries: error = 0.00287583
+    bin #5   : 625      entries: error = 0.00280704
+    bin #6   : 312      entries: error = 0.00282259
+    bin #7   : 156      entries: error = 0.00276664
+Test 3: 0.507869 +/- 0.00321; tau = 0.116 WARNING: check error convergence
+    bin #1   : 10000    entries: error = 0.00289105
+    bin #2   : 5000     entries: error = 0.00286199
+    bin #3   : 2500     entries: error = 0.00287098
+    bin #4   : 1250     entries: error = 0.00289687
+    bin #5   : 625      entries: error = 0.00288711
+    bin #6   : 312      entries: error = 0.00288283
+    bin #7   : 156      entries: error = 0.00320908
+Test 4: 0.498397 +/- 0.00287
+Histogram:
+0: 966 entries.
+1: 1012 entries.
+2: 998 entries.
+3: 988 entries.
+4: 951 entries.
+5: 1060 entries.
+6: 1060 entries.
+7: 988 entries.
+8: 1009 entries.
+9: 968 entries.
+Ratio: 0.970608 +/- 0.00847
+Sign: 1 +/- 0; tau = 0
+    bin #1   : 10000    entries: error = 0
+    bin #2   : 5000     entries: error = 0
+    bin #3   : 2500     entries: error = 0
+    bin #4   : 1250     entries: error = 0
+    bin #5   : 625      entries: error = 0
+    bin #6   : 312      entries: error = 0
+    bin #7   : 156      entries: error = 0
+Test: 0.500296 +/- 0.0030556; sign in observable "Sign"
+Sign * Test: 0.500301 +/- 0.00282; tau = -0.0227
+    bin #1   : 10000    entries: error = 0.00288344
+    bin #2   : 5000     entries: error = 0.00287294
+    bin #3   : 2500     entries: error = 0.00288716
+    bin #4   : 1250     entries: error = 0.00288336
+    bin #5   : 625      entries: error = 0.00291027
+    bin #6   : 312      entries: error = 0.00294589
+    bin #7   : 156      entries: error = 0.00281725
+Test 2: 0.493208 +/- 0.00277; tau = -0.0374
+    bin #1   : 10000    entries: error = 0.0028763
+    bin #2   : 5000     entries: error = 0.00288887
+    bin #3   : 2500     entries: error = 0.00290494
+    bin #4   : 1250     entries: error = 0.00287583
+    bin #5   : 625      entries: error = 0.00280704
+    bin #6   : 312      entries: error = 0.00282259
+    bin #7   : 156      entries: error = 0.00276664
+Test 3: 0.507869 +/- 0.00321; tau = 0.116 WARNING: check error convergence
+    bin #1   : 10000    entries: error = 0.00289105
+    bin #2   : 5000     entries: error = 0.00286199
+    bin #3   : 2500     entries: error = 0.00287098
+    bin #4   : 1250     entries: error = 0.00289687
+    bin #5   : 625      entries: error = 0.00288711
+    bin #6   : 312      entries: error = 0.00288283
+    bin #7   : 156      entries: error = 0.00320908
+Test 4: 0.498397 +/- 0.00287

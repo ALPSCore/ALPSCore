@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="MyEncoding"?>
+<?xml-stylesheet type="text/xsl" href="URL to my stylesheet"?>
+<?my_pi?>
+<tag0 name0="1">
+  this is a text
+  <tag1>
+    <tag2 xmlns:MyNameSpace="MyURL">
+      text 2 text 3 
+      3.14 3.14159
+      text 4
+      text &lt;&amp;&quot;&gt;&apos;
+      <tag3/>
+      3.14
+      <tag4>no linebreak</tag4>
+    </tag2>
+  </tag1>
+</tag0>

@@ -1,0 +1,24 @@
+LATTICE_LIBRARY = "../../lib/xml/lattices.xml"
+L = 4
+{
+LATTICE = "square lattice"
+}
+{
+LATTICE = "frustrated square lattice"
+}
+{
+LATTICE = "frustrated square lattice"
+BACKBONE_TYPES =
+}
+{
+LATTICE = "frustrated square lattice"
+BACKBONE_TYPES = 0
+}
+{
+LATTICE = "frustrated square lattice"
+BACKBONE_TYPES = 1
+}
+{
+LATTICE = "frustrated square lattice"
+BACKBONE_TYPES = "0 1"
+}

@@ -1,0 +1,12 @@
+LATTICE = chain lattice
+  number of colors = 2
+  site colors = 0 1 0 1 0 1 0 1
+LATTICE = square lattice
+  number of colors = 2
+  site colors = 0 1 0 1 1 0 1 0 0 1 0 1 1 0 1 0
+LATTICE = frustrated square lattice
+  number of colors = 4
+  site colors = 0 1 0 1 2 3 2 3 0 1 0 1 2 3 2 3
+LATTICE = triangular lattice
+  number of colors = 4
+  site colors = 0 1 0 1 2 3 2 3 0 1 0 1 2 3 2 3

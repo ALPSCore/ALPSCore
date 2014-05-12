@@ -1,0 +1,78 @@
+observable
+Entry[0]: 0.502618 +/- 0.0045331; tau = 0.00800212
+    bin #1   : 4096     entries: error = 0.00449726
+    bin #2   : 2048     entries: error = 0.00447824
+    bin #3   : 1024     entries: error = 0.00442771
+    bin #4   : 512      entries: error = 0.0043568
+    bin #5   : 256      entries: error = 0.00432941
+    bin #6   : 128      entries: error = 0.0045331
+Entry[1]: 1.50074 +/- 0.00438853; tau = -0.0309996
+    bin #1   : 4096     entries: error = 0.00453124
+    bin #2   : 2048     entries: error = 0.00446591
+    bin #3   : 1024     entries: error = 0.00441569
+    bin #4   : 512      entries: error = 0.00425621
+    bin #5   : 256      entries: error = 0.00434305
+    bin #6   : 128      entries: error = 0.00438853
+observable
+Entry[0]: 0.502618 +/- 0.00453255; tau = 0.00800212
+Entry[1]: 1.50074 +/- 0.00438799; tau = -0.0309996
+observable + 1
+Entry[0]: 1.50262 +/- 0.00453255; tau = 0.00800212
+Entry[1]: 2.50074 +/- 0.00438799; tau = -0.0309996
+2.5 + observable
+Entry[0]: 3.00262 +/- 0.00453255; tau = 0.00800212
+Entry[1]: 4.00074 +/- 0.00438799; tau = -0.0309996
+observable + observable
+Entry[0]: 1.00524 +/- 0.0090651
+Entry[1]: 3.00149 +/- 0.00877598
+(unnamed array) + observable
+Entry[0]: 3.50262 +/- 0.00453255; tau = 0.00800212
+Entry[1]: -0.499255 +/- 0.00438799; tau = -0.0309996
+observable - 1
+Entry[0]: -0.497382 +/- 0.00453255; tau = 0.00800212
+Entry[1]: 0.500745 +/- 0.00438799; tau = -0.0309996
+2.5 - observable
+Entry[0]: 1.99738 +/- 0.00453255; tau = 0.00800212
+Entry[1]: 0.999255 +/- 0.00438799; tau = -0.0309996
+observable - observable
+Entry[0]: 0 +/- 0
+Entry[1]: 0 +/- 0
+observable - (unnamed array)
+Entry[0]: -2.49738 +/- 0.00453255; tau = 0.00800212
+Entry[1]: 3.50074 +/- 0.00438799; tau = -0.0309996
+(observable) * 3
+Entry[0]: 1.50785 +/- 0.0135976; tau = 0.00800212
+Entry[1]: 4.50223 +/- 0.013164; tau = -0.0309996
+1.3 * observable
+Entry[0]: 0.653403 +/- 0.00589231; tau = 0.00800212
+Entry[1]: 1.95097 +/- 0.00570439; tau = -0.0309996
+(observable) * (observable)
+Entry[0]: 0.252604 +/- 0.00455558
+Entry[1]: 2.25222 +/- 0.0131702
+(observable) * (unnamed array)
+Entry[0]: 1.50785 +/- 0.0135976; tau = 0.00800212
+Entry[1]: -3.00149 +/- -0.00877598; tau = -0.0309996
+(unnamed array) * observable
+Entry[0]: 1.50785 +/- 0.0135976; tau = 0.00800212
+Entry[1]: -3.00149 +/- -0.00877598; tau = -0.0309996
+(observable) / 3
+Entry[0]: 0.167539 +/- 0.00151085; tau = 0.00800212
+Entry[1]: 0.500248 +/- 0.00146266; tau = -0.0309996
+1.3 / (observable)
+Entry[0]: 2.58646 +/- 0.0233244
+Entry[1]: 0.866237 +/- 0.00253277
+(observable) / (observable)
+Entry[0]: 1 +/- 0
+Entry[1]: 1 +/- 0
+(observable) / (unnamed array)
+Entry[0]: 0.167539 +/- 0.00151085; tau = 0.00800212
+Entry[1]: -0.750372 +/- -0.002194; tau = -0.0309996
+(unnamed array) / (observable)
+Entry[0]: 5.96875 +/- 0.0538255
+Entry[1]: -1.33267 +/- -0.00389657
+pow(observable, 2)
+Entry[0]: 0.252604 +/- 0.00455558
+Entry[1]: 2.25222 +/- 0.0131702
+observable0: 0.502618 +/- 0.00453; tau = 0.008
+observable1: 1.50074 +/- 0.00439; tau = -0.031
+(observable0) * (observable1): 0.7543 +/- 0.00727

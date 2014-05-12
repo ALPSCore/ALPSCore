@@ -1,0 +1,6 @@
+is_embeddable_with_color_symmetries_test()
+true
+true
+false
+is_embeddable_with_color_symmetries_test2()
+false

@@ -1,0 +1,52 @@
+Momentum: 0 0 
+Translation 0 with phase (1,0) maps 0->0 1->1 2->2 3->3 
+Translation 1 with phase (1,0) maps 0->2 1->3 2->0 3->1 
+Translation 2 with phase (1,0) maps 0->1 1->0 2->3 3->2 
+Translation 3 with phase (1,0) maps 0->3 1->2 2->1 3->0 
+Built states:
+{
+1*[ |1/2 -1/2 > |1/2 -1/2 > |1/2 -1/2 > |1/2 -1/2 >  ] + translations
+0.5*[ |1/2 -1/2 > |1/2 -1/2 > |1/2 -1/2 > |1/2 1/2 >  ] + translations
+0.707107*[ |1/2 -1/2 > |1/2 -1/2 > |1/2 1/2 > |1/2 1/2 >  ] + translations
+0.707107*[ |1/2 -1/2 > |1/2 1/2 > |1/2 -1/2 > |1/2 1/2 >  ] + translations
+0.707107*[ |1/2 -1/2 > |1/2 1/2 > |1/2 1/2 > |1/2 -1/2 >  ] + translations
+0.5*[ |1/2 -1/2 > |1/2 1/2 > |1/2 1/2 > |1/2 1/2 >  ] + translations
+1*[ |1/2 1/2 > |1/2 1/2 > |1/2 1/2 > |1/2 1/2 >  ] + translations
+}
+
+Momentum: 0 3.14159 
+Translation 0 with phase (1,0) maps 0->0 1->1 2->2 3->3 
+Translation 1 with phase (1,0) maps 0->2 1->3 2->0 3->1 
+Translation 2 with phase (-1,0) maps 0->1 1->0 2->3 3->2 
+Translation 3 with phase (-1,0) maps 0->3 1->2 2->1 3->0 
+Built states:
+{
+0.5*[ |1/2 -1/2 > |1/2 -1/2 > |1/2 -1/2 > |1/2 1/2 >  ] + translations
+0.707107*[ |1/2 -1/2 > |1/2 1/2 > |1/2 -1/2 > |1/2 1/2 >  ] + translations
+0.5*[ |1/2 -1/2 > |1/2 1/2 > |1/2 1/2 > |1/2 1/2 >  ] + translations
+}
+
+Momentum: 3.14159 0 
+Translation 0 with phase (1,0) maps 0->0 1->1 2->2 3->3 
+Translation 1 with phase (-1,0) maps 0->2 1->3 2->0 3->1 
+Translation 2 with phase (1,0) maps 0->1 1->0 2->3 3->2 
+Translation 3 with phase (-1,0) maps 0->3 1->2 2->1 3->0 
+Built states:
+{
+0.5*[ |1/2 -1/2 > |1/2 -1/2 > |1/2 -1/2 > |1/2 1/2 >  ] + translations
+0.707107*[ |1/2 -1/2 > |1/2 -1/2 > |1/2 1/2 > |1/2 1/2 >  ] + translations
+0.5*[ |1/2 -1/2 > |1/2 1/2 > |1/2 1/2 > |1/2 1/2 >  ] + translations
+}
+
+Momentum: 3.14159 3.14159 
+Translation 0 with phase (1,0) maps 0->0 1->1 2->2 3->3 
+Translation 1 with phase (-1,0) maps 0->2 1->3 2->0 3->1 
+Translation 2 with phase (-1,0) maps 0->1 1->0 2->3 3->2 
+Translation 3 with phase (1,0) maps 0->3 1->2 2->1 3->0 
+Built states:
+{
+0.5*[ |1/2 -1/2 > |1/2 -1/2 > |1/2 -1/2 > |1/2 1/2 >  ] + translations
+0.707107*[ |1/2 -1/2 > |1/2 1/2 > |1/2 1/2 > |1/2 -1/2 >  ] + translations
+0.5*[ |1/2 -1/2 > |1/2 1/2 > |1/2 1/2 > |1/2 1/2 >  ] + translations
+}
+

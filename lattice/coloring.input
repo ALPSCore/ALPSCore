@@ -1,0 +1,5 @@
+LATTICE_LIBRARY = "../../lib/xml/lattices.xml"
+{ LATTICE = "chain lattice"; L = 8; }
+{ LATTICE = "square lattice"; L = 4; }
+{ LATTICE = "frustrated square lattice"; L = 4; }
+{ LATTICE = "triangular lattice"; L = 4; }

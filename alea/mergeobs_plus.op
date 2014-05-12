@@ -1,0 +1,2 @@
+one: 1.00829 +/- 0.011; tau = 0.022 WARNING: check error convergence
+one + 1.0: 2.00829 +/- 0.011; tau = -0.471 WARNING: check error convergence

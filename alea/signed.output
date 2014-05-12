@@ -1,0 +1,97 @@
+<AVERAGES>
+  <SCALAR_AVERAGE name="Observable a" signed="true">
+    <COUNT>10000</COUNT>
+    <MEAN>0.49931</MEAN>
+    <ERROR converged="yes">0.0142</ERROR>
+    <SIGN signed_observable="Sign * Observable a" sign="Sign"/>
+  </SCALAR_AVERAGE>
+  <SCALAR_AVERAGE name="Sign * Observable a">
+    <COUNT>10000</COUNT>
+    <MEAN method="simple">0.09565</MEAN>
+    <ERROR converged="yes" method="binning">0.0056</ERROR>
+    <VARIANCE method="simple">0.324</VARIANCE>
+    <AUTOCORR method="binning">-0.0155</AUTOCORR>
+    <BINNED size="1"><COUNT>10000</COUNT><MEAN method="simple">0.09565</MEAN><ERROR method="simple">0.00569</ERROR></BINNED>
+    <BINNED size="2"><COUNT>5000</COUNT><MEAN method="simple">0.09565</MEAN><ERROR method="simple">0.00571</ERROR></BINNED>
+    <BINNED size="4"><COUNT>2500</COUNT><MEAN method="simple">0.09565</MEAN><ERROR method="simple">0.0057</ERROR></BINNED>
+    <BINNED size="8"><COUNT>1250</COUNT><MEAN method="simple">0.09565</MEAN><ERROR method="simple">0.00579</ERROR></BINNED>
+    <BINNED size="16"><COUNT>625</COUNT><MEAN method="simple">0.09565</MEAN><ERROR method="simple">0.00575</ERROR></BINNED>
+    <BINNED size="32"><COUNT>312</COUNT><MEAN method="simple">0.09582</MEAN><ERROR method="simple">0.00564</ERROR></BINNED>
+    <BINNED size="64"><COUNT>156</COUNT><MEAN method="simple">0.09582</MEAN><ERROR method="simple">0.0056</ERROR></BINNED>
+  </SCALAR_AVERAGE>
+  <SCALAR_AVERAGE name="Observable b" signed="true">
+    <COUNT>10000</COUNT>
+    <MEAN>1.47424</MEAN>
+    <ERROR converged="yes">0.0138</ERROR>
+    <SIGN signed_observable="Sign * Observable b" sign="Sign"/>
+  </SCALAR_AVERAGE>
+  <SCALAR_AVERAGE name="Sign * Observable b">
+    <COUNT>10000</COUNT>
+    <MEAN method="simple">0.28227</MEAN>
+    <ERROR converged="yes" method="binning">0.0154</ERROR>
+    <VARIANCE method="simple">2.27</VARIANCE>
+    <AUTOCORR method="binning">0.0225</AUTOCORR>
+    <BINNED size="1"><COUNT>10000</COUNT><MEAN method="simple">0.28227</MEAN><ERROR method="simple">0.0151</ERROR></BINNED>
+    <BINNED size="2"><COUNT>5000</COUNT><MEAN method="simple">0.28227</MEAN><ERROR method="simple">0.015</ERROR></BINNED>
+    <BINNED size="4"><COUNT>2500</COUNT><MEAN method="simple">0.28227</MEAN><ERROR method="simple">0.0149</ERROR></BINNED>
+    <BINNED size="8"><COUNT>1250</COUNT><MEAN method="simple">0.28227</MEAN><ERROR method="simple">0.015</ERROR></BINNED>
+    <BINNED size="16"><COUNT>625</COUNT><MEAN method="simple">0.28227</MEAN><ERROR method="simple">0.0149</ERROR></BINNED>
+    <BINNED size="32"><COUNT>312</COUNT><MEAN method="simple">0.2829</MEAN><ERROR method="simple">0.015</ERROR></BINNED>
+    <BINNED size="64"><COUNT>156</COUNT><MEAN method="simple">0.2829</MEAN><ERROR method="simple">0.0154</ERROR></BINNED>
+  </SCALAR_AVERAGE>
+  <SCALAR_AVERAGE name="Sign">
+    <COUNT>10000</COUNT>
+    <MEAN method="simple">0.1916</MEAN>
+    <ERROR converged="yes" method="binning">0.0102</ERROR>
+    <VARIANCE method="simple">0.963</VARIANCE>
+    <AUTOCORR method="binning">0.0397</AUTOCORR>
+    <BINNED size="1"><COUNT>10000</COUNT><MEAN method="simple">0.1916</MEAN><ERROR method="simple">0.00982</ERROR></BINNED>
+    <BINNED size="2"><COUNT>5000</COUNT><MEAN method="simple">0.1916</MEAN><ERROR method="simple">0.00978</ERROR></BINNED>
+    <BINNED size="4"><COUNT>2500</COUNT><MEAN method="simple">0.1916</MEAN><ERROR method="simple">0.00979</ERROR></BINNED>
+    <BINNED size="8"><COUNT>1250</COUNT><MEAN method="simple">0.1916</MEAN><ERROR method="simple">0.0098</ERROR></BINNED>
+    <BINNED size="16"><COUNT>625</COUNT><MEAN method="simple">0.1916</MEAN><ERROR method="simple">0.00976</ERROR></BINNED>
+    <BINNED size="32"><COUNT>312</COUNT><MEAN method="simple">0.19191</MEAN><ERROR method="simple">0.00979</ERROR></BINNED>
+    <BINNED size="64"><COUNT>156</COUNT><MEAN method="simple">0.19191</MEAN><ERROR method="simple">0.0102</ERROR></BINNED>
+  </SCALAR_AVERAGE>
+  <SCALAR_AVERAGE name="a/b">
+    <COUNT>9984</COUNT>
+    <MEAN method="jackknife">0.33867</MEAN>
+    <ERROR converged="yes" method="jackknife">0.00978</ERROR>
+  </SCALAR_AVERAGE>
+</AVERAGES>
+<AVERAGES>
+  <SCALAR_AVERAGE name="My Sign">
+    <COUNT>10000</COUNT>
+    <MEAN method="simple">0.212</MEAN>
+    <ERROR converged="yes" method="binning">0.00942</ERROR>
+    <VARIANCE method="simple">0.955</VARIANCE>
+    <AUTOCORR method="binning">-0.0359</AUTOCORR>
+    <BINNED size="1"><COUNT>10000</COUNT><MEAN method="simple">0.212</MEAN><ERROR method="simple">0.00977</ERROR></BINNED>
+    <BINNED size="2"><COUNT>5000</COUNT><MEAN method="simple">0.212</MEAN><ERROR method="simple">0.0098</ERROR></BINNED>
+    <BINNED size="4"><COUNT>2500</COUNT><MEAN method="simple">0.212</MEAN><ERROR method="simple">0.01</ERROR></BINNED>
+    <BINNED size="8"><COUNT>1250</COUNT><MEAN method="simple">0.212</MEAN><ERROR method="simple">0.00989</ERROR></BINNED>
+    <BINNED size="16"><COUNT>625</COUNT><MEAN method="simple">0.212</MEAN><ERROR method="simple">0.00996</ERROR></BINNED>
+    <BINNED size="32"><COUNT>312</COUNT><MEAN method="simple">0.21174</MEAN><ERROR method="simple">0.0099</ERROR></BINNED>
+    <BINNED size="64"><COUNT>156</COUNT><MEAN method="simple">0.21174</MEAN><ERROR method="simple">0.00942</ERROR></BINNED>
+  </SCALAR_AVERAGE>
+  <SCALAR_AVERAGE name="Observable c" signed="true">
+    <COUNT>10000</COUNT>
+    <MEAN>0.52701</MEAN>
+    <ERROR converged="yes">0.0134</ERROR>
+    <SIGN signed_observable="My Sign * Observable c" sign="My Sign"/>
+  </SCALAR_AVERAGE>
+  <SCALAR_AVERAGE name="My Sign * Observable c">
+    <COUNT>10000</COUNT>
+    <MEAN method="simple">0.11177</MEAN>
+    <ERROR converged="yes" method="binning">0.00556</ERROR>
+    <VARIANCE method="simple">0.316</VARIANCE>
+    <AUTOCORR method="binning">-0.0114</AUTOCORR>
+    <BINNED size="1"><COUNT>10000</COUNT><MEAN method="simple">0.11177</MEAN><ERROR method="simple">0.00562</ERROR></BINNED>
+    <BINNED size="2"><COUNT>5000</COUNT><MEAN method="simple">0.11177</MEAN><ERROR method="simple">0.00562</ERROR></BINNED>
+    <BINNED size="4"><COUNT>2500</COUNT><MEAN method="simple">0.11177</MEAN><ERROR method="simple">0.0057</ERROR></BINNED>
+    <BINNED size="8"><COUNT>1250</COUNT><MEAN method="simple">0.11177</MEAN><ERROR method="simple">0.0057</ERROR></BINNED>
+    <BINNED size="16"><COUNT>625</COUNT><MEAN method="simple">0.11177</MEAN><ERROR method="simple">0.00578</ERROR></BINNED>
+    <BINNED size="32"><COUNT>312</COUNT><MEAN method="simple">0.11158</MEAN><ERROR method="simple">0.00589</ERROR></BINNED>
+    <BINNED size="64"><COUNT>156</COUNT><MEAN method="simple">0.11158</MEAN><ERROR method="simple">0.00556</ERROR></BINNED>
+  </SCALAR_AVERAGE>
+</AVERAGES>

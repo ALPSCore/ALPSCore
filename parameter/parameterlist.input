@@ -1,0 +1,28 @@
+/* C-style comment */
+
+// C++-style comments are also accepted
+
+A=0.1;
+{ B=0.2; C=200; }
+
+D=0.2;
+dir = "${DIR}/lib/xml"
+
+{
+
+E=0.2, F=100
+}
+
+{ G=0.5; H=100}
+
+{}
+
+#clear // clear global parameters
+
+{ G=0.4; H=200 }
+
+{ /* G=0.2; */ H=300; }
+
+#stop // stop reading here
+
+{ G=0.3; H=400; }

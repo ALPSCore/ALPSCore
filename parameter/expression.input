@@ -1,0 +1,11 @@
+L=10;
+T=0.1;
+beta='1/T';
+error="error";
+%
+sqrt(4),3+5,L, T, 1/L, 1/T, 2*Pi/L, L+T, L+10,L-T,1/T+10,L/(1/T+10),
+L*L,beta,sqrt(L),sin(2*Pi/L), cos(2*Pi/L),L^2,(L+1)^3,(L+1)^-1*5,random(),
+random(),random(),integer_random(50),integer_random(50),integer_random(50),
+gaussian_random(),gaussian_random(),gaussian_random(100,20), error
+%
+sqrt(3.33) L*T 1/L 2*Pi*L error

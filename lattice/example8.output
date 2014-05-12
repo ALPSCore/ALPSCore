@@ -1,0 +1,25 @@
+<GRAPH dimension="1" vertices="10" edges="13">
+  <VERTEX id="1" type="0"><COORDINATE>0</COORDINATE></VERTEX>
+  <VERTEX id="2" type="1"><COORDINATE>0</COORDINATE></VERTEX>
+  <VERTEX id="3" type="0"><COORDINATE>0</COORDINATE></VERTEX>
+  <VERTEX id="4" type="1"><COORDINATE>0</COORDINATE></VERTEX>
+  <VERTEX id="5" type="0"><COORDINATE>0</COORDINATE></VERTEX>
+  <VERTEX id="6" type="1"><COORDINATE>0</COORDINATE></VERTEX>
+  <VERTEX id="7" type="0"><COORDINATE>0</COORDINATE></VERTEX>
+  <VERTEX id="8" type="1"><COORDINATE>0</COORDINATE></VERTEX>
+  <VERTEX id="9" type="0"><COORDINATE>0</COORDINATE></VERTEX>
+  <VERTEX id="10" type="1"><COORDINATE>0</COORDINATE></VERTEX>
+  <EDGE source="1" target="2" id="1" type="0" vector="0"/>
+  <EDGE source="1" target="3" id="2" type="1" vector="0"/>
+  <EDGE source="2" target="4" id="3" type="2" vector="0"/>
+  <EDGE source="3" target="4" id="4" type="0" vector="0"/>
+  <EDGE source="3" target="5" id="5" type="1" vector="0"/>
+  <EDGE source="4" target="6" id="6" type="2" vector="0"/>
+  <EDGE source="5" target="6" id="7" type="0" vector="0"/>
+  <EDGE source="5" target="7" id="8" type="1" vector="0"/>
+  <EDGE source="6" target="8" id="9" type="2" vector="0"/>
+  <EDGE source="7" target="8" id="10" type="0" vector="0"/>
+  <EDGE source="7" target="9" id="11" type="1" vector="0"/>
+  <EDGE source="8" target="10" id="12" type="2" vector="0"/>
+  <EDGE source="9" target="10" id="13" type="0" vector="0"/>
+</GRAPH>

@@ -1,0 +1,13 @@
+<type 'int'> <type 'str'> <type 'NoneType'>
+['a', 'val2', 'val1', 'b', 'x'] [1, '42', 42, 3, 2]
+a
+val2
+val1
+b
+x
+<type 'int'> <type 'str'>
+a 1 <type 'int'>
+val2 42 <type 'str'>
+val1 42 <type 'int'>
+b 3 <type 'int'>
+x 2 <type 'int'>

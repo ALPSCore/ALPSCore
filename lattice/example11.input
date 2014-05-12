@@ -1,0 +1,2 @@
+LATTICE_LIBRARY = "../../lib/xml/lattices.xml"
+LATTICE = "chain lattice"

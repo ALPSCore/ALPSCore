@@ -1,0 +1,6 @@
+a = 2
+b = "/home/ALPS/lib/xml"
+c = 'abc def '
+d = "../lattices.xml"
+f= .1.4
+g= ....5

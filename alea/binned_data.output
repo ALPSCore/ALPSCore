@@ -1,0 +1,371 @@
+
+data1 :
+
+count:	0
+binsize:	0
+changed:	0
+valid:	1
+jack_valid:	1
+nonlinear_operations:	0
+mean:	0
+error:	0
+values:	
+jack:	
+
+vec4:	0	1	2	3	4	5	6	7	8	9	10	11	12	13	14	15	16	17	18	19	20	21	22	23	24	25	26	27	28	29	
+
+alps::alea::binned_data<double> data4(vec4)
+data4 : 
+
+count:	30
+binsize:	1
+changed:	0
+valid:	0
+jack_valid:	0
+nonlinear_operations:	0
+mean:	0
+error:	0
+values:	0	1	2	3	4	5	6	7	8	9	10	11	12	13	14	15	16	17	18	19	20	21	22	23	24	25	26	27	28	29	
+jack:	
+
+data4.set_bin_number(10)
+data4 : 
+
+count:	30
+binsize:	3
+changed:	1
+valid:	0
+jack_valid:	0
+nonlinear_operations:	0
+mean:	0
+error:	0
+values:	3	12	21	30	39	48	57	66	75	84	
+jack:	
+
+alps::alea::binned_data<double> data4a(vec4,10)
+data4a : 
+
+count:	30
+binsize:	3
+changed:	1
+valid:	0
+jack_valid:	0
+nonlinear_operations:	0
+mean:	0
+error:	0
+values:	3	12	21	30	39	48	57	66	75	84	
+jack:	
+
+Jackknife mean and error of data4a : 	14.5	2.87228
+
+obs2: 
+obs2: 0.443743 +/- 0.109; tau = inf WARNING: check error convergence
+
+data2 (valarray):
+
+count:	10
+binsize:	1
+changed:	0
+valid:	0
+jack_valid:	0
+nonlinear_operations:	0
+mean:	0.443743
+error:	0.108836
+variance:	0.106608
+tau:	inf
+values:	7.8259e-06	0.131538	0.755605	0.45865	0.532767	0.218959	0.0470446	0.678865	0.679296	0.934693	
+jack:	
+
+OBS3: 
+OBS3
+Entry[0]: 4.5 +/- 1.00922; tau = inf WARNING: check error convergence
+Entry[1]: 4.5 +/- 1.00922; tau = inf WARNING: check error convergence
+Entry[2]: 4.5 +/- 1.00922; tau = inf WARNING: check error convergence
+Entry[3]: 4.5 +/- 1.00922; tau = inf WARNING: check error convergence
+Entry[4]: 4.5 +/- 1.00922; tau = inf WARNING: check error convergence
+
+
+data3_0 : 
+
+count:	10
+binsize:	1
+changed:	0
+valid:	0
+jack_valid:	0
+nonlinear_operations:	0
+mean:	4.5
+error:	1.00922
+variance:	9.16667
+tau:	inf
+values:	0	1	2	3	4	5	6	7	8	9	
+jack:	
+
+data3_1 : 
+
+count:	10
+binsize:	1
+changed:	0
+valid:	0
+jack_valid:	0
+nonlinear_operations:	0
+mean:	4.5
+error:	1.00922
+variance:	9.16667
+tau:	inf
+values:	0	1	2	3	4	5	6	7	8	9	
+jack:	
+
+data2x (valarray) (= data2):
+ 
+count:	10
+binsize:	1
+changed:	0
+valid:	0
+jack_valid:	0
+nonlinear_operations:	0
+mean:	0.443743
+error:	0.108836
+variance:	0.106608
+tau:	inf
+values:	7.8259e-06	0.131538	0.755605	0.45865	0.532767	0.218959	0.0470446	0.678865	0.679296	0.934693	
+jack:	
+
+data3x_0 (= data3_0):
+
+count:	10
+binsize:	1
+changed:	0
+valid:	0
+jack_valid:	0
+nonlinear_operations:	0
+mean:	4.5
+error:	1.00922
+variance:	9.16667
+tau:	inf
+values:	0	1	2	3	4	5	6	7	8	9	
+jack:	
+
+data3x_1 (= data3_1):
+
+count:	10
+binsize:	1
+changed:	0
+valid:	0
+jack_valid:	0
+nonlinear_operations:	0
+mean:	4.5
+error:	1.00922
+variance:	9.16667
+tau:	inf
+values:	0	1	2	3	4	5	6	7	8	9	
+jack:	
+
+data4 != data4a
+
+data5 :
+
+count:	30
+binsize:	3
+changed:	1
+valid:	1
+jack_valid:	1
+nonlinear_operations:	0
+mean:	14.5
+error:	2.87228
+values:	3	12	21	30	39	48	57	66	75	84	
+jack:	14.5	16	15.6667	15.3333	15	14.6667	14.3333	14	13.6667	13.3333	13	
+
+data5 += data5 , data5 :
+
+count:	30
+binsize:	3
+changed:	1
+valid:	0
+jack_valid:	1
+nonlinear_operations:	1
+mean:	29
+error:	4.06202
+values:	6	24	42	60	78	96	114	132	150	168	
+jack:	29	32	31.3333	30.6667	30	29.3333	28.6667	28	27.3333	26.6667	26	
+
+data5 :
+
+count:	30
+binsize:	3
+changed:	1
+valid:	1
+jack_valid:	1
+nonlinear_operations:	0
+mean:	14.5
+error:	2.87228
+values:	3	12	21	30	39	48	57	66	75	84	
+jack:	14.5	16	15.6667	15.3333	15	14.6667	14.3333	14	13.6667	13.3333	13	
+
+data5 -= data5 , data5 :
+
+count:	30
+binsize:	3
+changed:	1
+valid:	0
+jack_valid:	1
+nonlinear_operations:	1
+mean:	0
+error:	4.06202
+values:	0	0	0	0	0	0	0	0	0	0	
+jack:	0	0	0	0	0	0	0	0	0	0	0	
+
+data5 :
+
+count:	30
+binsize:	3
+changed:	1
+valid:	1
+jack_valid:	1
+nonlinear_operations:	0
+mean:	14.5
+error:	2.87228
+values:	3	12	21	30	39	48	57	66	75	84	
+jack:	14.5	16	15.6667	15.3333	15	14.6667	14.3333	14	13.6667	13.3333	13	
+
+data5 *= data5 , data5 :
+
+count:	30
+binsize:	3
+changed:	1
+valid:	0
+jack_valid:	1
+nonlinear_operations:	1
+mean:	210.25
+error:	58.8993
+values:	3	48	147	300	507	768	1083	1452	1875	2352	
+jack:	210.25	256	245.444	235.111	225	215.111	205.444	196	186.778	177.778	169	
+
+data5 :
+
+count:	30
+binsize:	3
+changed:	1
+valid:	1
+jack_valid:	1
+nonlinear_operations:	0
+mean:	14.5
+error:	2.87228
+values:	3	12	21	30	39	48	57	66	75	84	
+jack:	14.5	16	15.6667	15.3333	15	14.6667	14.3333	14	13.6667	13.3333	13	
+
+data5 /= data5 , data5 :
+
+count:	30
+binsize:	3
+changed:	1
+valid:	0
+jack_valid:	1
+nonlinear_operations:	1
+mean:	1
+error:	0.280139
+values:	3	3	3	3	3	3	3	3	3	3	
+jack:	1	1	1	1	1	1	1	1	1	1	1	
+
+data5 :
+
+count:	30
+binsize:	3
+changed:	1
+valid:	1
+jack_valid:	1
+nonlinear_operations:	0
+mean:	14.5
+error:	2.87228
+values:	3	12	21	30	39	48	57	66	75	84	
+jack:	14.5	16	15.6667	15.3333	15	14.6667	14.3333	14	13.6667	13.3333	13	
+
+data5 += 2. , data5 :
+
+count:	30
+binsize:	3
+changed:	1
+valid:	1
+jack_valid:	1
+nonlinear_operations:	0
+mean:	16.5
+error:	2.87228
+values:	5	14	23	32	41	50	59	68	77	86	
+jack:	16.5	18	17.6667	17.3333	17	16.6667	16.3333	16	15.6667	15.3333	15	
+
+data5 :
+
+count:	30
+binsize:	3
+changed:	1
+valid:	1
+jack_valid:	1
+nonlinear_operations:	0
+mean:	14.5
+error:	2.87228
+values:	3	12	21	30	39	48	57	66	75	84	
+jack:	14.5	16	15.6667	15.3333	15	14.6667	14.3333	14	13.6667	13.3333	13	
+
+data5 -= 3. , data5 :
+
+count:	30
+binsize:	3
+changed:	1
+valid:	1
+jack_valid:	1
+nonlinear_operations:	0
+mean:	11.5
+error:	2.87228
+values:	0	9	18	27	36	45	54	63	72	81	
+jack:	11.5	13	12.6667	12.3333	12	11.6667	11.3333	11	10.6667	10.3333	10	
+
+data5 :
+
+count:	30
+binsize:	3
+changed:	1
+valid:	1
+jack_valid:	1
+nonlinear_operations:	0
+mean:	14.5
+error:	2.87228
+values:	3	12	21	30	39	48	57	66	75	84	
+jack:	14.5	16	15.6667	15.3333	15	14.6667	14.3333	14	13.6667	13.3333	13	
+
+data5 *= -2. , data5 :
+
+count:	30
+binsize:	3
+changed:	1
+valid:	1
+jack_valid:	1
+nonlinear_operations:	0
+mean:	-29
+error:	5.74456
+values:	-6	-24	-42	-60	-78	-96	-114	-132	-150	-168	
+jack:	-29	-32	-31.3333	-30.6667	-30	-29.3333	-28.6667	-28	-27.3333	-26.6667	-26	
+
+data5 :
+
+count:	30
+binsize:	3
+changed:	1
+valid:	1
+jack_valid:	1
+nonlinear_operations:	0
+mean:	14.5
+error:	2.87228
+values:	3	12	21	30	39	48	57	66	75	84	
+jack:	14.5	16	15.6667	15.3333	15	14.6667	14.3333	14	13.6667	13.3333	13	
+
+data5 /= 4. , data5 :
+
+count:	30
+binsize:	3
+changed:	1
+valid:	1
+jack_valid:	1
+nonlinear_operations:	0
+mean:	3.625
+error:	0.71807
+values:	0.75	3	5.25	7.5	9.75	12	14.25	16.5	18.75	21	
+jack:	3.625	4	3.91667	3.83333	3.75	3.66667	3.58333	3.5	3.41667	3.33333	3.25	

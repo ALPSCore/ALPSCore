@@ -1,0 +1,11 @@
+<GRAPH name="5-site dimerized" vertices="5" edges="4">
+  <VERTEX id="1" type="0"/>
+  <VERTEX id="2" type="0"/>
+  <VERTEX id="3" type="0"/>
+  <VERTEX id="4" type="0"/>
+  <VERTEX id="5" type="0"/>
+  <EDGE source="1" target="2" id="1" type="0"/>
+  <EDGE source="2" target="3" id="2" type="1"/>
+  <EDGE source="3" target="4" id="3" type="0"/>
+  <EDGE source="4" target="5" id="4" type="1"/>
+</GRAPH>

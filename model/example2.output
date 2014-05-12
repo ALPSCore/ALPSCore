@@ -1,0 +1,32 @@
+States of basis fermion={
+  | Nup=0 Ndown=0 >
+  | Nup=0 Ndown=1 >
+  | Nup=1 Ndown=0 >
+  | Nup=1 Ndown=1 >
+}
+States of basis hardcore boson={
+  | N=0 >
+  | N=1 >
+}
+States of basis spin={
+  | S=1 Sz=-1 >
+  | S=1 Sz=0 >
+  | S=1 Sz=1 >
+}
+States of basis spin={
+  | S=1/2 Sz=-1/2 >
+  | S=1/2 Sz=1/2 >
+}
+States of basis spin={
+  | S=3/2 Sz=-3/2 >
+  | S=3/2 Sz=-1/2 >
+  | S=3/2 Sz=1/2 >
+  | S=3/2 Sz=3/2 >
+}
+States of basis spin={
+  | S=2 Sz=-2 >
+  | S=2 Sz=-1 >
+  | S=2 Sz=0 >
+  | S=2 Sz=1 >
+  | S=2 Sz=2 >
+}

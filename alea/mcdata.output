@@ -1,0 +1,47 @@
+observable a: 0.497211 +/- 0.00485; tau = 0.0679
+    bin #1   : 4096     entries: error = 0.00455021
+    bin #2   : 2048     entries: error = 0.00455922
+    bin #3   : 1024     entries: error = 0.00457997
+    bin #4   : 512      entries: error = 0.00463017
+    bin #5   : 256      entries: error = 0.00479441
+    bin #6   : 128      entries: error = 0.00484938
+observable b: 1.50455 +/- 0.0047; tau = 0.049
+    bin #1   : 4096     entries: error = 0.00448764
+    bin #2   : 2048     entries: error = 0.00457509
+    bin #3   : 1024     entries: error = 0.00454425
+    bin #4   : 512      entries: error = 0.00455364
+    bin #5   : 256      entries: error = 0.00459102
+    bin #6   : 128      entries: error = 0.00470255
+observable c: 1.49876 +/- 0.00256; tau = -0.0185
+    bin #1   : 12288    entries: error = 0.00260463
+    bin #2   : 6144     entries: error = 0.00261035
+    bin #3   : 3072     entries: error = 0.00263224
+    bin #4   : 1536     entries: error = 0.00257175
+    bin #5   : 768      entries: error = 0.00260109
+    bin #6   : 384      entries: error = 0.00263753
+    bin #7   : 192      entries: error = 0.00255591
+observable d:0.664328 +/- 0.163898
+Jackknife analysis
+0.497211 +/- 0.00484938; tau = 0.0679088
+  count = 4096, bin size = 32, number of bins = 128
+1.50455 +/- 0.00470255; tau = 0.0490359
+  count = 4096, bin size = 32, number of bins = 128
+1.49876 +/- 0.00255591; tau = -0.018531
+  count = 12288, bin size = 128, number of bins = 96
+0.664328 +/- 0.163898
+  count = 4, bin size = 1, number of bins = 4
+four different methods to construct RealObsevaluator
+  3.02568 +/- 0.0309813; tau = 0.0490359
+  3.02568 +/- 0.0309813; tau = 0.0490359
+  3.02568 +/- 0.0309813; tau = 0.0490359
+  3.02568 +/- 0.0309813; tau = 0.0490359
+merging observables b and c
+  1.50021 +/- 0.00246925; tau = -0.0016393
+  count = 16384, bin size = 128, number of bins = 128
+merging observables b and d
+  1.50373 +/- 0.00470068
+  count = 4100, bin size = 32, number of bins = 128
+2.01122 +/- 0.0196157; tau = 0.0679088
+0.664652 +/- 0.00207741; tau = 0.0490359
+0.0996385 +/- 0.00320685; tau = 0.0679088
+1 +/- 0

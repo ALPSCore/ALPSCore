@@ -1,0 +1,24 @@
+<EXECUTED processes="4" elapsed="00:00:05" phase="equilibrating">
+  <FROM>2006-Oct-07 19:13:08</FROM>
+  <TO>2006-Oct-07 19:13:13</TO>
+  <MACHINE id="1"><NAME>host0</NAME></MACHINE>
+  <MACHINE id="2"><NAME>host1</NAME></MACHINE>
+  <MACHINE id="3"><NAME>host2</NAME></MACHINE>
+  <MACHINE id="4"><NAME>host3</NAME></MACHINE>
+</EXECUTED>
+<EXECUTED processes="4" elapsed="00:00:05" phase="equilibrating">
+  <FROM>2006-Oct-07 19:13:08</FROM>
+  <TO>2006-Oct-07 19:13:13</TO>
+  <MACHINE id="1"><NAME>host0</NAME></MACHINE>
+  <MACHINE id="2"><NAME>host1</NAME></MACHINE>
+  <MACHINE id="3"><NAME>host2</NAME></MACHINE>
+  <MACHINE id="4"><NAME>host3</NAME></MACHINE>
+</EXECUTED>
+<EXECUTED processes="4" elapsed="00:00:05" phase="equilibrating">
+  <FROM>2006-Oct-07 19:13:08</FROM>
+  <TO>2006-Oct-07 19:13:13</TO>
+  <MACHINE id="1"><NAME>host0</NAME></MACHINE>
+  <MACHINE id="2"><NAME>host1</NAME></MACHINE>
+  <MACHINE id="3"><NAME>host2</NAME></MACHINE>
+  <MACHINE id="4"><NAME>host3</NAME></MACHINE>
+</EXECUTED>

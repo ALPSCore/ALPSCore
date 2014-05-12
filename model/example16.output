@@ -1,0 +1,52 @@
+Momentum: 0 
+Translation 0 with phase (1,0) maps 0->0 1->1 2->2 3->3 
+Translation 1 with phase (1,0) maps 0->1 1->2 2->3 3->0 
+Translation 2 with phase (1,0) maps 0->2 1->3 2->0 3->1 
+Translation 3 with phase (1,0) maps 0->3 1->0 2->1 3->2 
+Built states:
+{
+1*[ |0 > |0 > |0 > |0 >  ] + translations
+0.5*[ |0 > |0 > |0 > |1 >  ] + translations
+0.5*[ |0 > |0 > |1 > |1 >  ] + translations
+0.5*[ |0 > |1 > |1 > |1 >  ] + translations
+}
+
+Momentum: 1.5708 
+Translation 0 with phase (1,0) maps 0->0 1->1 2->2 3->3 
+Translation 1 with phase (0,1) maps 0->1 1->2 2->3 3->0 
+Translation 2 with phase (-1,0) maps 0->2 1->3 2->0 3->1 
+Translation 3 with phase (0,-1) maps 0->3 1->0 2->1 3->2 
+Built states:
+{
+0.5*[ |0 > |0 > |0 > |1 >  ] + translations
+0.5*[ |0 > |0 > |1 > |1 >  ] + translations
+0.707107*[ |0 > |1 > |0 > |1 >  ] + translations
+0.5*[ |0 > |1 > |1 > |1 >  ] + translations
+}
+
+Momentum: 3.14159 
+Translation 0 with phase (1,0) maps 0->0 1->1 2->2 3->3 
+Translation 1 with phase (-1,0) maps 0->1 1->2 2->3 3->0 
+Translation 2 with phase (1,0) maps 0->2 1->3 2->0 3->1 
+Translation 3 with phase (-1,0) maps 0->3 1->0 2->1 3->2 
+Built states:
+{
+0.5*[ |0 > |0 > |0 > |1 >  ] + translations
+0.5*[ |0 > |0 > |1 > |1 >  ] + translations
+0.5*[ |0 > |1 > |1 > |1 >  ] + translations
+1*[ |1 > |1 > |1 > |1 >  ] + translations
+}
+
+Momentum: 4.71239 
+Translation 0 with phase (1,0) maps 0->0 1->1 2->2 3->3 
+Translation 1 with phase (0,-1) maps 0->1 1->2 2->3 3->0 
+Translation 2 with phase (-1,0) maps 0->2 1->3 2->0 3->1 
+Translation 3 with phase (0,1) maps 0->3 1->0 2->1 3->2 
+Built states:
+{
+0.5*[ |0 > |0 > |0 > |1 >  ] + translations
+0.5*[ |0 > |0 > |1 > |1 >  ] + translations
+0.707107*[ |0 > |1 > |0 > |1 >  ] + translations
+0.5*[ |0 > |1 > |1 > |1 >  ] + translations
+}
+

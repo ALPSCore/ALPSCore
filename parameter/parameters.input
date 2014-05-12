@@ -1,0 +1,10 @@
+L=10; M= 1,
+
+T=0.1; 
+beta="1/T"; // comment
+dir = "${DIR}/lib/xml", a0 = "abc def ";
+a0 = 'abc def '
+a[test 2] = 3, /* comment */  a[ test 3 ] = 3;
+b = sqrt(4)+2*Pi/L-X^5;
+
+

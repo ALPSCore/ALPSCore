@@ -1,0 +1,32 @@
+T = std::vector<int>
+capacity is not fixed
+
+T = std::list<int>
+capacity is not fixed
+
+T = alps::fixed_capacity_vector<int,8>
+capacity is fixed (static_max_size = 8)
+
+T = alps::fixed_capacity_deque<int,8>
+capacity is fixed (static_max_size = 8)
+
+T = std::stack<int, alps::fixed_capacity_vector<int,4> >
+capacity is fixed (static_max_size = 4)
+
+T = std::stack<int>
+capacity is not fixed
+
+T = std::queue<int, alps::fixed_capacity_deque<int,6> >
+capacity is fixed (static_max_size = 6)
+
+T = std::queue<int>
+capacity is not fixed
+
+T = std::priority_queue<int, alps::fixed_capacity_vector<int,16> >
+capacity is fixed (static_max_size = 16)
+
+T = std::priority_queue<int>
+capacity is not fixed
+
+T = double
+capacity is not fixed

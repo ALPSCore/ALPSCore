@@ -1,0 +1,292 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *                                                                                 *
+ * ALPS Project: Algorithms and Libraries for Physics Simulations                  *
+ *                                                                                 *
+ * ALPS Libraries                                                                  *
+ *                                                                                 *
+ * Copyright (C) 2010 - 2012 by Lukas Gamper <gamperl@gmail.com>                   *
+ *                                                                                 *
+ * This software is part of the ALPS libraries, published under the ALPS           *
+ * Library License; you can use, redistribute it and/or modify it under            *
+ * the terms of the license, either version 1 or (at your option) any later        *
+ * version.                                                                        *
+ *                                                                                 *
+ * You should have received a copy of the ALPS Library License along with          *
+ * the ALPS Libraries; see the file LICENSE.txt. If not, the license is also       *
+ * available from http://alps.comp-phys.org/.                                      *
+ *                                                                                 *
+ *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR     *
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,        *
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT       *
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE       *
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,     *
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER     *
+ * DEALINGS IN THE SOFTWARE.                                                       *
+ *                                                                                 *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+#define VECTOR_SIZE 25
+#define MATRIX_SIZE 5
+#define SEED 42
+
+#define TYPE @HDF5_TEST_TYPE@
+
+#include "creator.hpp"
+
+#ifndef SZIP_COMPRESS
+    #define SZIP_COMPRESS false
+#endif
+
+#ifndef IS_ATTRIBUTE
+    #define IS_ATTRIBUTE false
+#endif
+
+#if defined(__FCC_VERSION) && defined(main) // workaround for FCC with SSL2
+extern "C"{
+    extern void setrcd_(int *) ;
+};
+#endif
+
+template<typename base_type> struct test {
+    static bool write(std::string const & filename, boost::true_type) {
+        std::vector<std::size_t> size_0;
+        base_type* write_0_value = NULL;
+        std::size_t length = MATRIX_SIZE;
+        std::vector<std::size_t> size_1(1, MATRIX_SIZE);
+        base_type write_1_value[MATRIX_SIZE];
+        std::vector<std::size_t> size_2(2, MATRIX_SIZE);
+        base_type write_2_value[MATRIX_SIZE][MATRIX_SIZE];
+        std::vector<std::size_t> size_3(3, MATRIX_SIZE);
+        base_type write_3_value[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE];
+        for (std::size_t i = 0; i < MATRIX_SIZE; ++i) {
+            initialize(write_1_value[i]);
+            for (std::size_t j = 0; j < MATRIX_SIZE; ++j) {
+                initialize(write_2_value[i][j]);
+                for (std::size_t k = 0; k < MATRIX_SIZE; ++k)
+                    initialize(write_3_value[i][j][k]);
+            }
+        }
+        {
+            alps::hdf5::archive oar(filename, SZIP_COMPRESS ? "ca" : "a");
+            if (IS_ATTRIBUTE)
+                oar["/data"] << 0;
+            oar
+                << alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "len", &write_1_value[0], length)
+                << alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "len_0", write_0_value, 0)
+                << alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "ptr_0", write_0_value, size_0)
+                << alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "ptr_1", &write_1_value[0], size_1)
+                << alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "ptr_2", &write_2_value[0][0], size_2)
+                << alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "ptr_3", &write_3_value[0][0][0], size_3)
+            ;
+        }
+        {
+            base_type* read_0_value = NULL;
+            base_type read_1_len_value[MATRIX_SIZE], read_1_value[MATRIX_SIZE];
+            base_type read_2_value[MATRIX_SIZE][MATRIX_SIZE];
+            base_type read_3_value[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE];
+            alps::hdf5::archive iar(filename, SZIP_COMPRESS ? "rc" : "r");
+            iar
+                >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "len", &read_1_len_value[0], length)
+                >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "len_0", write_0_value, 0)
+                >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "ptr_0", read_0_value, size_0)
+                >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "ptr_1", &read_1_value[0], size_1)
+                >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "ptr_2", &read_2_value[0][0], size_2)
+                >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "ptr_3", &read_3_value[0][0][0], size_3)
+            ;
+            return write_0_value == read_0_value
+                && equal(&write_1_value[0], &read_1_len_value[0], length)
+                && equal(&write_1_value[0], &read_1_value[0], size_1[0])
+                && equal(&write_2_value[0][0], &read_2_value[0][0], size_2[0] * size_2[1])
+                && equal(&write_3_value[0][0][0], &read_3_value[0][0][0], size_3[0] * size_3[1] * size_3[2])
+            ;
+        }
+    }
+    static bool write(std::string const & filename, boost::false_type) {
+        base_type random_write(creator<base_type>::random());
+        base_type empty_write(creator<base_type>::empty());
+        base_type special_write(creator<base_type>::special());
+        bool result;
+        {
+            alps::hdf5::archive oar(filename, SZIP_COMPRESS ? "ca" : "a");
+            if (IS_ATTRIBUTE)
+                oar["/data"] << 0;
+            oar[std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "random"] << random_write;
+            oar[std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "empty"]<< empty_write;
+            if (!IS_ATTRIBUTE)
+                oar["/special"] << special_write;
+        }
+        {
+            alps::hdf5::archive iar(filename);
+            base_type random_read(creator<base_type>::random(iar));
+            base_type empty_read(creator<base_type>::empty(iar));
+            base_type special_read(creator<base_type>::special(iar));
+            iar[std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "random"] >> random_read;
+            iar[std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "empty"] >> empty_read;
+            if (!IS_ATTRIBUTE)
+                iar["/special"] >> special_read;
+            result = equal(random_write, random_read) && equal(empty_write, empty_read) && (IS_ATTRIBUTE || equal(special_write, special_read));
+            destructor<base_type>::apply(random_read);
+            destructor<base_type>::apply(empty_read);
+            if (!IS_ATTRIBUTE)
+                destructor<base_type>::apply(special_read);
+        }
+        destructor<base_type>::apply(random_write);
+        destructor<base_type>::apply(empty_write);
+        if (!IS_ATTRIBUTE)
+            destructor<base_type>::apply(special_write);
+        return result;
+    }
+    template<typename data_type> static bool overwrite_helper(std::string const & filename) {
+        data_type random_write(creator<data_type>::random());
+        bool result;
+        alps::hdf5::archive ar(filename, SZIP_COMPRESS ? "ca" : "a");
+        {
+            if (IS_ATTRIBUTE)
+                ar["/data"] << 0;
+            ar[std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "overwrite"] << random_write;
+        }
+        {
+            data_type random_read(creator<data_type>::random(ar));
+            ar[std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "overwrite"] >> random_read;
+            result = equal(random_write, random_read);
+            destructor<data_type>::apply(random_read);
+        }
+        destructor<data_type>::apply(random_write);
+        return result;
+    }
+    template<typename unused> static bool overwrite(std::string const & filename, unused) {
+        return overwrite_helper<int>(filename);
+        return overwrite_helper<base_type>(filename);
+        return overwrite_helper<std::complex<double> >(filename);
+        return overwrite_helper<base_type>(filename);
+        return overwrite_helper<double>(filename);
+        return overwrite_helper<base_type>(filename);
+        return overwrite_helper<std::vector<double> >(filename);
+        return overwrite_helper<base_type>(filename);
+        return overwrite_helper<std::string>(filename);
+        return overwrite_helper<base_type>(filename);
+    }
+};
+
+template<typename T> struct test<boost::shared_array<T> > {
+    static bool write(std::string const & filename, boost::mpl::false_) {
+        std::size_t length = MATRIX_SIZE;
+        std::vector<std::size_t> size_1(1, MATRIX_SIZE);
+        boost::shared_array<T> write_1_value(new T[MATRIX_SIZE]);
+        std::vector<std::size_t> size_2(2, MATRIX_SIZE);
+        boost::shared_array<T> write_2_value(new T[MATRIX_SIZE * MATRIX_SIZE]);
+        std::vector<std::size_t> size_3(3, MATRIX_SIZE);
+        boost::shared_array<T> write_3_value(new T[MATRIX_SIZE * MATRIX_SIZE * MATRIX_SIZE]);
+        for (std::size_t i = 0; i < MATRIX_SIZE; ++i) {
+            initialize(write_1_value[i]);
+            for (std::size_t j = 0; j < MATRIX_SIZE; ++j) {
+                initialize(write_2_value[i * MATRIX_SIZE + j]);
+                for (std::size_t k = 0; k < MATRIX_SIZE; ++k)
+                    initialize(write_3_value[(i * MATRIX_SIZE + j) * MATRIX_SIZE + k]);
+            }
+        }
+        {
+            alps::hdf5::archive oar(filename, SZIP_COMPRESS ? "ca" : "a");
+            if (IS_ATTRIBUTE)
+                oar["/data"] << 0;
+            oar
+                << alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "len", write_1_value, length)
+                << alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "ptr_1", write_1_value, size_1)
+                << alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "ptr_2", write_2_value, size_2)
+                << alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "ptr_3", write_3_value, size_3)
+            ;
+        }
+        {
+            boost::shared_array<T> read_1_len_value(new T[MATRIX_SIZE]), read_1_value(new T[MATRIX_SIZE]);
+            boost::shared_array<T> read_2_value(new T[MATRIX_SIZE * MATRIX_SIZE]);
+            boost::shared_array<T> read_3_value(new T[MATRIX_SIZE * MATRIX_SIZE * MATRIX_SIZE]);
+            alps::hdf5::archive iar(filename);
+            iar
+                >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "len", read_1_len_value, length)
+                >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "ptr_1", read_1_value, size_1)
+                >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "ptr_2", read_2_value, size_2)
+                >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "ptr_3", read_3_value, size_3)
+            ;
+            return equal(write_1_value.get(), read_1_len_value.get(), length)
+                && equal(write_1_value.get(), read_1_value.get(), size_1[0])
+                && equal(write_2_value.get(), read_2_value.get(), size_2[0] * size_2[1])
+                && equal(write_3_value.get(), read_3_value.get(), size_3[0] * size_3[1] * size_3[2])
+            ;
+        }
+    }
+    static bool overwrite(std::string const & filename, boost::mpl::false_) {
+        // TODO: implement test for write type A and overwrite with type B
+        return true;
+    }
+};
+
+// TODO: this should be possible
+template<typename T> struct skip_attribute: public boost::mpl::false_ {};
+
+template<typename T> struct skip_attribute<userdefined_class<T> >: public boost::mpl::true_ {};
+template<typename T, typename U> struct skip_attribute<cast_type<T, U> >: public boost::mpl::true_ {};
+template<> struct skip_attribute<enum_type>: public boost::mpl::true_ {};
+
+template<> struct skip_attribute<std::vector<bool> >: public boost::mpl::true_ {};
+template<typename T> struct skip_attribute<std::vector<std::vector<T> > >: public boost::mpl::true_ {};
+template<typename T> struct skip_attribute<std::valarray<std::vector<T> > >: public boost::mpl::true_ {}; 
+template<typename T> struct skip_attribute<std::vector<std::valarray<T> > >: public boost::mpl::true_ {}; 
+template<typename T> struct skip_attribute<std::valarray<std::valarray<T> > >: public boost::mpl::true_ {};
+template<typename T> struct skip_attribute<boost::numeric::ublas::vector<boost::numeric::ublas::vector<T> > >: public boost::mpl::true_ {};
+template<typename T> struct skip_attribute<std::valarray<boost::numeric::ublas::vector<T> > >: public boost::mpl::true_ {};
+template<typename T> struct skip_attribute<std::vector<boost::numeric::ublas::vector<T> > >: public boost::mpl::true_ {};
+template<typename T> struct skip_attribute<boost::numeric::ublas::vector<std::vector<T> > >: public boost::mpl::true_ {};
+template<typename T> struct skip_attribute<boost::numeric::ublas::vector<std::valarray<T> > >: public boost::mpl::true_ {};
+
+template<typename T, std::size_t N> struct skip_attribute<boost::array<std::vector<T>, N> >: public boost::mpl::true_ {};
+
+template<typename T, std::size_t N, typename A> struct skip_attribute<std::vector<boost::multi_array<T, N, A> > >: public boost::mpl::true_ {};
+template<typename T, std::size_t N, typename A> struct skip_attribute<std::vector<alps::multi_array<T, N, A> > >: public boost::mpl::true_ {};
+
+template<typename T, std::size_t N, typename A> struct skip_attribute<boost::multi_array<T, N, A> * >: public boost::mpl::true_ {};
+template<typename T, std::size_t N, typename A> struct skip_attribute<alps::multi_array<T, N, A> * >: public boost::mpl::true_ {};
+
+template <
+    typename T0, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9
+> struct skip_attribute<std::vector<boost::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> > >: public boost::mpl::true_ {};
+
+template <typename T, typename M> struct skip_attribute<alps::numeric::matrix<T, M> > : public boost::mpl::true_ {};
+
+template<typename T> struct skip_attribute<T *>: public skip_attribute<T> {};
+template<typename T> struct skip_attribute<std::vector<T> >: public skip_attribute<T> {};
+template<typename T> struct skip_attribute<std::valarray<T> >: public skip_attribute<T> {};
+template<typename T, typename U> struct skip_attribute<std::pair<T, U> >: public boost::mpl::or_<skip_attribute<T>, skip_attribute<U> >::type {};
+
+template<typename T> struct skip_attribute<std::pair<T *, std::vector<std::size_t> > >: public skip_attribute<T> {};
+template<typename T> struct skip_attribute<std::pair<std::vector<T> *, std::vector<std::size_t> > >: public boost::mpl::true_ {};
+template<typename T, std::size_t N, typename A> struct skip_attribute<std::pair<boost::multi_array<T, N, A> *, std::vector<std::size_t> > >: public boost::mpl::true_ {};
+template<typename T, std::size_t N, typename A> struct skip_attribute<std::pair<alps::multi_array<T, N, A> *, std::vector<std::size_t> > >: public boost::mpl::true_ {};
+
+template<typename T> struct skip_attribute<boost::shared_array<T> >: public skip_attribute<T> {};
+
+int main(int argc, char * argv[]) {
+    std::string const filename = std::string(argv[0]) + ".h5";
+    if (boost::filesystem::exists(boost::filesystem::path(filename)))
+        boost::filesystem::remove(boost::filesystem::path(filename));
+    bool result = true;
+    if (IS_ATTRIBUTE && skip_attribute< TYPE >::value)
+        std::cout << "SKIP" << std::endl;
+    else {
+        for (std::size_t i = 32; i && result; --i)
+            result = test<boost::remove_pointer< TYPE >::type >::write(filename, boost::is_pointer< TYPE >::type());
+        {
+            alps::hdf5::archive iar1(filename, SZIP_COMPRESS ? "ca" : "a");
+            alps::hdf5::archive iar2(filename, SZIP_COMPRESS ? "ca" : "a");
+            alps::hdf5::archive iar3 = iar1;
+            for (std::size_t i = 32; i && result; --i)
+                result = test<boost::remove_pointer< TYPE >::type >::overwrite(filename, boost::is_pointer< TYPE >::type());
+        }
+        boost::filesystem::remove(boost::filesystem::path(filename));
+        std::cout << (result ? "SUCCESS" : "FAILURE") << std::endl;
+    }
+#if defined(__FCC_VERSION) && defined(main) // workaround for FCC with SSL2
+    int ret = result ? EXIT_SUCCESS : EXIT_FAILURE;
+    setrcd_(&ret) ;
+#endif
+    return result ? EXIT_SUCCESS : EXIT_FAILURE;
+}

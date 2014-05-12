@@ -1,0 +1,87 @@
+<MCRUN id="1" status="running" elapsed="00:00:11" progress="86.6%">
+  <DISORDER_SEED value="1905408611"/>
+  <SEED id="1" value="2244434836"/>
+  <SEED id="2" value="148093842"/>
+  <SEED id="3" value="2238981233"/>
+  <SEED id="4" value="847987123"/>
+  <EXECUTED processes="4" elapsed="00:00:07" phase="equilibrating">
+    <FROM>2006-Oct-07 19:13:08</FROM>
+    <TO>2006-Oct-07 19:13:15</TO>
+    <MACHINE id="1"><NAME>host0</NAME></MACHINE>
+    <MACHINE id="2"><NAME>host1</NAME></MACHINE>
+    <MACHINE id="3"><NAME>host2</NAME></MACHINE>
+    <MACHINE id="4"><NAME>host3</NAME></MACHINE>
+    <USER>wistaria</USER>
+  </EXECUTED>
+  <EXECUTED processes="4" elapsed="00:00:04" phase="running">
+    <FROM>2006-Oct-07 19:13:16</FROM>
+    <TO>2006-Oct-07 19:13:20</TO>
+    <MACHINE id="1"><NAME>host0</NAME></MACHINE>
+    <MACHINE id="2"><NAME>host1</NAME></MACHINE>
+    <MACHINE id="3"><NAME>host2</NAME></MACHINE>
+    <MACHINE id="4"><NAME>host3</NAME></MACHINE>
+    <USER>synge</USER>
+  </EXECUTED>
+  <CHECKPOINT id="1" format="osiris" file="param.task1.clone1.1"/>
+  <CHECKPOINT id="2" format="osiris" file="param.task1.clone1.2"/>
+  <CHECKPOINT id="3" format="osiris" file="param.task1.clone1.3"/>
+  <CHECKPOINT id="4" format="osiris" file="param.task1.clone1.4"/>
+</MCRUN>
+<MCRUN id="1" status="running" elapsed="00:00:11" progress="86.6%">
+  <DISORDER_SEED value="1905408611"/>
+  <SEED id="1" value="2244434836"/>
+  <SEED id="2" value="148093842"/>
+  <SEED id="3" value="2238981233"/>
+  <SEED id="4" value="847987123"/>
+  <EXECUTED processes="4" elapsed="00:00:07" phase="equilibrating">
+    <FROM>2006-Oct-07 19:13:08</FROM>
+    <TO>2006-Oct-07 19:13:15</TO>
+    <MACHINE id="1"><NAME>host0</NAME></MACHINE>
+    <MACHINE id="2"><NAME>host1</NAME></MACHINE>
+    <MACHINE id="3"><NAME>host2</NAME></MACHINE>
+    <MACHINE id="4"><NAME>host3</NAME></MACHINE>
+    <USER>wistaria</USER>
+  </EXECUTED>
+  <EXECUTED processes="4" elapsed="00:00:04" phase="running">
+    <FROM>2006-Oct-07 19:13:16</FROM>
+    <TO>2006-Oct-07 19:13:20</TO>
+    <MACHINE id="1"><NAME>host0</NAME></MACHINE>
+    <MACHINE id="2"><NAME>host1</NAME></MACHINE>
+    <MACHINE id="3"><NAME>host2</NAME></MACHINE>
+    <MACHINE id="4"><NAME>host3</NAME></MACHINE>
+    <USER>synge</USER>
+  </EXECUTED>
+  <CHECKPOINT id="1" format="osiris" file="param.task1.clone1.1"/>
+  <CHECKPOINT id="2" format="osiris" file="param.task1.clone1.2"/>
+  <CHECKPOINT id="3" format="osiris" file="param.task1.clone1.3"/>
+  <CHECKPOINT id="4" format="osiris" file="param.task1.clone1.4"/>
+</MCRUN>
+<MCRUN id="1" status="running" elapsed="00:00:11" progress="86.6%">
+  <DISORDER_SEED value="1905408611"/>
+  <SEED id="1" value="2244434836"/>
+  <SEED id="2" value="148093842"/>
+  <SEED id="3" value="2238981233"/>
+  <SEED id="4" value="847987123"/>
+  <EXECUTED processes="4" elapsed="00:00:07" phase="equilibrating">
+    <FROM>2006-Oct-07 19:13:08</FROM>
+    <TO>2006-Oct-07 19:13:15</TO>
+    <MACHINE id="1"><NAME>host0</NAME></MACHINE>
+    <MACHINE id="2"><NAME>host1</NAME></MACHINE>
+    <MACHINE id="3"><NAME>host2</NAME></MACHINE>
+    <MACHINE id="4"><NAME>host3</NAME></MACHINE>
+    <USER>wistaria</USER>
+  </EXECUTED>
+  <EXECUTED processes="4" elapsed="00:00:04" phase="running">
+    <FROM>2006-Oct-07 19:13:16</FROM>
+    <TO>2006-Oct-07 19:13:20</TO>
+    <MACHINE id="1"><NAME>host0</NAME></MACHINE>
+    <MACHINE id="2"><NAME>host1</NAME></MACHINE>
+    <MACHINE id="3"><NAME>host2</NAME></MACHINE>
+    <MACHINE id="4"><NAME>host3</NAME></MACHINE>
+    <USER>synge</USER>
+  </EXECUTED>
+  <CHECKPOINT id="1" format="osiris" file="param.task1.clone1.1"/>
+  <CHECKPOINT id="2" format="osiris" file="param.task1.clone1.2"/>
+  <CHECKPOINT id="3" format="osiris" file="param.task1.clone1.3"/>
+  <CHECKPOINT id="4" format="osiris" file="param.task1.clone1.4"/>
+</MCRUN>

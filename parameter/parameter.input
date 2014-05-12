@@ -1,0 +1,13 @@
+L=10 ; 
+M=1 
+N =
+O = ;
+T=0.1 ;
+beta='1/T';
+a0 = "abc def ";
+a# = 'abc def '
+a[test 2] = 3;
+a[ test 3 ] = 3;
+dir = "${DIR}/lib/xml${ DIR}"
+b = sqrt(4)+2*Pi/L-X^5
+c = 'a - b[4]'

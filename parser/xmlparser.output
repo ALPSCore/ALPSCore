@@ -1,0 +1,12 @@
+<test>
+  <param name="a">
+    1.0
+  </param>
+  <param name="b">
+    2.0
+  </param>
+  <text>
+    this is a text
+    next line
+  </text>
+</test>

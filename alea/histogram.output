@@ -1,0 +1,276 @@
+<AVERAGES>
+  <HISTOGRAM name="histogram 1" nvalues="10">
+    <ENTRY indexvalue="0">
+      <COUNT>4096</COUNT>
+      <VALUE>384</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="1">
+      <COUNT>4096</COUNT>
+      <VALUE>440</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="2">
+      <COUNT>4096</COUNT>
+      <VALUE>413</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="3">
+      <COUNT>4096</COUNT>
+      <VALUE>389</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="4">
+      <COUNT>4096</COUNT>
+      <VALUE>431</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="5">
+      <COUNT>4096</COUNT>
+      <VALUE>443</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="6">
+      <COUNT>4096</COUNT>
+      <VALUE>406</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="7">
+      <COUNT>4096</COUNT>
+      <VALUE>387</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="8">
+      <COUNT>4096</COUNT>
+      <VALUE>403</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="9">
+      <COUNT>4096</COUNT>
+      <VALUE>400</VALUE>
+    </ENTRY>
+  </HISTOGRAM>
+  <HISTOGRAM name="histogram 2" nvalues="10">
+    <ENTRY indexvalue="0">
+      <COUNT>4096</COUNT>
+      <VALUE>1289</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="1">
+      <COUNT>4096</COUNT>
+      <VALUE>548</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="2">
+      <COUNT>4096</COUNT>
+      <VALUE>435</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="3">
+      <COUNT>4096</COUNT>
+      <VALUE>350</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="4">
+      <COUNT>4096</COUNT>
+      <VALUE>311</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="5">
+      <COUNT>4096</COUNT>
+      <VALUE>258</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="6">
+      <COUNT>4096</COUNT>
+      <VALUE>271</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="7">
+      <COUNT>4096</COUNT>
+      <VALUE>209</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="8">
+      <COUNT>4096</COUNT>
+      <VALUE>219</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="9">
+      <COUNT>4096</COUNT>
+      <VALUE>206</VALUE>
+    </ENTRY>
+  </HISTOGRAM>
+  <SCALAR_AVERAGE name="scalar 1">
+    <COUNT>4096</COUNT>
+    <MEAN method="simple">0.33008</MEAN>
+    <ERROR converged="yes" method="simple">0.00462</ERROR>
+    <VARIANCE method="simple">0.0875</VARIANCE>
+  </SCALAR_AVERAGE>
+</AVERAGES>
+<AVERAGES>
+  <HISTOGRAM name="histogram 1" nvalues="10">
+    <ENTRY indexvalue="0">
+      <COUNT>1024</COUNT>
+      <VALUE>103</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="1">
+      <COUNT>1024</COUNT>
+      <VALUE>90</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="2">
+      <COUNT>1024</COUNT>
+      <VALUE>106</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="3">
+      <COUNT>1024</COUNT>
+      <VALUE>103</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="4">
+      <COUNT>1024</COUNT>
+      <VALUE>106</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="5">
+      <COUNT>1024</COUNT>
+      <VALUE>103</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="6">
+      <COUNT>1024</COUNT>
+      <VALUE>96</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="7">
+      <COUNT>1024</COUNT>
+      <VALUE>108</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="8">
+      <COUNT>1024</COUNT>
+      <VALUE>110</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="9">
+      <COUNT>1024</COUNT>
+      <VALUE>99</VALUE>
+    </ENTRY>
+  </HISTOGRAM>
+  <HISTOGRAM name="histogram 2" nvalues="10">
+    <ENTRY indexvalue="0">
+      <COUNT>1024</COUNT>
+      <VALUE>315</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="1">
+      <COUNT>1024</COUNT>
+      <VALUE>131</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="2">
+      <COUNT>1024</COUNT>
+      <VALUE>111</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="3">
+      <COUNT>1024</COUNT>
+      <VALUE>90</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="4">
+      <COUNT>1024</COUNT>
+      <VALUE>68</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="5">
+      <COUNT>1024</COUNT>
+      <VALUE>73</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="6">
+      <COUNT>1024</COUNT>
+      <VALUE>68</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="7">
+      <COUNT>1024</COUNT>
+      <VALUE>65</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="8">
+      <COUNT>1024</COUNT>
+      <VALUE>53</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="9">
+      <COUNT>1024</COUNT>
+      <VALUE>50</VALUE>
+    </ENTRY>
+  </HISTOGRAM>
+  <SCALAR_AVERAGE name="scalar 1">
+    <COUNT>1024</COUNT>
+    <MEAN method="simple">0.33691</MEAN>
+    <ERROR converged="yes" method="simple">0.00931</ERROR>
+    <VARIANCE method="simple">0.0888</VARIANCE>
+  </SCALAR_AVERAGE>
+</AVERAGES>
+<AVERAGES>
+  <HISTOGRAM name="histogram 1" nvalues="10">
+    <ENTRY indexvalue="0">
+      <COUNT>5120</COUNT>
+      <VALUE>487</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="1">
+      <COUNT>5120</COUNT>
+      <VALUE>530</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="2">
+      <COUNT>5120</COUNT>
+      <VALUE>519</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="3">
+      <COUNT>5120</COUNT>
+      <VALUE>492</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="4">
+      <COUNT>5120</COUNT>
+      <VALUE>537</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="5">
+      <COUNT>5120</COUNT>
+      <VALUE>546</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="6">
+      <COUNT>5120</COUNT>
+      <VALUE>502</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="7">
+      <COUNT>5120</COUNT>
+      <VALUE>495</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="8">
+      <COUNT>5120</COUNT>
+      <VALUE>513</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="9">
+      <COUNT>5120</COUNT>
+      <VALUE>499</VALUE>
+    </ENTRY>
+  </HISTOGRAM>
+  <HISTOGRAM name="histogram 2" nvalues="10">
+    <ENTRY indexvalue="0">
+      <COUNT>5120</COUNT>
+      <VALUE>1604</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="1">
+      <COUNT>5120</COUNT>
+      <VALUE>679</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="2">
+      <COUNT>5120</COUNT>
+      <VALUE>546</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="3">
+      <COUNT>5120</COUNT>
+      <VALUE>440</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="4">
+      <COUNT>5120</COUNT>
+      <VALUE>379</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="5">
+      <COUNT>5120</COUNT>
+      <VALUE>331</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="6">
+      <COUNT>5120</COUNT>
+      <VALUE>339</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="7">
+      <COUNT>5120</COUNT>
+      <VALUE>274</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="8">
+      <COUNT>5120</COUNT>
+      <VALUE>272</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="9">
+      <COUNT>5120</COUNT>
+      <VALUE>256</VALUE>
+    </ENTRY>
+  </HISTOGRAM>
+  <SCALAR_AVERAGE name="scalar 1">
+    <COUNT>5120</COUNT>
+    <MEAN method="simple">0.33145</MEAN>
+    <ERROR converged="yes" method="simple">0.00414</ERROR>
+    <VARIANCE method="simple">0.0877</VARIANCE>
+  </SCALAR_AVERAGE>
+</AVERAGES>
