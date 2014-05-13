@@ -2,22 +2,29 @@ cmake_minimum_required (VERSION 2.8)
 
 set(CMAKE_DISABLE_SOURCE_CHANGES ON)
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/../common/cmake)
 
 project (alps-hdf5)
 
-set(DOXYFILE_SOURCE_DIR "./include")
-include(UseDoxygen)
+if (NOT DEFINED ALPS_ROOT)
+    set(ALPS_ROOT ${CMAKE_INSTALL_PREFIX})
+    get_filename_component(ALPS_ROOT "${CMAKE_INSTALL_PREFIX}" ABSOLUTE)
+endif ()
+message (STATUS "ALPS_ROOT: ${ALPS_ROOT}")
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/../common/cmake ${CMAKE_INSTALL_PREFIX}/share/cmake/Modules ${ALPS_ROOT}/share/cmake/Modules)
 
 # Boost
 #set(Boost_USE_STATIC_LIBS        ON)
 #set(Boost_USE_STATIC_RUNTIME    OFF)
-find_package (Boost COMPONENTS filesystem system)
+find_package (Boost COMPONENTS filesystem system REQUIRED)
     message(STATUS "Boost includes: " ${Boost_INCLUDE_DIRS} )
     message(STATUS "Boost libs: " ${Boost_LIBRARIES} )
-find_package (HDF5)
+find_package (HDF5 REQUIRED)
     message(STATUS "HDF5 includes: " ${HDF5_INCLUDE_DIRS} )
     message(STATUS "HDF5 libs: " ${HDF5_LIBRARIES} )
+
+find_package (alps-utility REQUIRED)
+    message(STATUS "alps-utility includes: " ${alps-utility_INCLUDE_DIRS} )
+    #message(STATUS "HDF5 libs: " ${HDF5_LIBRARIES} )
 
 # LINK_ALL - link for libraries
 # LINK_TEST - link for tests
@@ -49,6 +56,11 @@ endif (Testing)
 install(DIRECTORY include DESTINATION .
           FILES_MATCHING PATTERN "*.hpp" PATTERN "*.hxx"
         )
+
+# Documentation
+set(DOXYFILE_SOURCE_DIR "./include")
+include(UseDoxygen)
+
 
 # Generate pkg-config file
 configure_file("${PROJECT_SOURCE_DIR}/${PROJECT_NAME}.pc.in" "${CMAKE_BINARY_DIR}/${PROJECT_NAME}.pc")

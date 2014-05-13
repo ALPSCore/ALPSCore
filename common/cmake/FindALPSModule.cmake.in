@@ -6,19 +6,19 @@
 
 # The following hints are used
 #    1. pkg-config
-#    2. @PROJECT_NAME@_ROOT directory, containing the prefixed install
+#    2. ALPS_ROOT or @PROJECT_NAME@_ROOT directory, containing the prefixed install
 #    3. @PROJECT_NAME@_SEARCH_FILE containing the header of the @PROJECT_NAME@ with relative path inside of the prefix.
 
 find_package(PkgConfig)
 pkg_check_modules(PC_@PROJECT_NAME@ QUIET @PROJECT_NAME@)
 set(@PROJECT_NAME@_DEFINITIONS ${PC_@PROJECT_NAME@_CFLAGS_OTHER})
 
-find_path(@PROJECT_NAME@_INCLUDE_DIR ${@PROJECT_NAME@_SEARCH_FILE}
-          HINTS ${PC_@PROJECT_NAME@_INCLUDEDIR} ${PC_@PROJECT_NAME@_INCLUDE_DIRS} ${@PROJECT_NAME@_ROOT}/include
+find_path(@PROJECT_NAME@_INCLUDE_DIR "@PROJECT_SEARCH_FILE@" }
+          HINTS ${PC_@PROJECT_NAME@_INCLUDEDIR} ${PC_@PROJECT_NAME@_INCLUDE_DIRS} ${@PROJECT_NAME@_ROOT}/include ${ALPS_ROOT}/include
          )
 
 find_library(@PROJECT_NAME@_LIBRARY NAMES @PROJECT_NAME@ lib@PROJECT_NAME@
-             HINTS ${PC_@PROJECT_NAME@_LIBDIR} ${PC_@PROJECT_NAME@_LIBRARY_DIRS} ${@PROJECT_NAME@_ROOT}/lib)
+             HINTS ${PC_@PROJECT_NAME@_LIBDIR} ${PC_@PROJECT_NAME@_LIBRARY_DIRS} ${@PROJECT_NAME@_ROOT}/lib ${ALPS_ROOT}/lib)
 
 set(@PROJECT_NAME@_INCLUDE_DIRS ${@PROJECT_NAME@_INCLUDE_DIR} )
 set(@PROJECT_NAME@_LIBRARIES    ${@PROJECT_NAME@_LIBRARY})
