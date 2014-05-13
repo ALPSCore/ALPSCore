@@ -18,7 +18,7 @@ cmake \
 -DCMAKE_BUILD_TYPE=Release \
 ${MODULEDIR}
 
-make 
-make test
+make || exit 1 
+make test || exit 1
 
 echo "all done."
