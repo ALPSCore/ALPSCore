@@ -1,0 +1,19 @@
+set (alps_utils_src
+    # copyright.cpp //FIXME
+    encode.cpp
+    os.cpp
+    temporary_filename.cpp
+    vmusage.cpp 
+    )
+
+#include_directories(
+#    ${Boost_INCLUDE_DIRS}
+#    ${PROJECT_SOURCE_DIR}/include
+#    ${PROJECT_BINARY_DIR}/include
+#)
+
+add_library(${PROJECT_NAME} STATIC ${alps_utils_src})
+target_link_libraries(${PROJECT_NAME} ${LINK_ALL})
+install(TARGETS ${PROJECT_NAME} DESTINATION lib)
+
+

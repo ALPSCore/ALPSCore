@@ -1,0 +1,27 @@
+# Find gtest or otherwise fetch it into the build_dir/gtest
+    if (DEFINED gtest_ROOT)
+        message(STATUS "gtest source specified at ${gtest_ROOT}")
+        find_path(gtest_ROOT NAMES "include/gtest/gtest.h" HINTS ${gtest_ROOT})
+        if (NOT IS_DIRECTORY ${gtest_ROOT})
+            message(WARNING "Provided wrong gtest_ROOT. Please unset gtest_ROOT - gtest will be fetched")
+            unset(gtest_ROOT CACHE)
+        endif()
+    endif()
+
+    if (NOT DEFINED gtest_ROOT)
+        find_path(gtest_ROOT1 NAMES "include/gtest/gtest.h" HINTS ${CMAKE_SOURCE_DIR}/gtest-1.6.0  ${CMAKE_SOURCE_DIR}/gtest-1.7.0  ${CMAKE_SOURCE_DIR}/gtest   ${CMAKE_BINARY_DIR}/gtest)
+        if (IS_DIRECTORY ${gtest_ROOT1})
+            set (gtest_ROOT ${gtest_ROOT1})
+        else()
+            message(STATUS "Trying to fetch gtest via subversion")
+            find_package(Subversion)
+            execute_process(COMMAND "${Subversion_SVN_EXECUTABLE}" "checkout" "http://googletest.googlecode.com/svn/trunk/" "gtest" WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+            set (gtest_ROOT "${CMAKE_BINARY_DIR}/gtest")
+        endif()
+    endif()
+
+message(STATUS "gtest is in ${gtest_ROOT}")
+
+set (gtest_INCLUDE_DIR ${gtest_ROOT}/include)
+mark_as_advanced(gtest_ROOT)
+mark_as_advanced(gtest_INCLUDE_DIR)
