@@ -4,7 +4,7 @@ set(CMAKE_DISABLE_SOURCE_CHANGES ON)
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
-project (alps-utils)
+project (alps-utility)
 
 set(DOXYFILE_SOURCE_DIR "./include")
 include(UseDoxygen)
@@ -36,7 +36,7 @@ if (Testing)
     enable_testing()
     include(UseGtest)
     set (LINK_TEST gtest_main)
-    add_subdirectory(${gtest_ROOT})
+    add_subdirectory(${gtest_ROOT} ${PROJECT_BINARY_DIR}/gtest)
     include_directories(${gtest_INCLUDE_DIR})
     add_subdirectory(test)
 endif (Testing)
@@ -46,8 +46,8 @@ install(DIRECTORY . DESTINATION include/alps
         )
 
 # Generate pkg-config file
-#configure_file("${CMAKE_SOURCE_DIR}/alps-utils.pc.in" "${CMAKE_BINARY_DIR}/alps-utils.pc")
+configure_file("${CMAKE_SOURCE_DIR}/${PROJECT_NAME}.pc.in" "${CMAKE_BINARY_DIR}/${PROJECT_NAME}.pc")
 #configure_file("${CMAKE_SOURCE_DIR}/alps-utils.hpp" "${CMAKE_BINARY_DIR}/alps-utils.hpp")
-#install(FILES "${CMAKE_BINARY_DIR}/alps-utils.pc" DESTINATION "lib/pkgconfig")
+install(FILES "${CMAKE_BINARY_DIR}/alps-utils.pc" DESTINATION "lib/pkgconfig")
 #install(FILES "${CMAKE_BINARY_DIR}/alps-utils.hpp" DESTINATION include)
 
