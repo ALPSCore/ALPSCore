@@ -55,7 +55,7 @@ module = sys.argv[1]
 # Make sure we are at the top of the repository
 location = os.path.dirname(os.path.realpath(sys.argv[0]))
 os.chdir(location)
-os.chdir("..")
+os.chdir("../..")
 
 # Read header
 headerFile = "HEADER.TXT"
