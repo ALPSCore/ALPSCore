@@ -1,3 +1,4 @@
 *~
+*.pyc
 scripts/CHEADER.TXT
 scripts/*.tmp
