@@ -1,15 +1,10 @@
 #!/usr/bin/python
 
-import sys, os, fnmatch
+import sys
+import os
+import fnmatch
 
-# Reades the header from the header file
-def readHeader(headerFile):
-  cFileHeader = ["/*\n"]
-  with open(headerFile) as f:
-    for line in f:
-      cFileHeader.append(" * " + line)
-  cFileHeader.append(" */\n")
-  return cFileHeader
+import notice
 
 # Matches the first lines of the file to the header
 def headerMatches(f, header):
@@ -47,7 +42,7 @@ os.chdir("..")
 
 # Read header
 headerFile = "HEADER.TXT"
-cFileHeader = readHeader(headerFile)
+cFileHeader = notice.readHeader(headerFile)
 
 # Crawl all cpp, hpp and h files
 # Be careful to avoid the optimization of logical expressions
