@@ -4,11 +4,16 @@
 #  @PROJECT_NAME@_LIBRARIES    - The @PROJECT_NAME@ libraries
 #  @PROJECT_NAME@_DEFINITIONS  - Compiler switches required for using @PROJECT_NAME@
 
+# The following hints are used
+#    1. pkg-config
+#    2. @PROJECT_NAME@_ROOT directory, containing the prefixed install
+#    3. @PROJECT_NAME@_SEARCH_FILE containing the header of the @PROJECT_NAME@ with relative path inside of the prefix.
+
 find_package(PkgConfig)
 pkg_check_modules(PC_@PROJECT_NAME@ QUIET @PROJECT_NAME@)
 set(@PROJECT_NAME@_DEFINITIONS ${PC_@PROJECT_NAME@_CFLAGS_OTHER})
 
-find_path(@PROJECT_NAME@_INCLUDE_DIR alps/utility/data.hpp
+find_path(@PROJECT_NAME@_INCLUDE_DIR ${@PROJECT_NAME@_SEARCH_FILE}
           HINTS ${PC_@PROJECT_NAME@_INCLUDEDIR} ${PC_@PROJECT_NAME@_INCLUDE_DIRS} ${@PROJECT_NAME@_ROOT}/include
          )
 
