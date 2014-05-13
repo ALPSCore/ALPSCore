@@ -1,0 +1,31 @@
+#  Try to find @PROJECT_NAME@. Once done this will define
+#  @PROJECT_NAME@_FOUND        - System has @PROJECT_NAME@
+#  @PROJECT_NAME@_INCLUDE_DIRS - The @PROJECT_NAME@ include directories
+#  @PROJECT_NAME@_LIBRARIES    - The @PROJECT_NAME@ libraries
+#  @PROJECT_NAME@_DEFINITIONS  - Compiler switches required for using @PROJECT_NAME@
+
+find_package(PkgConfig)
+pkg_check_modules(PC_@PROJECT_NAME@ QUIET @PROJECT_NAME@)
+set(@PROJECT_NAME@_DEFINITIONS ${PC_@PROJECT_NAME@_CFLAGS_OTHER})
+
+find_path(@PROJECT_NAME@_INCLUDE_DIR alps/utility/data.hpp
+          HINTS ${PC_@PROJECT_NAME@_INCLUDEDIR} ${PC_@PROJECT_NAME@_INCLUDE_DIRS} ${@PROJECT_NAME@_ROOT}/include
+         )
+
+find_library(@PROJECT_NAME@_LIBRARY NAMES @PROJECT_NAME@ lib@PROJECT_NAME@
+             HINTS ${PC_@PROJECT_NAME@_LIBDIR} ${PC_@PROJECT_NAME@_LIBRARY_DIRS} ${@PROJECT_NAME@_ROOT}/lib)
+
+set(@PROJECT_NAME@_INCLUDE_DIRS ${@PROJECT_NAME@_INCLUDE_DIR} )
+set(@PROJECT_NAME@_LIBRARIES    ${@PROJECT_NAME@_LIBRARY})
+
+include(FindPackageHandleStandardArgs)
+# handle the QUIETLY and REQUIRED arguments and set @PROJECT_NAME@_FOUND to TRUE
+# if all listed variables are TRUE
+find_package_handle_standard_args(@PROJECT_NAME@ "No @PROJECT_NAME@ found" @PROJECT_NAME@_INCLUDE_DIR)
+
+mark_as_advanced(@PROJECT_NAME@_INCLUDE_DIR 
+                 @PROJECT_NAME@_INCLUDE_DIRS
+                 @PROJECT_NAME@_DEFINITIONS
+                 @PROJECT_NAME@_LIBRARY 
+                 @PROJECT_NAME@_LIBRARIES
+                )
