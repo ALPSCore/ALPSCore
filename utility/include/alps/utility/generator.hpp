@@ -1,8 +1,8 @@
-//  (C) Copyright 2008-10 Lukas Gamper <gamperl -at- gmail.com>
-//                        Brigitte Surer <surerb -at- phys.ethz.ch>
-//                        Bela Bauer <bauerb -at- phys.ethz.ch>
-//  Use, modification, and distribution are subject to the Boost Software 
-//  License, Version 1.0. (See at <http://www.boost.org/LICENSE_1_0.txt>.)
+/*
+ * Copyright (C) 1998-2014 ALPS Collaboration. See COPYRIGHT.TXT
+ * All rights reserved. Use is subject to license terms. See LICENSE.TXT
+ * For use in publications, see ACKNOWLEDGE.TXT
+ */
 #include <vector>
 #include <algorithm>
 #include <boost/function.hpp>
