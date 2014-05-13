@@ -64,5 +64,6 @@ cFileHeader = notice.readHeader(headerFile)
 crawlDirectory(module, "*.cpp", cFileHeader)
 crawlDirectory(module, "*.hpp", cFileHeader)
 crawlDirectory(module, "*.h", cFileHeader)
+crawlDirectory(module, "*.h.in", cFileHeader)
 
 

@@ -49,6 +49,7 @@ cFileHeader = notice.readHeader(headerFile)
 matches = crawlDirectory(module, "*.cpp", cFileHeader)
 matches = crawlDirectory(module, "*.hpp", cFileHeader) and matches
 matches = crawlDirectory(module, "*.h", cFileHeader) and matches
+matches = crawlDirectory(module, "*.h.in", cFileHeader) and matches
 
 if (not matches):
   exit(1)
