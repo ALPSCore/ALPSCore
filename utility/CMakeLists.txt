@@ -41,13 +41,14 @@ if (Testing)
     add_subdirectory(test)
 endif (Testing)
 
-install(DIRECTORY . DESTINATION include/alps
+# installation
+install(DIRECTORY include DESTINATION .
           FILES_MATCHING PATTERN "*.hpp" PATTERN "*.hxx"
         )
 
 # Generate pkg-config file
 configure_file("${CMAKE_SOURCE_DIR}/${PROJECT_NAME}.pc.in" "${CMAKE_BINARY_DIR}/${PROJECT_NAME}.pc")
 #configure_file("${CMAKE_SOURCE_DIR}/alps-utils.hpp" "${CMAKE_BINARY_DIR}/alps-utils.hpp")
-install(FILES "${CMAKE_BINARY_DIR}/alps-utils.pc" DESTINATION "lib/pkgconfig")
+install(FILES "${CMAKE_BINARY_DIR}/${PROJECT_NAME}.pc" DESTINATION "lib/pkgconfig")
 #install(FILES "${CMAKE_BINARY_DIR}/alps-utils.hpp" DESTINATION include)
 
