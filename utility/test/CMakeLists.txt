@@ -4,6 +4,7 @@
 set (test_src
     vmusage
     bitops
+    temporary_filename
     )
 
 foreach(test ${test_src})

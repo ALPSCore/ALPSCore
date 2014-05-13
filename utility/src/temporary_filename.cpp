@@ -6,11 +6,6 @@
 
 #include <alps/utility/temporary_filename.hpp>
 #include <boost/throw_exception.hpp>
-#include <boost/lexical_cast.hpp>
-#include <stdexcept>
-#include <sys/stat.h>
-#include <iostream>
-#include <cstdlib>
 
 
 #ifdef BOOST_WINDOWS
