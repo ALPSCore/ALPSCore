@@ -29,7 +29,7 @@
 /* $Id$ */
 
 #include <alps/utility/os.hpp>
-#include <alps/version.h>
+//#include <alps/version.h> //FIXME
 #include <boost/throw_exception.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <stdexcept>

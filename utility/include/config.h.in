@@ -244,6 +244,6 @@ using boost::uint_fast64_t;
 #define BOOST_NUMERIC_BINDINGS_USE_COMPLEX_STRUCT
 #endif
 
-#include <boost/numeric/bindings/detail/config/fortran.hpp>
+// #include <boost/numeric/bindings/detail/config/fortran.hpp> //FIXME
 
 #endif // ALPS_CONFIG_H
