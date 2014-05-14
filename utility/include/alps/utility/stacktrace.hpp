@@ -28,8 +28,8 @@
 #ifndef ALPS_NGS_STACKTRACE_HPP
 #define ALPS_NGS_STACKTRACE_HPP
 
-#include <alps/ngs/config.hpp>
-#include <alps/ngs/stringify.hpp>
+#include <alps/config.h>
+#include <alps/utility/stringify.hpp>
 
 #include <string>
 

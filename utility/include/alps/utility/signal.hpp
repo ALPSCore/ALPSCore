@@ -28,7 +28,7 @@
 #ifndef ALPS_NGS_SIGNAL_HPP
 #define ALPS_NGS_SIGNAL_HPP
 
-#include <alps/ngs/config.hpp>
+#include <alps/utility/stacktrace.hpp>
 
 #include <boost/array.hpp>
 

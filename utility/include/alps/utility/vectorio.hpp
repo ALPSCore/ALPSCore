@@ -17,7 +17,7 @@
 #define ALPS_VECTORIO_H
 
 #include <alps/config.h>
-#include <alps/parser/parser.h>
+//#include <alps/parser/parser.h> // FIXME
 #include <alps/utility/size.hpp>
 #include <alps/type_traits/element_type.hpp>
 

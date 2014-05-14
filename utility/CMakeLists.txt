@@ -28,6 +28,8 @@ include_directories(
 )
 
 configure_file("${PROJECT_SOURCE_DIR}/include/config.h.in" "${CMAKE_BINARY_DIR}/include/alps/config.h")
+install(FILES "${CMAKE_BINARY_DIR}/include/alps/config.h" DESTINATION include/alps) 
+
 add_subdirectory(src)
 
 option(Testing "Enable testing" ON)
@@ -42,7 +44,7 @@ if (Testing)
 endif (Testing)
 
 # installation
-install(DIRECTORY include DESTINATION .
+install(DIRECTORY include DESTINATION ${CMAKE_INSTALL_PREFIX} 
           FILES_MATCHING PATTERN "*.hpp" PATTERN "*.hxx"
         )
 
