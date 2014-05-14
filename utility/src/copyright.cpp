@@ -11,6 +11,7 @@
 #include <alps/version.h>
 
 void alps::print_copyright(std::ostream& out) {
+  out << "ALPSCore: Core ALPS libraries \n";
   out << "based on the ALPS libraries version " << ALPS_VERSION << "\n";
   out << "  available from http://alps.comp-phys.org/\n";
   out << "  copyright (c) 1994-" << ALPS_YEAR
