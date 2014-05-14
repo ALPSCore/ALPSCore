@@ -29,7 +29,7 @@
 #define ALPS_NGS_HDF5_STD_VECTOR_HPP
 
 #include <alps/hdf5/archive.hpp>
-#include <alps/ngs/cast.hpp>
+#include <alps/utility/cast.hpp>
 
 #include <boost/type_traits/is_scalar.hpp>
 

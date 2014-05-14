@@ -29,7 +29,7 @@
 #define ALPS_NGS_HDF5_STD_MAP
 
 #include <alps/hdf5/archive.hpp>
-#include <alps/ngs/cast.hpp>
+#include <alps/utility/cast.hpp>
 
 #include <map>
 

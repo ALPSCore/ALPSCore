@@ -26,10 +26,10 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <alps/hdf5/archive.hpp>
-#include <alps/ngs/cast.hpp>
-#include <alps/ngs/config.hpp>
-#include <alps/ngs/signal.hpp>
-#include <alps/ngs/stacktrace.hpp>
+#include <alps/utility/cast.hpp>
+//#include <alps/ngs/config.hpp>
+#include <alps/utility/signal.hpp>
+#include <alps/utility/stacktrace.hpp>
 
 #include <boost/scoped_array.hpp>
 #include <boost/filesystem/operations.hpp>

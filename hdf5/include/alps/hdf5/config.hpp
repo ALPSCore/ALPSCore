@@ -25,19 +25,24 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_HDF5_HPP
-#define ALPS_HDF5_HPP
+#ifndef ALPS_HDF5_CONFIG_HPP
+#define ALPS_HDF5_CONFIG_HPP
 
-#include <alps/hdf5/archive.hpp>
-#include <alps/hdf5/map.hpp>
-#include <alps/hdf5/pair.hpp>
-#include <alps/hdf5/vector.hpp>
-#include <alps/hdf5/pointer.hpp>
-#include <alps/hdf5/complex.hpp>
-#include <alps/hdf5/valarray.hpp>
-//#include <alps/hdf5/multi_array.hpp> // FIXME: move to a separate module
-#include <alps/hdf5/shared_array.hpp>
-//#include <alps/hdf5/ublas/matrix.hpp> // FIXME: to separate module
-//#include <alps/hdf5/ublas/vector.hpp> // FIXME: to separate module
+#include <alps/config.h>
 
-#endif //ALPS_HDF5_HPP
+// if defined, no threading libraries are included
+// #define ALPS_NGS_SINGLE_THREAD
+
+// do not throw an error on accessing a not existing paht in a hdf5 file
+// #define ALPS_HDF5_READ_GREEDY
+
+// do not throw an error if closing a hdf5 gets dirty (e.g in Python)
+// #define ALPS_HDF5_CLOSE_GREEDY
+
+// blocksize in compressed hdf5. Default: 32
+#ifndef ALPS_HDF5_SZIP_BLOCK_SIZE
+    #define ALPS_HDF5_SZIP_BLOCK_SIZE 32
+#endif
+
+#endif
+
