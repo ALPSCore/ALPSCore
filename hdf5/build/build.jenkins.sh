@@ -1,3 +1,4 @@
+
 #guarantees we are in build directory
 BASEDIR=$(dirname $0)
 cd $BASEDIR
@@ -7,6 +8,13 @@ cd ..
 MODULEDIR=`pwd`
 BUILDDIR=${MODULEDIR}/target
 TARGET=${MODULEDIR}/../INSTALL_DIR
+cd ..
+ROOTDIR=`pwd`
+
+# alps-utility
+${ROOTDIR}/utility/build/build.jenkins.sh
+export gtest_ROOT=${ROOTDIR}/utility/target
+
 mkdir ${BUILDDIR}
 cd ${BUILDDIR} 
 
