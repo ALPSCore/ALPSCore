@@ -29,7 +29,7 @@
 #define ALPS_NGS_HDF5_STD_VALARRAY_HPP
 
 #include <alps/hdf5.hpp>
-#include <alps/ngs/cast.hpp>
+#include <alps/utility/cast.hpp>
 
 #include <valarray>
 #include <iterator>

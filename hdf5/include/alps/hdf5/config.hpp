@@ -25,67 +25,24 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_SIGNAL_HPP
-#define ALPS_NGS_SIGNAL_HPP
+#ifndef ALPS_HDF5_CONFIG_HPP
+#define ALPS_HDF5_CONFIG_HPP
 
-#include <alps/ngs/config.hpp>
+#include <alps/config.h>
 
-#include <boost/array.hpp>
+// if defined, no threading libraries are included
+// #define ALPS_NGS_SINGLE_THREAD
 
-#include <vector>
+// do not throw an error on accessing a not existing paht in a hdf5 file
+// #define ALPS_HDF5_READ_GREEDY
 
-namespace alps {
-  namespace ngs {
+// do not throw an error if closing a hdf5 gets dirty (e.g in Python)
+// #define ALPS_HDF5_CLOSE_GREEDY
 
-    class ALPS_DECL signal{
-
-    public:
-
-      /*!
-Listen to the following posix signals SIGINT, SIGTERM, SIGXCPU, SIGQUIT, SIGUSR1, SIGUSR2, SIGSTOP SIGKILL. Those signals can be check by empty, top, pop
-
-\verbatim embed:rst
-.. note::
-   If a SIGSEGV (segfault) or SIGBUS (bus error) occures, a stacktrace
-   is printed an all open hdf5 archives are closed before it exits.
-\endverbatim
-      */
-      signal();
-
-      /*!
-Returns if a signal has been captured.
-      */
-      bool empty();
-
-      /*!
-Returns the last signal that has been captured .
-      */
-      int top();
-
-
-      /*!
-Pops a signal form the stack.
-       */
-      void pop();
-
-      /*!
-Listen to the signals SIGSEGV (segfault) and SIGBUS (bus error). If one
-of these signals are captured, a stacktrace is printed an all open hdf5
-archives are closed before it exits. 
-      */
-      static void listen();
-
-      static void slot(int signal);
-
-      static void segfault(int signal);
-
-    private:
-
-      static std::size_t begin_;
-      static std::size_t end_;
-      static boost::array<int, 0x20> signals_;
-    };
-  }
-}
+// blocksize in compressed hdf5. Default: 32
+#ifndef ALPS_HDF5_SZIP_BLOCK_SIZE
+    #define ALPS_HDF5_SZIP_BLOCK_SIZE 32
+#endif
 
 #endif
+

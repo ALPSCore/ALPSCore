@@ -28,11 +28,11 @@
 #ifndef ALPS_NGS_HDF5_HPP
 #define ALPS_NGS_HDF5_HPP
 
-#include <alps/ngs/config.hpp>
-#include <alps/ngs/stacktrace.hpp>
+#include <alps/hdf5/config.hpp>
+#include <alps/utility/stacktrace.hpp>
 #include <alps/hdf5/errors.hpp>
-#include <alps/ngs/detail/remove_cvr.hpp>
-#include <alps/ngs/detail/type_wrapper.hpp>
+#include <alps/utility/remove_cvr.hpp>
+#include <alps/utility/type_wrapper.hpp>
 
 #include <boost/mpl/and.hpp>
 #include <boost/filesystem/path.hpp>

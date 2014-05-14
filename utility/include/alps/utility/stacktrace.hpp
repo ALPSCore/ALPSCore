@@ -25,19 +25,50 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_HDF5_HPP
-#define ALPS_HDF5_HPP
+#ifndef ALPS_NGS_STACKTRACE_HPP
+#define ALPS_NGS_STACKTRACE_HPP
 
-#include <alps/hdf5/archive.hpp>
-#include <alps/hdf5/map.hpp>
-#include <alps/hdf5/pair.hpp>
-#include <alps/hdf5/vector.hpp>
-#include <alps/hdf5/pointer.hpp>
-#include <alps/hdf5/complex.hpp>
-#include <alps/hdf5/valarray.hpp>
-//#include <alps/hdf5/multi_array.hpp> // FIXME: move to a separate module
-#include <alps/hdf5/shared_array.hpp>
-//#include <alps/hdf5/ublas/matrix.hpp> // FIXME: to separate module
-//#include <alps/hdf5/ublas/vector.hpp> // FIXME: to separate module
+#include <alps/config.h>
+#include <alps/utility/stringify.hpp>
 
-#endif //ALPS_HDF5_HPP
+#include <string>
+
+// maximal number of stack frames displayed in stacktrace. Default 63
+#ifndef ALPS_NGS_MAX_FRAMES
+    #define ALPS_NGS_MAX_FRAMES 63
+#endif
+
+// prevent the signal object from registering signals
+#ifdef BOOST_MSVC
+    #define ALPS_NGS_NO_SIGNALS
+#endif
+
+// do not print a stacktrace in error messages
+#ifndef __GNUC__
+    #define ALPS_NGS_NO_STACKTRACE
+#endif
+
+// TODO: have_python
+// TODO: have_mpi
+// TODO: have_thread
+
+
+
+// TODO: check for gcc and use __PRETTY_FUNCTION__
+
+#define ALPS_STACKTRACE (                                                          \
+      std::string("\nIn ") + __FILE__                                              \
+    + " on " + ALPS_NGS_STRINGIFY(__LINE__)                                        \
+    + " in " + __FUNCTION__ + "\n"                                          	   \
+    + ::alps::ngs::stacktrace()                                                    \
+)
+
+namespace alps {
+    namespace ngs {
+
+        ALPS_DECL std::string stacktrace();
+
+    }
+}
+
+#endif

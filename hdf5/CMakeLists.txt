@@ -24,16 +24,18 @@ find_package (HDF5 REQUIRED)
 
 find_package (alps-utility REQUIRED)
     message(STATUS "alps-utility includes: " ${alps-utility_INCLUDE_DIRS} )
+    message(STATUS "alps-utility libs: " ${alps-utility_LIBRARIES} )
     #message(STATUS "HDF5 libs: " ${HDF5_LIBRARIES} )
 
 # LINK_ALL - link for libraries
 # LINK_TEST - link for tests
-set (LINK_ALL ${Boost_LIBRARIES} ${HDF5_LIBRARIES})
+set (LINK_ALL ${Boost_LIBRARIES} ${HDF5_LIBRARIES} ${alps-utility_LIBRARIES})
 set (LINK_TEST )
 
 include_directories(
     ${Boost_INCLUDE_DIRS}
     ${HDF5_INCLUDE_DIRS}
+    ${alps-utility_INCLUDE_DIRS}
     ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_BINARY_DIR}/include
 )

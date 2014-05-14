@@ -4,6 +4,8 @@ set (alps_utils_src
     os.cpp
     temporary_filename.cpp
     vmusage.cpp 
+    stacktrace.cpp
+    signal.cpp
     )
 
 #include_directories(

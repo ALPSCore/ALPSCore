@@ -25,9 +25,9 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <alps/ngs/signal.hpp>
-#include <alps/ngs/stacktrace.hpp>
-#include <alps/hdf5/archive.hpp>
+#include <alps/utility/signal.hpp>
+#include <alps/utility/stacktrace.hpp>
+//#include <alps/hdf5/archive.hpp> //FIXME - see below
 
 #include <cstring>
 #include <sstream>
@@ -99,7 +99,7 @@ namespace alps {
         }
 
         void signal::segfault(int signal) {
-            hdf5::archive::abort();
+            //hdf5::archive::abort(); //FIXME
             fprintf(stderr, "Abort by signal %i\n", signal);
             std::cerr << ALPS_STACKTRACE;
             std::abort();

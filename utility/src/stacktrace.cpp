@@ -25,7 +25,7 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <alps/ngs/stacktrace.hpp>
+#include <alps/utility/stacktrace.hpp>
 
 #ifndef ALPS_NGS_NO_STACKTRACE
 

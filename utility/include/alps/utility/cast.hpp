@@ -28,8 +28,8 @@
 #ifndef ALPS_NGS_CAST_HPP
 #define ALPS_NGS_CAST_HPP
 
-#include <alps/ngs/config.hpp>
-#include <alps/ngs/stacktrace.hpp>
+//#include <alps/ngs/config.hpp>
+#include <alps/utility/stacktrace.hpp>
 
 #include <boost/bind.hpp>
 #include <boost/mpl/int.hpp>
