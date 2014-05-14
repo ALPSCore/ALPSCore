@@ -8,7 +8,6 @@
 #define ALPS_ESCAPE_HPP
 
 #include <string>
-#include <boost/lexical_cast.hpp>
 #include <alps/config.h>
 
 namespace alps { 
