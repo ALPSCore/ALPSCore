@@ -12,10 +12,12 @@ cd $SCRIPTDIR/../..
 
 if [[ -z "$BOOST_ROOT" ]]
 then
-  BOOST_SYSTEM=YES
-else
   BOOST_SYSTEM=NO
+else
+  BOOST_SYSTEM=YES
 fi
+
+echo "Using BOOST at $BOOST_ROOT - no system path $BOOST_SYSTEM"
 
 # Function to build one module
 function build {
@@ -35,7 +37,7 @@ function build {
   -DTesting=ON \
   -DCMAKE_BUILD_TYPE=Release \
   -DBOOST_ROOT="${BOOST_ROOT}" \
-  -DBoost_NO_SYSTEM_PATHS="$BOOST_SYSTEM" \
+  -DBoost_NO_SYSTEM_PATHS="${BOOST_SYSTEM}" \
   ${MODULEDIR}
 
   make || exit 1 
