@@ -10,6 +10,13 @@
 SCRIPTDIR=$(dirname $0)
 cd $SCRIPTDIR/../..
 
+if [[ -z "$BOOST_ROOT" ]]
+then
+  BOOST_SYSTEM=YES
+else
+  BOOST_SYSTEM=NO
+fi
+
 # Function to build one module
 function build {
   MODULE=$1
@@ -28,6 +35,7 @@ function build {
   -DTesting=ON \
   -DCMAKE_BUILD_TYPE=Release \
   -DBOOST_ROOT="${BOOST_ROOT}" \
+  -DBoost_NO_SYSTEM_PATHS="$BOOST_SYSTEM" \
   ${MODULEDIR}
 
   make || exit 1 
