@@ -17,6 +17,7 @@ cmake \
 -DCMAKE_INSTALL_PREFIX="${TARGET}" \
 -DTesting=ON \
 -DCMAKE_BUILD_TYPE=Release \
+-DBOOST_ROOT="${BOOST_ROOT}" \
 ${MODULEDIR}
 
 make || exit 1 
