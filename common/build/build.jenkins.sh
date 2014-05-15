@@ -24,7 +24,7 @@ function build {
   echo "*** Building module in $MODULEDIR to $INSTALLDIR ***"
 
   cmake \
-  -DCMAKE_INSTALL_PREFIX="${TARGETDIR}" \
+  -DCMAKE_INSTALL_PREFIX="${INSTALLDIR}" \
   -DTesting=ON \
   -DCMAKE_BUILD_TYPE=Release \
   -DBOOST_ROOT="${BOOST_ROOT}" \
