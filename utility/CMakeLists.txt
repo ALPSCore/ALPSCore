@@ -1,13 +1,16 @@
+# 
+# alps-utility cmake configuration script.
+# 
+
 cmake_minimum_required (VERSION 2.8)
 
-set(CMAKE_DISABLE_SOURCE_CHANGES ON)
-set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
+# add common modules from ../common/cmake
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/../common/cmake)
 
-project (alps-utility)
+include(ALPSCommonModuleDefinitions)
 
-set(DOXYFILE_SOURCE_DIR "./include")
-include(UseDoxygen)
+# define project name
+project (alps-utility CXX)
 
 # Boost
 #set(Boost_USE_STATIC_LIBS        ON)
@@ -32,12 +35,16 @@ install(FILES "${CMAKE_BINARY_DIR}/include/alps/config.h" DESTINATION include/al
 
 add_subdirectory(src)
 
-# add tests - takes two parameters Testing and TestXMLOutput
+# add tests - take two parameters Testing and TestXMLOutput
 option(Testing "Enable testing" ON)
 if (Testing)
     enable_testing()
     add_subdirectory(test)
 endif (Testing)
+
+# generate documentation
+set(DOXYFILE_SOURCE_DIR "./include")
+include(UseDoxygen)
 
 # installation
 install(DIRECTORY include DESTINATION ${CMAKE_INSTALL_PREFIX} 

@@ -10,7 +10,8 @@
 #include <iostream>
 
 int main(int argc, char** argv) {
-  int pid = (argc == 1) ? -1 : boost::lexical_cast<int>(argv[1]);
+    std::string test = "my_test";
+  int pid = boost::lexical_cast<int>(test.c_str());
   BOOST_FOREACH(alps::vmusage_type::value_type v, alps::vmusage(pid)) {
     std::cerr << v.first << " = " << v.second << "\n";
   }
