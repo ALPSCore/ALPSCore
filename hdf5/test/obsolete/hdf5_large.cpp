@@ -5,6 +5,8 @@
  */
 
 #include <alps/hdf5/archive.hpp>
+#include <alps/hdf5/vector.hpp>
+#include <alps/utility/cast.hpp>
 
 #include <boost/filesystem.hpp>
 
