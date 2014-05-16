@@ -29,16 +29,16 @@
 #ifndef ALPS_NGS_ACCUMULATOR_MAX_NUM_BINNING_HPP
 #define ALPS_NGS_ACCUMULATOR_MAX_NUM_BINNING_HPP
 
-#include <alps/ngs/accumulator/feature.hpp>
-#include <alps/ngs/accumulator/parameter.hpp>
-#include <alps/ngs/accumulator/feature/mean.hpp>
-#include <alps/ngs/accumulator/feature/count.hpp>
-#include <alps/ngs/accumulator/feature/error.hpp>
+#include <alps/accumulator/feature.hpp>
+#include <alps/accumulator/parameter.hpp>
+#include <alps/accumulator/feature/mean.hpp>
+#include <alps/accumulator/feature/count.hpp>
+#include <alps/accumulator/feature/error.hpp>
 
-#include <alps/ngs/numeric.hpp>
+#include <alps/accumulator/numeric.hpp>
 #include <alps/hdf5/archive.hpp>
-#include <alps/ngs/stacktrace.hpp>
-#include <alps/ngs/short_print.hpp>
+#include <alps/utility/stacktrace.hpp>
+#include <alps/utility/short_print.hpp>
 #include <alps/numeric/functional.hpp>
 
 #include <boost/mpl/if.hpp>

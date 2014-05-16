@@ -29,13 +29,13 @@
 #ifndef ALPS_NGS_ACCUMULATOR_WEIGHT_HPP
 #define ALPS_NGS_ACCUMULATOR_WEIGHT_HPP
 
-#include <alps/ngs/accumulator/feature.hpp>
-#include <alps/ngs/accumulator/parameter.hpp>
-#include <alps/ngs/accumulator/feature/count.hpp>
+#include <alps/accumulator/feature.hpp>
+#include <alps/accumulator/parameter.hpp>
+#include <alps/accumulator/feature/count.hpp>
 
 #include <alps/hdf5/archive.hpp>
-#include <alps/ngs/stacktrace.hpp>
-#include <alps/ngs/short_print.hpp>
+#include <alps/utility/stacktrace.hpp>
+#include <alps/utility/short_print.hpp>
 
 #include <boost/utility.hpp>
 

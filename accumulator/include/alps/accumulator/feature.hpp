@@ -29,8 +29,8 @@
 #ifndef ALPS_NGS_ACCUMULATOR_FEATURE_HPP
 #define ALPS_NGS_ACCUMULATOR_FEATURE_HPP
 
-#include <alps/ngs/config.hpp>
-#include <alps/ngs/numeric.hpp>
+#include <alps/accumulator/config.hpp>
+#include <alps/accumulator/numeric.hpp>
 
 #include <boost/utility.hpp>
 

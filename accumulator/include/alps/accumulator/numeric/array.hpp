@@ -29,8 +29,8 @@
 #ifndef ALPS_NGS_NUMERIC_ARRAY_HEADER
 #define ALPS_NGS_NUMERIC_ARRAY_HEADER
 
-#include <alps/ngs/stacktrace.hpp>
-#include <alps/ngs/numeric/inf.hpp>
+#include <alps/utility/stacktrace.hpp>
+#include <alps/accumulator/numeric/inf.hpp>
 
 #include <alps/numeric/special_functions.hpp>
 

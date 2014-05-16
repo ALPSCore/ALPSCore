@@ -29,17 +29,17 @@
 #ifndef ALPS_NGS_ACCUMULATOR_BINNING_ANALYSIS_HPP
 #define ALPS_NGS_ACCUMULATOR_BINNING_ANALYSIS_HPP
 
-#include <alps/ngs/accumulator/feature.hpp>
-#include <alps/ngs/accumulator/parameter.hpp>
-#include <alps/ngs/accumulator/feature/mean.hpp>
-#include <alps/ngs/accumulator/feature/count.hpp>
+#include <alps/accumulator/feature.hpp>
+#include <alps/accumulator/parameter.hpp>
+#include <alps/accumulator/feature/mean.hpp>
+#include <alps/accumulator/feature/count.hpp>
 
-#include <alps/ngs/numeric.hpp>
+#include <alps/accumulator/numeric.hpp>
 #include <alps/hdf5/archive.hpp>
-#include <alps/ngs/stacktrace.hpp>
-#include <alps/ngs/short_print.hpp>
+#include <alps/utility/stacktrace.hpp>
+#include <alps/utility/short_print.hpp>
 
-#include <alps/alea/convergence.hpp>
+//#include <alps/alea/convergence.hpp>
 #include <alps/numeric/set_negative_0.hpp>
 
 #include <boost/mpl/if.hpp>
@@ -120,6 +120,7 @@ namespace alps {
                         , m_ac_count()
                     {}                    
 
+                    /** FIXME 
                     error_convergence converged_errors() const {
                         error_convergence conv = MAYBE_CONVERGED;
                         // TODO: implement!
@@ -148,7 +149,7 @@ namespace alps {
                         //     }
                         // }
                         // return conv;
-                    }
+                    } */
 
                     typename alps::accumulator::error_type<B>::type const error(std::size_t bin_level = std::numeric_limits<std::size_t>::max()) const {
                         using alps::ngs::numeric::operator*;

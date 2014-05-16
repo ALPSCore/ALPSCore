@@ -34,8 +34,8 @@
 
 #include <alps/numeric/special_functions.hpp>
 
-#include <boost/accumulators/numeric/functional/vector.hpp>
-#include <boost/accumulators/numeric/functional.hpp>
+#include <boost/accumulators/numeric/functional/vector.hpp> 
+#include <boost/accumulators/numeric/functional.hpp> 
 
 #include <boost/lambda/bind.hpp>
 #include <boost/lambda/lambda.hpp>
