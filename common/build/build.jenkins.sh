@@ -26,6 +26,9 @@ function build {
   INSTALLDIR=$PWD/install
   BUILDDIR=$PWD/build.tmp/$MODULE
 
+  echo "*** Checking copyright notice ***"
+  common/scripts/check-module-copyright-notice.py $MODULE || echo Please fix copyright && exit 1
+
   mkdir build.tmp
   rm -rf $BUILDDIR
   mkdir $BUILDDIR
