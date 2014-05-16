@@ -7,6 +7,8 @@
 #include <iostream>
 #include <alps/utility/temporary_filename.hpp>
 
+#include <gtest/gtest.h>
+
 TEST(temporary_fname, main)
 {
   std::string prefix="alps_temp_filename_test";
