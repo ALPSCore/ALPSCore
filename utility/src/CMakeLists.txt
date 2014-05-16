@@ -14,7 +14,7 @@ set (alps_utils_src
 #    ${PROJECT_BINARY_DIR}/include
 #)
 
-add_library(${PROJECT_NAME} STATIC ${alps_utils_src})
+add_library(${PROJECT_NAME} ${ALPS_BUILD_TYPE} ${alps_utils_src})
 target_link_libraries(${PROJECT_NAME} ${LINK_ALL})
 install(TARGETS ${PROJECT_NAME} DESTINATION lib)
 

@@ -14,6 +14,16 @@ else()
  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 endif()
 
-# Build static and dyn 
-OPTION(BuildStatic ON)
-OPTION(BuildDynamic OFF)
+# Build static XOR shared 
+# Defines ALPS_BUILD_TYPE=STATIC|DYNAMIC .
+option(BuildStatic "Build static libraries" ON)
+option(BuildShared "Build shared libraries" OFF)
+if (BuildStatic AND NOT BuildShared) 
+    message(STATUS "Building static libraries")
+    set(ALPS_BUILD_TYPE STATIC)
+elseif(BuildShared AND NOT BuildStatic)
+    message(STATUS "Building shared libraries")
+    set(ALPS_BUILD_TYPE SHARED)
+else()
+    message(FATAL_ERROR "Please choose BuildStatic XOR BuildShared type of building libraries.")
+endif()
