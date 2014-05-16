@@ -32,14 +32,10 @@ install(FILES "${CMAKE_BINARY_DIR}/include/alps/config.h" DESTINATION include/al
 
 add_subdirectory(src)
 
+# add tests - takes two parameters Testing and TestXMLOutput
 option(Testing "Enable testing" ON)
 if (Testing)
-    message(STATUS "Building tests")
     enable_testing()
-    include(UseGtest)
-    set (LINK_TEST gtest_main)
-    add_subdirectory(${gtest_ROOT} ${PROJECT_BINARY_DIR}/gtest)
-    include_directories(${gtest_INCLUDE_DIR})
     add_subdirectory(test)
 endif (Testing)
 

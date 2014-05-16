@@ -7,9 +7,15 @@
 #include <iostream>
 #include <alps/utility/temporary_filename.hpp>
 
-int main()
+TEST(temporary_fname, main)
 {
   std::string prefix="alps_temp_filename_test";
   std::string filename=alps::temporary_filename(prefix);
-  exit(0);
 }
+
+int main(int argc, char **argv) 
+{
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
+

@@ -5,8 +5,9 @@
  */
 
 #include <alps/utility/bitops.hpp>
+#include "gtest/gtest.h"
 
-int main()
+TEST(bitops, main)
 {
     uint32_t ui  = 5;
     uint64_t uli = 5;
@@ -15,5 +16,12 @@ int main()
 
     bool succ = alps::popcnt(ui)  == 2;
     succ     &= alps::popcnt(uli) == 2;
-    return succ ? 0 : -1;
+    ASSERT_EQ(succ, true);
 }
+
+int main(int argc, char **argv) 
+{
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
+
