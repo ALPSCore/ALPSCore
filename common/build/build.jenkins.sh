@@ -19,6 +19,13 @@ fi
 
 echo "Using BOOST at $BOOST_ROOT - no system path $BOOST_SYSTEM"
 
+if [[ -z "$HDF5_ROOT" ]]
+then
+else
+  export DYLD_LIBRARY_PATH=$BOOST_ROOT/lib:$HDF5_ROOT/lib:$DYLD_LIBRARY_PATH
+fi
+
+
 # Function to build one module
 function build {
   MODULE=$1
@@ -27,7 +34,7 @@ function build {
   BUILDDIR=$PWD/build.tmp/$MODULE
 
   echo "*** Checking copyright notice ***"
-  common/scripts/check-module-copyright-notice.py $MODULE || echo Please fix copyright && exit 1
+  common/scripts/check-module-copyright-notice.py $MODULE || exit 1
 
   mkdir build.tmp
   rm -rf $BUILDDIR
