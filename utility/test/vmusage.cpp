@@ -9,13 +9,20 @@
 #include <boost/foreach.hpp>
 #include <iostream>
 
-int main(int argc, char** argv) {
+#include "gtest/gtest.h"
+
+TEST(vmusage, main)
+{
     std::string test = "my_test";
-  int pid = boost::lexical_cast<int>(test.c_str());
-  BOOST_FOREACH(alps::vmusage_type::value_type v, alps::vmusage(pid)) {
-    std::cerr << v.first << " = " << v.second << "\n";
-  }
-  return 0;
+    int pid = boost::lexical_cast<int>(test.c_str());
+    BOOST_FOREACH(alps::vmusage_type::value_type v, alps::vmusage(pid)) {
+        std::cerr << v.first << " = " << v.second << "\n";
+        };
 }
 
-  
+int main(int argc, char **argv) 
+{
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
+ 
