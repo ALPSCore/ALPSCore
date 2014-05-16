@@ -1,3 +1,5 @@
+include(ALPSEnableTests)
+
 set (test_src
     hdf5_complex
     hdf5_bool
@@ -14,9 +16,5 @@ set (test_src
 
 
 foreach(test ${test_src})
-  add_executable(${test} ${test}.cpp)
-  add_dependencies(${test} alps)
-  target_link_libraries(${test} ${PROJECT_NAME} ${LINK_ALL} ${LINK_TEST})
-  add_test(${test} ${test})
-  #set_property(TEST ${test} PROPERTY LABELS utility)
+    alps_add_gtest(${test})
 endforeach(test)
