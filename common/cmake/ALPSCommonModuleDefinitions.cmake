@@ -27,3 +27,17 @@ elseif(BuildShared AND NOT BuildStatic)
 else()
     message(FATAL_ERROR "Please choose BuildStatic XOR BuildShared type of building libraries.")
 endif()
+
+# Define ALPS_ROOT and add it to cmake module path 
+if (NOT DEFINED ALPS_ROOT)
+    set(ALPS_ROOT ${CMAKE_INSTALL_PREFIX})
+endif ()
+
+if (NOT IS_ABSOLUTE ${ALPS_ROOT})
+    set (ALPS_ROOT ${CMAKE_BINARY_DIR}/${ALPS_ROOT}) # FIXME: unstable
+endif()
+
+message (STATUS "ALPS_ROOT: ${ALPS_ROOT}")
+list(APPEND CMAKE_MODULE_PATH ${ALPS_ROOT}/share/cmake/Modules)
+
+

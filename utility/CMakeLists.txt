@@ -20,8 +20,8 @@ find_package (Boost COMPONENTS filesystem system REQUIRED)
     message(STATUS "Boost libs: " ${Boost_LIBRARIES} )
 
 # LINK_ALL - link for libraries
-# LINK_TEST - link for tests
 set (LINK_ALL ${Boost_LIBRARIES})
+# LINK_TEST - link for tests
 set (LINK_TEST )
 
 include_directories(

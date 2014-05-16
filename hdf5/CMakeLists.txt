@@ -1,16 +1,18 @@
+# 
+# alps-hdf5 cmake configuration script.
+# 
+
 cmake_minimum_required (VERSION 2.8)
 
-set(CMAKE_DISABLE_SOURCE_CHANGES ON)
-set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
+# add common modules from ../common/cmake
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/../common/cmake)
 
-project (alps-hdf5)
+message (STATUS ${CMAKE_MODULE_PATH}) 
+include(ALPSCommonModuleDefinitions)
+message (STATUS ${CMAKE_MODULE_PATH}) 
 
-if (NOT DEFINED ALPS_ROOT)
-    set(ALPS_ROOT ${CMAKE_INSTALL_PREFIX})
-    get_filename_component(ALPS_ROOT "${CMAKE_INSTALL_PREFIX}" ABSOLUTE)
-endif ()
-message (STATUS "ALPS_ROOT: ${ALPS_ROOT}")
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/../common/cmake ${CMAKE_INSTALL_PREFIX}/share/cmake/Modules ${ALPS_ROOT}/share/cmake/Modules)
+# define project name
+project (alps-hdf5 CXX)
 
 # Boost
 #set(Boost_USE_STATIC_LIBS        ON)
@@ -43,14 +45,10 @@ include_directories(
 #configure_file("${PROJECT_SOURCE_DIR}/include/config.h.in" "${CMAKE_BINARY_DIR}/include/alps/config.h")
 add_subdirectory(src)
 
+# add tests - take two parameters Testing and TestXMLOutput
 option(Testing "Enable testing" ON)
 if (Testing)
-    message(STATUS "Building tests")
     enable_testing()
-    include(UseGtest)
-    set (LINK_TEST gtest_main)
-    add_subdirectory(${gtest_ROOT} ${PROJECT_BINARY_DIR}/gtest)
-    include_directories(${gtest_INCLUDE_DIR})
     add_subdirectory(test)
 endif (Testing)
 
