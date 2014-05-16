@@ -54,7 +54,7 @@ function build {
   ${MODULEDIR}
 
   make || exit 1 
-  make test || exit 1
+  make test
   make install || exit 1
 
   cd ../..
