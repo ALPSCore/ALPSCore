@@ -50,6 +50,7 @@ function build {
   -DCMAKE_BUILD_TYPE=Release \
   -DBOOST_ROOT="${BOOST_ROOT}" \
   -DBoost_NO_SYSTEM_PATHS="${BOOST_SYSTEM}" \
+  -DTestXMLOutput=TRUE \
   ${MODULEDIR}
 
   make || exit 1 
