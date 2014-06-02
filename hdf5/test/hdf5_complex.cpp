@@ -12,6 +12,8 @@
 #include <iostream>
 #include <algorithm>
 
+#include "gtest/gtest.h"
+
 template<class T>
 std::ostream& operator<<(std::ostream& os, std::vector<T> const & v)
 {
@@ -37,8 +39,7 @@ struct foo {
     }
     
 };
-int main () {
-    
+TEST(hdf5_complex, TestingIoOfComplexVars){
     foo b;
     b.scalar = std::complex<double>(3,4);
     b.vec = std::vector<std::complex<double> >(5, std::complex<double>(0,7));
@@ -58,5 +59,10 @@ int main () {
         std::cout << "vector (read): " << t_b.vec << std::endl;
     }
     
-    return 0;
 }
+int main(int argc, char **argv) 
+{
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
+
