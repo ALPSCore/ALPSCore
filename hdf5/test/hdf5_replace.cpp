@@ -8,10 +8,12 @@
 #include <alps/hdf5/vector.hpp>
 
 #include <vector>
+#include "gtest/gtest.h"
+
 
 using namespace std;
 
-int main () {
+TEST(hdf5, TestingReplace){
 
    vector<double> vec(100, 10.);
 
@@ -29,5 +31,10 @@ int main () {
        ar >> alps::make_pvp("/vec2", tmp);
    }
 
-    return 0;
 }
+int main(int argc, char **argv) 
+{
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
+

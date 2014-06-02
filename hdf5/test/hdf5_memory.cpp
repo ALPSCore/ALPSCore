@@ -11,10 +11,11 @@
 #include <boost/filesystem.hpp>
 
 #include <iostream>
+
+#include "gtest/gtest.h"
 using namespace std;
 
-int main()
-{
+TEST(hdf5, TestingHDF5Memory){
     if (boost::filesystem::exists(boost::filesystem::path("test_hdf5_memory.h5")))
         boost::filesystem::remove(boost::filesystem::path("test_hdf5_memory.h5"));
     {
@@ -35,9 +36,13 @@ int main()
         } catch (exception e) {
             cout << "Exception caught: no complex value" << endl;
             boost::filesystem::remove(boost::filesystem::path("test_hdf5_memory.h5"));
-            return EXIT_SUCCESS;
         }
     }
     boost::filesystem::remove(boost::filesystem::path("test_hdf5_memory.h5"));
-    return EXIT_SUCCESS;
 }
+int main(int argc, char **argv) 
+{
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
+

@@ -8,6 +8,7 @@
 #include <alps/hdf5/archive.hpp>
 #include <alps/hdf5/pair.hpp>
 #include <iostream>
+#include "gtest/gtest.h"
 
 using namespace std;
 using namespace alps;
@@ -63,8 +64,7 @@ public:
     C c;
 };
 
-int main()
-{
+TEST(hdf5, TestingIoOfBoolVars){
     A a;
     a.b.b = true; a.b.p = std::make_pair(3,4); a.b.e = E1;
     a.c.b = false; a.c.u = 1;
@@ -88,5 +88,10 @@ int main()
         std::cout << "Read bt=" << bt << ", should be " << true << endl;
         std:: cout << "Read bf=" << bf << ", should be " << false << endl;
     }
-    return 0;
 }
+int main(int argc, char **argv) 
+{
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
+

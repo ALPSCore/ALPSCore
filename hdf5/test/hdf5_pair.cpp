@@ -9,8 +9,9 @@
 
 #include <alps/hdf5.hpp>
 #include <alps/hdf5/vector.hpp>
+#include "gtest/gtest.h"
 
-int main() {
+TEST(hdf5, TestingIoOfPair){
     alps::hdf5::archive ar("creal.h5", "a");
     {
         std::vector<double> a(1e6);
@@ -30,5 +31,10 @@ int main() {
             )
         );
     }
-    return 0;
 }
+int main(int argc, char **argv) 
+{
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
+

@@ -14,10 +14,11 @@
 #include <vector>
 #include <complex>
 
+#include "gtest/gtest.h"
+
 using namespace std;
 
-int main()
-{
+TEST(hdf5, TestingIoOfDoubleVectors){
     if (boost::filesystem::exists(boost::filesystem::path("vvdbl.h5")))
         boost::filesystem::remove(boost::filesystem::path("vvdbl.h5"));
     {
@@ -36,3 +37,9 @@ int main()
     }
     boost::filesystem::remove(boost::filesystem::path("vvdbl.h5"));
 }
+int main(int argc, char **argv) 
+{
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
+

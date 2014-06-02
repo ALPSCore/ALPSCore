@@ -14,6 +14,7 @@ set (test_src
     hdf5_replace
     hdf5_vecvecdbl
     hdf5_vecveccplx
+    hdf5_omp #this one was commented out. Any idea why?
     )
 #hdf5_complex hdf5_copy hdf5_real_complex_vec hdf5_real_complex_matrix hdf5_bool hdf5_replace hdf5_pair hdf5_parms 
 #            hdf5_ising hdf5_family hdf5_valgrind hdf5_observableset hdf5_multi_array hdf5_memory hdf5_misc hdf5_vecveccplx 

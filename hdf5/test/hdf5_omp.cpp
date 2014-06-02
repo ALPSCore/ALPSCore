@@ -9,8 +9,9 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
+#include "gtest/gtest.h"
 
-int main () {
+TEST(hdf5, TestingOfOpenMP){
     bool result = false;
     try {
 #pragma omp parallel for
@@ -30,5 +31,11 @@ int main () {
             boost::filesystem::remove(boost::filesystem::path(filename));
     }
 
-    return result ? EXIT_SUCCESS : EXIT_FAILURE;    
+    EXPECT_TRUE(result);
 }
+int main(int argc, char **argv) 
+{
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
+
