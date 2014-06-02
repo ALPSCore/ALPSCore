@@ -1,14 +1,8 @@
-/*****************************************************************************
- *
- * ALPS DMFT Project - BLAS Compatibility headers
- *  Blas resizeable vector class
- *
- * Copyright (C) 2005 - 2009 by 
- *                              Emanuel Gull <gull@phys.columbia.edu>,
- *
- *
- * THIS SOFTWARE NEEDS AN APPROPRIATE LICENSE BLOCK HERE
- *****************************************************************************/
+/*
+ * Copyright (C) 1998-2014 ALPS Collaboration. See COPYRIGHT.TXT
+ * All rights reserved. Use is subject to license terms. See LICENSE.TXT
+ * For use in publications, see ACKNOWLEDGE.TXT
+ */
 
 #ifndef BLAS_RSVECTOR
 #define BLAS_RSVECTOR

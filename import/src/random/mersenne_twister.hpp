@@ -1,17 +1,7 @@
-/* boost random/mersenne_twister.hpp header file
- *
- * Copyright Jens Maurer 2000-2001
- * Copyright Steven Watanabe 2010
- * Distributed under the Boost Software License, Version 1.0. (See
- * accompanying file LICENSE_1_0.txt or copy at
- * http://www.boost.org/LICENSE_1_0.txt)
- *
- * See http://www.boost.org for most recent version including documentation.
- *
- * $Id: mersenne_twister.hpp 74867 2011-10-09 23:13:31Z steven_watanabe $
- *
- * Revision history
- *  2001-02-18  moved to individual header files
+/*
+ * Copyright (C) 1998-2014 ALPS Collaboration. See COPYRIGHT.TXT
+ * All rights reserved. Use is subject to license terms. See LICENSE.TXT
+ * For use in publications, see ACKNOWLEDGE.TXT
  */
 
 // ALPS note: this is here to fix a Boost 1.47.0 bug (Fixed in 1.48.0)
