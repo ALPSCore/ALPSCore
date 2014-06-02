@@ -30,7 +30,7 @@ find_package (alps-hdf5 REQUIRED)
     message(STATUS "alps-hdf5 includes: " ${alps-hdf5_INCLUDE_DIRS} )
     message(STATUS "alps-hdf5 libs: " ${alps-hdf5_LIBRARIES} )
 
-set (LINK_ALL ${alps-utility_LIBRARIES} ${alps-hdf5_LIBRARIES} ${Boost_LIBRARIES} ${HDF5_LIBRARIES} )
+set (LINK_ALL ${alps-hdf5_LIBRARIES} ${alps-utility_LIBRARIES} ${Boost_LIBRARIES} ${HDF5_LIBRARIES} )
 #set (LINK_TEST )
 
 include_directories(
