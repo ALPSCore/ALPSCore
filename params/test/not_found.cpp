@@ -1,6 +1,13 @@
-#include <alps/ngs.hpp>
+/*
+ * Copyright (C) 1998-2014 ALPS Collaboration. See COPYRIGHT.TXT
+ * All rights reserved. Use is subject to license terms. See LICENSE.TXT
+ * For use in publications, see ACKNOWLEDGE.TXT
+ */
+#include <alps/params.hpp>
 
-int main(int argc, char** argv){
+#include "gtest/gtest.h"
+
+TEST(params, TestingMissingPramaeter){
     alps::params parms;
     parms["hello"]="world";
 
@@ -21,5 +28,10 @@ int main(int argc, char** argv){
         std::cout << w.substr(0, w.find_first_of('\n')) << std::endl;
     }
 
-    return 0;
 }
+int main(int argc, char **argv) 
+{
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
+
