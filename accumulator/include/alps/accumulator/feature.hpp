@@ -4,11 +4,10 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_NGS_ACCUMULATOR_FEATURE_HPP
-#define ALPS_NGS_ACCUMULATOR_FEATURE_HPP
+#pragma once
 
-#include <alps/ngs/config.hpp>
-#include <alps/ngs/numeric.hpp>
+#include <alps/config.h>
+#include <alps/accumulator/numeric.hpp>
 
 #include <boost/utility.hpp>
 
@@ -184,4 +183,3 @@ namespace alps {
     }
 }
 
- #endif

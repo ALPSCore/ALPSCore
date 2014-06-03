@@ -7,12 +7,12 @@
 #ifndef ALPS_NGS_ACCUMULATOR_WEIGHT_IMPL_HPP
 #define ALPS_NGS_ACCUMULATOR_WEIGHT_IMPL_HPP
 
-#include <alps/ngs/accumulator/wrappers.hpp>
-#include <alps/ngs/accumulator/feature/weight.hpp>
+#include <alps/accumulator/wrappers.hpp>
+#include <alps/accumulator/feature/weight.hpp>
 
 #include <alps/hdf5/archive.hpp>
-#include <alps/ngs/stacktrace.hpp>
-#include <alps/ngs/short_print.hpp>
+#include <alps/utility/stacktrace.hpp>
+#include <alps/utility/short_print.hpp>
 
 #include <boost/utility.hpp>
 #include <boost/shared_ptr.hpp>

@@ -4,12 +4,11 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_NGS_SHORT_PRINT_HPP
-#define ALPS_NGS_SHORT_PRINT_HPP
+#pragma once
 
 #include <vector>
 #include <boost/array.hpp>
-//#include <alps/multi_array.hpp> 
+//#include <alps/multi_array.hpp> // FIXME
 #include <ostream>
 
 namespace alps {
@@ -62,7 +61,6 @@ namespace alps {
         {
             return print_for_sequence(os, v.value);
         }
-       
 //DEPENDENCE ON MULTIARRAY TO BE REMOVED 
 /*        template <typename T, std::size_t N> std::ostream & operator<<(std::ostream & os, short_print_proxy<alps::multi_array<T, N> const> const & v) {
             switch (v.value.num_elements()) {
@@ -75,8 +73,8 @@ namespace alps {
                 default: 
                     return os << "[" << short_print(*(v.value.data())) << ",.." << short_print(v.value.num_elements()) << "..," << short_print(*(v.value.data()+v.value.num_elements()-1)) << "]";
             }
+         // FIXME -> move to multi_array
         }*/
     }
 }
 
-#endif

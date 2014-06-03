@@ -4,11 +4,10 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_NGS_ACCUMULATOR_ACCUMULATOR_HPP
-#define ALPS_NGS_ACCUMULATOR_ACCUMULATOR_HPP
+#pragma once
 
-#include <alps/ngs/accumulator/wrappers.hpp>
-#include <alps/ngs/accumulator/feature/weight_impl.hpp>
+#include <alps/accumulator/wrappers.hpp>
+#include <alps/accumulator/feature/weight_impl.hpp>
 
 // TODO: move inside features
 #include <alps/type_traits/covariance_type.hpp>
@@ -558,4 +557,3 @@ namespace alps {
     }
 }
 
- #endif

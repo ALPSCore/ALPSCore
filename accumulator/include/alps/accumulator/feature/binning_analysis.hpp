@@ -4,20 +4,19 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_NGS_ACCUMULATOR_BINNING_ANALYSIS_HPP
-#define ALPS_NGS_ACCUMULATOR_BINNING_ANALYSIS_HPP
+#pragma once
 
-#include <alps/ngs/accumulator/feature.hpp>
-#include <alps/ngs/accumulator/parameter.hpp>
-#include <alps/ngs/accumulator/feature/mean.hpp>
-#include <alps/ngs/accumulator/feature/count.hpp>
+#include <alps/accumulator/feature.hpp>
+#include <alps/accumulator/parameter.hpp>
+#include <alps/accumulator/feature/mean.hpp>
+#include <alps/accumulator/feature/count.hpp>
+#include <alps/accumulator/convergence.hpp>
 
-#include <alps/ngs/numeric.hpp>
+#include <alps/accumulator/numeric.hpp>
 #include <alps/hdf5/archive.hpp>
-#include <alps/ngs/stacktrace.hpp>
-#include <alps/ngs/short_print.hpp>
+#include <alps/utility/stacktrace.hpp>
+#include <alps/utility/short_print.hpp>
 
-#include <alps/alea/convergence.hpp>
 #include <alps/numeric/set_negative_0.hpp>
 
 #include <boost/mpl/if.hpp>
@@ -387,5 +386,3 @@ namespace alps {
         }
     }
 }
-
- #endif

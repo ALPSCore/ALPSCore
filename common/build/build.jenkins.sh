@@ -63,5 +63,6 @@ function build {
 build utility
 build hdf5
 build params
+build accumulator
 
 echo "*** Done ***"

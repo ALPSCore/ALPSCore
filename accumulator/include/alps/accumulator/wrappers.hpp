@@ -4,15 +4,14 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_NGS_ACCUMULATOR_WRAPPER_HPP
-#define ALPS_NGS_ACCUMULATOR_WRAPPER_HPP
+#pragma once
 
-#include <alps/ngs/accumulator/feature/mean.hpp>
-#include <alps/ngs/accumulator/feature/error.hpp>
-#include <alps/ngs/accumulator/feature/count.hpp>
-#include <alps/ngs/accumulator/feature/weight.hpp>
-#include <alps/ngs/accumulator/feature/max_num_binning.hpp>
-#include <alps/ngs/accumulator/feature/binning_analysis.hpp>
+#include <alps/accumulator/feature/mean.hpp>
+#include <alps/accumulator/feature/error.hpp>
+#include <alps/accumulator/feature/count.hpp>
+#include <alps/accumulator/feature/weight.hpp>
+#include <alps/accumulator/feature/max_num_binning.hpp>
+#include <alps/accumulator/feature/binning_analysis.hpp>
 
 #include <alps/hdf5/archive.hpp>
 
@@ -401,5 +400,3 @@ namespace alps {
         };
     }
 }
-
- #endif
