@@ -4,7 +4,7 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#include <alps/ngs/config.hpp>
+#include <alps/config.h>
 
 #ifndef ALPS_NGS_USE_NEW_ALEA
 #error "This test only works with new alea library"
@@ -12,7 +12,7 @@
 
 #define BOOST_TEST_MODULE alps::ngs::accumulator
 
-#include <alps/ngs/accumulator/accumulator.hpp>
+#include <alps/accumulator/accumulator.hpp>
 
 #ifndef ALPS_LINK_BOOST_TEST
 #	include <boost/test/included/unit_test.hpp>

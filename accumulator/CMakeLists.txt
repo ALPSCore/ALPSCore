@@ -13,8 +13,6 @@ message (STATUS "ALPS_ROOT: ${ALPS_ROOT}")
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/../common/cmake ${CMAKE_INSTALL_PREFIX}/share/cmake/Modules ${ALPS_ROOT}/share/cmake/Modules)
 
 # Boost
-#set(Boost_USE_STATIC_LIBS        ON)
-#set(Boost_USE_STATIC_RUNTIME    OFF)
 find_package (Boost COMPONENTS filesystem system REQUIRED)
     message(STATUS "Boost includes: " ${Boost_INCLUDE_DIRS} )
     message(STATUS "Boost libs: " ${Boost_LIBRARIES} )
@@ -28,11 +26,10 @@ find_package (alps-utility REQUIRED)
 find_package (alps-hdf5 REQUIRED)
     message(STATUS "alps-hdf5 includes: " ${alps-hdf5_INCLUDE_DIRS} )
     message(STATUS "alps-hdf5 libs: " ${alps-hdf5_LIBRARIES} )
-    #message(STATUS "HDF5 libs: " ${HDF5_LIBRARIES} )
 
 # LINK_ALL - link for libraries
 # LINK_TEST - link for tests
-set (LINK_ALL ${Boost_LIBRARIES} ${HDF5_LIBRARIES} ${alps-utility_LIBRARIES})
+set (LINK_ALL ${alps-hdf5_LIBRARIES} ${alps-utility_LIBRARIES} ${Boost_LIBRARIES} ${HDF5_LIBRARIES})
 set (LINK_TEST )
 
 include_directories(
@@ -46,17 +43,11 @@ include_directories(
 configure_file("${PROJECT_SOURCE_DIR}/include/alps/accumulator/config.hpp.in" "${CMAKE_BINARY_DIR}/include/alps/accumulator/config.hpp")
 install(FILES "${CMAKE_BINARY_DIR}/include/alps/accumulator/config.hpp" DESTINATION include/alps/accumulator) 
 
-#configure_file("${PROJECT_SOURCE_DIR}/include/config.h.in" "${CMAKE_BINARY_DIR}/include/alps/config.h")
 add_subdirectory(src)
 
 option(Testing "Enable testing" ON)
 if (Testing)
-    message(STATUS "Building tests")
     enable_testing()
-    include(UseGtest)
-    set (LINK_TEST gtest_main)
-    add_subdirectory(${gtest_ROOT} ${PROJECT_BINARY_DIR}/gtest)
-    include_directories(${gtest_INCLUDE_DIR})
     add_subdirectory(test)
 endif (Testing)
 

@@ -1,23 +1,44 @@
-/*
- * Copyright (C) 1998-2014 ALPS Collaboration. See COPYRIGHT.TXT
- * All rights reserved. Use is subject to license terms. See LICENSE.TXT
- * For use in publications, see ACKNOWLEDGE.TXT
- */
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *                                                                                 *
+ * ALPS Project: Algorithms and Libraries for Physics Simulations                  *
+ *                                                                                 *
+ * ALPS Libraries                                                                  *
+ *                                                                                 *
+ * Copyright (C) 2011 - 2013 by Mario Koenz <mkoenz@ethz.ch>                       *
+ *                              Lukas Gamper <gamperl@gmail.com>                   *
+ *                                                                                 *
+ * This software is part of the ALPS libraries, published under the ALPS           *
+ * Library License; you can use, redistribute it and/or modify it under            *
+ * the terms of the license, either version 1 or (at your option) any later        *
+ * version.                                                                        *
+ *                                                                                 *
+ * You should have received a copy of the ALPS Library License along with          *
+ * the ALPS Libraries; see the file LICENSE.txt. If not, the license is also       *
+ * available from http://alps.comp-phys.org/.                                      *
+ *                                                                                 *
+ *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR     *
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,        *
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT       *
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE       *
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,     *
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER     *
+ * DEALINGS IN THE SOFTWARE.                                                       *
+ *                                                                                 *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_ACCUMULATOR_BINNING_ANALYSIS_HPP
-#define ALPS_NGS_ACCUMULATOR_BINNING_ANALYSIS_HPP
+#pragma once
 
 #include <alps/accumulator/feature.hpp>
 #include <alps/accumulator/parameter.hpp>
 #include <alps/accumulator/feature/mean.hpp>
 #include <alps/accumulator/feature/count.hpp>
+#include <alps/accumulator/convergence.hpp>
 
 #include <alps/accumulator/numeric.hpp>
 #include <alps/hdf5/archive.hpp>
 #include <alps/utility/stacktrace.hpp>
 #include <alps/utility/short_print.hpp>
 
-//#include <alps/alea/convergence.hpp>
 #include <alps/numeric/set_negative_0.hpp>
 
 #include <boost/mpl/if.hpp>
@@ -98,7 +119,6 @@ namespace alps {
                         , m_ac_count()
                     {}                    
 
-                    /** FIXME 
                     error_convergence converged_errors() const {
                         error_convergence conv = MAYBE_CONVERGED;
                         // TODO: implement!
@@ -127,7 +147,7 @@ namespace alps {
                         //     }
                         // }
                         // return conv;
-                    } */
+                    }
 
                     typename alps::accumulator::error_type<B>::type const error(std::size_t bin_level = std::numeric_limits<std::size_t>::max()) const {
                         using alps::ngs::numeric::operator*;
@@ -388,5 +408,3 @@ namespace alps {
         }
     }
 }
-
- #endif
