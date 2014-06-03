@@ -12,6 +12,7 @@
 #include <alps/hdf5/shared_array.hpp>
 
 #include <iostream>
+#include "gtest/gtest.h"
 
 namespace detail {
     void copy_data(alps::hdf5::archive & tar, alps::hdf5::archive & sar, std::string const & segment) {
@@ -62,7 +63,7 @@ void copy(alps::hdf5::archive & tar, std::string const & tpath, alps::hdf5::arch
     sar.set_context(scontext);
 }
 
-int main() {
+TEST(hdf5_complex, TestingOfHDF5Copy){
     try {
         std::vector<std::vector<int> > a(4);
         a[0] = std::vector<int>(1, 2);
@@ -85,5 +86,10 @@ int main() {
         std::cerr << "Exception: " << e.what() << std::endl;
         std::abort();
     }
-    return 0;
  }
+int main(int argc, char **argv) 
+{
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
+

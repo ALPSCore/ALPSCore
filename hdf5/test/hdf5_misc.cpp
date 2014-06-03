@@ -7,6 +7,7 @@
 #include <alps/hdf5.hpp>
 
 #include <boost/filesystem.hpp>
+#include "gtest/gtest.h"
 
 class my_class {
     public:
@@ -23,7 +24,7 @@ class my_class {
         double d;
 };
 
-int main () {
+TEST(hdf5, TestingHDF5Misc){
 
     if (boost::filesystem::exists(boost::filesystem::path("data.h5")))
         boost::filesystem::remove(boost::filesystem::path("data.h5"));
@@ -113,5 +114,10 @@ int main () {
     }
 
     boost::filesystem::remove(boost::filesystem::path("data.h5"));
-    return 0;
 }
+int main(int argc, char **argv) 
+{
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
+

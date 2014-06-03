@@ -1,9 +1,8 @@
-///////////////////////////////////////////////////////////////////////////////
-/// \file functional.hpp
-///
-//  Copyright 2005 Eric Niebler. Distributed under the Boost
-//  Software License, Version 1.0. (See accompanying file
-//  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+/*
+ * Copyright (C) 1998-2014 ALPS Collaboration. See COPYRIGHT.TXT
+ * All rights reserved. Use is subject to license terms. See LICENSE.TXT
+ * For use in publications, see ACKNOWLEDGE.TXT
+ */
 
 #ifndef BOOST_NUMERIC_FUNCTIONAL_HPP_EAN_08_12_2005
 #define BOOST_NUMERIC_FUNCTIONAL_HPP_EAN_08_12_2005

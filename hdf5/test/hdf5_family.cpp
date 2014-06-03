@@ -13,8 +13,9 @@
 #include <vector>
 #include <iostream>
 #include <algorithm>
+#include "gtest/gtest.h"
 
-int main() {
+TEST(hdf5, TestingFamilyFunctionality){
     std::string const filename = "test%05d.h5";
     if (boost::filesystem::exists(boost::filesystem::path(filename)))
         boost::filesystem::remove(boost::filesystem::path(filename));
@@ -54,5 +55,10 @@ int main() {
         iar4 >> make_pvp("/data", test4);
     }
     boost::filesystem::remove(boost::filesystem::path(filename));
-    return 0;
 }
+int main(int argc, char **argv) 
+{
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
+

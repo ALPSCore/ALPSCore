@@ -14,6 +14,7 @@
 #include <vector>
 #include <complex>
 #include <iostream>
+#include "gtest/gtest.h"
 
 template <class T>
 std::ostream& operator<<(std::ostream& os, std::vector<T> const& v)
@@ -22,7 +23,7 @@ std::ostream& operator<<(std::ostream& os, std::vector<T> const& v)
 	return os;
 }
 
-int main() {
+TEST(hdf5, TestingOfRealComplex){
 
     if (boost::filesystem::exists("real_complex_vec.h5") && boost::filesystem::is_regular_file("real_complex_vec.h5"))
         boost::filesystem::remove("real_complex_vec.h5");
@@ -54,12 +55,17 @@ int main() {
 			passed = (v[i] == w[i]);
 
         std::cout << "Test status checked element by element." << std::endl;
-        return (passed) ? EXIT_SUCCESS : EXIT_FAILURE;
+        EXPECT_TRUE(passed);
 
     } catch (alps::hdf5::archive_error) {
         boost::filesystem::remove("real_complex_vec.h5");
         std::cout << "Test passed because Exception was thrown." << std::endl;
-        return EXIT_SUCCESS;
     }
 
 }
+int main(int argc, char **argv) 
+{
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
+

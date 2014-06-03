@@ -5,17 +5,15 @@
  */
 
 #include <alps/utility/vmusage.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
 #include <iostream>
-
+#include <cstdlib>
 #include "gtest/gtest.h"
 
+pid_t global_child_pid;
 TEST(vmusage, main)
 {
-    std::string test = "my_test";
-    int pid = boost::lexical_cast<int>(test.c_str());
-    BOOST_FOREACH(alps::vmusage_type::value_type v, alps::vmusage(pid)) {
+    BOOST_FOREACH(alps::vmusage_type::value_type v, alps::vmusage(global_child_pid)) {
         std::cerr << v.first << " = " << v.second << "\n";
         };
 }
@@ -23,6 +21,16 @@ TEST(vmusage, main)
 int main(int argc, char **argv) 
 {
     ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+
+    pid_t pid = fork(); // create child process
+    int status;
+    switch(pid){
+    case 0:
+      system("sleep 1");
+      exit(0);
+    default:
+      global_child_pid=pid;
+      return RUN_ALL_TESTS();
+    }
 }
  
