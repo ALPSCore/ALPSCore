@@ -4,12 +4,10 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#include <alps/ngs.hpp>
-#include <alps/mcbase.hpp>
-#include <alps/parseargs.hpp>
-#include <alps/mcmpiadapter.hpp>
+#include <alps/mc/mcbase.hpp>
+#include <alps/utility/parseargs.hpp>
+#include <alps/mc/mcmpiadapter.hpp>
 #include <alps/stop_callback.hpp>
-#include <alps/ngs/make_parameters_from_xml.hpp>
 
 #include <boost/lambda/lambda.hpp>
 
@@ -71,8 +69,6 @@ int main(int argc, char *argv[]) {
         alps::parameters_type<my_sim_type>::type params;
         if (c.rank() > 0)
           /* do nothing*/ ;
-        else if (boost::filesystem::extension(options.input_file) == ".xml")
-            params = alps::make_parameters_from_xml(options.input_file);
         else if (boost::filesystem::extension(options.input_file) == ".h5")
             alps::hdf5::archive(options.input_file)["/parameters"] >> params;
         else

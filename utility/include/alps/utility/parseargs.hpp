@@ -4,11 +4,9 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_NGS_SCHEDULER_PARSEARGS_HPP
-#define ALPS_NGS_SCHEDULER_PARSEARGS_HPP
+#pragma once
 
 #include <alps/ngs/config.hpp>
-
 #include <string>
 
 namespace alps {
@@ -25,7 +23,4 @@ namespace alps {
 	    std::string input_file;
 	    std::string output_file;
 	};
-
 }
-
-#endif

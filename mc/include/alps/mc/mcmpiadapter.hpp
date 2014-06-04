@@ -4,12 +4,11 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#include <alps/ngs/config.hpp>
+#include <alps/config.h>
 
 #if !defined(ALPS_MCMPIADAPTER_HPP) && defined(ALPS_HAVE_MPI)
 #define ALPS_MCMPIADAPTER_HPP
 
-#include <alps/ngs.hpp>
 #include <alps/ngs/boost_mpi.hpp>
 #include <alps/check_schedule.hpp>
 

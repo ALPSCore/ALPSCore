@@ -9,6 +9,10 @@
 #include <boost/function.hpp>
 #include <boost/filesystem/path.hpp>
 
+#include <alps/accumulator/accumulator.hpp>
+#include <alps/params.hpp>
+#include "random01.hpp"
+
 #include <vector>
 #include <string>
 
