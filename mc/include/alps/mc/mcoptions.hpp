@@ -7,7 +7,7 @@
 #ifndef ALPS_NGS_MCOPTIONS_HPP
 #define ALPS_NGS_MCOPTIONS_HPP
 
-#include <alps/ngs/config.hpp>
+#include <alps/config.h>
 
 #include <string>
 

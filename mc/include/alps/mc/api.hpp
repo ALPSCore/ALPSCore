@@ -7,14 +7,9 @@
 #ifndef ALPS_NGS_API_HPP
 #define ALPS_NGS_API_HPP
 
-#include <alps/ngs/config.hpp>
-#include <alps/ngs/params.hpp>
-#include <alps/ngs/mcresults.hpp>
-#include <alps/ngs/mcobservables.hpp>
-
-#ifdef ALPS_NGS_USE_NEW_ALEA
-    #include <alps/ngs/accumulator/accumulator.hpp>
-#endif
+#include <alps/config.h>
+#include <alps/params.hpp>
+#include <alps/accumulator/accumulator.hpp>
 
 #include <boost/filesystem/path.hpp>
 
@@ -63,9 +58,9 @@ namespace alps {
         ALPS_DECL void save_results(alps::accumulator::result_set const & results, params const & params, boost::filesystem::path const & filename, std::string const & path);
     #endif
 
-    ALPS_DECL void save_results(mcresults const & results, params const & params, boost::filesystem::path const & filename, std::string const & path);
+    //ALPS_DECL void save_results(mcresults const & results, params const & params, boost::filesystem::path const & filename, std::string const & path);
 
-    ALPS_DECL void save_results(mcobservables const & observables, params const & params, boost::filesystem::path const & filename, std::string const & path);
+    //ALPS_DECL void save_results(mcobservables const & observables, params const & params, boost::filesystem::path const & filename, std::string const & path);
 
     template<typename C, typename P> void broadcast(C const & c, P & p, int r = 0) {
         p.broadcast(c, r);

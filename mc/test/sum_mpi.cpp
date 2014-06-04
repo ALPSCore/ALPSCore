@@ -7,7 +7,7 @@
 #include <alps/mc/mcbase.hpp>
 #include <alps/utility/parseargs.hpp>
 #include <alps/mc/mcmpiadapter.hpp>
-#include <alps/stop_callback.hpp>
+#include <alps/utility/stop_callback.hpp>
 
 #include <boost/lambda/lambda.hpp>
 

@@ -5,7 +5,9 @@
  */
 
 #include <alps/mc/mcbase.hpp>
-#include <alps/stop_callback.hpp>
+#include <alps/mc/mcoptions.hpp>
+#include <alps/mc/api.hpp>
+#include <alps/utility/stop_callback.hpp>
 
 #include <boost/lambda/lambda.hpp>
 
