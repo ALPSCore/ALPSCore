@@ -64,5 +64,6 @@ build utility
 build hdf5
 build params
 build accumulator
+build mc
 
 echo "*** Done ***"
