@@ -4,21 +4,18 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_NGS_BOOST_MPI_HPP
-#define ALPS_NGS_BOOST_MPI_HPP
+#pragma once
 
 #ifdef ALPS_HAVE_MPI
 
     #include <boost/mpi.hpp>
-//    #include <boost/array.hpp>
-//    #include <alps/multi_array.hpp>
 
     #include <vector>
 
     namespace boost {
         namespace mpi {
 
-            // std::vectyor
+            // std::vector
             template<typename T, typename A, typename Op> void reduce(const communicator & comm, std::vector<T, A> const & in_values, Op op, int root) {
                 reduce(comm, &in_values.front(), in_values.size(), op, root);
             }
@@ -63,4 +60,3 @@
 
 #endif
 
-#endif

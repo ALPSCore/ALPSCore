@@ -7,8 +7,8 @@
 #ifndef ALPS_NGS_CALLBACK_HPP
 #define ALPS_NGS_CALLBACK_HPP
 
-#include <alps/ngs/config.hpp>
-#include <alps/ngs/signal.hpp>
+#include <alps/config.h>
+#include <alps/utility/signal.hpp>
 
 #include <boost/chrono.hpp>
 #ifdef ALPS_HAVE_MPI

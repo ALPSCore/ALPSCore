@@ -4,8 +4,8 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#include <alps/ngs/mcoptions.hpp>
-#include <alps/ngs/stacktrace.hpp>
+#include <alps/mc/mcoptions.hpp>
+#include <alps/utility/stacktrace.hpp>
 
 #include <boost/program_options.hpp>
 

@@ -4,9 +4,9 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#include <alps/ngs/signal.hpp>
-#include <alps/ngs/boost_mpi.hpp>
-#include <alps/stop_callback.hpp>
+#include <alps/utility/signal.hpp>
+#include <alps/utility/boost_mpi.hpp>
+#include <alps/utility/stop_callback.hpp>
 
 namespace alps {
 

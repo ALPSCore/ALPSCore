@@ -4,7 +4,7 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#include <alps/ngs/api.hpp>
+#include <alps/mc/api.hpp>
 #include <alps/hdf5/archive.hpp>
 
 #include <boost/filesystem.hpp>
@@ -32,13 +32,5 @@ namespace alps {
         }
 
     #endif
-
-    void save_results(mcresults const & results, params const & params, boost::filesystem::path const & filename, std::string const & path) {
-        detail::save_results_impl(results, params, filename, path);
-    }
-
-    void save_results(mcobservables const & observables, params const & params, boost::filesystem::path const & filename, std::string const & path) {
-        detail::save_results_impl(observables, params, filename, path);
-    }
 
 }

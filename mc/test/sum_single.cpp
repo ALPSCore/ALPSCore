@@ -7,7 +7,9 @@
 #include <alps/mc/mcbase.hpp>
 #include <alps/mc/mcoptions.hpp>
 #include <alps/mc/api.hpp>
+
 #include <alps/utility/stop_callback.hpp>
+#include <alps/utility/temporary_filename.hpp>
 
 #include <boost/lambda/lambda.hpp>
 
@@ -60,20 +62,17 @@ class my_sim_type : public alps::mcbase {
 
 int main(int argc, char *argv[]) {
 
-    alps::mcoptions options(argc, argv);
-
     alps::parameters_type<my_sim_type>::type params;
-    if (boost::filesystem::extension(options.input_file) == ".h5")
-        alps::hdf5::archive(options.input_file)["/parameters"] >> params;
-    else
-        params = alps::parameters_type<my_sim_type>::type(options.input_file);
 
-    my_sim_type my_sim(params); // creat a simulation
-    my_sim.run(alps::stop_callback(options.time_limit)); // run the simulation
+    params["COUNT"]=10000;
+
+
+    my_sim_type my_sim(params); // create a simulation
+    my_sim.run(alps::stop_callback(1)); // run the simulation for 1 second
 
     alps::results_type<my_sim_type>::type results = collect_results(my_sim); // collect the results
 
     std::cout << "e^(-x*x): " << results["SValue"] << std::endl;
     std::cout << "e^(-x*x): " << results["VValue"] << std::endl;
-    save_results(results, params, options.output_file, "/simulation/results");
+    save_results(results, params, alps::temporary_filename("sum_single"), "/simulation/results");
 }
