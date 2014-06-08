@@ -4,13 +4,12 @@
 
 cmake_minimum_required (VERSION 2.8)
 
-# add common modules from ../common/cmake
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/../common/cmake)
-
-include(ALPSCommonModuleDefinitions)
-
 # define project name
 project (alps-utility CXX)
+message ("\nALPSCore module : ${PROJECT_NAME}\n")
+# add common modules from ../common/cmake
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/../common/cmake)
+include(ALPSCommonModuleDefinitions)
 
 # Boost
 #set(Boost_USE_STATIC_LIBS        ON)
@@ -21,8 +20,6 @@ find_package (Boost COMPONENTS filesystem system REQUIRED)
 
 # LINK_ALL - link for libraries
 set (LINK_ALL ${Boost_LIBRARIES})
-# LINK_TEST - link for tests
-set (LINK_TEST )
 
 include_directories(
     ${Boost_INCLUDE_DIRS}
@@ -30,8 +27,8 @@ include_directories(
     ${PROJECT_BINARY_DIR}/include
 )
 
-configure_file("${PROJECT_SOURCE_DIR}/include/config.h.in" "${CMAKE_BINARY_DIR}/include/alps/config.h")
-install(FILES "${CMAKE_BINARY_DIR}/include/alps/config.h" DESTINATION include/alps) 
+configure_file("${PROJECT_SOURCE_DIR}/include/config.h.in" "${PROJECT_BINARY_DIR}/include/alps/config.h")
+install(FILES "${PROJECT_BINARY_DIR}/include/alps/config.h" DESTINATION include/alps) 
 
 add_subdirectory(src)
 
@@ -52,11 +49,11 @@ install(DIRECTORY include DESTINATION ${CMAKE_INSTALL_PREFIX}
         )
 
 # Generate pkg-config file
-configure_file("${PROJECT_SOURCE_DIR}/${PROJECT_NAME}.pc.in" "${CMAKE_BINARY_DIR}/${PROJECT_NAME}.pc")
-install(FILES "${CMAKE_BINARY_DIR}/${PROJECT_NAME}.pc" DESTINATION "lib/pkgconfig")
+configure_file("${PROJECT_SOURCE_DIR}/${PROJECT_NAME}.pc.in" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}.pc")
+install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}.pc" DESTINATION "lib/pkgconfig")
 
 # Generate cmake Find module
 set(PROJECT_SEARCH_FILE alps/utility/data.hpp)
-configure_file("${CMAKE_SOURCE_DIR}/../common/cmake/FindALPSModule.cmake.in" "${CMAKE_BINARY_DIR}/Find${PROJECT_NAME}.cmake" @ONLY)
-install(FILES "${CMAKE_BINARY_DIR}/Find${PROJECT_NAME}.cmake" DESTINATION "share/cmake/Modules")
+configure_file("${PROJECT_SOURCE_DIR}/../common/cmake/FindALPSModule.cmake.in" "${PROJECT_BINARY_DIR}/Find${PROJECT_NAME}.cmake" @ONLY)
+install(FILES "${PROJECT_BINARY_DIR}/Find${PROJECT_NAME}.cmake" DESTINATION "share/cmake/Modules")
 

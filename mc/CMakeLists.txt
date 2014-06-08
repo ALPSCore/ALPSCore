@@ -4,15 +4,15 @@
 
 cmake_minimum_required (VERSION 2.8)
 
-# add common modules from ../common/cmake
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/../common/cmake)
-
-message (STATUS ${CMAKE_MODULE_PATH}) 
-include(ALPSCommonModuleDefinitions)
-message (STATUS ${CMAKE_MODULE_PATH}) 
-
 # define project name
 project (alps-mc CXX)
+message ("\nALPSCore module : ${PROJECT_NAME}\n")
+
+# add common modules from ../common/cmake
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/../common/cmake)
+
+# add common definitions
+include(ALPSCommonModuleDefinitions)
 
 # Boost
 #set(Boost_USE_STATIC_LIBS        ON)
@@ -24,6 +24,7 @@ find_package (HDF5 REQUIRED)
     message(STATUS "HDF5 includes: " ${HDF5_INCLUDE_DIRS} )
     message(STATUS "HDF5 libs: " ${HDF5_LIBRARIES} )
 
+if (NOT DEFINED ALPS_GLOBAL_BUILD)
 find_package (alps-utility REQUIRED)
     message(STATUS "alps-utility includes: " ${alps-utility_INCLUDE_DIRS} )
     message(STATUS "alps-utility libs: " ${alps-utility_LIBRARIES} )
@@ -36,22 +37,24 @@ find_package (alps-params REQUIRED)
 find_package (alps-accumulator REQUIRED)
     message(STATUS "alps-accumulator includes: " ${alps-accumulator_INCLUDE_DIRS} )
     message(STATUS "alps-accumulator libs: " ${alps-accumulator_LIBRARIES} )
+endif(NOT DEFINED ALPS_GLOBAL_BUILD)
 
 
 # LINK_ALL - link for libraries
 set (LINK_ALL ${alps-accumulator_LIBRARIES} ${alps-params_LIBRARIES} ${alps-hdf5_LIBRARIES} ${alps-utility_LIBRARIES} ${Boost_LIBRARIES} ${HDF5_LIBRARIES} )
-# LINK_TEST - link for tests
-set (LINK_TEST )
 
 include_directories(
     ${Boost_INCLUDE_DIRS}
     ${HDF5_INCLUDE_DIRS}
     ${alps-utility_INCLUDE_DIRS}
+    ${alps-hdf5_INCLUDE_DIRS}
+    ${alps-params_INCLUDE_DIRS}
+    ${alps-accumulator_INCLUDE_DIRS}
     ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_BINARY_DIR}/include
 )
 
-#configure_file("${PROJECT_SOURCE_DIR}/include/config.h.in" "${CMAKE_BINARY_DIR}/include/alps/config.h")
+#configure_file("${PROJECT_SOURCE_DIR}/include/config.h.in" "${PROJECT_BINARY_DIR}/include/alps/config.h")
 add_subdirectory(src)
 
 # add tests - take two parameters Testing and TestXMLOutput
@@ -71,11 +74,11 @@ set(DOXYFILE_SOURCE_DIR "./include")
 include(UseDoxygen)
 
 # Generate pkg-config file
-configure_file("${PROJECT_SOURCE_DIR}/${PROJECT_NAME}.pc.in" "${CMAKE_BINARY_DIR}/${PROJECT_NAME}.pc")
-install(FILES "${CMAKE_BINARY_DIR}/${PROJECT_NAME}.pc" DESTINATION "lib/pkgconfig")
+configure_file("${PROJECT_SOURCE_DIR}/${PROJECT_NAME}.pc.in" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}.pc")
+install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}.pc" DESTINATION "lib/pkgconfig")
 
 # Generate cmake Find module
 set(PROJECT_SEARCH_FILE alps/mcbase.hpp)
-configure_file("${CMAKE_SOURCE_DIR}/../common/cmake/FindALPSModule.cmake.in" "${CMAKE_BINARY_DIR}/Find${PROJECT_NAME}.cmake" @ONLY)
-install(FILES "${CMAKE_BINARY_DIR}/Find${PROJECT_NAME}.cmake" DESTINATION "share/cmake/Modules")
+configure_file("${PROJECT_SOURCE_DIR}/../common/cmake/FindALPSModule.cmake.in" "${PROJECT_BINARY_DIR}/Find${PROJECT_NAME}.cmake" @ONLY)
+install(FILES "${PROJECT_BINARY_DIR}/Find${PROJECT_NAME}.cmake" DESTINATION "share/cmake/Modules")
 
