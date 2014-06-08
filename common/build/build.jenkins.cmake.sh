@@ -3,6 +3,7 @@
 
 # This script expects the following environment variables
 # BOOST_ROOT - location for boost distribution
+# GTEST_ROOT - location for gtest sources/binaries
 # HDF5_ROOT - location for the HDF5 distribution
 # MPI_CXX_COMPILER - location for the mpi c++ compile
 
@@ -39,6 +40,7 @@ cmake \
   -DTesting=ON \
   -DCMAKE_BUILD_TYPE=Release \
   -DBOOST_ROOT="${BOOST_ROOT}" \
+  -DGTEST_ROOT="${GTEST_ROOT}" \
   -DBoost_NO_SYSTEM_PATHS="${BOOST_SYSTEM}" \
   -DTestXMLOutput=TRUE \
   ${ROOTDIR}

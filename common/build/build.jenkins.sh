@@ -3,6 +3,7 @@
 
 # This script expects the following environment variables
 # BOOST_ROOT - location for boost distribution
+# GTEST_ROOT - location for gtest sources/binaries
 # HDF5_ROOT - location for the HDF5 distribution
 # MPI_CXX_COMPILER - location for the mpi c++ compile
 
@@ -26,7 +27,6 @@ else
   export DYLD_LIBRARY_PATH=$BOOST_ROOT/lib:$HDF5_ROOT/lib:$DYLD_LIBRARY_PATH
 fi
 
-
 # Function to build one module
 function build {
   MODULE=$1
@@ -49,6 +49,7 @@ function build {
   -DTesting=ON \
   -DCMAKE_BUILD_TYPE=Release \
   -DBOOST_ROOT="${BOOST_ROOT}" \
+  -DGTEST_ROOT="${GTEST_ROOT}" \
   -DBoost_NO_SYSTEM_PATHS="${BOOST_SYSTEM}" \
   -DTestXMLOutput=TRUE \
   ${MODULEDIR}

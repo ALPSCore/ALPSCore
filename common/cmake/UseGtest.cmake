@@ -31,7 +31,6 @@ set (GTEST_INCLUDE_DIR ${GTEST_ROOT}/include)
 set (GTEST_MAIN_LIBRARIES gtest_main)
 set (GTEST_MAIN_LIBRARY gtest_main)
 set (GTEST_LIBRARY gtest_main)
-message ("gtest lib ${GTEST_LIBRARY}")
 
 #mark_as_advanced(GTEST_ROOT)
 #mark_as_advanced(gtest_INCLUDE_DIR)
