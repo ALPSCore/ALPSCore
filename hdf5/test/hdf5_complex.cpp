@@ -55,6 +55,7 @@ TEST(hdf5_complex, TestingIoOfComplexVars){
         ar >> alps::make_pvp("/test/foo", t_b);
         std::cout << "scalar (write): " << b.scalar << std::endl;
         std::cout << "scalar (read): " << t_b.scalar << std::endl;
+        EXPECT_NEAR(std::abs(b.scalar-t_b.scalar), 0, 1e-12);
         std::cout << "vector (write): " << b.vec << std::endl;
         std::cout << "vector (read): " << t_b.vec << std::endl;
     }
