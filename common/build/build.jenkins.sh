@@ -3,8 +3,7 @@
 
 # This script expects the following environment variables
 # BOOST_ROOT - location for boost distribution
-# HDF5_ROOT - location for the HDF5 distribution
-# MPI_CXX_COMPILER - location for the mpi c++ compile
+# HDF5_ROOT  - location for the HDF5 distribution
 
 # Make sure we are in top directory for the repository
 SCRIPTDIR=$(dirname $0)
@@ -51,6 +50,7 @@ function build {
   -DBOOST_ROOT="${BOOST_ROOT}" \
   -DBoost_NO_SYSTEM_PATHS="${BOOST_SYSTEM}" \
   -DTestXMLOutput=TRUE \
+  -DALPS_ENABLE_MPI=TRUE \
   ${MODULEDIR}
 
   make || exit 1 

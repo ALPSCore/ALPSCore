@@ -10,6 +10,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/../common/cmake)
 message (STATUS ${CMAKE_MODULE_PATH}) 
 include(ALPSCommonModuleDefinitions)
 message (STATUS ${CMAKE_MODULE_PATH}) 
+include(ALPSTestMPI)
 
 # define project name
 project (alps-params CXX)
