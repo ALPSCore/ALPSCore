@@ -8,10 +8,18 @@ option(TestXMLOutput "Output tests to xml" OFF)
 # enable testing with gtest
 if (NOT tests_are_already_enabled) 
     message(STATUS "Building tests")
-    include(UseGtest) # consider using cmake FindGTest
-    set (LINK_TEST gtest_main)
-    add_subdirectory(${gtest_ROOT} ${PROJECT_BINARY_DIR}/gtest)
-    include_directories(${gtest_INCLUDE_DIR})
+    #set (LINK_TEST gtest_main)
+    #add_subdirectory(${gtest_ROOT} ${PROJECT_BINARY_DIR}/gtest)
+    #include_directories(${gtest_INCLUDE_DIR})
+    find_package(GTest QUIET)
+
+    if (NOT GTEST_FOUND) 
+        include(UseGtest) # fetch gtest
+        find_package(GTest)
+    endif (NOT GTEST_FOUND) 
+
+    set (LINK_TEST  ${GTEST_MAIN_LIBRARIES}) 
+    include_directories(${GTEST_INCLUDE_DIRS})
     set(tests_are_already_enabled TRUE)
 endif(NOT tests_are_already_enabled)
 
