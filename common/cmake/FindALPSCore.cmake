@@ -28,7 +28,7 @@ foreach(component ${ALPSCore_FIND_COMPONENTS})
         message(FATAL_ERROR "ALPSCore : Unknown component ${component}")
     else()
         set(alps_module "alps-${component}")
-        find_package(${alps_module})
+        find_package(${alps_module} REQUIRED)
 
         # Add includes (do not add more than once)
         list(FIND ALPSCore_INCLUDES ${${alps_module}_INCLUDE_DIRS} is_already_there)
