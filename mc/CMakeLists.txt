@@ -13,7 +13,7 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/../common/cmake)
 
 # add common definitions
 include(ALPSCommonModuleDefinitions)
-include(ALPSTestMPI)
+include(ALPSEnableMPI)
 
 # Boost
 #set(Boost_USE_STATIC_LIBS        ON)

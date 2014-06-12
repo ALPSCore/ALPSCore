@@ -10,7 +10,7 @@ message ("\nALPSCore module : ${PROJECT_NAME}\n")
 # add common modules from ../common/cmake
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/../common/cmake)
 include(ALPSCommonModuleDefinitions)
-include(ALPSTestMPI)
+include(ALPSEnableMPI)
 
 # Boost
 #set(Boost_USE_STATIC_LIBS        ON)

@@ -13,7 +13,7 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/../common/cmake)
 
 # add common definitions
 include(ALPSCommonModuleDefinitions)
-include(ALPSTestMPI)
+include(ALPSEnableMPI)
 
 # Boost
 find_package (Boost COMPONENTS filesystem system REQUIRED)
