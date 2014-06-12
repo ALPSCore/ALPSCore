@@ -6,7 +6,6 @@ cmake_minimum_required (VERSION 2.8)
 
 # project name
 project (alps-accumulator CXX)
-include(ALPSTestMPI)
 message ("\nALPSCore module : ${PROJECT_NAME}\n")
 
 # add common modules from ../common/cmake
@@ -14,6 +13,7 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/../common/cmake)
 
 # add common definitions
 include(ALPSCommonModuleDefinitions)
+include(ALPSTestMPI)
 
 # Boost
 find_package (Boost COMPONENTS filesystem system REQUIRED)
