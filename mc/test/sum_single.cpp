@@ -22,6 +22,7 @@ class my_sim_type : public alps::mcbase {
         my_sim_type(parameters_type const & params, std::size_t seed_offset = 42)
             : alps::mcbase(params, seed_offset)
             , total_count(params["COUNT"])
+            , count(0)
 
         {
             measurements << alps::accumulator::RealObservable("SValue")
@@ -64,11 +65,11 @@ class my_sim_type : public alps::mcbase {
 TEST(mc, sum_single){
     alps::parameters_type<my_sim_type>::type params;
 
-    params["COUNT"]=10000;
+    params["COUNT"]=1000;
 
 
     my_sim_type my_sim(params); // create a simulation
-    my_sim.run(alps::stop_callback(1)); // run the simulation for 1 second
+    my_sim.run(alps::stop_callback(5)); // run the simulation for 1 second
 
     alps::results_type<my_sim_type>::type results = collect_results(my_sim); // collect the results
 
