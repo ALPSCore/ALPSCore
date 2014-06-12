@@ -4,13 +4,13 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
+#pragma once
 #include <alps/config.h>
 
-#if !defined(ALPS_MCMPIADAPTER_HPP) && defined(ALPS_HAVE_MPI)
-#define ALPS_MCMPIADAPTER_HPP
+#if defined(ALPS_HAVE_MPI)
 
 #include <alps/utility/boost_mpi.hpp>
-#include <alps/check_schedule.hpp>
+#include "check_schedule.hpp"
 
 namespace alps {
 

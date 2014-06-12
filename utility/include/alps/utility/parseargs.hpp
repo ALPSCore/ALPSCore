@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <alps/ngs/config.hpp>
+#include <alps/config.h>
 #include <string>
 
 namespace alps {

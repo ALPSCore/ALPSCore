@@ -7,6 +7,7 @@ set (alps_utils_src
     stacktrace.cpp
     signal.cpp
     stop_callback.cpp
+    parseargs.cpp
     )
 
 #include_directories(

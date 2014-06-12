@@ -2,6 +2,7 @@ include(ALPSEnableTests)
 
 set (test_src
     sum_single
+    sum_mpi
     )
 
 
