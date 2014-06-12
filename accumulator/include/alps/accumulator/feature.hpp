@@ -12,7 +12,7 @@
 #include <boost/utility.hpp>
 
 #ifdef ALPS_HAVE_MPI
-    #include <alps/ngs/mpi.hpp>
+    #include <alps/utility/mpi.hpp>
 #endif
 
 namespace alps {

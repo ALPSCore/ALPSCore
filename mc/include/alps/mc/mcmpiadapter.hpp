@@ -9,7 +9,7 @@
 #if !defined(ALPS_MCMPIADAPTER_HPP) && defined(ALPS_HAVE_MPI)
 #define ALPS_MCMPIADAPTER_HPP
 
-#include <alps/ngs/boost_mpi.hpp>
+#include <alps/utility/boost_mpi.hpp>
 #include <alps/check_schedule.hpp>
 
 namespace alps {
