@@ -4,8 +4,7 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_NGS_SCHEDULER_CHECK_SCHEDULE_HPP
-#define ALPS_NGS_SCHEDULER_CHECK_SCHEDULE_HPP
+#pragma once
 
 #include <boost/chrono.hpp>
 
@@ -74,4 +73,4 @@ namespace alps {
 
 } // namespace alps 
 
-#endif // !defined ALPS_NGS_SCHEDULER_CHECK_SCHEDULE_HPP
+
