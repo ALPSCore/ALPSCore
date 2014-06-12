@@ -16,7 +16,12 @@ include(ALPSCommonModuleDefinitions)
 include(ALPSEnableMPI)
 
 # Boost
-find_package (Boost COMPONENTS filesystem system REQUIRED)
+# Boost
+if(ALPS_HAVE_MPI)
+  find_package (Boost COMPONENTS filesystem system serialization mpi REQUIRED)
+else()
+  find_package (Boost COMPONENTS filesystem system REQUIRED)
+endif()
     message(STATUS "Boost includes: " ${Boost_INCLUDE_DIRS} )
     message(STATUS "Boost libs: " ${Boost_LIBRARIES} )
 find_package (HDF5 REQUIRED)
