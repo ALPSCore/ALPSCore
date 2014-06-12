@@ -20,12 +20,12 @@ if (ENABLE_MPI)
 
     find_package(MPI REQUIRED)
 
-    set(mpi_is_ok true)
+    set(mpi_is_ok false)
     # check that the versions of compilers are the same
     execute_process(COMMAND ${MPI_CXX_COMPILER}   "-dumpversion" OUTPUT_VARIABLE mpi_version OUTPUT_STRIP_TRAILING_WHITESPACE)
     execute_process(COMMAND ${CMAKE_CXX_COMPILER} "-dumpversion" OUTPUT_VARIABLE cxx_version OUTPUT_STRIP_TRAILING_WHITESPACE)
-    if (NOT ${mpi_version} EQUAL ${cxx_version})
-        set(mpi_is_ok false)
+    if (${mpi_version} EQUAL ${cxx_version})
+        set(mpi_is_ok true)
     endif()
 
     if (mpi_is_ok)
