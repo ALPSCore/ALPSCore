@@ -5,7 +5,6 @@
 # BOOST_ROOT - location for boost distribution
 # GTEST_ROOT - location for gtest sources/binaries
 # HDF5_ROOT - location for the HDF5 distribution
-# MPI_CXX_COMPILER - location for the mpi c++ compile
 
 # Make sure we are in top directory for the repository
 SCRIPTDIR=$(dirname $0)

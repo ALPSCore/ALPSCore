@@ -5,7 +5,6 @@
 # BOOST_ROOT - location for boost distribution
 # GTEST_ROOT - location for gtest sources/binaries
 # HDF5_ROOT - location for the HDF5 distribution
-# MPI_CXX_COMPILER - location for the mpi c++ compile
 
 # Make sure we are in top directory for the repository
 SCRIPTDIR=$(dirname $0)
@@ -52,7 +51,7 @@ function build {
   -DGTEST_ROOT="${GTEST_ROOT}" \
   -DBoost_NO_SYSTEM_PATHS="${BOOST_SYSTEM}" \
   -DTestXMLOutput=TRUE \
-  -DALPS_ENABLE_MPI=TRUE \
+  -DENABLE_MPI=TRUE \
   ${MODULEDIR}
 
   make || exit 1 
