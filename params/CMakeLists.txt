@@ -13,9 +13,14 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/../common/cmake)
 
 # add common definitions
 include(ALPSCommonModuleDefinitions)
+include(ALPSTestMPI)
 
 # Boost
-find_package (Boost COMPONENTS filesystem system REQUIRED)
+if(ALPS_HAVE_MPI)
+  find_package (Boost COMPONENTS filesystem system serialization mpi REQUIRED)
+else()
+  find_package (Boost COMPONENTS filesystem system REQUIRED)
+endif()
     message(STATUS "Boost includes: " ${Boost_INCLUDE_DIRS} )
     message(STATUS "Boost libs: " ${Boost_LIBRARIES} )
 find_package (HDF5 REQUIRED)

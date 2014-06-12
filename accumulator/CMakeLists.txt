@@ -6,6 +6,7 @@ cmake_minimum_required (VERSION 2.8)
 
 # project name
 project (alps-accumulator CXX)
+include(ALPSTestMPI)
 message ("\nALPSCore module : ${PROJECT_NAME}\n")
 
 # add common modules from ../common/cmake
