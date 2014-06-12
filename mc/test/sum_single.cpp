@@ -13,6 +13,7 @@
 
 #include <boost/lambda/lambda.hpp>
 
+#include "gtest/gtest.h"
 // Simulation to measure e^(-x*x)
 class my_sim_type : public alps::mcbase {
 
@@ -60,8 +61,7 @@ class my_sim_type : public alps::mcbase {
         double value;
 };
 
-int main(int argc, char *argv[]) {
-
+TEST(mc, sum_single){
     alps::parameters_type<my_sim_type>::type params;
 
     params["COUNT"]=10000;

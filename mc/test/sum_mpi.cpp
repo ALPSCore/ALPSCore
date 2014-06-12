@@ -12,6 +12,7 @@
 
 #include <boost/lambda/lambda.hpp>
 
+#include "gtest/gtest.h"
 // Simulation to measure e^(-x*x)
 class my_sim_type : public alps::mcbase {
 
@@ -59,26 +60,23 @@ class my_sim_type : public alps::mcbase {
         double value;
 };
 
-int main(int argc, char *argv[]) {
-
-    try {
-
-std::cout<<"parsing opt"<<std::endl;
-        alps::parseargs options(argc, argv);
-std::cout<<"building mpi"<<std::endl;
-        boost::mpi::environment env(argc, argv);
+TEST(mc, sum_mpi){
+        boost::mpi::environment env;
         boost::mpi::communicator c;
 
 std::cout<<"building param"<<std::endl;
         alps::mcbase::parameters_type params;
         params["COUNT"]=1000;
         broadcast(c, params);
+        
+        int t_min_check=1, t_max_check=1, timelimit=1;
+        std::string out_file_name("test_out.h5");
 
 std::cout<<"building sim"<<std::endl;
-        alps::mcmpiadapter<my_sim_type> my_sim(params, c, alps::check_schedule(options.tmin, options.tmax)); // creat a simulation
+        alps::mcmpiadapter<my_sim_type> my_sim(params, c, alps::check_schedule(t_min_check, t_max_check)); // creat a simulation
 std::cout<<"running sim"<<std::endl;
 
-        my_sim.run(alps::stop_callback(c, options.timelimit)); // run the simulation
+        my_sim.run(alps::stop_callback(c, timelimit)); // run the simulation
 
         using alps::collect_results;
 
@@ -91,15 +89,7 @@ std::cout<<"collecting resutls"<<std::endl;
             std::cout << results["SValue"] + 1 << std::endl;
             std::cout << results["SValue"] + results["SValue"] << std::endl;
 std::cout<<"storing resutls"<<std::endl;
-            save_results(results, params, options.output_file, "/simulation/results");
+            save_results(results, params, out_file_name, "/simulation/results");
         } else
             collect_results(my_sim);
-
-    } catch(std::exception & ex) {
-        std::cerr << ex.what() << std::endl;
-        return -1;
-    } catch(...) {
-        std::cerr << "Fatal Error: Unknown Exception!\n";
-        return -2;
-    }
 }
