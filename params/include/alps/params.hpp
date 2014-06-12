@@ -23,7 +23,7 @@
 #include <boost/serialization/string.hpp> 
 
 #ifdef ALPS_HAVE_MPI
-    #include <alps/ngs/boost_mpi.hpp>
+    #include <alps/utility/boost_mpi.hpp>
 #endif
 
 #include <map>
