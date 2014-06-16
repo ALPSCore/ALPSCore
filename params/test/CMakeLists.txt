@@ -1,6 +1,7 @@
 include(ALPSEnableTests)
 
 set (test_src
+     param
      assign
      default
      not_found

@@ -5,7 +5,9 @@
  */
 #include <alps/params.hpp>
 #include <boost/bind.hpp>
+#include <boost/algorithm/string.hpp>
 #include <algorithm>
+#include <fstream>
 
 namespace alps {
 
@@ -16,16 +18,9 @@ namespace alps {
         ar.set_context(context);
     }
 
-    /* DISALLOWED BECAUSE OF DEPENDENCE ON ALPS::PARAMETERS,THE OLD PARAMETERS CLASS
     params::params(boost::filesystem::path const & path) {
-        boost::filesystem::ifstream ifs(path);
-        Parameters par(ifs);
-        for (Parameters::const_iterator it = par.begin(); it != par.end(); ++it) {
-            detail::paramvalue val(it->value());
-            setter(it->key(), val);
-        }
+      parse_text_parameters(path);
     }
-    */
 
     #ifdef ALPS_HAVE_PYTHON
         params::params(boost::python::dict const & arg) {
@@ -136,5 +131,25 @@ namespace alps {
         for (params::const_iterator it = v.begin(); it != v.end(); ++it)
             os << it->first << " = " << it->second << std::endl;
         return os;
-    }    
+    }
+  //this is a trivial parameter parser to handle text parameters
+  //we expect parameters to be of the form key = value
+  //format taken over from legacy ALPS.
+  void params::parse_text_parameters(boost::filesystem::path const & path){
+    std::ifstream ifs(path.string().c_str());
+    if(!ifs.is_open()) throw std::runtime_error("Problem reading parameter file at: "+path.string());
+    
+    std::string line;
+    while(std::getline(ifs, line)){
+      std::stringstream line_sstr(line);
+      std::string key, equal, value;
+      if((line_sstr>>key>>equal) && (equal == "=")){
+        if(std::getline(line_sstr, value)){
+          boost::algorithm::trim(value);
+          boost::algorithm::trim_if(value, boost::is_any_of(";")); //trim semicolon
+          setter(key,value);
+        }
+      }
+    }
+  }
 }

@@ -96,6 +96,7 @@ namespace alps {
             }
 
             void setter(std::string const &, detail::paramvalue const &);
+      void parse_text_parameters(boost::filesystem::path const & path);
 
             detail::paramvalue getter(std::string const &);
 
