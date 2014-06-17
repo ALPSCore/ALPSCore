@@ -12,6 +12,10 @@ endmacro(alps_add_module)
 
 # include cmake scripts from common/cmake directory
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/./common/cmake)
+
+# check that compiler version is OK.
+include(ALPSCompilerVersionCheck)
+
 # ALPS_GLOBAL_BUILD means building project all at once
 set(ALPS_GLOBAL_BUILD true)
 
