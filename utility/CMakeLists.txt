@@ -15,7 +15,7 @@ include(ALPSEnableMPI)
 # Boost
 #set(Boost_USE_STATIC_LIBS        ON)
 #set(Boost_USE_STATIC_RUNTIME    OFF)
-find_package (Boost COMPONENTS filesystem system REQUIRED)
+find_package (Boost COMPONENTS filesystem system chrono REQUIRED)
     message(STATUS "Boost includes: " ${Boost_INCLUDE_DIRS} )
     message(STATUS "Boost libs: " ${Boost_LIBRARIES} )
 
