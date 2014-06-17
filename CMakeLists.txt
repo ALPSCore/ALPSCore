@@ -15,6 +15,10 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/./common/cmake)
 # ALPS_GLOBAL_BUILD means building project all at once
 set(ALPS_GLOBAL_BUILD true)
 
+if (${CMAKE_BINARY_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
+    message(FATAL_ERROR "In source builds are disabled. Please use a separate build directory")
+endif()
+
 # enable Testing
 option(Testing "Enable testing" ON)
 if (Testing)
