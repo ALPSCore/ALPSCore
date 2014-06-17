@@ -26,15 +26,24 @@ else
   export DYLD_LIBRARY_PATH=$BOOST_ROOT/lib:$HDF5_ROOT/lib:$DYLD_LIBRARY_PATH
 fi
 
-INSTALLDIR=$PWD/install
-BUILDDIR=$PWD/build.tmp
-ROOTDIR=$PWD
+# Function to build one module
+function build {
+  MODULE=$1
+  MODULEDIR=$PWD/$MODULE
+  INSTALLDIR=$PWD/install
+  BUILDDIR=$PWD/build.tmp/$MODULE
 
-rm -rf $BUILDDIR
-mkdir $BUILDDIR
-cd $BUILDDIR
+  echo "*** Checking copyright notice ***"
+  common/scripts/check-module-copyright-notice.py $MODULE || exit 1
 
-cmake \
+  mkdir build.tmp
+  rm -rf $BUILDDIR
+  mkdir $BUILDDIR
+  cd $BUILDDIR
+
+  echo "*** Building module in $MODULEDIR to $INSTALLDIR ***"
+
+  cmake \
   -DCMAKE_INSTALL_PREFIX="${INSTALLDIR}" \
   -DTesting=ON \
   -DCMAKE_BUILD_TYPE=Release \
@@ -42,10 +51,20 @@ cmake \
   -DGTEST_ROOT="${GTEST_ROOT}" \
   -DBoost_NO_SYSTEM_PATHS="${BOOST_SYSTEM}" \
   -DTestXMLOutput=TRUE \
-  ${ROOTDIR}
+  -DENABLE_MPI=TRUE \
+  ${MODULEDIR}
 
-make || exit 1 
-make test
-make install || exit 1
+  make || exit 1 
+  make test
+  make install || exit 1
+
+  cd ../..
+}
+
+build utility
+build hdf5
+build params
+build accumulator
+build mc
 
 echo "*** Done ***"
