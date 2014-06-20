@@ -141,15 +141,14 @@ namespace alps {
     
     std::string line;
     while(std::getline(ifs, line)){
-      std::stringstream line_sstr(line);
-      std::string key, equal, value;
-      if((line_sstr>>key>>equal) && (equal == "=")){
-        if(std::getline(line_sstr, value)){
-          boost::algorithm::trim(value);
-          boost::algorithm::trim_if(value, boost::is_any_of(";")); //trim semicolon
-          setter(key,value);
-        }
-      }
+      std::size_t eqpos=line.find("=");
+      if (eqpos==std::string::npos || eqpos ==0 || eqpos ==line.length()) continue; //no equal sign found in this line or string starting/ending with =
+      std::string key=line.substr(0,eqpos);
+      std::string value=line.substr(eqpos+1,line.length());
+      boost::algorithm::trim(key);
+      boost::algorithm::trim(value);
+      boost::algorithm::trim_if(value, boost::is_any_of(";")); //trim semicolon
+      setter(key,value);
     }
   }
 }
