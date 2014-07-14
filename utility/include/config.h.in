@@ -247,7 +247,8 @@ using boost::uint_fast64_t;
 #endif
 
 // do not print a stacktrace in error messages
-#ifndef __GNUC__
-    #define ALPS_NGS_NO_STACKTRACE
-#endif
+// we will always print stacktrace. This is how it was done in legacy ALPS:
+//#ifndef __GNUC__
+//    #define ALPS_NGS_NO_STACKTRACE
+//#endif
 

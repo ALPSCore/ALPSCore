@@ -21,7 +21,7 @@ namespace alps {
 
 #ifndef ALPS_NGS_NO_STACKTRACE
 
-        // TODO: ues boost::units::detail::demangle
+        // TODO: use boost::units::detail::demangle
         // in #include <boost/units/detail/utility.hpp>
         std::string stacktrace() {
             std::ostringstream buffer;
