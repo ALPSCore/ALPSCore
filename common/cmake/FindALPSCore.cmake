@@ -44,6 +44,10 @@ foreach(component ${ALPSCore_FIND_COMPONENTS})
     endif()
 endforeach()
 
+# Reverse the list of libraries to put utility in the end
+# This is vital for old linkers 
+list(REVERSE ALPSCore_LIBRARIES)
+
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(ALPSCore DEFAULT_MSG ALPSCore_LIBRARIES ALPSCore_INCLUDES)
 
