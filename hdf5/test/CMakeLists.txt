@@ -132,40 +132,17 @@ FOREACH (type ${ALPS_HDF5_DATA_TYPES})
     include_directories(.)
 
     configure_file(hdf5_io.cpp.in ${PROJECT_BINARY_DIR}/hdf5/test/hdf5_d${test_name}.cpp)
-
     alps_add_gtest(hdf5_d${test_name} ${PROJECT_BINARY_DIR}/hdf5/test)
 
+    # TODO: fix szip dependance ...
+    if (SZIP_FOUND)
+        configure_file(hdf5_io.cpp.in ${PROJECT_BINARY_DIR}/hdf5/test/hdf5_dz${test_name}.cpp)
+        alps_add_gtest(hdf5_d${test_name} ${PROJECT_BINARY_DIR}/hdf5/test)
+        SET_TARGET_PROPERTIES(hdf5_dz${test_name} PROPERTIES COMPILE_FLAGS "-DSZIP_COMPRESS=true")
+    endif (SZIP_FOUND)
 
-#    if (SZIP_FOUND)
-#        configure_file(hdf5_io.cpp.in ${PROJECT_BINARY_DIR}/hdf5/test/hdf5_dz${test_name}.cpp)
-#        add_executable(hdf5_dz${test_name} ${PROJECT_BINARY_DIR}/hdf5/test/hdf5_dz${test_name}.cpp)
-
-#        alps_add_gtest(${test})
-
-#        SET_TARGET_PROPERTIES(hdf5_dz${test_name} PROPERTIES COMPILE_FLAGS "-DSZIP_COMPRESS=true")
-#    endif (SZIP_FOUND)
-
-#    configure_file(hdf5_io.cpp.in ${PROJECT_BINARY_DIR}/hdf5/test/hdf5_a${test_name}.cpp)
-#    add_executable(hdf5_a${test_name} ${PROJECT_BINARY_DIR}/hdf5/test/hdf5_a${test_name}.cpp)
-#    SET_TARGET_PROPERTIES(hdf5_a${test_name} PROPERTIES COMPILE_FLAGS "-DIS_ATTRIBUTE=true")
-
-#    add_dependencies(hdf5_d${test_name} alps)
-#    target_link_libraries(hdf5_d${test_name} alps)
-
-#    if (SZIP_FOUND)
-#        add_dependencies(hdf5_dz${test_name} alps)
-#        target_link_libraries(hdf5_dz${test_name} alps)
-#    endif (SZIP_FOUND)
-
-#    add_dependencies(hdf5_a${test_name} alps)
-#    target_link_libraries(hdf5_a${test_name} alps)
-
-#    add_alps_test(hdf5_d${test_name})
-
-#    if (SZIP_FOUND)
-#        add_alps_test(hdf5_dz${test_name})
-#    endif (SZIP_FOUND)
-
-#    add_alps_test(hdf5_a${test_name})
+    configure_file(hdf5_io.cpp.in ${PROJECT_BINARY_DIR}/hdf5/test/hdf5_a${test_name}.cpp)
+    alps_add_gtest(hdf5_a${test_name} ${PROJECT_BINARY_DIR}/hdf5/test)
+    SET_TARGET_PROPERTIES(hdf5_a${test_name} PROPERTIES COMPILE_FLAGS "-DIS_ATTRIBUTE=true")
 
 ENDFOREACH(type)
