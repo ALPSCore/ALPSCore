@@ -9,7 +9,7 @@
 
 #include <alps/hdf5/archive.hpp>
 
-#include <alps/multi_array.hpp>
+// #include <alps/multi_array.hpp>
 
 #include <boost/multi_array.hpp>
 
@@ -19,20 +19,23 @@ namespace alps {
         template<typename T, std::size_t N, typename A> struct scalar_type<boost::multi_array<T, N, A> > {
             typedef typename scalar_type<typename boost::remove_reference<typename boost::remove_cv<T>::type>::type>::type type;
         };
-        template<typename T, std::size_t N, typename A> struct scalar_type<alps::multi_array<T, N, A> > 
-            : public scalar_type<boost::multi_array<T, N, A> > 
-        {};
+        // template<typename T, std::size_t N, typename A> struct scalar_type<alps::multi_array<T, N, A> > 
+        //     : public scalar_type<boost::multi_array<T, N, A> > 
+        // {};
 
-        template<typename T, std::size_t N, typename A> struct is_content_continuous<alps::multi_array<T, N, A> > 
+        template<typename T, std::size_t N, typename A> struct is_content_continuous<boost::multi_array<T, N, A> > 
             : public is_continuous<T> 
         {};
+        // template<typename T, std::size_t N, typename A> struct is_content_continuous<alps::multi_array<T, N, A> > 
+        //     : public is_continuous<T> 
+        // {};
 
         template<typename T, std::size_t N, typename A> struct has_complex_elements<boost::multi_array<T, N, A> > 
             : public has_complex_elements<typename alps::detail::remove_cvr<T>::type>
         {};
-        template<typename T, std::size_t N, typename A> struct has_complex_elements<alps::multi_array<T, N, A> > 
-            : public has_complex_elements<boost::multi_array<T, N, A> > 
-        {};
+        // template<typename T, std::size_t N, typename A> struct has_complex_elements<alps::multi_array<T, N, A> > 
+        //     : public has_complex_elements<boost::multi_array<T, N, A> > 
+        // {};
 
         namespace detail {
 
@@ -50,9 +53,9 @@ namespace alps {
                     return result;
                 }
             };
-            template<typename T, std::size_t N, typename A> struct get_extent<alps::multi_array<T, N, A> >
-                : public get_extent<boost::multi_array<T, N, A> > 
-            {};
+            // template<typename T, std::size_t N, typename A> struct get_extent<alps::multi_array<T, N, A> >
+            //     : public get_extent<boost::multi_array<T, N, A> > 
+            // {};
 
             template<typename T, std::size_t N, typename A> struct set_extent<boost::multi_array<T, N, A> > {
                 static void apply(boost::multi_array<T, N, A> & value, std::vector<std::size_t> const & size) {
@@ -75,9 +78,9 @@ namespace alps {
                         value.resize(extents);
                     }
             };
-            template<typename T, std::size_t N, typename A> struct set_extent<alps::multi_array<T, N, A> >
-                : public set_extent<boost::multi_array<T, N, A> > 
-            {};
+            // template<typename T, std::size_t N, typename A> struct set_extent<alps::multi_array<T, N, A> >
+            //     : public set_extent<boost::multi_array<T, N, A> > 
+            // {};
 
             template<typename T, std::size_t N, typename A> struct is_vectorizable<boost::multi_array<T, N, A> > {
                 static bool apply(boost::multi_array<T, N, A> const & value) {
@@ -90,9 +93,9 @@ namespace alps {
                     return true;
                 }
             };
-            template<typename T, std::size_t N, typename A> struct is_vectorizable<alps::multi_array<T, N, A> >
-                : public is_vectorizable<boost::multi_array<T, N, A> > 
-            {};
+            // template<typename T, std::size_t N, typename A> struct is_vectorizable<alps::multi_array<T, N, A> >
+            //     : public is_vectorizable<boost::multi_array<T, N, A> > 
+            // {};
 
             template<typename T, std::size_t N, typename A> struct get_pointer<boost::multi_array<T, N, A> > {
                 static typename alps::hdf5::scalar_type<boost::multi_array<T, N, A> >::type * apply(boost::multi_array<T, N, A> & value) {
@@ -100,9 +103,9 @@ namespace alps {
                     return get_pointer(*value.data());
                 }
             };
-            template<typename T, std::size_t N, typename A> struct get_pointer<alps::multi_array<T, N, A> >
-                : public get_pointer<boost::multi_array<T, N, A> > 
-            {};
+            // template<typename T, std::size_t N, typename A> struct get_pointer<alps::multi_array<T, N, A> >
+            //     : public get_pointer<boost::multi_array<T, N, A> > 
+            // {};
 
             template<typename T, std::size_t N, typename A> struct get_pointer<boost::multi_array<T, N, A> const> {
                 static typename alps::hdf5::scalar_type<boost::multi_array<T, N, A> >::type const * apply(boost::multi_array<T, N, A> const & value) {
@@ -110,9 +113,9 @@ namespace alps {
                     return get_pointer(*value.data());
                 }
             };
-            template<typename T, std::size_t N, typename A> struct get_pointer<alps::multi_array<T, N, A> const>
-                : public get_pointer<boost::multi_array<T, N, A> const> 
-            {};
+            // template<typename T, std::size_t N, typename A> struct get_pointer<alps::multi_array<T, N, A> const>
+            //     : public get_pointer<boost::multi_array<T, N, A> const> 
+            // {};
 
         }
 
@@ -151,16 +154,16 @@ namespace alps {
             } else
                 throw wrong_type("invalid type");
         }
-        template<typename T, std::size_t N, typename A> void save(
-              archive & ar
-            , std::string const & path
-            , alps::multi_array<T, N, A> const & value
-            , std::vector<std::size_t> size = std::vector<std::size_t>()
-            , std::vector<std::size_t> chunk = std::vector<std::size_t>()
-            , std::vector<std::size_t> offset = std::vector<std::size_t>()
-        ) {
-            save(ar, path, static_cast<boost::multi_array<T, N, A> const &>(value), size, chunk, offset);
-        }
+        // template<typename T, std::size_t N, typename A> void save(
+        //       archive & ar
+        //     , std::string const & path
+        //     , alps::multi_array<T, N, A> const & value
+        //     , std::vector<std::size_t> size = std::vector<std::size_t>()
+        //     , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+        //     , std::vector<std::size_t> offset = std::vector<std::size_t>()
+        // ) {
+        //     save(ar, path, static_cast<boost::multi_array<T, N, A> const &>(value), size, chunk, offset);
+        // }
 
         template<typename T, std::size_t N, typename A> void load(
               archive & ar
@@ -201,15 +204,15 @@ namespace alps {
                 }
             }
         }
-        template<typename T, std::size_t N, typename A> void load(
-              archive & ar
-            , std::string const & path
-            , alps::multi_array<T, N, A> & value
-            , std::vector<std::size_t> chunk = std::vector<std::size_t>()
-            , std::vector<std::size_t> offset = std::vector<std::size_t>()
-        ) {
-            load(ar, path, static_cast<boost::multi_array<T, N, A> &>(value), chunk, offset);                                                   
-        }
+        // template<typename T, std::size_t N, typename A> void load(
+        //       archive & ar
+        //     , std::string const & path
+        //     , alps::multi_array<T, N, A> & value
+        //     , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+        //     , std::vector<std::size_t> offset = std::vector<std::size_t>()
+        // ) {
+        //     load(ar, path, static_cast<boost::multi_array<T, N, A> &>(value), chunk, offset);                                                   
+        // }
    }
 }
 
