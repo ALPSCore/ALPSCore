@@ -1,4 +1,4 @@
-childs:  22
+childs:  23
 /list:  array([1, 2, 3], dtype=int32)
 /list2:  array([[[1, 2],
         [3, 4]],
@@ -11,6 +11,7 @@ childs:  22
 
        [[1, 2],
         [3, 4]]], dtype=int32)
+/tuple:  array([1, 2, 3], dtype=int32)
 /dict:  {'string': 'str', 'numpycpx': array([ 1.1+1.j,  0.0+2.j,  3.5+0.j]), 'list': array([1, 2, 3], dtype=int32), '1': 1, 'scalar': 1, '4': {'a': array([1, 2, 3]), '(2+3j)': 'foo'}, 'numpy': array([1, 2, 3])}
 /numpy:  array([1, 2, 3])
 /numpy2:  array([ 1.1,  2. ,  3.5])

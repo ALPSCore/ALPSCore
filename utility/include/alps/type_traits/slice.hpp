@@ -40,48 +40,48 @@ slices (T const&)
   return std::pair<typename slice_index<T>::type,typename slice_index<T>::type >(0,1);
 }
 
-template <class ValueType, class SliceIndex>
+template <class ValueType>
 typename boost::enable_if<is_sequence<ValueType>, std::string>::type
-slice_name(ValueType const& ,SliceIndex i) 
+slice_name(ValueType const& ,unsigned i) 
 { 
   return boost::lexical_cast<std::string,int>(i);
 }
 
-template <class ValueType, class SliceIndex>
+template <class ValueType>
 typename boost::disable_if<is_sequence<ValueType>, std::string>::type
-slice_name(ValueType const& ,SliceIndex) 
+slice_name(ValueType const& ,unsigned) 
 { 
   return "";
 }
 
-template <class ValueType, class SliceIndex>
+template <class ValueType>
 typename boost::enable_if<is_sequence<ValueType>, 
   typename element_type<ValueType>::type>::type
-slice_value(ValueType const& x ,SliceIndex i) 
+slice_value(ValueType const& x ,unsigned i) 
 { 
   return i < x.size() ? x[i] : typename element_type<ValueType>::type();
 }
 
 
-template <class ValueType, class SliceIndex>
+template <class ValueType>
 typename boost::disable_if<is_sequence<ValueType>, ValueType const&>::type
-slice_value(ValueType const& x ,SliceIndex) 
+slice_value(ValueType const& x ,unsigned) 
 { 
   return x;
 }
 
-template <class ValueType, class SliceIndex>
+template <class ValueType>
 typename boost::enable_if<is_sequence<ValueType>, 
   typename element_type<ValueType>::type&>::type
-slice_value(ValueType& x,SliceIndex i) 
+slice_value(ValueType& x,unsigned i) 
 { 
   return x[i];
 }
 
 
-template <class ValueType, class SliceIndex>
+template <class ValueType>
 typename boost::disable_if<is_sequence<ValueType>, ValueType&>::type
-slice_value(ValueType& x ,SliceIndex) 
+slice_value(ValueType& x ,unsigned) 
 { 
   return x;
 }

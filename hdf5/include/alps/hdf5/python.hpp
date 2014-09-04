@@ -96,6 +96,26 @@ namespace alps {
 
         namespace detail {
 
+            template<> struct is_vectorizable<boost::python::tuple> {
+                static bool apply(boost::python::tuple const & value);
+            };
+
+            template<> struct get_extent<boost::python::tuple> {
+                static std::vector<std::size_t> apply(boost::python::tuple const & value);
+            };
+        }
+
+        ALPS_DECL void save(
+              archive & ar
+            , std::string const & path
+            , boost::python::tuple const & value
+            , std::vector<std::size_t> size = std::vector<std::size_t>()
+            , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+            , std::vector<std::size_t> offset = std::vector<std::size_t>()
+        );
+
+        namespace detail {
+
             template<> struct is_vectorizable<boost::python::numeric::array> {
                 static bool apply(boost::python::numeric::array const & value);
             };

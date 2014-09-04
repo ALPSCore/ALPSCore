@@ -36,6 +36,7 @@ d = {"a": a, 2 + 3j: "foo"}
 
 ar["/list"] = [1, 2, 3]
 ar["/list2"] = [[[1, 2], [3, 4]], [[1, 2], [3, 4]], [[1, 2], [3, 4]], [[1, 2], [3, 4]]]
+ar["/tuple"] = (1, 2, 3)
 ar["/dict"] = {"scalar": 1, "numpy": a, "numpycpx": c, "list": [1, 2, 3], "string": "str", 1: 1, 4: d}
 ar["/numpy"] = a
 ar["/numpy2"] = b
@@ -64,6 +65,7 @@ ar = hdf5.archive('pyngs.h5', 'r')
 childs = ar.list_children('/')
 l1 = ar["/list"]
 l2 = ar["/list2"]
+t1 = ar["/tuple"]
 d1 = ar["/dict"]
 n1 = ar["/numpy"]
 n2 = ar["/numpy2"]
@@ -88,6 +90,7 @@ nl2 = ar["/numpylist2"]
 print "childs: ", len(childs)
 print "/list: ", repr(l1)
 print "/list2: ", repr(l2)
+print "/tuple: ", repr(t1)
 print "/dict: ", repr(d1)
 print "/numpy: ", repr(n1)
 print "/numpy2: ", repr(n2)

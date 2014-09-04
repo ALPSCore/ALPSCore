@@ -34,6 +34,7 @@
                 else if (dtype == "complex") visitor(boost::python::extract<std::complex<double> >(data)());
                 else if (dtype == "str") visitor(boost::python::extract<std::string>(data)());
                 else if (dtype == "list") visitor(boost::python::list(data));
+                else if (dtype == "tuple") visitor(boost::python::list(data));
                 else if (dtype == "dict") visitor(boost::python::dict(data));
                 else if (dtype == "numpy.str") visitor(boost::python::call_method<std::string>(data.ptr(), "__str__"));
                 else if (dtype == "numpy.bool") visitor(boost::python::call_method<bool>(data.ptr(), "__bool__"));

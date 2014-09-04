@@ -27,19 +27,19 @@ namespace alps {
             {}
 
             typename T::results_type collect_results(typename T::result_names_type const & names = typename T::result_names_type()) {
-                return names.size() ? ising_sim::collect_results(names) : ising_sim::collect_results();
+                return names.size() ? T::collect_results(names) : T::collect_results();
             }
 
             bool run(boost::python::object stop_callback) {
-                return ising_sim::run(boost::bind(&export2python_wrapper<T>::run_helper, this, stop_callback));
+                return T::run(boost::bind(&export2python_wrapper<T>::run_helper, this, stop_callback));
             }
 
             alps::random01 & get_random() {
-                return ising_sim::random;
+                return T::random;
             }
 
             typename T::parameters_type & get_parameters() {
-                return ising_sim::parameters;
+                return T::parameters;
             }
 
         private:
