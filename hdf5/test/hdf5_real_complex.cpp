@@ -5,7 +5,10 @@
  */
 
 #include <alps/hdf5/archive.hpp>
-#include <alps/numeric/matrix.hpp>
+#include <alps/hdf5/vector.hpp>
+#include <alps/hdf5/complex.hpp>
+// TODO: do we have a matrix class test?
+// #include <alps/numeric/matrix.hpp>
 #include <alps/utility/short_print.hpp>
 
 #include <boost/filesystem.hpp>
@@ -14,14 +17,9 @@
 #include <complex>
 #include <iostream>
 
-template <class T>
-std::ostream& operator<<(std::ostream& os, std::vector<T> const& v)
-{
-	os << "[" <<alps::write_vector(v, " ", 6) << "]";
-	return os;
-}
+#include "gtest/gtest.h"
 
-int main() {
+TEST(hdf5, TestingOfRealComplex){
 
     if (boost::filesystem::exists("real_complex.h5") && boost::filesystem::is_regular_file("real_complex.h5"))
         boost::filesystem::remove("real_complex.h5");
@@ -30,33 +28,37 @@ int main() {
         const int vsize = 6, msize=4;
 
         std::vector<double> v(vsize, 3.2);
-        alps::numeric::matrix<double> A(msize,msize, 1.5);
+        // alps::numeric::matrix<double> A(msize,msize, 1.5);
 
-        std::cout << "v: " << v << std::endl;
+        std::cout << "v: " << alps::short_print(v) << std::endl;
 
         {
             alps::hdf5::archive ar("real_complex.h5", "w");
-            ar["/matrix"] << A;
+            // ar["/matrix"] << A;
             ar["/vec"] << v;
         }
 
         std::vector<std::complex<double> > w;
-        alps::numeric::matrix<std::complex<double> > B;
+        // alps::numeric::matrix<std::complex<double> > B;
         {
             alps::hdf5::archive ar("real_complex.h5", "r");
-            ar["/matrix"] >> B;
+            // ar["/matrix"] >> B;
             ar["/vec"] >> w;
         }
 
-        std::cout << "w: " << w << std::endl;
+        std::cout << "w: " << alps::short_print(w) << std::endl;
         
         boost::filesystem::remove("real_complex.h5");
         
-        return EXIT_FAILURE;
+        EXPECT_TRUE(false);
 
     } catch (alps::hdf5::archive_error) {
         boost::filesystem::remove("real_complex.h5");
-        return EXIT_SUCCESS;
+        EXPECT_TRUE(true);
     }
-
+}
+int main(int argc, char **argv) 
+{
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }

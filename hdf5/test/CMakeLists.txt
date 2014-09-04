@@ -10,6 +10,7 @@ set (test_src
     hdf5_misc
     hdf5_multiarchive
     hdf5_pair
+    hdf5_real_complex
     hdf5_real_complex_vec
     hdf5_replace
     hdf5_vecvecdbl
