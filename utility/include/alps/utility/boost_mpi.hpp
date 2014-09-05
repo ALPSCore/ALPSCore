@@ -11,7 +11,8 @@
 
     #include <boost/mpi.hpp>
     #include <boost/array.hpp>
-    #include <alps/multi_array.hpp>
+    #include <boost/multi_array.hpp>
+    // #include <alps/multi_array.hpp>
 
     #include <vector>
 
@@ -49,14 +50,14 @@
                 reduce(comm, in_values.data(), std::accumulate(shape.begin(), shape.end(), 0), out_values.data(), op, root);
             }
 
-            // alps::mulit_array
-            template<typename T, std::size_t N, typename A, typename Op> void reduce(const communicator & comm, alps::multi_array<T, N, A> const & in_values, Op op, int root) {
-                reduce(comm, static_cast<boost::multi_array<T, N, A> const &>(in_values), op, root);
-            }
+            // // alps::mulit_array
+            // template<typename T, std::size_t N, typename A, typename Op> void reduce(const communicator & comm, alps::multi_array<T, N, A> const & in_values, Op op, int root) {
+            //     reduce(comm, static_cast<boost::multi_array<T, N, A> const &>(in_values), op, root);
+            // }
 
-            template<typename T, std::size_t N, typename A, typename Op> void reduce(const communicator & comm, alps::multi_array<T, N, A> const & in_values, alps::multi_array<T, N, A> & out_values, Op op, int root) {
-                reduce(comm, static_cast<boost::multi_array<T, N, A> const &>(in_values), static_cast<boost::multi_array<T, N, A> &>(out_values), op, root);
-            }
+            // template<typename T, std::size_t N, typename A, typename Op> void reduce(const communicator & comm, alps::multi_array<T, N, A> const & in_values, alps::multi_array<T, N, A> & out_values, Op op, int root) {
+            //     reduce(comm, static_cast<boost::multi_array<T, N, A> const &>(in_values), static_cast<boost::multi_array<T, N, A> &>(out_values), op, root);
+            // }
 
         }
     }
