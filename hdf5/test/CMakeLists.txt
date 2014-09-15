@@ -130,6 +130,7 @@ FOREACH (type ${ALPS_HDF5_DATA_TYPES})
     STRING(REGEX REPLACE "_aosot_" "_bst_" test_name ${test_name})
 
     set(HDF5_DATA_TYPE ${type})
+    set(HDF5_TEST_NAME ${test_name})
     include_directories(.)
 
     configure_file(hdf5_io.cpp.in ${PROJECT_BINARY_DIR}/hdf5/test/hdf5_d${test_name}.cpp)
