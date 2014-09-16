@@ -7,6 +7,8 @@
 #include <boost/bind.hpp>
 #include <algorithm>
 #include <fstream>
+#include <iostream>
+#include <string>
 
 namespace alps {
     params::params(hdf5::archive ar, std::string const & path) {
