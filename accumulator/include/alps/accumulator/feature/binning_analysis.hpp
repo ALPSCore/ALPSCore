@@ -98,8 +98,8 @@ namespace alps {
                     {}                    
 
                     error_convergence converged_errors() const {
-                        error_convergence conv = MAYBE_CONVERGED;
                         // TODO: implement!
+                        // error_convergence conv = MAYBE_CONVERGED;
                         // typename alps::accumulator::mean_type<B>::type err = error();
                         // resize_same_as(conv,err);
                         // const unsigned int range = 4;
@@ -148,7 +148,7 @@ namespace alps {
                         error_scalar_type one = 1;
 
                         error_scalar_type binlen = 1ll << bin_level;
-                        error_scalar_type N_0 = m_ac_count[0];
+                        //error_scalar_type N_0 = m_ac_count[0];
                         error_scalar_type N_i = m_ac_count[bin_level];
                         error_type sum_i = m_ac_sum[bin_level];
                         error_type sum2_i = m_ac_sum2[bin_level];
