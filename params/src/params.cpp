@@ -5,10 +5,9 @@
  */
 #include <alps/params.hpp>
 #include <boost/bind.hpp>
+#include <boost/algorithm/string.hpp>
 #include <algorithm>
 #include <fstream>
-#include <iostream>
-#include <string>
 
 namespace alps {
     params::params(hdf5::archive ar, std::string const & path) {
@@ -135,11 +134,10 @@ namespace alps {
       if (eqpos==std::string::npos || eqpos ==0 || eqpos ==line.length()) continue; //no equal sign found in this line or string starting/ending with =
       std::string key=line.substr(0,eqpos);
       std::string value=line.substr(eqpos+1,line.length());
-      key  .erase(std::remove_if(key  .begin(), key  .end(), ::isspace), key.end() );
-      value.erase(std::remove_if(value.begin(), value.end(), ::isspace), value.end() );
-      if(value.back()==';') value.pop_back();
-      detail::paramvalue val(value);      
-      setter(key,val);
+      boost::algorithm::trim(key);
+      boost::algorithm::trim(value);
+      boost::algorithm::trim_if(value, boost::is_any_of(";")); //trim semicolon
+      setter(key,value);
     }
   }
 }
