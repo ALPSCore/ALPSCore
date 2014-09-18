@@ -33,6 +33,9 @@ TEST(param, TextParamRead){
      pfile<<"" <<std::endl; //empty line
      pfile<<" this is a  line with some gunk in it" <<std::endl; //empty line
      pfile<<"complicated_string = "<<complicated_string_parameter<<std::endl; //empty line
+     pfile<<"NOSPACE_LEFT= "<<double_parameter<<std::endl;
+     pfile<<"NOSPACE_RIGHT ="<<double_parameter<<std::endl;
+     pfile<<"NOSPACE_BOTH="<<double_parameter<<std::endl;
    }
    
    //define the parameters and read them
@@ -45,6 +48,9 @@ TEST(param, TextParamRead){
    std::string complicated_string_parameter_read=p["complicated_string"];
    bool bool_parameter_true_read=p["BOOL_TRUE"];
    bool bool_parameter_false_read=p["BOOL_FALSE"];
+   double nospace_left=p["NOSPACE_LEFT"];  
+   double nospace_right=p["NOSPACE_RIGHT"];  
+   double nospace_both=p["NOSPACE_BOTH"];  
 
    EXPECT_EQ(int_parameter, int_parameter_read);    
    EXPECT_NEAR(double_parameter, double_parameter_read, 1.e-12);    
@@ -53,6 +59,9 @@ TEST(param, TextParamRead){
    EXPECT_EQ(string_parameter, string_parameter_semi_read); //test that the ; gets trimmed
    EXPECT_EQ(bool_parameter_true, bool_parameter_true_read); 
    EXPECT_EQ(bool_parameter_false, bool_parameter_false_read); 
+   EXPECT_NEAR(double_parameter, nospace_left, 1.e-12);    
+   EXPECT_NEAR(double_parameter, nospace_right, 1.e-12);    
+   EXPECT_NEAR(double_parameter, nospace_both, 1.e-12);    
 
 }
 int main(int argc, char **argv) 

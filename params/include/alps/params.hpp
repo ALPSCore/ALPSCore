@@ -7,7 +7,6 @@
 #pragma once
 
 #include <alps/hdf5/archive.hpp>
-//#include <alps/ngs/config.hpp>
 #include <alps/params/paramvalue.hpp>
 #include <alps/params/paramproxy.hpp>
 #include <alps/params/paramiterator.hpp>
@@ -23,7 +22,7 @@
 #include <boost/serialization/string.hpp> 
 
 #ifdef ALPS_HAVE_MPI
-    #include <alps/utility/boost_mpi.hpp>
+    namespace boost{ namespace mpi{ class communicator; } }
 #endif
 
 #include <map>

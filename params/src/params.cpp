@@ -4,13 +4,13 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 #include <alps/params.hpp>
+#include <alps/utility/boost_mpi.hpp>
 #include <boost/bind.hpp>
 #include <boost/algorithm/string.hpp>
 #include <algorithm>
 #include <fstream>
 
 namespace alps {
-
     params::params(hdf5::archive ar, std::string const & path) {
         std::string context = ar.get_context();
         ar.set_context(path);
@@ -32,19 +32,6 @@ namespace alps {
             for (std::size_t i = 0; i < boost::python::len(dict()); ++i)
                 setter(boost::python::call_method<std::string>(kit.attr("next")().ptr(), "__str__"), vit.attr("next")());
         }
-    /* DISALLOWED BECAUSE OF DEPENDENCE ON ALPS::PARAMETERS,THE OLD PARAMETERS CLASS
-        // TODO: merge with params::params(boost::filesystem::path const & path);
-        params::params(boost::python::str const & arg) {
-            std::string path = boost::python::extract<std::string>(arg)();
-            boost::filesystem::ifstream ifs(path);
-            Parameters par(ifs);
-            for (Parameters::const_iterator it = par.begin(); it != par.end(); ++it) {
-                detail::paramvalue val(it->value());
-                setter(it->key(), val);
-            }
-        }
-     */
-
     #endif
 
     std::size_t params::size() const {
@@ -117,8 +104,9 @@ namespace alps {
     #endif
     
     void params::setter(std::string const & key, detail::paramvalue const & value) {
-        if (!defined(key))
+        if (!defined(key)){
             keys.push_back(key);
+        }
         values[key] = value;
     }
 
@@ -136,6 +124,8 @@ namespace alps {
   //we expect parameters to be of the form key = value
   //format taken over from legacy ALPS.
   void params::parse_text_parameters(boost::filesystem::path const & path){
+    keys.clear();
+    values.clear();
     std::ifstream ifs(path.string().c_str());
     if(!ifs.is_open()) throw std::runtime_error("Problem reading parameter file at: "+path.string());
     
