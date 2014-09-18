@@ -69,6 +69,9 @@ if (Testing)
     add_subdirectory(test)
 endif (Testing)
 
+# add tutorial
+# add_subdirectory(tutorials)
+
 # installation
 install(DIRECTORY include DESTINATION .
           FILES_MATCHING PATTERN "*.hpp" PATTERN "*.hxx"

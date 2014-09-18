@@ -4,8 +4,8 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_NGS_DETAIL_PARAMS_IMPL_BASE_HPP
-#define ALPS_NGS_DETAIL_PARAMS_IMPL_BASE_HPP
+#ifndef ALPS_DETAIL_PARAMS_IMPL_BASE_HPP
+#define ALPS_DETAIL_PARAMS_IMPL_BASE_HPP
 
 #warning this file is deprecated
 

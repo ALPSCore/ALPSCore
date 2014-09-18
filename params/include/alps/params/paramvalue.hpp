@@ -28,7 +28,7 @@
 #include <ostream>
 #include <stdexcept>
 
-#define ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE_NO_PYTHON(CALLBACK)                    \
+#define ALPS_FOREACH_PARAMETERVALUE_TYPE_NO_PYTHON(CALLBACK)                        \
     CALLBACK(double)                                                                \
     CALLBACK(int)                                                                   \
     CALLBACK(bool)                                                                  \
@@ -40,12 +40,12 @@
     CALLBACK(std::vector<std::complex<double> >)
 
 #if defined(ALPS_HAVE_PYTHON)
-    #define ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE(CALLBACK)                          \
-        ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE_NO_PYTHON(CALLBACK)                    \
+    #define ALPS_FOREACH_PARAMETERVALUE_TYPE(CALLBACK)                              \
+        ALPS_FOREACH_PARAMETERVALUE_TYPE_NO_PYTHON(CALLBACK)                        \
         CALLBACK(boost::python::object)
 #else
-    #define ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE(CALLBACK)                          \
-        ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE_NO_PYTHON(CALLBACK)
+    #define ALPS_FOREACH_PARAMETERVALUE_TYPE(CALLBACK)                              \
+        ALPS_FOREACH_PARAMETERVALUE_TYPE_NO_PYTHON(CALLBACK)
 #endif
 
 namespace alps {
@@ -116,13 +116,13 @@ namespace alps {
                 Archive & ar;
         };
 
-        #define ALPS_NGS_PARAMVALUE_VARIANT_TYPE(T)    T,
+        #define ALPS_PARAMVALUE_VARIANT_TYPE(T)    T,
         typedef boost::mpl::pop_back<boost::mpl::vector<
-            ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE(
-                ALPS_NGS_PARAMVALUE_VARIANT_TYPE
+            ALPS_FOREACH_PARAMETERVALUE_TYPE(
+                ALPS_PARAMVALUE_VARIANT_TYPE
             ) void
         >::type >::type paramvalue_types;
-        #undef ALPS_NGS_PARAMVALUE_VARIANT_TYPE
+        #undef ALPS_PARAMVALUE_VARIANT_TYPE
         typedef boost::make_variant_over<paramvalue_types>::type paramvalue_base;
 
         class paramvalue : public paramvalue_base {
@@ -146,31 +146,31 @@ namespace alps {
                     return visitor.get_value();
                 }
 
-                #define ALPS_NGS_PARAMVALUE_MEMBER_DECL(T)                          \
+                #define ALPS_PARAMVALUE_MEMBER_DECL(T)                              \
                     paramvalue( T const & v) : paramvalue_base(v) {}                \
                     operator T () const;                                            \
                     paramvalue & operator=( T const &);
-                ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE(ALPS_NGS_PARAMVALUE_MEMBER_DECL)
-                #undef ALPS_NGS_PARAMVALUE_MEMBER_DECL
+                ALPS_FOREACH_PARAMETERVALUE_TYPE(ALPS_PARAMVALUE_MEMBER_DECL)
+                #undef ALPS_PARAMVALUE_MEMBER_DECL
 
                 
-                #define ALPS_NGS_PARAMVALUE_MEMBER_DECL_CONVERT(T)                  \
+                #define ALPS_PARAMVALUE_MEMBER_DECL_CONVERT(T)                      \
                     paramvalue(T const & value)                                     \
                         : paramvalue_base(static_cast<int>(value))                  \
                     {}                                                              \
                     paramvalue & operator=(T const & value) {                       \
                         return *this = static_cast<int>(value);                     \
                     }
-                ALPS_NGS_PARAMVALUE_MEMBER_DECL_CONVERT(char)
-                ALPS_NGS_PARAMVALUE_MEMBER_DECL_CONVERT(unsigned char)
-                ALPS_NGS_PARAMVALUE_MEMBER_DECL_CONVERT(short)
-                ALPS_NGS_PARAMVALUE_MEMBER_DECL_CONVERT(unsigned short)
-                ALPS_NGS_PARAMVALUE_MEMBER_DECL_CONVERT(unsigned)
-                ALPS_NGS_PARAMVALUE_MEMBER_DECL_CONVERT(long)
-                ALPS_NGS_PARAMVALUE_MEMBER_DECL_CONVERT(unsigned long)
-                ALPS_NGS_PARAMVALUE_MEMBER_DECL_CONVERT(long long)
-                ALPS_NGS_PARAMVALUE_MEMBER_DECL_CONVERT(unsigned long long)
-                #undef ALPS_NGS_PARAMVALUE_MEMBER_DECL_CONVERT
+                ALPS_PARAMVALUE_MEMBER_DECL_CONVERT(char)
+                ALPS_PARAMVALUE_MEMBER_DECL_CONVERT(unsigned char)
+                ALPS_PARAMVALUE_MEMBER_DECL_CONVERT(short)
+                ALPS_PARAMVALUE_MEMBER_DECL_CONVERT(unsigned short)
+                ALPS_PARAMVALUE_MEMBER_DECL_CONVERT(unsigned)
+                ALPS_PARAMVALUE_MEMBER_DECL_CONVERT(long)
+                ALPS_PARAMVALUE_MEMBER_DECL_CONVERT(unsigned long)
+                ALPS_PARAMVALUE_MEMBER_DECL_CONVERT(long long)
+                ALPS_PARAMVALUE_MEMBER_DECL_CONVERT(unsigned long long)
+                #undef ALPS_PARAMVALUE_MEMBER_DECL_CONVERT
 
                 paramvalue(long double const & value)
                     : paramvalue_base(static_cast<double>(value))
@@ -204,16 +204,16 @@ namespace alps {
                     std::size_t type;
                     ar >> type;
                     if (false);
-                    #define ALPS_NGS_PARAMVALUE_LOAD(T)                                 \
+                    #define ALPS_PARAMVALUE_LOAD(T)                                     \
                         else if (type == paramvalue_index< T >::value) {                \
                             T value;                                                    \
                             ar >> value;                                                \
                             operator=(value);                                           \
                         }
                     // TODO: fix python serialization!
-                    // ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE(ALPS_NGS_PARAMVALUE_LOAD)
-                    ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE_NO_PYTHON(ALPS_NGS_PARAMVALUE_LOAD)
-                    #undef ALPS_NGS_PARAMVALUE_LOAD
+                    // ALPS_FOREACH_PARAMETERVALUE_TYPE(ALPS_PARAMVALUE_LOAD)
+                    ALPS_FOREACH_PARAMETERVALUE_TYPE_NO_PYTHON(ALPS_PARAMVALUE_LOAD)
+                    #undef ALPS_PARAMVALUE_LOAD
                     else
                         throw std::runtime_error("unknown type" + ALPS_STACKTRACE);
                 }

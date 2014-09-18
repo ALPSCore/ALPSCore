@@ -10,7 +10,7 @@
 #include <alps/config.h>
 
 // if defined, no threading libraries are included
-// #define ALPS_NGS_SINGLE_THREAD
+// #define ALPS_SINGLE_THREAD
 
 // do not throw an error on accessing a not existing paht in a hdf5 file
 // #define ALPS_HDF5_READ_GREEDY

@@ -88,22 +88,22 @@ namespace alps {
                 std::ostream & os;
         };
 
-        #define ALPS_NGS_PARAMVALUE_OPERATOR_T_IMPL(T)                                \
+        #define ALPS_PARAMVALUE_OPERATOR_T_IMPL(T)                                   \
             paramvalue::operator T () const {                                        \
-                paramvalue_reader< T > visitor;                                        \
-                boost::apply_visitor(visitor, *this);                               \
-                return visitor.get_value();                                            \
+                paramvalue_reader< T > visitor;                                      \
+                boost::apply_visitor(visitor, *this);                                \
+                return visitor.get_value();                                          \
             }
-        ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE(ALPS_NGS_PARAMVALUE_OPERATOR_T_IMPL)
-        #undef ALPS_NGS_PARAMVALUE_OPERATOR_T_IMPL
+        ALPS_FOREACH_PARAMETERVALUE_TYPE(ALPS_PARAMVALUE_OPERATOR_T_IMPL)
+        #undef ALPS_PARAMVALUE_OPERATOR_T_IMPL
 
-        #define ALPS_NGS_PARAMVALUE_OPERATOR_EQ_IMPL(T)                                \
-            paramvalue & paramvalue::operator=( T const & arg) {                    \
-                paramvalue_base::operator=(arg);                                    \
+        #define ALPS_PARAMVALUE_OPERATOR_EQ_IMPL(T)                                  \
+            paramvalue & paramvalue::operator=( T const & arg) {                     \
+                paramvalue_base::operator=(arg);                                     \
                 return *this;                                                        \
             }
-        ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE(ALPS_NGS_PARAMVALUE_OPERATOR_EQ_IMPL)
-        #undef ALPS_NGS_PARAMVALUE_OPERATOR_EQ_IMPL
+        ALPS_FOREACH_PARAMETERVALUE_TYPE(ALPS_PARAMVALUE_OPERATOR_EQ_IMPL)
+        #undef ALPS_PARAMVALUE_OPERATOR_EQ_IMPL
 
         void paramvalue::save(hdf5::archive & ar) const {
             boost::apply_visitor(
@@ -112,35 +112,35 @@ namespace alps {
         }
 
         void paramvalue::load(hdf5::archive & ar) {
-            #define ALPS_NGS_PARAMVALUE_LOAD_HDF5(T)                                \
+            #define ALPS_PARAMVALUE_LOAD_HDF5(T)                                     \
                 {                                                                    \
-                    T value;                                                        \
-                    ar[""] >> value;                                        \
+                    T value;                                                         \
+                    ar[""] >> value;                                                 \
                     operator=(value);                                                \
                 }
-            #define ALPS_NGS_PARAMVALUE_LOAD_HDF5_CHECK(T, U)                        \
+            #define ALPS_PARAMVALUE_LOAD_HDF5_CHECK(T, U)                            \
                 else if (ar.is_datatype< T >(""))                                    \
-                    ALPS_NGS_PARAMVALUE_LOAD_HDF5(U)
+                    ALPS_PARAMVALUE_LOAD_HDF5(U)
             if (ar.is_scalar("")) {
                 if (ar.is_complex(""))
-                    ALPS_NGS_PARAMVALUE_LOAD_HDF5(std::complex<double>)
-                ALPS_NGS_PARAMVALUE_LOAD_HDF5_CHECK(double, double)
-                ALPS_NGS_PARAMVALUE_LOAD_HDF5_CHECK(int, int)
-                ALPS_NGS_PARAMVALUE_LOAD_HDF5_CHECK(bool, bool)
-                ALPS_NGS_PARAMVALUE_LOAD_HDF5_CHECK(std::string, std::string)
+                    ALPS_PARAMVALUE_LOAD_HDF5(std::complex<double>)
+                ALPS_PARAMVALUE_LOAD_HDF5_CHECK(double, double)
+                ALPS_PARAMVALUE_LOAD_HDF5_CHECK(int, int)
+                ALPS_PARAMVALUE_LOAD_HDF5_CHECK(bool, bool)
+                ALPS_PARAMVALUE_LOAD_HDF5_CHECK(std::string, std::string)
             } else {
                 if (ar.is_complex(""))
-                    ALPS_NGS_PARAMVALUE_LOAD_HDF5(
+                    ALPS_PARAMVALUE_LOAD_HDF5(
                         std::vector<std::complex<double> >
                     )
-                ALPS_NGS_PARAMVALUE_LOAD_HDF5_CHECK(double, std::vector<double>)
-                ALPS_NGS_PARAMVALUE_LOAD_HDF5_CHECK(int, std::vector<int>)
-                ALPS_NGS_PARAMVALUE_LOAD_HDF5_CHECK(
+                ALPS_PARAMVALUE_LOAD_HDF5_CHECK(double, std::vector<double>)
+                ALPS_PARAMVALUE_LOAD_HDF5_CHECK(int, std::vector<int>)
+                ALPS_PARAMVALUE_LOAD_HDF5_CHECK(
                     std::string, std::vector<std::string>
                 )
             }
-            #undef ALPS_NGS_PARAMVALUE_LOAD_HDF5
-            #undef ALPS_NGS_PARAMVALUE_LOAD_HDF5_CHECK
+            #undef ALPS_PARAMVALUE_LOAD_HDF5
+            #undef ALPS_PARAMVALUE_LOAD_HDF5_CHECK
         }
 
         std::ostream & operator<<(std::ostream & os, paramvalue const & arg) {

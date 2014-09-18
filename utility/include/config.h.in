@@ -37,12 +37,12 @@
 #cmakedefine ALPS_HAVE_WINDOWS_H
 
 // If defined, the new ngs alea will be used, instead of the old alea
-//#cmakedefine ALPS_NGS_USE_NEW_ALEA
+//#cmakedefine ALPS_USE_NEW_ALEA
 //we have no 'old' ALEA here
-#define ALPS_NGS_USE_NEW_ALEA
+#define ALPS_USE_NEW_ALEA
 
 // If defined, the openmpi specific ulfm is used.
-#cmakedefine ALPS_NGS_OPENMPI_ULFM
+#cmakedefine ALPS_OPENMPI_ULFM
 
 //
 // Libraries
@@ -223,7 +223,7 @@ using boost::uint_fast64_t;
 #endif
 
 // if defined, no threading libraries are included
-// #define ALPS_NGS_SINGLE_THREAD
+// #define ALPS_SINGLE_THREAD
 
 // do not throw an error on accessing a not existing paht in a hdf5 file
 // #define ALPS_HDF5_READ_GREEDY
@@ -237,18 +237,18 @@ using boost::uint_fast64_t;
 #endif
 
 // maximal number of stack frames displayed in stacktrace. Default 63
-#ifndef ALPS_NGS_MAX_FRAMES
-    #define ALPS_NGS_MAX_FRAMES 63
+#ifndef ALPS_MAX_FRAMES
+    #define ALPS_MAX_FRAMES 63
 #endif
 
 // prevent the signal object from registering signals
 #ifdef BOOST_MSVC
-    #define ALPS_NGS_NO_SIGNALS
+    #define ALPS_NO_SIGNALS
 #endif
 
 // do not print a stacktrace in error messages
 // we will always print stacktrace. This is how it was done in legacy ALPS:
 //#ifndef __GNUC__
-//    #define ALPS_NGS_NO_STACKTRACE
+//    #define ALPS_NO_STACKTRACE
 //#endif
 

@@ -4,8 +4,8 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_NGS_HDF5_HPP
-#define ALPS_NGS_HDF5_HPP
+#ifndef ALPS_HDF5_ARCHIVE_HPP
+#define ALPS_HDF5_ARCHIVE_HPP
 
 #include <alps/hdf5/config.hpp>
 #include <alps/utility/stacktrace.hpp>
@@ -20,7 +20,7 @@
 #include <boost/type_traits/is_array.hpp>
 #include <boost/type_traits/remove_all_extents.hpp>
 
-#ifndef ALPS_NGS_SINGLE_THREAD
+#ifndef ALPS_SINGLE_THREAD
 
 #include <boost/thread.hpp>
 
@@ -31,22 +31,22 @@
 #include <string>
 #include <numeric>
 
-#define ALPS_NGS_FOREACH_NATIVE_HDF5_TYPE(CALLBACK)                                                                                            \
-    CALLBACK(char)                                                                                                                             \
-    CALLBACK(signed char)                                                                                                                      \
-    CALLBACK(unsigned char)                                                                                                                    \
-    CALLBACK(short)                                                                                                                            \
-    CALLBACK(unsigned short)                                                                                                                   \
-    CALLBACK(int)                                                                                                                              \
-    CALLBACK(unsigned)                                                                                                                         \
-    CALLBACK(long)                                                                                                                             \
-    CALLBACK(unsigned long)                                                                                                                    \
-    CALLBACK(long long)                                                                                                                        \
-    CALLBACK(unsigned long long)                                                                                                               \
-    CALLBACK(float)                                                                                                                            \
-    CALLBACK(double)                                                                                                                           \
-    CALLBACK(long double)                                                                                                                      \
-    CALLBACK(bool)                                                                                                                             \
+#define ALPS_FOREACH_NATIVE_HDF5_TYPE(CALLBACK)                                                                                                                        \
+    CALLBACK(char)                                                                                                                                                     \
+    CALLBACK(signed char)                                                                                                                                              \
+    CALLBACK(unsigned char)                                                                                                                                            \
+    CALLBACK(short)                                                                                                                                                    \
+    CALLBACK(unsigned short)                                                                                                                                           \
+    CALLBACK(int)                                                                                                                                                      \
+    CALLBACK(unsigned)                                                                                                                                                 \
+    CALLBACK(long)                                                                                                                                                     \
+    CALLBACK(unsigned long)                                                                                                                                            \
+    CALLBACK(long long)                                                                                                                                                \
+    CALLBACK(unsigned long long)                                                                                                                                       \
+    CALLBACK(float)                                                                                                                                                    \
+    CALLBACK(double)                                                                                                                                                   \
+    CALLBACK(long double)                                                                                                                                              \
+    CALLBACK(bool)                                                                                                                                                     \
     CALLBACK(std::string)
 
 namespace alps {
@@ -62,14 +62,14 @@ namespace alps {
                 }
             };
 
-            #define ALPS_NGS_HDF5_IS_DATATYPE_CALLER(T)                                                                                                                \
+            #define ALPS_HDF5_IS_DATATYPE_CALLER(T)                                                                                                                    \
                 template<typename A> struct is_datatype_caller<A, T > {                                                                                                \
                     static bool apply(A const & ar, std::string path, T unused = alps::detail::type_wrapper<T>::type()) {                                              \
                         return ar.is_datatype_impl(path, unused);                                                                                                      \
                     }                                                                                                                                                  \
                 };
-            ALPS_NGS_FOREACH_NATIVE_HDF5_TYPE(ALPS_NGS_HDF5_IS_DATATYPE_CALLER)
-            #undef ALPS_NGS_HDF5_IS_DATATYPE_CALLER
+            ALPS_FOREACH_NATIVE_HDF5_TYPE(ALPS_HDF5_IS_DATATYPE_CALLER)
+            #undef ALPS_HDF5_IS_DATATYPE_CALLER
 
             template<typename A> struct archive_proxy {
 
@@ -173,7 +173,7 @@ namespace alps {
                     throw std::logic_error("Invalid type on path: " + path + ALPS_STACKTRACE);
                 }
 
-                #define ALPS_NGS_HDF5_DEFINE_API(T)                                                                                                                    \
+                #define ALPS_HDF5_DEFINE_API(T)                                                                                                                        \
                     void read(std::string path, T & value) const;                                                                                                      \
                     void read(                                                                                                                                         \
                           std::string path                                                                                                                             \
@@ -189,13 +189,13 @@ namespace alps {
                         , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                  \
                         , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                 \
                     ) const;
-                ALPS_NGS_FOREACH_NATIVE_HDF5_TYPE(ALPS_NGS_HDF5_DEFINE_API)
-                #undef ALPS_NGS_HDF5_DEFINE_API
+                ALPS_FOREACH_NATIVE_HDF5_TYPE(ALPS_HDF5_DEFINE_API)
+                #undef ALPS_HDF5_DEFINE_API
 
-                #define ALPS_NGS_HDF5_IS_DATATYPE_IMPL_DECL(T)                                                                                                         \
+                #define ALPS_HDF5_IS_DATATYPE_IMPL_DECL(T)                                                                                                             \
                     bool is_datatype_impl(std::string path, T) const;
-                ALPS_NGS_FOREACH_NATIVE_HDF5_TYPE(ALPS_NGS_HDF5_IS_DATATYPE_IMPL_DECL)
-                #undef ALPS_NGS_HDF5_IS_DATATYPE_IMPL_DECL
+                ALPS_FOREACH_NATIVE_HDF5_TYPE(ALPS_HDF5_IS_DATATYPE_IMPL_DECL)
+                #undef ALPS_HDF5_IS_DATATYPE_IMPL_DECL
 
             private:
 
@@ -205,7 +205,7 @@ namespace alps {
                 std::string current_;
                 detail::archivecontext * context_;
 
-#ifndef ALPS_NGS_SINGLE_THREAD
+#ifndef ALPS_SINGLE_THREAD
                 static boost::recursive_mutex mutex_;
 #endif
                 static std::map<std::string, std::pair<detail::archivecontext *, std::size_t> > ref_cnt_;
@@ -240,15 +240,15 @@ namespace alps {
                  static void apply(T &, std::vector<std::size_t> const &) {}
             };
             
-            #define ALPS_NGS_HDF5_DEFINE_SET_EXTENT(T)                                                                                                              \
+            #define ALPS_HDF5_DEFINE_SET_EXTENT(T)                                                                                                                  \
                 template<> struct set_extent<T> {                                                                                                                   \
                     static void apply(T &, std::vector<std::size_t> const & extent) {                                                                               \
                         if (extent.size() > 0)                                                                                                                      \
                             throw wrong_type("The extents do not match" + ALPS_STACKTRACE);                                                                         \
                     }                                                                                                                                               \
                 };
-            ALPS_NGS_FOREACH_NATIVE_HDF5_TYPE(ALPS_NGS_HDF5_DEFINE_SET_EXTENT)
-            #undef ALPS_NGS_HDF5_DEFINE_SET_EXTENT
+            ALPS_FOREACH_NATIVE_HDF5_TYPE(ALPS_HDF5_DEFINE_SET_EXTENT)
+            #undef ALPS_HDF5_DEFINE_SET_EXTENT
 
             template<typename T> struct is_vectorizable {
                  static bool apply(T const & value){
@@ -321,7 +321,7 @@ namespace alps {
             ar.set_context(context);
         }
 
-        #define ALPS_NGS_HDF5_DEFINE_FREE_FUNCTIONS(T)                                                                                                                 \
+        #define ALPS_HDF5_DEFINE_FREE_FUNCTIONS(T)                                                                                                                     \
             template<> struct is_continuous< T >                                                                                                                       \
                 : public boost::true_type                                                                                                                              \
             {};                                                                                                                                                        \
@@ -362,8 +362,8 @@ namespace alps {
                 , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                          \
                 , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                         \
             );
-        ALPS_NGS_FOREACH_NATIVE_HDF5_TYPE(ALPS_NGS_HDF5_DEFINE_FREE_FUNCTIONS)
-        #undef ALPS_NGS_HDF5_DEFINE_FREE_FUNCTIONS
+        ALPS_FOREACH_NATIVE_HDF5_TYPE(ALPS_HDF5_DEFINE_FREE_FUNCTIONS)
+        #undef ALPS_HDF5_DEFINE_FREE_FUNCTIONS
 
         namespace detail {
 

@@ -4,8 +4,8 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_NGS_API_HPP
-#define ALPS_NGS_API_HPP
+#ifndef ALPS_API_HPP
+#define ALPS_API_HPP
 
 #include <alps/config.h>
 #include <alps/params.hpp>
@@ -53,7 +53,7 @@ namespace alps {
         return s.fraction_completed();
     }
 
-    #ifdef ALPS_NGS_USE_NEW_ALEA
+    #ifdef ALPS_USE_NEW_ALEA
         ALPS_DECL void save_results(alps::accumulator::accumulator_set const & observables, params const & params, boost::filesystem::path const & filename, std::string const & path);
         ALPS_DECL void save_results(alps::accumulator::result_set const & results, params const & params, boost::filesystem::path const & filename, std::string const & path);
     #endif

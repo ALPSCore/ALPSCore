@@ -4,20 +4,24 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#pragma once
+#ifndef ALPS_ACCUMULATOR_BINNING_ANALYSIS_HPP
+#define ALPS_ACCUMULATOR_BINNING_ANALYSIS_HPP
 
 #include <alps/accumulator/feature.hpp>
 #include <alps/accumulator/parameter.hpp>
 #include <alps/accumulator/feature/mean.hpp>
 #include <alps/accumulator/feature/count.hpp>
-#include <alps/accumulator/convergence.hpp>
 
 #include <alps/accumulator/numeric.hpp>
 #include <alps/hdf5/archive.hpp>
 #include <alps/utility/stacktrace.hpp>
 #include <alps/utility/short_print.hpp>
 
+#include <alps/accumulator/convergence.hpp>
 #include <alps/numeric/set_negative_0.hpp>
+// TODO: make nicer way to use this
+#include <alps/type_traits/slice.hpp>
+#include <alps/type_traits/change_value_type.hpp>
 
 #include <boost/mpl/if.hpp>
 #include <boost/utility.hpp>
@@ -36,6 +40,10 @@ namespace alps {
         template<typename T> struct autocorrelation_type
             : public boost::mpl::if_<boost::is_integral<typename value_type<T>::type>, double, typename value_type<T>::type>
         {};
+
+        template<typename T> struct convergence_type {
+            typedef typename change_value_type<typename value_type<T>::type, int>::type type;
+        };
 
         template<typename T> struct has_feature<T, binning_analysis_tag> {
             template<typename R, typename C> static char helper(R(C::*)() const);
@@ -97,34 +105,32 @@ namespace alps {
                         , m_ac_count()
                     {}                    
 
-                    error_convergence converged_errors() const {
-                        error_convergence conv = MAYBE_CONVERGED;
-                        // TODO: implement!
-                        // typename alps::accumulator::mean_type<B>::type err = error();
-                        // resize_same_as(conv,err);
-                        // const unsigned int range = 4;
-                        // typename slice_index<convergence_type>::type it;
-                        // if (binning_depth()<range) {
-                        //     for (it= slices(conv).first; it!= slices(conv).second; ++it)
-                        //         slice_value(conv,it) = MAYBE_CONVERGED;
-                        // }
-                        // else {
-                        //     for (it= slices(conv).first; it!= slices(conv).second; ++it)
-                        //         slice_value(conv,it) = CONVERGED;
+                    typename alps::accumulator::convergence_type<B>::type converged_errors() const {
+                        typedef typename alps::hdf5::scalar_type<typename convergence_type<T>::type>::type convergence_scalar_type;
 
-                        //     for (unsigned int i=binning_depth()-range;i<binning_depth()-1;++i) {
-                        //         result_type this_err(error(i));
-                        //         for (it= slices(conv).first; it!= slices(conv).second; ++it)
-                        //             if (std::abs(slice_value(this_err,it)) >= std::abs(slice_value(err,it)))
-                        //                 slice_value(conv,it)=CONVERGED;
-                        //             else if (std::abs(slice_value(this_err,it)) < 0.824 * std::abs(slice_value(err,it)))
-                        //                 slice_value(conv,it)=NOT_CONVERGED;
-                        //             else if (std::abs(slice_value(this_err,it)) <0.9* std::abs(slice_value(err,it))  &&
-                        //                 slice_value(conv,it)!=NOT_CONVERGED)
-                        //             slice_value(conv,it)=MAYBE_CONVERGED;
-                        //     }
-                        // }
-                        // return conv;
+                        typename alps::accumulator::convergence_type<B>::type conv;
+                        typename alps::accumulator::error_type<B>::type err = error();
+                        check_size(conv, err);
+                        const unsigned int range = 4;
+                        const unsigned int depth = (m_ac_sum2.size() < 8 ? 1 : m_ac_sum2.size() - 7);
+                        if (depth < range)
+                            conv = 0 * conv + (convergence_scalar_type)MAYBE_CONVERGED;
+                        else {
+                            conv = 0 * conv + (convergence_scalar_type)CONVERGED;
+                            // TODO: how to we iterate over the datatype?
+                            for (unsigned int i = depth - range; i < depth - 1; ++i) {
+                                typename slice_index<typename alps::accumulator::convergence_type<B>::type>::type it;
+                                result_type this_err(error(i));
+                                for (it = slices(conv).first; it != slices(conv).second; ++it)
+                                    if (std::abs(slice_value(this_err, it)) >= std::abs(slice_value(err,it)))
+                                        slice_value(conv,it) = CONVERGED;
+                                    else if (std::abs(slice_value(this_err, it)) < 0.824 * std::abs(slice_value(err,it)))
+                                        slice_value(conv,it) = NOT_CONVERGED;
+                                    else if (std::abs(slice_value(this_err, it)) < 0.9 * std::abs(slice_value(err,it)) && slice_value(conv, it) != NOT_CONVERGED)
+                                        slice_value(conv,it) = MAYBE_CONVERGED;
+                            }
+                        }
+                        return conv;
                     }
 
                     typename alps::accumulator::error_type<B>::type const error(std::size_t bin_level = std::numeric_limits<std::size_t>::max()) const {
@@ -140,7 +146,7 @@ namespace alps {
                         typedef typename alps::accumulator::error_type<B>::type error_type;
                         typedef typename alps::hdf5::scalar_type<error_type>::type error_scalar_type;
 
-                        // TODO: if not enoght bins are available, return infinity
+                        // if not enoght bins are available, return infinity
                         if (m_ac_sum2.size() < 2)
                             return alps::ngs::numeric::inf<error_type>();
 
@@ -156,7 +162,6 @@ namespace alps {
                         return sqrt(var_i / (N_i - one));
                     }
 
-                    // TODO: remove since 
                     typename autocorrelation_type<B>::type const autocorrelation() const {
                         using alps::ngs::numeric::operator*;
                         using alps::ngs::numeric::operator-;
@@ -167,7 +172,7 @@ namespace alps {
                         // TODO: make library for scalar type
                         typedef typename alps::hdf5::scalar_type<mean_type>::type mean_scalar_type;
 
-                        // TODO: if not enoght bins are available, return infinity
+                        // if not enoght bins are available, return infinity
                         if (m_ac_sum2.size() < 2)
                             return alps::ngs::numeric::inf<mean_type>();
 
@@ -184,6 +189,7 @@ namespace alps {
                         return (err * err * fac / var_0 - one) / two;
                     }
 
+                    using B::operator();
                     void operator()(T const & val) {
                         using alps::ngs::numeric::operator+=;
                         using alps::ngs::numeric::operator*;
@@ -247,7 +253,10 @@ namespace alps {
 
                     void reset() {
                         B::reset();
-                        // TODO: implement!
+                        m_ac_sum = std::vector<T>();
+                        m_ac_sum2 = std::vector<T>();
+                        m_ac_partial = std::vector<T>();
+                        m_ac_count = std::vector<typename count_type<B>::type>();
                     }
 
 #ifdef ALPS_HAVE_MPI
@@ -325,7 +334,7 @@ namespace alps {
 
                     template<typename A> Result(A const & acc)
                         : B(acc)
-                        , m_ac_autocorrelation(autocorrelation_impl(acc))
+                        , m_ac_autocorrelation(detail::autocorrelation_impl(acc))
                     {}
 
                     autocorrelation_type const autocorrelation() const {
@@ -358,18 +367,15 @@ namespace alps {
                     }
 
                     // TODO: add functions and operators
+                    // TODO: add error analysis
 
                 private:
                     typename mean_type<B>::type m_ac_autocorrelation;
             };
 
-            template<typename B> class BaseWrapper<binning_analysis_tag, B> : public B {
+            template<typename T, typename B> class BaseWrapper<T, binning_analysis_tag, B> : public B {
                 public:
                     virtual bool has_autocorrelation() const = 0;
-            };
-
-            template<typename T, typename B> class ResultTypeWrapper<T, binning_analysis_tag, B> : public B {
-                public:
                     virtual typename autocorrelation_type<B>::type autocorrelation() const = 0;
             };
 
@@ -386,3 +392,5 @@ namespace alps {
         }
     }
 }
+
+ #endif

@@ -4,8 +4,8 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_NGS_ACCUMULATOR_PARAMETER_HPP
-#define ALPS_NGS_ACCUMULATOR_PARAMETER_HPP
+#ifndef ALPS_ACCUMULATOR_PARAMETER_HPP
+#define ALPS_ACCUMULATOR_PARAMETER_HPP
 
 #include <boost/parameter.hpp>
 

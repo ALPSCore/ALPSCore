@@ -4,8 +4,8 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_NGS_DETAIL_TYPE_WRAPPER_HPP
-#define ALPS_NGS_DETAIL_TYPE_WRAPPER_HPP
+#ifndef ALPS_DETAIL_TYPE_WRAPPER_HPP
+#define ALPS_DETAIL_TYPE_WRAPPER_HPP
 
 namespace alps {
 

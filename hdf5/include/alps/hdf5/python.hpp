@@ -4,13 +4,13 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_NGS_HDF5_PYTHON_CPP
-#define ALPS_NGS_HDF5_PYTHON_CPP
+#ifndef ALPS_HDF5_PYTHON_CPP
+#define ALPS_HDF5_PYTHON_CPP
 
 #include <alps/hdf5/archive.hpp>
-#include <alps/ngs/cast.hpp>
+#include <alps/utility/cast.hpp>
 #include <alps/hdf5/pair.hpp>
-#include <alps/ngs/stacktrace.hpp>
+#include <alps/utility/stacktrace.hpp>
 #include <alps/hdf5/vector.hpp>
 #include <alps/hdf5/complex.hpp>
 

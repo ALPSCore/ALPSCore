@@ -4,11 +4,11 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_NGS_HDF5_ALPS_MATRIX_HPP
-#define ALPS_NGS_HDF5_ALPS_MATRIX_HPP
+#ifndef ALPS_HDF5_ALPS_MATRIX_HPP
+#define ALPS_HDF5_ALPS_MATRIX_HPP
 
 #include <alps/hdf5/archive.hpp>
-#include <alps/ngs/cast.hpp>
+#include <alps/utility/cast.hpp>
 #include <alps/hdf5/complex.hpp>
 #include <alps/numeric/matrix.hpp>
 
@@ -264,4 +264,4 @@ namespace detail {
 } // end namespace hdf5
 } // end namespace alps
 
-#endif //ALPS_NGS_HDF5_ALPS_MATRIX_HPP
+#endif

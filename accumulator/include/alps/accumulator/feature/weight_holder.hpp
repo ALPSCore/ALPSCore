@@ -4,8 +4,8 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_NGS_ACCUMULATOR_WEIGHT_IMPL_HPP
-#define ALPS_NGS_ACCUMULATOR_WEIGHT_IMPL_HPP
+#ifndef ALPS_ACCUMULATOR_WEIGHT_HOLDER_HPP
+#define ALPS_ACCUMULATOR_WEIGHT_HOLDER_HPP
 
 #include <alps/accumulator/wrappers.hpp>
 #include <alps/accumulator/feature/weight.hpp>
@@ -43,7 +43,7 @@ namespace alps {
                         : B(args), m_owner(true), m_weight(new ::alps::accumulator::derived_accumulator_wrapper<W>(W()))
                     {}
 
-                    base_wrapper const * weight() const {
+                    base_wrapper<T> const * weight() const {
                         // TODO: make library for scalar type
                         return m_weight.get();
                     }
@@ -53,10 +53,22 @@ namespace alps {
                         B::operator()(val);
                     }
 
-                    void operator()(T const & val, typename value_type<weight_type>::type const & weight) {
+                    template<typename X> typename boost::enable_if<typename boost::mpl::if_<
+                          typename boost::is_scalar<typename value_type<weight_type>::type>::type
+                        , typename boost::is_convertible<X, typename value_type<weight_type>::type>::type
+                        , typename boost::is_same<X, typename value_type<weight_type>::type>::type
+                    >::type>::type operator()(T const & val, X const & weight) {
                         // TODO: how do we make sure, weight is updated only once?
                         B::operator()(val);
-                        (m_weight->extract<W>())(weight);
+                        (m_weight->template extract<W>())(weight);
+                    }
+
+                    template<typename X> typename boost::disable_if<typename boost::mpl::if_<
+                          typename boost::is_scalar<typename value_type<weight_type>::type>::type
+                        , typename boost::is_convertible<X, typename value_type<weight_type>::type>::type
+                        , typename boost::is_same<X, typename value_type<weight_type>::type>::type
+                    >::type>::type operator()(T const & val, X const & weight) {
+                        throw std::runtime_error("Invalid type for binary call operator" + ALPS_STACKTRACE);
                     }
 
                     template<typename S> void print(S & os) const {
@@ -65,13 +77,11 @@ namespace alps {
                         m_weight->print(os);
                     }
 
-                    // TODO: implement!
                     void save(hdf5::archive & ar) const {
                         B::save(ar);
                         ar["weight/value"] = *weight();
                     }
 
-                    // TODO: implement!
                     void load(hdf5::archive & ar) { // TODO: make archive const
                         B::load(ar);
                         ar["weight/value"] >> *m_weight;
@@ -117,7 +127,7 @@ namespace alps {
 
                 private:
                     bool m_owner;
-                    boost::shared_ptr< ::alps::accumulator::base_wrapper> m_weight;
+                    boost::shared_ptr< ::alps::accumulator::base_wrapper<typename value_type<weight_type>::type> > m_weight;
             };
 
             template<typename T, typename W, typename B> class Result<T, weight_holder_tag<W>, B> : public B {
@@ -138,7 +148,7 @@ namespace alps {
                         , m_weight(acc.weight()->result())
                     {}
 
-                    base_wrapper const * weight() const {
+                    base_wrapper<typename value_type<weight_type>::type> const * weight() const {
                         return m_weight.get();
                     }
 
@@ -171,7 +181,7 @@ namespace alps {
 
                 protected:
                     bool m_owner;
-                    boost::shared_ptr< ::alps::accumulator::base_wrapper> m_weight;
+                    boost::shared_ptr< ::alps::accumulator::base_wrapper<typename value_type<weight_type>::type> > m_weight;
             };
 
         }

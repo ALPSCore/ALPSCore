@@ -4,8 +4,8 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_NGS_HDF5_BOOST_TUPLE
-#define ALPS_NGS_HDF5_BOOST_TUPLE
+#ifndef ALPS_HDF5_BOOST_TUPLE
+#define ALPS_HDF5_BOOST_TUPLE
 
 #include <alps/hdf5/archive.hpp>
 #include <alps/utility/cast.hpp>

@@ -4,13 +4,14 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#pragma once 
+#ifndef ALPS_ACCUMULATOR_MPI_HPP
+#define ALPS_ACCUMULATOR_MPI_HPP
 
 #ifdef ALPS_HAVE_MPI
 
     #include <alps/hdf5.hpp>
 
-    #include <alps/utility/boost_mpi.hpp>
+    #include <alps/ngs/boost_mpi.hpp>
 
     namespace alps {
         namespace mpi {
@@ -123,3 +124,4 @@
 
 #endif
 
+#endif

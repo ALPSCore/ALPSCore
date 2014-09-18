@@ -4,15 +4,14 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_NGS_ACCUMULATOR_MEAN_HPP
-#define ALPS_NGS_ACCUMULATOR_MEAN_HPP
+#ifndef ALPS_ACCUMULATOR_MEAN_HPP
+#define ALPS_ACCUMULATOR_MEAN_HPP
 
 #include <alps/accumulator/feature.hpp>
 #include <alps/accumulator/parameter.hpp>
 #include <alps/accumulator/feature/count.hpp>
 
 #include <alps/hdf5/archive.hpp>
-#include <alps/hdf5/vector.hpp>
 #include <alps/accumulator/numeric.hpp>
 #include <alps/utility/stacktrace.hpp>
 #include <alps/utility/short_print.hpp>
@@ -83,9 +82,11 @@ namespace alps {
 
                         // TODO: make library for scalar type
                         typename alps::hdf5::scalar_type<mean_type>::type cnt = B::count();
+                        
                         return mean_type(m_sum) / cnt;
                     }
 
+                    using B::operator();
                     void operator()(T const & val) {
                         using alps::ngs::numeric::operator+=;
                         using alps::ngs::numeric::detail::check_size;
@@ -213,6 +214,11 @@ namespace alps {
                     template<typename U> void operator-=(U const & arg) { augsub(arg); }
                     template<typename U> void operator*=(U const & arg) { augmul(arg); }
                     template<typename U> void operator/=(U const & arg) { augdiv(arg); }
+                    void negate() {
+                        using alps::ngs::numeric::operator-;
+                        m_mean = -m_mean;
+                        B::negate();
+                    }                    
                     void inverse() {
                         using alps::ngs::numeric::operator/;
                         // TODO: make library for scalar type
@@ -291,13 +297,9 @@ namespace alps {
                     #undef NUMERIC_FUNCTION_OPERATOR
             };
 
-            template<typename B> class BaseWrapper<mean_tag, B> : public B {
+            template<typename T, typename B> class BaseWrapper<T, mean_tag, B> : public B {
                 public:
                     virtual bool has_mean() const = 0;
-            };
-
-            template<typename T, typename B> class ResultTypeWrapper<T, mean_tag, B> : public B {
-                public:
                     virtual typename mean_type<B>::type mean() const = 0;
             };
 

@@ -4,8 +4,8 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_NGS_NUMERIC_INF_HEADER
-#define ALPS_NGS_NUMERIC_INF_HEADER
+#ifndef ALPS_NUMERIC_INF_HEADER
+#define ALPS_NUMERIC_INF_HEADER
 
 #include <limits>
 

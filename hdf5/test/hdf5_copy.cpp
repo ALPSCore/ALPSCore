@@ -32,7 +32,7 @@ namespace detail {
                 sar[segment] >> value;                                                                                                          \
                 tar[segment] = value;                                                                                                           \
             }
-        ALPS_NGS_FOREACH_NATIVE_HDF5_TYPE(CHECK_TYPE)
+        ALPS_FOREACH_NATIVE_HDF5_TYPE(CHECK_TYPE)
         #undef CHECK_TYPE
         else
             throw std::runtime_error("Unknown type in path: " + sar.complete_path(segment) + ALPS_STACKTRACE);

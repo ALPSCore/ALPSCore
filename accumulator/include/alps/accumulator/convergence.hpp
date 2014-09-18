@@ -6,7 +6,8 @@
 
 /* $Id: obsvalue.h 3435 2009-11-28 14:45:38Z troyer $ */
 
-#pragma once
+#ifndef ALPS_ALEA_CONVERGENCE_H
+#define ALPS_ALEA_CONVERGENCE_H
 
 #include <alps/config.h>
 #include <string>
@@ -26,3 +27,5 @@ inline std::string convergence_to_text(int c)
 }
 
 } // end namespace alps
+
+#endif // ALPS_ALEA_CONVERGENCE_H

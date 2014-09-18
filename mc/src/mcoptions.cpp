@@ -19,7 +19,7 @@ namespace alps {
         desc.add_options()
             ("help", "produce help message")
             ("single", "run single process")
-            #ifndef ALPS_NGS_SINGLE_THREAD
+            #ifndef ALPS_SINGLE_THREAD
                 ("threaded", "run in multithread environment")
             #endif
             #ifdef ALPS_HAVE_MPI
@@ -44,7 +44,7 @@ namespace alps {
         if (vm.count("threaded") && vm.count("mpi"))
             type = HYBRID;
         else if (vm.count("threaded"))
-            #ifdef ALPS_NGS_SINGLE_THREAD
+            #ifdef ALPS_SINGLE_THREAD
                 throw std::logic_error("Not build with multithread support" + ALPS_STACKTRACE);
             #else
                 type = THREADED;

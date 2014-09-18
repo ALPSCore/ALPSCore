@@ -4,7 +4,8 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#pragma once
+#ifndef ALPS_ACCUMULATOR_WEIGHT_HPP
+#define ALPS_ACCUMULATOR_WEIGHT_HPP
 
 #include <alps/accumulator/feature.hpp>
 #include <alps/accumulator/parameter.hpp>
@@ -21,7 +22,7 @@
 namespace alps {
     namespace accumulator {
 
-        class base_wrapper;
+        template<typename T> class base_wrapper;
 
         // this should be called namespace tag { struct weight; }
         // but gcc <= 4.4 has lookup error, so name it different
@@ -48,7 +49,7 @@ namespace alps {
             typedef typename detail::weight_type_impl<has_feature<T, weight_tag>::type::value, T>::type type;
         };
 
-        template<typename T> base_wrapper const * weight(T const & arg) {
+        template<typename T> base_wrapper<typename value_type<T>::type> const * weight(T const & arg) {
             return arg.weight();
         }
 
@@ -56,14 +57,14 @@ namespace alps {
 
             template<typename A> typename boost::enable_if<
                   typename has_feature<A, weight_tag>::type
-                , base_wrapper const *
+                , base_wrapper<typename value_type<A>::type> const *
             >::type weight_impl(A const & acc) {
                 return weight(acc);
             }
 
             template<typename A> typename boost::disable_if<
                   typename has_feature<A, weight_tag>::type
-                , base_wrapper const *
+                , base_wrapper<typename value_type<A>::type> const *
             >::type weight_impl(A const & acc) {
                 throw std::runtime_error(std::string(typeid(A).name()) + " has no weight-method" + ALPS_STACKTRACE);
                 return NULL;
@@ -72,14 +73,10 @@ namespace alps {
 
         namespace impl {
 
-            template<typename B> class BaseWrapper<weight_tag, B> : public B {
+            template<typename T, typename B> class BaseWrapper<T, weight_tag, B> : public B {
                 public:
                     virtual bool has_weight() const = 0;
-            };
-
-            template<typename T, typename B> class ResultTypeWrapper<T, weight_tag, B> : public B {
-                public:
-                    virtual base_wrapper const * weight() const = 0;
+                    virtual base_wrapper<T> const * weight() const = 0;
             };
 
             template<typename T, typename B> class DerivedWrapper<T, weight_tag, B> : public B {
@@ -88,11 +85,11 @@ namespace alps {
                     DerivedWrapper(T const & arg): B(arg) {}
 
                     bool has_weight() const { return has_feature<T, weight_tag>::type::value; }
-
-                    base_wrapper const * weight() const { return detail::weight_impl(this->m_data); }
+                    base_wrapper<typename value_type<T>::type> const * weight() const { return detail::weight_impl(this->m_data); } 
             };
 
         }
     }
 }
 
+ #endif

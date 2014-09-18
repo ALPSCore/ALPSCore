@@ -21,7 +21,7 @@ namespace alps {
     namespace ngs {
 
         signal::signal() {
-            #if not ( defined BOOST_MSVC || defined ALPS_NGS_NO_SIGNALS )
+            #if not ( defined BOOST_MSVC || defined ALPS_NO_SIGNALS )
                 static bool initialized;
                 if (!initialized) {
                     initialized = true;
@@ -55,7 +55,7 @@ namespace alps {
         }
 
         void signal::listen() {
-            #if not ( defined BOOST_MSVC || defined ALPS_NGS_NO_SIGNALS )
+            #if not ( defined BOOST_MSVC || defined ALPS_NO_SIGNALS )
                 static bool initialized;
                 if (!initialized) {
                     initialized = true;

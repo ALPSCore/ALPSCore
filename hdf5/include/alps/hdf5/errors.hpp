@@ -4,8 +4,8 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_NGS_HDF5_ERROR_HPP
-#define ALPS_NGS_HDF5_ERROR_HPP
+#ifndef ALPS_HDF5_ERROR_HPP
+#define ALPS_HDF5_ERROR_HPP
 
 #include <string>
 #include <stdexcept>

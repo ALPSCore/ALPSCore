@@ -4,7 +4,8 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#pragma once
+#ifndef ALPS_ACCUMULATOR_MAX_NUM_BINNING_HPP
+#define ALPS_ACCUMULATOR_MAX_NUM_BINNING_HPP
 
 #include <alps/accumulator/feature.hpp>
 #include <alps/accumulator/parameter.hpp>
@@ -13,11 +14,13 @@
 #include <alps/accumulator/feature/error.hpp>
 
 #include <alps/accumulator/numeric.hpp>
-#include <alps/numeric/functional.hpp>
-
 #include <alps/hdf5/archive.hpp>
 #include <alps/utility/stacktrace.hpp>
 #include <alps/utility/short_print.hpp>
+
+#include <alps/numeric/functional.hpp>
+#include <alps/numeric/outer_product.hpp>
+#include <alps/type_traits/covariance_type.hpp>
 
 #include <boost/mpl/if.hpp>
 #include <boost/utility.hpp>
@@ -86,6 +89,10 @@ namespace alps {
         template<typename T> typename max_num_binning_type<T>::type max_num_binning(T const & arg) {
             return arg.max_num_binning();
         }
+
+        template<typename T> struct covariance_type
+            : public alps::covariance_type<typename value_type<T>::type>
+        {};
 
         namespace detail {
 
@@ -164,6 +171,7 @@ namespace alps {
                         throw std::runtime_error("Transform can only be applied to a result" + ALPS_STACKTRACE);
                     }
 
+                    using B::operator();
                     void operator()(T const & val) {
                         using alps::ngs::numeric::operator+=;
                         using alps::ngs::numeric::operator+;
@@ -246,7 +254,10 @@ namespace alps {
 
                     void reset() {
                         B::reset();
-                        // TODO: implement!
+                        m_mn_elements_in_bin = typename B::count_type();
+                        m_mn_elements_in_partial = typename B::count_type();
+                        m_mn_partial = T();
+                        m_mn_bins = std::vector<typename mean_type<B>::type>();
                     }
 
 #ifdef ALPS_HAVE_MPI
@@ -395,6 +406,91 @@ namespace alps {
 
                     max_num_binning_type const max_num_binning() const {
                         return max_num_binning_type(m_mn_bins, m_mn_elements_in_bin, m_mn_max_number);
+                    }
+
+                    template <typename A> typename boost::enable_if<
+                        typename has_feature<A, max_num_binning_tag>::type, typename covariance_type<B>::type
+                    >::type covariance(A const & obs) const {
+                        using alps::ngs::numeric::operator+;
+                        using alps::ngs::numeric::operator/;
+                        using alps::numeric::outer_product;
+
+                        generate_jackknife();
+                        obs.generate_jackknife();
+                        if (m_mn_jackknife_bins.size() != obs.m_mn_jackknife_bins.size())
+                            throw std::runtime_error("Unequal number of bins in calculation of covariance matrix" + ALPS_STACKTRACE);
+                        if (!m_mn_jackknife_bins.size() || !obs.m_mn_jackknife_bins.size())
+                            throw std::runtime_error("No binning information available for calculation of covariances" + ALPS_STACKTRACE);
+
+                        typename alps::hdf5::scalar_type<typename mean_type<B>::type>::type bin_number = m_mn_bins.size();
+
+                        typename mean_type<B>::type unbiased_mean_1;
+                        for (typename std::vector<typename mean_type<B>::type>::const_iterator it = m_mn_jackknife_bins.begin() + 1; it != m_mn_jackknife_bins.end(); ++it)
+                            unbiased_mean_1 = unbiased_mean_1 + *it / bin_number;
+
+                        typename mean_type<B>::type unbiased_mean_2;
+                        for (typename std::vector<typename mean_type<B>::type>::const_iterator it = obs.m_mn_jackknife_bins.begin() + 1; it != obs.m_mn_jackknife_bins.end(); ++it)
+                            unbiased_mean_2 = unbiased_mean_2 + *it / bin_number;
+
+                        typename covariance_type<B>::type cov = outer_product(m_mn_jackknife_bins[1], obs.m_mn_jackknife_bins[1]);
+                        for (typename B::count_type i = 1; i < m_mn_bins.size(); ++i)
+                            cov += outer_product(m_mn_jackknife_bins[i + 1], obs.m_mn_jackknife_bins[i + 1]);
+                        cov /= bin_number;
+                        cov -= outer_product(unbiased_mean_1, unbiased_mean_2);
+                        cov *= bin_number - 1;
+                        return cov;
+                    }
+
+                    // Adapted from http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Covariance
+                    // It is a two-pass algorith, which first calculates estimates for the mean and then performs
+                    // the stable algorithm on the residuals. According to literature and local authorities, this
+                    // is the most accurate and stable way to calculate variances.
+                    template <typename A> typename boost::enable_if<
+                        typename has_feature<A, max_num_binning_tag>::type, typename covariance_type<B>::type
+                    >::type accurate_covariance(A const & obs) const {
+                        using alps::ngs::numeric::operator+;
+                        using alps::ngs::numeric::operator-;
+                        using alps::ngs::numeric::operator/;
+                        using alps::numeric::outer_product;
+
+                        generate_jackknife();
+                        obs.generate_jackknife();
+                        if (m_mn_jackknife_bins.size() != obs.m_mn_jackknife_bins.size())
+                            throw std::runtime_error("Unequal number of bins in calculation of covariance matrix" + ALPS_STACKTRACE);
+                        if (!m_mn_jackknife_bins.size() || !obs.m_mn_jackknife_bins.size())
+                            throw std::runtime_error("No binning information available for calculation of covariances" + ALPS_STACKTRACE);
+
+                        typedef typename alps::hdf5::scalar_type<typename mean_type<B>::type>::type scalar_type;
+                        scalar_type bin_number = m_mn_bins.size();
+
+                        typename mean_type<B>::type unbiased_mean_1;
+                        for (typename std::vector<typename mean_type<B>::type>::const_iterator it = m_mn_jackknife_bins.begin() + 1; it != m_mn_jackknife_bins.end(); ++it)
+                            unbiased_mean_1 = unbiased_mean_1 + *it / bin_number;
+
+                        typename mean_type<B>::type unbiased_mean_2;
+                        for (typename std::vector<typename mean_type<B>::type>::const_iterator it = obs.m_mn_jackknife_bins.begin() + 1; it != obs.m_mn_jackknife_bins.end(); ++it)
+                            unbiased_mean_2 = unbiased_mean_2 + *it / bin_number;
+
+                        std::vector<typename mean_type<B>::type> X(m_mn_bins.size());
+                        std::vector<typename mean_type<B>::type> Y(m_mn_bins.size());
+                        for (typename B::count_type i = 0; i < m_mn_bins.size(); ++i) {
+                            X[i] = m_mn_jackknife_bins[i + 1] - unbiased_mean_1;
+                            Y[i] = obs.m_mn_jackknife_bins[i + 1] - unbiased_mean_2;
+                        }
+
+                        typename mean_type<B>::type xbar;
+                        typename mean_type<B>::type ybar;
+                        typename covariance_type<B>::type cov = outer_product(xbar, ybar);
+                        for (typename B::count_type i = 0; i < m_mn_bins.size(); ++i) {
+                            typename mean_type<B>::type delta_x = X[i] - xbar;
+                            typename mean_type<B>::type delta_y = Y[i] - ybar;
+                            xbar = xbar + delta_x / scalar_type(i + 1);
+                            cov += outer_product(X[i] - xbar, delta_y);
+                            ybar = ybar + delta_y / scalar_type(i + 1);
+                        }
+                        cov /= bin_number;
+                        cov *= bin_number - 1;
+                        return cov;
                     }
 
                     // TODO: use mean error from here ...
@@ -634,13 +730,9 @@ namespace alps {
                     #undef NUMERIC_FUNCTION_OPERATOR
             };
 
-            template<typename B> class BaseWrapper<max_num_binning_tag, B> : public B {
+            template<typename T, typename B> class BaseWrapper<T, max_num_binning_tag, B> : public B {
                 public:
                     virtual bool has_max_num_binning() const = 0;
-            };
-
-            template<typename T, typename B> class ResultTypeWrapper<T, max_num_binning_tag, B> : public B {
-                public:
                     virtual typename max_num_binning_type<B>::type max_num_binning() const = 0;
                     virtual void transform(boost::function<typename value_type<B>::type(typename value_type<B>::type)>) = 0;
             };
@@ -661,3 +753,4 @@ namespace alps {
     }
 }
 
+ #endif

@@ -4,8 +4,8 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_NGS_NUMERIC_ARRAY_HEADER
-#define ALPS_NGS_NUMERIC_ARRAY_HEADER
+#ifndef ALPS_NUMERIC_ARRAY_HEADER
+#define ALPS_NUMERIC_ARRAY_HEADER
 
 #include <alps/utility/stacktrace.hpp>
 #include <alps/accumulator/numeric/inf.hpp>
@@ -138,41 +138,41 @@ namespace alps {
             }
 
             //------------------- numeric functions -------------------
-            #define ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION(FUNCTION_NAME)                                                      \
+            #define ALPS_NUMERIC_IMPLEMENT_FUNCTION(FUNCTION_NAME)                                                      \
                 template<typename T, std::size_t N> boost::array<T, N> FUNCTION_NAME (boost::array<T, N> arg) {             \
                     using std:: FUNCTION_NAME ;                                                                             \
                     std::transform(arg.begin(), arg.end(), arg.begin(), static_cast<double (*)(double)>(& FUNCTION_NAME )); \
                     return arg;                                                                                             \
                 }
 
-            ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION(sin)
-            ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION(cos)
-            ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION(tan)
-            ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION(sinh)
-            ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION(cosh)
-            ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION(tanh)
-            ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION(asin)
-            ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION(acos)
-            ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION(atan)
-            ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION(abs)
-            ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION(sqrt)
-            ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION(exp)
-            ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION(log)
+            ALPS_NUMERIC_IMPLEMENT_FUNCTION(sin)
+            ALPS_NUMERIC_IMPLEMENT_FUNCTION(cos)
+            ALPS_NUMERIC_IMPLEMENT_FUNCTION(tan)
+            ALPS_NUMERIC_IMPLEMENT_FUNCTION(sinh)
+            ALPS_NUMERIC_IMPLEMENT_FUNCTION(cosh)
+            ALPS_NUMERIC_IMPLEMENT_FUNCTION(tanh)
+            ALPS_NUMERIC_IMPLEMENT_FUNCTION(asin)
+            ALPS_NUMERIC_IMPLEMENT_FUNCTION(acos)
+            ALPS_NUMERIC_IMPLEMENT_FUNCTION(atan)
+            ALPS_NUMERIC_IMPLEMENT_FUNCTION(abs)
+            ALPS_NUMERIC_IMPLEMENT_FUNCTION(sqrt)
+            ALPS_NUMERIC_IMPLEMENT_FUNCTION(exp)
+            ALPS_NUMERIC_IMPLEMENT_FUNCTION(log)
 
-            #undef ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION
+            #undef ALPS_NUMERIC_IMPLEMENT_FUNCTION
 
-            #define ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION(FUNCTION_NAME)                                                      \
+            #define ALPS_NUMERIC_IMPLEMENT_FUNCTION(FUNCTION_NAME)                                                      \
                 template<typename T, std::size_t N> boost::array<T, N> FUNCTION_NAME (boost::array<T, N> arg) {             \
                     using alps::numeric:: FUNCTION_NAME ;                                                                   \
                     std::transform(arg.begin(), arg.end(), arg.begin(), static_cast<double (*)(double)>(& FUNCTION_NAME )); \
                     return arg;                                                                                             \
                 }
 
-            ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION(sq)
-            ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION(cb)
-            ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION(cbrt)
+            ALPS_NUMERIC_IMPLEMENT_FUNCTION(sq)
+            ALPS_NUMERIC_IMPLEMENT_FUNCTION(cb)
+            ALPS_NUMERIC_IMPLEMENT_FUNCTION(cbrt)
 
-            #undef ALPS_NGS_NUMERIC_IMPLEMENT_FUNCTION
+            #undef ALPS_NUMERIC_IMPLEMENT_FUNCTION
 
         }
     }

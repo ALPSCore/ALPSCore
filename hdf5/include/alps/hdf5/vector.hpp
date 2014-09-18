@@ -4,8 +4,8 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_NGS_HDF5_STD_VECTOR_HPP
-#define ALPS_NGS_HDF5_STD_VECTOR_HPP
+#ifndef ALPS_HDF5_STD_VECTOR_HPP
+#define ALPS_HDF5_STD_VECTOR_HPP
 
 #include <alps/hdf5/archive.hpp>
 #include <alps/utility/cast.hpp>

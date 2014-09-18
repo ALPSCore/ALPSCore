@@ -4,11 +4,9 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_STRINGIFY_HPP
-#define ALPS_STRINGIFY_HPP
+#ifndef ALPS_ACCUMULATOR_HPP
+#define ALPS_ACCUMULATOR_HPP
 
-#define ALPS_STRINGIFY(arg) ALPS_STRINGIFY_HELPER(arg)
-
-#define ALPS_STRINGIFY_HELPER(arg) #arg
+#include <alps/accumulator/accumulator.hpp>
 
 #endif

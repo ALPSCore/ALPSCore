@@ -40,7 +40,7 @@ namespace alps {
             return os;
 		}
 /* DISALLOWED BECAUSE OF NUMERIC DEPENDENCE!
-        #define ALPS_NGS_PARAMPROXY_ADD_OPERATOR_IMPL(T)                                \
+        #define ALPS_PARAMPROXY_ADD_OPERATOR_IMPL(T)                                    \
             T operator+(paramproxy const & p, T s) {                                    \
                 using boost::numeric::operators::operator+=;                            \
                 return s += p.cast< T >();                                              \
@@ -49,8 +49,8 @@ namespace alps {
                 using boost::numeric::operators::operator+=;                            \
                 return s += p.cast< T >();                                              \
             }
-        ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE(ALPS_NGS_PARAMPROXY_ADD_OPERATOR_IMPL)
-        #undef ALPS_NGS_PARAMPROXY_ADD_OPERATOR_IMPL
+        ALPS_FOREACH_PARAMETERVALUE_TYPE(ALPS_PARAMPROXY_ADD_OPERATOR_IMPL)
+        #undef ALPS_PARAMPROXY_ADD_OPERATOR_IMPL
 */
         std::string operator+(paramproxy const & p, char const * s) {
             return p.cast<std::string>() + s;

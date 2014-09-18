@@ -4,15 +4,16 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#pragma once
+#ifndef ALPS_ACCUMULATOR_FEATURE_HPP
+#define ALPS_ACCUMULATOR_FEATURE_HPP
 
-#include <alps/config.h>
+// #include <alps/accumulator/config.hpp>
 #include <alps/accumulator/numeric.hpp>
 
 #include <boost/utility.hpp>
 
 #ifdef ALPS_HAVE_MPI
-    #include <alps/accumulator/mpi.hpp>
+    #include <alps/ngs/mpi.hpp>
 #endif
 
 namespace alps {
@@ -68,6 +69,7 @@ namespace alps {
                 template<typename U> void operator-=(U const &) {}
                 template<typename U> void operator*=(U const &) {}
                 template<typename U> void operator/=(U const &) {}
+                void negate() {}
                 void inverse() {}
 
                 void sin() {}
@@ -105,8 +107,11 @@ namespace alps {
                     template<typename U> void operator/=(U) {
                         throw std::runtime_error("The Function operator /= is not implemented for accumulators, only for results" + ALPS_STACKTRACE); 
                     }
+                    void negate() {
+                        throw std::runtime_error("The Function gegate is not implemented for accumulators, only for results" + ALPS_STACKTRACE); 
+                    }
                     void inverse() {
-                        throw std::runtime_error("The Function inverseis not implemented for accumulators, only for results" + ALPS_STACKTRACE); 
+                        throw std::runtime_error("The Function inverse is not implemented for accumulators, only for results" + ALPS_STACKTRACE); 
                     }
 
                     void sin() { throw std::runtime_error("The Function sin is not implemented for accumulators, only for results" + ALPS_STACKTRACE); }
@@ -170,9 +175,7 @@ namespace alps {
 
             template<typename T, typename F, typename B> class Result {};
 
-            template<typename F, typename B> class BaseWrapper {};
-
-            template<typename T, typename F, typename B> class ResultTypeWrapper {};
+            template<typename T, typename F, typename B> class BaseWrapper {};
 
             template<typename A, typename F, typename B> class DerivedWrapper {};
 
@@ -183,3 +186,4 @@ namespace alps {
     }
 }
 
+ #endif

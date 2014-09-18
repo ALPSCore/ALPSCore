@@ -4,8 +4,8 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_NGS_CALLBACK_HPP
-#define ALPS_NGS_CALLBACK_HPP
+#ifndef ALPS_CALLBACK_HPP
+#define ALPS_CALLBACK_HPP
 
 #include <alps/config.h>
 #include <alps/utility/signal.hpp>

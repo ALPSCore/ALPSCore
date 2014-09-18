@@ -4,8 +4,8 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_NGS_SIGNAL_HPP
-#define ALPS_NGS_SIGNAL_HPP
+#ifndef ALPS_SIGNAL_HPP
+#define ALPS_SIGNAL_HPP
 
 #include <alps/utility/stacktrace.hpp>
 

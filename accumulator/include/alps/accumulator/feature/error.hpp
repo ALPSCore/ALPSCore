@@ -4,7 +4,8 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#pragma once
+#ifndef ALPS_ACCUMULATOR_ERROR_HPP
+#define ALPS_ACCUMULATOR_ERROR_HPP
 
 #include <alps/accumulator/feature.hpp>
 #include <alps/accumulator/parameter.hpp>
@@ -89,6 +90,7 @@ namespace alps {
                         return sqrt((m_sum2 / cnt - B::mean() * B::mean()) / (cnt - 1));
                     }
 
+                    using B::operator();
                     void operator()(T const & val) {
                         using alps::ngs::numeric::operator*;
                         using alps::ngs::numeric::operator+=;
@@ -214,6 +216,11 @@ namespace alps {
                     template<typename U> void operator-=(U const & arg) { augaddsub(arg); B::operator-=(arg); }
                     template<typename U> void operator*=(U const & arg) { augmul(arg); }
                     template<typename U> void operator/=(U const & arg) { augdiv(arg); }
+                    void negate() {
+                        using alps::ngs::numeric::operator-;
+                        m_error = -m_error;
+                        B::negate();
+                    }
                     void inverse() {
                         using alps::ngs::numeric::operator*;
                         using alps::ngs::numeric::operator/;
@@ -348,13 +355,9 @@ namespace alps {
                     }
             };
 
-            template<typename B> class BaseWrapper<error_tag, B> : public B {
+            template<typename T, typename B> class BaseWrapper<T, error_tag, B> : public B {
                 public:
                     virtual bool has_error() const = 0;
-            };
-
-            template<typename T, typename B> class ResultTypeWrapper<T, error_tag, B> : public B {
-                public:
                     virtual typename error_type<B>::type error() const = 0;
             };
 
@@ -372,3 +375,4 @@ namespace alps {
     }
 }
 
+ #endif

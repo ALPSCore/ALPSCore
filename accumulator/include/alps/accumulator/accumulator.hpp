@@ -4,20 +4,32 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#pragma once
+#ifndef ALPS_ACCUMULATOR_ACCUMULATOR_HPP
+#define ALPS_ACCUMULATOR_ACCUMULATOR_HPP
+
+#include <alps/hdf5/vector.hpp>
+
+#ifndef ALPS_ACCUMULATOR_VALUE_TYPES
+    #define ALPS_ACCUMULATOR_VALUE_TYPES double, std::vector<double>
+    // #define ALPS_ACCUMULATOR_VALUE_TYPES double, std::vector<double>, alps::multi_array<double, 2>, alps::multi_array<double, 3>
+#endif
 
 #include <alps/accumulator/wrappers.hpp>
-#include <alps/accumulator/feature/weight_impl.hpp>
-
-// TODO: move inside features
-#include <alps/type_traits/covariance_type.hpp>
+#include <alps/accumulator/feature/weight_holder.hpp>
 
 #include <alps/hdf5/archive.hpp>
 
+#include <boost/mpl/if.hpp>
+#include <boost/mpl/list.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/mpl/vector.hpp>
+#include <boost/mpl/has_key.hpp>
+#include <boost/mpl/transform.hpp>
+#include <boost/variant/variant.hpp>
+#include <boost/mpl/placeholders.hpp>
 
 #ifdef ALPS_HAVE_MPI
-    #include <alps/utility/boost_mpi.hpp>
+    #include <alps/ngs/boost_mpi.hpp>
 #endif
 
 #include <typeinfo>
@@ -26,139 +38,362 @@
 namespace alps {
     namespace accumulator {
 
-        // TODO: merge with accumulator_wrapper
+        namespace detail {
+            template<typename T> struct add_base_wrapper_pointer {
+                typedef boost::shared_ptr<base_wrapper<T> > type;
+            };
+
+            typedef boost::make_variant_over<boost::mpl::transform<
+                  boost::mpl::vector<ALPS_ACCUMULATOR_VALUE_TYPES>
+                , detail::add_base_wrapper_pointer<boost::mpl::_1> 
+            >::type>::type variant_type;
+
+            template<typename T, typename A> struct is_valid_argument : public boost::mpl::if_<
+                  typename boost::is_scalar<A>::type
+                , typename boost::is_convertible<T, A>::type
+                , typename boost::is_same<T, A>::type
+            > {};
+        }
+
+        // TODO: merge with accumulator_wrapper, at least make common base ...
         class ALPS_DECL result_wrapper {
             public:
+
+            // default constructor
                 result_wrapper() 
-                    : m_base()
+                    : m_variant()
                 {}
 
+            // constructor from raw result
                 template<typename T> result_wrapper(T arg)
-                    : m_base(new derived_result_wrapper<T>(arg))
+                    : m_variant(typename detail::add_base_wrapper_pointer<typename value_type<T>::type>::type(
+                        new derived_result_wrapper<T>(arg))
+                      )
                 {}
 
-                result_wrapper(base_wrapper * arg)
-                    : m_base(arg) 
+            // constructor from base_wrapper
+                template<typename T> result_wrapper(base_wrapper<T> * arg)
+                    : m_variant(typename detail::add_base_wrapper_pointer<T>::type(arg))
                 {}
 
-                result_wrapper(result_wrapper const & arg)
-                    : m_base(arg.m_base->clone()) 
-                {}
+            // copy constructor
+            private:
+                struct copy_visitor: public boost::static_visitor<> {
+                    copy_visitor(detail::variant_type & s): self(s) {}
+                    template<typename T> void operator()(T const & arg) const {
+                        const_cast<detail::variant_type &>(self) = T(arg->clone());
+                    }
+                    detail::variant_type & self;
+                };
+            public:
+                result_wrapper(result_wrapper const & rhs)
+                    : m_variant()
+                {
+                    copy_visitor visitor(m_variant);
+                    boost::apply_visitor(visitor, rhs.m_variant);
+                }
 
+            // constructor from hdf5
                 result_wrapper(hdf5::archive & ar) {
                     ar[""] >> *this;
                 }
 
-                template<typename T> void operator()(T const & value) {
-                    (*m_base)(&value, typeid(T));
-                }
-                template<typename T> result_wrapper & operator<<(T const & value) {
-                    (*this)(value);
-                    return (*this);
-                }
-
-                template<typename T, typename W> void operator()(T const & value, W const & weight) {
-                    (*m_base)(&value, typeid(T), &weight, typeid(W));
-                }
-
-                result_wrapper & operator=(boost::shared_ptr<result_wrapper> const & ptr) {
-                    m_base = ptr->m_base;
+            // operator=
+            private:
+                struct assign_visitor: public boost::static_visitor<> {
+                    assign_visitor(result_wrapper * s): self(s) {}
+                    template<typename T> void operator()(T & arg) const {
+                        self->m_variant = arg;
+                    }
+                    mutable result_wrapper * self;
+                };
+            public:
+                result_wrapper & operator=(boost::shared_ptr<result_wrapper> const & rhs) {
+                    boost::apply_visitor(assign_visitor(this), rhs->m_variant);
                     return *this;
                 }
 
-                template<typename T> result_type_wrapper<T> const & get() const {
-                    return m_base->get<T>();
+            // get
+            private:
+                template<typename T> struct get_visitor: public boost::static_visitor<> {
+                    template<typename X> void operator()(X const & arg) {
+                        throw std::runtime_error(std::string("Canot cast observable") + typeid(X).name() + " to base type: " + typeid(T).name() + ALPS_STACKTRACE);
+                    }
+                    void operator()(typename detail::add_base_wrapper_pointer<T>::type const & arg) { value = arg; }
+                    typename detail::add_base_wrapper_pointer<T>::type value;
+                };
+            public:
+                template <typename T> base_wrapper<T> & get() {
+                    get_visitor<T> visitor;
+                    boost::apply_visitor(visitor, m_variant);
+                    return *visitor.value;
                 }
 
+            // extract
+            private:
+                template<typename A> struct extract_visitor: public boost::static_visitor<> {
+                    template<typename T> void operator()(T const & arg) { value = &arg->template extract<A>(); }
+                    A * value;
+                };
+            public:
                 template <typename A> A & extract() {
-                    return m_base->extract<A>();
+                    extract_visitor<A> visitor;
+                    boost::apply_visitor(visitor, m_variant);
+                    return *visitor.value;
+                }
+                template <typename A> A const & extract() const {
+                    extract_visitor<A> visitor;
+                    boost::apply_visitor(visitor, m_variant);
+                    return *visitor.value;
                 }
 
+            // count
+            private:
+                struct count_visitor: public boost::static_visitor<> {
+                    template<typename T> void operator()(T const & arg) const { value = arg->count(); }
+                    mutable boost::uint64_t value;
+                };
+            public:
                 boost::uint64_t count() const {
-                    return m_base->count();
+                    count_visitor visitor;
+                    boost::apply_visitor(visitor, m_variant);
+                    return visitor.value;
                 }
 
-                // TODO: add all member functions
-                template<typename T> typename mean_type<result_type_wrapper<T> >::type mean() const { return get<T>().mean(); }
-                template<typename T> typename error_type<result_type_wrapper<T> >::type error() const { return get<T>().error(); }
-                template<typename T> typename covariance_type<T>::type accurate_covariance(result_wrapper const & rhs) const { return typename covariance_type<T>::type(); } // TODO: implement!
-                template<typename T> typename covariance_type<T>::type covariance(result_wrapper const & rhs) const { return typename covariance_type<T>::type(); } // TODO: implement!
+            // mean, error
+            #define ALPS_ACCUMULATOR_PROPERTY_PROXY(PROPERTY, TYPE)                                                 \
+                private:                                                                                            \
+                    template<typename T> struct PROPERTY ## _visitor: public boost::static_visitor<> {              \
+                        template<typename X> void apply(typename boost::enable_if<                                  \
+                            typename detail::is_valid_argument<typename TYPE <X>::type, T>::type, X const &         \
+                        >::type arg) const {                                                                        \
+                            value = arg. PROPERTY ();                                                               \
+                        }                                                                                           \
+                        template<typename X> void apply(typename boost::disable_if<                                 \
+                            typename detail::is_valid_argument<typename TYPE <X>::type, T>::type, X const &         \
+                        >::type arg) const {                                                                        \
+                            throw std::logic_error(std::string("cannot convert: ")                                  \
+                                + typeid(typename TYPE <X>::type).name() + " to "                                   \
+                                + typeid(T).name() + ALPS_STACKTRACE);                                              \
+                        }                                                                                           \
+                        template<typename X> void operator()(X const & arg) const {                                 \
+                            apply<typename X::element_type>(*arg);                                                  \
+                        }                                                                                           \
+                        mutable T value;                                                                            \
+                    };                                                                                              \
+                public:                                                                                             \
+                    template<typename T> typename TYPE <base_wrapper<T> >::type PROPERTY () const {                 \
+                        PROPERTY ## _visitor<typename TYPE <base_wrapper<T> >::type> visitor;                       \
+                        boost::apply_visitor(visitor, m_variant);                                                   \
+                        return visitor.value;                                                                       \
+                    }
+            ALPS_ACCUMULATOR_PROPERTY_PROXY(mean, mean_type)
+            ALPS_ACCUMULATOR_PROPERTY_PROXY(error, error_type)
+            #undef ALPS_ACCUMULATOR_FUNCTION_PROXY
 
+            // save
+            private:
+                struct save_visitor: public boost::static_visitor<> {
+                    save_visitor(hdf5::archive & a): ar(a) {}
+                    template<typename T> void operator()(T & arg) const { ar[""] = *arg; }
+                    hdf5::archive & ar;
+                };
+            public:
                 void save(hdf5::archive & ar) const {
-                    ar[""] = *m_base;
+                    boost::apply_visitor(save_visitor(ar), m_variant);
                 }
 
+            // load
+            private:
+                struct load_visitor: public boost::static_visitor<> {
+                    load_visitor(hdf5::archive & a): ar(a) {}
+                    template<typename T> void operator()(T const & arg) const { ar[""] >> *arg; }
+                    hdf5::archive & ar;
+                };
+            public:
                 void load(hdf5::archive & ar) {
-                    ar[""] >> *m_base;
+                    boost::apply_visitor(load_visitor(ar), m_variant);
                 }
 
+            // print
+            private:
+                struct print_visitor: public boost::static_visitor<> {
+                    print_visitor(std::ostream & o): os(o) {}
+                    template<typename T> void operator()(T const & arg) const { arg->print(os); }
+                    std::ostream & os;
+                };
+            public:
                 void print(std::ostream & os) const {
-                    m_base->print(os);
+                    boost::apply_visitor(print_visitor(os), m_variant);
                 }
 
+            // transform(T F(T))
+            private:
+                template<typename T> struct transform_1_visitor: public boost::static_visitor<> {
+                    transform_1_visitor(boost::function<T(T)> f) : op(f) {}
+                    template<typename X> void apply(typename boost::enable_if<
+                        typename detail::is_valid_argument<T, typename value_type<X>::type>::type, X &
+                    >::type arg) const {
+                        arg.transform(op);
+                    }
+                    template<typename X> void apply(typename boost::disable_if<
+                        typename detail::is_valid_argument<T, typename value_type<X>::type>::type, X &
+                    >::type arg) const {
+                        throw std::logic_error(std::string("cannot convert: ") + typeid(T).name() + " to " + typeid(typename value_type<X>::type).name() + ALPS_STACKTRACE);
+                    }
+                    template<typename X> void operator()(X & arg) const {
+                        apply<typename X::element_type>(*arg);
+                    }
+                    boost::function<T(T)> op;
+                };
+            public:
                 template<typename T> result_wrapper transform(boost::function<T(T)> op) const {
                     result_wrapper clone(*this);
-                    clone.m_base->get<T>().transform(op);
+                    boost::apply_visitor(transform_1_visitor<T>(op), clone.m_variant);
                     return clone;
                 }
+                template<typename T> result_wrapper transform(T(*op)(T)) const {
+                    return transform(boost::function<T(T)>(op));
+                }
 
-                #define OPERATOR_PROXY(OPNAME, AUGOPNAME, AUGOP)                        \
-                    result_wrapper & AUGOPNAME (result_wrapper const & arg) {           \
-                        *this->m_base AUGOP *arg.m_base;                                \
-                        return *this;                                                   \
-                    }                                                                   \
-                    result_wrapper OPNAME (result_wrapper const & arg) {                \
-                        result_wrapper clone(*this);                                    \
-                        clone AUGOP arg;                                                \
-                        return clone;                                                   \
-                    }                                                                   \
-                    result_wrapper & AUGOPNAME (double arg) {                           \
-                        *this->m_base AUGOP arg;                                        \
-                        return *this;                                                   \
-                    }                                                                   \
-                    result_wrapper OPNAME (double arg) {                                \
-                        result_wrapper clone(*this);                                    \
-                        clone AUGOP arg;                                                \
-                        return clone;                                                   \
+            // unary plus
+            public:
+                result_wrapper operator+ () const {
+                    return result_wrapper(*this);
+                }
+
+            // unary minus
+            private:
+                struct unary_add_visitor: public boost::static_visitor<> {
+                    template<typename X> void operator()(X & arg) const {
+                        arg->negate();
                     }
-                OPERATOR_PROXY(operator+, operator+=, +=)
-                OPERATOR_PROXY(operator-, operator-=, -=)
-                OPERATOR_PROXY(operator*, operator*=, *=)
-                OPERATOR_PROXY(operator/, operator/=, /=)
-                #undef OPERATOR_PROXY
-
-                result_wrapper inverse() {
+                };
+            public:
+                result_wrapper operator- () const {
                     result_wrapper clone(*this);
-                    clone.inverse();
+                    unary_add_visitor visitor;
+                    boost::apply_visitor(visitor, clone.m_variant);
                     return clone;
                 }
 
-                #define FUNCTION_PROXY(FUN)            \
-                    result_wrapper FUN () const {      \
-                        result_wrapper clone(*this);   \
-                        clone.m_base-> FUN ();         \
-                        return clone;                  \
+            // operators
+            #define ALPS_ACCUMULATOR_OPERATOR_PROXY(OPNAME, AUGOPNAME, AUGOP, FUN)                                  \
+                private:                                                                                            \
+                    template<typename T> struct FUN ## _arg_visitor: public boost::static_visitor<> {               \
+                        FUN ## _arg_visitor(T & v): value(v) {}                                                     \
+                        template<typename X> void apply(X const &) const {                                          \
+                            throw std::logic_error("only results with equal value types are allowed in operators"   \
+                                + ALPS_STACKTRACE);                                                                 \
+                        }                                                                                           \
+                        void apply(T const & arg) const {                                                           \
+                            const_cast<T &>(value) AUGOP arg;                                                       \
+                        }                                                                                           \
+                        template<typename X> void operator()(X const & arg) const {                                 \
+                            apply(*arg);                                                                            \
+                        }                                                                                           \
+                        T & value;                                                                                  \
+                    };                                                                                              \
+                    struct FUN ## _self_visitor: public boost::static_visitor<> {                                   \
+                        FUN ## _self_visitor(result_wrapper const & v): value(v) {}                                 \
+                        template<typename X> void operator()(X & self) const {                                      \
+                            FUN ## _arg_visitor<typename X::element_type> visitor(*self);                           \
+                            boost::apply_visitor(visitor, value.m_variant);                                         \
+                        }                                                                                           \
+                        result_wrapper const & value;                                                               \
+                    };                                                                                              \
+                    struct FUN ## _double_visitor: public boost::static_visitor<> {                                 \
+                        FUN ## _double_visitor(double v): value(v) {}                                               \
+                        template<typename X> void operator()(X & arg) const {                                       \
+                            *arg AUGOP value;                                                                       \
+                        }                                                                                           \
+                        double value;                                                                               \
+                    };                                                                                              \
+                public:                                                                                             \
+                    result_wrapper & AUGOPNAME (result_wrapper const & arg) {                                       \
+                        FUN ## _self_visitor visitor(arg);                                                          \
+                        boost::apply_visitor(visitor, m_variant);                                                   \
+                        return *this;                                                                               \
+                    }                                                                                               \
+                    result_wrapper & AUGOPNAME (double arg) {                                                       \
+                        FUN ## _double_visitor visitor(arg);                                                        \
+                        boost::apply_visitor(visitor, m_variant);                                                   \
+                        return *this;                                                                               \
+                    }                                                                                               \
+                    result_wrapper OPNAME (result_wrapper const & arg) const {                                      \
+                        result_wrapper clone(*this);                                                                \
+                        clone AUGOP arg;                                                                            \
+                        return clone;                                                                               \
+                    }                                                                                               \
+                    result_wrapper OPNAME (double arg) const {                                                      \
+                        result_wrapper clone(*this);                                                                \
+                        clone AUGOP arg;                                                                            \
+                        return clone;                                                                               \
                     }
-                FUNCTION_PROXY(sin)
-                FUNCTION_PROXY(cos)
-                FUNCTION_PROXY(tan)
-                FUNCTION_PROXY(sinh)
-                FUNCTION_PROXY(cosh)
-                FUNCTION_PROXY(tanh)
-                FUNCTION_PROXY(asin)
-                FUNCTION_PROXY(acos)
-                FUNCTION_PROXY(atan)
-                FUNCTION_PROXY(abs)
-                FUNCTION_PROXY(sqrt)
-                FUNCTION_PROXY(log)
-                FUNCTION_PROXY(sq)
-                FUNCTION_PROXY(cb)
-                FUNCTION_PROXY(cbrt)
-                #undef FUNCTION_PROXY
+            ALPS_ACCUMULATOR_OPERATOR_PROXY(operator+, operator+=, +=, add)
+            ALPS_ACCUMULATOR_OPERATOR_PROXY(operator-, operator-=, -=, sub)
+            ALPS_ACCUMULATOR_OPERATOR_PROXY(operator*, operator*=, *=, mul)
+            ALPS_ACCUMULATOR_OPERATOR_PROXY(operator/, operator/=, /=, div)
+            #undef ALPS_ACCUMULATOR_OPERATOR_PROXY
+
+            // inverse
+            private:
+                struct inverse_visitor: public boost::static_visitor<> {
+                    template<typename T> void operator()(T & arg) const { arg->inverse(); }
+                };
+            public:
+                result_wrapper inverse() const {
+                    result_wrapper clone(*this);
+                    boost::apply_visitor(inverse_visitor(), m_variant);
+                    return clone;
+                }
+
+            #define ALPS_ACCUMULATOR_FUNCTION_PROXY(FUN)                                \
+                private:                                                                \
+                    struct FUN ## _visitor: public boost::static_visitor<> {            \
+                        template<typename T> void operator()(T & arg) const {           \
+                            arg-> FUN ();                                               \
+                        }                                                               \
+                    };                                                                  \
+                public:                                                                 \
+                    result_wrapper FUN () const {                                       \
+                        result_wrapper clone(*this);                                    \
+                        boost::apply_visitor( FUN ## _visitor(), clone.m_variant);      \
+                        return clone;                                                   \
+                    }
+            ALPS_ACCUMULATOR_FUNCTION_PROXY(sin)
+            ALPS_ACCUMULATOR_FUNCTION_PROXY(cos)
+            ALPS_ACCUMULATOR_FUNCTION_PROXY(tan)
+            ALPS_ACCUMULATOR_FUNCTION_PROXY(sinh)
+            ALPS_ACCUMULATOR_FUNCTION_PROXY(cosh)
+            ALPS_ACCUMULATOR_FUNCTION_PROXY(tanh)
+            ALPS_ACCUMULATOR_FUNCTION_PROXY(asin)
+            ALPS_ACCUMULATOR_FUNCTION_PROXY(acos)
+            ALPS_ACCUMULATOR_FUNCTION_PROXY(atan)
+            ALPS_ACCUMULATOR_FUNCTION_PROXY(abs)
+            ALPS_ACCUMULATOR_FUNCTION_PROXY(sqrt)
+            ALPS_ACCUMULATOR_FUNCTION_PROXY(log)
+            ALPS_ACCUMULATOR_FUNCTION_PROXY(sq)
+            ALPS_ACCUMULATOR_FUNCTION_PROXY(cb)
+            ALPS_ACCUMULATOR_FUNCTION_PROXY(cbrt)
+            #undef ALPS_ACCUMULATOR_FUNCTION_PROXY
 
             private:
-                boost::shared_ptr<base_wrapper> m_base;
+
+                detail::variant_type m_variant;
         };
+        inline result_wrapper operator+(double arg1, result_wrapper const & arg2) {
+            return arg2 + arg1;
+        }
+        inline result_wrapper operator-(double arg1, result_wrapper const & arg2) {
+            return -arg2 + arg1;
+        }
+        inline result_wrapper operator*(double arg1, result_wrapper const & arg2) {
+            return arg2 * arg1;
+        }
+        inline result_wrapper operator/(double arg1, result_wrapper const & arg2) {
+            return arg2.inverse() * arg1;
+        }
 
         inline std::ostream & operator<<(std::ostream & os, const result_wrapper & arg) {
             arg.print(os);
@@ -192,95 +427,252 @@ namespace alps {
 
         class ALPS_DECL accumulator_wrapper {
             public:
+            // default constructor
                 accumulator_wrapper() 
-                    : m_base()
+                    : m_variant()
                 {}
 
+            // constructor from raw accumulator
                 template<typename T> accumulator_wrapper(T arg)
-                    : m_base(new derived_accumulator_wrapper<T>(arg))
+                    : m_variant(typename detail::add_base_wrapper_pointer<typename value_type<T>::type>::type(
+                        new derived_accumulator_wrapper<T>(arg))
+                      )
                 {}
 
-                accumulator_wrapper(accumulator_wrapper const & arg)
-                    : m_base(arg.m_base->clone())
+            // copy constructor
+                accumulator_wrapper(accumulator_wrapper const & rhs)
+                    : m_variant(rhs.m_variant)
                 {}
 
+            // constructor from hdf5
                 accumulator_wrapper(hdf5::archive & ar) {
                     ar[""] >> *this;
                 }
 
+            // operator(T)
+            private:
+                template<typename T> struct call_1_visitor: public boost::static_visitor<> {
+                    call_1_visitor(T const & v) : value(v) {}
+                    template<typename X> void apply(typename boost::enable_if<
+                        typename detail::is_valid_argument<T, typename value_type<X>::type>::type, X &
+                    >::type arg) const {
+                        arg(value); 
+                    }
+                    template<typename X> void apply(typename boost::disable_if<
+                        typename detail::is_valid_argument<T, typename value_type<X>::type>::type, X &
+                    >::type arg) const {
+                        throw std::logic_error(std::string("cannot convert: ") + typeid(T).name() + " to " + typeid(typename value_type<X>::type).name() + ALPS_STACKTRACE);
+                    }
+                    template<typename X> void operator()(X & arg) const {
+                        apply<typename X::element_type>(*arg);
+                    }
+                    T const & value;
+                };
+            public:
                 template<typename T> void operator()(T const & value) {
-                    (*m_base)(&value, typeid(T));
+                    boost::apply_visitor(call_1_visitor<T>(value), m_variant);
                 }
                 template<typename T> accumulator_wrapper & operator<<(T const & value) {
                     (*this)(value);
                     return (*this);
                 }
-                template<typename T, typename W> void operator()(T const & value, W const & weight) {
-                    (*m_base)(&value, typeid(T), &weight, typeid(W));
-                }                
 
-                accumulator_wrapper & operator=(boost::shared_ptr<accumulator_wrapper> const & ptr) {
-                    m_base = ptr->m_base;
+            // operator(T, W)
+            private:
+                template<typename T, typename W> struct call_2_visitor: public boost::static_visitor<> {
+                    call_2_visitor(T const & v, W const & w) : value(v), weight(w) {}
+                    template<typename X> void apply(typename boost::enable_if<
+                        typename detail::is_valid_argument<T, typename value_type<X>::type>::type, X &
+                    >::type arg) const {
+                        arg(value, weight);
+                    }
+                    template<typename X> void apply(typename boost::disable_if<
+                        typename detail::is_valid_argument<T, typename value_type<X>::type>::type, X &
+                    >::type arg) const {
+                        throw std::logic_error(std::string("cannot convert: ") + typeid(T).name() + " to " + typeid(typename value_type<X>::type).name() + ALPS_STACKTRACE);
+                    }
+                    template<typename X> void operator()(X & arg) const {
+                        apply<typename X::element_type>(*arg);
+                    }
+                    T const & value;
+                    detail::weight_variant_type weight;
+                };
+            public:
+                template<typename T, typename W> void operator()(T const & value, W const & weight) {
+                    boost::apply_visitor(call_2_visitor<T, W>(value, weight), m_variant);
+                }
+
+            // operator=
+            private:
+                struct assign_visitor: public boost::static_visitor<> {
+                    assign_visitor(accumulator_wrapper * s): self(s) {}
+                    template<typename T> void operator()(T & arg) const {
+                        self->m_variant = arg;
+                    }
+                    mutable accumulator_wrapper * self;
+                };
+            public:
+                accumulator_wrapper & operator=(boost::shared_ptr<accumulator_wrapper> const & rhs) {
+                    boost::apply_visitor(assign_visitor(this), rhs->m_variant);
                     return *this;
                 }
 
-                template<typename T> result_type_wrapper<T> const & get() const {
-                    return m_base->get<T>();
+            // get
+            private:
+                template<typename T> struct get_visitor: public boost::static_visitor<> {
+                    template<typename X> void operator()(X const & arg) {
+                        throw std::runtime_error(std::string("Canot cast observable") + typeid(X).name() + " to base type: " + typeid(T).name() + ALPS_STACKTRACE);
+                    }
+                    void operator()(typename detail::add_base_wrapper_pointer<T>::type const & arg) { value = arg; }
+                    typename detail::add_base_wrapper_pointer<T>::type value;
+                };
+            public:
+                template <typename T> base_wrapper<T> & get() {
+                    get_visitor<T> visitor;
+                    boost::apply_visitor(visitor, m_variant);
+                    return *visitor.value;
                 }
 
+            // extract
+            private:
+                template<typename A> struct extract_visitor: public boost::static_visitor<> {
+                    template<typename T> void operator()(T const & arg) { value = &arg->template extract<A>(); }
+                    A * value;
+                };
+            public:
                 template <typename A> A & extract() {
-                    return m_base->extract<A>();
+                    extract_visitor<A> visitor;
+                    boost::apply_visitor(visitor, m_variant);
+                    return *visitor.value;
                 }
 
+            // count
+            private:
+                struct count_visitor: public boost::static_visitor<> {
+                    template<typename T> void operator()(T const & arg) const { value = arg->count(); }
+                    mutable boost::uint64_t value;
+                };
+            public:
                 boost::uint64_t count() const {
-                    return m_base->count();
+                    count_visitor visitor;
+                    boost::apply_visitor(visitor, m_variant);
+                    return visitor.value;
                 }
 
-                // TODO: add all member functions
-                template<typename T> typename mean_type<result_type_wrapper<T> >::type mean() const { return get<T>().mean(); }
-                template<typename T> typename error_type<result_type_wrapper<T> >::type error() const { return get<T>().error(); }
-                template<typename T> typename covariance_type<T>::type accurate_covariance(result_wrapper const & rhs) const { return typename covariance_type<T>::type(); } // TODO: implement!
-                template<typename T> typename covariance_type<T>::type covariance(result_wrapper const & rhs) const { return typename covariance_type<T>::type(); } // TODO: implement!
+            // mean, error
+            #define ALPS_ACCUMULATOR_PROPERTY_PROXY(PROPERTY, TYPE)                                                 \
+                private:                                                                                            \
+                    template<typename T> struct PROPERTY ## _visitor: public boost::static_visitor<> {              \
+                        template<typename X> void apply(typename boost::enable_if<                                  \
+                            typename detail::is_valid_argument<typename TYPE <X>::type, T>::type, X const &         \
+                        >::type arg) const {                                                                        \
+                            value = arg. PROPERTY ();                                                               \
+                        }                                                                                           \
+                        template<typename X> void apply(typename boost::disable_if<                                 \
+                            typename detail::is_valid_argument<typename TYPE <X>::type, T>::type, X const &         \
+                        >::type arg) const {                                                                        \
+                            throw std::logic_error(std::string("cannot convert: ")                                  \
+                                + typeid(typename TYPE <X>::type).name() + " to "                                   \
+                                + typeid(T).name() + ALPS_STACKTRACE);                                              \
+                        }                                                                                           \
+                        template<typename X> void operator()(X const & arg) const {                                 \
+                            apply<typename X::element_type>(*arg);                                                  \
+                        }                                                                                           \
+                        mutable T value;                                                                            \
+                    };                                                                                              \
+                public:                                                                                             \
+                    template<typename T> typename TYPE <base_wrapper<T> >::type PROPERTY () const {                 \
+                        PROPERTY ## _visitor<typename TYPE <base_wrapper<T> >::type> visitor;                       \
+                        boost::apply_visitor(visitor, m_variant);                                                   \
+                        return visitor.value;                                                                       \
+                    }
+            ALPS_ACCUMULATOR_PROPERTY_PROXY(mean, mean_type)
+            ALPS_ACCUMULATOR_PROPERTY_PROXY(error, error_type)
+            #undef ALPS_ACCUMULATOR_FUNCTION_PROXY
 
+            // save
+            private:
+                struct save_visitor: public boost::static_visitor<> {
+                    save_visitor(hdf5::archive & a): ar(a) {}
+                    template<typename T> void operator()(T & arg) const { ar[""] = *arg; }
+                    hdf5::archive & ar;
+                };
+            public:
                 void save(hdf5::archive & ar) const {
-                    ar[""] = *m_base;
+                    boost::apply_visitor(save_visitor(ar), m_variant);
                 }
 
+            // load
+            private:
+                struct load_visitor: public boost::static_visitor<> {
+                    load_visitor(hdf5::archive & a): ar(a) {}
+                    template<typename T> void operator()(T const & arg) const { ar[""] >> *arg; }
+                    hdf5::archive & ar;
+                };
+            public:
                 void load(hdf5::archive & ar) {
-                    ar[""] >> *m_base;
+                    boost::apply_visitor(load_visitor(ar), m_variant);
                 }
 
-                inline void reset() {
-                    m_base->reset();
+            // reset
+            private:
+                struct reset_visitor: public boost::static_visitor<> {
+                    template<typename T> void operator()(T const & arg) const { arg->reset(); }
+                };
+            public:
+                void reset() const {
+                    boost::apply_visitor(reset_visitor(), m_variant);
                 }
 
+            // result
+            private:
+                struct result_visitor: public boost::static_visitor<> {
+                    template<typename T> void operator()(T const & arg) {
+                        value = boost::shared_ptr<result_wrapper>(new result_wrapper(arg->result()));
+                    }
+                    boost::shared_ptr<result_wrapper> value;
+                };
+            public:
                 boost::shared_ptr<result_wrapper> result() const {
-                   return boost::shared_ptr<result_wrapper>(new result_wrapper(m_base->result()));
+                    result_visitor visitor;
+                    boost::apply_visitor(visitor, m_variant);
+                    return visitor.value;
                 }
 
+            // print
+            private:
+                struct print_visitor: public boost::static_visitor<> {
+                    print_visitor(std::ostream & o): os(o) {}
+                    template<typename T> void operator()(T const & arg) const { arg->print(os); }
+                    std::ostream & os;
+                };
+            public:
                 void print(std::ostream & os) const {
-                    m_base->print(os);
+                    boost::apply_visitor(print_visitor(os), m_variant);
                 }
 
 #ifdef ALPS_HAVE_MPI
-                inline void collective_merge(
-                      boost::mpi::communicator const & comm
-                    , int root
-                ) {
-                    m_base->collective_merge(comm, root);
+            // collective_merge
+            private:
+                struct collective_merge_visitor: public boost::static_visitor<> {
+                    collective_merge_visitor(boost::mpi::communicator const & c, int r): comm(c), root(r) {}
+                    template<typename T> void operator()(T & arg) const { arg->collective_merge(comm, root); }
+                    template<typename T> void operator()(T const & arg) const { arg->collective_merge(comm, root); }
+                    boost::mpi::communicator const & comm;
+                    int root;
+                };
+            public:
+                inline void collective_merge(boost::mpi::communicator const & comm, int root) {
+                    boost::apply_visitor(collective_merge_visitor(comm, root), m_variant);
                 }
-
-                inline void collective_merge(
-                      boost::mpi::communicator const & comm
-                    , int root
-                ) const {
-                    m_base->collective_merge(comm, root);
+                inline void collective_merge(boost::mpi::communicator const & comm, int root) const {
+                    boost::apply_visitor(collective_merge_visitor(comm, root), m_variant);
                 }
 #endif
 
             private:
 
-                boost::shared_ptr<base_wrapper> m_base;
+                detail::variant_type m_variant;
         };
 
         inline std::ostream & operator<<(std::ostream & os, const accumulator_wrapper & arg) {
@@ -557,3 +949,4 @@ namespace alps {
     }
 }
 
+ #endif

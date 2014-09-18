@@ -4,10 +4,10 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_NGS_CAST_HPP
-#define ALPS_NGS_CAST_HPP
+#ifndef ALPS_UTILITY_CAST_HPP
+#define ALPS_UTILITY_CAST_HPP
 
-//#include <alps/ngs/config.hpp>
+//#include <alps/accumulator/config.hpp>
 #include <alps/utility/stacktrace.hpp>
 
 #include <boost/bind.hpp>
@@ -66,7 +66,7 @@ namespace alps {
         }
     };
 
-    #define ALPS_NGS_CAST_STRING(T, p, c)                                            \
+    #define ALPS_CAST_STRING(T, p, c)                                            \
         template<> struct cast_hook<std::string, T > {                                \
             static inline std::string apply( T arg) {                                \
                 char buffer[255];                                                    \
@@ -88,20 +88,20 @@ namespace alps {
                 return value;                                                        \
             }                                                                        \
         };
-    ALPS_NGS_CAST_STRING(short, "", "hd")
-    ALPS_NGS_CAST_STRING(int, "", "d")
-    ALPS_NGS_CAST_STRING(long, "", "ld")
-    ALPS_NGS_CAST_STRING(unsigned short, "", "hu")
-    ALPS_NGS_CAST_STRING(unsigned int, "", "u")
-    ALPS_NGS_CAST_STRING(unsigned long, "", "lu")
-    ALPS_NGS_CAST_STRING(float, ".8", "e")
-    ALPS_NGS_CAST_STRING(double, ".16", "le")
-    ALPS_NGS_CAST_STRING(long double, ".32", "Le")
-    ALPS_NGS_CAST_STRING(long long, "", "lld")
-    ALPS_NGS_CAST_STRING(unsigned long long, "", "llu")
-    #undef ALPS_NGS_CAST_STRING
+    ALPS_CAST_STRING(short, "", "hd")
+    ALPS_CAST_STRING(int, "", "d")
+    ALPS_CAST_STRING(long, "", "ld")
+    ALPS_CAST_STRING(unsigned short, "", "hu")
+    ALPS_CAST_STRING(unsigned int, "", "u")
+    ALPS_CAST_STRING(unsigned long, "", "lu")
+    ALPS_CAST_STRING(float, ".8", "e")
+    ALPS_CAST_STRING(double, ".16", "le")
+    ALPS_CAST_STRING(long double, ".32", "Le")
+    ALPS_CAST_STRING(long long, "", "lld")
+    ALPS_CAST_STRING(unsigned long long, "", "llu")
+    #undef ALPS_CAST_STRING
 
-    #define ALPS_NGS_CAST_STRING_CHAR(T, U)                                            \
+    #define ALPS_CAST_STRING_CHAR(T, U)                                            \
         template<> struct cast_hook<std::string, T > {                                \
             static inline std::string apply( T arg) {                                \
                 return cast_hook<std::string, U>::apply(arg);                        \
@@ -112,11 +112,11 @@ namespace alps {
                 return cast_hook< U , std::string>::apply(arg);                        \
             }                                                                        \
         };
-    ALPS_NGS_CAST_STRING_CHAR(bool, short)
-    ALPS_NGS_CAST_STRING_CHAR(char, short)
-    ALPS_NGS_CAST_STRING_CHAR(signed char, short)
-    ALPS_NGS_CAST_STRING_CHAR(unsigned char, unsigned short)
-    #undef ALPS_NGS_CAST_STRING_CHAR
+    ALPS_CAST_STRING_CHAR(bool, short)
+    ALPS_CAST_STRING_CHAR(char, short)
+    ALPS_CAST_STRING_CHAR(signed char, short)
+    ALPS_CAST_STRING_CHAR(unsigned char, unsigned short)
+    #undef ALPS_CAST_STRING_CHAR
 
     template<typename U, typename T> struct cast_hook<U, std::complex<T> > {
         static inline U apply(std::complex<T> const & arg) {

@@ -4,12 +4,13 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_NGS_NUMERIC_DETAIL_HEADER
-#define ALPS_NGS_NUMERIC_DETAIL_HEADER
+#ifndef ALPS_ACCUMULATOR_NUMERIC_DETAIL_HEADER
+#define ALPS_ACCUMULATOR_NUMERIC_DETAIL_HEADER
 
 #include <alps/utility/stacktrace.hpp>
+#include <alps/utility/resize.hpp>
 
-//#include <alps/multi_array.hpp> // FIXME
+// #include <alps/multi_array.hpp>
 
 #include <boost/array.hpp>
 
@@ -27,7 +28,7 @@ namespace alps {
                 template<typename T, typename U>
                 inline void check_size(std::vector<T> & a, std::vector<U> const & b) {
                     if(a.size() == 0)
-                        a.resize(b.size());
+                        alps::resize_same_as(a, b);
                     else if(a.size() != b.size())
                         boost::throw_exception(std::runtime_error("vectors must have the same size!" + ALPS_STACKTRACE));
                 }
@@ -40,8 +41,8 @@ namespace alps {
                 template<typename T, typename U, std::size_t N>
                 inline void check_size(boost::array<T, N> & a, boost::array<U, N> const & b) {}
 
-//                template<typename T, typename U, std::size_t D>
-//                inline void check_size(alps::multi_array<T, D> & a, alps::multi_array<U, D> const & b) {}
+                // template<typename T, typename U, std::size_t D>
+                // inline void check_size(alps::multi_array<T, D> & a, alps::multi_array<U, D> const & b) {}
                 
             }
         }

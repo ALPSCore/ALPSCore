@@ -4,8 +4,8 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_NGS_HDF5_STD_COMPLEX
-#define ALPS_NGS_HDF5_STD_COMPLEX
+#ifndef ALPS_HDF5_STD_COMPLEX
+#define ALPS_HDF5_STD_COMPLEX
 
 #include <alps/hdf5/archive.hpp>
 

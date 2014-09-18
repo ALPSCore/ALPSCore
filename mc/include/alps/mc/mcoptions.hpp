@@ -4,8 +4,8 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_NGS_MCOPTIONS_HPP
-#define ALPS_NGS_MCOPTIONS_HPP
+#ifndef ALPS_MCOPTIONS_HPP
+#define ALPS_MCOPTIONS_HPP
 
 #include <alps/config.h>
 

@@ -4,8 +4,8 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_NGS_DETAIL_REMOVE_CVR_HPP
-#define ALPS_NGS_DETAIL_REMOVE_CVR_HPP
+#ifndef ALPS_DETAIL_REMOVE_CVR_HPP
+#define ALPS_DETAIL_REMOVE_CVR_HPP
 
 namespace alps {
     namespace detail {

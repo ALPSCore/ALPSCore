@@ -4,7 +4,8 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#pragma once
+#ifndef ALPS_ACCUMULATOR_WRAPPER_HPP
+#define ALPS_ACCUMULATOR_WRAPPER_HPP
 
 #include <alps/accumulator/feature/mean.hpp>
 #include <alps/accumulator/feature/error.hpp>
@@ -15,29 +16,44 @@
 
 #include <alps/hdf5/archive.hpp>
 
+#include <boost/mpl/vector.hpp>
+#include <boost/variant/variant.hpp>
+
 #include <typeinfo>
 #include <stdexcept>
 
 namespace alps {
     namespace accumulator {
 
-        template<typename T> class result_type_wrapper;
         template<typename A> class derived_wrapper;
 
-        // TODO: make for macro for that ...
-        class base_wrapper : public 
-            impl::BaseWrapper<weight_tag, 
-            impl::BaseWrapper<max_num_binning_tag, 
-            impl::BaseWrapper<binning_analysis_tag, 
-            impl::BaseWrapper<error_tag, 
-            impl::BaseWrapper<mean_tag, 
-            impl::BaseWrapper<count_tag, 
-        impl::BaseWrapper<void, void> > > > > > > {
+        namespace detail {
+            template<typename T> struct value_wrapper {
+                typedef T value_type;
+            };
+
+            typedef boost::make_variant_over<
+                boost::mpl::vector<ALPS_ACCUMULATOR_VALUE_TYPES>
+            >::type weight_variant_type;
+        }
+
+        template<typename T> class base_wrapper : public 
+            impl::BaseWrapper<T, weight_tag, 
+            impl::BaseWrapper<T, max_num_binning_tag, 
+            impl::BaseWrapper<T, binning_analysis_tag, 
+            impl::BaseWrapper<T, error_tag, 
+            impl::BaseWrapper<T, mean_tag, 
+            impl::BaseWrapper<T, count_tag, 
+            detail::value_wrapper<T>
+        > > > > > > {
+
             public:
+                using typename detail::value_wrapper<T>::value_type;
+
                 virtual ~base_wrapper() {}
 
-                virtual void operator()(void const * value, std::type_info const & value_info) = 0;
-                virtual void operator()(void const * value, std::type_info const & value_info, void const * weight, std::type_info const & weight_info) = 0;
+                virtual void operator()(value_type const & value) = 0;
+                virtual void operator()(value_type const & value, detail::weight_variant_type const & weight) = 0;
 
                 virtual void save(hdf5::archive & ar) const = 0;
                 virtual void load(hdf5::archive & ar) = 0;
@@ -51,13 +67,6 @@ namespace alps {
 
                 virtual base_wrapper * clone() const = 0;
                 virtual base_wrapper * result() const = 0;
-
-                template<typename T> result_type_wrapper<T> & get() {
-                    return dynamic_cast<result_type_wrapper<T> &>(*this);
-                }
-                template<typename T> result_type_wrapper<T> const & get() const {
-                    return dynamic_cast<result_type_wrapper<T> const &>(*this);
-                }
 
                 template<typename A> A & extract() {
                     return dynamic_cast<derived_wrapper<A> &>(*this).extract();
@@ -76,6 +85,7 @@ namespace alps {
                 virtual void operator*=(double) = 0;
                 virtual void operator/=(double) = 0;
 
+                virtual void negate() = 0;
                 virtual void inverse() = 0;
 
                 virtual void sin() = 0;
@@ -96,22 +106,7 @@ namespace alps {
         };
 
         namespace detail {
-            template<typename T, typename B> struct value_type_wrapper : public B {
-                typedef T value_type;
-            };
-        }
-
-        template<typename T> class result_type_wrapper : public 
-            impl::ResultTypeWrapper<T, weight_tag, 
-            impl::ResultTypeWrapper<T, max_num_binning_tag, 
-            impl::ResultTypeWrapper<T, binning_analysis_tag, 
-            impl::ResultTypeWrapper<T, error_tag, 
-            impl::ResultTypeWrapper<T, mean_tag, 
-            impl::ResultTypeWrapper<T, count_tag, 
-        detail::value_type_wrapper<T, base_wrapper> > > > > > >{};
-
-        namespace detail {
-            template<typename A> class foundation_wrapper : public result_type_wrapper<typename value_type<A>::type> {
+            template<typename A> class foundation_wrapper : public base_wrapper<typename value_type<A>::type> {
 
                 public:
                     foundation_wrapper(A const & arg): m_data(arg) {}
@@ -121,22 +116,17 @@ namespace alps {
             };
         }
 
-        template<typename T> void add_value(T & arg, typename value_type<T>::type const & value) {
-            arg(value);
-        }
-
-        template<typename T> void add_value(T & arg, typename value_type<T>::type const & value, typename value_type<typename weight_type<T>::type>::type const & weight) {
-            arg(value, weight);
-        }
-
-         template<typename A> class derived_wrapper : public 
+        template<typename A> class derived_wrapper : public 
             impl::DerivedWrapper<A, weight_tag, 
             impl::DerivedWrapper<A, max_num_binning_tag, 
             impl::DerivedWrapper<A, binning_analysis_tag, 
             impl::DerivedWrapper<A, error_tag, 
             impl::DerivedWrapper<A, mean_tag, 
             impl::DerivedWrapper<A, count_tag, 
-         detail::foundation_wrapper<A> > > > > > > {
+        detail::foundation_wrapper<A> > > > > > > {
+
+            using typename detail::value_wrapper<typename value_type<A>::type>::value_type;
+            
             public:
                 derived_wrapper()
                     : 
@@ -167,12 +157,23 @@ namespace alps {
                     return this->m_data;
                 }
 
-                 void operator()(void const * value, std::type_info const & value_info) {
-                    return call_impl<A>(value, value_info);
+                void operator()(value_type const & value) {
+                    this->m_data(value);
                 }
 
-                 void operator()(void const * value, std::type_info const & value_info, void const * weight, std::type_info const & weight_info) {
-                    return call_impl<A>(value, value_info, weight, weight_info);
+            private:
+                template<typename Q>
+                struct call_2_visitor: public boost::static_visitor<> {
+                    call_2_visitor(A & d, value_type const & v) : data(d), value(v) {}
+                    template<typename X> void operator()(X const & arg) const {
+                        data(value, arg);
+                    }
+                    A & data;
+                    value_type const & value;
+                };
+            public:
+                void operator()(value_type const & value, detail::weight_variant_type const & weight) {
+                    boost::apply_visitor(call_2_visitor<A>(this->m_data, value), weight);
                 }
 
                 void save(hdf5::archive & ar) const { 
@@ -205,62 +206,6 @@ namespace alps {
                     this->m_data.collective_merge(comm, root);
                 }
 #endif
-
-            private:
-
-                bool equal(std::type_info const & info1, std::type_info const & info2) const {
-                    return (&info1 == &info2 ||
-                        #ifdef BOOST_AUX_ANY_TYPE_ID_NAME
-                            std::strcmp(info1.name(), info2.name()) == 0
-                        #else
-                            info1 == info2
-                        #endif
-                    );
-                }
-
-                template<typename T> typename boost::enable_if<typename boost::is_scalar<typename value_type<T>::type>::type>::type call_impl(
-                    void const * value, std::type_info const & value_info
-                ) {
-                    if (equal(value_info, typeid(char))) add_value(this->m_data, *static_cast<char const *>(value));
-                    else if (equal(value_info, typeid(signed char))) add_value(this->m_data, *static_cast<signed char const *>(value));
-                    else if (equal(value_info, typeid(unsigned char))) add_value(this->m_data, *static_cast<unsigned char const *>(value));
-                    else if (equal(value_info, typeid(short))) add_value(this->m_data, *static_cast<short const *>(value));
-                    else if (equal(value_info, typeid(unsigned short))) add_value(this->m_data, *static_cast<unsigned short const *>(value));
-                    else if (equal(value_info, typeid(int))) add_value(this->m_data, *static_cast<int const *>(value));
-                    else if (equal(value_info, typeid(unsigned))) add_value(this->m_data, *static_cast<unsigned const *>(value));
-                    else if (equal(value_info, typeid(long))) add_value(this->m_data, *static_cast<long const *>(value));
-                    else if (equal(value_info, typeid(unsigned long))) add_value(this->m_data, *static_cast<unsigned long const *>(value));
-                    else if (equal(value_info, typeid(long long))) add_value(this->m_data, *static_cast<long long const *>(value));
-                    else if (equal(value_info, typeid(unsigned long long))) add_value(this->m_data, *static_cast<unsigned long long const *>(value));
-                    else if (equal(value_info, typeid(float))) add_value(this->m_data, *static_cast<float const *>(value));
-                    else if (equal(value_info, typeid(double))) add_value(this->m_data, *static_cast<double const *>(value));
-                    else if (equal(value_info, typeid(long double))) add_value(this->m_data, *static_cast<long double const *>(value));
-                    else if (equal(value_info, typeid(bool))) add_value(this->m_data, *static_cast<bool const *>(value));
-                    else if (equal(value_info, typeid(typename value_type<A>::type))) add_value(this->m_data, *static_cast<typename value_type<A>::type const *>(value));
-                    else throw std::runtime_error("wrong value type added in accumulator_wrapper::add_value" + ALPS_STACKTRACE);
-                }
-                template<typename T> typename boost::disable_if<typename boost::is_scalar<typename value_type<T>::type>::type>::type call_impl(
-                    void const * value, std::type_info const & value_info
-                ) {
-                    if (!equal(value_info, typeid(typename value_type<A>::type)))
-                        throw std::runtime_error("wrong value type added in accumulator_wrapper::add_value" + ALPS_STACKTRACE);
-                    add_value(this->m_data, *static_cast<typename value_type<A>::type const *>(value));
-                }
-
-                template<typename T> typename boost::enable_if<typename has_feature<T, weight_tag>::type>::type call_impl(
-                    void const * value, std::type_info const & value_info, void const * weight, std::type_info const & weight_info
-                ) {
-                    if (!equal(value_info, typeid(typename value_type<T>::type)))
-                        throw std::runtime_error("wrong value type added in accumulator_wrapper::add_value" + ALPS_STACKTRACE);
-                    if (!equal(weight_info, typeid(typename value_type<typename weight_type<T>::type>::type)))
-                        throw std::runtime_error("wrong weight type added in accumulator_wrapper::add_value" + ALPS_STACKTRACE);
-                    add_value(this->m_data, *static_cast<typename value_type<T>::type const *>(value), *static_cast<typename value_type<typename weight_type<T>::type>::type const *>(weight));
-                }
-                template<typename T> typename boost::disable_if<typename has_feature<T, weight_tag>::type>::type call_impl(
-                    void const * value, std::type_info const & value_info, void const * weight, std::type_info const & weight_info
-                ) {
-                    throw std::runtime_error(std::string("The type ") + typeid(T).name() + " has no weight" + ALPS_STACKTRACE);
-                }
         };
 
         template<typename A> class derived_result_wrapper : public derived_wrapper<A> {
@@ -269,20 +214,20 @@ namespace alps {
 
                 derived_result_wrapper(A const & arg): derived_wrapper<A>(arg) {}
 
-                base_wrapper * clone() const { 
+                base_wrapper<typename value_type<A>::type> * clone() const { 
                     return new derived_result_wrapper<A>(this->m_data); 
                 }
-                base_wrapper * result() const { 
+                base_wrapper<typename value_type<A>::type> * result() const { 
                     throw std::runtime_error(std::string("A result(") + typeid(A).name() + ") cannot be converted to a result" + ALPS_STACKTRACE);
                     return NULL;
                 }
 
-                #define OPERATOR_PROXY(AUGOPNAME, AUGOP)            \
-                    void AUGOPNAME(base_wrapper const & arg) {      \
-                        this->m_data AUGOP arg.extract<A>();        \
-                    }                                               \
-                    void AUGOPNAME(double arg) {                    \
-                        this->m_data AUGOP arg;                     \
+                #define OPERATOR_PROXY(AUGOPNAME, AUGOP)                                            \
+                    void AUGOPNAME(base_wrapper<typename value_type<A>::type> const & arg) {        \
+                        this->m_data AUGOP arg.template extract<A>();                               \
+                    }                                                                               \
+                    void AUGOPNAME(double arg) {                                                    \
+                        this->m_data AUGOP arg;                                                     \
                     }
                 OPERATOR_PROXY(operator+=, +=)
                 OPERATOR_PROXY(operator-=, -=)
@@ -290,13 +235,16 @@ namespace alps {
                 OPERATOR_PROXY(operator/=, /=)
                 #undef OPERATOR_PROXY
 
+                void negate() {
+                    this->m_data.negate();
+                }
                 void inverse() {
                     this->m_data.inverse();
                 }
 
-                #define FUNCTION_PROXY(FUN)                         \
-                    void FUN () {                                   \
-                        this->m_data. FUN ();                       \
+                #define FUNCTION_PROXY(FUN)                                                         \
+                    void FUN () {                                                                   \
+                        this->m_data. FUN ();                                                       \
                     }
 
                 FUNCTION_PROXY(sin)
@@ -326,24 +274,24 @@ namespace alps {
                 derived_accumulator_wrapper(): derived_wrapper<A>() {}
 
                 derived_accumulator_wrapper(A const & arg): derived_wrapper<A>(arg) {}
-
-                base_wrapper * clone() const {
+                
+                base_wrapper<typename value_type<A>::type> * clone() const {
                     return new derived_accumulator_wrapper<A>(this->m_data); 
                 }
-                base_wrapper * result() const { 
+                base_wrapper<typename value_type<A>::type> * result() const { 
                     return result_impl<A>();
                 }
 
-                void operator+=(base_wrapper const &) {
+                void operator+=(base_wrapper<typename value_type<A>::type> const &) {
                     throw std::runtime_error("The Operator += is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
                 }
-                void operator-=(base_wrapper const &) {
+                void operator-=(base_wrapper<typename value_type<A>::type> const &) {
                     throw std::runtime_error("The Operator -= is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
                 }
-                void operator*=(base_wrapper const &) {
+                void operator*=(base_wrapper<typename value_type<A>::type> const &) {
                     throw std::runtime_error("The Operator *= is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
                 }
-                void operator/=(base_wrapper const &) {
+                void operator/=(base_wrapper<typename value_type<A>::type> const &) {
                     throw std::runtime_error("The Operator /= is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
                 }
 
@@ -360,8 +308,11 @@ namespace alps {
                     throw std::runtime_error("The operator /= is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
                 }
 
+                void negate() {
+                    throw std::runtime_error("The function negate is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
+                }
                 void inverse() {
-                    throw std::runtime_error("The inverse is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
+                    throw std::runtime_error("The function inverse is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
                 }
 
                 #define FUNCTION_PROXY(FUN)                                                                                                           \
@@ -389,10 +340,10 @@ namespace alps {
 
             private:
 
-                template<typename T> typename boost::enable_if<typename has_result_type<T>::type, base_wrapper *>::type result_impl() const {
+                template<typename T> typename boost::enable_if<typename has_result_type<T>::type, base_wrapper<typename value_type<A>::type> *>::type result_impl() const {
                     return new derived_result_wrapper<typename A::result_type>(this->m_data);
                 }
-                template<typename T> typename boost::disable_if<typename has_result_type<T>::type, base_wrapper *>::type result_impl() const {
+                template<typename T> typename boost::disable_if<typename has_result_type<T>::type, base_wrapper<typename value_type<A>::type> *>::type result_impl() const {
                     throw std::runtime_error(std::string("The type ") + typeid(A).name() + " has no result_type" + ALPS_STACKTRACE);
                     return NULL;
                 }
@@ -400,3 +351,5 @@ namespace alps {
         };
     }
 }
+
+ #endif

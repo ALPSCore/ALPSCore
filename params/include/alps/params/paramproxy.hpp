@@ -4,8 +4,8 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_NGS_DETAIL_PARAMPROXY_HPP
-#define ALPS_NGS_DETAIL_PARAMPROXY_HPP
+#ifndef ALPS_DETAIL_PARAMPROXY_HPP
+#define ALPS_DETAIL_PARAMPROXY_HPP
 
 #include <alps/hdf5/archive.hpp>
 //#include <alps/ngs/config.hpp>
@@ -105,11 +105,11 @@ namespace alps {
 
         ALPS_DECL std::ostream & operator<<(std::ostream & os, paramproxy const &);
 
-        #define ALPS_NGS_PARAMPROXY_ADD_OPERATOR_DECL(T)                                 \
+        #define ALPS_PARAMPROXY_ADD_OPERATOR_DECL(T)                                 \
             ALPS_DECL T operator+(paramproxy const & p, T s);                            \
             ALPS_DECL T operator+(T s, paramproxy const & p);
-        ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE(ALPS_NGS_PARAMPROXY_ADD_OPERATOR_DECL)
-        #undef ALPS_NGS_PARAMPROXY_ADD_OPERATOR_DECL
+        ALPS_FOREACH_PARAMETERVALUE_TYPE(ALPS_PARAMPROXY_ADD_OPERATOR_DECL)
+        #undef ALPS_PARAMPROXY_ADD_OPERATOR_DECL
 
         ALPS_DECL std::string operator+(paramproxy const & p, char const * s);
         ALPS_DECL std::string operator+(char const * s, paramproxy const & p);

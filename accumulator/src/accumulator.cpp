@@ -4,7 +4,7 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#include <alps/accumulator/accumulator.hpp>
+#include <alps/accumulator.hpp>
 
 namespace alps {
     namespace accumulator {

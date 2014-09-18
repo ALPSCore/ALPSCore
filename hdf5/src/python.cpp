@@ -244,7 +244,7 @@ namespace alps {
                     if (has_complex_elements< T >::value)                                                                                   \
                         ar.set_complex(path);                                                                                               \
                 }
-            ALPS_NGS_FOREACH_NATIVE_NUMPY_TYPE(NGS_PYTHON_HDF5_CHECK_NUMPY)
+            ALPS_FOREACH_NATIVE_NUMPY_TYPE(NGS_PYTHON_HDF5_CHECK_NUMPY)
             #undef NGS_PYTHON_HDF5_CHECK_NUMPY
             else
                 throw std::runtime_error("unknown numpy element type" + ALPS_STACKTRACE);
@@ -264,7 +264,7 @@ namespace alps {
             #define NGS_PYTHON_HDF5_LOAD_NUMPY(T)                                                                                                               \
                 else if (ar.is_datatype<scalar_type< T >::type>(path) && ar.is_complex(path) == has_complex_elements< T >::value)                               \
                     detail::load_python_numeric< T >(ar, path, value, chunk, offset, ::alps::detail::get_numpy_type(alps::detail::type_wrapper< T >::type()));
-            ALPS_NGS_FOREACH_NATIVE_NUMPY_TYPE(NGS_PYTHON_HDF5_LOAD_NUMPY)
+            ALPS_FOREACH_NATIVE_NUMPY_TYPE(NGS_PYTHON_HDF5_LOAD_NUMPY)
             #undef NGS_PYTHON_HDF5_LOAD_NUMPY
             else
                 throw std::runtime_error("Unsupported type." + ALPS_STACKTRACE);
@@ -438,7 +438,7 @@ namespace alps {
                 #define NGS_PYTHON_HDF5_LOAD_SCALAR_NUMPY(T)                                                                                                    \
                 } else if (ar.is_datatype<scalar_type< T >::type>(path) && ar.is_complex(path) == has_complex_elements< T >::value) {                           \
                     detail::load_python_object< T >(ar, path, value, chunk, offset, ::alps::detail::get_numpy_type(alps::detail::type_wrapper< T >::type()));
-                ALPS_NGS_FOREACH_NATIVE_NUMPY_TYPE(NGS_PYTHON_HDF5_LOAD_SCALAR_NUMPY)
+                ALPS_FOREACH_NATIVE_NUMPY_TYPE(NGS_PYTHON_HDF5_LOAD_SCALAR_NUMPY)
                 #undef NGS_PYTHON_HDF5_LOAD_SCALAR_NUMPY
                 } else
                     throw std::runtime_error("Unsupported type." + ALPS_STACKTRACE);
