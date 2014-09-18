@@ -53,14 +53,8 @@ namespace alps {
         return s.fraction_completed();
     }
 
-    #ifdef ALPS_USE_NEW_ALEA
-        ALPS_DECL void save_results(alps::accumulator::accumulator_set const & observables, params const & params, boost::filesystem::path const & filename, std::string const & path);
-        ALPS_DECL void save_results(alps::accumulator::result_set const & results, params const & params, boost::filesystem::path const & filename, std::string const & path);
-    #endif
-
-    //ALPS_DECL void save_results(mcresults const & results, params const & params, boost::filesystem::path const & filename, std::string const & path);
-
-    //ALPS_DECL void save_results(mcobservables const & observables, params const & params, boost::filesystem::path const & filename, std::string const & path);
+    ALPS_DECL void save_results(alps::accumulator::accumulator_set const & observables, params const & params, boost::filesystem::path const & filename, std::string const & path);
+    ALPS_DECL void save_results(alps::accumulator::result_set const & results, params const & params, boost::filesystem::path const & filename, std::string const & path);
 
     template<typename C, typename P> void broadcast(C const & c, P & p, int r = 0) {
         p.broadcast(c, r);
