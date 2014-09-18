@@ -10,7 +10,7 @@
 #include <alps/accumulator/feature/weight_impl.hpp>
 
 // TODO: move inside features
-#include <alps/type_traits/covariance_type.hpp>
+// #include <alps/type_traits/covariance_type.hpp>
 
 #include <alps/hdf5/archive.hpp>
 
@@ -81,8 +81,8 @@ namespace alps {
                 // TODO: add all member functions
                 template<typename T> typename mean_type<result_type_wrapper<T> >::type mean() const { return get<T>().mean(); }
                 template<typename T> typename error_type<result_type_wrapper<T> >::type error() const { return get<T>().error(); }
-                template<typename T> typename covariance_type<T>::type accurate_covariance(result_wrapper const & rhs) const { return typename covariance_type<T>::type(); } // TODO: implement!
-                template<typename T> typename covariance_type<T>::type covariance(result_wrapper const & rhs) const { return typename covariance_type<T>::type(); } // TODO: implement!
+                // template<typename T> typename covariance_type<T>::type accurate_covariance(result_wrapper const & rhs) const { return typename covariance_type<T>::type(); } // TODO: implement!
+                // template<typename T> typename covariance_type<T>::type covariance(result_wrapper const & rhs) const { return typename covariance_type<T>::type(); } // TODO: implement!
 
                 void save(hdf5::archive & ar) const {
                     ar[""] = *m_base;
@@ -239,8 +239,8 @@ namespace alps {
                 // TODO: add all member functions
                 template<typename T> typename mean_type<result_type_wrapper<T> >::type mean() const { return get<T>().mean(); }
                 template<typename T> typename error_type<result_type_wrapper<T> >::type error() const { return get<T>().error(); }
-                template<typename T> typename covariance_type<T>::type accurate_covariance(result_wrapper const & rhs) const { return typename covariance_type<T>::type(); } // TODO: implement!
-                template<typename T> typename covariance_type<T>::type covariance(result_wrapper const & rhs) const { return typename covariance_type<T>::type(); } // TODO: implement!
+                // template<typename T> typename covariance_type<T>::type accurate_covariance(result_wrapper const & rhs) const { return typename covariance_type<T>::type(); } // TODO: implement!
+                // template<typename T> typename covariance_type<T>::type covariance(result_wrapper const & rhs) const { return typename covariance_type<T>::type(); } // TODO: implement!
 
                 void save(hdf5::archive & ar) const {
                     ar[""] = *m_base;
