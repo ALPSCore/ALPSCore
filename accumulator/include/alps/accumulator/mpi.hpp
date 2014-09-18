@@ -11,7 +11,7 @@
 
     #include <alps/hdf5.hpp>
 
-    #include <alps/ngs/boost_mpi.hpp>
+    #include <alps/utility/boost_mpi.hpp>
 
     namespace alps {
         namespace mpi {
