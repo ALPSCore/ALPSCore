@@ -154,7 +154,6 @@ namespace alps {
                         error_scalar_type one = 1;
 
                         error_scalar_type binlen = 1ll << bin_level;
-                        error_scalar_type N_0 = m_ac_count[0];
                         error_scalar_type N_i = m_ac_count[bin_level];
                         error_type sum_i = m_ac_sum[bin_level];
                         error_type sum2_i = m_ac_sum2[bin_level];
