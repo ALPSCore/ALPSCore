@@ -25,6 +25,13 @@ foreach(test ${test_src})
     alps_add_gtest(${test})
 endforeach(test)
 
+if (NOT DEFINED ALPS_EXTENSIVE_HDF5_TESTS)
+SET(ALPS_HDF5_DATA_TYPES
+    bool int short long float double
+    std::size_t std::string std::complex<float> std::complex<double> "std::complex<long double>"
+    boost::int8_t boost::uint8_t boost::int16_t boost::uint16_t boost::int32_t boost::uint32_t boost::int64_t boost::uint64_t
+    std::vector<bool>)
+else(NOT DEFINED ALPS_EXTENSIVE_HDF5_TESTS) 
 # texting type serialization
 SET(ALPS_HDF5_DATA_TYPES
     bool int short long float double
@@ -97,6 +104,7 @@ SET(ALPS_HDF5_DATA_TYPES
     "std::vector<boost::array<int, 4> >" "boost::array<std::vector<int>, 4>" "std::vector<boost::array<std::vector<int>, 4> >"
     "boost::tuple<int, double, float, std::complex<double> >" "std::vector<boost::tuple<char, bool, long long> >"
 )
+endif(NOT DEFINED ALPS_EXTENSIVE_HDF5_TESTS) 
 
 FOREACH (type ${ALPS_HDF5_DATA_TYPES})
 
