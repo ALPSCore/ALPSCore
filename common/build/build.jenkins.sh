@@ -19,13 +19,6 @@ fi
 
 echo "Using BOOST at $BOOST_ROOT - no system path $BOOST_SYSTEM"
 
-if [[ -z "$HDF5_ROOT" ]]
-then
-  echo
-else
-  export DYLD_LIBRARY_PATH=$BOOST_ROOT/lib:$HDF5_ROOT/lib:$DYLD_LIBRARY_PATH
-fi
-
 INSTALLDIR=$PWD/install
 BUILDDIR=$PWD/build.tmp
 ROOTDIR=$PWD
