@@ -31,7 +31,7 @@
     #define ALPS_HDF5_FAKE_THREADSAFETY ALPS_HDF5_LOCK_MUTEX
 #endif
 
-#define ALPS_HDF5_FOREACH_NATIVE_TYPE_INTEGRAL(CALLBACK, ARG)                                                                                                       \
+#define ALPS_HDF5_FOREACH_NATIVE_TYPE_INTEGRAL(CALLBACK, ARG)                                                                                                           \
     CALLBACK(char, ARG)                                                                                                                                                 \
     CALLBACK(signed char, ARG)                                                                                                                                          \
     CALLBACK(unsigned char, ARG)                                                                                                                                        \

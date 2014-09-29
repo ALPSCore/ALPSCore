@@ -888,14 +888,14 @@ namespace alps {
             };
 
             template<typename T> struct signed_observable_type
-                : public impl::Accumulator<T, weight_holder_tag<simple_observable_type<T> >, observable_type<T> >
+                : public impl::Accumulator<T, weight_holder_tag<observable_type<T> >, observable_type<T> >
             {
-                typedef typename impl::Accumulator<T, weight_holder_tag<simple_observable_type<T> >, typename observable_type<T>::accumuator_type> accumuator_type;
-                typedef typename impl::Result<T, weight_holder_tag<simple_observable_type<T> >, typename observable_type<T>::result_type> result_type;
+                typedef typename impl::Accumulator<T, weight_holder_tag<observable_type<T> >, typename observable_type<T>::accumuator_type> accumuator_type;
+                typedef typename impl::Result<T, weight_holder_tag<observable_type<T> >, typename observable_type<T>::result_type> result_type;
                 signed_observable_type(): base_type() {}
                 template<typename A> signed_observable_type(A const & arg): base_type(arg) {}
                 private:
-                    typedef impl::Accumulator<T, weight_holder_tag<simple_observable_type<T> >, observable_type<T> > base_type;
+                    typedef impl::Accumulator<T, weight_holder_tag<observable_type<T> >, observable_type<T> > base_type;
             };
 
             template<typename T> struct signed_simple_observable_type
