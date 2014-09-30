@@ -3,7 +3,7 @@
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
-
+#pragma once
 #include <alps/hdf5/archive.hpp>
 
 #include <boost/random.hpp>
