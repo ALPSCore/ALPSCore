@@ -4,8 +4,7 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_TUTORIAL_ISING_HPP
-#define ALPS_TUTORIAL_ISING_HPP
+#pragma once
 
 #include <alps/hdf5/archive.hpp>
 #include <alps/hdf5/vector.hpp>
@@ -64,5 +63,3 @@ class ALPS_DECL ising_sim {
         double beta;
         std::vector<int> spins;
 };
-
-#endif
