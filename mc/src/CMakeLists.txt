@@ -2,6 +2,7 @@ set (alps-mc_src
     mcbase
     mcoptions
     api
+    parseargs
     )
 
 add_library(${PROJECT_NAME} ${ALPS_BUILD_TYPE} ${alps-mc_src})

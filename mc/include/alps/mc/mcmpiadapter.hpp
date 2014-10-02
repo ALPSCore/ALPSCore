@@ -5,6 +5,7 @@
  */
 
 #pragma once
+
 #include <alps/config.h>
 
 #if defined(ALPS_HAVE_MPI)

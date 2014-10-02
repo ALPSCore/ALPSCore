@@ -70,7 +70,7 @@ if (Testing)
 endif (Testing)
 
 # add tutorial
-# add_subdirectory(tutorials)
+add_subdirectory(tutorials)
 
 # installation
 install(DIRECTORY include DESTINATION .

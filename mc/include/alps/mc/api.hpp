@@ -4,12 +4,11 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_API_HPP
-#define ALPS_API_HPP
+#pragma once
 
 #include <alps/config.h>
 #include <alps/params.hpp>
-#include <alps/accumulator/accumulator.hpp>
+#include <alps/accumulator.hpp>
 
 #include <boost/filesystem/path.hpp>
 
@@ -61,5 +60,3 @@ namespace alps {
     }
 
 }
-
-#endif

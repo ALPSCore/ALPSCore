@@ -28,8 +28,8 @@ include_directories(
     ${PROJECT_BINARY_DIR}/include
 )
 
-configure_file("${PROJECT_SOURCE_DIR}/include/config.h.in" "${PROJECT_BINARY_DIR}/include/alps/config.h")
-install(FILES "${PROJECT_BINARY_DIR}/include/alps/config.h" DESTINATION include/alps) 
+configure_file("${PROJECT_SOURCE_DIR}/include/config.hpp.in" "${PROJECT_BINARY_DIR}/include/alps/config.hpp")
+install(FILES "${PROJECT_BINARY_DIR}/include/alps/config.hpp" DESTINATION include/alps) 
 
 add_subdirectory(src)
 

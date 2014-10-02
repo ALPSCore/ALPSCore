@@ -4,8 +4,7 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_MCOPTIONS_HPP
-#define ALPS_MCOPTIONS_HPP
+#pragma once
 
 #include <alps/config.h>
 
@@ -30,5 +29,3 @@ namespace alps {
             execution_types type;
     };
 }
-
-#endif
