@@ -6,8 +6,9 @@
 
 #include "ising.hpp"
 
+#include <alps/mc/api.hpp>
 #include <alps/mc/parseargs.hpp>
-#include <alps/mc/mpiadapter.hpp>
+#include <alps/mc/mcmpiadapter.hpp>
 #include <alps/utility/stop_callback.hpp>
 // #include <alps/ngs/make_parameters_from_xml.hpp>
 
@@ -30,7 +31,7 @@ int main(int argc, char *argv[]) {
                                     +  ".clone" + boost::lexical_cast<std::string>(comm.rank()) + ".h5";
 
         alps::parameters_type<ising_sim>::type parameters;
-        if (comm.rank() > 0)
+        if (comm.rank() == 0)
             /* do nothing */ ;
         // else if (boost::filesystem::extension(options.input_file) == ".xml")
         //     parameters = alps::make_parameters_from_xml(options.input_file);

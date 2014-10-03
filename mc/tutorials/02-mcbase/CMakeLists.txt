@@ -5,7 +5,7 @@ target_link_libraries(tutorial_02_single ${PROJECT_NAME} ${LINK_ALL})
 
 if (ALPS_HAVE_MPI)
 
-	add_executable(tutorial_02_mpi mpi.cpp single.cpp)
+	add_executable(tutorial_02_mpi mpi.cpp ising.cpp)
 	target_link_libraries(tutorial_02_mpi ${PROJECT_NAME} ${LINK_ALL})
 
 #	add_executable(tutorial_02_pscan pscan.cpp single.cpp)
