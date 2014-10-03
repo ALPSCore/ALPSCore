@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <alps/config.h>
+#include <alps/config.hpp>
 
 #include <string>
 

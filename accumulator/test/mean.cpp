@@ -4,7 +4,7 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#include <alps/config.h>
+#include <alps/config.hpp>
 #include <alps/accumulator/accumulator.hpp>
 #include "gtest/gtest.h"
 

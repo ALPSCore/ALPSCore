@@ -13,7 +13,7 @@
 // This file includes low level functions which depend on the OS used
 //=======================================================================
 
-#include <alps/config.h>
+#include <alps/config.hpp>
 #include <boost/filesystem/path.hpp>
 #include <string>
 

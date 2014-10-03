@@ -9,7 +9,7 @@
 #ifndef ALPS_TYPE_TRAITS_CHANGE_VALUE_TYPE_H
 #define ALPS_TYPE_TRAITS_CHANGE_VALUE_TYPE_H
 
-#include <alps/config.h>
+#include <alps/config.hpp>
 #include <boost/mpl/bool.hpp>
 #include <valarray>
 #include <vector>

@@ -9,7 +9,7 @@
 #ifndef ALPS_ALEA_CONVERGENCE_H
 #define ALPS_ALEA_CONVERGENCE_H
 
-#include <alps/config.h>
+#include <alps/config.hpp>
 #include <string>
 
 namespace alps {

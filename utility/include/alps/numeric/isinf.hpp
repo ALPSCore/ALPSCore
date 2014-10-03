@@ -9,7 +9,7 @@
 #ifndef ALPS_NUMERIC_ISINF_HPP
 #define ALPS_NUMERIC_ISINF_HPP
 
-#include <alps/config.h>
+#include <alps/config.hpp>
 #include <cmath>
 
 namespace alps { namespace numeric {

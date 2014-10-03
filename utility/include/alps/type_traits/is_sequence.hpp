@@ -9,7 +9,7 @@
 #ifndef ALPS_TYPE_TRAITS_IS_SEQUENCE_H
 #define ALPS_TYPE_TRAITS_IS_SEQUENCE_H
 
-#include <alps/config.h>
+#include <alps/config.hpp>
 #include <boost/mpl/bool.hpp>
 #include <alps/type_traits/has_value_type.hpp>
 #include <valarray>

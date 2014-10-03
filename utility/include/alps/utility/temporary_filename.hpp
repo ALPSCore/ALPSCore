@@ -7,7 +7,7 @@
 #ifndef ALPS_UTILITY_TEMPORARU_FILENAME_HPP
 #define ALPS_UTILITY_TEMPORARU_FILENAME_HPP
 
-#include <alps/config.h>
+#include <alps/config.hpp>
 #include <string>
 
 namespace alps { 

@@ -16,7 +16,7 @@
 #ifndef ALPS_UTILITY_BITOPS_HPP
 #define ALPS_UTILITY_BITOPS_HPP
 
-#include <alps/config.h>
+#include <alps/config.hpp>
 
 #ifdef cray
 # include <intrinsics.h>

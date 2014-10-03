@@ -9,7 +9,7 @@
 #ifndef ALPS_NUMERIC_IS_EQUAL_HPP
 #define ALPS_NUMERIC_IS_EQUAL_HPP
 
-#include <alps/config.h>
+#include <alps/config.hpp>
 #include <boost/type_traits.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <algorithm>

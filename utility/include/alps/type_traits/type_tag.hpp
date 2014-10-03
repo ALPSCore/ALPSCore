@@ -9,7 +9,7 @@
 #ifndef ALPS_TYPE_TRAITS_TYPE_TAG_H
 #define ALPS_TYPE_TRAITS_TYPE_TAG_H
 
-#include <alps/config.h>
+#include <alps/config.hpp>
 #include <boost/mpl/int.hpp>
 #include <complex>
 #include <string>

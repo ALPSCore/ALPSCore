@@ -9,7 +9,7 @@
 #ifndef ALPS_UTILITY_VMUSAGE_HPP
 #define ALPS_UTILITY_VMUSAGE_HPP
 
-#include <alps/config.h>
+#include <alps/config.hpp>
 #include <map>
 #include <string>
 

@@ -6,7 +6,7 @@
 
 /* $Id$ */
 
-#include <alps/config.h>
+#include <alps/config.hpp>
 #include <alps/utility/copyright.hpp>
 #include <alps/version.h>
 

@@ -10,7 +10,7 @@
 #define ALPS_NUMERIC_ISNAN_HPP
 
 #include <cmath>
-#include <alps/config.h>
+#include <alps/config.hpp>
 
 namespace alps { namespace numeric {
 

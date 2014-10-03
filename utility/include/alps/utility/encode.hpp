@@ -8,7 +8,7 @@
 #define ALPS_ESCAPE_HPP
 
 #include <string>
-#include <alps/config.h>
+#include <alps/config.hpp>
 
 namespace alps { 
   ALPS_DECL std::string hdf5_name_encode(std::string const & s);

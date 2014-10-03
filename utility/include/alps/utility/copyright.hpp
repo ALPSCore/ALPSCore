@@ -15,7 +15,7 @@
 #define ALPS_COPYRIGHT_H
 
 #include <iostream>
-#include <alps/config.h>
+#include <alps/config.hpp>
 
 namespace alps {
 

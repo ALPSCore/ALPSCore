@@ -7,7 +7,7 @@
 #ifndef ALPS_STACKTRACE_HPP
 #define ALPS_STACKTRACE_HPP
 
-#include <alps/config.h>
+#include <alps/config.hpp>
 #include <alps/utility/stringify.hpp>
 
 #include <string>

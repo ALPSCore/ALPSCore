@@ -7,7 +7,7 @@
 #ifndef ALPS_HDF5_CONFIG_HPP
 #define ALPS_HDF5_CONFIG_HPP
 
-#include <alps/config.h>
+#include <alps/config.hpp>
 
 // if defined, no threading libraries are included
 // #define ALPS_SINGLE_THREAD

@@ -7,7 +7,7 @@
 #ifndef ALPS_CALLBACK_HPP
 #define ALPS_CALLBACK_HPP
 
-#include <alps/config.h>
+#include <alps/config.hpp>
 #include <alps/utility/signal.hpp>
 
 #include <boost/chrono.hpp>
