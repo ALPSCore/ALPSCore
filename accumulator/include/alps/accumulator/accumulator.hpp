@@ -847,7 +847,7 @@ namespace alps {
 
 
             template<typename T> struct PredefinedObservable : public PredefinedObservableBase<T> {
-                typedef typename T::accumuator_type accumuator_type;
+                typedef typename T::accumulator_type accumulator_type;
                 typedef typename T::result_type result_type;
                 BOOST_PARAMETER_CONSTRUCTOR(
                     PredefinedObservable, 
@@ -868,7 +868,7 @@ namespace alps {
             template<typename T> struct simple_observable_type
                 : public impl::Accumulator<T, error_tag, impl::Accumulator<T, mean_tag, impl::Accumulator<T, count_tag, impl::AccumulatorBase<T> > > >
             {
-                typedef typename impl::Accumulator<T, error_tag, impl::Accumulator<T, mean_tag, impl::Accumulator<T, count_tag, impl::AccumulatorBase<T> > > > accumuator_type;
+                typedef typename impl::Accumulator<T, error_tag, impl::Accumulator<T, mean_tag, impl::Accumulator<T, count_tag, impl::AccumulatorBase<T> > > > accumulator_type;
                 typedef typename impl::Result<T, error_tag, impl::Result<T, mean_tag, impl::Result<T, count_tag, impl::ResultBase<T> > > > result_type;
                 simple_observable_type(): base_type() {}
                 template<typename A> simple_observable_type(A const & arg): base_type(arg) {}
@@ -879,7 +879,7 @@ namespace alps {
             template<typename T> struct observable_type
                 : public impl::Accumulator<T, max_num_binning_tag, impl::Accumulator<T, binning_analysis_tag, simple_observable_type<T> > >
             {
-                typedef typename impl::Accumulator<T, max_num_binning_tag, impl::Accumulator<T, binning_analysis_tag, typename simple_observable_type<T>::accumuator_type> > accumuator_type;
+                typedef typename impl::Accumulator<T, max_num_binning_tag, impl::Accumulator<T, binning_analysis_tag, typename simple_observable_type<T>::accumulator_type> > accumulator_type;
                 typedef typename impl::Result<T, max_num_binning_tag, impl::Result<T, binning_analysis_tag, typename simple_observable_type<T>::result_type> > result_type;
                 observable_type(): base_type() {}
                 template<typename A> observable_type(A const & arg): base_type(arg) {}
@@ -890,7 +890,7 @@ namespace alps {
             template<typename T> struct signed_observable_type
                 : public impl::Accumulator<T, weight_holder_tag<observable_type<T> >, observable_type<T> >
             {
-                typedef typename impl::Accumulator<T, weight_holder_tag<observable_type<T> >, typename observable_type<T>::accumuator_type> accumuator_type;
+                typedef typename impl::Accumulator<T, weight_holder_tag<observable_type<T> >, typename observable_type<T>::accumulator_type> accumulator_type;
                 typedef typename impl::Result<T, weight_holder_tag<observable_type<T> >, typename observable_type<T>::result_type> result_type;
                 signed_observable_type(): base_type() {}
                 template<typename A> signed_observable_type(A const & arg): base_type(arg) {}
@@ -901,7 +901,7 @@ namespace alps {
             template<typename T> struct signed_simple_observable_type
                 : public impl::Accumulator<T, weight_holder_tag<simple_observable_type<T> >, simple_observable_type<T> >
             {
-                typedef typename impl::Accumulator<T, weight_holder_tag<simple_observable_type<T> >, typename simple_observable_type<T>::accumuator_type> accumuator_type;
+                typedef typename impl::Accumulator<T, weight_holder_tag<simple_observable_type<T> >, typename simple_observable_type<T>::accumulator_type> accumulator_type;
                 typedef typename impl::Result<T, weight_holder_tag<simple_observable_type<T> >, typename simple_observable_type<T>::result_type> result_type;
                 signed_simple_observable_type(): base_type() {}
                 template<typename A> signed_simple_observable_type(A const & arg): base_type(arg) {}
