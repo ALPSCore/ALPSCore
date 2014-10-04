@@ -10,7 +10,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include "gtest/gtest.h"
-
+#if defined(_OPENMP)
 TEST(hdf5, TestingOfOpenMP){
     bool result = false;
     try {
@@ -33,9 +33,14 @@ TEST(hdf5, TestingOfOpenMP){
 
     EXPECT_TRUE(result);
 }
+#endif
 int main(int argc, char **argv) 
 {
+#if defined(_OPENMP)
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
+#else
+    return 0;
+#endif
 }
 
