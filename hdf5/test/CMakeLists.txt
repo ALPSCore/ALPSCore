@@ -25,7 +25,7 @@ foreach(test ${test_src})
     alps_add_gtest(${test})
 endforeach(test)
 
-if (NOT DEFINED ALPS_EXTENSIVE_HDF5_TESTS)
+if(ExtensiveTesting)
 SET(ALPS_HDF5_DATA_TYPES
     bool int short long float double
     std::size_t std::string std::complex<float> std::complex<double> "std::complex<long double>"
@@ -104,7 +104,7 @@ SET(ALPS_HDF5_DATA_TYPES
     "std::vector<boost::array<int, 4> >" "boost::array<std::vector<int>, 4>" "std::vector<boost::array<std::vector<int>, 4> >"
     "boost::tuple<int, double, float, std::complex<double> >" "std::vector<boost::tuple<char, bool, long long> >"
 )
-endif(NOT DEFINED ALPS_EXTENSIVE_HDF5_TESTS) 
+endif(ExtensiveTesting)
 
 FOREACH (type ${ALPS_HDF5_DATA_TYPES})
 

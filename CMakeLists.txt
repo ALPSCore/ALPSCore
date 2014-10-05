@@ -25,6 +25,8 @@ endif()
 
 # enable Testing
 option(Testing "Enable testing" ON)
+option(ExtensiveTesting "Enable extensive testing, including time consuming tests" OFF)
+mark_as_advanced(ExtensiveTesting)
 if (Testing)
     enable_testing()
     include(ALPSEnableTests) #defined in common/cmake
