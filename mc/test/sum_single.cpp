@@ -4,11 +4,11 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#include <alps/mc/mcbase.hpp>
-#include <alps/mc/mcoptions.hpp>
 #include <alps/mc/api.hpp>
+#include <alps/mc/mcbase.hpp>
+#include <alps/mc/parseargs.hpp>
+#include <alps/mc/stop_callback.hpp>
 
-#include <alps/utility/stop_callback.hpp>
 #include <alps/utility/temporary_filename.hpp>
 
 #include <boost/lambda/lambda.hpp>

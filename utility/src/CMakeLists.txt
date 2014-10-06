@@ -6,7 +6,6 @@ set (alps_utils_src
     vmusage.cpp 
     stacktrace.cpp
     signal.cpp
-    stop_callback.cpp
     parseargs.cpp
     )
 

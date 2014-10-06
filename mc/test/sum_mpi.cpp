@@ -6,14 +6,16 @@
 
 #include <alps/mc/mcbase.hpp>
 #include <alps/mc/api.hpp>
+#include <alps/mc/mpiadapter.hpp>
+#include <alps/mc/stop_callback.hpp>
+
 #include <alps/utility/parseargs.hpp>
 #include <alps/utility/temporary_filename.hpp>
-#include <alps/mc/mcmpiadapter.hpp>
-#include <alps/utility/stop_callback.hpp>
 
 #include <boost/lambda/lambda.hpp>
 
 #include "gtest/gtest.h"
+
 // Simulation to measure e^(-x*x)
 class my_sim_type : public alps::mcbase {
 

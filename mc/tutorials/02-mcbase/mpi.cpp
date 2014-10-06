@@ -8,8 +8,8 @@
 
 #include <alps/mc/api.hpp>
 #include <alps/mc/parseargs.hpp>
-#include <alps/mc/mcmpiadapter.hpp>
-#include <alps/utility/stop_callback.hpp>
+#include <alps/mc/mpiadapter.hpp>
+#include <alps/mc/stop_callback.hpp>
 // #include <alps/ngs/make_parameters_from_xml.hpp>
 
 #include <boost/chrono.hpp>
@@ -31,7 +31,8 @@ int main(int argc, char *argv[]) {
                                     +  ".clone" + boost::lexical_cast<std::string>(comm.rank()) + ".h5";
 
         alps::parameters_type<ising_sim>::type parameters;
-        if (comm.rank() == 0)
+        // only load parameter if rank is 0 and brcast them to other ranks, els do nothing
+        if (comm.rank() > 0)
             /* do nothing */ ;
         // else if (boost::filesystem::extension(options.input_file) == ".xml")
         //     parameters = alps::make_parameters_from_xml(options.input_file);

@@ -5,11 +5,11 @@ target_link_libraries(tutorial_02_single ${PROJECT_NAME} ${LINK_ALL})
 
 if (ALPS_HAVE_MPI)
 
-	add_executable(tutorial_02_mpi mpi.cpp ising.cpp)
+	add_executable(tutorial_02_mpi ising.cpp mpi.cpp)
 	target_link_libraries(tutorial_02_mpi ${PROJECT_NAME} ${LINK_ALL})
 
-#	add_executable(tutorial_02_pscan pscan.cpp single.cpp)
-#	target_link_libraries(tutorial_02_pscan ${PROJECT_NAME} ${LINK_ALL})
+	add_executable(tutorial_02_pscan ising.cpp mpi_pscan.cpp)
+	target_link_libraries(tutorial_02_pscan ${PROJECT_NAME} ${LINK_ALL})
 
 endif (ALPS_HAVE_MPI)
 
