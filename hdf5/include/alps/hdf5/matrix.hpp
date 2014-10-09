@@ -8,7 +8,7 @@
 #define ALPS_HDF5_ALPS_MATRIX_HPP
 
 #include <alps/hdf5/archive.hpp>
-#include <alps/utility/cast.hpp>
+#include <alps/utilities/cast.hpp>
 #include <alps/hdf5/complex.hpp>
 #include <alps/numeric/matrix.hpp>
 

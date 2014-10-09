@@ -26,7 +26,7 @@
 *****************************************************************************/
 
 #include <alps/random/uniform_on_sphere_n.h>
-#include <alps/utility/vectorio.hpp>
+#include <alps/utilities/vectorio.hpp>
 #include <boost/random.hpp>
 #include <iostream>
 #include <vector>

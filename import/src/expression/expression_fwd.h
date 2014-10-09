@@ -15,7 +15,7 @@
 #include <alps/parameter.h>
 #include <alps/random.h>
 #include <alps/parser/parser.h>
-#include <alps/utility/vectorio.hpp>
+#include <alps/utilities/vectorio.hpp>
 #include <alps/type_traits/is_symbolic.hpp>
 
 #include <boost/call_traits.hpp>

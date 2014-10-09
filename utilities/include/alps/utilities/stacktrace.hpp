@@ -8,7 +8,7 @@
 #define ALPS_STACKTRACE_HPP
 
 #include <alps/config.hpp>
-#include <alps/utility/stringify.hpp>
+#include <alps/utilities/stringify.hpp>
 
 #include <string>
 

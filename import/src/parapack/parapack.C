@@ -36,9 +36,9 @@
 #include "version.h"
 
 #include <alps/config.h>
-#include <alps/utility/copyright.hpp>
-#include <alps/utility/os.hpp>
-#include <alps/utility/vmusage.hpp>
+#include <alps/utilities/copyright.hpp>
+#include <alps/utilities/os.hpp>
+#include <alps/utilities/vmusage.hpp>
 #include <alps/osiris/comm.h>
 
 // some file (probably a python header) defines a tolower macro ...

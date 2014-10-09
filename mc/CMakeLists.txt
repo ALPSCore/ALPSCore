@@ -30,9 +30,9 @@ find_package (HDF5 REQUIRED)
     message(STATUS "HDF5 libs: " ${HDF5_LIBRARIES} )
 
 if (NOT DEFINED ALPS_GLOBAL_BUILD)
-find_package (alps-utility REQUIRED)
-    message(STATUS "alps-utility includes: " ${alps-utility_INCLUDE_DIRS} )
-    message(STATUS "alps-utility libs: " ${alps-utility_LIBRARIES} )
+find_package (alps-utilities REQUIRED)
+    message(STATUS "alps-utilities includes: " ${alps-utilities_INCLUDE_DIRS} )
+    message(STATUS "alps-utilities libs: " ${alps-utilities_LIBRARIES} )
 find_package (alps-hdf5 REQUIRED)
     message(STATUS "alps-hdf5 includes: " ${alps-hdf5_INCLUDE_DIRS} )
     message(STATUS "alps-hdf5 libs: " ${alps-hdf5_LIBRARIES} )
@@ -46,12 +46,12 @@ endif(NOT DEFINED ALPS_GLOBAL_BUILD)
 
 
 # LINK_ALL - link for libraries
-set (LINK_ALL ${alps-accumulator_LIBRARIES} ${alps-params_LIBRARIES} ${alps-hdf5_LIBRARIES} ${alps-utility_LIBRARIES} ${Boost_LIBRARIES} ${HDF5_LIBRARIES} )
+set (LINK_ALL ${alps-accumulator_LIBRARIES} ${alps-params_LIBRARIES} ${alps-hdf5_LIBRARIES} ${alps-utilities_LIBRARIES} ${Boost_LIBRARIES} ${HDF5_LIBRARIES} )
 
 include_directories(
     ${Boost_INCLUDE_DIRS}
     ${HDF5_INCLUDE_DIRS}
-    ${alps-utility_INCLUDE_DIRS}
+    ${alps-utilities_INCLUDE_DIRS}
     ${alps-hdf5_INCLUDE_DIRS}
     ${alps-params_INCLUDE_DIRS}
     ${alps-accumulator_INCLUDE_DIRS}

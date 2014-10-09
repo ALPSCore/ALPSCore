@@ -7,7 +7,7 @@
 #ifndef ALPS_SIGNAL_HPP
 #define ALPS_SIGNAL_HPP
 
-#include <alps/utility/stacktrace.hpp>
+#include <alps/utilities/stacktrace.hpp>
 
 #include <boost/array.hpp>
 

@@ -21,9 +21,9 @@
 #include <alps/type_traits/covariance_type.hpp>
 #include <alps/numeric/update_minmax.hpp>
 #include <alps/numeric/outer_product.hpp>
-#include <alps/utility/numeric_cast.hpp>
-#include <alps/utility/resize.hpp>
-#include <alps/utility/assign.hpp>
+#include <alps/utilities/numeric_cast.hpp>
+#include <alps/utilities/resize.hpp>
+#include <alps/utilities/assign.hpp>
 #include <alps/lambda.hpp>
 #include <alps/hdf5.hpp>
 

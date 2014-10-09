@@ -8,7 +8,7 @@
 #define ALPS_CALLBACK_HPP
 
 #include <alps/config.hpp>
-#include <alps/utility/signal.hpp>
+#include <alps/utilities/signal.hpp>
 
 #include <boost/chrono.hpp>
 #ifdef ALPS_HAVE_MPI

@@ -14,7 +14,7 @@
 #include <alps/alea/simpleobsdata.h>
 #include <alps/parser/parser.h>
 #include <alps/osiris/std/vector.h>
-#include <alps/utility/encode.hpp>
+#include <alps/utilities/encode.hpp>
 #include <alps/numeric/round.hpp>
 #include <alps/numeric/is_nonzero.hpp>
 #include <alps/type_traits/is_scalar.hpp>

@@ -4,7 +4,7 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#include <alps/utility/parseargs.hpp>
+#include <alps/utilities/parseargs.hpp>
 
 #include <boost/program_options.hpp>
 

@@ -6,7 +6,7 @@
 
 #include <alps/params.hpp>
 #include "gtest/gtest.h"
-#include <alps/utility/temporary_filename.hpp>
+#include <alps/utilities/temporary_filename.hpp>
 #include <fstream>
 
 TEST(param, TextParamRead){

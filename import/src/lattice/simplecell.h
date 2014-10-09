@@ -14,7 +14,7 @@
 #include <alps/lattice/graph_traits.h>
 #include <alps/lattice/dimensional_traits.h>
 #include <alps/lattice/cell_traits.h>
-#include <alps/utility/vectorio.hpp>
+#include <alps/utilities/vectorio.hpp>
 
 namespace alps {
 

@@ -14,7 +14,7 @@
 #include <alps/lattice/coordinate_traits.h>
 #include <alps/lattice/boundary.h>
 
-#include <alps/utility/vectorio.hpp>
+#include <alps/utilities/vectorio.hpp>
 #include <alps/numeric/vector_functions.hpp>
 #include <alps/numeric/scalar_product.hpp>
 

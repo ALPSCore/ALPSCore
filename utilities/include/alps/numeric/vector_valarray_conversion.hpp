@@ -10,7 +10,7 @@
 #ifndef ALPS_VECTOR_VALARRAY_CONVERSION
 #define ALPS_VECTOR_VALARRAY_CONVERSION
 
-#include <alps/utility/data.hpp>
+#include <alps/utilities/data.hpp>
 #include <vector>
 #include <valarray>
 #include <algorithm>

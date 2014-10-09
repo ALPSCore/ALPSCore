@@ -4,7 +4,7 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#include <alps/utility/signal.hpp>
+#include <alps/utilities/signal.hpp>
 #include <alps/mc/mcbase.hpp>
 
 namespace alps {

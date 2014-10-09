@@ -6,8 +6,8 @@
 
 #pragma once
 
-#include <alps/utility/cast.hpp>
-//#include <alps/utility/config.hpp>
+#include <alps/utilities/cast.hpp>
+//#include <alps/utilities/config.hpp>
 
 #include <boost/variant.hpp>
 

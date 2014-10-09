@@ -8,7 +8,7 @@
 #define ALPS_HDF5_STD_VALARRAY_HPP
 
 #include <alps/hdf5.hpp>
-#include <alps/utility/cast.hpp>
+#include <alps/utilities/cast.hpp>
 
 #include <valarray>
 #include <iterator>

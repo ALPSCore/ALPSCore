@@ -8,9 +8,9 @@
 #define ALPS_HDF5_PYTHON_CPP
 
 #include <alps/hdf5/archive.hpp>
-#include <alps/utility/cast.hpp>
+#include <alps/utilities/cast.hpp>
 #include <alps/hdf5/pair.hpp>
-#include <alps/utility/stacktrace.hpp>
+#include <alps/utilities/stacktrace.hpp>
 #include <alps/hdf5/vector.hpp>
 #include <alps/hdf5/complex.hpp>
 

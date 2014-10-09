@@ -26,7 +26,7 @@
 *
 *****************************************************************************/
 
-#include <alps/utility/encode.hpp>
+#include <alps/utilities/encode.hpp>
 #include <alps/alea.h>
 
 #include <alps/hdf5.hpp>

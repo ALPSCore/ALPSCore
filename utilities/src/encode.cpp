@@ -7,7 +7,7 @@
 
 #include <string>
 #include <boost/lexical_cast.hpp>
-#include <alps/utility/encode.hpp>
+#include <alps/utilities/encode.hpp>
 
 namespace alps {
   std::string hdf5_name_encode(std::string const & s)

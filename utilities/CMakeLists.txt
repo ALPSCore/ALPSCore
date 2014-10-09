@@ -1,11 +1,11 @@
 # 
-# alps-utility cmake configuration script.
+# alps-utilities cmake configuration script.
 # 
 
 cmake_minimum_required (VERSION 2.8)
 
 # define project name
-project (alps-utility CXX)
+project (alps-utilities CXX)
 message ("\nALPSCore module : ${PROJECT_NAME}\n")
 # add common modules from ../common/cmake
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/../common/cmake)
@@ -54,7 +54,7 @@ configure_file("${PROJECT_SOURCE_DIR}/${PROJECT_NAME}.pc.in" "${PROJECT_BINARY_D
 install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}.pc" DESTINATION "lib/pkgconfig")
 
 # Generate cmake Find module
-set(PROJECT_SEARCH_FILE alps/utility/data.hpp)
+set(PROJECT_SEARCH_FILE alps/utilities/data.hpp)
 configure_file("${PROJECT_SOURCE_DIR}/../common/cmake/FindALPSModule.cmake.in" "${PROJECT_BINARY_DIR}/Find${PROJECT_NAME}.cmake" @ONLY)
 install(FILES "${PROJECT_BINARY_DIR}/Find${PROJECT_NAME}.cmake" DESTINATION "share/cmake/Modules")
 install(FILES "${PROJECT_SOURCE_DIR}/../common/cmake/FindALPSCore.cmake" DESTINATION "share/cmake/Modules")

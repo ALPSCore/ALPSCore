@@ -16,8 +16,8 @@
 
 #include <alps/accumulator/numeric.hpp>
 #include <alps/hdf5/archive.hpp>
-#include <alps/utility/stacktrace.hpp>
-#include <alps/utility/short_print.hpp>
+#include <alps/utilities/stacktrace.hpp>
+#include <alps/utilities/short_print.hpp>
 
 #include <alps/accumulator/convergence.hpp>
 #include <alps/numeric/set_negative_0.hpp>

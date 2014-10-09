@@ -9,8 +9,8 @@
 #include <alps/mc/mpiadapter.hpp>
 #include <alps/mc/stop_callback.hpp>
 
-#include <alps/utility/parseargs.hpp>
-#include <alps/utility/temporary_filename.hpp>
+#include <alps/utilities/parseargs.hpp>
+#include <alps/utilities/temporary_filename.hpp>
 
 #include <boost/lambda/lambda.hpp>
 

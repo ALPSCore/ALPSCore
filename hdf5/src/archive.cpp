@@ -5,10 +5,10 @@
  */
 
 #include <alps/hdf5/archive.hpp>
-#include <alps/utility/cast.hpp>
+#include <alps/utilities/cast.hpp>
 //#include <alps/ngs/config.hpp>
-#include <alps/utility/signal.hpp>
-#include <alps/utility/stacktrace.hpp>
+#include <alps/utilities/signal.hpp>
+#include <alps/utilities/stacktrace.hpp>
 
 #include <boost/scoped_array.hpp>
 #include <boost/filesystem/operations.hpp>

@@ -8,7 +8,7 @@
 #define ALPS_UTILITY_CAST_HPP
 
 #include <alps/config.hpp>
-#include <alps/utility/stacktrace.hpp>
+#include <alps/utilities/stacktrace.hpp>
 
 #include <boost/bind.hpp>
 #include <boost/mpl/int.hpp>

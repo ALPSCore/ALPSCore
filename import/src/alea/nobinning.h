@@ -16,9 +16,9 @@
 #include <alps/numeric/set_negative_0.hpp>
 #include <alps/type_traits/change_value_type.hpp>
 #include <alps/type_traits/average_type.hpp>
-#include <alps/utility/numeric_cast.hpp>
-#include <alps/utility/resize.hpp>
-#include <alps/utility/size.hpp>
+#include <alps/utilities/numeric_cast.hpp>
+#include <alps/utilities/resize.hpp>
+#include <alps/utilities/size.hpp>
 #include <alps/numeric/round.hpp>
 #include <alps/numeric/is_nonzero.hpp>
 

@@ -5,7 +5,7 @@
  */
 
 #include <alps/hdf5/archive.hpp>
-#include <alps/utility/encode.hpp>
+#include <alps/utilities/encode.hpp>
 #include <alps/alea.h>
 
 #include <string>

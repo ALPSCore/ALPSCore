@@ -14,7 +14,7 @@
 #include <alps/type_traits/change_value_type.hpp>
 #include <alps/type_traits/is_scalar.hpp>
 #include <alps/alea/type_tag.hpp>
-#include <alps/utility/encode.hpp>
+#include <alps/utilities/encode.hpp>
 
 #include <alps/hdf5.hpp>
 

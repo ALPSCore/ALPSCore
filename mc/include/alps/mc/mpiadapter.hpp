@@ -10,7 +10,7 @@
 
 #if defined(ALPS_HAVE_MPI)
 
-#include <alps/utility/boost_mpi.hpp>
+#include <alps/utilities/boost_mpi.hpp>
 #include <alps/mc/check_schedule.hpp>
 
 namespace alps {

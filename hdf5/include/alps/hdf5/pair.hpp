@@ -8,8 +8,8 @@
 #define ALPS_HDF5_STD_PAIR
 
 #include <alps/hdf5/archive.hpp>
-#include <alps/utility/cast.hpp>
-#include <alps/utility/remove_cvr.hpp>
+#include <alps/utilities/cast.hpp>
+#include <alps/utilities/remove_cvr.hpp>
 
 #include <utility>
 

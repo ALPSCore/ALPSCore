@@ -8,7 +8,7 @@
 #define ALPS_HDF5_STD_VECTOR_HPP
 
 #include <alps/hdf5/archive.hpp>
-#include <alps/utility/cast.hpp>
+#include <alps/utilities/cast.hpp>
 
 #include <boost/type_traits/is_scalar.hpp>
 

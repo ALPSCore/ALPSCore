@@ -7,7 +7,7 @@
 #pragma once
 
 #include <alps/hdf5/archive.hpp>
-#include <alps/utility/remove_cvr.hpp>
+#include <alps/utilities/remove_cvr.hpp>
 #include "paramvalue_reader.hpp"
 
 #if defined(ALPS_HAVE_PYTHON)

@@ -16,7 +16,7 @@
 #include <alps/lattice/graph_traits.h>
 #include <alps/lattice/coordinate_traits.h>
 #include <alps/lattice/propertymap.h>
-#include <alps/utility/vectorio.hpp>
+#include <alps/utilities/vectorio.hpp>
 
 #include <boost/pending/property.hpp>
 #include <boost/graph/adjacency_list.hpp>

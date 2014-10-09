@@ -4,8 +4,8 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#include <alps/utility/signal.hpp>
-#include <alps/utility/stacktrace.hpp>
+#include <alps/utilities/signal.hpp>
+#include <alps/utilities/stacktrace.hpp>
 //#include <alps/hdf5/archive.hpp> //FIXME - see below
 
 #include <cstring>

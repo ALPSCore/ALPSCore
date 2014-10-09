@@ -4,7 +4,7 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#include <alps/utility/stacktrace.hpp>
+#include <alps/utilities/stacktrace.hpp>
 
 #ifndef ALPS_UTILITY_NO_STACKTRACE
 

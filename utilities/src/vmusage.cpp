@@ -6,7 +6,7 @@
 
 // reference: http://d.hatena.ne.jp/naoya/20080727/1217119867
 
-#include <alps/utility/vmusage.hpp>
+#include <alps/utilities/vmusage.hpp>
 #include <alps/config.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>

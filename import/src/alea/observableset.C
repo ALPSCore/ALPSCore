@@ -30,7 +30,7 @@
 
 #include "observableset.h"
 #include "observableset_p.h"
-#include <alps/utility/encode.hpp>
+#include <alps/utilities/encode.hpp>
 #include <alps/multi_array.hpp>
 #include <boost/lexical_cast.hpp>
 

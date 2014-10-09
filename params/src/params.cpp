@@ -4,7 +4,7 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 #include <alps/params.hpp>
-#include <alps/utility/boost_mpi.hpp>
+#include <alps/utilities/boost_mpi.hpp>
 #include <boost/bind.hpp>
 #include <boost/algorithm/string.hpp>
 #include <algorithm>

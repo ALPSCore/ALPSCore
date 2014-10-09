@@ -4,7 +4,7 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#include <alps/utility/vmusage.hpp>
+#include <alps/utilities/vmusage.hpp>
 #include <boost/foreach.hpp>
 #include <iostream>
 #include <cstdlib>

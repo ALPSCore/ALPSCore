@@ -25,7 +25,7 @@
 *
 *****************************************************************************/
 
-#include <alps/utility/os.hpp>
+#include <alps/utilities/os.hpp>
 #include <alps/version.h>
 #include <iostream>
 

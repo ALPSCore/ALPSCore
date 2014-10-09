@@ -13,8 +13,8 @@
 #include <alps/accumulator/feature/weight.hpp>
 
 #include <alps/hdf5/archive.hpp>
-#include <alps/utility/stacktrace.hpp>
-#include <alps/utility/short_print.hpp>
+#include <alps/utilities/stacktrace.hpp>
+#include <alps/utilities/short_print.hpp>
 
 #include <boost/utility.hpp>
 #include <boost/shared_ptr.hpp>

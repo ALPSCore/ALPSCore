@@ -33,8 +33,8 @@ if (Testing)
 endif(Testing)
 
 # each module is defined as a cmake project in a subdirectory
-add_subdirectory(utility)
-alps_add_module(alps-utility utility)
+add_subdirectory(utilities)
+alps_add_module(alps-utilities utilities)
 add_subdirectory(hdf5)
 alps_add_module(alps-hdf5 hdf5)
 add_subdirectory(accumulator)

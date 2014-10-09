@@ -13,7 +13,7 @@
 #include <alps/lattice/unitcell.h>
 #include <alps/lattice/coordinate_traits.h>
 
-#include <alps/utility/vectorio.hpp>
+#include <alps/utilities/vectorio.hpp>
 #include <alps/numeric/vector_functions.hpp>
 #include <alps/type_traits/element_type.hpp>
 

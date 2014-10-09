@@ -12,7 +12,7 @@
 #include <alps/model.h>
 #include <alps/lattice.h>
 
-#include <alps/utility/numeric_cast.hpp>
+#include <alps/utilities/numeric_cast.hpp>
 #include <alps/numeric/matrix_as_vector.hpp>
 #include <alps/numeric/conj.hpp>
 #include <alps/numeric/is_nonzero.hpp>

@@ -6,8 +6,8 @@
 
 #include <alps/mc/stop_callback.hpp>
 
-#include <alps/utility/signal.hpp>
-#include <alps/utility/boost_mpi.hpp>
+#include <alps/utilities/signal.hpp>
+#include <alps/utilities/boost_mpi.hpp>
 
 namespace alps {
 

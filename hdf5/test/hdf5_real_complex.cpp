@@ -9,7 +9,7 @@
 #include <alps/hdf5/complex.hpp>
 // TODO: do we have a matrix class test?
 // #include <alps/numeric/matrix.hpp>
-#include <alps/utility/short_print.hpp>
+#include <alps/utilities/short_print.hpp>
 
 #include <boost/filesystem.hpp>
 

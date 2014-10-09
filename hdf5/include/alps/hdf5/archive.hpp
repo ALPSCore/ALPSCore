@@ -8,10 +8,10 @@
 #define ALPS_HDF5_ARCHIVE_HPP
 
 #include <alps/hdf5/config.hpp>
-#include <alps/utility/stacktrace.hpp>
+#include <alps/utilities/stacktrace.hpp>
 #include <alps/hdf5/errors.hpp>
-#include <alps/utility/remove_cvr.hpp>
-#include <alps/utility/type_wrapper.hpp>
+#include <alps/utilities/remove_cvr.hpp>
+#include <alps/utilities/type_wrapper.hpp>
 
 #include <boost/mpl/and.hpp>
 #include <boost/filesystem/path.hpp>

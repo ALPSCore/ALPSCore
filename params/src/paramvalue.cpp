@@ -4,12 +4,12 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#include <alps/utility/short_print.hpp>
+#include <alps/utilities/short_print.hpp>
 #include <alps/hdf5/vector.hpp>
 #include <alps/hdf5/complex.hpp>
 #include <alps/hdf5/pointer.hpp>
 #include <alps/params/paramvalue.hpp>
-#include <alps/utility/type_wrapper.hpp>
+#include <alps/utilities/type_wrapper.hpp>
 
 namespace alps {
     namespace detail {

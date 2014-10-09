@@ -6,7 +6,7 @@
 
 #include <alps/hdf5/archive.hpp>
 #include <alps/numeric/matrix.hpp>
-#include <alps/utility/short_print.hpp>
+#include <alps/utilities/short_print.hpp>
 
 #include <boost/filesystem.hpp>
 

@@ -9,7 +9,7 @@
 
 #include <boost/python.hpp>
 #include <alps/scheduler/convert.h>
-#include <alps/utility/encode.hpp>
+#include <alps/utilities/encode.hpp>
 #include <alps/random.h>
 #include <alps/parser/xslt_path.h>
 #include <alps/python/make_copy.hpp>

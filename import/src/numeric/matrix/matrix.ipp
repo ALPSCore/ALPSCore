@@ -27,7 +27,7 @@
 
 #include <alps/numeric/conj.hpp>
 #include <boost/iterator/transform_iterator.hpp>
-#include <alps/utility/numeric_cast.hpp>
+#include <alps/utilities/numeric_cast.hpp>
 
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/vector.hpp>

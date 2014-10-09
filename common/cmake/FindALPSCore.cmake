@@ -11,9 +11,9 @@ list(APPEND CMAKE_MODULE_PATH ${ALPS_ROOT}/share/cmake/Modules)
 list(APPEND known_components hdf5 accumulator params mc)
 
 # Start searching from utility
-find_package(alps-utility)
-set(ALPSCore_INCLUDES ${alps-utility_INCLUDE_DIRS}) 
-set(ALPSCore_LIBRARIES ${alps-utility_LIBRARIES})
+find_package(alps-utilities)
+set(ALPSCore_INCLUDES ${alps-utilities_INCLUDE_DIRS}) 
+set(ALPSCore_LIBRARIES ${alps-utilities_LIBRARIES})
 
 # if no components required - search for everything
 list(LENGTH ALPSCore_FIND_COMPONENTS comp_len)

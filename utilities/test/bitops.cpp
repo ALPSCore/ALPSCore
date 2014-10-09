@@ -4,15 +4,19 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#include <iostream>
-#include <alps/utility/temporary_filename.hpp>
+#include <alps/utilities/bitops.hpp>
+#include "gtest/gtest.h"
 
-#include <gtest/gtest.h>
-
-TEST(temporary_fname, main)
+TEST(bitops, main)
 {
-  std::string prefix="alps_temp_filename_test";
-  std::string filename=alps::temporary_filename(prefix);
+    uint32_t ui  = 5;
+    uint64_t uli = 5;
+    ui   <<= sizeof(uint32_t)*8-4;
+    uli  <<= sizeof(uint64_t)*8-4;
+
+    bool succ = alps::popcnt(ui)  == 2;
+    succ     &= alps::popcnt(uli) == 2;
+    ASSERT_EQ(succ, true);
 }
 
 int main(int argc, char **argv) 

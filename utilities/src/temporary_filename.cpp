@@ -5,7 +5,7 @@
  */
 
 
-#include <alps/utility/temporary_filename.hpp>
+#include <alps/utilities/temporary_filename.hpp>
 #include <boost/filesystem.hpp>
 
 namespace alps {

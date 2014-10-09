@@ -8,7 +8,7 @@
 #define ALPS_HDF5_STD_MAP
 
 #include <alps/hdf5/archive.hpp>
-#include <alps/utility/cast.hpp>
+#include <alps/utilities/cast.hpp>
 
 #include <map>
 

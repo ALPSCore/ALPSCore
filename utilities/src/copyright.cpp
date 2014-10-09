@@ -7,7 +7,7 @@
 /* $Id$ */
 
 #include <alps/config.hpp>
-#include <alps/utility/copyright.hpp>
+#include <alps/utilities/copyright.hpp>
 #include <alps/version.h>
 
 void alps::print_copyright(std::ostream& out) {

@@ -7,7 +7,7 @@
 #ifndef ALPS_NUMERIC_ARRAY_HEADER
 #define ALPS_NUMERIC_ARRAY_HEADER
 
-#include <alps/utility/stacktrace.hpp>
+#include <alps/utilities/stacktrace.hpp>
 #include <alps/accumulator/numeric/inf.hpp>
 
 #include <alps/numeric/special_functions.hpp>

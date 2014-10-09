@@ -29,7 +29,7 @@
 
 #include <alps/scheduler/info.h>
 #include <alps/osiris/std/vector.h>
-#include <alps/utility/os.hpp>
+#include <alps/utilities/os.hpp>
 
 #include <algorithm>
 #include <boost/functional.hpp>
