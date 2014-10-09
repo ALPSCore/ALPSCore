@@ -7,6 +7,8 @@
 #ifndef ALPS_ACCUMULATOR_COUNT_HPP
 #define ALPS_ACCUMULATOR_COUNT_HPP
 
+#include <alps/config.hpp>
+
 #include <alps/accumulator/feature.hpp>
 #include <alps/accumulator/parameter.hpp>
 

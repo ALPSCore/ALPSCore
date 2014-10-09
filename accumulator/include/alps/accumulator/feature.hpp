@@ -7,7 +7,7 @@
 #ifndef ALPS_ACCUMULATOR_FEATURE_HPP
 #define ALPS_ACCUMULATOR_FEATURE_HPP
 
-// #include <alps/accumulator/config.hpp>
+#include <alps/config.hpp>
 #include <alps/accumulator/numeric.hpp>
 
 #include <boost/utility.hpp>

@@ -7,7 +7,7 @@
 #ifndef ALPS_UTILITY_CAST_HPP
 #define ALPS_UTILITY_CAST_HPP
 
-//#include <alps/accumulator/config.hpp>
+#include <alps/config.hpp>
 #include <alps/utility/stacktrace.hpp>
 
 #include <boost/bind.hpp>

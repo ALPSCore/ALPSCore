@@ -7,6 +7,8 @@
 #ifndef ALPS_ACCUMULATOR_MPI_HPP
 #define ALPS_ACCUMULATOR_MPI_HPP
 
+#include <alps/config.hpp>
+
 #ifdef ALPS_HAVE_MPI
 
     #include <alps/hdf5.hpp>

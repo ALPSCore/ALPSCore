@@ -7,6 +7,8 @@
 #ifndef ALPS_ACCUMULATOR_WRAPPER_HPP
 #define ALPS_ACCUMULATOR_WRAPPER_HPP
 
+#include <alps/config.hpp>
+
 #include <alps/accumulator/feature/mean.hpp>
 #include <alps/accumulator/feature/error.hpp>
 #include <alps/accumulator/feature/count.hpp>

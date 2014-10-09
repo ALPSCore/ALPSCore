@@ -7,6 +7,8 @@
 #ifndef ALPS_BOOST_MPI_HPP
 #define ALPS_BOOST_MPI_HPP
 
+#include <alps/config.hpp>
+
 #ifdef ALPS_HAVE_MPI
 
     #include <boost/mpi.hpp>

@@ -7,6 +7,8 @@
 #ifndef ALPS_ACCUMULATOR_ERROR_HPP
 #define ALPS_ACCUMULATOR_ERROR_HPP
 
+#include <alps/config.hpp>
+
 #include <alps/accumulator/feature.hpp>
 #include <alps/accumulator/parameter.hpp>
 #include <alps/accumulator/feature/mean.hpp>

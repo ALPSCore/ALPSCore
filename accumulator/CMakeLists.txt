@@ -49,9 +49,6 @@ include_directories(
     ${PROJECT_BINARY_DIR}/include
 )
 
-configure_file("${PROJECT_SOURCE_DIR}/include/alps/accumulator/config.hpp.in" "${PROJECT_BINARY_DIR}/include/alps/accumulator/config.hpp")
-install(FILES "${PROJECT_BINARY_DIR}/include/alps/accumulator/config.hpp" DESTINATION include/alps/accumulator) 
-
 add_subdirectory(src)
 
 option(Testing "Enable testing" ON)

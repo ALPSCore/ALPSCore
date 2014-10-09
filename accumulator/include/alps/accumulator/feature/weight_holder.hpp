@@ -7,6 +7,8 @@
 #ifndef ALPS_ACCUMULATOR_WEIGHT_HOLDER_HPP
 #define ALPS_ACCUMULATOR_WEIGHT_HOLDER_HPP
 
+#include <alps/config.hpp>
+
 #include <alps/accumulator/wrappers.hpp>
 #include <alps/accumulator/feature/weight.hpp>
 

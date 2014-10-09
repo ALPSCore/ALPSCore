@@ -7,6 +7,7 @@
 #ifndef ALPS_ACCUMULATOR_ACCUMULATOR_HPP
 #define ALPS_ACCUMULATOR_ACCUMULATOR_HPP
 
+#include <alps/config.hpp>
 #include <alps/hdf5/vector.hpp>
 
 #ifndef ALPS_ACCUMULATOR_VALUE_TYPES

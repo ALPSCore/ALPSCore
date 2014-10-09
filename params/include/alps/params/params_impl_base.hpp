@@ -9,6 +9,8 @@
 
 #warning this file is deprecated
 
+#include <alps/config.hpp>
+
 #include <string>
 
 namespace alps {

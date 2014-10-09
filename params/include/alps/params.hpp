@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <alps/config.hpp>
 #include <alps/hdf5/archive.hpp>
 #include <alps/params/paramvalue.hpp>
 #include <alps/params/paramproxy.hpp>
