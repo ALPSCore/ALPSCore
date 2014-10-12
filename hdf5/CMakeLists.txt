@@ -57,8 +57,13 @@ install(DIRECTORY include DESTINATION .
         )
 
 # Documentation
-set(DOXYFILE_SOURCE_DIR "./include")
-include(UseDoxygen)
+set(DOXYFILE_EXTRA_SOURCES "${DOXYFILE_EXTRA_SOURCES} ${PROJECT_SOURCE_DIR}/include" PARENT_SCOPE)
+option(Documentation OFF)
+if (Documentation)
+    set(DOXYFILE_SOURCE_DIR "${PROJECT_SOURCE_DIR}/include")
+    set(DOXYFILE_IN "${PROJECT_SOURCE_DIR}/../common/doc/Doxyfile.in") 
+    include(UseDoxygen)
+endif(Documentation)
 
 # Generate pkg-config file
 configure_file("${PROJECT_SOURCE_DIR}/${PROJECT_NAME}.pc.in" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}.pc")

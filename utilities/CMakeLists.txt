@@ -40,9 +40,16 @@ if (Testing)
     add_subdirectory(test)
 endif (Testing)
 
-# generate documentation
-set(DOXYFILE_SOURCE_DIR "./include")
-include(UseDoxygen)
+# Documentation
+set(DOXYFILE_EXTRA_SOURCES "${DOXYFILE_EXTRA_SOURCES} ${PROJECT_SOURCE_DIR}/include" PARENT_SCOPE)
+option(Documentation OFF)
+if (Documentation)
+    set(DOXYFILE_SOURCE_DIR "${PROJECT_SOURCE_DIR}/include")
+    set(DOXYFILE_IN "${PROJECT_SOURCE_DIR}/../common/doc/Doxyfile.in") 
+    include(UseDoxygen)
+endif(Documentation)
+
+
 
 # installation
 install(DIRECTORY include DESTINATION ${CMAKE_INSTALL_PREFIX} 

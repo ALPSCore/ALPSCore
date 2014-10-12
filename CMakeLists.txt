@@ -32,6 +32,14 @@ if (Testing)
     include(ALPSEnableTests) #defined in common/cmake
 endif(Testing)
 
+# Documentation
+option(Documentation ON)
+set(_am_building_documentation ${Documentation})
+if (Documentation)
+    message(STATUS "Enable build of documentation")
+    set(Documentation OFF) # not to spawn make doc jobs for each module
+endif(Documentation)
+
 # each module is defined as a cmake project in a subdirectory
 add_subdirectory(utilities)
 alps_add_module(alps-utilities utilities)
@@ -44,3 +52,9 @@ alps_add_module(alps-params params)
 add_subdirectory(mc)
 alps_add_module(alps-mc mc)
 
+if(_am_building_documentation)
+    set(DOXYFILE_SOURCE_DIR "${CMAKE_SOURCE_DIR}/common/doc")
+    message(STATUS "Building documentation for sources in ${DOXYFILE_EXTRA_SOURCES}")  
+    set(DOXYFILE_IN "${CMAKE_SOURCE_DIR}/common/doc/Doxyfile.in") 
+    include(UseDoxygen)
+endif(_am_building_documentation)
