@@ -5,10 +5,10 @@
  */
 
 #include <iostream>
+#include <sstream>
+#include <cstdio>
 #include <alps/hdf5.hpp>
 
-#include <boost/filesystem.hpp>
-#include <boost/lexical_cast.hpp>
 #include "gtest/gtest.h"
 #if defined(_OPENMP)
 TEST(hdf5, TestingOfOpenMP){
@@ -16,8 +16,9 @@ TEST(hdf5, TestingOfOpenMP){
     try {
 #pragma omp parallel for
         for (unsigned i=0; i<10; ++i) {
-            std::string filename = "omp." + boost::lexical_cast<std::string>(i) + ".h5";
-            alps::hdf5::archive ar(filename, "w");
+            std::stringstream filename;
+            filename<<"omp."<<i<<".h5";
+            alps::hdf5::archive ar(filename.str(), "w");
             ar["/value"] << i;
         }
         result = true;
@@ -26,9 +27,9 @@ TEST(hdf5, TestingOfOpenMP){
         std::cerr << e.what() << std::endl;
     }
     for (unsigned i=0; i<10; ++i) {
-        std::string filename = "omp." + boost::lexical_cast<std::string>(i) + ".h5";
-        if (boost::filesystem::exists(boost::filesystem::path(filename)))
-            boost::filesystem::remove(boost::filesystem::path(filename));
+        std::stringstream filename;
+        filename<< "omp."<<i<<".h5";
+        std::remove(filename.str().c_str());
     }
 
     EXPECT_TRUE(result);

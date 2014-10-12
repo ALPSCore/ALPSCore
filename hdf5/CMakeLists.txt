@@ -17,7 +17,7 @@ include(ALPSEnableMPI)
 # Boost
 #set(Boost_USE_STATIC_LIBS        ON)
 #set(Boost_USE_STATIC_RUNTIME    OFF)
-find_package (Boost COMPONENTS filesystem system REQUIRED)
+find_package (Boost COMPONENTS filesystem system program_options REQUIRED)
     message(STATUS "Boost includes: " ${Boost_INCLUDE_DIRS} )
     message(STATUS "Boost libs: " ${Boost_LIBRARIES} )
 find_package (HDF5 REQUIRED)
@@ -31,7 +31,7 @@ find_package (alps-utilities REQUIRED)
 endif(NOT DEFINED ALPS_GLOBAL_BUILD)
 
 # LINK_ALL - link for libraries
-set (LINK_ALL ${Boost_LIBRARIES} ${HDF5_LIBRARIES} ${alps-utilities_LIBRARIES})
+set (LINK_ALL ${HDF5_LIBRARIES} ${alps-utilities_LIBRARIES} ${Boost_LIBRARIES})
 
 include_directories(
     ${Boost_INCLUDE_DIRS}
