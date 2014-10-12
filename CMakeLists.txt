@@ -56,5 +56,7 @@ if(_am_building_documentation)
     set(DOXYFILE_SOURCE_DIR "${CMAKE_SOURCE_DIR}/common/doc")
     message(STATUS "Building documentation for sources in ${DOXYFILE_EXTRA_SOURCES}")  
     set(DOXYFILE_IN "${CMAKE_SOURCE_DIR}/common/doc/Doxyfile.in") 
+    set(CMAKE_PROJECT_NAME "ALPSCore reference") # to provide name for the documentation 
     include(UseDoxygen)
+    unset(CMAKE_PROJECT_NAME)
 endif(_am_building_documentation)
