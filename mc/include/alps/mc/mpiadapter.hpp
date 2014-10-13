@@ -13,6 +13,8 @@
 #include <alps/utilities/boost_mpi.hpp>
 #include <alps/mc/check_schedule.hpp>
 
+#include <boost/function.hpp>
+
 namespace alps {
 
     template<typename Base, typename ScheduleChecker = alps::check_schedule> class mcmpiadapter : public Base {
