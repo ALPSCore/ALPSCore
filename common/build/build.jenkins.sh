@@ -22,6 +22,10 @@ echo "Using BOOST at $BOOST_ROOT - no system path $BOOST_SYSTEM"
 INSTALLDIR=$PWD/install
 BUILDDIR=$PWD/build.tmp
 ROOTDIR=$PWD
+DOCDIR=$INSTALLDIR/doc
+
+mkdir $INSTALLDIR 2>/dev/null
+mkdir $DOCDIR 2>/dev/null
 
 rm -rf $BUILDDIR
 mkdir $BUILDDIR
@@ -36,8 +40,11 @@ cmake \
   -DBoost_NO_SYSTEM_PATHS="${BOOST_SYSTEM}" \
   -DENABLE_MPI=TRUE \
   -DTestXMLOutput=TRUE \
+  -DDocumentation=ON \
+  -DDOXYFILE_OUTPUT_DIR="${DOCDIR}" \
   ${ROOTDIR}
 
+make doc # || exit 1
 make || exit 1 
 make test
 make install || exit 1
