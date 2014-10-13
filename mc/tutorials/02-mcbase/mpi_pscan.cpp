@@ -64,11 +64,10 @@ int main(int argc, char *argv[]) {
                                         +  ".clone" + boost::lexical_cast<std::string>(comm_local.rank()) + ".h5";
 
             alps::parameters_type<ising_sim>::type parameters;
-            // if (comm_local.rank() > 0);
+            if (comm_local.rank() > 0);
             // else if (boost::filesystem::extension(infile) == ".xml")
             //     parameters = alps::make_parameters_from_xml(infile);
-            // else 
-            if (boost::filesystem::extension(infile) == ".h5")
+            else if (boost::filesystem::extension(infile) == ".h5")
                 alps::hdf5::archive(infile)["/parameters"] >> parameters;
             else
                 parameters = alps::parameters_type<ising_sim>::type(infile);
