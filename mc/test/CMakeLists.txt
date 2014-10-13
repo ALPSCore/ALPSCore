@@ -13,6 +13,7 @@ if(ALPS_HAVE_MPI)
 
 set (test_src_mpi
     sum_mpi
+    reduce
     )
 foreach(test ${test_src_mpi})
     alps_add_gtest(${test})
