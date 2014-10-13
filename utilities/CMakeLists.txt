@@ -28,6 +28,9 @@ include_directories(
     ${PROJECT_BINARY_DIR}/include
 )
 
+include(CheckIncludeFile)
+CHECK_INCLUDE_FILE(unistd.h ALPS_HAVE_UNISTD_H)
+
 configure_file("${PROJECT_SOURCE_DIR}/include/config.hpp.in" "${PROJECT_BINARY_DIR}/include/alps/config.hpp")
 install(FILES "${PROJECT_BINARY_DIR}/include/alps/config.hpp" DESTINATION include/alps) 
 
