@@ -12,19 +12,22 @@ message ("\nALPSCore module : ${PROJECT_NAME}\n")
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/../common/cmake)
 
 include(ALPSCommonModuleDefinitions)
-include(ALPSEnableMPI)
 
-# Boost
-#set(Boost_USE_STATIC_LIBS        ON)
-#set(Boost_USE_STATIC_RUNTIME    OFF)
-add_boost(filesystem system program_options)
-add_hdf5()
+if (NOT DocumentationOnly)
+  include(ALPSEnableMPI)
 
-add_alps_package(alps-utilities)
+  # Boost
+  #set(Boost_USE_STATIC_LIBS        ON)
+  #set(Boost_USE_STATIC_RUNTIME    OFF)
+  add_boost(filesystem system program_options)
+  add_hdf5()
 
-add_this_package()
-add_testing()
+  add_alps_package(alps-utilities)
 
-gen_pkg_config()
-gen_find_module(alps/hdf5.hpp)
+  add_this_package()
+  add_testing()
+
+  gen_pkg_config()
+  gen_find_module(alps/hdf5.hpp)
+endif (NOT DocumentationOnly)
 gen_documentation()

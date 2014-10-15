@@ -23,22 +23,29 @@ if (${CMAKE_BINARY_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
     message(FATAL_ERROR "In source builds are disabled. Please use a separate build directory")
 endif()
 
-# enable Testing
-option(Testing "Enable testing" ON)
-option(ExtensiveTesting "Enable extensive testing, including time consuming tests" OFF)
-mark_as_advanced(ExtensiveTesting)
-if (Testing)
-    enable_testing()
-    include(ALPSEnableTests) #defined in common/cmake
-endif(Testing)
-
 # Documentation
-option(Documentation ON)
+option(DocumentationOnly "Build only documentation, no code or tests" OFF)
+mark_as_advanced(DocumentationOnly)
+
+option(Documentation "Build documentation" ON)
+if (DocumentationOnly)
+  set(Documentation ON)
+endif (DocumentationOnly)
+
 set(_am_building_documentation ${Documentation})
 if (Documentation)
     message(STATUS "Enable build of documentation")
     set(Documentation OFF) # not to spawn make doc jobs for each module
 endif(Documentation)
+
+# enable Testing
+option(Testing "Enable testing" ON)
+option(ExtensiveTesting "Enable extensive testing, including time consuming tests" OFF)
+mark_as_advanced(ExtensiveTesting)
+if (Testing AND NOT DocumentationOnly)
+    enable_testing()
+    include(ALPSEnableTests) #defined in common/cmake
+endif(Testing AND NOT DocumentationOnly)
 
 # each module is defined as a cmake project in a subdirectory
 add_subdirectory(utilities)
@@ -60,4 +67,4 @@ if(_am_building_documentation)
     include(UseDoxygen)
     unset(CMAKE_PROJECT_NAME)
 endif(_am_building_documentation)
-unset(_am_building_documentation CACHE)
+# unset(_am_building_documentation CACHE)

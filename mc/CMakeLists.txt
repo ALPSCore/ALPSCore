@@ -13,26 +13,29 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/../common/cmake)
 
 # add common definitions
 include(ALPSCommonModuleDefinitions)
-include(ALPSEnableMPI)
 
-# Boost
-#set(Boost_USE_STATIC_LIBS        ON)
-#set(Boost_USE_STATIC_RUNTIME    OFF)
-if(ALPS_HAVE_MPI)
-  add_boost(chrono program_options filesystem system serialization mpi)
-else()
-  add_boost(chrono program_options filesystem system)
-endif()
-add_hdf5()
-add_alps_package(alps-utilities alps-hdf5 alps-params alps-accumulator)
+if (NOT DocumentationOnly)
+  include(ALPSEnableMPI)
 
-add_this_package()
+  # Boost
+  #set(Boost_USE_STATIC_LIBS        ON)
+  #set(Boost_USE_STATIC_RUNTIME    OFF)
+  if(ALPS_HAVE_MPI)
+    add_boost(chrono program_options filesystem system serialization mpi)
+  else()
+    add_boost(chrono program_options filesystem system)
+  endif()
+  add_hdf5()
+  add_alps_package(alps-utilities alps-hdf5 alps-params alps-accumulator)
 
-add_testing()
+  add_this_package()
 
-# add tutorial
-add_subdirectory(tutorials)
+  add_testing()
 
-gen_pkg_config()
-gen_find_module(alps/mc/mcbase.hpp)
+  # add tutorial
+  add_subdirectory(tutorials)
+
+  gen_pkg_config()
+  gen_find_module(alps/mc/mcbase.hpp)
+endif (NOT DocumentationOnly)
 gen_documentation()
