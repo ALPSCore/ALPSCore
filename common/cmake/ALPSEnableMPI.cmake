@@ -8,7 +8,7 @@
 # 
 
 # configurable option
-option(ENABLE_MPI ON)
+option(ENABLE_MPI "Enable MPI build" ON)
 
 if (ENABLE_MPI)
   # try compiling sample mpi code 
