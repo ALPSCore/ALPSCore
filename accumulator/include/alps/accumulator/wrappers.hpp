@@ -50,7 +50,7 @@ namespace alps {
         > > > > > > {
 
             public:
-                using typename detail::value_wrapper<T>::value_type;
+                typedef typename detail::value_wrapper<T>::value_type value_type;
 
                 virtual ~base_wrapper() {}
 
@@ -127,7 +127,7 @@ namespace alps {
             impl::DerivedWrapper<A, count_tag, 
         detail::foundation_wrapper<A> > > > > > > {
 
-            using typename detail::value_wrapper<typename value_type<A>::type>::value_type;
+            typedef typename detail::value_wrapper<typename value_type<A>::type>::value_type value_type;
             
             public:
                 derived_wrapper()
