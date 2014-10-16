@@ -51,6 +51,9 @@ int main() {
     p["nsweeps"] = 10000;
     alps::mcmpiadapter<sim1> sim (p,comm, alps::check_schedule(0.001, 60));
     sim.run(alps::stop_callback(1));
-    alps::results_type<sim1>::type res = alps::collect_results(sim);
-    std::cout << res << std::endl;
+    if (comm.rank() == 0) {
+        alps::results_type<sim1>::type res = alps::collect_results(sim);
+        std::cout << res << std::endl;
+    } else
+        alps::collect_results(sim);
 }

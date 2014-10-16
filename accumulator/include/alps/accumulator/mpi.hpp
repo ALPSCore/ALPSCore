@@ -81,12 +81,18 @@
                     using alps::hdf5::is_vectorizable;
                     if (is_vectorizable(in_values)) {
                         using alps::hdf5::get_extent;
+                        typedef typename alps::hdf5::scalar_type<T>::type scalar_type;
                         std::vector<std::size_t> extent(get_extent(in_values));
-                        std::vector<typename alps::hdf5::scalar_type<T>::type> in_buffer(std::accumulate(extent.begin(), extent.end(), 0));
+                        std::vector<scalar_type> in_buffer(std::accumulate(extent.begin(), extent.end(), 0));
                         using detail::copy_to_buffer;
                         copy_to_buffer(in_values, in_buffer, 0, typename hdf5::is_content_continuous<T>::type());
-                        using boost::mpi::reduce;
-                        reduce(comm, &in_buffer.front(), in_buffer.size(), op, root);
+
+                        // using boost::mpi::reduce;
+                        // reduce(comm, &in_buffer.front(), in_buffer.size(), op, root);
+
+                        using boost::mpi::get_mpi_datatype;
+                        MPI_Reduce(&in_buffer.front(), NULL, in_buffer.size(), get_mpi_datatype(scalar_type()), boost::mpi::is_mpi_op<Op, scalar_type>::op(), root, comm);
+
                     } else
                         throw std::logic_error("No alps::mpi::reduce available for this type " + std::string(typeid(T).name()) + ALPS_STACKTRACE);
                 }
@@ -95,13 +101,19 @@
                     using alps::hdf5::is_vectorizable;
                     if (is_vectorizable(in_values)) {
                         using alps::hdf5::get_extent;
+                        typedef typename alps::hdf5::scalar_type<T>::type scalar_type;
                         std::vector<std::size_t> extent(get_extent(in_values));
-                        std::vector<typename alps::hdf5::scalar_type<T>::type> in_buffer(std::accumulate(extent.begin(), extent.end(), 1, std::multiplies<std::size_t>()));
-                        std::vector<typename alps::hdf5::scalar_type<T>::type> out_buffer(in_buffer);
+                        std::vector<scalar_type> in_buffer(std::accumulate(extent.begin(), extent.end(), 1, std::multiplies<std::size_t>()));
+                        std::vector<scalar_type> out_buffer(in_buffer);
                         using detail::copy_to_buffer;
                         copy_to_buffer(in_values, in_buffer, 0, typename hdf5::is_content_continuous<T>::type());
-                        using boost::mpi::reduce;
-                        reduce(comm, &in_buffer.front(), in_buffer.size(), &out_buffer.front(), op, root);
+
+                        // using boost::mpi::reduce;
+                        // reduce(comm, &in_buffer.front(), in_buffer.size(), &out_buffer.front(), op, root);
+
+                        using boost::mpi::get_mpi_datatype;
+                        MPI_Reduce(&in_buffer.front(), &out_buffer.front(), in_buffer.size(), get_mpi_datatype(scalar_type()), boost::mpi::is_mpi_op<Op, scalar_type>::op(), root, comm);
+
                         using alps::hdf5::set_extent;
                         set_extent(out_values, std::vector<std::size_t>(extent.begin(), extent.end()));
                         using detail::copy_from_buffer;
