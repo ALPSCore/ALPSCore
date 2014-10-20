@@ -272,7 +272,7 @@ namespace alps {
                             std::size_t size = boost::mpi::all_reduce(comm, m_ac_count.size(), boost::mpi::maximum<std::size_t>());
 
                             m_ac_count.resize(size);
-                            B::reduce_if(comm, std::vector<typename count_type<B>::type>(m_ac_count), m_ac_count, std::plus<mean_scalar_type>(), root);
+                            B::reduce_if(comm, std::vector<typename count_type<B>::type>(m_ac_count), m_ac_count, std::plus<typename count_type<B>::type>(), root);
 
                             m_ac_sum.resize(size);
                             B::reduce_if(comm, std::vector<T>(m_ac_sum), m_ac_sum, std::plus<mean_scalar_type>(), root);
@@ -298,7 +298,7 @@ namespace alps {
                             {
                                 std::vector<typename count_type<B>::type> count(m_ac_count);
                                 count.resize(size);
-                                B::reduce_if(comm, count, std::plus<mean_scalar_type>(), root);
+                                B::reduce_if(comm, count, std::plus<typename count_type<B>::type>(), root);
                             }
                             {
                                 std::vector<T> sum(m_ac_sum);
