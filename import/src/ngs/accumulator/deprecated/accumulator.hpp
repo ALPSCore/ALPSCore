@@ -9,8 +9,8 @@
 
 #include <alps/ngs/alea/result.hpp>
 #include <alps/ngs/alea/features.hpp>
-#include <alps/ngs/alea/accumulator/arguments.hpp>
-#include <alps/ngs/alea/accumulator/accumulator_impl.hpp>
+#include <alps/ngs/alea/accumulators/arguments.hpp>
+#include <alps/ngs/alea/accumulators/accumulator_impl.hpp>
 
 #include <boost/parameter.hpp>
 #include <boost/mpl/if.hpp>

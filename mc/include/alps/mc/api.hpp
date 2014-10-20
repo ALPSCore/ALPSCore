@@ -8,7 +8,7 @@
 
 #include <alps/config.hpp>
 #include <alps/params.hpp>
-#include <alps/accumulator.hpp>
+#include <alps/accumulators.hpp>
 
 #include <boost/filesystem/path.hpp>
 

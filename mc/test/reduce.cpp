@@ -12,7 +12,7 @@
 #include <boost/mpi.hpp>
 
 #include <alps/utilities/boost_mpi.hpp>
-#include <alps/accumulator.hpp>
+#include <alps/accumulators.hpp>
 #include <alps/params.hpp>
  
 #include "gtest/gtest.h"

@@ -9,7 +9,7 @@
 #include <boost/function.hpp>
 #include <boost/filesystem/path.hpp>
 
-#include <alps/accumulator/accumulator.hpp>
+#include <alps/accumulators/accumulator.hpp>
 #include <alps/params.hpp>
 #include "random01.hpp"
 

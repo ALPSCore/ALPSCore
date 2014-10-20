@@ -5,7 +5,7 @@
  */
 
 #include <alps/config.hpp>
-#include <alps/accumulator/accumulator.hpp>
+#include <alps/accumulators/accumulator.hpp>
 #include "gtest/gtest.h"
 
 

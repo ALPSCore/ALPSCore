@@ -15,8 +15,8 @@
     // #define ALPS_ACCUMULATOR_VALUE_TYPES double, std::vector<double>, alps::multi_array<double, 2>, alps::multi_array<double, 3>
 #endif
 
-#include <alps/accumulator/wrappers.hpp>
-#include <alps/accumulator/feature/weight_holder.hpp>
+#include <alps/accumulators/wrappers.hpp>
+#include <alps/accumulators/feature/weight_holder.hpp>
 
 #include <alps/hdf5/archive.hpp>
 

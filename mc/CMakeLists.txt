@@ -26,7 +26,7 @@ if (NOT DocumentationOnly)
     add_boost(chrono program_options filesystem system)
   endif()
   add_hdf5()
-  add_alps_package(alps-utilities alps-hdf5 alps-params alps-accumulator)
+  add_alps_package(alps-utilities alps-hdf5 alps-params alps-accumulators)
 
   add_this_package()
 

@@ -15,7 +15,7 @@
 #endif
 
 #include <boost/cstdint.hpp>
-#include <alps/ngs/alea/accumulator/arguments.hpp>
+#include <alps/ngs/alea/accumulators/arguments.hpp>
 
 namespace alps {
     namespace accumulator {

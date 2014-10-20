@@ -1,11 +1,11 @@
 # 
-# alps-accumulator cmake configuration script.
+# alps-accumulators cmake configuration script.
 # 
 
 cmake_minimum_required (VERSION 2.8)
 
 # project name
-project (alps-accumulator CXX)
+project (alps-accumulators CXX)
 message ("\nALPSCore module : ${PROJECT_NAME}\n")
 
 # add common modules from ../common/cmake
@@ -28,6 +28,6 @@ if (NOT DocumentationOnly)
   add_this_package()
   add_testing()
   gen_pkg_config()
-  gen_find_module(alps/accumulator/accumulator.hpp)
+  gen_find_module(alps/accumulators/accumulators.hpp)
 endif(NOT DocumentationOnly)
 gen_documentation()

@@ -9,8 +9,8 @@
 
 #include <alps/config.hpp>
 
-#include <alps/accumulator/wrappers.hpp>
-#include <alps/accumulator/feature/weight.hpp>
+#include <alps/accumulators/wrappers.hpp>
+#include <alps/accumulators/feature/weight.hpp>
 
 #include <alps/hdf5/archive.hpp>
 #include <alps/utilities/stacktrace.hpp>

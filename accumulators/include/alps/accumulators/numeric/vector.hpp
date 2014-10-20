@@ -8,7 +8,7 @@
 #define ALPS_ACCUMULATOR_NUMERIC_VECTOR_HEADER
 
 #include <alps/utilities/stacktrace.hpp>
-#include <alps/accumulator/numeric/inf.hpp>
+#include <alps/accumulators/numeric/inf.hpp>
 
 #include <alps/numeric/vector_functions.hpp>
 #include <alps/numeric/special_functions.hpp>

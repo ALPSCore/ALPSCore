@@ -9,12 +9,12 @@
 
 #include <alps/config.hpp>
 
-#include <alps/accumulator/feature/mean.hpp>
-#include <alps/accumulator/feature/error.hpp>
-#include <alps/accumulator/feature/count.hpp>
-#include <alps/accumulator/feature/weight.hpp>
-#include <alps/accumulator/feature/max_num_binning.hpp>
-#include <alps/accumulator/feature/binning_analysis.hpp>
+#include <alps/accumulators/feature/mean.hpp>
+#include <alps/accumulators/feature/error.hpp>
+#include <alps/accumulators/feature/count.hpp>
+#include <alps/accumulators/feature/weight.hpp>
+#include <alps/accumulators/feature/max_num_binning.hpp>
+#include <alps/accumulators/feature/binning_analysis.hpp>
 
 #include <alps/hdf5/archive.hpp>
 

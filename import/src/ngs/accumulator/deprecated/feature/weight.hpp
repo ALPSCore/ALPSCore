@@ -12,7 +12,7 @@
 #include <alps/ngs/alea/feature/generate_property.hpp>
 #include <alps/ngs/alea/feature/tags.hpp>
 
-#include <alps/ngs/alea/accumulator/arguments.hpp>
+#include <alps/ngs/alea/accumulators/arguments.hpp>
 
 #include <boost/shared_ptr.hpp>
 

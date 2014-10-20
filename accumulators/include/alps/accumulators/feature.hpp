@@ -8,12 +8,12 @@
 #define ALPS_ACCUMULATOR_FEATURE_HPP
 
 #include <alps/config.hpp>
-#include <alps/accumulator/numeric.hpp>
+#include <alps/accumulators/numeric.hpp>
 
 #include <boost/utility.hpp>
 
 #ifdef ALPS_HAVE_MPI
-    #include <alps/accumulator/mpi.hpp>
+    #include <alps/accumulators/mpi.hpp>
 #endif
 
 namespace alps {

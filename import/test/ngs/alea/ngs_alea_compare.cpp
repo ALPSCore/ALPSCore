@@ -10,7 +10,7 @@
 #include <alps/hdf5/multi_array.hpp>
 
 #include <alps/ngs/random01.hpp>
-#include <alps/ngs/accumulator/accumulator.hpp>
+#include <alps/ngs/accumulators/accumulator.hpp>
 
 #include <alps/alea/mcdata.hpp>
 #include <alps/alea/observableset.h>

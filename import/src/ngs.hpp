@@ -25,7 +25,7 @@
 #include <alps/ngs/observablewrappers.hpp> // TODO: remove!
 
 #ifdef ALPS_NGS_USE_NEW_ALEA
-	#include <alps/ngs/accumulator/accumulator.hpp>
+	#include <alps/ngs/accumulators/accumulator.hpp>
 #else
 	namespace alps {
 		namespace accumulator {

@@ -9,8 +9,8 @@
 
 #include <alps/config.hpp>
 
-#include <alps/accumulator/feature.hpp>
-#include <alps/accumulator/parameter.hpp>
+#include <alps/accumulators/feature.hpp>
+#include <alps/accumulators/parameter.hpp>
 
 #include <alps/hdf5/archive.hpp>
 #include <alps/utilities/stacktrace.hpp>

@@ -9,17 +9,17 @@
 
 #include <alps/config.hpp>
 
-#include <alps/accumulator/feature.hpp>
-#include <alps/accumulator/parameter.hpp>
-#include <alps/accumulator/feature/mean.hpp>
-#include <alps/accumulator/feature/count.hpp>
+#include <alps/accumulators/feature.hpp>
+#include <alps/accumulators/parameter.hpp>
+#include <alps/accumulators/feature/mean.hpp>
+#include <alps/accumulators/feature/count.hpp>
 
-#include <alps/accumulator/numeric.hpp>
+#include <alps/accumulators/numeric.hpp>
 #include <alps/hdf5/archive.hpp>
 #include <alps/utilities/stacktrace.hpp>
 #include <alps/utilities/short_print.hpp>
 
-#include <alps/accumulator/convergence.hpp>
+#include <alps/accumulators/convergence.hpp>
 #include <alps/numeric/set_negative_0.hpp>
 // TODO: make nicer way to use this
 #include <alps/type_traits/slice.hpp>

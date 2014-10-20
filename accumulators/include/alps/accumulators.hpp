@@ -4,9 +4,9 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_ACCUMULATOR_HPP
-#define ALPS_ACCUMULATOR_HPP
+#ifndef ALPS_ACCUMULATORS_HPP
+#define ALPS_ACCUMULATORS_HPP
 
-#include <alps/accumulator/accumulator.hpp>
+#include <alps/accumulators/accumulator.hpp>
 
 #endif

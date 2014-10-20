@@ -10,7 +10,7 @@
 #include <alps/hdf5/vector.hpp>
 
 #include <alps/params.hpp>
-#include <alps/accumulator.hpp>
+#include <alps/accumulators.hpp>
 
 #include <boost/function.hpp>
 #include <boost/filesystem/path.hpp>

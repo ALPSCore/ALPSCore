@@ -7,10 +7,10 @@
 #ifndef ALPS_ACCUMULATOR_NUMERIC_HPP
 #define ALPS_ACCUMULATOR_NUMERIC_HPP
 
-#include <alps/accumulator/numeric/inf.hpp>
-#include <alps/accumulator/numeric/array.hpp>
-#include <alps/accumulator/numeric/detail.hpp>
-#include <alps/accumulator/numeric/vector.hpp>
-//#include <alps/accumulator/numeric/multi_array.hpp>
+#include <alps/accumulators/numeric/inf.hpp>
+#include <alps/accumulators/numeric/array.hpp>
+#include <alps/accumulators/numeric/detail.hpp>
+#include <alps/accumulators/numeric/vector.hpp>
+//#include <alps/accumulators/numeric/multi_array.hpp>
 
 #endif
