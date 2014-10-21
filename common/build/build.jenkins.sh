@@ -5,6 +5,8 @@
 # BOOST_ROOT - location for boost distribution
 # GTEST_ROOT - location for gtest sources/binaries
 # HDF5_ROOT - location for the HDF5 distribution
+# EXTRA_CMAKE_FLAGS - extra options for CMake invocation (can be empty)
+# EXTRA_MAKE_FLAGS - extra options for the first `make` invocation (can be empty)
 
 # Make sure we are in top directory for the repository
 SCRIPTDIR=$(dirname $0)
@@ -33,6 +35,7 @@ cd $BUILDDIR
 cmake \
   -DCMAKE_INSTALL_PREFIX="${INSTALLDIR}" \
   -DTesting=ON \
+  -DExtensiveTesting=ON \
   -DCMAKE_BUILD_TYPE=Release \
   -DBOOST_ROOT="${BOOST_ROOT}" \
   -DGTEST_ROOT="${GTEST_ROOT}" \
@@ -40,9 +43,10 @@ cmake \
   -DENABLE_MPI=TRUE \
   -DTestXMLOutput=TRUE \
   -DDocumentation=OFF \
+  $EXTRA_CMAKE_FLAGS \
   ${ROOTDIR}
 
-make || exit 1 
+make $EXTRA_MAKE_FLAGS || exit 1 
 make test
 make install || exit 1
 
