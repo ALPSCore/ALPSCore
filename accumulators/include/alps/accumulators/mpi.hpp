@@ -64,7 +64,7 @@
                     // reduce(comm, get_pointer(in_values), std::accumulate(extent.begin(), extent.end(), 0), op, root);
 
                     using boost::mpi::get_mpi_datatype;
-                    MPI_Reduce(get_pointer(in_values), NULL, std::accumulate(extent.begin(), extent.end(), 0), get_mpi_datatype(scalar_type()), boost::mpi::is_mpi_op<Op, scalar_type>::op(), root, comm);
+                    MPI_Reduce(const_cast<scalar_type*>(get_pointer(in_values)), NULL, std::accumulate(extent.begin(), extent.end(), 0), get_mpi_datatype(scalar_type()), boost::mpi::is_mpi_op<Op, scalar_type>::op(), root, comm);
                 }
 
                 template<typename T, typename Op, typename C> void reduce_impl(const boost::mpi::communicator & comm, T const & in_values, T & out_values, Op op, int root, boost::true_type, C) {
@@ -84,7 +84,7 @@
                     // reduce(comm, get_pointer(in_values), std::accumulate(extent.begin(), extent.end(), 0), get_pointer(out_values), op, root);
 
                     using boost::mpi::get_mpi_datatype;
-                    MPI_Reduce(get_pointer(in_values), get_pointer(out_values), std::accumulate(extent.begin(), extent.end(), 0), get_mpi_datatype(scalar_type()), boost::mpi::is_mpi_op<Op, scalar_type>::op(), root, comm);
+                    MPI_Reduce(const_cast<scalar_type*>(get_pointer(in_values)), get_pointer(out_values), std::accumulate(extent.begin(), extent.end(), 0), get_mpi_datatype(scalar_type()), boost::mpi::is_mpi_op<Op, scalar_type>::op(), root, comm);
                 }
 
                 template<typename T, typename Op> void reduce_impl(const boost::mpi::communicator & comm, T const & in_values, Op op, int root, boost::false_type, boost::false_type) {
