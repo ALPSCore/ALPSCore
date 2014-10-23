@@ -1,3 +1,0 @@
-LATTICE_LIBRARY = "../../lib/xml/lattices.xml"
-LATTICE = "2 band chain lattice"
-L = 10

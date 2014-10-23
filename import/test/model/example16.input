@@ -1,5 +1,0 @@
-L=4
-MODEL_LIBRARY = "../../lib/xml/models.xml"
-MODEL = "spinless fermions"
-LATTICE_LIBRARY = "../../lib/xml/lattices.xml"
-LATTICE = "chain lattice"

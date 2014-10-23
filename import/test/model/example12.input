@@ -1,7 +1,0 @@
-L=2
-MODEL_LIBRARY = "../../lib/xml/models.xml"
-MODEL = "spin"
-LATTICE_LIBRARY = "../../lib/xml/lattices.xml"
-LATTICE = "square lattice"
-Sz_total = 0
-

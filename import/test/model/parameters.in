@@ -1,4 +1,0 @@
-LATTICE_LIBRARY = "../../lib/xml/lattices.xml"
-LATTICE = "anisotropic square lattice"
-L = 10
-W = 4
