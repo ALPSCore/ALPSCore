@@ -4,8 +4,8 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_ACCUMULATOR_NUMERIC_MULTIARRAY_HEADER
-#define ALPS_ACCUMULATOR_NUMERIC_MULTIARRAY_HEADER
+#ifndef ALPS_NUMERIC_MULTIARRAY_HEADER
+#define ALPS_NUMERIC_MULTIARRAY_HEADER
 
 #include <alps/multi_array/functions.hpp>
 

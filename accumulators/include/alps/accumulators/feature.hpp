@@ -8,7 +8,10 @@
 #define ALPS_ACCUMULATOR_FEATURE_HPP
 
 #include <alps/config.hpp>
-#include <alps/accumulators/numeric.hpp>
+#include <alps/numeric/inf.hpp>
+#include <alps/numeric/check_size.hpp>
+#include <alps/numeric/vector_functions.hpp>
+#include <alps/numeric/boost_array_functions.hpp>
 
 #include <boost/utility.hpp>
 
@@ -31,7 +34,7 @@ namespace alps {
 
         #define NUMERIC_FUNCTION_OPERATOR(OP_NAME, OP, OP_TOKEN)                                                                               \
             namespace detail {                                                                                                                 \
-                using ::alps::ngs::numeric:: OP_NAME ;                                                                                         \
+                using ::alps::numeric:: OP_NAME ;                                                                                         \
                 template<typename T, typename U> struct has_operator_ ## OP_TOKEN ## _impl {                                                   \
                     template<typename R> static char helper(R);                                                                                \
                     template<typename C, typename D> static char check(boost::integral_constant<std::size_t, sizeof(helper(C() OP D()))>*);    \

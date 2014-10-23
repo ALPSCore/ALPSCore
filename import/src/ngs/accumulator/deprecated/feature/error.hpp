@@ -62,20 +62,20 @@ namespace alps {
                     {}
                     
                     inline error_type const error() const {
-                        using alps::ngs::numeric::sqrt;
+                        using alps::numeric::sqrt;
                         using std::sqrt;
-                        using alps::ngs::numeric::operator/;
-                        using alps::ngs::numeric::operator-;
-                        using alps::ngs::numeric::operator*;
+                        using alps::numeric::operator/;
+                        using alps::numeric::operator-;
+                        using alps::numeric::operator*;
 
                         return sqrt((sum2_ / (typename alps::hdf5::scalar_type<value_type_loc>::type)base_type::count() - base_type::mean() * base_type::mean()) 
                             / ((typename alps::hdf5::scalar_type<value_type_loc>::type)base_type::count() - 1));
                     }
                     
                     inline void operator ()(value_type_loc const & val) {
-                        using alps::ngs::numeric::operator*;
-                        using alps::ngs::numeric::operator+=;
-                        using alps::ngs::numeric::detail::check_size;
+                        using alps::numeric::operator*;
+                        using alps::numeric::operator+=;
+                        using alps::numeric::check_size;
                         
                         check_size(sum2_, val);
                         base_type::operator()(val);
@@ -98,8 +98,8 @@ namespace alps {
                     }
 
                     void load(hdf5::archive & ar) {
-                        using alps::ngs::numeric::operator*;
-                        using alps::ngs::numeric::operator+;
+                        using alps::numeric::operator*;
+                        using alps::numeric::operator+;
 
                         base_type::load(ar);
                         error_type error;

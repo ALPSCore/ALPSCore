@@ -100,8 +100,8 @@ namespace alps {
                     }
               
                     inline void operator()(value_type_loc const & val) {
-                        using namespace alps::ngs::numeric;
-                        using alps::ngs::numeric::detail::check_size;
+                        using namespace alps::numeric;
+                        using alps::numeric::detail::check_size;
                         
                         base_type::operator()(val);
                         
@@ -223,8 +223,8 @@ namespace alps {
 
                 private:
                     std::size_t partition_bins (boost::mpi::communicator const & comm, std::vector<mean_type> & local_bins) const {
-                        using alps::ngs::numeric::operator+;
-                        using alps::ngs::numeric::operator/;
+                        using alps::numeric::operator+;
+                        using alps::numeric::operator/;
                         boost::uint64_t elements_in_local_bins = boost::mpi::all_reduce(comm, elements_in_bin_, boost::mpi::maximum<boost::uint64_t>());
                         size_type howmany = (elements_in_local_bins - 1) / elements_in_bin_ + 1;
                         if (howmany > 1) {

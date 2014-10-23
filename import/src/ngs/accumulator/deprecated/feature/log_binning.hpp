@@ -90,8 +90,8 @@ namespace alps {
                     }
 
                     inline void operator()(value_type_loc const & val) {
-                        using namespace alps::ngs::numeric;
-                        using alps::ngs::numeric::detail::check_size;
+                        using namespace alps::numeric;
+                        using alps::numeric::check_size;
                         
                         base_type::operator()(val);
                         

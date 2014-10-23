@@ -121,7 +121,7 @@ namespace alps {
                 //insert a value via stream-operator
                 void operator()(value_type const & val)
                 {
-                    using namespace alps::ngs::numeric;
+                    using namespace alps::numeric;
                     data_[get_index(val)] += weight_type(1);
                     count_ += weight_type(1);
                 }
@@ -133,7 +133,7 @@ namespace alps {
                 //insert a pair via stream operator
                 void operator()(std::pair<value_type, weight_type> p)
                 {
-                    using namespace alps::ngs::numeric;
+                    using namespace alps::numeric;
                     data_[get_index(p.first)] += p.second;
                     count_ += p.second;
                 }
@@ -159,7 +159,7 @@ namespace alps {
                 {
                     typename mean_type<weight_type>::type res(0);
                     
-                    using namespace alps::ngs::numeric;
+                    using namespace alps::numeric;
                     
                     for(value_type i = start_; i < start_ + value_type(size_)*num_break_; i += num_break_)
                         res += i * data_[get_index(i)];
@@ -176,7 +176,7 @@ namespace alps {
                 //get from user-index to impl-index for std::vector
                 size_type get_index(value_type const & arg) const
                 {
-                    using namespace alps::ngs::numeric;
+                    using namespace alps::numeric;
                     using std::floor;
                     if(floor((arg - start_) / num_break_) == double(size_))
                         return size_ - 1;

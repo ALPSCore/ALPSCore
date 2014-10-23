@@ -102,13 +102,13 @@ namespace alps {
                     {}
                     
                     inline mean_type const mean() const {
-                        using alps::ngs::numeric::operator/;
+                        using alps::numeric::operator/;
                         return mean_type(sum_) / (typename alps::hdf5::scalar_type<value_type_loc>::type)base_type::count();
                     }
             
                     inline void operator()(value_type_loc const & val)  {
-                        using alps::ngs::numeric::operator+=;
-                        using alps::ngs::numeric::detail::check_size;
+                        using alps::numeric::operator+=;
+                        using alps::numeric::check_size;
                         base_type::operator()(val);
                         
                         check_size(sum_, val);
@@ -130,7 +130,7 @@ namespace alps {
                     }
 
                     void load(hdf5::archive & ar) {
-                        using alps::ngs::numeric::operator*;
+                        using alps::numeric::operator*;
 
                         base_type::load(ar);
                         value_type_loc mean;

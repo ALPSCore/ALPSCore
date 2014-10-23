@@ -89,19 +89,19 @@ namespace alps {
                     }
                     
                     inline void operator()(value_type_loc const & val, weight_value_type_loc const & w) {
-                        using namespace alps::ngs::numeric;
+                        using namespace alps::numeric;
                         
                         base_type::operator()(val * w);
                     }
 
                     template<typename ArgumentPack>
                     inline void operator()(value_type_loc const & val, ArgumentPack & arg) {
-                        using namespace alps::ngs::numeric;
+                        using namespace alps::numeric;
                         base_type::operator()(val * arg[Weight]);
                     }
                     
                     inline void operator()(value_type_loc const & val) {
-                        using namespace alps::ngs::numeric;
+                        using namespace alps::numeric;
                         base_type::operator()(val * weight_type_loc(1));
                     }
 
@@ -122,7 +122,7 @@ namespace alps {
                     }
 
                     void load(hdf5::archive & ar) {
-                        using alps::ngs::numeric::operator*;
+                        using alps::numeric::operator*;
 
                         base_type::load(ar);
                         ar["ownsweight"] >> ownes_weight_acc_;

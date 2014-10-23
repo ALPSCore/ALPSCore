@@ -10,18 +10,16 @@
 #include <limits>
 
 namespace alps {
-    namespace ngs {
-        namespace numeric {
+    namespace numeric {
 
-			template<typename T> struct inf {};
+		template<typename T> struct inf {};
 
-			template<> struct inf<double> {
-        		operator double() const {
-        			return std::numeric_limits<double>::infinity();
-        		}
-        	};
+		template<> struct inf<double> {
+    		operator double() const {
+    			return std::numeric_limits<double>::infinity();
+    		}
+    	};
 
-		}
 	}
 }
 

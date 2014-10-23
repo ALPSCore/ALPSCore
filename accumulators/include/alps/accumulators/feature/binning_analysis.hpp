@@ -14,12 +14,15 @@
 #include <alps/accumulators/feature/mean.hpp>
 #include <alps/accumulators/feature/count.hpp>
 
-#include <alps/accumulators/numeric.hpp>
 #include <alps/hdf5/archive.hpp>
 #include <alps/utilities/stacktrace.hpp>
 #include <alps/utilities/short_print.hpp>
 
 #include <alps/accumulators/convergence.hpp>
+#include <alps/numeric/inf.hpp>
+#include <alps/numeric/check_size.hpp>
+#include <alps/numeric/vector_functions.hpp>
+#include <alps/numeric/boost_array_functions.hpp>
 #include <alps/numeric/set_negative_0.hpp>
 // TODO: make nicer way to use this
 #include <alps/type_traits/slice.hpp>
@@ -136,11 +139,11 @@ namespace alps {
                     }
 
                     typename alps::accumulator::error_type<B>::type const error(std::size_t bin_level = std::numeric_limits<std::size_t>::max()) const {
-                        using alps::ngs::numeric::operator*;
-                        using alps::ngs::numeric::operator-;
-                        using alps::ngs::numeric::operator/;
+                        using alps::numeric::operator*;
+                        using alps::numeric::operator-;
+                        using alps::numeric::operator/;
                         using std::sqrt;
-                        using alps::ngs::numeric::sqrt;
+                        using alps::numeric::sqrt;
 
                         if (bin_level > m_ac_sum2.size() - 8)
                             bin_level = m_ac_sum2.size() < 8 ? 0 : m_ac_sum2.size() - 8;
@@ -150,7 +153,7 @@ namespace alps {
 
                         // if not enoght bins are available, return infinity
                         if (m_ac_sum2.size() < 2)
-                            return alps::ngs::numeric::inf<error_type>();
+                            return alps::numeric::inf<error_type>();
 
                         // TODO: make library for scalar type
                         error_scalar_type one = 1;
@@ -164,9 +167,9 @@ namespace alps {
                     }
 
                     typename autocorrelation_type<B>::type const autocorrelation() const {
-                        using alps::ngs::numeric::operator*;
-                        using alps::ngs::numeric::operator-;
-                        using alps::ngs::numeric::operator/;
+                        using alps::numeric::operator*;
+                        using alps::numeric::operator-;
+                        using alps::numeric::operator/;
 
                         typedef typename mean_type<B>::type mean_type;
 
@@ -175,7 +178,7 @@ namespace alps {
 
                         // if not enoght bins are available, return infinity
                         if (m_ac_sum2.size() < 2)
-                            return alps::ngs::numeric::inf<mean_type>();
+                            return alps::numeric::inf<mean_type>();
 
                         mean_scalar_type one = 1;
                         mean_scalar_type two = 2;
@@ -192,9 +195,9 @@ namespace alps {
 
                     using B::operator();
                     void operator()(T const & val) {
-                        using alps::ngs::numeric::operator+=;
-                        using alps::ngs::numeric::operator*;
-                        using alps::ngs::numeric::detail::check_size;
+                        using alps::numeric::operator+=;
+                        using alps::numeric::operator*;
+                        using alps::numeric::check_size;
 
                         B::operator()(val);
                         if(B::count() == (1 << m_ac_sum2.size())) {

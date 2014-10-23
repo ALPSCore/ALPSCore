@@ -15,7 +15,10 @@
 #include <alps/accumulators/feature/count.hpp>
 #include <alps/accumulators/feature/error.hpp>
 
-#include <alps/accumulators/numeric.hpp>
+#include <alps/numeric/inf.hpp>
+#include <alps/numeric/boost_array_functions.hpp>
+#include <alps/numeric/check_size.hpp>
+#include <alps/numeric/vector_functions.hpp>
 #include <alps/hdf5/archive.hpp>
 #include <alps/utilities/stacktrace.hpp>
 #include <alps/utilities/short_print.hpp>
@@ -175,10 +178,10 @@ namespace alps {
 
                     using B::operator();
                     void operator()(T const & val) {
-                        using alps::ngs::numeric::operator+=;
-                        using alps::ngs::numeric::operator+;
-                        using alps::ngs::numeric::operator/;
-                        using alps::ngs::numeric::detail::check_size;
+                        using alps::numeric::operator+=;
+                        using alps::numeric::operator+;
+                        using alps::numeric::operator/;
+                        using alps::numeric::check_size;
 
                         B::operator()(val);
 
@@ -299,9 +302,9 @@ namespace alps {
                         , std::vector<typename mean_type<B>::type> & merged_bins
                         , int root
                     ) const {
-                        using alps::ngs::numeric::operator+;
-                        using alps::ngs::numeric::operator/;
-                        using alps::ngs::numeric::detail::check_size;
+                        using alps::numeric::operator+;
+                        using alps::numeric::operator/;
+                        using alps::numeric::check_size;
 
                         typename B::count_type elements_in_local_bins = boost::mpi::all_reduce(comm, m_mn_elements_in_bin, boost::mpi::maximum<typename B::count_type>());
                         typename B::count_type howmany = (elements_in_local_bins - 1) / m_mn_elements_in_bin + 1;
@@ -413,8 +416,8 @@ namespace alps {
                     template <typename A> typename boost::enable_if<
                         typename has_feature<A, max_num_binning_tag>::type, typename covariance_type<B>::type
                     >::type covariance(A const & obs) const {
-                        using alps::ngs::numeric::operator+;
-                        using alps::ngs::numeric::operator/;
+                        using alps::numeric::operator+;
+                        using alps::numeric::operator/;
                         using alps::numeric::outer_product;
 
                         generate_jackknife();
@@ -450,9 +453,9 @@ namespace alps {
                     template <typename A> typename boost::enable_if<
                         typename has_feature<A, max_num_binning_tag>::type, typename covariance_type<B>::type
                     >::type accurate_covariance(A const & obs) const {
-                        using alps::ngs::numeric::operator+;
-                        using alps::ngs::numeric::operator-;
-                        using alps::ngs::numeric::operator/;
+                        using alps::numeric::operator+;
+                        using alps::numeric::operator-;
+                        using alps::numeric::operator/;
                         using alps::numeric::outer_product;
 
                         generate_jackknife();
@@ -573,39 +576,39 @@ namespace alps {
                     #define NUMERIC_FUNCTION_IMPLEMENTATION(FUNCTION_NAME)                                                              \
                         void FUNCTION_NAME () {                                                                                         \
                             using alps::numeric::sq;                                                                                    \
-                            using alps::ngs::numeric::sq;                                                                               \
+                            using alps::numeric::sq;                                                                               \
                             using alps::numeric::cbrt;                                                                                  \
-                            using alps::ngs::numeric::cbrt;                                                                             \
+                            using alps::numeric::cbrt;                                                                             \
                             using alps::numeric::cb;                                                                                    \
-                            using alps::ngs::numeric::cb;                                                                               \
+                            using alps::numeric::cb;                                                                               \
                             using std::sqrt;                                                                                            \
-                            using alps::ngs::numeric::sqrt;                                                                             \
+                            using alps::numeric::sqrt;                                                                             \
                             using std::exp;                                                                                             \
-                            using alps::ngs::numeric::exp;                                                                              \
+                            using alps::numeric::exp;                                                                              \
                             using std::log;                                                                                             \
-                            using alps::ngs::numeric::log;                                                                              \
+                            using alps::numeric::log;                                                                              \
                             using std::abs;                                                                                             \
-                            using alps::ngs::numeric::abs;                                                                              \
+                            using alps::numeric::abs;                                                                              \
                             using std::pow;                                                                                             \
-                            using alps::ngs::numeric::pow;                                                                              \
+                            using alps::numeric::pow;                                                                              \
                             using std::sin;                                                                                             \
-                            using alps::ngs::numeric::sin;                                                                              \
+                            using alps::numeric::sin;                                                                              \
                             using std::cos;                                                                                             \
-                            using alps::ngs::numeric::cos;                                                                              \
+                            using alps::numeric::cos;                                                                              \
                             using std::tan;                                                                                             \
-                            using alps::ngs::numeric::tan;                                                                              \
+                            using alps::numeric::tan;                                                                              \
                             using std::sinh;                                                                                            \
-                            using alps::ngs::numeric::sinh;                                                                             \
+                            using alps::numeric::sinh;                                                                             \
                             using std::cosh;                                                                                            \
-                            using alps::ngs::numeric::cosh;                                                                             \
+                            using alps::numeric::cosh;                                                                             \
                             using std::tanh;                                                                                            \
-                            using alps::ngs::numeric::tanh;                                                                             \
+                            using alps::numeric::tanh;                                                                             \
                             using std::asin;                                                                                            \
-                            using alps::ngs::numeric::asin;                                                                             \
+                            using alps::numeric::asin;                                                                             \
                             using std::acos;                                                                                            \
-                            using alps::ngs::numeric::acos;                                                                             \
+                            using alps::numeric::acos;                                                                             \
                             using std::atan;                                                                                            \
-                            using alps::ngs::numeric::atan;                                                                             \
+                            using alps::numeric::atan;                                                                             \
                             transform((typename value_type<B>::type(*)(typename value_type<B>::type))& FUNCTION_NAME );                 \
                             B:: FUNCTION_NAME ();                                                                                       \
                         }
@@ -642,10 +645,10 @@ namespace alps {
                     mutable std::vector<typename mean_type<B>::type> m_mn_jackknife_bins;
 
                     void generate_jackknife() const {
-                        using alps::ngs::numeric::operator-;
-                        using alps::ngs::numeric::operator+;
-                        using alps::ngs::numeric::operator*;
-                        using alps::ngs::numeric::operator/;
+                        using alps::numeric::operator-;
+                        using alps::numeric::operator+;
+                        using alps::numeric::operator*;
+                        using alps::numeric::operator/;
                         // build jackknife data structure
                         if (!m_mn_bins.empty() && !m_mn_jackknife_valid) {
                             if (m_mn_cannot_rebin)
@@ -669,10 +672,10 @@ namespace alps {
                         using alps::numeric::sq;
                         using std::sqrt;
                         using alps::numeric::sqrt;
-                        using alps::ngs::numeric::operator-;
-                        using alps::ngs::numeric::operator+;
-                        using alps::ngs::numeric::operator*;
-                        using alps::ngs::numeric::operator/;
+                        using alps::numeric::operator-;
+                        using alps::numeric::operator+;
+                        using alps::numeric::operator*;
+                        using alps::numeric::operator/;
                         if (m_mn_bins.empty())
                             throw std::runtime_error("No Measurement" + ALPS_STACKTRACE);
                         if (!m_mn_data_is_analyzed) {
@@ -704,7 +707,7 @@ namespace alps {
                               boost::is_scalar<U>                                                                                                                               \
                             , typename has_operator_ ## OP_TOKEN <typename mean_type<B>::type, U>::type                                                                         \
                         >, int>::type = 0) {                                                                                                                                    \
-                            using alps::ngs::numeric:: OP_NAME ;                                                                                                                \
+                            using alps::numeric:: OP_NAME ;                                                                                                                \
                             generate_jackknife();                                                                                                                               \
                             m_mn_data_is_analyzed = false;                                                                                                                      \
                             m_mn_cannot_rebin = true;                                                                                                                           \

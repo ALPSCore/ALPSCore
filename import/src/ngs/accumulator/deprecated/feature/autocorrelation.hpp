@@ -57,14 +57,14 @@ namespace alps
             
             inline mean_type const error(boost::uint64_t level = -1) const
             {
-                using namespace alps::ngs::numeric;
-                //~ using alps::ngs::numeric::operator*;
-                //~ using alps::ngs::numeric::operator-;
-                //~ using alps::ngs::numeric::operator/;
+                using namespace alps::numeric;
+                //~ using alps::numeric::operator*;
+                //~ using alps::numeric::operator-;
+                //~ using alps::numeric::operator/;
                 if(level == -1)
                     level = std::max(bin2_.size() - 5, typename std::vector<value_type>::size_type(0));
                 using std::sqrt;
-                using alps::ngs::numeric::sqrt;
+                using alps::numeric::sqrt;
                 return sqrt((bin2_[level] - bin1_[level] * bin1_[level]) / (count_ - 1));
             }
             
@@ -133,12 +133,12 @@ namespace alps
                     
                     inline void operator()(value_type_loc const & val) 
                     {
-                        using namespace alps::ngs::numeric;
-                        using alps::ngs::numeric::operator+;
-                        using alps::ngs::numeric::operator+=;
-                        using alps::ngs::numeric::operator-;
-                        using alps::ngs::numeric::operator*;
-                        using alps::ngs::numeric::operator-;
+                        using namespace alps::numeric;
+                        using alps::numeric::operator+;
+                        using alps::numeric::operator+=;
+                        using alps::numeric::operator-;
+                        using alps::numeric::operator*;
+                        using alps::numeric::operator-;
                         
                         base_type::operator()(val);
                         

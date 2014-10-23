@@ -15,7 +15,11 @@
 #include <alps/accumulators/feature/count.hpp>
 
 #include <alps/hdf5/archive.hpp>
-#include <alps/accumulators/numeric.hpp>
+#include <alps/numeric/inf.hpp>
+#include <alps/numeric/check_size.hpp>
+#include <alps/numeric/vector_functions.hpp>
+#include <alps/numeric/boost_array_functions.hpp>
+ 
 #include <alps/utilities/stacktrace.hpp>
 #include <alps/utilities/short_print.hpp>
 
@@ -82,10 +86,10 @@ namespace alps {
 
                     error_type const error() const {
                         using std::sqrt;
-                        using alps::ngs::numeric::sqrt;
-                        using alps::ngs::numeric::operator/;
-                        using alps::ngs::numeric::operator-;
-                        using alps::ngs::numeric::operator*;
+                        using alps::numeric::sqrt;
+                        using alps::numeric::operator/;
+                        using alps::numeric::operator-;
+                        using alps::numeric::operator*;
 
                         // TODO: make library for scalar type
                         typename alps::hdf5::scalar_type<error_type>::type cnt = B::count();
@@ -94,9 +98,9 @@ namespace alps {
 
                     using B::operator();
                     void operator()(T const & val) {
-                        using alps::ngs::numeric::operator*;
-                        using alps::ngs::numeric::operator+=;
-                        using alps::ngs::numeric::detail::check_size;
+                        using alps::numeric::operator*;
+                        using alps::numeric::operator+=;
+                        using alps::numeric::check_size;
 
                         B::operator()(val);
                         check_size(m_sum2, val);
@@ -114,8 +118,8 @@ namespace alps {
                     }
 
                     void load(hdf5::archive & ar) { // TODO: make archive const
-                        using alps::ngs::numeric::operator*;
-                        using alps::ngs::numeric::operator+;
+                        using alps::numeric::operator*;
+                        using alps::numeric::operator+;
 
                         B::load(ar);
                         error_type error;
@@ -219,13 +223,13 @@ namespace alps {
                     template<typename U> void operator*=(U const & arg) { augmul(arg); }
                     template<typename U> void operator/=(U const & arg) { augdiv(arg); }
                     void negate() {
-                        using alps::ngs::numeric::operator-;
+                        using alps::numeric::operator-;
                         m_error = -m_error;
                         B::negate();
                     }
                     void inverse() {
-                        using alps::ngs::numeric::operator*;
-                        using alps::ngs::numeric::operator/;
+                        using alps::numeric::operator*;
+                        using alps::numeric::operator/;
                         m_error = this->error() / (this->mean() * this->mean());
                         B::inverse();
 
@@ -233,40 +237,40 @@ namespace alps {
 
                     #define NUMERIC_FUNCTION_USEING                                 \
                         using alps::numeric::sq;                                    \
-                        using alps::ngs::numeric::cbrt;                             \
-                        using alps::ngs::numeric::cb;                               \
+                        using alps::numeric::cbrt;                             \
+                        using alps::numeric::cb;                               \
                         using std::sqrt;                                            \
-                        using alps::ngs::numeric::sqrt;                             \
+                        using alps::numeric::sqrt;                             \
                         using std::exp;                                             \
-                        using alps::ngs::numeric::exp;                              \
+                        using alps::numeric::exp;                              \
                         using std::log;                                             \
-                        using alps::ngs::numeric::log;                              \
+                        using alps::numeric::log;                              \
                         using std::abs;                                             \
-                        using alps::ngs::numeric::abs;                              \
+                        using alps::numeric::abs;                              \
                         using std::pow;                                             \
-                        using alps::ngs::numeric::pow;                              \
+                        using alps::numeric::pow;                              \
                         using std::sin;                                             \
-                        using alps::ngs::numeric::sin;                              \
+                        using alps::numeric::sin;                              \
                         using std::cos;                                             \
-                        using alps::ngs::numeric::cos;                              \
+                        using alps::numeric::cos;                              \
                         using std::tan;                                             \
-                        using alps::ngs::numeric::tan;                              \
+                        using alps::numeric::tan;                              \
                         using std::sinh;                                            \
-                        using alps::ngs::numeric::sinh;                             \
+                        using alps::numeric::sinh;                             \
                         using std::cosh;                                            \
-                        using alps::ngs::numeric::cosh;                             \
+                        using alps::numeric::cosh;                             \
                         using std::tanh;                                            \
-                        using alps::ngs::numeric::tanh;                             \
+                        using alps::numeric::tanh;                             \
                         using std::asin;                                            \
-                        using alps::ngs::numeric::asin;                             \
+                        using alps::numeric::asin;                             \
                         using std::acos;                                            \
-                        using alps::ngs::numeric::acos;                             \
+                        using alps::numeric::acos;                             \
                         using std::atan;                                            \
-                        using alps::ngs::numeric::atan;                             \
-                        using alps::ngs::numeric::operator+;                        \
-                        using alps::ngs::numeric::operator-;                        \
-                        using alps::ngs::numeric::operator*;                        \
-                        using alps::ngs::numeric::operator/;
+                        using alps::numeric::atan;                             \
+                        using alps::numeric::operator+;                        \
+                        using alps::numeric::operator-;                        \
+                        using alps::numeric::operator*;                        \
+                        using alps::numeric::operator/;
 
                     #define NUMERIC_FUNCTION_IMPLEMENTATION(FUNCTION_NAME, ERROR)    \
                         void FUNCTION_NAME () {                                      \
@@ -299,7 +303,7 @@ namespace alps {
                     error_type m_error;
 
                     template<typename U> void augaddsub (U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {
-                        using alps::ngs::numeric::operator+;
+                        using alps::numeric::operator+;
                         m_error = m_error + arg.error();
                     }
                     template<typename U> void augaddsub (U const & arg, typename boost::enable_if<boost::mpl::and_<
@@ -314,8 +318,8 @@ namespace alps {
                     }
 
                     template<typename U> void augmul (U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {
-                        using alps::ngs::numeric::operator*;
-                        using alps::ngs::numeric::operator+;
+                        using alps::numeric::operator*;
+                        using alps::numeric::operator+;
                         m_error = arg.mean() * m_error + this->mean() * arg.error();
                         B::operator*=(arg);
                     }
@@ -323,7 +327,7 @@ namespace alps {
                           boost::is_scalar<U>
                         , typename has_operator_mul<error_type, U>::type
                     >, int>::type = 0) {
-                        using alps::ngs::numeric::operator*;
+                        using alps::numeric::operator*;
                         m_error = m_error * arg;
                         B::operator*=(arg);
                     }
@@ -335,9 +339,9 @@ namespace alps {
                     }
 
                     template<typename U> void augdiv (U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {
-                        using alps::ngs::numeric::operator*;
-                        using alps::ngs::numeric::operator/;
-                        using alps::ngs::numeric::operator+;
+                        using alps::numeric::operator*;
+                        using alps::numeric::operator/;
+                        using alps::numeric::operator+;
                         m_error = m_error / arg.mean() + this->mean() * arg.error() / (arg.mean() * arg.mean());
                         B::operator/=(arg);
                     }
@@ -345,7 +349,7 @@ namespace alps {
                           boost::is_scalar<U>
                         , typename has_operator_div<error_type, U>::type
                     >, int>::type = 0) {
-                        using alps::ngs::numeric::operator/;
+                        using alps::numeric::operator/;
                         m_error = m_error / arg;
                         B::operator/=(arg);
                     }

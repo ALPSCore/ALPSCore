@@ -55,7 +55,7 @@ void ising_sim::measure() {
                 corr[d] += spins[i] * spins[( i + d ) % length ];
         }
         // pull in operator/ for vectors
-        using alps::ngs::numeric::operator/;
+        using alps::numeric::operator/;
         corr = corr / double(length);
         ten /= length;
         tmag /= length;

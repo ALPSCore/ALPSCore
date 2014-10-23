@@ -14,7 +14,10 @@
 #include <alps/accumulators/feature/count.hpp>
 
 #include <alps/hdf5/archive.hpp>
-#include <alps/accumulators/numeric.hpp>
+#include <alps/numeric/inf.hpp>
+#include <alps/numeric/boost_array_functions.hpp>
+#include <alps/numeric/check_size.hpp>
+#include <alps/numeric/vector_functions.hpp>
 #include <alps/utilities/stacktrace.hpp>
 #include <alps/utilities/short_print.hpp>
 
@@ -80,7 +83,7 @@ namespace alps {
                     {}
 
                     mean_type const mean() const {
-                        using alps::ngs::numeric::operator/;
+                        using alps::numeric::operator/;
 
                         // TODO: make library for scalar type
                         typename alps::hdf5::scalar_type<mean_type>::type cnt = B::count();
@@ -90,8 +93,8 @@ namespace alps {
 
                     using B::operator();
                     void operator()(T const & val) {
-                        using alps::ngs::numeric::operator+=;
-                        using alps::ngs::numeric::detail::check_size;
+                        using alps::numeric::operator+=;
+                        using alps::numeric::check_size;
 
                         B::operator()(val);
                         check_size(m_sum, val);
@@ -109,7 +112,7 @@ namespace alps {
                     }
 
                     void load(hdf5::archive & ar) { // TODO: make archive const
-                        using alps::ngs::numeric::operator*;
+                        using alps::numeric::operator*;
 
                         B::load(ar);
                         mean_type mean;
@@ -217,12 +220,12 @@ namespace alps {
                     template<typename U> void operator*=(U const & arg) { augmul(arg); }
                     template<typename U> void operator/=(U const & arg) { augdiv(arg); }
                     void negate() {
-                        using alps::ngs::numeric::operator-;
+                        using alps::numeric::operator-;
                         m_mean = -m_mean;
                         B::negate();
                     }                    
                     void inverse() {
-                        using alps::ngs::numeric::operator/;
+                        using alps::numeric::operator/;
                         // TODO: make library for scalar type
                         typename alps::hdf5::scalar_type<mean_type>::type one = 1;
                         m_mean = one / m_mean;
@@ -233,7 +236,7 @@ namespace alps {
                         void FUNCTION_NAME () {                                         \
                             B:: FUNCTION_NAME ();                                       \
                             using std:: FUNCTION_NAME ;                                 \
-                            using alps::ngs::numeric:: FUNCTION_NAME ;                  \
+                            using alps::numeric:: FUNCTION_NAME ;                  \
                             m_mean = FUNCTION_NAME (m_mean);                            \
                         }
 
@@ -256,7 +259,7 @@ namespace alps {
                         void FUNCTION_NAME () {                                     \
                             B:: FUNCTION_NAME ();                                   \
                             using alps::numeric:: FUNCTION_NAME ;                   \
-                            using alps::ngs::numeric:: FUNCTION_NAME ;              \
+                            using alps::numeric:: FUNCTION_NAME ;              \
                             m_mean = FUNCTION_NAME (m_mean);                        \
                         }
 
@@ -272,7 +275,7 @@ namespace alps {
 
                     #define NUMERIC_FUNCTION_OPERATOR(OP_NAME, OPEQ_NAME, OP, OP_TOKEN)                                                                                         \
                         template<typename U> void aug ## OP_TOKEN (U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {                             \
-                            using alps::ngs::numeric:: OP_NAME ;                                                                                                                \
+                            using alps::numeric:: OP_NAME ;                                                                                                                \
                             m_mean = m_mean OP arg.mean();                                                                                                                      \
                             B:: OPEQ_NAME (arg);                                                                                                                                \
                         }                                                                                                                                                       \
@@ -280,7 +283,7 @@ namespace alps {
                               boost::is_scalar<U>                                                                                                                               \
                             , typename has_operator_ ## OP_TOKEN <mean_type, U>::type                                                                                           \
                         >, int>::type = 0) {                                                                                                                                    \
-                            using alps::ngs::numeric:: OP_NAME ;                                                                                                                \
+                            using alps::numeric:: OP_NAME ;                                                                                                                \
                             m_mean = m_mean OP arg;                                                                                                                             \
                             B:: OPEQ_NAME (arg);                                                                                                                                \
                         }                                                                                                                                                       \
