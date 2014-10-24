@@ -8,7 +8,7 @@
 
 list(APPEND CMAKE_MODULE_PATH ${ALPS_ROOT}/share/cmake/Modules)
 
-list(APPEND known_components hdf5 accumulator params mc)
+list(APPEND known_components hdf5 accumulators params mc)
 
 # Start searching from utility
 find_package(alps-utilities)
