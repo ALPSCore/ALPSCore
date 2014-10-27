@@ -31,7 +31,7 @@
 #include <stdexcept>
 
 namespace alps {
-    namespace accumulator {
+    namespace accumulators {
         // this should be called namespace tag { struct error; }
         // but gcc <= 4.4 has lookup error, so name it different
         struct error_tag;
@@ -73,7 +73,7 @@ namespace alps {
             template<typename T, typename B> struct Accumulator<T, error_tag, B> : public B {
 
                 public:
-                    typedef typename alps::accumulator::error_type<B>::type error_type;
+                    typedef typename alps::accumulators::error_type<B>::type error_type;
                     typedef Result<T, error_tag, typename B::result_type> result_type;
 
                     Accumulator(): B(), m_sum2(T()) {}
@@ -176,7 +176,7 @@ namespace alps {
             template<typename T, typename B> class Result<T, error_tag, B> : public B {
 
                 public:
-                    typedef typename alps::accumulator::error_type<B>::type error_type;
+                    typedef typename alps::accumulators::error_type<B>::type error_type;
 
                     Result() 
                         : B()

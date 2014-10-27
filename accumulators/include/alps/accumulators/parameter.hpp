@@ -10,7 +10,7 @@
 #include <boost/parameter.hpp>
 
 namespace alps {
-    namespace accumulator  {
+    namespace accumulators {
 
         BOOST_PARAMETER_NAME((accumulator_name, accumulator_keywords) _accumulator_name)
         BOOST_PARAMETER_NAME((max_bin_number, accumulator_keywords) _max_bin_number)

@@ -36,7 +36,7 @@
 #include <stdexcept>
 
 namespace alps {
-    namespace accumulator {
+    namespace accumulators {
         // this should be called namespace tag { struct max_num_binning; }
         // but gcc <= 4.4 has lookup error, so name it different
         struct max_num_binning_tag;
@@ -136,7 +136,7 @@ namespace alps {
             template<typename T, typename B> struct Accumulator<T, max_num_binning_tag, B> : public B {
 
                 public:
-                    typedef typename alps::accumulator::max_num_binning_type<B>::type max_num_binning_type;
+                    typedef typename alps::accumulators::max_num_binning_type<B>::type max_num_binning_type;
                     typedef Result<T, max_num_binning_tag, typename B::result_type> result_type;
 
                     Accumulator()
@@ -350,7 +350,7 @@ namespace alps {
             template<typename T, typename B> class Result<T, max_num_binning_tag, B> : public B {
 
                 public:
-                    typedef typename alps::accumulator::max_num_binning_type<B>::type max_num_binning_type;
+                    typedef typename alps::accumulators::max_num_binning_type<B>::type max_num_binning_type;
 
                     Result()
                         : B()

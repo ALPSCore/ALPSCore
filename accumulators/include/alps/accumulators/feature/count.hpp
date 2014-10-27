@@ -22,7 +22,7 @@
 #include <stdexcept>
 
 namespace alps {
-    namespace accumulator {
+    namespace accumulators {
         // this should be called namespace tag { struct count; }
         // but gcc <= 4.4 has lookup error, so name it different
         struct count_tag;

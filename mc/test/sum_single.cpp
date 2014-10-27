@@ -25,8 +25,8 @@ class my_sim_type : public alps::mcbase {
             , count(0)
 
         {
-            measurements << alps::accumulator::RealObservable("SValue")
-                         << alps::accumulator::RealVectorObservable("VValue");
+            measurements << alps::accumulators::RealObservable("SValue")
+                         << alps::accumulators::RealVectorObservable("VValue");
         }
 
         // if not compiled with mpi boost::mpi::communicator does not exists, 
@@ -35,8 +35,8 @@ class my_sim_type : public alps::mcbase {
             : alps::mcbase(params, comm)
             , total_count(params["COUNT"])
         {
-            measurements << alps::accumulator::RealObservable("SValue")
-                         << alps::accumulator::RealVectorObservable("VValue");
+            measurements << alps::accumulators::RealObservable("SValue")
+                         << alps::accumulators::RealVectorObservable("VValue");
         }
 
         // do the calculation in this function

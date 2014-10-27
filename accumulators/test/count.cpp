@@ -10,9 +10,9 @@
 
 TEST(accumulator, count_feature){
 
-	alps::accumulator::accumulator_set measurements;
-	measurements << alps::accumulator::RealObservable("scalar")
-				 << alps::accumulator::RealVectorObservable("vector");
+	alps::accumulators::accumulator_set measurements;
+	measurements << alps::accumulators::RealObservable("scalar")
+				 << alps::accumulators::RealVectorObservable("vector");
 
 	for (int i = 1; i < 1001; ++i) {
 		measurements["scalar"] << i;
@@ -21,7 +21,7 @@ TEST(accumulator, count_feature){
 		EXPECT_EQ(count(measurements["vector"]) , i);
 	}
 
-	alps::accumulator::result_set results(measurements);
+	alps::accumulators::result_set results(measurements);
 	EXPECT_EQ(count(results["scalar"]) , 1000);
 	EXPECT_EQ(count(results["vector"]) , 1000);
 }

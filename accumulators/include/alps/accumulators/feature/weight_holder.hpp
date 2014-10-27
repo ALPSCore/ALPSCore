@@ -22,7 +22,7 @@
 #include <stdexcept>
 
 namespace alps {
-    namespace accumulator {
+    namespace accumulators {
         // this should be called namespace tag { template<typename T> struct weight_holder; }
         // but gcc <= 4.4 has lookup error, so name it different
         template<typename T> struct weight_holder_tag;
@@ -37,12 +37,12 @@ namespace alps {
 
                     // TODO: add external weight!
 
-                    Accumulator(): B(), m_owner(true), m_weight(new ::alps::accumulator::derived_accumulator_wrapper<W>(W())) {}
+                    Accumulator(): B(), m_owner(true), m_weight(new ::alps::accumulators::derived_accumulator_wrapper<W>(W())) {}
 
                     Accumulator(Accumulator const & arg): B(arg), m_owner(arg.m_owner), m_weight(arg.m_weight) {}
 
                     template<typename ArgumentPack> Accumulator(ArgumentPack const & args, typename boost::disable_if<is_accumulator<ArgumentPack>, int>::type = 0)
-                        : B(args), m_owner(true), m_weight(new ::alps::accumulator::derived_accumulator_wrapper<W>(W()))
+                        : B(args), m_owner(true), m_weight(new ::alps::accumulators::derived_accumulator_wrapper<W>(W()))
                     {}
 
                     base_wrapper<T> const * weight() const {
@@ -129,7 +129,7 @@ namespace alps {
 
                 private:
                     bool m_owner;
-                    boost::shared_ptr< ::alps::accumulator::base_wrapper<typename value_type<weight_type>::type> > m_weight;
+                    boost::shared_ptr< ::alps::accumulators::base_wrapper<typename value_type<weight_type>::type> > m_weight;
             };
 
             template<typename T, typename W, typename B> class Result<T, weight_holder_tag<W>, B> : public B {
@@ -140,7 +140,7 @@ namespace alps {
                     Result()
                         : B()
                         , m_owner(true)
-                        , m_weight(new ::alps::accumulator::derived_result_wrapper<W>(W()))
+                        , m_weight(new ::alps::accumulators::derived_result_wrapper<W>(W()))
                     {}
 
                     template<typename A> Result(A const & acc)
@@ -183,7 +183,7 @@ namespace alps {
 
                 protected:
                     bool m_owner;
-                    boost::shared_ptr< ::alps::accumulator::base_wrapper<typename value_type<weight_type>::type> > m_weight;
+                    boost::shared_ptr< ::alps::accumulators::base_wrapper<typename value_type<weight_type>::type> > m_weight;
             };
 
         }

@@ -20,8 +20,8 @@ class sim1 : public alps::mcbase {
             count(0) 
         {
             measurements << 
-                alps::accumulator::RealObservable("e1") <<
-                alps::accumulator::SignedRealObservable("e2"); /// <- Here is the bug
+                alps::accumulators::RealObservable("e1") <<
+                alps::accumulators::SignedRealObservable("e2"); /// <- Here is the bug
         }
  
         void update() { count++; }

@@ -37,7 +37,7 @@
 #include <stdexcept>
 
 namespace alps {
-    namespace accumulator {
+    namespace accumulators {
         // this should be called namespace tag { struct binning_analysis; }
         // but gcc <= 4.4 has lookup error, so name it different
         struct binning_analysis_tag;
@@ -110,11 +110,11 @@ namespace alps {
                         , m_ac_count()
                     {}                    
 
-                    typename alps::accumulator::convergence_type<B>::type converged_errors() const {
+                    typename alps::accumulators::convergence_type<B>::type converged_errors() const {
                         typedef typename alps::hdf5::scalar_type<typename convergence_type<T>::type>::type convergence_scalar_type;
 
-                        typename alps::accumulator::convergence_type<B>::type conv;
-                        typename alps::accumulator::error_type<B>::type err = error();
+                        typename alps::accumulators::convergence_type<B>::type conv;
+                        typename alps::accumulators::error_type<B>::type err = error();
                         check_size(conv, err);
                         const unsigned int range = 4;
                         const unsigned int depth = (m_ac_sum2.size() < 8 ? 1 : m_ac_sum2.size() - 7);
@@ -124,7 +124,7 @@ namespace alps {
                             conv = 0 * conv + (convergence_scalar_type)CONVERGED;
                             // TODO: how to we iterate over the datatype?
                             for (unsigned int i = depth - range; i < depth - 1; ++i) {
-                                typename slice_index<typename alps::accumulator::convergence_type<B>::type>::type it;
+                                typename slice_index<typename alps::accumulators::convergence_type<B>::type>::type it;
                                 result_type this_err(error(i));
                                 for (it = slices(conv).first; it != slices(conv).second; ++it)
                                     if (std::abs(slice_value(this_err, it)) >= std::abs(slice_value(err,it)))
@@ -138,7 +138,7 @@ namespace alps {
                         return conv;
                     }
 
-                    typename alps::accumulator::error_type<B>::type const error(std::size_t bin_level = std::numeric_limits<std::size_t>::max()) const {
+                    typename alps::accumulators::error_type<B>::type const error(std::size_t bin_level = std::numeric_limits<std::size_t>::max()) const {
                         using alps::numeric::operator*;
                         using alps::numeric::operator-;
                         using alps::numeric::operator/;
@@ -148,7 +148,7 @@ namespace alps {
                         if (bin_level > m_ac_sum2.size() - 8)
                             bin_level = m_ac_sum2.size() < 8 ? 0 : m_ac_sum2.size() - 8;
 
-                        typedef typename alps::accumulator::error_type<B>::type error_type;
+                        typedef typename alps::accumulators::error_type<B>::type error_type;
                         typedef typename alps::hdf5::scalar_type<error_type>::type error_scalar_type;
 
                         // if not enoght bins are available, return infinity
@@ -329,7 +329,7 @@ namespace alps {
             template<typename T, typename B> class Result<T, binning_analysis_tag, B> : public B {
 
                 public:
-                    typedef typename alps::accumulator::autocorrelation_type<B>::type autocorrelation_type;
+                    typedef typename alps::accumulators::autocorrelation_type<B>::type autocorrelation_type;
 
                     Result()
                         : B()

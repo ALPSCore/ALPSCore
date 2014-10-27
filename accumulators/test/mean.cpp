@@ -11,9 +11,9 @@
 
 TEST(accumulator, mean_feature_scalar){
 
-	alps::accumulator::accumulator_set measurements;
-	measurements << alps::accumulator::RealObservable("obs1")
-				 << alps::accumulator::RealObservable("obs2");
+	alps::accumulators::accumulator_set measurements;
+	measurements << alps::accumulators::RealObservable("obs1")
+				 << alps::accumulators::RealObservable("obs2");
 
 	for (int i = 1; i < 1000; ++i) {
 		measurements["obs1"] << 1.;
@@ -22,12 +22,12 @@ TEST(accumulator, mean_feature_scalar){
 		EXPECT_EQ(measurements["obs2"].mean<double>() , double(i + 1) / 2.);
 	}
 
-	alps::accumulator::result_set results(measurements);
+	alps::accumulators::result_set results(measurements);
 	EXPECT_EQ(results["obs1"].mean<double>() , 1.);
 	EXPECT_EQ(results["obs2"].mean<double>() , 500.);
 }
 
-void meas_test_body(alps::accumulator::accumulator_set &measurements){
+void meas_test_body(alps::accumulators::accumulator_set &measurements){
 
         int L=10;
 
@@ -42,7 +42,7 @@ void meas_test_body(alps::accumulator::accumulator_set &measurements){
                 }
 	}
 
-	alps::accumulator::result_set results(measurements);
+	alps::accumulators::result_set results(measurements);
         std::vector<double> mean_vec_1=results["obs1"].mean<std::vector<double> >();
         std::vector<double> mean_vec_2=results["obs2"].mean<std::vector<double> >();
         for(int i=0;i<mean_vec_1.size();++i){
@@ -51,15 +51,15 @@ void meas_test_body(alps::accumulator::accumulator_set &measurements){
         }
 }
 TEST(accumulator, mean_feature_vector_RealVectorObservable){
-	alps::accumulator::accumulator_set measurements;
-	measurements << alps::accumulator::RealVectorObservable("obs1")
-				 << alps::accumulator::RealVectorObservable("obs2");
+	alps::accumulators::accumulator_set measurements;
+	measurements << alps::accumulators::RealVectorObservable("obs1")
+				 << alps::accumulators::RealVectorObservable("obs2");
   meas_test_body(measurements);
 }
 TEST(accumulator, mean_feature_vector_SimpleRealVectorObservable){
-	alps::accumulator::accumulator_set measurements;
-	measurements << alps::accumulator::SimpleRealVectorObservable("obs1")
-				 << alps::accumulator::SimpleRealVectorObservable("obs2");
+	alps::accumulators::accumulator_set measurements;
+	measurements << alps::accumulators::SimpleRealVectorObservable("obs1")
+				 << alps::accumulators::SimpleRealVectorObservable("obs2");
   meas_test_body(measurements);
 }
 

@@ -20,7 +20,7 @@
 #endif
 
 namespace alps {
-    namespace accumulator {
+    namespace accumulators {
 
         template<typename T, typename F> struct has_feature 
             : public boost::false_type

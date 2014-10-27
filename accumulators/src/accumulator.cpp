@@ -7,7 +7,7 @@
 #include <alps/accumulators.hpp>
 
 namespace alps {
-    namespace accumulator {
+    namespace accumulators {
 
         #define EXTERNAL_FUNCTION(FUN)                          \
             result_wrapper FUN (result_wrapper const & arg) {   \

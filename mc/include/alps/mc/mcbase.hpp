@@ -23,14 +23,14 @@ namespace alps {
 
         protected:
 
-            typedef alps::accumulator::accumulator_set observable_collection_type;
+            typedef alps::accumulators::accumulator_set observable_collection_type;
 
         public:
 
             typedef alps::params parameters_type;
             typedef std::vector<std::string> result_names_type;
 
-            typedef alps::accumulator::result_set results_type;
+            typedef alps::accumulators::result_set results_type;
 
             mcbase(parameters_type const & parms, std::size_t seed_offset = 0);
 

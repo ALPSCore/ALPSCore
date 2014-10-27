@@ -20,7 +20,7 @@
 #include <stdexcept>
 
 namespace alps {
-    namespace accumulator {
+    namespace accumulators {
 
         template<typename T> class base_wrapper;
 

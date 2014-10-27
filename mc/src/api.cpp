@@ -21,11 +21,11 @@ namespace alps {
         }
     }
 
-    void save_results(alps::accumulator::result_set const & results, params const & params, boost::filesystem::path const & filename, std::string const & path) {
+    void save_results(alps::accumulators::result_set const & results, params const & params, boost::filesystem::path const & filename, std::string const & path) {
         detail::save_results_impl(results, params, filename, path);
     }
 
-    void save_results(alps::accumulator::accumulator_set const & observables, params const & params, boost::filesystem::path const & filename, std::string const & path) {
+    void save_results(alps::accumulators::accumulator_set const & observables, params const & params, boost::filesystem::path const & filename, std::string const & path) {
         detail::save_results_impl(observables, params, filename, path);
     }
 

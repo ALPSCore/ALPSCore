@@ -23,13 +23,13 @@
 
 class ALPS_DECL ising_sim {
 
-    typedef alps::accumulator::accumulator_set accumulators_type;
+    typedef alps::accumulators::accumulator_set accumulators_type;
 
     public:
 
         typedef alps::params parameters_type;
         typedef std::vector<std::string> result_names_type;
-        typedef alps::accumulator::result_set results_type;
+        typedef alps::accumulators::result_set results_type;
 
         ising_sim(parameters_type const & params);
 

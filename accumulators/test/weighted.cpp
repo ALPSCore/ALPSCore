@@ -9,11 +9,11 @@
 #include "gtest/gtest.h"
 
 TEST(accumulators, SignedSimpleRealObservable){
-	alps::accumulator::accumulator_set measurements;
-	measurements << alps::accumulator::SignedSimpleRealObservable("obs1")
-				<< alps::accumulator::SignedSimpleRealObservable("obs2")
-				<< alps::accumulator::SignedSimpleRealObservable("obs3")
-				<< alps::accumulator::SignedSimpleRealObservable("obs4");
+	alps::accumulators::accumulator_set measurements;
+	measurements << alps::accumulators::SignedSimpleRealObservable("obs1")
+				<< alps::accumulators::SignedSimpleRealObservable("obs2")
+				<< alps::accumulators::SignedSimpleRealObservable("obs3")
+				<< alps::accumulators::SignedSimpleRealObservable("obs4");
 
 	for (int i = 1; i < 1000; ++i) {
 		measurements["obs1"](1., 1.);
@@ -26,7 +26,7 @@ TEST(accumulators, SignedSimpleRealObservable){
 	EXPECT_EQ(measurements["obs3"].mean<double>() , 500.);
 	EXPECT_EQ(measurements["obs4"].mean<double>() , 500.);
 
-	alps::accumulator::result_set results(measurements);
+	alps::accumulators::result_set results(measurements);
 	EXPECT_EQ(results["obs1"].mean<double>() , 1.);
 	EXPECT_EQ(results["obs2"].mean<double>() , 1.);
 	EXPECT_EQ(results["obs3"].mean<double>() , 500.);

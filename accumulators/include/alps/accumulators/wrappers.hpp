@@ -25,7 +25,7 @@
 #include <stdexcept>
 
 namespace alps {
-    namespace accumulator {
+    namespace accumulators {
 
         template<typename A> class derived_wrapper;
 

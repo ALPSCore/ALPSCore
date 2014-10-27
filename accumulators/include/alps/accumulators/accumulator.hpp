@@ -37,7 +37,7 @@
 #include <stdexcept>
 
 namespace alps {
-    namespace accumulator {
+    namespace accumulators {
 
         namespace detail {
             template<typename T> struct add_base_wrapper_pointer {
