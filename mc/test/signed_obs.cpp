@@ -21,11 +21,14 @@ class sim1 : public alps::mcbase {
         {
             measurements << 
                 alps::accumulators::RealObservable("e1") <<
-                alps::accumulators::SignedRealObservable("e2"); /// <- Here is the bug
+                alps::accumulators::SignedRealObservable("e2");
         }
  
         void update() { count++; }
-        void measure() { measurements["e1"] << 1.0; measurements["e2"] << 1.0; }
+        void measure() { 
+            measurements["e1"] << 1.0; 
+            measurements["e2"](1.0, 1); // measure value and weight
+        }
         double fraction_completed() const { return double (count/nsweeps); }
  
     private:
