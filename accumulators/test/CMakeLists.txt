@@ -2,7 +2,8 @@ include(ALPSEnableTests)
 
 set (test_src
     count
-    mean 
+    mean
+    weighted
     )
 
 foreach(test ${test_src})
