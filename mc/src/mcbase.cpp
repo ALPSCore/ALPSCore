@@ -14,7 +14,7 @@ namespace alps {
         , params(parameters) // TODO: remove, deprecated!
         , random((parameters["SEED"] | 42) + seed_offset)
     {
-        alps::ngs::signal::listen();
+        alps::signal::listen();
     }
 
     void mcbase::save(boost::filesystem::path const & filename) const {

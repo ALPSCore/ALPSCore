@@ -11,31 +11,29 @@
 
 // Import multi_array functions into ngs::numeric namespace.
 namespace alps {
-    namespace ngs {
-        namespace numeric {
-            
-            using alps::sin;
-            using alps::cos;
-            using alps::tan;
-            using alps::sinh;
-            using alps::cosh;
-            using alps::tanh;
-            using alps::asin;
-            using alps::acos;
-            using alps::atan;
-            using alps::abs;
-            using alps::sqrt;
-            using alps::exp;
-            using alps::log;
-            using alps::fabs;
+    namespace numeric {
+        
+        using alps::sin;
+        using alps::cos;
+        using alps::tan;
+        using alps::sinh;
+        using alps::cosh;
+        using alps::tanh;
+        using alps::asin;
+        using alps::acos;
+        using alps::atan;
+        using alps::abs;
+        using alps::sqrt;
+        using alps::exp;
+        using alps::log;
+        using alps::fabs;
 
-            using alps::sq;
-            using alps::cb;
-            using alps::cbrt;
-            
-            using alps::pow;
-            using alps::sum;
-        }
+        using alps::sq;
+        using alps::cb;
+        using alps::cbrt;
+        
+        using alps::pow;
+        using alps::sum;
     }
 }
 

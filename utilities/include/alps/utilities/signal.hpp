@@ -14,7 +14,6 @@
 #include <vector>
 
 namespace alps {
-  namespace ngs {
 
     class ALPS_DECL signal{
 
@@ -64,7 +63,6 @@ archives are closed before it exits.
       static std::size_t end_;
       static boost::array<int, 0x20> signals_;
     };
-  }
 }
 
 #endif

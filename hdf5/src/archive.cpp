@@ -233,7 +233,7 @@ namespace alps {
                 private:
 
                     void construct() {
-                        alps::ngs::signal::listen();
+                        alps::signal::listen();
                         if (memory_ && large_)
                             throw archive_error("either memory or large file system can be used!" + ALPS_STACKTRACE);
                         else if (memory_) {
