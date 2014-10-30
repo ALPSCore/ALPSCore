@@ -8,29 +8,23 @@
 #include <alps/accumulators/accumulator.hpp>
 #include "gtest/gtest.h"
 
-TEST(accumulators, SignedSimpleRealObservable){
+TEST(accumulators, WeightedObservable){
 	alps::accumulators::accumulator_set measurements;
-	measurements << alps::accumulators::SignedSimpleRealObservable("obs1")
-				<< alps::accumulators::SignedSimpleRealObservable("obs2")
-				<< alps::accumulators::SignedSimpleRealObservable("obs3")
-				<< alps::accumulators::SignedSimpleRealObservable("obs4");
+	measurements << alps::accumulators::RealObservable("sign")
+				 << alps::accumulators::RealObservable("x*sign");
 
 	for (int i = 1; i < 1000; ++i) {
-		measurements["obs1"](1., 1.);
-		measurements["obs2"](1., i % 2 ? 1. : -1);
-		measurements["obs3"](i, 1.);
-		measurements["obs4"](i, i % 2 ? 1. : -1);
+		double sign = i % 3 ? 1. : -1.;
+		measurements["sign"] << sign;
+		measurements["x*sign"] << sign * i;
 	}
-	EXPECT_EQ(measurements["obs1"].mean<double>() , 1.);
-	EXPECT_EQ(measurements["obs2"].mean<double>() , 1.);
-	EXPECT_EQ(measurements["obs3"].mean<double>() , 500.);
-	EXPECT_EQ(measurements["obs4"].mean<double>() , 500.);
+	EXPECT_EQ(measurements["sign"].mean<double>(), 1. / 3.);
+	EXPECT_EQ(measurements["x*sign"].mean<double>(), 166.);
 
 	alps::accumulators::result_set results(measurements);
-	EXPECT_EQ(results["obs1"].mean<double>() , 1.);
-	EXPECT_EQ(results["obs2"].mean<double>() , 1.);
-	EXPECT_EQ(results["obs3"].mean<double>() , 500.);
-	EXPECT_EQ(results["obs4"].mean<double>() , 500.);
+	EXPECT_EQ(results["sign"].mean<double>(), 1. / 3.);
+	EXPECT_EQ(results["x*sign"].mean<double>(), 166.);
+	std::cout << (results["x*sign"] / results["sign"]) << std::endl;
 }
 
 int main(int argc, char **argv) 

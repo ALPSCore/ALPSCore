@@ -917,11 +917,11 @@ namespace alps {
         typedef detail::PredefinedObservable<detail::observable_type<double> > RealObservable;
         typedef detail::PredefinedObservable<detail::observable_type<std::vector<double> > > RealVectorObservable;
 
-        typedef detail::PredefinedObservable<detail::signed_observable_type<double> > SignedRealObservable;
-        typedef detail::PredefinedObservable<detail::signed_observable_type<std::vector<double> > > SignedRealVectorObservable;
+        // typedef detail::PredefinedObservable<detail::signed_observable_type<double> > SignedRealObservable;
+        // typedef detail::PredefinedObservable<detail::signed_observable_type<std::vector<double> > > SignedRealVectorObservable;
 
-        typedef detail::PredefinedObservable<detail::signed_simple_observable_type<double> > SignedSimpleRealObservable;
-        typedef detail::PredefinedObservable<detail::signed_simple_observable_type<std::vector<double> > > SignedSimpleRealVectorObservable;
+        // typedef detail::PredefinedObservable<detail::signed_simple_observable_type<double> > SignedSimpleRealObservable;
+        // typedef detail::PredefinedObservable<detail::signed_simple_observable_type<std::vector<double> > > SignedSimpleRealVectorObservable;
 
         // TODO implement: RealTimeSeriesObservable
 
@@ -932,19 +932,19 @@ namespace alps {
                 accumulator_set::register_serializable_type<SimpleRealVectorObservable::accumulator_type>(true);
                 accumulator_set::register_serializable_type<RealObservable::accumulator_type>(true);
                 accumulator_set::register_serializable_type<RealVectorObservable::accumulator_type>(true);
-                accumulator_set::register_serializable_type<SignedRealObservable::accumulator_type>(true);
-                accumulator_set::register_serializable_type<SignedRealVectorObservable::accumulator_type>(true);
-                accumulator_set::register_serializable_type<SignedSimpleRealObservable::accumulator_type>(true);
-                accumulator_set::register_serializable_type<SignedSimpleRealVectorObservable::accumulator_type>(true);
+                // accumulator_set::register_serializable_type<SignedRealObservable::accumulator_type>(true);
+                // accumulator_set::register_serializable_type<SignedRealVectorObservable::accumulator_type>(true);
+                // accumulator_set::register_serializable_type<SignedSimpleRealObservable::accumulator_type>(true);
+                // accumulator_set::register_serializable_type<SignedSimpleRealVectorObservable::accumulator_type>(true);
 
                 result_set::register_serializable_type<SimpleRealObservable::result_type>(true);
                 result_set::register_serializable_type<SimpleRealVectorObservable::result_type>(true);
                 result_set::register_serializable_type<RealObservable::result_type>(true);
                 result_set::register_serializable_type<RealVectorObservable::result_type>(true);
-                result_set::register_serializable_type<SignedRealObservable::result_type>(true);
-                result_set::register_serializable_type<SignedRealVectorObservable::result_type>(true);
-                result_set::register_serializable_type<SignedSimpleRealObservable::result_type>(true);
-                result_set::register_serializable_type<SignedSimpleRealVectorObservable::result_type>(true);
+                // result_set::register_serializable_type<SignedRealObservable::result_type>(true);
+                // result_set::register_serializable_type<SignedRealVectorObservable::result_type>(true);
+                // result_set::register_serializable_type<SignedSimpleRealObservable::result_type>(true);
+                // result_set::register_serializable_type<SignedSimpleRealVectorObservable::result_type>(true);
             }
         }
     }

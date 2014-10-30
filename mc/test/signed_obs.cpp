@@ -19,15 +19,15 @@ class sim1 : public alps::mcbase {
             nsweeps(p["nsweeps"]), 
             count(0) 
         {
-            measurements << 
-                alps::accumulators::RealObservable("e1") <<
-                alps::accumulators::SignedRealObservable("e2");
+            measurements 
+                << alps::accumulators::RealObservable("sigh") 
+                << alps::accumulators::RealObservable("x*sign");
         }
  
         void update() { count++; }
         void measure() { 
-            measurements["e1"] << 1.0; 
-            measurements["e2"](1.0, 1); // measure value and weight
+            measurements["sigh"] << 1.0; 
+            measurements["x*sigh"] << 1.0;
         }
         double fraction_completed() const { return double (count/nsweeps); }
  
