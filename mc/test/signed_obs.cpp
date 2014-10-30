@@ -20,14 +20,14 @@ class sim1 : public alps::mcbase {
             count(0) 
         {
             measurements 
-                << alps::accumulators::RealObservable("sigh") 
+                << alps::accumulators::RealObservable("sign") 
                 << alps::accumulators::RealObservable("x*sign");
         }
  
         void update() { count++; }
         void measure() { 
-            measurements["sigh"] << 1.0; 
-            measurements["x*sigh"] << 1.0;
+            measurements["sign"] << 1.0; 
+            measurements["x*sign"] << 1.0;
         }
         double fraction_completed() const { return double (count/nsweeps); }
  
