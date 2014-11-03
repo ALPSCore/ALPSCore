@@ -32,20 +32,6 @@ namespace alps {
 	        boost::optional<boost::mpi::communicator> comm;
 #endif
 	};
-
-#ifdef ALPS_HAVE_MPI
-		// TODO: remove this!
-        class ALPS_DECL stop_callback_mpi {
-        public:
-          stop_callback_mpi(boost::mpi::communicator const& cm, std::size_t timelimit);
-          bool operator()();
-        private:
-          boost::mpi::communicator comm;
-          boost::chrono::duration<std::size_t> limit;
-          alps::signal signals;
-          boost::chrono::high_resolution_clock::time_point start;
-	};
-#endif
 }
 
 #endif

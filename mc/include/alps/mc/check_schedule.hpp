@@ -29,11 +29,6 @@ namespace alps {
             return now > (last_check_time_ + next_check_);
         }
     
-        double check_interval() const
-        {
-            return next_check_.count();
-        }
-
         void update(double fraction)
         {
             time_point now = clock::now();
