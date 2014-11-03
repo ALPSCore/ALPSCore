@@ -36,8 +36,7 @@ int main(int argc, char *argv[]) {
             /* do nothing */ ;
         // else if (boost::filesystem::extension(options.input_file) == ".xml")
         //     parameters = alps::make_parameters_from_xml(options.input_file);
-        // else 
-        if (boost::filesystem::extension(options.input_file) == ".h5")
+        else if (boost::filesystem::extension(options.input_file) == ".h5")
             alps::hdf5::archive(options.input_file)["/parameters"] >> parameters;
         else
             parameters = alps::parameters_type<ising_sim>::type(options.input_file);
