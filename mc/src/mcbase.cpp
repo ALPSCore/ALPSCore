@@ -63,13 +63,13 @@ namespace alps {
     void mcbase::save(alps::hdf5::archive & ar) const {
         ar["/parameters"] << parameters;
         ar["measurements"] << measurements;
-        ar["checkpoint/engine"] << random;
+        ar["checkpoint"] << random;
     }
 
     void mcbase::load(alps::hdf5::archive & ar) {
         ar["/parameters"] >> parameters;
         ar["measurements"] >> measurements;
-        ar["checkpoint/engine"] >> random;
+        ar["checkpoint"] >> random;
     }
 
 }
