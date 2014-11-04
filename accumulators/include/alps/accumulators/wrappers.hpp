@@ -20,6 +20,7 @@
 
 #include <boost/mpl/vector.hpp>
 #include <boost/variant/variant.hpp>
+#include <boost/variant/apply_visitor.hpp>
 
 #include <typeinfo>
 #include <stdexcept>
