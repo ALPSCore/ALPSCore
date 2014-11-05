@@ -20,8 +20,8 @@ class sim1 : public alps::mcbase {
             count(0) 
         {
             measurements 
-                << alps::accumulators::RealObservable("sign") 
-                << alps::accumulators::RealObservable("x*sign");
+                << alps::accumulators::FullBinningAccumulator<double>("sign") 
+                << alps::accumulators::FullBinningAccumulator<double>("x*sign");
         }
  
         void update() { count++; }

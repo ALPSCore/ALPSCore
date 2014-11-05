@@ -11,8 +11,8 @@
 TEST(accumulator, count_feature){
 
 	alps::accumulators::accumulator_set measurements;
-	measurements << alps::accumulators::RealObservable("scalar")
-				 << alps::accumulators::RealVectorObservable("vector");
+	measurements << alps::accumulators::MeanAccumulator<double>("scalar")
+				 << alps::accumulators::MeanAccumulator<std::vector<double> >("vector");
 
 	for (int i = 1; i < 1001; ++i) {
 		measurements["scalar"] << i;

@@ -830,14 +830,13 @@ namespace alps {
         typedef impl::wrapper_set<accumulator_wrapper> accumulator_set;
         typedef impl::wrapper_set<result_wrapper> result_set;
 
-        // TODO: make this nicer ...
         namespace detail {
-    
-            template<typename T> struct PredefinedObservableBase {
+
+            template<typename T> struct AccumulatorBase {
                 typedef T accumulator_type;
                 typedef typename T::result_type result_type;
 
-                template<typename ArgumentPack> PredefinedObservableBase(ArgumentPack const& args) 
+                template<typename ArgumentPack> AccumulatorBase(ArgumentPack const& args) 
                     : name(args[accumulator_name])
                     , wrapper(new accumulator_wrapper(T(args)))
                 {}
@@ -846,118 +845,101 @@ namespace alps {
                 boost::shared_ptr<accumulator_wrapper> wrapper;
             };
 
-
-            template<typename T> struct PredefinedObservable : public PredefinedObservableBase<T> {
-                typedef typename T::accumulator_type accumulator_type;
-                typedef typename T::result_type result_type;
-                BOOST_PARAMETER_CONSTRUCTOR(
-                    PredefinedObservable, 
-                    (PredefinedObservableBase<T>),
-                    accumulator_keywords,
-                        (required (_accumulator_name, (std::string)))
-                        (optional 
-                            (_max_bin_number, (std::size_t))
-                        )
-                )
-            };
-
-            template<typename T> inline accumulator_set & operator<<(accumulator_set & set, const PredefinedObservable<T> & arg) {
-                set.insert(arg.name, arg.wrapper);
-                return set;
-            }
-
-            template<typename T> struct simple_observable_type
-                : public impl::Accumulator<T, error_tag, impl::Accumulator<T, mean_tag, impl::Accumulator<T, count_tag, impl::AccumulatorBase<T> > > >
-            {
-                typedef typename impl::Accumulator<T, error_tag, impl::Accumulator<T, mean_tag, impl::Accumulator<T, count_tag, impl::AccumulatorBase<T> > > > accumulator_type;
-                typedef typename impl::Result<T, error_tag, impl::Result<T, mean_tag, impl::Result<T, count_tag, impl::ResultBase<T> > > > result_type;
-                simple_observable_type(): base_type() {}
-                template<typename A> simple_observable_type(A const & arg): base_type(arg) {}
-                private:
-                    typedef impl::Accumulator<T, error_tag, impl::Accumulator<T, mean_tag, impl::Accumulator<T, count_tag, impl::AccumulatorBase<T> > > > base_type;
-            };
-
-            template<typename T> struct observable_type
-                : public impl::Accumulator<T, max_num_binning_tag, impl::Accumulator<T, binning_analysis_tag, simple_observable_type<T> > >
-            {
-                typedef typename impl::Accumulator<T, max_num_binning_tag, impl::Accumulator<T, binning_analysis_tag, typename simple_observable_type<T>::accumulator_type> > accumulator_type;
-                typedef typename impl::Result<T, max_num_binning_tag, impl::Result<T, binning_analysis_tag, typename simple_observable_type<T>::result_type> > result_type;
-                observable_type(): base_type() {}
-                template<typename A> observable_type(A const & arg): base_type(arg) {}
-                private:
-                    typedef impl::Accumulator<T, max_num_binning_tag, impl::Accumulator<T, binning_analysis_tag, simple_observable_type<T> > > base_type;
-            };
-
-            // template<typename T> struct signed_observable_type
-            //     : public impl::Accumulator<T, weight_holder_tag<observable_type<T> >, observable_type<T> >
-            // {
-            //     typedef typename impl::Accumulator<T, weight_holder_tag<observable_type<T> >, typename observable_type<T>::accumulator_type> accumulator_type;
-            //     typedef typename impl::Result<T, weight_holder_tag<observable_type<T> >, typename observable_type<T>::result_type> result_type;
-            //     signed_observable_type(): base_type() {}
-            //     template<typename A> signed_observable_type(A const & arg): base_type(arg) {}
-            //     private:
-            //         typedef impl::Accumulator<T, weight_holder_tag<observable_type<T> >, observable_type<T> > base_type;
-            // };
-
-            // template<typename T> struct signed_simple_observable_type
-            //     : public impl::Accumulator<T, weight_holder_tag<simple_observable_type<T> >, simple_observable_type<T> >
-            // {
-            //     typedef typename impl::Accumulator<T, weight_holder_tag<simple_observable_type<T> >, typename simple_observable_type<T>::accumulator_type> accumulator_type;
-            //     typedef typename impl::Result<T, weight_holder_tag<simple_observable_type<T> >, typename simple_observable_type<T>::result_type> result_type;
-            //     signed_simple_observable_type(): base_type() {}
-            //     template<typename A> signed_simple_observable_type(A const & arg): base_type(arg) {}
-            //     private:
-            //         typedef impl::Accumulator<T, weight_holder_tag<simple_observable_type<T> >, simple_observable_type<T> > base_type;
-            // };
         }
 
-        // MeanAccumulator
-        // NobinningAccumulator
-        // LogBinningAccumulator
-        // FullBinningAccumulator
+        template<typename T> struct MeanAccumulator : public detail::AccumulatorBase<
+            impl::Accumulator<T, mean_tag, impl::Accumulator<T, count_tag, impl::AccumulatorBase<T> > >
+        > {
+            typedef typename impl::Accumulator<T, mean_tag, impl::Accumulator<T, count_tag, impl::AccumulatorBase<T> > > accumulator_type;
+            typedef typename accumulator_type::result_type result_type;
+            BOOST_PARAMETER_CONSTRUCTOR(
+                MeanAccumulator, 
+                (detail::AccumulatorBase<accumulator_type>),
+                accumulator_keywords,
+                    (required (_accumulator_name, (std::string)))
+            )
 
-        // float
-        // double
-        // longdouble
+        };
 
-        // std::vector<float>
-        // std::vector<double>
-        // std::vector<longdouble>
+        template<typename T> struct NoBinningAccumulator : public detail::AccumulatorBase<
+            typename impl::Accumulator<T, error_tag, typename MeanAccumulator<T>::accumulator_type>
+        > {
+            typedef typename impl::Accumulator<T, error_tag, typename MeanAccumulator<T>::accumulator_type> accumulator_type;
+            typedef typename accumulator_type::result_type result_type;
+            BOOST_PARAMETER_CONSTRUCTOR(
+                NoBinningAccumulator, 
+                (detail::AccumulatorBase<accumulator_type>),
+                accumulator_keywords,
+                    (required (_accumulator_name, (std::string)))
+            )
 
-        typedef detail::PredefinedObservable<detail::simple_observable_type<double> > SimpleRealObservable;
-        typedef detail::PredefinedObservable<detail::simple_observable_type<std::vector<double> > > SimpleRealVectorObservable;
+        };        
 
-        typedef detail::PredefinedObservable<detail::observable_type<double> > RealObservable;
-        typedef detail::PredefinedObservable<detail::observable_type<std::vector<double> > > RealVectorObservable;
+        template<typename T> struct LogBinningAccumulator : public detail::AccumulatorBase<
+            typename impl::Accumulator<T, binning_analysis_tag, typename NoBinningAccumulator<T>::accumulator_type>
+        > {
+            typedef typename impl::Accumulator<T, binning_analysis_tag, typename NoBinningAccumulator<T>::accumulator_type> accumulator_type;
+            typedef typename accumulator_type::result_type result_type;
+            BOOST_PARAMETER_CONSTRUCTOR(
+                LogBinningAccumulator, 
+                (detail::AccumulatorBase<accumulator_type>),
+                accumulator_keywords,
+                    (required (_accumulator_name, (std::string)))
+            )
 
-        // typedef detail::PredefinedObservable<detail::signed_observable_type<double> > SignedRealObservable;
-        // typedef detail::PredefinedObservable<detail::signed_observable_type<std::vector<double> > > SignedRealVectorObservable;
+        }; 
 
-        // typedef detail::PredefinedObservable<detail::signed_simple_observable_type<double> > SignedSimpleRealObservable;
-        // typedef detail::PredefinedObservable<detail::signed_simple_observable_type<std::vector<double> > > SignedSimpleRealVectorObservable;
+        template<typename T> struct FullBinningAccumulator : public detail::AccumulatorBase<
+            typename impl::Accumulator<T, max_num_binning_tag, typename LogBinningAccumulator<T>::accumulator_type>
+        > {
+            typedef typename impl::Accumulator<T, max_num_binning_tag, typename LogBinningAccumulator<T>::accumulator_type> accumulator_type;
+            typedef typename accumulator_type::result_type result_type;
+            BOOST_PARAMETER_CONSTRUCTOR(
+                FullBinningAccumulator, 
+                (detail::AccumulatorBase<accumulator_type>),
+                accumulator_keywords,
+                    (required (_accumulator_name, (std::string)))
+                    (optional
+                        (_max_bin_number, (std::size_t))
+                    )
+            )
 
-        // TODO implement: RealTimeSeriesObservable
+        }; 
+
+        #define ALPS_ACCUMULATOR_REGISTER_OPERATOR(A)                                                               \
+            template<typename T> inline accumulator_set & operator<<(accumulator_set & set, const A <T> & arg) {    \
+                set.insert(arg.name, arg.wrapper);                                                                  \
+                return set;                                                                                         \
+            }
+
+        ALPS_ACCUMULATOR_REGISTER_OPERATOR(MeanAccumulator)
+        ALPS_ACCUMULATOR_REGISTER_OPERATOR(NoBinningAccumulator)
+        ALPS_ACCUMULATOR_REGISTER_OPERATOR(LogBinningAccumulator)
+        ALPS_ACCUMULATOR_REGISTER_OPERATOR(FullBinningAccumulator)
+        #undef ALPS_ACCUMULATOR_REGISTER_OPERATOR
 
         namespace detail {
 
             inline void register_predefined_serializable_type() {
-                accumulator_set::register_serializable_type<SimpleRealObservable::accumulator_type>(true);
-                accumulator_set::register_serializable_type<SimpleRealVectorObservable::accumulator_type>(true);
-                accumulator_set::register_serializable_type<RealObservable::accumulator_type>(true);
-                accumulator_set::register_serializable_type<RealVectorObservable::accumulator_type>(true);
-                // accumulator_set::register_serializable_type<SignedRealObservable::accumulator_type>(true);
-                // accumulator_set::register_serializable_type<SignedRealVectorObservable::accumulator_type>(true);
-                // accumulator_set::register_serializable_type<SignedSimpleRealObservable::accumulator_type>(true);
-                // accumulator_set::register_serializable_type<SignedSimpleRealVectorObservable::accumulator_type>(true);
+                #define ALPS_ACCUMULATOR_REGISTER_ACCUMULATOR(A)                                                    \
+                    accumulator_set::register_serializable_type<A::accumulator_type>(true);                         \
+                    result_set::register_serializable_type<A::result_type>(true);
 
-                result_set::register_serializable_type<SimpleRealObservable::result_type>(true);
-                result_set::register_serializable_type<SimpleRealVectorObservable::result_type>(true);
-                result_set::register_serializable_type<RealObservable::result_type>(true);
-                result_set::register_serializable_type<RealVectorObservable::result_type>(true);
-                // result_set::register_serializable_type<SignedRealObservable::result_type>(true);
-                // result_set::register_serializable_type<SignedRealVectorObservable::result_type>(true);
-                // result_set::register_serializable_type<SignedSimpleRealObservable::result_type>(true);
-                // result_set::register_serializable_type<SignedSimpleRealVectorObservable::result_type>(true);
+                #define ALPS_ACCUMULATOR_REGISTER_TYPE(T)                                                           \
+                    ALPS_ACCUMULATOR_REGISTER_ACCUMULATOR(MeanAccumulator<T>)                                       \
+                    ALPS_ACCUMULATOR_REGISTER_ACCUMULATOR(NoBinningAccumulator<T>)                                  \
+                    ALPS_ACCUMULATOR_REGISTER_ACCUMULATOR(LogBinningAccumulator<T>)                                 \
+                    ALPS_ACCUMULATOR_REGISTER_ACCUMULATOR(FullBinningAccumulator<T>)
+
+                // ALPS_ACCUMULATOR_REGISTER_TYPE(float)
+                ALPS_ACCUMULATOR_REGISTER_TYPE(double)
+                // ALPS_ACCUMULATOR_REGISTER_TYPE(long double)
+                // ALPS_ACCUMULATOR_REGISTER_TYPE(std::vector<float>)
+                ALPS_ACCUMULATOR_REGISTER_TYPE(std::vector<double>)
+                // ALPS_ACCUMULATOR_REGISTER_TYPE(std::vector<long double>)
+
+                #undef ALPS_ACCUMULATOR_REGISTER_TYPE
+                #undef ALPS_ACCUMULATOR_REGISTER_ACCUMULATOR
             }
         }
     }

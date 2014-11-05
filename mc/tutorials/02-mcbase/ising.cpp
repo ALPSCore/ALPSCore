@@ -20,11 +20,11 @@ ising_sim::ising_sim(parameters_type const & parms, std::size_t seed_offset)
     for(int i = 0; i < length; ++i)
         spins[i] = (random() < 0.5 ? 1 : -1);
     measurements
-        << alps::accumulators::RealObservable("Energy")
-        << alps::accumulators::RealObservable("Magnetization")
-        << alps::accumulators::RealObservable("Magnetization^2")
-        << alps::accumulators::RealObservable("Magnetization^4")
-        << alps::accumulators::RealVectorObservable("Correlations")
+        << alps::accumulators::FullBinningAccumulator<double>("Energy")
+        << alps::accumulators::FullBinningAccumulator<double>("Magnetization")
+        << alps::accumulators::FullBinningAccumulator<double>("Magnetization^2")
+        << alps::accumulators::FullBinningAccumulator<double>("Magnetization^4")
+        << alps::accumulators::FullBinningAccumulator<std::vector<double> >("Correlations")
     ;
 }
 

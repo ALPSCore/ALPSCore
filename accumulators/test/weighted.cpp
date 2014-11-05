@@ -10,8 +10,8 @@
 
 TEST(accumulators, WeightedObservable){
 	alps::accumulators::accumulator_set measurements;
-	measurements << alps::accumulators::RealObservable("sign")
-				 << alps::accumulators::RealObservable("x*sign");
+	measurements << alps::accumulators::FullBinningAccumulator<double>("sign")
+				 << alps::accumulators::FullBinningAccumulator<double>("x*sign");
 
 	for (int i = 1; i < 1000; ++i) {
 		double sign = i % 3 ? 1. : -1.;

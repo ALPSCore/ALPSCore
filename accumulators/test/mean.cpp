@@ -12,8 +12,8 @@
 TEST(accumulator, mean_feature_scalar){
 
 	alps::accumulators::accumulator_set measurements;
-	measurements << alps::accumulators::RealObservable("obs1")
-				 << alps::accumulators::RealObservable("obs2");
+	measurements << alps::accumulators::MeanAccumulator<double>("obs1")
+				 << alps::accumulators::MeanAccumulator<double>("obs2");
 
 	for (int i = 1; i < 1000; ++i) {
 		measurements["obs1"] << 1.;
@@ -50,16 +50,28 @@ void meas_test_body(alps::accumulators::accumulator_set &measurements){
           EXPECT_EQ(mean_vec_2[i] , 500.);
         }
 }
-TEST(accumulator, mean_feature_vector_RealVectorObservable){
+TEST(accumulator, mean_feature_vector_MeanObserbale){
 	alps::accumulators::accumulator_set measurements;
-	measurements << alps::accumulators::RealVectorObservable("obs1")
-				 << alps::accumulators::RealVectorObservable("obs2");
+	measurements << alps::accumulators::MeanAccumulator<std::vector<double> >("obs1")
+				 << alps::accumulators::MeanAccumulator<std::vector<double> >("obs2");
   meas_test_body(measurements);
 }
-TEST(accumulator, mean_feature_vector_SimpleRealVectorObservable){
+TEST(accumulator, mean_feature_vector_NoBinningAccumulator){
 	alps::accumulators::accumulator_set measurements;
-	measurements << alps::accumulators::SimpleRealVectorObservable("obs1")
-				 << alps::accumulators::SimpleRealVectorObservable("obs2");
+	measurements << alps::accumulators::NoBinningAccumulator<std::vector<double> >("obs1")
+				 << alps::accumulators::NoBinningAccumulator<std::vector<double> >("obs2");
+  meas_test_body(measurements);
+}
+TEST(accumulator, mean_feature_vector_LogBinningAccumulator){
+	alps::accumulators::accumulator_set measurements;
+	measurements << alps::accumulators::LogBinningAccumulator<std::vector<double> >("obs1")
+				 << alps::accumulators::LogBinningAccumulator<std::vector<double> >("obs2");
+  meas_test_body(measurements);
+}
+TEST(accumulator, mean_feature_vector_FullBinningAccumulator){
+	alps::accumulators::accumulator_set measurements;
+	measurements << alps::accumulators::FullBinningAccumulator<std::vector<double> >("obs1")
+				 << alps::accumulators::FullBinningAccumulator<std::vector<double> >("obs2");
   meas_test_body(measurements);
 }
 

@@ -25,7 +25,7 @@ class sim1 : public alps::mcbase {
             nsweeps(p["nsweeps"]), 
             count(0) 
         {
-            measurements << alps::accumulators::RealVectorObservable("e1");
+            measurements << alps::accumulators::FullBinningAccumulator<std::vector<double> >("e1");
         }
  
         void update() { 

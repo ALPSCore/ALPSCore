@@ -160,11 +160,11 @@ namespace alps {
         #undef ALPS_NUMERIC_OPERATOR_EQ
 
         //------------------- infinity -------------------
-        template<> struct inf<std::vector<double> > {
-            operator std::vector<double> const() {
-                std::vector<double> retval;
-                BOOST_FOREACH(double & arg, retval) {
-                    arg = std::numeric_limits<double>::infinity();
+        template<typename T> struct inf<std::vector<T> > {
+            operator std::vector<T> const() {
+                std::vector<T> retval;
+                BOOST_FOREACH(T & arg, retval) {
+                    arg = (T)inf<T>();
                 }
                 return retval;
             }
@@ -275,7 +275,7 @@ namespace alps {
         #define ALPS_NUMERIC_IMPLEMENT_FUNCTION(FUNCTION_NAME)                                                          \
             template<typename T> std::vector<T> FUNCTION_NAME (std::vector<T> arg) {                                    \
                 using std:: FUNCTION_NAME ;                                                                             \
-                std::transform(arg.begin(), arg.end(), arg.begin(), static_cast<double (*)(double)>(& FUNCTION_NAME )); \
+                std::transform(arg.begin(), arg.end(), arg.begin(), static_cast<T (*)(T)>(& FUNCTION_NAME )); \
                 return arg;                                                                                             \
             }
 

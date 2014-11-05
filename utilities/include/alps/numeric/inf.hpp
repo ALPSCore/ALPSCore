@@ -7,6 +7,8 @@
 #ifndef ALPS_NUMERIC_INF_HEADER
 #define ALPS_NUMERIC_INF_HEADER
 
+#include <alps/utilities/type_wrapper.hpp>
+
 #include <limits>
 
 namespace alps {
@@ -14,11 +16,16 @@ namespace alps {
 
 		template<typename T> struct inf {};
 
-		template<> struct inf<double> {
-    		operator double() const {
-    			return std::numeric_limits<double>::infinity();
-    		}
-    	};
+    	#define ALPS_NUMERIC_INF_OVERLOADS(T)						\
+			template<> struct inf< T > {							\
+	    		operator T () const {								\
+	    			return std::numeric_limits< T >::infinity();	\
+	    		}													\
+	    	};
+	    ALPS_NUMERIC_INF_OVERLOADS(float)
+	    ALPS_NUMERIC_INF_OVERLOADS(double)
+	    ALPS_NUMERIC_INF_OVERLOADS(detail::type_wrapper<long double>::type)
+	    #undef ALPS_NUMERIC_INF_OVERLOADS
 
 	}
 }
