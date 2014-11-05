@@ -17,6 +17,16 @@ namespace alps {
         alps::signal::listen();
     }
 
+    // static void mcbase::define_parameters(parameters_type & parameters) {
+    //     parameters
+    //         .define<void>("continue,c", "load simulation from checkpoint")
+    //         .define<std::size_t>("timelimit,T", 0, "time limit for the simulation")
+    //         .define<std::size_t>("Tmin,i", 600, "maximum time to check if simulation has finished")
+    //         .define<std::size_t>("Tmax,a", "number of sweeps for thermalization")
+    //         .define<std::string>("outputfile", "name of the output file")
+    //     ;
+    // }
+
     void mcbase::save(boost::filesystem::path const & filename) const {
         alps::hdf5::archive ar(filename, "w");
         ar["/simulation/realizations/0/clones/0"] << *this;

@@ -8,6 +8,17 @@
 
 #include <boost/lambda/lambda.hpp>
 
+// static void ising_sim::define_parameters(parameters_type & parameters) {
+//     alps::mcbase::define_parameters(parameters);
+//     parameters.description("1D ising simulation")
+//         .define<int>("L", 50, "lenth of the periodic ising chain")
+//         .define<int>("SWEEPS", 1000, "maximum number of sweeps")
+//         .define<int>("THERMALIZATION", "number of sweeps for thermalization")
+//         .define<double>("T", "temperature of the system")
+//     ;
+// }
+
+
 ising_sim::ising_sim(parameters_type const & parms, std::size_t seed_offset)
     : alps::mcbase(parms, seed_offset)
     , length(parameters["L"])

@@ -21,6 +21,11 @@
 int main(int argc, char *argv[]) {
 
     try {
+
+        // alps::parameters_type<ising_sim>::type parameters;        
+        // ising_sim::define_parameters(parameters);
+        // parameters.parse(argc, argv);
+
         alps::parseargs options(argc, argv);
         std::string checkpoint_file = options.input_file.substr(0, options.input_file.find_last_of('.')) +  ".clone0.h5";
 
@@ -37,6 +42,7 @@ int main(int argc, char *argv[]) {
 
         ising_sim sim(parameters);
 
+        // if (parameters["continue"].as<bool>())
         if (options.resume)
             sim.load(checkpoint_file);
 
