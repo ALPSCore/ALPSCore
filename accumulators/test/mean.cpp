@@ -27,6 +27,8 @@ TEST(accumulator, mean_feature_scalar){
 	EXPECT_EQ(results["obs2"].mean<double>() , 500.);
 }
 
+typedef long double longdouble;
+
 void meas_test_body(alps::accumulators::accumulator_set &measurements){
 
         int L=10;
@@ -50,30 +52,25 @@ void meas_test_body(alps::accumulators::accumulator_set &measurements){
           EXPECT_EQ(mean_vec_2[i] , 500.);
         }
 }
-TEST(accumulator, mean_feature_vector_MeanObserbale){
-	alps::accumulators::accumulator_set measurements;
-	measurements << alps::accumulators::MeanAccumulator<std::vector<double> >("obs1")
-				 << alps::accumulators::MeanAccumulator<std::vector<double> >("obs2");
-  meas_test_body(measurements);
-}
-TEST(accumulator, mean_feature_vector_NoBinningAccumulator){
-	alps::accumulators::accumulator_set measurements;
-	measurements << alps::accumulators::NoBinningAccumulator<std::vector<double> >("obs1")
-				 << alps::accumulators::NoBinningAccumulator<std::vector<double> >("obs2");
-  meas_test_body(measurements);
-}
-TEST(accumulator, mean_feature_vector_LogBinningAccumulator){
-	alps::accumulators::accumulator_set measurements;
-	measurements << alps::accumulators::LogBinningAccumulator<std::vector<double> >("obs1")
-				 << alps::accumulators::LogBinningAccumulator<std::vector<double> >("obs2");
-  meas_test_body(measurements);
-}
-TEST(accumulator, mean_feature_vector_FullBinningAccumulator){
-	alps::accumulators::accumulator_set measurements;
-	measurements << alps::accumulators::FullBinningAccumulator<std::vector<double> >("obs1")
-				 << alps::accumulators::FullBinningAccumulator<std::vector<double> >("obs2");
-  meas_test_body(measurements);
-}
+#define ALPS_TEST_RUN_MEAN_TEST(A, T, N)														\
+	TEST(accumulator, mean_feature_vector_ ## A ## N){											\
+		alps::accumulators::accumulator_set measurements;										\
+		measurements << alps::accumulators:: A < T >("obs1")									\
+					 << alps::accumulators:: A < T >("obs2");									\
+	  meas_test_body(measurements);																\
+	}
+#define ALPS_TEST_RUN_MEAN_TEST_EACH_TYPE(A)													\
+	ALPS_TEST_RUN_MEAN_TEST(A, std::vector<float>, _f)											\
+	ALPS_TEST_RUN_MEAN_TEST(A, std::vector<double>, _d)											\
+	ALPS_TEST_RUN_MEAN_TEST(A, std::vector<longdouble>, _ld)
+
+ALPS_TEST_RUN_MEAN_TEST_EACH_TYPE(MeanAccumulator)
+ALPS_TEST_RUN_MEAN_TEST_EACH_TYPE(NoBinningAccumulator)
+ALPS_TEST_RUN_MEAN_TEST_EACH_TYPE(LogBinningAccumulator)
+ALPS_TEST_RUN_MEAN_TEST_EACH_TYPE(FullBinningAccumulator)
+
+#undef ALPS_TEST_RUN_MEAN_TEST
+#undef ALPS_TEST_RUN_MEAN_TEST_EACH_TYPE
 
 int main(int argc, char **argv) 
 {

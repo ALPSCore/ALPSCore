@@ -74,6 +74,7 @@ namespace alps {
 
                 public:
                     typedef typename alps::accumulators::error_type<B>::type error_type;
+                    typedef typename alps::hdf5::scalar_type<error_type>::type error_scalar_type;
                     typedef Result<T, error_tag, typename B::result_type> result_type;
 
                     Accumulator(): B(), m_sum2(T()) {}
@@ -92,7 +93,7 @@ namespace alps {
                         using alps::numeric::operator*;
 
                         // TODO: make library for scalar type
-                        typename alps::hdf5::scalar_type<error_type>::type cnt = B::count();
+                        error_scalar_type cnt = B::count();
                         return sqrt((m_sum2 / cnt - B::mean() * B::mean()) / (cnt - 1));
                     }
 
@@ -125,7 +126,7 @@ namespace alps {
                         error_type error;
                         ar["mean/error"] >> error;
                         // TODO: make library for scalar type
-                        typename alps::hdf5::scalar_type<error_type>::type cnt = B::count();
+                        error_scalar_type cnt = B::count();
                         m_sum2 = (error * error * (cnt - 1) + B::mean() * B::mean()) * cnt;
                     }
 
@@ -177,6 +178,7 @@ namespace alps {
 
                 public:
                     typedef typename alps::accumulators::error_type<B>::type error_type;
+                    typedef typename alps::hdf5::scalar_type<error_type>::type error_scalar_type;
 
                     Result() 
                         : B()
@@ -281,18 +283,18 @@ namespace alps {
 
                     NUMERIC_FUNCTION_IMPLEMENTATION(sin, abs(cos(this->mean()) * m_error))
                     NUMERIC_FUNCTION_IMPLEMENTATION(cos, abs(-sin(this->mean()) * m_error))
-                    NUMERIC_FUNCTION_IMPLEMENTATION(tan, abs(1. / (cos(this->mean()) * cos(this->mean())) * m_error))
+                    NUMERIC_FUNCTION_IMPLEMENTATION(tan, abs(error_scalar_type(1) / (cos(this->mean()) * cos(this->mean())) * m_error))
                     NUMERIC_FUNCTION_IMPLEMENTATION(sinh, abs(cosh(this->mean()) * m_error))
                     NUMERIC_FUNCTION_IMPLEMENTATION(cosh, abs(sinh(this->mean()) * m_error))
-                    NUMERIC_FUNCTION_IMPLEMENTATION(tanh, abs(1. / (cosh(this->mean()) * cosh(this->mean())) * m_error))
-                    NUMERIC_FUNCTION_IMPLEMENTATION(asin, abs(1. / sqrt(1. - this->mean() * this->mean()) * m_error))
-                    NUMERIC_FUNCTION_IMPLEMENTATION(acos, abs(-1. / sqrt(1. - this->mean() * this->mean()) * m_error))
-                    NUMERIC_FUNCTION_IMPLEMENTATION(atan, abs(1. / (1. + this->mean() * this->mean()) * m_error))
+                    NUMERIC_FUNCTION_IMPLEMENTATION(tanh, abs(error_scalar_type(1) / (cosh(this->mean()) * cosh(this->mean())) * m_error))
+                    NUMERIC_FUNCTION_IMPLEMENTATION(asin, abs(error_scalar_type(1) / sqrt(error_scalar_type(1) - this->mean() * this->mean()) * m_error))
+                    NUMERIC_FUNCTION_IMPLEMENTATION(acos, abs(error_scalar_type(-1) / sqrt(error_scalar_type(1) - this->mean() * this->mean()) * m_error))
+                    NUMERIC_FUNCTION_IMPLEMENTATION(atan, abs(error_scalar_type(1) / (error_scalar_type(1) + this->mean() * this->mean()) * m_error))
                     // abs does not change the error, so nothing has to be done ...
-                    NUMERIC_FUNCTION_IMPLEMENTATION(sq, abs(2. * this->mean() * m_error))
-                    NUMERIC_FUNCTION_IMPLEMENTATION(sqrt, abs(m_error / (2. * sqrt(this->mean()))))
-                    NUMERIC_FUNCTION_IMPLEMENTATION(cb, abs(3. * sq(this->mean()) * m_error))
-                    NUMERIC_FUNCTION_IMPLEMENTATION(cbrt, abs(m_error / (3. * sq(pow(this->mean(),1. / 3)))))
+                    NUMERIC_FUNCTION_IMPLEMENTATION(sq, abs(error_scalar_type(2) * this->mean() * m_error))
+                    NUMERIC_FUNCTION_IMPLEMENTATION(sqrt, abs(m_error / (error_scalar_type(2) * sqrt(this->mean()))))
+                    NUMERIC_FUNCTION_IMPLEMENTATION(cb, abs(error_scalar_type(3) * sq(this->mean()) * m_error))
+                    NUMERIC_FUNCTION_IMPLEMENTATION(cbrt, abs(m_error / (error_scalar_type(3) * sq(pow(this->mean(), 1. / 3)))))
                     NUMERIC_FUNCTION_IMPLEMENTATION(exp, exp(this->mean()) * m_error)
                     NUMERIC_FUNCTION_IMPLEMENTATION(log, abs(m_error / this->mean()))
 

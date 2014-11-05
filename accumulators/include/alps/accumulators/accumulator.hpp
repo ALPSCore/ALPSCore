@@ -11,7 +11,7 @@
 #include <alps/hdf5/vector.hpp>
 
 #ifndef ALPS_ACCUMULATOR_VALUE_TYPES
-    #define ALPS_ACCUMULATOR_VALUE_TYPES double, std::vector<double>
+    #define ALPS_ACCUMULATOR_VALUE_TYPES float, double, long double, std::vector<float>, std::vector<double>, std::vector<long double>
     // #define ALPS_ACCUMULATOR_VALUE_TYPES double, std::vector<double>, alps::multi_array<double, 2>, alps::multi_array<double, 3>
 #endif
 
@@ -931,12 +931,12 @@ namespace alps {
                     ALPS_ACCUMULATOR_REGISTER_ACCUMULATOR(LogBinningAccumulator<T>)                                 \
                     ALPS_ACCUMULATOR_REGISTER_ACCUMULATOR(FullBinningAccumulator<T>)
 
-                // ALPS_ACCUMULATOR_REGISTER_TYPE(float)
+                ALPS_ACCUMULATOR_REGISTER_TYPE(float)
                 ALPS_ACCUMULATOR_REGISTER_TYPE(double)
-                // ALPS_ACCUMULATOR_REGISTER_TYPE(long double)
-                // ALPS_ACCUMULATOR_REGISTER_TYPE(std::vector<float>)
+                ALPS_ACCUMULATOR_REGISTER_TYPE(long double)
+                ALPS_ACCUMULATOR_REGISTER_TYPE(std::vector<float>)
                 ALPS_ACCUMULATOR_REGISTER_TYPE(std::vector<double>)
-                // ALPS_ACCUMULATOR_REGISTER_TYPE(std::vector<long double>)
+                ALPS_ACCUMULATOR_REGISTER_TYPE(std::vector<long double>)
 
                 #undef ALPS_ACCUMULATOR_REGISTER_TYPE
                 #undef ALPS_ACCUMULATOR_REGISTER_ACCUMULATOR
