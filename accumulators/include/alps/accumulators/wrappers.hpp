@@ -12,7 +12,7 @@
 #include <alps/accumulators/feature/mean.hpp>
 #include <alps/accumulators/feature/error.hpp>
 #include <alps/accumulators/feature/count.hpp>
-#include <alps/accumulators/feature/weight.hpp>
+// #include <alps/accumulators/feature/weight.hpp>
 #include <alps/accumulators/feature/max_num_binning.hpp>
 #include <alps/accumulators/feature/binning_analysis.hpp>
 
@@ -35,20 +35,21 @@ namespace alps {
                 typedef T value_type;
             };
 
-            typedef boost::make_variant_over<
-                boost::mpl::vector<ALPS_ACCUMULATOR_VALUE_TYPES>
-            >::type weight_variant_type;
+            // typedef boost::make_variant_over<
+            //     boost::mpl::vector<ALPS_ACCUMULATOR_VALUE_TYPES>
+            // >::type weight_variant_type;
         }
 
         template<typename T> class base_wrapper : public 
-            impl::BaseWrapper<T, weight_tag, 
+            // impl::BaseWrapper<T, weight_tag, 
             impl::BaseWrapper<T, max_num_binning_tag, 
             impl::BaseWrapper<T, binning_analysis_tag, 
             impl::BaseWrapper<T, error_tag, 
             impl::BaseWrapper<T, mean_tag, 
             impl::BaseWrapper<T, count_tag, 
             detail::value_wrapper<T>
-        > > > > > > {
+        // > 
+        > > > > > {
 
             public:
                 typedef typename detail::value_wrapper<T>::value_type value_type;
@@ -56,7 +57,7 @@ namespace alps {
                 virtual ~base_wrapper() {}
 
                 virtual void operator()(value_type const & value) = 0;
-                virtual void operator()(value_type const & value, detail::weight_variant_type const & weight) = 0;
+                // virtual void operator()(value_type const & value, detail::weight_variant_type const & weight) = 0;
 
                 virtual void save(hdf5::archive & ar) const = 0;
                 virtual void load(hdf5::archive & ar) = 0;
@@ -120,37 +121,43 @@ namespace alps {
         }
 
         template<typename A> class derived_wrapper : public 
-            impl::DerivedWrapper<A, weight_tag, 
+            // impl::DerivedWrapper<A, weight_tag, 
             impl::DerivedWrapper<A, max_num_binning_tag, 
             impl::DerivedWrapper<A, binning_analysis_tag, 
             impl::DerivedWrapper<A, error_tag, 
             impl::DerivedWrapper<A, mean_tag, 
             impl::DerivedWrapper<A, count_tag, 
-        detail::foundation_wrapper<A> > > > > > > {
+        detail::foundation_wrapper<A>
+        // > 
+        > > > > > {
 
             typedef typename detail::value_wrapper<typename value_type<A>::type>::value_type value_type;
             
             public:
                 derived_wrapper()
                     : 
-                        impl::DerivedWrapper<A, weight_tag, 
+                        // impl::DerivedWrapper<A, weight_tag, 
                         impl::DerivedWrapper<A, max_num_binning_tag, 
                         impl::DerivedWrapper<A, binning_analysis_tag, 
                         impl::DerivedWrapper<A, error_tag, 
                         impl::DerivedWrapper<A, mean_tag, 
                         impl::DerivedWrapper<A, count_tag, 
-                    detail::foundation_wrapper<A> > > > > > >() 
+                    detail::foundation_wrapper<A> 
+                    // > 
+                    > > > > >() 
                 {}
 
                 derived_wrapper(A const & arg)
                     : 
-                        impl::DerivedWrapper<A, weight_tag, 
+                        // impl::DerivedWrapper<A, weight_tag, 
                         impl::DerivedWrapper<A, max_num_binning_tag, 
                         impl::DerivedWrapper<A, binning_analysis_tag, 
                         impl::DerivedWrapper<A, error_tag, 
                         impl::DerivedWrapper<A, mean_tag, 
                         impl::DerivedWrapper<A, count_tag, 
-                    detail::foundation_wrapper<A> > > > > > >(arg) 
+                    detail::foundation_wrapper<A> 
+                    // > 
+                    > > > > >(arg) 
                 {}
 
                 A & extract() {
@@ -175,9 +182,9 @@ namespace alps {
                     value_type const & value;
                 };
             public:
-                void operator()(value_type const & value, detail::weight_variant_type const & weight) {
-                    boost::apply_visitor(call_2_visitor<A>(this->m_data, value), weight);
-                }
+                // void operator()(value_type const & value, detail::weight_variant_type const & weight) {
+                //     boost::apply_visitor(call_2_visitor<A>(this->m_data, value), weight);
+                // }
 
                 void save(hdf5::archive & ar) const { 
                     ar[""] = this->m_data; 

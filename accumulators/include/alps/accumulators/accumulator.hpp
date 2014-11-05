@@ -16,7 +16,7 @@
 #endif
 
 #include <alps/accumulators/wrappers.hpp>
-#include <alps/accumulators/feature/weight_holder.hpp>
+// #include <alps/accumulators/feature/weight_holder.hpp>
 
 #include <alps/hdf5/archive.hpp>
 
@@ -478,30 +478,30 @@ namespace alps {
                     return (*this);
                 }
 
-            // operator(T, W)
-            private:
-                template<typename T, typename W> struct call_2_visitor: public boost::static_visitor<> {
-                    call_2_visitor(T const & v, W const & w) : value(v), weight(w) {}
-                    template<typename X> void apply(typename boost::enable_if<
-                        typename detail::is_valid_argument<T, typename value_type<X>::type>::type, X &
-                    >::type arg) const {
-                        arg(value, weight);
-                    }
-                    template<typename X> void apply(typename boost::disable_if<
-                        typename detail::is_valid_argument<T, typename value_type<X>::type>::type, X &
-                    >::type arg) const {
-                        throw std::logic_error(std::string("cannot convert: ") + typeid(T).name() + " to " + typeid(typename value_type<X>::type).name() + ALPS_STACKTRACE);
-                    }
-                    template<typename X> void operator()(X & arg) const {
-                        apply<typename X::element_type>(*arg);
-                    }
-                    T const & value;
-                    detail::weight_variant_type weight;
-                };
-            public:
-                template<typename T, typename W> void operator()(T const & value, W const & weight) {
-                    boost::apply_visitor(call_2_visitor<T, W>(value, weight), m_variant);
-                }
+            // // operator(T, W)
+            // private:
+            //     template<typename T, typename W> struct call_2_visitor: public boost::static_visitor<> {
+            //         call_2_visitor(T const & v, W const & w) : value(v), weight(w) {}
+            //         template<typename X> void apply(typename boost::enable_if<
+            //             typename detail::is_valid_argument<T, typename value_type<X>::type>::type, X &
+            //         >::type arg) const {
+            //             arg(value, weight);
+            //         }
+            //         template<typename X> void apply(typename boost::disable_if<
+            //             typename detail::is_valid_argument<T, typename value_type<X>::type>::type, X &
+            //         >::type arg) const {
+            //             throw std::logic_error(std::string("cannot convert: ") + typeid(T).name() + " to " + typeid(typename value_type<X>::type).name() + ALPS_STACKTRACE);
+            //         }
+            //         template<typename X> void operator()(X & arg) const {
+            //             apply<typename X::element_type>(*arg);
+            //         }
+            //         T const & value;
+            //         detail::weight_variant_type weight;
+            //     };
+            // public:
+            //     template<typename T, typename W> void operator()(T const & value, W const & weight) {
+            //         boost::apply_visitor(call_2_visitor<T, W>(value, weight), m_variant);
+            //     }
 
             // operator=
             private:
@@ -803,7 +803,7 @@ namespace alps {
                             os << it->first << ": " << *(it->second) << std::endl;
                     }
 
-                    void reset(bool=true /* deprecated flag */) { // TODO: Do we really want this flag?
+                    void reset() {
                         for(iterator it = begin(); it != end(); ++it)
                             it->second->reset();
                     }
@@ -888,28 +888,41 @@ namespace alps {
                     typedef impl::Accumulator<T, max_num_binning_tag, impl::Accumulator<T, binning_analysis_tag, simple_observable_type<T> > > base_type;
             };
 
-            template<typename T> struct signed_observable_type
-                : public impl::Accumulator<T, weight_holder_tag<observable_type<T> >, observable_type<T> >
-            {
-                typedef typename impl::Accumulator<T, weight_holder_tag<observable_type<T> >, typename observable_type<T>::accumulator_type> accumulator_type;
-                typedef typename impl::Result<T, weight_holder_tag<observable_type<T> >, typename observable_type<T>::result_type> result_type;
-                signed_observable_type(): base_type() {}
-                template<typename A> signed_observable_type(A const & arg): base_type(arg) {}
-                private:
-                    typedef impl::Accumulator<T, weight_holder_tag<observable_type<T> >, observable_type<T> > base_type;
-            };
+            // template<typename T> struct signed_observable_type
+            //     : public impl::Accumulator<T, weight_holder_tag<observable_type<T> >, observable_type<T> >
+            // {
+            //     typedef typename impl::Accumulator<T, weight_holder_tag<observable_type<T> >, typename observable_type<T>::accumulator_type> accumulator_type;
+            //     typedef typename impl::Result<T, weight_holder_tag<observable_type<T> >, typename observable_type<T>::result_type> result_type;
+            //     signed_observable_type(): base_type() {}
+            //     template<typename A> signed_observable_type(A const & arg): base_type(arg) {}
+            //     private:
+            //         typedef impl::Accumulator<T, weight_holder_tag<observable_type<T> >, observable_type<T> > base_type;
+            // };
 
-            template<typename T> struct signed_simple_observable_type
-                : public impl::Accumulator<T, weight_holder_tag<simple_observable_type<T> >, simple_observable_type<T> >
-            {
-                typedef typename impl::Accumulator<T, weight_holder_tag<simple_observable_type<T> >, typename simple_observable_type<T>::accumulator_type> accumulator_type;
-                typedef typename impl::Result<T, weight_holder_tag<simple_observable_type<T> >, typename simple_observable_type<T>::result_type> result_type;
-                signed_simple_observable_type(): base_type() {}
-                template<typename A> signed_simple_observable_type(A const & arg): base_type(arg) {}
-                private:
-                    typedef impl::Accumulator<T, weight_holder_tag<simple_observable_type<T> >, simple_observable_type<T> > base_type;
-            };
+            // template<typename T> struct signed_simple_observable_type
+            //     : public impl::Accumulator<T, weight_holder_tag<simple_observable_type<T> >, simple_observable_type<T> >
+            // {
+            //     typedef typename impl::Accumulator<T, weight_holder_tag<simple_observable_type<T> >, typename simple_observable_type<T>::accumulator_type> accumulator_type;
+            //     typedef typename impl::Result<T, weight_holder_tag<simple_observable_type<T> >, typename simple_observable_type<T>::result_type> result_type;
+            //     signed_simple_observable_type(): base_type() {}
+            //     template<typename A> signed_simple_observable_type(A const & arg): base_type(arg) {}
+            //     private:
+            //         typedef impl::Accumulator<T, weight_holder_tag<simple_observable_type<T> >, simple_observable_type<T> > base_type;
+            // };
         }
+
+        // MeanAccumulator
+        // NobinningAccumulator
+        // LogBinningAccumulator
+        // FullBinningAccumulator
+
+        // float
+        // double
+        // longdouble
+
+        // std::vector<float>
+        // std::vector<double>
+        // std::vector<longdouble>
 
         typedef detail::PredefinedObservable<detail::simple_observable_type<double> > SimpleRealObservable;
         typedef detail::PredefinedObservable<detail::simple_observable_type<std::vector<double> > > SimpleRealVectorObservable;
