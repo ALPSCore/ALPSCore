@@ -7,9 +7,9 @@
 /* $Id: nobinning.h 3520 2009-12-11 16:49:53Z gamperl $ */
 
 
-#ifndef ALPS_NUMERIC_SPECIAL_FUNCTIONS_HPP
-#define ALPS_NUMERIC_SPECIAL_FUNCTIONS_HPP
+#pragma once
 
+#include <cmath>
 #include <boost/accumulators/numeric/functional/vector.hpp>
 #include <boost/math/special_functions.hpp>
 
@@ -32,7 +32,7 @@ namespace alps {
 
     template<class T>
     inline T cbrt(T value) { 
-        return std::pow(value,1./3.); 
+        return std::pow(value,(T)(1./3.)); 
     }
 
     // define norm and r
@@ -48,6 +48,3 @@ namespace alps {
     }
   }
 }
-
-
-#endif
