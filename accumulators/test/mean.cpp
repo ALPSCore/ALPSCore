@@ -8,61 +8,64 @@
 #include <alps/accumulators/accumulator.hpp>
 #include "gtest/gtest.h"
 
-
-TEST(accumulator, mean_feature_scalar){
-
-	alps::accumulators::accumulator_set measurements;
-	measurements << alps::accumulators::MeanAccumulator<double>("obs1")
-				 << alps::accumulators::MeanAccumulator<double>("obs2");
-
-	for (int i = 1; i < 1000; ++i) {
-		measurements["obs1"] << 1.;
-		EXPECT_EQ(measurements["obs1"].mean<double>() , 1.);
-		measurements["obs2"] << i;
-		EXPECT_EQ(measurements["obs2"].mean<double>() , double(i + 1) / 2.);
-	}
-
-	alps::accumulators::result_set results(measurements);
-	EXPECT_EQ(results["obs1"].mean<double>() , 1.);
-	EXPECT_EQ(results["obs2"].mean<double>() , 500.);
-}
-
 typedef long double longdouble;
 
-void meas_test_body(alps::accumulators::accumulator_set &measurements){
+template<typename A, typename T> void meas_test_body_scalar() {
 
-        int L=10;
+	alps::accumulators::accumulator_set measurements;
+	measurements << A("obs1") << A("obs2");
 
 	for (int i = 1; i < 1000; ++i) {
-		measurements["obs1"] << std::vector<double>(L, 1.);
-		measurements["obs2"] << std::vector<double>(L, i);
-                std::vector<double> mean_vec_1=measurements["obs1"].mean<std::vector<double> >();
-                std::vector<double> mean_vec_2=measurements["obs2"].mean<std::vector<double> >();
-                for(int j=0;j<mean_vec_1.size();++j){
-		  EXPECT_EQ(mean_vec_1[j] , 1.);
-		  EXPECT_EQ(mean_vec_2[j] , (i + 1) / 2.);
-                }
+		measurements["obs1"] << T(1);
+		EXPECT_EQ(measurements["obs1"].mean<double>() , T(1));
+		measurements["obs2"] << T(i);
+		EXPECT_EQ(measurements["obs2"].mean<double>() , T(i + 1) / 2);
 	}
 
 	alps::accumulators::result_set results(measurements);
-        std::vector<double> mean_vec_1=results["obs1"].mean<std::vector<double> >();
-        std::vector<double> mean_vec_2=results["obs2"].mean<std::vector<double> >();
-        for(int i=0;i<mean_vec_1.size();++i){
-	  EXPECT_EQ(mean_vec_1[i] , 1.);
-          EXPECT_EQ(mean_vec_2[i] , 500.);
-        }
+	EXPECT_EQ(results["obs1"].mean<double>() , T(1));
+	EXPECT_EQ(results["obs2"].mean<double>() , T(500));
 }
-#define ALPS_TEST_RUN_MEAN_TEST(A, T, N)														\
-	TEST(accumulator, mean_feature_vector_ ## A ## N){											\
-		alps::accumulators::accumulator_set measurements;										\
-		measurements << alps::accumulators:: A < T >("obs1")									\
-					 << alps::accumulators:: A < T >("obs2");									\
-	  meas_test_body(measurements);																\
+
+template<typename A, typename T> void meas_test_body_vector() {
+
+	alps::accumulators::accumulator_set measurements;
+	measurements << A("obs1") << A("obs2");
+
+    int L = 10;
+
+	for (int i = 1; i < 1000; ++i) {
+		measurements["obs1"] << std::vector<T>(L, T(1.));
+		measurements["obs2"] << std::vector<T>(L, T(i));
+        std::vector<T> mean_vec_1=measurements["obs1"].mean<std::vector<T> >();
+        std::vector<T> mean_vec_2=measurements["obs2"].mean<std::vector<T> >();
+        for(int j=0;j<mean_vec_1.size();++j){
+		    EXPECT_EQ(mean_vec_1[j] , T(1.));
+		    EXPECT_EQ(mean_vec_2[j] , T(i + 1) / 2);
+        }
 	}
+
+	alps::accumulators::result_set results(measurements);
+        std::vector<T> mean_vec_1=results["obs1"].mean<std::vector<T> >();
+        std::vector<T> mean_vec_2=results["obs2"].mean<std::vector<T> >();
+        for(int i=0;i<mean_vec_1.size();++i){
+	  	EXPECT_EQ(mean_vec_1[i] , T(1.));
+        EXPECT_EQ(mean_vec_2[i] , T(500.));
+	}
+}
+
+#define ALPS_TEST_RUN_MEAN_TEST(A, T, N)														\
+	TEST(accumulator, mean_feature_scalar_ ## A ## _ ## N){										\
+	  	meas_test_body_scalar<alps::accumulators:: A < T >, T >();								\
+	}																							\
+	TEST(accumulator, mean_feature_vector_ ## A ## _vector_ ## N){								\
+	  	meas_test_body_vector<alps::accumulators:: A <std::vector< T > >, T >();				\
+	}
+
 #define ALPS_TEST_RUN_MEAN_TEST_EACH_TYPE(A)													\
-	ALPS_TEST_RUN_MEAN_TEST(A, std::vector<float>, _f)											\
-	ALPS_TEST_RUN_MEAN_TEST(A, std::vector<double>, _d)											\
-	ALPS_TEST_RUN_MEAN_TEST(A, std::vector<longdouble>, _ld)
+	ALPS_TEST_RUN_MEAN_TEST(A, float, float)													\
+	ALPS_TEST_RUN_MEAN_TEST(A, double, double)													\
+	ALPS_TEST_RUN_MEAN_TEST(A, longdouble, long_double)
 
 ALPS_TEST_RUN_MEAN_TEST_EACH_TYPE(MeanAccumulator)
 ALPS_TEST_RUN_MEAN_TEST_EACH_TYPE(NoBinningAccumulator)
