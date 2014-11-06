@@ -6,11 +6,12 @@
 
 #define PY_ARRAY_UNIQUE_SYMBOL pyngsrandom_PyArrayHandle
 
-#include <alps/utilities/boost_python.hpp>
+// this must be first
+#include <alps/utilities/python/boost_python.hpp>
+
+#include <alps/utilities/python/make_copy.hpp>
 
 #include <alps/mc/random01.hpp>
-
-// #include <alps/python/make_copy.hpp>
 
 BOOST_PYTHON_MODULE(pyrandom01_c) {
 
@@ -18,8 +19,7 @@ BOOST_PYTHON_MODULE(pyrandom01_c) {
         "random01",
         boost::python::init<boost::python::optional<int> >()
     )
-    	// TODO: implement ...
-        // .def("__deepcopy__",  &alps::python::make_copy<alps::random01>)
+        .def("__deepcopy__",  &alps::python::make_copy<alps::random01>)
         .def("__call__", static_cast<alps::random01::result_type(alps::random01::*)()>(&alps::random01::operator()))
         .def("save", &alps::random01::save)
         .def("load", &alps::random01::load)

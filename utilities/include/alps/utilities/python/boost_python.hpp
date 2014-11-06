@@ -6,8 +6,7 @@
 
 /// WARNING: This header has to be the first include ever!
 
-#ifndef ALPS_UTILITIES_BOOST_PYTHON_HPP
-#define ALPS_UTILITIES_BOOST_PYTHON_HPP
+#pragma once
 
 #include <boost/python.hpp>
 
@@ -17,6 +16,4 @@
 
 #ifdef toupper
     #undef toupper
-#endif
-
 #endif
