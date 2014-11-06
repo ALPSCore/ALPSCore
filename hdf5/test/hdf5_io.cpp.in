@@ -19,6 +19,8 @@
 // #include <alps/hdf5/ublas/matrix.hpp>
 // #include <alps/hdf5/ublas/vector.hpp>
 
+#include <alps/utilities/temporary_filename.hpp>
+
 #include <deque>
 #include <numeric>
 #include <iostream>
@@ -1207,7 +1209,7 @@ template<typename T> struct skip_attribute<boost::shared_array<T> >: public skip
 #include "gtest/gtest.h"
 
 TEST(hdf5, NAME) {
-    std::string const filename = std::string(ALPS_STRINGIFY(NAME)) + ".h5";
+    std::string const filename = alps::temporary_filename(ALPS_STRINGIFY(NAME)) + ".h5";
     if (boost::filesystem::exists(boost::filesystem::path(filename)))
         boost::filesystem::remove(boost::filesystem::path(filename));
     bool result = true;
