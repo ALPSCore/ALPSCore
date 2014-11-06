@@ -237,7 +237,7 @@ namespace alps {
 
                     }
 
-                    #define NUMERIC_FUNCTION_USEING                                 \
+                    #define NUMERIC_FUNCTION_USING                                 \
                         using alps::numeric::sq;                                    \
                         using alps::numeric::cbrt;                             \
                         using alps::numeric::cb;                               \
@@ -277,7 +277,7 @@ namespace alps {
                     #define NUMERIC_FUNCTION_IMPLEMENTATION(FUNCTION_NAME, ERROR)    \
                         void FUNCTION_NAME () {                                      \
                             B:: FUNCTION_NAME ();                                    \
-                            NUMERIC_FUNCTION_USEING                                  \
+                            NUMERIC_FUNCTION_USING                                  \
                             m_error = ERROR ;                                        \
                         }
 
@@ -294,7 +294,7 @@ namespace alps {
                     NUMERIC_FUNCTION_IMPLEMENTATION(sq, abs(error_scalar_type(2) * this->mean() * m_error))
                     NUMERIC_FUNCTION_IMPLEMENTATION(sqrt, abs(m_error / (error_scalar_type(2) * sqrt(this->mean()))))
                     NUMERIC_FUNCTION_IMPLEMENTATION(cb, abs(error_scalar_type(3) * sq(this->mean()) * m_error))
-                    NUMERIC_FUNCTION_IMPLEMENTATION(cbrt, abs(m_error / (error_scalar_type(3) * sq(pow(this->mean(), 1. / 3)))))
+                    NUMERIC_FUNCTION_IMPLEMENTATION(cbrt, abs(m_error / (error_scalar_type(3) * sq(pow(this->mean(), error_scalar_type(1./3.))))))
                     NUMERIC_FUNCTION_IMPLEMENTATION(exp, exp(this->mean()) * m_error)
                     NUMERIC_FUNCTION_IMPLEMENTATION(log, abs(m_error / this->mean()))
 
