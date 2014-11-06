@@ -10,9 +10,9 @@ if (NOT DocumentationOnly)
 
   if (ENABLE_PYTHON)
 
-    find_package(Python)
+    find_package(PythonLibs)
 
-    if (PYTHON_FOUND)
+    if (PYTHONLIBS_FOUND)
 
       set(ALPS_HAVE_PYTHON TRUE)
       set(ALPS_SHARED_CPPFLAGS PYALPS_EXPORTS=1)  
@@ -24,12 +24,13 @@ if (NOT DocumentationOnly)
 
         set_target_properties(${name}_c PROPERTIES COMPILE_DEFINITIONS "${ALPS_SHARED_CPPFLAGS}")
         set_target_properties(${name}_c PROPERTIES PREFIX "")
-        target_link_libraries(${name}_c ${PYTHON_LIBRARY} ${LINK_ALL})
+        target_link_libraries(${name}_c ${PYTHON_LIBRARIES} ${LINK_ALL})
+        include_directories(${PYTHON_INCLUDE_DIRS})
       endforeach(name)
 
-    else (PYTHON_FOUND)
+    else (PYTHONLIBS_FOUND)
       message(FATAL_ERROR " Python libraries not found")
-    endif (PYTHON_FOUND)
+    endif (PYTHONLIBS_FOUND)
 
   endif (ENABLE_PYTHON)
 
