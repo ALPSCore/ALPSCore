@@ -14,17 +14,24 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/../common/cmake)
 # add common definitions
 include(ALPSCommonModuleDefinitions)
 
+# configurable option
+option(ENABLE_PYTHON "Enable Python libraries" ON)
+
 if (NOT DocumentationOnly)
   include(ALPSEnableMPI)
 
   # Boost
   #set(Boost_USE_STATIC_LIBS        ON)
   #set(Boost_USE_STATIC_RUNTIME    OFF)
-  if(ALPS_HAVE_MPI)
-    add_boost(chrono program_options filesystem system serialization mpi)
-  else()
-    add_boost(chrono program_options filesystem system)
-  endif()
+  set(BOOST_LIBRARY_LIST chrono program_options filesystem system)
+  if(ENABLE_MPI)
+    list(APPEND BOOST_LIBRARY_LIST mpi)
+  endif(ENABLE_MPI)
+  if(ENABLE_PYTHON)
+    list(APPEND BOOST_LIBRARY_LIST python)
+  endif(ENABLE_PYTHON)
+  add_boost(${BOOST_LIBRARY_LIST})
+
   add_hdf5()
   add_alps_package(alps-utilities alps-hdf5 alps-params alps-accumulators)
 
@@ -35,7 +42,11 @@ if (NOT DocumentationOnly)
   # add tutorial
   add_subdirectory(tutorials)
 
+  # add python
+  add_subdirectory(python)
+
   gen_pkg_config()
   gen_find_module(alps/mc/mcbase.hpp)
+
 endif (NOT DocumentationOnly)
 gen_documentation()
