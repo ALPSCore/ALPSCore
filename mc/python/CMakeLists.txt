@@ -14,6 +14,7 @@ if (NOT DocumentationOnly)
 
     if (PYTHON_FOUND)
 
+      set(ALPS_HAVE_PYTHON TRUE)
       set(ALPS_SHARED_CPPFLAGS PYALPS_EXPORTS=1)  
 
 
