@@ -1,0 +1,37 @@
+# 
+# alps-mc cmake configuration script.
+# 
+
+cmake_minimum_required (VERSION 2.8)
+
+# define project name
+
+if (NOT DocumentationOnly)
+
+  if (ENABLE_PYTHON)
+
+    find_package(Python)
+
+    if (PYTHON_FOUND)
+
+      set(ALPS_HAVE_PYTHON TRUE)
+      set(ALPS_SHARED_CPPFLAGS PYALPS_EXPORTS=1)  
+
+
+      foreach(name pyrandom01)
+#      foreach(name pyrandom01 pymcbase)
+        add_library(${name}_c MODULE src/${name}.cpp)
+
+        set_target_properties(${name}_c PROPERTIES COMPILE_DEFINITIONS "${ALPS_SHARED_CPPFLAGS}")
+        set_target_properties(${name}_c PROPERTIES PREFIX "")
+        target_link_libraries(${name}_c ${PYTHON_LIBRARY} ${LINK_ALL})
+      endforeach(name)
+
+    else (PYTHON_FOUND)
+      message(FATAL_ERROR " Python libraries not found")
+    endif (PYTHON_FOUND)
+
+  endif (ENABLE_PYTHON)
+
+endif (NOT DocumentationOnly)
+gen_documentation()

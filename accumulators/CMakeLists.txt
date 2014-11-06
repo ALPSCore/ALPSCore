@@ -18,7 +18,7 @@ if (NOT DocumentationOnly)
   include(ALPSEnableMPI)
 
   # Boost
-  if(ALPS_HAVE_MPI)
+  if(ENABLE_MPI)
     add_boost(filesystem system serialization mpi)
   else()
     add_boost(filesystem system)
