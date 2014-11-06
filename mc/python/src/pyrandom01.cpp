@@ -4,7 +4,7 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#define PY_ARRAY_UNIQUE_SYMBOL pyngsrandom_PyArrayHandle
+#define PY_ARRAY_UNIQUE_SYMBOL pyrandom_PyArrayHandle
 
 // this must be first
 #include <alps/utilities/python/boost_python.hpp>

@@ -16,14 +16,15 @@ if (NOT DocumentationOnly)
 
       set(ALPS_SHARED_CPPFLAGS PYALPS_EXPORTS=1)  
 
-      set(PYALPS_SOURCES pyrandom01_c)
 
-      set_property(GLOBAL APPEND PROPERTY PY_MODULES_LIST pyrandom01_c)
-      add_library(pyrandom01_c MODULE src/pyrandom01.cpp)
+      foreach(name pyrandom01)
+#      foreach(name pyrandom01 pymcbase)
+        add_library(${name}_c MODULE src/${name}.cpp)
 
-      set_target_properties(pyrandom01_c PROPERTIES COMPILE_DEFINITIONS "${ALPS_SHARED_CPPFLAGS}")
-      set_target_properties(pyrandom01_c PROPERTIES PREFIX "")
-      target_link_libraries(pyrandom01_c ${PYTHON_LIBRARY} ${LINK_ALL})
+        set_target_properties(${name}_c PROPERTIES COMPILE_DEFINITIONS "${ALPS_SHARED_CPPFLAGS}")
+        set_target_properties(${name}_c PROPERTIES PREFIX "")
+        target_link_libraries(${name}_c ${PYTHON_LIBRARY} ${LINK_ALL})
+      endforeach(name)
 
     else (PYTHON_FOUND)
       message(FATAL_ERROR " Python libraries not found")
