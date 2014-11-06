@@ -14,7 +14,7 @@ if (NOT DocumentationOnly)
 
     if (PYTHONLIBS_FOUND)
 
-      set(ALPS_HAVE_PYTHON TRUE)
+      set(ALPS_HAVE_PYTHON TRUE) # better put it through configure_file?
       set(ALPS_SHARED_CPPFLAGS PYALPS_EXPORTS=1)  
 
 
