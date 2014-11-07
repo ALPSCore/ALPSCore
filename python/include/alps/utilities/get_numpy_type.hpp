@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <alps/vonfig.hpp>
+#include <alps/config.hpp>
 
 #ifndef ALPS_HAVE_PYTHON
     #error numpy is only available if python is enabled
@@ -15,11 +15,11 @@
 // this must be first
 #include <alps/utilities/boost_python.hpp>
 
-#include <alps/utilities/numpy_import.hpp>
+#include <alps/utilities/import_numpy.hpp>
 
 #include <complex>
 
-#define ALPS_NGS_FOREACH_NATIVE_NUMPY_TYPE(CALLBACK)                                                                                            \
+#define ALPS_FOREACH_NATIVE_NUMPY_TYPE(CALLBACK)                                                                                                \
     CALLBACK(bool)                                                                                                                              \
     CALLBACK(char)                                                                                                                              \
     CALLBACK(signed char)                                                                                                                       \
@@ -41,11 +41,9 @@
 
 namespace alps {
     namespace detail {
-        #define ALPS_NGS_DECL_NUMPY_TYPE(T)                                                                                                     \
+        #define ALPS_DECL_NUMPY_TYPE(T)                                                                                                         \
             ALPS_DECL int get_numpy_type(T);
-        ALPS_NGS_FOREACH_NATIVE_NUMPY_TYPE(ALPS_NGS_DECL_NUMPY_TYPE)
-        #undef ALPS_NGS_DECL_NUMPY_TYPE
+        ALPS_FOREACH_NATIVE_NUMPY_TYPE(ALPS_DECL_NUMPY_TYPE)
+        #undef ALPS_DECL_NUMPY_TYPE
     }
 }
-
-#endif

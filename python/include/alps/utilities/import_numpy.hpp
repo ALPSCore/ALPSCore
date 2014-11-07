@@ -6,14 +6,15 @@
 
 #pragma once
 
-#include <boost/python/dict.hpp>
+#include <alps/config.hpp>
 
-namespace alps { 
-	namespace python {
+#ifndef ALPS_HAVE_PYTHON
+    #error numpy is only available if python is enabled
+#endif
 
-		template<class T> T make_deepcopy(T const& x, boost::python::dict const& ) { 
-			return x;
-		}
+namespace alps {
+    namespace detail {
 
-	}
+        ALPS_DECL void import_numpy();
+    }
 }

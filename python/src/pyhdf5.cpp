@@ -15,15 +15,18 @@
 #include <alps/hdf5/python.hpp>
 #include <alps/hdf5/complex.hpp>
 
-#include <alps/utilities/stacktrace.hpp>
-#include <alps/utilities/make_copy.hpp>
+#include <alps/hdf5/python.ipp>
+#include <alps/utilities/get_numpy_type.ipp>
 
+#include <alps/utilities/stacktrace.hpp>
+#include <alps/utilities/make_deepcopy.hpp>
+
+#include <boost/array.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/python/list.hpp>
 #include <boost/python/dict.hpp>
 #include <boost/python/numeric.hpp>
 #include <boost/python/to_python_converter.hpp>
-#include <boost/array.hpp>
 
 #include <string>
 #include <iterator>
@@ -53,13 +56,13 @@ namespace alps {
 
         void python_hdf5_save(alps::hdf5::archive & ar, std::string const & path, boost::python::object const & data) {
             import_numpy();
-            ar[path] << data;
+            ar[path] = data;
         }
 
         boost::python::object python_hdf5_load(alps::hdf5::archive & ar, std::string const & path) {
             import_numpy();
             boost::python::object value;
-            ar[path] >> value;
+            // ar[path] >> value;
             return value;
         }
         
@@ -124,7 +127,7 @@ BOOST_PYTHON_MODULE(pyhdf5_c) {
           "hdf5_archive_impl",
           boost::python::init<std::string, std::string>()
     )
-        .def("__deepcopy__", &alps::python::make_copy<alps::hdf5::archive>)
+        .def("__deepcopy__", &alps::python::make_deepcopy<alps::hdf5::archive>)
         .add_property("filename", &alps::detail::python_hdf5_get_filename)
         .add_property("context", &alps::hdf5::archive::get_context)
         .add_property("is_open", &alps::hdf5::archive::is_open)

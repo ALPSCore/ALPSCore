@@ -1,10 +1,10 @@
 
 foreach (name
 	pyrandom01 
-#	pyhdf5
+	pyhdf5
 #	pymcbase
 )
-    add_library(${name}_c MODULE ${name}.cpp)
+    add_library(${name}_c MODULE ${name}.cpp import_numpy.cpp)
 
     set_target_properties(${name}_c PROPERTIES COMPILE_DEFINITIONS "${ALPS_SHARED_CPPFLAGS}")
     set_target_properties(${name}_c PROPERTIES PREFIX "")

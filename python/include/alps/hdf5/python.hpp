@@ -9,7 +9,6 @@
 // this must be first
 #include <alps/utilities/boost_python.hpp>
 
-
 #include <alps/hdf5/archive.hpp>
 #include <alps/hdf5/pair.hpp>
 #include <alps/hdf5/vector.hpp>
@@ -17,7 +16,7 @@
 
 #include <alps/utilities/cast.hpp>
 #include <alps/utilities/stacktrace.hpp>
-#include <alps/utilities/numpy_import.hpp>
+#include <alps/utilities/import_numpy.hpp>
 
 #include <boost/scoped_ptr.hpp>
 
