@@ -10,7 +10,7 @@
 #include <alps/utilities/remove_cvr.hpp>
 #include "paramvalue_reader.hpp"
 
-#if defined(ALPS_HAVE_PYTHON)
+#if defined(ALPS_HAVE_PYTHON_DEPRECATED)
     #include <alps/ngs/boost_python.hpp>
 #endif
 
@@ -39,7 +39,7 @@
     CALLBACK(std::vector<std::string>)                                              \
     CALLBACK(std::vector<std::complex<double> >)
 
-#if defined(ALPS_HAVE_PYTHON)
+#if defined(ALPS_HAVE_PYTHON_DEPRECATED)
     #define ALPS_FOREACH_PARAMETERVALUE_TYPE(CALLBACK)                              \
         ALPS_FOREACH_PARAMETERVALUE_TYPE_NO_PYTHON(CALLBACK)                        \
         CALLBACK(boost::python::object)
@@ -80,7 +80,7 @@ namespace alps {
 		template <> struct paramvalue_index<std::vector<std::complex<double> > > {
 			enum { value = 8 };
 		};
-		#if defined(ALPS_HAVE_PYTHON)
+		#if defined(ALPS_HAVE_PYTHON_DEPRECATED)
 			template <> struct paramvalue_index<boost::python::object> {
 				enum { value = 9 };
 			};

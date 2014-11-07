@@ -11,7 +11,7 @@
 namespace alps { 
 	namespace python {
 
-		template<class T> T make_copy(T const& x, boost::python::dict const& ) { return x; } 
+		template<class T> T make_deepcopy(T const& x, boost::python::dict const& ) { return x; } 
 
 	}
 }

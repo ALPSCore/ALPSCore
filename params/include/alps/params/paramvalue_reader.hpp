@@ -6,16 +6,20 @@
 
 #pragma once
 
+#include <alps/config.hpp>
+#ifdef ALPS_HAVE_PYTHON_DEPRECATED
+    // this must be first
+    #include <alps/utilities/boost_python.hpp>
+#endif
+
 #include <alps/utilities/cast.hpp>
 //#include <alps/utilities/config.hpp>
 
 #include <boost/variant.hpp>
 
-#if defined(ALPS_HAVE_PYTHON)
-	#include <alps/ngs/detail/get_numpy_type.hpp>
-	#include <alps/ngs/detail/extract_from_pyobject.hpp>
-
-	#include <alps/ngs/boost_python.hpp>
+#ifdef ALPS_HAVE_PYTHON_DEPRECATED
+	#include <alps/utilities/get_numpy_type.hpp>
+	#include <alps/utilities/extract_from_pyobject.hpp>
 #endif
 
 namespace alps {
@@ -31,7 +35,7 @@ namespace alps {
                 throw std::runtime_error(std::string("cannot cast from std::vector<") + typeid(U).name() + "> to " + typeid(T).name() + ALPS_STACKTRACE);
             }
 
-            #if defined(ALPS_HAVE_PYTHON)
+            #if defined(ALPS_HAVE_PYTHON_DEPRECATED)
                 void operator()(boost::python::list const &) {
                     throw std::runtime_error(std::string("cannot cast from boost::python::list ") + typeid(T).name() + ALPS_STACKTRACE);
                 }
@@ -58,7 +62,7 @@ namespace alps {
                         (*this)(*it);
             }
 
-            #if defined(ALPS_HAVE_PYTHON)
+            #if defined(ALPS_HAVE_PYTHON_DEPRECATED)
                 void operator()(boost::python::list const & data) {
                     for(boost::python::ssize_t i = 0; i < boost::python::len(data); ++i) {
                         paramvalue_reader_visitor<T> scalar;
@@ -89,7 +93,7 @@ namespace alps {
                         value += (it == ptr ? "," : "") + cast<std::string>(*it);
             }
 
-            #if defined(ALPS_HAVE_PYTHON)
+            #if defined(ALPS_HAVE_PYTHON_DEPRECATED)
                 void operator()(boost::python::list const & data) {
                     for(boost::python::ssize_t i = 0; i < boost::python::len(data); ++i)
                         value += (value.size() ? "," : "") + boost::python::call_method<std::string>(boost::python::object(data[i]).ptr(), "__str__");
@@ -120,7 +124,7 @@ namespace alps {
                     visitor.value = v; 
                 }
 
-                #if defined(ALPS_HAVE_PYTHON)
+                #if defined(ALPS_HAVE_PYTHON_DEPRECATED)
                     void operator()(boost::python::object const & v) const {
                         extract_from_pyobject(visitor, v);
                     }
@@ -135,7 +139,7 @@ namespace alps {
                 mutable paramvalue_reader_visitor<T> visitor;
         };
 
-        #if defined(ALPS_HAVE_PYTHON)
+        #if defined(ALPS_HAVE_PYTHON_DEPRECATED)
             template<> struct paramvalue_reader<boost::python::object>
                 : public boost::static_visitor<> 
             {

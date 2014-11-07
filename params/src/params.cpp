@@ -22,7 +22,7 @@ namespace alps {
       parse_text_parameters(path);
     }
 
-    #ifdef ALPS_HAVE_PYTHON
+    #ifdef ALPS_HAVE_PYTHON_DEPRECATED
         params::params(boost::python::dict const & arg) {
             boost::python::extract<boost::python::dict> dict(arg);
             if (!dict.check())

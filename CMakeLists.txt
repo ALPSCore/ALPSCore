@@ -59,6 +59,9 @@ alps_add_module(alps-params params)
 add_subdirectory(mc)
 alps_add_module(alps-mc mc)
 
+# python libraries
+add_subdirectory(python)
+
 if(_am_building_documentation)
     set(DOXYFILE_SOURCE_DIR "${CMAKE_SOURCE_DIR}/common/doc")
     message(STATUS "Building documentation for sources in ${DOXYFILE_EXTRA_SOURCES}")  

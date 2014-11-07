@@ -12,7 +12,7 @@
 #include <alps/params/paramproxy.hpp>
 #include <alps/params/paramiterator.hpp>
 
-#ifdef ALPS_HAVE_PYTHON
+#ifdef ALPS_HAVE_PYTHON_DEPRECATED
     #include <alps/ngs/boost_python.hpp>
     #include <boost/python/dict.hpp>
 #endif
@@ -56,7 +56,7 @@ namespace alps {
 
             params(boost::filesystem::path const &);
 
-            #ifdef ALPS_HAVE_PYTHON
+            #ifdef ALPS_HAVE_PYTHON_DEPRECATED
                 params(boost::python::dict const & arg);
                 params(boost::python::str const & arg);
             #endif

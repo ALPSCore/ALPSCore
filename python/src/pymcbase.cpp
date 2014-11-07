@@ -7,12 +7,11 @@
 #define PY_ARRAY_UNIQUE_SYMBOL pymcbase_PyArrayHandle
 
 // this must be first
-#include <alps/utilities/python/boost_python.hpp>
+#include <alps/utilities/boost_python.hpp>
 
 #include <alps/mc/mcbase.hpp>
 #include <alps/hdf5/archive.hpp>
-
-#include <alps/utilities/python/make_copy.hpp>
+#include <alps/utilities/make_copy.hpp>
 
 #ifdef ALPS_HAVE_MPI
     #include <boost/mpi.hpp>
@@ -31,13 +30,11 @@ namespace alps {
 
              #ifdef ALPS_HAVE_MPI
                 pymcbase(boost::python::dict arg, std::size_t seed_offset = 42, boost::mpi::communicator = boost::mpi::communicator())
-                    // : mcbase(mcbase::parameters_type(arg), seed_offset)
-                    : mcbase(mcbase::parameters_type(), seed_offset)
+                    : mcbase(mcbase::parameters_type(arg), seed_offset)
                 {}
             #else
                 pymcbase(boost::python::dict arg, std::size_t seed_offset = 42)
-                    // : mcbase(mcbase::parameters_type(arg), seed_offset)
-                    : mcbase(mcbase::parameters_type(), seed_offset)
+                    : mcbase(mcbase::parameters_type(arg), seed_offset)
                 {}
             #endif
 
@@ -63,9 +60,9 @@ namespace alps {
                 return mcbase::random;
             }
 
-            // parameters_type & get_parameters() {
-            //     return mcbase::parameters;
-            // }
+            parameters_type & get_parameters() {
+                return mcbase::parameters;
+            }
 
             // observable_collection_type & get_measurements() {
             //     return alps::mcbase::measurements;
@@ -91,7 +88,7 @@ BOOST_PYTHON_MODULE(pymcbase_c) {
           #endif
     )
         .add_property("random", boost::python::make_function(&alps::pymcbase::get_random, boost::python::return_internal_reference<>()))
-        // .add_property("parameters", boost::python::make_function(&alps::pymcbase::get_parameters, boost::python::return_internal_reference<>()))
+        .add_property("parameters", boost::python::make_function(&alps::pymcbase::get_parameters, boost::python::return_internal_reference<>()))
         // .add_property("measurements", boost::python::make_function(&alps::pymcbase::get_measurements, boost::python::return_internal_reference<>()))
         .def("run", &alps::pymcbase::run)
         .def("update", boost::python::pure_virtual(&alps::pymcbase::update))

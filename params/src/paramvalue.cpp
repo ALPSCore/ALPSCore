@@ -14,7 +14,7 @@
 namespace alps {
     namespace detail {
 
-        #if defined(ALPS_HAVE_PYTHON)
+        #if defined(ALPS_HAVE_PYTHON_DEPRECATED)
             struct paramvalue_save_python_visitor {
             
                 paramvalue_save_python_visitor(hdf5::archive & a)
@@ -58,7 +58,7 @@ namespace alps {
                 ar[""] << v;
             }
             
-            #if defined(ALPS_HAVE_PYTHON)
+            #if defined(ALPS_HAVE_PYTHON_DEPRECATED)
                 void operator()(boost::python::object const & v) const {
                     paramvalue_save_python_visitor visitor(ar);
                     extract_from_pyobject(visitor, v);
@@ -77,7 +77,7 @@ namespace alps {
                     os << short_print(v);
                 }
                 
-                #if defined(ALPS_HAVE_PYTHON)
+                #if defined(ALPS_HAVE_PYTHON_DEPRECATED)
                     void operator()(boost::python::object const & v) const {
                         os << boost::python::call_method<std::string>(v.ptr(), "__str__");
                     }

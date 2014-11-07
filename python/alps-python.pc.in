@@ -1,0 +1,6 @@
+Name: @PROJECT_NAME@
+Description: @PROJECT_NAME@ 
+Requires: boost hdf5 alps-utilities alps-hdf5 alps-mc
+Version: 
+Libs: -L@CMAKE_INSTALL_PREFIX@/lib
+Cflags: -I@CMAKE_INSTALL_PREFIX@/include

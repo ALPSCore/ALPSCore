@@ -4,17 +4,20 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_HDF5_PYTHON_CPP
-#define ALPS_HDF5_PYTHON_CPP
+#pragma once
+
+// this must be first
+#include <alps/utilities/boost_python.hpp>
+
 
 #include <alps/hdf5/archive.hpp>
-#include <alps/utilities/cast.hpp>
 #include <alps/hdf5/pair.hpp>
-#include <alps/utilities/stacktrace.hpp>
 #include <alps/hdf5/vector.hpp>
 #include <alps/hdf5/complex.hpp>
 
-#include <alps/ngs/boost_python.hpp>
+#include <alps/utilities/cast.hpp>
+#include <alps/utilities/stacktrace.hpp>
+#include <alps/utilities/numpy_import.hpp>
 
 #include <boost/scoped_ptr.hpp>
 
@@ -165,5 +168,3 @@ namespace alps {
         );
     }
 }
-
-#endif
