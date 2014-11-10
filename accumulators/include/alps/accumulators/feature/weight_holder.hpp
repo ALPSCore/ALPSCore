@@ -105,6 +105,14 @@ namespace alps {
                         m_weight->reset();
                     }
 
+                   /// Merge placeholder \remark FIXME: always throws
+                    template <typename A>
+                    void merge(const A& rhs)
+                    {
+                      throw std::logic_error("Merging weight_holder accumulators is not yet implemented"
+                                             +ALPS_STACKTRACE);
+                    }
+
 #ifdef ALPS_HAVE_MPI
                     void collective_merge(
                           boost::mpi::communicator const & comm

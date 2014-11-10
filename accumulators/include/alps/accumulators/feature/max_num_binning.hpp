@@ -265,6 +265,14 @@ namespace alps {
                         m_mn_bins = std::vector<typename mean_type<B>::type>();
                     }
 
+                    /// Merge placeholder \remark FIXME: always throws
+                    template <typename A>
+                    void merge(const A& rhs)
+                    {
+                      throw std::logic_error("Merging max_num_binning accumulators is not yet implemented"
+                                             +ALPS_STACKTRACE);
+                    }
+
 #ifdef ALPS_HAVE_MPI
                     void collective_merge(
                           boost::mpi::communicator const & comm

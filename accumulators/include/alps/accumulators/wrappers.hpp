@@ -65,6 +65,8 @@ namespace alps {
                 virtual void print(std::ostream & os) const = 0;
                 virtual void reset() = 0;
 
+                /// merge accumulators (defined in the derived classes)
+                virtual void merge(const base_wrapper<T>&) = 0;
 #ifdef ALPS_HAVE_MPI
                 virtual void collective_merge(boost::mpi::communicator const & comm, int root) = 0;
 #endif
@@ -199,6 +201,12 @@ namespace alps {
 
                 void reset() {
                     this->m_data.reset();
+                }
+
+                /// Merge the given accumulator into this accumulator @param rhs Accumulator to merge
+                void merge(const base_wrapper<value_type>& rhs)
+                {
+                  this->m_data.merge(dynamic_cast<const derived_wrapper<A>&>(rhs).m_data);
                 }
 
 #ifdef ALPS_HAVE_MPI

@@ -138,6 +138,17 @@ namespace alps {
                         m_sum = T();
                     }
 
+              /// Merge the sum (mean) of  given accumulator of type A into this sum (mean) @param rhs Accumulator to merge 
+              template <typename A>
+              void merge(const A& rhs)
+              {
+                using alps::numeric::operator+=;
+                using alps::numeric::check_size;
+                B::merge(rhs);
+                check_size(m_sum,rhs.m_sum);
+                m_sum += rhs.m_sum;
+              }
+
 #ifdef ALPS_HAVE_MPI
                     void collective_merge(
                           boost::mpi::communicator const & comm

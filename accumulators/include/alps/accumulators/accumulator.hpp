@@ -27,6 +27,7 @@
 #include <boost/mpl/has_key.hpp>
 #include <boost/mpl/transform.hpp>
 #include <boost/variant/variant.hpp>
+#include <boost/variant/get.hpp>
 #include <boost/mpl/placeholders.hpp>
 
 #ifdef ALPS_HAVE_MPI
@@ -476,6 +477,33 @@ namespace alps {
                 template<typename T> accumulator_wrapper & operator<<(T const & value) {
                     (*this)(value);
                     return (*this);
+                }
+
+                // Code to merge accumulators
+            private:
+                /// Service class to access elements of a variant type
+                struct merge_visitor: public boost::static_visitor<> {
+                  // The accumulator we want to merge (RHS):
+                  const accumulator_wrapper& rhs_acc;
+
+                  // Remember the RHS accumulator
+                  merge_visitor(const accumulator_wrapper& b): rhs_acc(b) {}
+                  
+                  // This is called by apply_visitor()
+                  template <typename P> // P can be dereferenced to base_wrapper<T>
+                  void operator()(P& lhs_ptr)
+                  {
+                    const P* rhs_ptr=boost::get<P>(& rhs_acc.m_variant);
+                    if (!rhs_ptr) throw std::runtime_error("Only accumulators of the same type can be merged"
+                                                           + ALPS_STACKTRACE);
+                    lhs_ptr->merge(**rhs_ptr);
+                  }
+                };
+            public:
+                /// Merge another accumulator into this one. @param rhs_acc : accumulator to merge.
+                void merge(const accumulator_wrapper& rhs_acc) {
+                  merge_visitor visitor(rhs_acc);
+                  boost::apply_visitor(visitor, m_variant);
                 }
 
             // // operator(T, W)
