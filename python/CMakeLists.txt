@@ -20,10 +20,10 @@ option(ENABLE_PYTHON "Enable Python libraries" ON)
 if (NOT DocumentationOnly AND ENABLE_PYTHON)
   include(ALPSEnableMPI)
 
-  find_package(Python)
-  if (NOT PYTHON_FOUND)
+  find_package(PythonLibs)
+  if (NOT PYTHONLIBS_FOUND)
     message(FATAL_ERROR " Python libraries not found")
-  endif (NOT PYTHON_FOUND)
+  endif (NOT PYTHONLIBS_FOUND)
 
   # Boost
   #set(Boost_USE_STATIC_LIBS        ON)
