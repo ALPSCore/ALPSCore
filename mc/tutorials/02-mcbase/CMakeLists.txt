@@ -13,7 +13,7 @@ if (ENABLE_MPI)
 
 endif(ENABLE_MPI)
 
-# if (ENABLE_PYTHON)
+# if (ALPS_HAVE_PYTHON)
 
 # 	# rule for generating python export
 # 	set_property(GLOBAL APPEND PROPERTY PY_MODULES_LIST ising_c)
@@ -27,4 +27,4 @@ endif(ENABLE_MPI)
 # 	set_target_properties(ising_c PROPERTIES PREFIX "")
 # 	target_link_libraries(ising_c ${PROJECT_NAME} ${LINK_ALL})
 
-# endif (ENABLE_PYTHON)
+# endif (ALPS_HAVE_PYTHON)

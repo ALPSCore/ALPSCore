@@ -17,10 +17,7 @@ if (NOT DocumentationOnly)
   include(CheckIncludeFile)
 
   # this is uply, we should make this nicer
-  option(ENABLE_PYTHON "Enable Python libraries" ON) 
-  if (ENABLE_PYTHON)
-      set(ALPS_HAVE_PYTHON TRUE)
-  endif(ENABLE_PYTHON)
+  option(ALPS_HAVE_PYTHON "Enable Python libraries" ON) 
 
   if(ALPS_HAVE_MPI)
     add_boost(filesystem system chrono mpi)

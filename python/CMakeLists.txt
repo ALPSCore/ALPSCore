@@ -15,9 +15,9 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/../common/cmake)
 include(ALPSCommonModuleDefinitions)
 
 # configurable option
-option(ENABLE_PYTHON "Enable Python libraries" ON)
+option(ALPS_HAVE_PYTHON "Enable Python libraries" ON)
 
-if (NOT DocumentationOnly AND ENABLE_PYTHON)
+if (NOT DocumentationOnly AND ALPS_HAVE_PYTHON)
   include(ALPSEnableMPI)
 
   find_package(PythonLibs)
@@ -32,9 +32,9 @@ if (NOT DocumentationOnly AND ENABLE_PYTHON)
   if(ENABLE_MPI)
     list(APPEND BOOST_LIBRARY_LIST mpi)
   endif(ENABLE_MPI)
-  if(ENABLE_PYTHON)
+  if(ALPS_HAVE_PYTHON)
     list(APPEND BOOST_LIBRARY_LIST python)
-  endif(ENABLE_PYTHON)
+  endif(ALPS_HAVE_PYTHON)
   add_boost(${BOOST_LIBRARY_LIST})
 
   add_hdf5()
@@ -46,5 +46,5 @@ if (NOT DocumentationOnly AND ENABLE_PYTHON)
 
   gen_pkg_config()
 
-endif (NOT DocumentationOnly AND ENABLE_PYTHON)
+endif (NOT DocumentationOnly AND ALPS_HAVE_PYTHON)
 gen_documentation()
