@@ -30,11 +30,13 @@ namespace alps {
 
              #ifdef ALPS_HAVE_MPI
                 pymcbase(boost::python::dict arg, std::size_t seed_offset = 42, boost::mpi::communicator = boost::mpi::communicator())
-                    : mcbase(mcbase::parameters_type(arg), seed_offset)
+                    // : mcbase(mcbase::parameters_type(arg), seed_offset)
+                    : mcbase(mcbase::parameters_type(), seed_offset)
                 {}
             #else
                 pymcbase(boost::python::dict arg, std::size_t seed_offset = 42)
-                    : mcbase(mcbase::parameters_type(arg), seed_offset)
+                    // : mcbase(mcbase::parameters_type(arg), seed_offset)
+                    : mcbase(mcbase::parameters_type(), seed_offset)
                 {}
             #endif
 

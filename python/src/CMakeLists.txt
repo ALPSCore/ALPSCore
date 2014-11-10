@@ -2,7 +2,8 @@
 foreach (name
 	pyrandom01 
 	pyhdf5
-#	pymcbase
+	api
+	pymcbase
 )
     add_library(${name}_c MODULE ${name}.cpp import_numpy.cpp)
 
