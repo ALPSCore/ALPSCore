@@ -6,7 +6,7 @@
 
 /* $Id$ */
 
-/// \file factory.h
+/// \file factory.hpp
 /// \brief object factories
 /// 
 /// This header contains an implementation of an object factory

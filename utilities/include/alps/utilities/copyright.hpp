@@ -6,7 +6,7 @@
 
 /* $Id$ */
 
-/// \file copyright.h
+/// \file copyright.hpp
 /// \brief prints copyright and license information
 ///
 /// contains functions to print the license and copyright statements

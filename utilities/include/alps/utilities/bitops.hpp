@@ -6,7 +6,7 @@
 
 /* $Id$ */
 
-/// \file bitops.h
+/// \file bitops.hpp
 /// \brief bit manipulation functions
 /// 
 /// This header contains bit operations modeled after Cray and Fortran
