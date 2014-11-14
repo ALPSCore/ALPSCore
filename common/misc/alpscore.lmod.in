@@ -1,0 +1,15 @@
+#%Module1.0
+
+set     name        alpscore
+conflict alps
+set     root        @CMAKE_INSTALL_PREFIX@
+
+setenv      ALPS_DIR    $root
+setenv      ALPS_ROOT   $root
+setenv      ALPS_LIB    $root/lib
+setenv      ALPS_INC    $root/include
+#setenv      ALPS_BIN    $root/bin
+
+prepend-path      LD_LIBRARY_PATH   $root/lib
+prepend-path      PATH              $root/bin
+prepend-path      PYTHONPATH        $root/lib
