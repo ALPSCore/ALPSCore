@@ -47,6 +47,12 @@ if (Testing AND NOT DocumentationOnly)
     include(ALPSEnableTests) #defined in common/cmake
 endif(Testing AND NOT DocumentationOnly)
 
+# enable tutorials
+option(BuildTutorials "Build tutorials" OFF)
+if (BuildTutorials)
+    set(ALPS_BUILD_TUTORIALS ON)
+endif()
+
 # each module is defined as a cmake project in a subdirectory
 add_subdirectory(utilities)
 alps_add_module(alps-utilities utilities)
@@ -59,8 +65,13 @@ alps_add_module(alps-params params)
 add_subdirectory(mc)
 alps_add_module(alps-mc mc)
 
-# python libraries
-add_subdirectory(python)
+option(BuildPython "Build Python interface" ON)
+if (BuildPython)
+    set(ALPS_HAVE_PYTHON ON)
+    # python libraries
+    add_subdirectory(python)
+    alps_add_module(alps-python python)
+endif()
 
 if(_am_building_documentation)
     set(DOXYFILE_SOURCE_DIR "${CMAKE_SOURCE_DIR}/common/doc")

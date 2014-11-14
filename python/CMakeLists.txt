@@ -18,33 +18,38 @@ include(ALPSCommonModuleDefinitions)
 option(ALPS_HAVE_PYTHON "Enable Python libraries" ON)
 
 if (NOT DocumentationOnly AND ALPS_HAVE_PYTHON)
-  include(ALPSEnableMPI)
-
-  find_package(PythonLibs)
-  if (NOT PYTHONLIBS_FOUND)
+    # enable mpi
+    include(ALPSEnableMPI)
+    # search for python
+    find_package(PythonLibs)
+    if (NOT PYTHONLIBS_FOUND)
     message(FATAL_ERROR " Python libraries not found")
-  endif (NOT PYTHONLIBS_FOUND)
-
-  # Boost
-  #set(Boost_USE_STATIC_LIBS        ON)
-  #set(Boost_USE_STATIC_RUNTIME    OFF)
-  set(BOOST_LIBRARY_LIST chrono program_options filesystem system)
-  if(ENABLE_MPI)
+    else(NOT PYTHONLIBS_FOUND)
+    set(ALPS_HAVE_PYTHON True)
+    endif (NOT PYTHONLIBS_FOUND)
+    # find numpy
+    find_package(NumPy REQUIRED)
+    include_directories(${NUMPY_INCLUDE_DIRS})
+    # Boost
+    #set(Boost_USE_STATIC_LIBS        ON)
+    #set(Boost_USE_STATIC_RUNTIME    OFF)
+    set(BOOST_LIBRARY_LIST chrono program_options filesystem system)
+    if(ENABLE_MPI)
     list(APPEND BOOST_LIBRARY_LIST mpi)
-  endif(ENABLE_MPI)
-  if(ALPS_HAVE_PYTHON)
+    endif(ENABLE_MPI)
+    if(ALPS_HAVE_PYTHON)
     list(APPEND BOOST_LIBRARY_LIST python)
-  endif(ALPS_HAVE_PYTHON)
-  add_boost(${BOOST_LIBRARY_LIST})
+    endif(ALPS_HAVE_PYTHON)
+    add_boost(${BOOST_LIBRARY_LIST})
 
-  add_hdf5()
-  add_alps_package(alps-utilities alps-hdf5 alps-params alps-accumulators alps-mc)
+    add_hdf5()
+    add_alps_package(alps-utilities alps-hdf5 alps-params alps-accumulators alps-mc)
 
-  add_this_package()
+    add_this_package()
 
-  add_testing()
+    add_testing()
 
-  gen_pkg_config()
+    gen_pkg_config()
 
 endif (NOT DocumentationOnly AND ALPS_HAVE_PYTHON)
 gen_documentation()
