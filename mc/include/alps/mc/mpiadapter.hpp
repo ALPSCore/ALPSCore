@@ -64,6 +64,7 @@ namespace alps {
                             merged.collective_merge(communicator, 0);
                             partial_results.insert(*it, merged.result());
                         } else
+                          // FIXME: throw exception here instead
                             partial_results.insert(*it, this->measurements[*it].result());
                     } else if (this->measurements[*it].count())
                         this->measurements[*it].collective_merge(communicator, 0);
