@@ -19,6 +19,7 @@ include(ALPSCompilerVersionCheck)
 # ALPS_GLOBAL_BUILD means building project all at once
 set(ALPS_GLOBAL_BUILD true)
 
+# disable in-source builds
 if (${CMAKE_BINARY_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
     message(FATAL_ERROR "In source builds are disabled. Please use a separate build directory")
 endif()
@@ -82,3 +83,7 @@ if(_am_building_documentation)
     unset(CMAKE_PROJECT_NAME)
 endif(_am_building_documentation)
 # unset(_am_building_documentation CACHE)
+
+# miscellaneous operations
+# create module file for lmod manager 
+configure_file("${CMAKE_SOURCE_DIR}/common/misc/alpscore.lmod.in" "${CMAKE_BINARY_DIR}/alpscore.lmod")
