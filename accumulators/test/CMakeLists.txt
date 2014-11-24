@@ -3,8 +3,9 @@ include(ALPSEnableTests)
 set (test_src
     count
     mean
-    weighted
     merge
+    mult_by_constant
+    weighted
     )
 
 foreach(test ${test_src})
