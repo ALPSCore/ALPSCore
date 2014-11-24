@@ -224,11 +224,15 @@ namespace alps {
                     template<typename S> void print(S & os) const {
                         B::print(os);
                         os << " Autocorrelation: " << short_print(autocorrelation());
-                        for (std::size_t i = 0; i < (m_ac_sum2.size() < 8 ? 1 : m_ac_sum2.size() - 7); ++i)
-                            os << std::endl
-                                << "    bin #" << std::setw(3) <<  i + 1
-                                << " : " << std::setw(8) << m_ac_count[i]
-                                << " entries: error = " << short_print(error(i));
+                        if (m_ac_sum2.size() > 0) {
+                            for (std::size_t i = 0; i < (m_ac_sum2.size() < 8 ? 1 : m_ac_sum2.size() - 7); ++i)
+                                os << std::endl
+                                    << "    bin #" << std::setw(3) <<  i + 1
+                                    << " : " << std::setw(8) << m_ac_count[i]
+                                    << " entries: error = " << short_print(error(i));
+                            os << std::endl;
+                        } else
+                            os << "No mesurements" << std::endl;
                     }
 
                     void save(hdf5::archive & ar) const {
