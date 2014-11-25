@@ -66,7 +66,6 @@ alps_add_module(alps-params params)
 add_subdirectory(mc)
 alps_add_module(alps-mc mc)
 
-option(BuildPython "Build Python interface" ON)
 if (BuildPython)
     set(ALPS_HAVE_PYTHON ON)
     # python libraries
