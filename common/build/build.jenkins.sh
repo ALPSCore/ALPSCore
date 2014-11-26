@@ -7,6 +7,7 @@
 # HDF5_ROOT - location for the HDF5 distribution
 # EXTRA_CMAKE_FLAGS - extra options for CMake invocation (can be empty)
 # EXTRA_MAKE_FLAGS - extra options for the first `make` invocation (can be empty)
+# FAST_BUILD - don't remove old build files if set and true
 
 # Make sure we are in top directory for the repository
 SCRIPTDIR=$(dirname $0)
@@ -26,11 +27,16 @@ BUILDDIR=$PWD/build.tmp
 ROOTDIR=$PWD
 
 mkdir $INSTALLDIR 2>/dev/null
-mkdir $DOCDIR 2>/dev/null
 
-rm -rf $BUILDDIR
-mkdir $BUILDDIR
+if [[ -z "$FAST_BUILD" || "$FAST_BUILD" == 0 || "$FAST_BUILD" == 'false' ]]; then
+    rm -rf $BUILDDIR
+else
+    rm -f $BUILDDIR/CMakeCache.txt
+fi
+mkdir -p $BUILDDIR
 cd $BUILDDIR
+rm -rf "$INSTALLDIR"
+mkdir -p "$INSTALLDIR"
 
 cmake \
   -DCMAKE_INSTALL_PREFIX="${INSTALLDIR}" \
