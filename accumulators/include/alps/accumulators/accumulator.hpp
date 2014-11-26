@@ -161,6 +161,34 @@ namespace alps {
                     boost::apply_visitor(visitor, m_variant);
                     return visitor.value;
                 }
+            
+            // Code to merge result_wrappers
+            private:
+                /// Service class to access elements of a variant type
+                struct merge_visitor: public boost::static_visitor<> {
+                  // The result_wrapper we want to merge (RHS):
+                  const result_wrapper& rhs_acc;
+
+                  // Remember the RHS accumulator
+                  merge_visitor(const result_wrapper& b): rhs_acc(b) {}
+                  
+                  // This is called by apply_visitor()
+                  template <typename P> // P can be dereferenced to base_wrapper<T>
+                  void operator()(P& lhs_ptr)
+                  {
+                    const P* rhs_ptr=boost::get<P>(& rhs_acc.m_variant);
+                    if (!rhs_ptr) throw std::runtime_error("Only results of the same type can be merged"
+                                                           + ALPS_STACKTRACE);
+                    lhs_ptr->merge(**rhs_ptr);
+                  }
+                };
+            public:
+                /// Merge another accumulator into this one. @param rhs_acc : accumulator to merge.
+                void merge(const result_wrapper& rhs_acc) {
+                  merge_visitor visitor(rhs_acc);
+                  boost::apply_visitor(visitor, m_variant);
+                }
+
 
             // mean, error
             #define ALPS_ACCUMULATOR_PROPERTY_PROXY(PROPERTY, TYPE)                                                 \
@@ -824,7 +852,14 @@ namespace alps {
                             m_types[i - 1].swap(m_types[i - 2]);
                     }
 
-                    void merge(wrapper_set const &) {}
+                    void merge(wrapper_set const &rhs) {
+                        iterator it1 = this->begin();
+                        const_iterator it2 = rhs.begin();
+                        for(; it1 != end(); ++it1, ++it2) { 
+                            if (it1->first != it2 ->first) throw std::logic_error("Can't merge" + it1->first + " and " + it2->first);
+                            it1->second->merge(*(it2->second));
+                            }
+                    }
 
                     void print(std::ostream & os) const {
                         for(const_iterator it = begin(); it != end(); ++it)
