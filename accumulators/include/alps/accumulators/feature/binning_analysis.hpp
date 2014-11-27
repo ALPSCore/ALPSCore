@@ -272,7 +272,7 @@ namespace alps {
                     void merge(const A& rhs)
                     {
                       throw std::logic_error("Merging binning accumulators is not yet implemented"
-                                             +ALPS_STACKTRACE);
+                                             + ALPS_STACKTRACE);
                     }
 #ifdef ALPS_HAVE_MPI
                     void collective_merge(
@@ -345,12 +345,18 @@ namespace alps {
                     Result()
                         : B()
                         , m_ac_autocorrelation()
+                        , m_ac_count()
+                        , m_ac_errors()
                     {}
 
                     template<typename A> Result(A const & acc)
                         : B(acc)
                         , m_ac_autocorrelation(detail::autocorrelation_impl(acc))
-                    {}
+                        , m_ac_count()
+                        , m_ac_errors()
+                    {
+                        // TODO: copy error and error bins
+                    }
 
                     autocorrelation_type const autocorrelation() const {
                         return m_ac_autocorrelation;
@@ -359,6 +365,14 @@ namespace alps {
                     template<typename S> void print(S & os) const {
                         B::print(os);
                         os << " Tau: " << short_print(autocorrelation());
+                        if (m_ac_errors.size() > 0) {
+                            for (std::size_t i = 0; i < m_ac_errors.size(); ++i)
+                                os << std::endl
+                                    << "    bin #" << std::setw(3) <<  i + 1
+                                    << " : " << std::setw(8) << m_ac_count[i]
+                                    << " entries: error = " << short_print(m_ac_errors[i]);
+                            os << std::endl;
+                        }
                     }
 
                     void save(hdf5::archive & ar) const {
@@ -386,6 +400,8 @@ namespace alps {
 
                 private:
                     typename mean_type<B>::type m_ac_autocorrelation;
+                    std::vector<typename count_type<B>::type> m_ac_count;
+                    std::vector<typename alps::accumulators::error_type<B>::type> m_ac_errors;
             };
 
             template<typename T, typename B> class BaseWrapper<T, binning_analysis_tag, B> : public B {
