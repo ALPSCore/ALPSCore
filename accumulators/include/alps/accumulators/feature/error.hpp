@@ -245,47 +245,47 @@ namespace alps {
 
                     }
 
-                    #define NUMERIC_FUNCTION_USING                                 \
+                    #define NUMERIC_FUNCTION_USING                                  \
                         using alps::numeric::sq;                                    \
-                        using alps::numeric::cbrt;                             \
-                        using alps::numeric::cb;                               \
+                        using alps::numeric::cbrt;                                  \
+                        using alps::numeric::cb;                                    \
                         using std::sqrt;                                            \
-                        using alps::numeric::sqrt;                             \
+                        using alps::numeric::sqrt;                                  \
                         using std::exp;                                             \
-                        using alps::numeric::exp;                              \
+                        using alps::numeric::exp;                                   \
                         using std::log;                                             \
-                        using alps::numeric::log;                              \
+                        using alps::numeric::log;                                   \
                         using std::abs;                                             \
-                        using alps::numeric::abs;                              \
+                        using alps::numeric::abs;                                   \
                         using std::pow;                                             \
-                        using alps::numeric::pow;                              \
+                        using alps::numeric::pow;                                   \
                         using std::sin;                                             \
-                        using alps::numeric::sin;                              \
+                        using alps::numeric::sin;                                   \
                         using std::cos;                                             \
-                        using alps::numeric::cos;                              \
+                        using alps::numeric::cos;                                   \
                         using std::tan;                                             \
-                        using alps::numeric::tan;                              \
+                        using alps::numeric::tan;                                   \
                         using std::sinh;                                            \
-                        using alps::numeric::sinh;                             \
+                        using alps::numeric::sinh;                                  \
                         using std::cosh;                                            \
-                        using alps::numeric::cosh;                             \
+                        using alps::numeric::cosh;                                  \
                         using std::tanh;                                            \
-                        using alps::numeric::tanh;                             \
+                        using alps::numeric::tanh;                                  \
                         using std::asin;                                            \
-                        using alps::numeric::asin;                             \
+                        using alps::numeric::asin;                                  \
                         using std::acos;                                            \
-                        using alps::numeric::acos;                             \
+                        using alps::numeric::acos;                                  \
                         using std::atan;                                            \
-                        using alps::numeric::atan;                             \
-                        using alps::numeric::operator+;                        \
-                        using alps::numeric::operator-;                        \
-                        using alps::numeric::operator*;                        \
+                        using alps::numeric::atan;                                  \
+                        using alps::numeric::operator+;                             \
+                        using alps::numeric::operator-;                             \
+                        using alps::numeric::operator*;                             \
                         using alps::numeric::operator/;
 
                     #define NUMERIC_FUNCTION_IMPLEMENTATION(FUNCTION_NAME, ERROR)    \
                         void FUNCTION_NAME () {                                      \
                             B:: FUNCTION_NAME ();                                    \
-                            NUMERIC_FUNCTION_USING                                  \
+                            NUMERIC_FUNCTION_USING                                   \
                             m_error = ERROR ;                                        \
                         }
 

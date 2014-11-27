@@ -193,6 +193,10 @@ namespace alps {
                         return (err * err * fac / var_0 - one) / two;
                     }
 
+                    uint32_t binning_depth() const {
+                        return m_ac_sum2.size() < 8 ? 1 : m_ac_sum2.size() - 7;
+                    }
+
                     using B::operator();
                     void operator()(T const & val) {
                         using alps::numeric::operator+=;
@@ -225,7 +229,7 @@ namespace alps {
                         B::print(os);
                         os << " Autocorrelation: " << short_print(autocorrelation());
                         if (m_ac_sum2.size() > 0) {
-                            for (std::size_t i = 0; i < (m_ac_sum2.size() < 8 ? 1 : m_ac_sum2.size() - 7); ++i)
+                            for (std::size_t i = 0; i < binning_depth(); ++i)
                                 os << std::endl
                                     << "    bin #" << std::setw(3) <<  i + 1
                                     << " : " << std::setw(8) << m_ac_count[i]
@@ -339,23 +343,33 @@ namespace alps {
             // TODO: remove autocorrelation on any transform
             template<typename T, typename B> class Result<T, binning_analysis_tag, B> : public B {
 
+                typedef Result<T, binning_analysis_tag, B> self_type;
+                typedef typename alps::accumulators::error_type<B>::type error_type;
+                typedef typename alps::hdf5::scalar_type<error_type>::type error_scalar_type;
+                typedef typename std::vector<error_type>::iterator error_iterator;
+
                 public:
                     typedef typename alps::accumulators::autocorrelation_type<B>::type autocorrelation_type;
 
                     Result()
                         : B()
                         , m_ac_autocorrelation()
-                        , m_ac_count()
                         , m_ac_errors()
                     {}
 
                     template<typename A> Result(A const & acc)
                         : B(acc)
                         , m_ac_autocorrelation(detail::autocorrelation_impl(acc))
-                        , m_ac_count()
-                        , m_ac_errors()
+                        , m_ac_errors(acc.binning_depth())
                     {
-                        // TODO: copy error and error bins
+                        for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
+                            *it = acc.error(it - m_ac_errors.begin());
+                    }
+
+                    error_type const error(std::size_t bin_level = std::numeric_limits<std::size_t>::max()) const {
+                        if (m_ac_errors.size() < 2)
+                            return alps::numeric::inf<error_type>();
+                        return m_ac_errors[bin_level >= m_ac_errors.size() ? 0 : bin_level];
                     }
 
                     autocorrelation_type const autocorrelation() const {
@@ -369,7 +383,6 @@ namespace alps {
                             for (std::size_t i = 0; i < m_ac_errors.size(); ++i)
                                 os << std::endl
                                     << "    bin #" << std::setw(3) <<  i + 1
-                                    << " : " << std::setw(8) << m_ac_count[i]
                                     << " entries: error = " << short_print(m_ac_errors[i]);
                             os << std::endl;
                         }
@@ -395,13 +408,234 @@ namespace alps {
                         ;
                     }
 
-                    // TODO: add functions and operators
-                    // TODO: add error analysis
+                    template<typename U> void operator+=(U const & arg) { augaddsub(arg); B::operator+=(arg); }
+                    template<typename U> void operator-=(U const & arg) { augaddsub(arg); B::operator-=(arg); }
+                    template<typename U> void operator*=(U const & arg) { augmul(arg); }
+                    template<typename U> void operator/=(U const & arg) { augdiv(arg); }
+                    void negate() {
+                        using alps::numeric::operator-;
+                        for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
+                            *it = -*it;
+                        B::negate();
+                    }
+                    void inverse() {
+                        using alps::numeric::operator*;
+                        using alps::numeric::operator/;
+                        for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
+                            *it = dynamic_cast<self_type &>(*this).error(it - m_ac_errors.begin()) / (this->mean() * this->mean());
+                        B::inverse();
+                    }
+
+                    #define NUMERIC_FUNCTION_USING                                  \
+                        using alps::numeric::sq;                                    \
+                        using alps::numeric::cbrt;                                  \
+                        using alps::numeric::cb;                                    \
+                        using std::sqrt;                                            \
+                        using alps::numeric::sqrt;                                  \
+                        using std::exp;                                             \
+                        using alps::numeric::exp;                                   \
+                        using std::log;                                             \
+                        using alps::numeric::log;                                   \
+                        using std::abs;                                             \
+                        using alps::numeric::abs;                                   \
+                        using std::pow;                                             \
+                        using alps::numeric::pow;                                   \
+                        using std::sin;                                             \
+                        using alps::numeric::sin;                                   \
+                        using std::cos;                                             \
+                        using alps::numeric::cos;                                   \
+                        using std::tan;                                             \
+                        using alps::numeric::tan;                                   \
+                        using std::sinh;                                            \
+                        using alps::numeric::sinh;                                  \
+                        using std::cosh;                                            \
+                        using alps::numeric::cosh;                                  \
+                        using std::tanh;                                            \
+                        using alps::numeric::tanh;                                  \
+                        using std::asin;                                            \
+                        using alps::numeric::asin;                                  \
+                        using std::acos;                                            \
+                        using alps::numeric::acos;                                  \
+                        using std::atan;                                            \
+                        using alps::numeric::atan;                                  \
+                        using alps::numeric::operator+;                             \
+                        using alps::numeric::operator-;                             \
+                        using alps::numeric::operator*;                             \
+                        using alps::numeric::operator/;
+
+                    void sin() {
+                        B::sin();
+                        NUMERIC_FUNCTION_USING
+                        for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
+                            *it = abs(cos(this->mean()) * *it);
+                    }
+
+                    void cos() {
+                        B::sin();
+                        NUMERIC_FUNCTION_USING
+                        for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
+                            *it = abs(-sin(this->mean()) * *it);
+                    }
+
+                    void tan() {
+                        B::sin();
+                        NUMERIC_FUNCTION_USING
+                        for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
+                            *it = abs(error_scalar_type(1) / (cos(this->mean()) * cos(this->mean())) * *it);
+                    }
+
+                    void sinh() {
+                        B::sin();
+                        NUMERIC_FUNCTION_USING
+                        for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
+                            *it = abs(cosh(this->mean()) * *it);
+                    }
+
+                    void cosh() {
+                        B::sin();
+                        NUMERIC_FUNCTION_USING
+                        for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
+                            *it = abs(sinh(this->mean()) * *it);
+                    }
+
+                    void tanh() {
+                        B::sin();
+                        NUMERIC_FUNCTION_USING
+                        for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
+                            *it = abs(error_scalar_type(1) / (cosh(this->mean()) * cosh(this->mean())) * *it);
+                    }
+
+                    void asin() {
+                        B::sin();
+                        NUMERIC_FUNCTION_USING
+                        for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
+                            *it = abs(error_scalar_type(1) / sqrt(error_scalar_type(1) - this->mean() * this->mean()) * *it);
+                    }
+
+                    void acos() {
+                        B::sin();
+                        NUMERIC_FUNCTION_USING
+                        for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
+                            *it = abs(error_scalar_type(-1) / sqrt(error_scalar_type(1) - this->mean() * this->mean()) * *it);
+                    }
+
+                    void atan() {
+                        B::sin();
+                        NUMERIC_FUNCTION_USING
+                        for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
+                            *it = abs(error_scalar_type(1) / (error_scalar_type(1) + this->mean() * this->mean()) * *it);
+                    }
+
+                    // abs does not change the error, so nothing has to be done ...
+
+                    void sq() {
+                        B::sin();
+                        NUMERIC_FUNCTION_USING
+                        for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
+                            *it = abs(error_scalar_type(2) * this->mean() * *it);
+                    }
+
+                    void sqrt() {
+                        B::sin();
+                        NUMERIC_FUNCTION_USING
+                        for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
+                            *it = abs(*it / (error_scalar_type(2) * sqrt(this->mean())));
+                    }
+
+                    void cb() {
+                        B::sin();
+                        NUMERIC_FUNCTION_USING
+                        for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
+                            *it = abs(error_scalar_type(3) * sq(this->mean()) * *it);
+                    }
+
+                    void cbrt() {
+                        B::sin();
+                        NUMERIC_FUNCTION_USING
+                        for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
+                            *it = abs(*it / (error_scalar_type(3) * sq(pow(this->mean(), error_scalar_type(1./3.)))));
+                    }
+
+                    void exp() {
+                        B::sin();
+                        NUMERIC_FUNCTION_USING
+                        for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
+                            *it = exp(this->mean()) * *it;
+                    }
+
+                    void log() {
+                        B::sin();
+                        NUMERIC_FUNCTION_USING
+                        for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
+                            *it = abs(*it / this->mean());
+                    }
 
                 private:
                     typename mean_type<B>::type m_ac_autocorrelation;
-                    std::vector<typename count_type<B>::type> m_ac_count;
                     std::vector<typename alps::accumulators::error_type<B>::type> m_ac_errors;
+
+                    template<typename U> void augaddsub (U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {
+                        using alps::numeric::operator+;
+                        for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
+                            *it = *it + dynamic_cast<self_type const &>(arg).error(it - m_ac_errors.begin());
+                    }
+                    template<typename U> void augaddsub (U const & arg, typename boost::enable_if<boost::mpl::and_<
+                          boost::is_scalar<U>
+                        , typename has_operator_add<error_type, U>::type
+                    >, int>::type = 0) {}
+                    template<typename U> void augaddsub (U const & arg, typename boost::enable_if<boost::mpl::and_<
+                          boost::is_scalar<U>
+                        , boost::mpl::not_<typename has_operator_add<error_type, U>::type>
+                    >, int>::type = 0) {
+                        throw std::runtime_error(std::string(typeid(error_type).name()) + " has no operator + " + typeid(U).name() + ALPS_STACKTRACE);
+                    }
+
+                    template<typename U> void augmul (U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {
+                        using alps::numeric::operator*;
+                        using alps::numeric::operator+;
+                        for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
+                            *it = arg.mean() * *it + this->mean() * dynamic_cast<self_type const &>(arg).error(it - m_ac_errors.begin());
+                        B::operator*=(arg);
+                    }
+                    template<typename U> void augmul (U const & arg, typename boost::enable_if<boost::mpl::and_<
+                          boost::is_scalar<U>
+                        , typename has_operator_mul<error_type, U>::type
+                    >, int>::type = 0) {
+                        using alps::numeric::operator*;
+                        for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
+                            *it = *it * arg;
+                        B::operator*=(arg);
+                    }
+                    template<typename U> void augmul (U const & arg, typename boost::enable_if<boost::mpl::and_<
+                          boost::is_scalar<U>
+                        , boost::mpl::not_<typename has_operator_mul<error_type, U>::type>
+                    >, int>::type = 0) {
+                        throw std::runtime_error(std::string(typeid(error_type).name()) + " has no operator * " + typeid(U).name() + ALPS_STACKTRACE);
+                    }
+
+                    template<typename U> void augdiv (U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {
+                        using alps::numeric::operator*;
+                        using alps::numeric::operator/;
+                        using alps::numeric::operator+;
+                        for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
+                            *it = *it / arg.mean() + this->mean() * dynamic_cast<self_type const &>(arg).error(it - m_ac_errors.begin()) / (arg.mean() * arg.mean());
+                        B::operator/=(arg);
+                    }
+                    template<typename U> void augdiv (U const & arg, typename boost::enable_if<boost::mpl::and_<
+                          boost::is_scalar<U>
+                        , typename has_operator_div<error_type, U>::type
+                    >, int>::type = 0) {
+                        using alps::numeric::operator/;
+                        for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
+                            *it = *it / arg;
+                        B::operator/=(arg);
+                    }
+                    template<typename U> void augdiv (U const & arg, typename boost::enable_if<boost::mpl::and_<
+                          boost::is_scalar<U>
+                        , boost::mpl::not_<typename has_operator_div<error_type, U>::type>
+                    >, int>::type = 0) {
+                        throw std::runtime_error(std::string(typeid(error_type).name()) + " has no operator / " + typeid(U).name() + ALPS_STACKTRACE);
+                    }                    
             };
 
             template<typename T, typename B> class BaseWrapper<T, binning_analysis_tag, B> : public B {
