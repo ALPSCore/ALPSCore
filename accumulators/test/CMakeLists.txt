@@ -1,10 +1,13 @@
 include(ALPSEnableTests)
 
 set (test_src
+    add_accumulators
     count
+    divide_accumulators
     mean
-    weighted
     merge
+    mult_by_constant
+    weighted
     )
 
 foreach(test ${test_src})

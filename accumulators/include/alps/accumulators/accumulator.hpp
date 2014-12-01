@@ -500,7 +500,7 @@ namespace alps {
                   }
                 };
             public:
-                /// Merge another accumulator into this one. @param rhs_acc : accumulator to merge.
+                /// Merge another accumulator into this one. @param rhs_acc  accumulator to merge.
                 void merge(const accumulator_wrapper& rhs_acc) {
                   merge_visitor visitor(rhs_acc);
                   boost::apply_visitor(visitor, m_variant);
@@ -824,7 +824,15 @@ namespace alps {
                             m_types[i - 1].swap(m_types[i - 2]);
                     }
 
-                    void merge(wrapper_set const &) {}
+                    /// Merge another accumulator/result set into this one. @param rhs the set to merge.
+                    void merge(wrapper_set const &rhs) {
+                        iterator it1 = this->begin();
+                        const_iterator it2 = rhs.begin();
+                        for(; it1 != end(); ++it1, ++it2) { 
+                            if (it1->first != it2 ->first) throw std::logic_error("Can't merge" + it1->first + " and " + it2->first);
+                            it1->second->merge(*(it2->second));
+                        }
+                    }
 
                     void print(std::ostream & os) const {
                         for(const_iterator it = begin(); it != end(); ++it)

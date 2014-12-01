@@ -20,17 +20,24 @@ endif()
 
 # Build static XOR shared 
 # Defines ALPS_BUILD_TYPE=STATIC|DYNAMIC .
-option(BuildStatic "Build static libraries" ON)
-option(BuildShared "Build shared libraries" OFF)
+option(BuildStatic "Build static libraries" OFF)
+option(BuildShared "Build shared libraries" ON)
+option(BuildPython "Build Python interface" ON)
 if (BuildStatic AND NOT BuildShared) 
     message(STATUS "Building static libraries")
     set(ALPS_BUILD_TYPE STATIC)
+    set(BUILD_SHARED_LIBS OFF)
 elseif(BuildShared AND NOT BuildStatic)
     message(STATUS "Building shared libraries")
     set(ALPS_BUILD_TYPE SHARED)
+    set(BUILD_SHARED_LIBS ON)
 else()
-    message(FATAL_ERROR "Please choose BuildStatic XOR BuildShared type of building libraries.")
+    message(FATAL_ERROR "Please choose EITHER BuildStatic OR BuildShared type of building libraries, NOT both")
 endif()
+if (BuildPython AND NOT BuildShared)
+    message(FATAL_ERROR "Python interface requires a shared (BuildShared=ON) build")
+endif()
+
 
 # Define ALPS_ROOT and add it to cmake module path 
 if (NOT DEFINED ALPS_ROOT)
