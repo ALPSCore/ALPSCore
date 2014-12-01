@@ -1,6 +1,7 @@
 include(ALPSEnableTests)
 
 set (test_src
+    add_accumulators
     count
     mean
     merge
