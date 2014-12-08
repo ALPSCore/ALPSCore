@@ -30,31 +30,18 @@ namespace alps {
 
         namespace wrapped {
 
-            // TODO: take type from variant type
-            class MeanAccumulatorDouble {
-                public:
-                    MeanAccumulatorDouble(std::string const & name): m_name(name) {}
-                private:
-                    std::string m_name;
-            };
-
-
             class ALPS_DECL virtual_accumulator_wrapper {
                 public:
-                // default constructor
+                    // default constructor
                     virtual_accumulator_wrapper();
 
-                // // constructor from raw accumulator
-                //     template<typename T> virtual_accumulator_wrapper(T arg)
-                //         : m_variant(typename detail::add_base_wrapper_pointer<typename value_type<T>::type>::type(
-                //             new derived_accumulator_wrapper<T>(arg))
-                //           )
-                //     {}
+                    // constructor from raw accumulator
+                    virtual_accumulator_wrapper(accumulator_wrapper * arg);
 
-                // copy constructor
+                    // copy constructor
                     virtual_accumulator_wrapper(virtual_accumulator_wrapper const & rhs);
 
-                // constructor from hdf5
+                    // constructor from hdf5
                     virtual_accumulator_wrapper(hdf5::archive & ar);
 
                     virtual ~virtual_accumulator_wrapper();
@@ -162,8 +149,19 @@ namespace alps {
         }
     }
 
+    // TODO: take type from variant type
+    struct MeanAccumulatorDouble {
+        public:
+            MeanAccumulatorDouble(std::string const & name): m_name(name) {}
+            std::string const & name() const { return m_name; }
+        private:
+            std::string m_name;
+    };
+    template<typename T> inline accumulators::impl::wrapper_set<T> & operator<<(accumulators::impl::wrapper_set<T> & set, const MeanAccumulatorDouble & arg);
+
     typedef accumulators::impl::wrapper_set<accumulators::wrapped::virtual_accumulator_wrapper> accumulator_set;
     // typedef impl::wrapper_set<result_wrapper> result_set;
+
 }
 
 #endif

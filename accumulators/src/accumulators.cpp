@@ -20,14 +20,13 @@ namespace alps {
 				, m_ptr(new accumulator_wrapper()) 
 			{}
 
-                // // constructor from raw accumulator
-                //     template<typename T> virtual_accumulator_wrapper(T arg)
-                //         : m_variant(typename detail::add_base_wrapper_pointer<typename value_type<T>::type>::type(
-                //             new derived_accumulator_wrapper<T>(arg))
-                //           )
-                //     {}
+            // constructor from raw accumulator
+            virtual_accumulator_wrapper::virtual_accumulator_wrapper(accumulator_wrapper * arg)
+				: m_cnt(new std::ptrdiff_t(1))
+				, m_ptr(arg) 
+            {}
 
-                // copy constructor
+            // copy constructor
 			virtual_accumulator_wrapper::virtual_accumulator_wrapper(virtual_accumulator_wrapper const & rhs)
 				: m_cnt(rhs.m_cnt)
 				, m_ptr(rhs.m_ptr)
@@ -35,7 +34,7 @@ namespace alps {
 				++(*m_cnt);
 			}
 
-                // constructor from hdf5
+            // constructor from hdf5
 			virtual_accumulator_wrapper::virtual_accumulator_wrapper(hdf5::archive & ar)
 				: m_cnt(new std::ptrdiff_t(1))
 				, m_ptr(new accumulator_wrapper(ar))
@@ -57,7 +56,7 @@ namespace alps {
                     //     return (*this);
                     // }
 
-                    /// Merge another accumulator into this one. @param rhs_acc  accumulator to merge.
+            /// Merge another accumulator into this one. @param rhs_acc  accumulator to merge.
 			void virtual_accumulator_wrapper::merge(const virtual_accumulator_wrapper & rhs){
             	m_ptr->merge(*(rhs.m_ptr));
             }
@@ -80,7 +79,7 @@ namespace alps {
                     // }
                     // template <> MeanAccumulatorDouble & extract<MeanAccumulatorDouble>();
 
-                // count
+            // count
             boost::uint64_t virtual_accumulator_wrapper::count() const{
             	return m_ptr->count();
             }
@@ -150,4 +149,15 @@ namespace alps {
 #endif
 		}
 	}
+
+    template<typename T> inline accumulators::impl::wrapper_set<T> & operator<<(accumulators::impl::wrapper_set<T> & set, const MeanAccumulatorDouble & arg) {
+        set.insert(arg.name(), new accumulators::wrapped::virtual_accumulator_wrapper(new accumulators::accumulator_wrapper(
+			accumulators::impl::Accumulator<
+				double, accumulators::mean_tag, accumulators::impl::Accumulator<
+					double, accumulators::count_tag, accumulators::impl::AccumulatorBase<double> 
+				> 
+			>()
+        )));
+        return set;
+    }
 }
