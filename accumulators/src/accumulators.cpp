@@ -4,7 +4,7 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#include <alps/acc.hpp>
+#include <alps/accumulators_.hpp>
 #include <alps/accumulators/accumulator.hpp>
 #include <alps/accumulators/namedaccumulators.hpp>
 
@@ -38,8 +38,8 @@ namespace alps {
                 // constructor from hdf5
 			virtual_accumulator_wrapper::virtual_accumulator_wrapper(hdf5::archive & ar)
 				: m_cnt(new std::ptrdiff_t(1))
-				, m_ptr = new accumulator_wrapper(ar)
-            {}}
+				, m_ptr(new accumulator_wrapper(ar))
+            {}
 
 			// destructor
 			virtual_accumulator_wrapper::~virtual_accumulator_wrapper() {
