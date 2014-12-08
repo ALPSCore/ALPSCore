@@ -8,5 +8,6 @@
 #define ALPS_ACCUMULATORS_HPP
 
 #include <alps/accumulators/accumulator.hpp>
+#include <alps/accumulators/namedaccumulators.hpp>
 
 #endif
