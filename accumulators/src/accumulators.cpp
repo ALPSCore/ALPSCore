@@ -150,13 +150,17 @@ namespace alps {
 		}
 	}
 
-    template<typename T> inline accumulators::impl::wrapper_set<T> & operator<<(accumulators::impl::wrapper_set<T> & set, const MeanAccumulatorDouble & arg) {
-        set.insert(arg.name(), new accumulators::wrapped::virtual_accumulator_wrapper(new accumulators::accumulator_wrapper(
-			accumulators::impl::Accumulator<
-				double, accumulators::mean_tag, accumulators::impl::Accumulator<
-					double, accumulators::count_tag, accumulators::impl::AccumulatorBase<double> 
-				> 
-			>()
+    accumulators::impl::wrapper_set<accumulators::wrapped::virtual_accumulator_wrapper> & operator<<(
+    	accumulators::impl::wrapper_set<accumulators::wrapped::virtual_accumulator_wrapper> & set, const MeanAccumulator<double> & arg
+    ) {
+        set.insert(arg.name(), boost::shared_ptr<accumulators::wrapped::virtual_accumulator_wrapper>(
+        	new accumulators::wrapped::virtual_accumulator_wrapper(new accumulators::accumulator_wrapper(
+				accumulators::impl::Accumulator<
+					double, accumulators::mean_tag, accumulators::impl::Accumulator<
+						double, accumulators::count_tag, accumulators::impl::AccumulatorBase<double> 
+					> 
+				>()
+			)
         )));
         return set;
     }

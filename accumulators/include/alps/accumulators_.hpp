@@ -150,14 +150,14 @@ namespace alps {
     }
 
     // TODO: take type from variant type
-    struct MeanAccumulatorDouble {
+    template<typename T> struct MeanAccumulator {
         public:
-            MeanAccumulatorDouble(std::string const & name): m_name(name) {}
+            MeanAccumulator(std::string const & name): m_name(name) {}
             std::string const & name() const { return m_name; }
         private:
             std::string m_name;
     };
-    template<typename T> inline accumulators::impl::wrapper_set<T> & operator<<(accumulators::impl::wrapper_set<T> & set, const MeanAccumulatorDouble & arg);
+    template<typename T, typename U> inline accumulators::impl::wrapper_set<T> & operator<<(accumulators::impl::wrapper_set<T> & set, const MeanAccumulator<U> & arg);
 
     typedef accumulators::impl::wrapper_set<accumulators::wrapped::virtual_accumulator_wrapper> accumulator_set;
     // typedef impl::wrapper_set<result_wrapper> result_set;
