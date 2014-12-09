@@ -5,7 +5,7 @@
  */
 
 #include <alps/config.hpp>
-#include <alps/accumulators/accumulator.hpp>
+#include <alps/accumulators.hpp>
 #include "gtest/gtest.h"
 
 typedef long double longdouble;

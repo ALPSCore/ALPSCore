@@ -5,7 +5,7 @@
  */
 
 #include <alps/config.hpp>
-#include <alps/accumulators/accumulator.hpp>
+#include <alps/accumulators.hpp>
 #include "gtest/gtest.h"
 
 void test_divide_accumulators_scalar(alps::accumulators::accumulator_set & measurements, std::string name) {
