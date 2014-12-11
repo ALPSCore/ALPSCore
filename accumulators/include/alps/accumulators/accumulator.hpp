@@ -10,11 +10,6 @@
 #include <alps/config.hpp>
 #include <alps/hdf5/vector.hpp>
 
-#ifndef ALPS_ACCUMULATOR_VALUE_TYPES
-    #define ALPS_ACCUMULATOR_VALUE_TYPES float, double, long double, std::vector<float>, std::vector<double>, std::vector<long double>
-    // #define ALPS_ACCUMULATOR_VALUE_TYPES double, std::vector<double>, alps::multi_array<double, 2>, alps::multi_array<double, 3>
-#endif
-
 #include <alps/accumulators/wrappers.hpp>
 // #include <alps/accumulators/feature/weight_holder.hpp>
 #include <alps/accumulators/wrapper_set.hpp>

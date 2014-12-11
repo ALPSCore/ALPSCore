@@ -18,10 +18,17 @@
 
 #include <alps/accumulators/wrapper_set.hpp>
 
+#include <boost/preprocessor/tuple/to_seq.hpp>
+#include <boost/preprocessor/seq/for_each.hpp>
+
 #include <string>
 #include <iostream>
 #include <typeinfo>
 #include <stdexcept>
+
+#ifndef ALPS_ACCUMULATOR_VALUE_TYPES_SEQ
+    #define ALPS_ACCUMULATOR_VALUE_TYPES_SEQ BOOST_PP_TUPLE_TO_SEQ(ALPS_ACCUMULATOR_VALUE_TYPES_SIZE, (ALPS_ACCUMULATOR_VALUE_TYPES))
+#endif
 
 namespace alps {
     namespace accumulators {
@@ -78,9 +85,15 @@ namespace alps {
 
                 private:
 
-                    double mean_impl(double) const;
+                    #define ALPS_ACCUMULATOR_MEAN_IMPL(r, data, T)  \
+                        T mean_impl(T) const;
+                    BOOST_PP_SEQ_FOR_EACH(ALPS_ACCUMULATOR_MEAN_IMPL, ~, ALPS_ACCUMULATOR_VALUE_TYPES_SEQ)
+                    #undef ALPS_ACCUMULATOR_MEAN_IMPL
 
-                    double error_impl(double) const;
+                    #define ALPS_ACCUMULATOR_ERROR_IMPL(r, data, T)  \
+                        T error_impl(T) const;
+                    BOOST_PP_SEQ_FOR_EACH(ALPS_ACCUMULATOR_ERROR_IMPL, ~, ALPS_ACCUMULATOR_VALUE_TYPES_SEQ)
+                    #undef ALPS_ACCUMULATOR_ERROR_IMPL
 
                 public:
 

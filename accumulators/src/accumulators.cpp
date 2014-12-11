@@ -83,15 +83,25 @@ namespace alps {
             }
 
             // mean
-            double virtual_accumulator_wrapper::mean_impl(double) const {
-                return m_ptr->mean<double>();
-            }
+            #define ALPS_ACCUMULATOR_MEAN_IMPL(r, data, T)                  \
+                T virtual_accumulator_wrapper::mean_impl(T) const {         \
+                    return m_ptr->mean<T>();                                \
+                }
+            BOOST_PP_SEQ_FOR_EACH(ALPS_ACCUMULATOR_MEAN_IMPL, ~, ALPS_ACCUMULATOR_VALUE_TYPES_SEQ)
+            #undef ALPS_ACCUMULATOR_MEAN_IMPL
 
             // error
-            double virtual_accumulator_wrapper::error_impl(double) const {
-                return m_ptr->error<double>();
-            }
+            #define ALPS_ACCUMULATOR_ERROR_IMPL(r, data, T)                 \
+                T virtual_accumulator_wrapper::error_impl(T) const {        \
+                    return m_ptr->error<T>();                               \
+                }
+            BOOST_PP_SEQ_FOR_EACH(ALPS_ACCUMULATOR_ERROR_IMPL, ~, ALPS_ACCUMULATOR_VALUE_TYPES_SEQ)
+            #undef ALPS_ACCUMULATOR_ERROR_IMPL
 
+
+            
+
+    
 
                 // // mean, error
                 // #define ALPS_ACCUMULATOR_PROPERTY_PROXY(PROPERTY, TYPE)                                                 \
