@@ -46,33 +46,34 @@ namespace alps {
 
                     virtual ~virtual_accumulator_wrapper();
 
-                    // template<typename T> void operator()(T const & value) {
-                    //     boost::apply_visitor(call_1_visitor<T>(value), m_variant);
-                    // }
-                    // template<typename T> virtual_accumulator_wrapper & operator<<(T const & value) {
-                    //     (*this)(value);
-                    //     return (*this);
-                    // }
+                    // operator()
+                    // TODO: use ALPS_ACCUMULATOR_VALUE_TYPES
+                    virtual_accumulator_wrapper & operator()(double const & value);
+
+                    template<typename T> virtual_accumulator_wrapper & operator<<(T const & value) {
+                        (*this)(value);
+                        return (*this);
+                    }
 
                     /// Merge another accumulator into this one. @param rhs  accumulator to merge.
                     void merge(const virtual_accumulator_wrapper & rhs);
 
                     virtual_accumulator_wrapper & operator=(boost::shared_ptr<virtual_accumulator_wrapper> const & rhs);
 
-                // get
+                    // get
                     // template <typename T> base_wrapper<T> & get() {
                     //     get_visitor<T> visitor;
                     //     boost::apply_visitor(visitor, m_variant);
                     //     return *visitor.value;
                     // }
 
-                // extract
+                    // extract
                     // template <typename A> A & extract() {
                     //     throw std::logic_error(std::string("unknown type : ") + typeid(A).name() + ALPS_STACKTRACE);
                     // }
                     // template <> MeanAccumulatorDouble & extract<MeanAccumulatorDouble>();
 
-                // count
+                    // count
                     boost::uint64_t count() const;
 
                 // // mean, error
@@ -106,23 +107,23 @@ namespace alps {
                 // ALPS_ACCUMULATOR_PROPERTY_PROXY(error, error_type)
                 // #undef ALPS_ACCUMULATOR_FUNCTION_PROXY
 
-                // save
+                    // save
                     void save(hdf5::archive & ar) const;
 
-                // load
+                    // load
                     void load(hdf5::archive & ar);
 
-                // reset
+                    // reset
                     void reset() const;
 
-                // result
+                    // result
                     // boost::shared_ptr<result_wrapper> result() const;
 
-                // print
+                    // print
                     void print(std::ostream & os) const;
 
 #ifdef ALPS_HAVE_MPI
-                // collective_merge
+                    // collective_merge
                     void collective_merge(boost::mpi::communicator const & comm, int root);
                     void collective_merge(boost::mpi::communicator const & comm, int root) const;
 #endif
@@ -157,11 +158,11 @@ namespace alps {
         private:
             std::string m_name;
     };
-    template<typename T, typename U> inline accumulators::impl::wrapper_set<T> & operator<<(accumulators::impl::wrapper_set<T> & set, const MeanAccumulator<U> & arg);
 
     typedef accumulators::impl::wrapper_set<accumulators::wrapped::virtual_accumulator_wrapper> accumulator_set;
     // typedef impl::wrapper_set<result_wrapper> result_set;
 
+    accumulator_set & operator<<(accumulator_set & set, const MeanAccumulator<double> & arg);
 }
 
 #endif

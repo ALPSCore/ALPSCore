@@ -37,7 +37,7 @@ namespace alps {
                 }
             };
 
-            inline void register_predefined_serializable_type();
+            void register_predefined_serializable_type();
 
         }
 

@@ -5,6 +5,7 @@ set (test_src
     count
     divide_accumulators
     mean
+    mean_wrapped
     merge
     mult_by_constant
     weighted

@@ -10,7 +10,7 @@
 
 typedef long double longdouble;
 
-template<typename A, typename T> void meas_test_body_scalar() {
+template<typename A, typename T> void mean_test_body_scalar() {
 
 	alps::accumulators::accumulator_set measurements;
 	measurements << A("obs1") << A("obs2");
@@ -27,39 +27,39 @@ template<typename A, typename T> void meas_test_body_scalar() {
 	EXPECT_EQ(results["obs2"].mean<double>() , T(500));
 }
 
-template<typename A, typename T> void meas_test_body_vector() {
+template<typename A, typename T> void mean_test_body_vector() {
 
 	alps::accumulators::accumulator_set measurements;
 	measurements << A("obs1") << A("obs2");
 
-    int L = 10;
+	int L = 10;
 
 	for (int i = 1; i < 1000; ++i) {
 		measurements["obs1"] << std::vector<T>(L, T(1.));
 		measurements["obs2"] << std::vector<T>(L, T(i));
-        std::vector<T> mean_vec_1=measurements["obs1"].mean<std::vector<T> >();
-        std::vector<T> mean_vec_2=measurements["obs2"].mean<std::vector<T> >();
-        for(int j=0;j<mean_vec_1.size();++j){
-		    EXPECT_EQ(mean_vec_1[j] , T(1.));
-		    EXPECT_EQ(mean_vec_2[j] , T(i + 1) / 2);
-        }
+		std::vector<T> mean_vec_1=measurements["obs1"].mean<std::vector<T> >();
+		std::vector<T> mean_vec_2=measurements["obs2"].mean<std::vector<T> >();
+		for(int j=0;j<mean_vec_1.size();++j){
+			EXPECT_EQ(mean_vec_1[j] , T(1.));
+			EXPECT_EQ(mean_vec_2[j] , T(i + 1) / 2);
+		}
 	}
 
 	alps::accumulators::result_set results(measurements);
-        std::vector<T> mean_vec_1=results["obs1"].mean<std::vector<T> >();
-        std::vector<T> mean_vec_2=results["obs2"].mean<std::vector<T> >();
-        for(int i=0;i<mean_vec_1.size();++i){
-	  	EXPECT_EQ(mean_vec_1[i] , T(1.));
-        EXPECT_EQ(mean_vec_2[i] , T(500.));
+		std::vector<T> mean_vec_1=results["obs1"].mean<std::vector<T> >();
+		std::vector<T> mean_vec_2=results["obs2"].mean<std::vector<T> >();
+		for(int i=0;i<mean_vec_1.size();++i){
+	  		EXPECT_EQ(mean_vec_1[i] , T(1.));
+			EXPECT_EQ(mean_vec_2[i] , T(500.));
 	}
 }
 
 #define ALPS_TEST_RUN_MEAN_TEST(A, T, N)														\
 	TEST(accumulator, mean_feature_scalar_ ## A ## _ ## N){										\
-	  	meas_test_body_scalar<alps::accumulators:: A < T >, T >();								\
+	  	mean_test_body_scalar<alps::accumulators:: A < T >, T >();								\
 	}																							\
 	TEST(accumulator, mean_feature_vector_ ## A ## _vector_ ## N){								\
-	  	meas_test_body_vector<alps::accumulators:: A <std::vector< T > >, T >();				\
+	  	mean_test_body_vector<alps::accumulators:: A <std::vector< T > >, T >();				\
 	}
 
 #define ALPS_TEST_RUN_MEAN_TEST_EACH_TYPE(A)													\
@@ -77,7 +77,7 @@ ALPS_TEST_RUN_MEAN_TEST_EACH_TYPE(FullBinningAccumulator)
 
 int main(int argc, char **argv) 
 {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+	::testing::InitGoogleTest(&argc, argv);
+	return RUN_ALL_TESTS();
 }
 

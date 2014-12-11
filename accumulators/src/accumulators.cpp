@@ -48,13 +48,11 @@ namespace alps {
 				}
             }
 
-                    // template<typename T> void operator()(T const & value) {
-                    //     boost::apply_visitor(call_1_visitor<T>(value), m_variant);
-                    // }
-                    // template<typename T> virtual_accumulator_wrapper & operator<<(T const & value) {
-                    //     (*this)(value);
-                    //     return (*this);
-                    // }
+            // operator()
+            virtual_accumulator_wrapper &  virtual_accumulator_wrapper::operator()(double const & value) {
+                (*m_ptr)(value);
+                return (*this);
+            }
 
             /// Merge another accumulator into this one. @param rhs_acc  accumulator to merge.
 			void virtual_accumulator_wrapper::merge(const virtual_accumulator_wrapper & rhs){
@@ -150,9 +148,7 @@ namespace alps {
 		}
 	}
 
-    accumulators::impl::wrapper_set<accumulators::wrapped::virtual_accumulator_wrapper> & operator<<(
-    	accumulators::impl::wrapper_set<accumulators::wrapped::virtual_accumulator_wrapper> & set, const MeanAccumulator<double> & arg
-    ) {
+    accumulator_set & operator<<(accumulator_set & set, const MeanAccumulator<double> & arg) {
         set.insert(arg.name(), boost::shared_ptr<accumulators::wrapped::virtual_accumulator_wrapper>(
         	new accumulators::wrapped::virtual_accumulator_wrapper(new accumulators::accumulator_wrapper(
 				accumulators::impl::Accumulator<
