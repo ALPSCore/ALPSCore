@@ -53,14 +53,15 @@ namespace alps {
 
                     virtual ~virtual_accumulator_wrapper();
 
-                    // operator()
-                    // TODO: use ALPS_ACCUMULATOR_VALUE_TYPES
-                    virtual_accumulator_wrapper & operator()(double const & value);
-
-                    template<typename T> virtual_accumulator_wrapper & operator<<(T const & value) {
-                        (*this)(value);
-                        return (*this);
-                    }
+                    // operator(), operator<<
+                    #define ALPS_ACCUMULATOR_OPERATOR_CALL(r, data, T)              \
+                        virtual_accumulator_wrapper & operator()(T const & value);  \
+                        virtual_accumulator_wrapper & operator<<(T const & value) { \
+                            (*this)(value);                                         \
+                            return (*this);                                         \
+                        }
+                    BOOST_PP_SEQ_FOR_EACH(ALPS_ACCUMULATOR_OPERATOR_CALL, ~, ALPS_ACCUMULATOR_VALUE_TYPES_SEQ)
+                    #undef ALPS_ACCUMULATOR_OPERATOR_CALL
 
                     /// Merge another accumulator into this one. @param rhs  accumulator to merge.
                     void merge(const virtual_accumulator_wrapper & rhs);

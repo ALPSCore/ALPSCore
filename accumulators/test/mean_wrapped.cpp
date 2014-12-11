@@ -17,11 +17,11 @@ TEST(accumulator, mean_feature_scalar_MeanAccumulator_double) {
 		<< alps::MeanAccumulator<double>("obs2");
 
 	for (int i = 1; i < 1000; ++i) {
-		measurements["obs1"] << 1;
-		EXPECT_EQ(measurements["obs1"].count() , i);
+		measurements["obs1"] << double(1);
+		EXPECT_EQ(measurements["obs1"].count(), i);
 		EXPECT_EQ(measurements["obs1"].mean<double>() , double(1));
-		measurements["obs2"] << i;
-		EXPECT_EQ(measurements["obs2"].count() , i);
+		measurements["obs2"] << double(i);
+		EXPECT_EQ(measurements["obs2"].count(), i);
 		EXPECT_EQ(measurements["obs2"].mean<double>() , double(i + 1) / 2);
 	}
 

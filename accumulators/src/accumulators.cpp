@@ -49,10 +49,13 @@ namespace alps {
             }
 
             // operator()
-            virtual_accumulator_wrapper &  virtual_accumulator_wrapper::operator()(double const & value) {
-                (*m_ptr)(value);
-                return (*this);
-            }
+            #define ALPS_ACCUMULATOR_OPERATOR_CALL(r, data, T)                                              \
+                virtual_accumulator_wrapper & virtual_accumulator_wrapper::operator()(T const & value) {    \
+                    (*m_ptr)(value);                                                                        \
+                    return (*this);                                                                         \
+                }
+            BOOST_PP_SEQ_FOR_EACH(ALPS_ACCUMULATOR_OPERATOR_CALL, ~, ALPS_ACCUMULATOR_VALUE_TYPES_SEQ)
+            #undef ALPS_ACCUMULATOR_OPERATOR_CALL
 
             /// Merge another accumulator into this one. @param rhs_acc  accumulator to merge.
 			void virtual_accumulator_wrapper::merge(const virtual_accumulator_wrapper & rhs){
