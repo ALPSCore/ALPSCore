@@ -76,36 +76,23 @@ namespace alps {
                     // count
                     boost::uint64_t count() const;
 
-                // // mean, error
-                // #define ALPS_ACCUMULATOR_PROPERTY_PROXY(PROPERTY, TYPE)                                                 \
-                //     private:                                                                                            \
-                //         template<typename T> struct PROPERTY ## _visitor: public boost::static_visitor<> {              \
-                //             template<typename X> void apply(typename boost::enable_if<                                  \
-                //                 typename detail::is_valid_argument<typename TYPE <X>::type, T>::type, X const &         \
-                //             >::type arg) const {                                                                        \
-                //                 value = arg. PROPERTY ();                                                               \
-                //             }                                                                                           \
-                //             template<typename X> void apply(typename boost::disable_if<                                 \
-                //                 typename detail::is_valid_argument<typename TYPE <X>::type, T>::type, X const &         \
-                //             >::type arg) const {                                                                        \
-                //                 throw std::logic_error(std::string("cannot convert: ")                                  \
-                //                     + typeid(typename TYPE <X>::type).name() + " to "                                   \
-                //                     + typeid(T).name() + ALPS_STACKTRACE);                                              \
-                //             }                                                                                           \
-                //             template<typename X> void operator()(X const & arg) const {                                 \
-                //                 apply<typename X::element_type>(*arg);                                                  \
-                //             }                                                                                           \
-                //             mutable T value;                                                                            \
-                //         };                                                                                              \
-                //     public:                                                                                             \
-                //         template<typename T> typename TYPE <base_wrapper<T> >::type PROPERTY () const {                 \
-                //             PROPERTY ## _visitor<typename TYPE <base_wrapper<T> >::type> visitor;                       \
-                //             boost::apply_visitor(visitor, m_variant);                                                   \
-                //             return visitor.value;                                                                       \
-                //         }
-                // ALPS_ACCUMULATOR_PROPERTY_PROXY(mean, mean_type)
-                // ALPS_ACCUMULATOR_PROPERTY_PROXY(error, error_type)
-                // #undef ALPS_ACCUMULATOR_FUNCTION_PROXY
+                private:
+
+                    double mean_impl(double) const;
+
+                    double error_impl(double) const;
+
+                public:
+
+                    // mean
+                    template<typename T> T mean() const {
+                        return mean_impl(T());
+                    }
+
+                    // error
+                    template<typename T> T error() const {
+                        return mean_impl(T());
+                    }
 
                     // save
                     void save(hdf5::archive & ar) const;

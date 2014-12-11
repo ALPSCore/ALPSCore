@@ -82,6 +82,17 @@ namespace alps {
             	return m_ptr->count();
             }
 
+            // mean
+            double virtual_accumulator_wrapper::mean_impl(double) const {
+                return m_ptr->mean<double>();
+            }
+
+            // error
+            double virtual_accumulator_wrapper::error_impl(double) const {
+                return m_ptr->error<double>();
+            }
+
+
                 // // mean, error
                 // #define ALPS_ACCUMULATOR_PROPERTY_PROXY(PROPERTY, TYPE)                                                 \
                 //     private:                                                                                            \

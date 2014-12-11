@@ -19,10 +19,10 @@ TEST(accumulator, mean_feature_scalar_MeanAccumulator_double) {
 	for (int i = 1; i < 1000; ++i) {
 		measurements["obs1"] << 1;
 		EXPECT_EQ(measurements["obs1"].count() , i);
-	// 	EXPECT_EQ(measurements["obs1"].mean<double>() , T(1));
+		EXPECT_EQ(measurements["obs1"].mean<double>() , T(1));
 		measurements["obs2"] << i;
 		EXPECT_EQ(measurements["obs2"].count() , i);
-	// 	EXPECT_EQ(measurements["obs2"].mean<double>() , T(i + 1) / 2);
+		EXPECT_EQ(measurements["obs2"].mean<double>() , T(i + 1) / 2);
 	}
 
 	// alps::accumulators::result_set results(measurements);
