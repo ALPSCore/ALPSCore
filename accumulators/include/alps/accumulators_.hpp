@@ -495,7 +495,9 @@ namespace alps {
         }
     }
 
-    // TODO: take type from variant type
+    typedef accumulators::impl::wrapper_set<accumulators::wrapped::virtual_accumulator_wrapper> accumulator_set;
+    typedef accumulators::impl::wrapper_set<accumulators::wrapped::virtual_result_wrapper<accumulators::wrapped::virtual_accumulator_wrapper> > result_set;
+
     template<typename T> struct MeanAccumulator {
         public:
             MeanAccumulator(std::string const & name): m_name(name) {}
@@ -504,11 +506,17 @@ namespace alps {
             std::string m_name;
     };
 
-    typedef accumulators::impl::wrapper_set<accumulators::wrapped::virtual_accumulator_wrapper> accumulator_set;
-    typedef accumulators::impl::wrapper_set<accumulators::wrapped::virtual_result_wrapper<accumulators::wrapped::virtual_accumulator_wrapper> > result_set;
+    template<typename T> struct NoBinningAccumulator {
+        public:
+            NoBinningAccumulator(std::string const & name): m_name(name) {}
+            std::string const & name() const { return m_name; }
+        private:
+            std::string m_name;
+    };
 
-    #define ALPS_ACCUMULATOR_ADD_ACCUMULATOR(r, data, T)  \
-        accumulator_set & operator<<(accumulator_set & set, const MeanAccumulator< T > & arg);
+    #define ALPS_ACCUMULATOR_ADD_ACCUMULATOR(r, data, T)                                            \
+        accumulator_set & operator<<(accumulator_set & set, const MeanAccumulator< T > & arg);      \
+        accumulator_set & operator<<(accumulator_set & set, const NoBinningAccumulator< T > & arg);
     BOOST_PP_SEQ_FOR_EACH(ALPS_ACCUMULATOR_ADD_ACCUMULATOR, ~, ALPS_ACCUMULATOR_VALUE_TYPES_SEQ)
     #undef ALPS_ACCUMULATOR_ADD_ACCUMULATOR
 }
