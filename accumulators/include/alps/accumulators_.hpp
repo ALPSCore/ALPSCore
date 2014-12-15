@@ -514,9 +514,27 @@ namespace alps {
             std::string m_name;
     };
 
+    template<typename T> struct LogBinningAccumulator {
+        public:
+            LogBinningAccumulator(std::string const & name): m_name(name) {}
+            std::string const & name() const { return m_name; }
+        private:
+            std::string m_name;
+    };
+
+    template<typename T> struct FullBinningAccumulator {
+        public:
+            FullBinningAccumulator(std::string const & name): m_name(name) {}
+            std::string const & name() const { return m_name; }
+        private:
+            std::string m_name;
+    };
+
     #define ALPS_ACCUMULATOR_ADD_ACCUMULATOR(r, data, T)                                            \
         accumulator_set & operator<<(accumulator_set & set, const MeanAccumulator< T > & arg);      \
-        accumulator_set & operator<<(accumulator_set & set, const NoBinningAccumulator< T > & arg);
+        accumulator_set & operator<<(accumulator_set & set, const NoBinningAccumulator< T > & arg); \
+        accumulator_set & operator<<(accumulator_set & set, const LogBinningAccumulator< T > & arg); \
+        accumulator_set & operator<<(accumulator_set & set, const FullBinningAccumulator< T > & arg);
     BOOST_PP_SEQ_FOR_EACH(ALPS_ACCUMULATOR_ADD_ACCUMULATOR, ~, ALPS_ACCUMULATOR_VALUE_TYPES_SEQ)
     #undef ALPS_ACCUMULATOR_ADD_ACCUMULATOR
 }

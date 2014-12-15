@@ -68,9 +68,9 @@ template<typename A, typename T> void mean_test_body_vector() {
 	ALPS_TEST_RUN_MEAN_TEST(A, longdouble, long_double)
 
 ALPS_TEST_RUN_MEAN_TEST_EACH_TYPE(MeanAccumulator)
-// ALPS_TEST_RUN_MEAN_TEST_EACH_TYPE(NoBinningAccumulator)
-// ALPS_TEST_RUN_MEAN_TEST_EACH_TYPE(LogBinningAccumulator)
-// ALPS_TEST_RUN_MEAN_TEST_EACH_TYPE(FullBinningAccumulator)
+ALPS_TEST_RUN_MEAN_TEST_EACH_TYPE(NoBinningAccumulator)
+ALPS_TEST_RUN_MEAN_TEST_EACH_TYPE(LogBinningAccumulator)
+ALPS_TEST_RUN_MEAN_TEST_EACH_TYPE(FullBinningAccumulator)
 
 #undef ALPS_TEST_RUN_MEAN_TEST
 #undef ALPS_TEST_RUN_MEAN_TEST_EACH_TYPE

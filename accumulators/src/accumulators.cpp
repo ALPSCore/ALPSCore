@@ -521,6 +521,40 @@ namespace alps {
                 )                                                                                                       \
             )));                                                                                                        \
             return set;                                                                                                 \
+        }                                                                                                               \
+        accumulator_set & operator<<(accumulator_set & set, const NoBinningAccumulator< T > & arg) {                    \
+            set.insert(arg.name(), boost::shared_ptr<accumulators::wrapped::virtual_accumulator_wrapper>(               \
+                new accumulators::wrapped::virtual_accumulator_wrapper(new accumulators::accumulator_wrapper(           \
+                    accumulators::impl::Accumulator<                                                                    \
+                        T , accumulators::binning_analysis_tag, accumulators::impl::Accumulator<                        \
+                            T , accumulators::error_tag, accumulators::impl::Accumulator<                               \
+                                T , accumulators::mean_tag, accumulators::impl::Accumulator<                            \
+                                    T , accumulators::count_tag, accumulators::impl::AccumulatorBase< T >               \
+                                >                                                                                       \
+                            >                                                                                           \
+                        >                                                                                               \
+                    >()                                                                                                 \
+                )                                                                                                       \
+            )));                                                                                                        \
+            return set;                                                                                                 \
+        }                                                                                                               \
+        accumulator_set & operator<<(accumulator_set & set, const NoBinningAccumulator< T > & arg) {                    \
+            set.insert(arg.name(), boost::shared_ptr<accumulators::wrapped::virtual_accumulator_wrapper>(               \
+                new accumulators::wrapped::virtual_accumulator_wrapper(new accumulators::accumulator_wrapper(           \
+                    accumulators::impl::Accumulator<                                                                    \
+                        T , accumulators::max_num_binning_tag, accumulators::impl::Accumulator<                         \
+                            T , accumulators::binning_analysis_tag, accumulators::impl::Accumulator<                    \
+                                T , accumulators::error_tag, accumulators::impl::Accumulator<                           \
+                                    T , accumulators::mean_tag, accumulators::impl::Accumulator<                        \
+                                        T , accumulators::count_tag, accumulators::impl::AccumulatorBase< T >           \
+                                    >                                                                                   \
+                                >                                                                                       \
+                            >                                                                                           \
+                        >                                                                                               \
+                    >()                                                                                                 \
+                )                                                                                                       \
+            )));                                                                                                        \
+            return set;                                                                                                 \
         }
     BOOST_PP_SEQ_FOR_EACH(ALPS_ACCUMULATOR_ADD_ACCUMULATOR, ~, ALPS_ACCUMULATOR_VALUE_TYPES_SEQ)
     #undef ALPS_ACCUMULATOR_ADD_ACCUMULATOR
