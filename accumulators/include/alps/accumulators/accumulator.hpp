@@ -57,19 +57,19 @@ namespace alps {
         class ALPS_DECL result_wrapper {
             public:
 
-            // default constructor
+                // default constructor
                 result_wrapper() 
                     : m_variant()
                 {}
 
-            // constructor from raw result
+                // constructor from raw result
                 template<typename T> result_wrapper(T arg)
                     : m_variant(typename detail::add_base_wrapper_pointer<typename value_type<T>::type>::type(
                         new derived_result_wrapper<T>(arg))
                       )
                 {}
 
-            // constructor from base_wrapper
+                // constructor from base_wrapper
                 template<typename T> result_wrapper(base_wrapper<T> * arg)
                     : m_variant(typename detail::add_base_wrapper_pointer<T>::type(arg))
                 {}
@@ -91,7 +91,7 @@ namespace alps {
                     boost::apply_visitor(visitor, rhs.m_variant);
                 }
 
-            // constructor from hdf5
+                // constructor from hdf5
                 result_wrapper(hdf5::archive & ar) {
                     ar[""] >> *this;
                 }
