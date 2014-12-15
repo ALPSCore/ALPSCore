@@ -25,9 +25,9 @@ TEST(accumulator, mean_feature_scalar_MeanAccumulator_double) {
 		EXPECT_EQ(measurements["obs2"].mean<double>() , double(i + 1) / 2);
 	}
 
-	// alps::accumulators::result_set results(measurements);
-	// EXPECT_EQ(results["obs1"].mean<double>() , T(1));
-	// EXPECT_EQ(results["obs2"].mean<double>() , T(500));	
+	alps::result_set results(measurements);
+	EXPECT_EQ(results["obs1"].mean<double>(), double(1));
+	EXPECT_EQ(results["obs2"].mean<double>(), double(500));	
 }
 
 int main(int argc, char **argv) 

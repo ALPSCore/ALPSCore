@@ -136,85 +136,41 @@ namespace alps {
             //             return *visitor.value;
             //         }
 
-            //     // count
-            //     private:
-            //         struct count_visitor: public boost::static_visitor<> {
-            //             template<typename T> void operator()(T const & arg) const { value = arg->count(); }
-            //             mutable boost::uint64_t value;
-            //         };
-            //     public:
-            //         boost::uint64_t count() const {
-            //             count_visitor visitor;
-            //             boost::apply_visitor(visitor, m_variant);
-            //             return visitor.value;
-            //         }
+            // count
+            template<> boost::uint64_t virtual_result_wrapper<virtual_accumulator_wrapper>::count() const{
+                return m_ptr->count();
+            }
 
-            //     // mean, error
-            //     #define ALPS_ACCUMULATOR_PROPERTY_PROXY(PROPERTY, TYPE)                                                 \
-            //         private:                                                                                            \
-            //             template<typename T> struct PROPERTY ## _visitor: public boost::static_visitor<> {              \
-            //                 template<typename X> void apply(typename boost::enable_if<                                  \
-            //                     typename detail::is_valid_argument<typename TYPE <X>::type, T>::type, X const &         \
-            //                 >::type arg) const {                                                                        \
-            //                     value = arg. PROPERTY ();                                                               \
-            //                 }                                                                                           \
-            //                 template<typename X> void apply(typename boost::disable_if<                                 \
-            //                     typename detail::is_valid_argument<typename TYPE <X>::type, T>::type, X const &         \
-            //                 >::type arg) const {                                                                        \
-            //                     throw std::logic_error(std::string("cannot convert: ")                                  \
-            //                         + typeid(typename TYPE <X>::type).name() + " to "                                   \
-            //                         + typeid(T).name() + ALPS_STACKTRACE);                                              \
-            //                 }                                                                                           \
-            //                 template<typename X> void operator()(X const & arg) const {                                 \
-            //                     apply<typename X::element_type>(*arg);                                                  \
-            //                 }                                                                                           \
-            //                 mutable T value;                                                                            \
-            //             };                                                                                              \
-            //         public:                                                                                             \
-            //             template<typename T> typename TYPE <base_wrapper<T> >::type PROPERTY () const {                 \
-            //                 PROPERTY ## _visitor<typename TYPE <base_wrapper<T> >::type> visitor;                       \
-            //                 boost::apply_visitor(visitor, m_variant);                                                   \
-            //                 return visitor.value;                                                                       \
-            //             }
-            //     ALPS_ACCUMULATOR_PROPERTY_PROXY(mean, mean_type)
-            //     ALPS_ACCUMULATOR_PROPERTY_PROXY(error, error_type)
-            //     #undef ALPS_ACCUMULATOR_FUNCTION_PROXY
+            // mean
+            #define ALPS_ACCUMULATOR_MEAN_IMPL(r, data, T)                                                      \
+                template<> T virtual_result_wrapper<virtual_accumulator_wrapper>::mean_impl(T) const {          \
+                    return m_ptr->mean<T>();                                                                    \
+                }
+            BOOST_PP_SEQ_FOR_EACH(ALPS_ACCUMULATOR_MEAN_IMPL, ~, ALPS_ACCUMULATOR_VALUE_TYPES_SEQ)
+            #undef ALPS_ACCUMULATOR_MEAN_IMPL
 
-            //     // save
-            //     private:
-            //         struct save_visitor: public boost::static_visitor<> {
-            //             save_visitor(hdf5::archive & a): ar(a) {}
-            //             template<typename T> void operator()(T & arg) const { ar[""] = *arg; }
-            //             hdf5::archive & ar;
-            //         };
-            //     public:
-            //         void save(hdf5::archive & ar) const {
-            //             boost::apply_visitor(save_visitor(ar), m_variant);
-            //         }
+            // error
+            #define ALPS_ACCUMULATOR_ERROR_IMPL(r, data, T)                                                     \
+                template<> T virtual_result_wrapper<virtual_accumulator_wrapper>::error_impl(T) const {         \
+                    return m_ptr->error<T>();                                                                   \
+                }
+            BOOST_PP_SEQ_FOR_EACH(ALPS_ACCUMULATOR_ERROR_IMPL, ~, ALPS_ACCUMULATOR_VALUE_TYPES_SEQ)
+            #undef ALPS_ACCUMULATOR_ERROR_IMPL
 
-            //     // load
-            //     private:
-            //         struct load_visitor: public boost::static_visitor<> {
-            //             load_visitor(hdf5::archive & a): ar(a) {}
-            //             template<typename T> void operator()(T const & arg) const { ar[""] >> *arg; }
-            //             hdf5::archive & ar;
-            //         };
-            //     public:
-            //         void load(hdf5::archive & ar) {
-            //             boost::apply_visitor(load_visitor(ar), m_variant);
-            //         }
+            // save
+            template<> void virtual_result_wrapper<virtual_accumulator_wrapper>::save(hdf5::archive & ar) const {
+                m_ptr->save(ar);
+            }
 
-            //     // print
-            //     private:
-            //         struct print_visitor: public boost::static_visitor<> {
-            //             print_visitor(std::ostream & o): os(o) {}
-            //             template<typename T> void operator()(T const & arg) const { arg->print(os); }
-            //             std::ostream & os;
-            //         };
-            //     public:
-            //         void print(std::ostream & os) const {
-            //             boost::apply_visitor(print_visitor(os), m_variant);
-            //         }
+            // load
+            template<> void virtual_result_wrapper<virtual_accumulator_wrapper>::load(hdf5::archive & ar){
+                m_ptr->load(ar);
+            }
+
+            // print
+            template<> void virtual_result_wrapper<virtual_accumulator_wrapper>::print(std::ostream & os) const {
+                m_ptr->print(os);
+            }
 
             //     // transform(T F(T))
             //     private:
@@ -516,8 +472,10 @@ namespace alps {
             }
 
             // result
-            virtual_result_wrapper<virtual_accumulator_wrapper> virtual_accumulator_wrapper::result() const {
-                return new result_wrapper(*(m_ptr->result()));
+            boost::shared_ptr<virtual_result_wrapper<virtual_accumulator_wrapper> > virtual_accumulator_wrapper::result() const {
+                return boost::shared_ptr<virtual_result_wrapper<virtual_accumulator_wrapper> >(
+                    new virtual_result_wrapper<virtual_accumulator_wrapper>(new result_wrapper(*(m_ptr->result())))
+                );
             }
 
             // print
