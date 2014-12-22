@@ -1,144 +1,185 @@
-/*
- * Copyright (C) 1998-2014 ALPS Collaboration. See COPYRIGHT.TXT
- * All rights reserved. Use is subject to license terms. See LICENSE.TXT
- * For use in publications, see ACKNOWLEDGE.TXT
- */
-#include <alps/params.hpp>
-#include <alps/utilities/boost_mpi.hpp>
-#include <boost/bind.hpp>
-#include <boost/algorithm/string.hpp>
-#include <algorithm>
-#include <fstream>
+#include <iostream>
+#include <stdexcept>
+#include "boost/foreach.hpp"
+// #include "boost/preprocessor.hpp"
+#include "boost/algorithm/string/join.hpp"
+
+#include "alps/params.hpp"
+
+/* Supported parameter types: */
+#ifndef ALPS_PARAMS_SUPPORTED_TYPES
+#define ALPS_PARAMS_SUPPORTED_TYPES (5, (int,unsigned,double,bool,std::string))
+#endif
+
+namespace po=boost::program_options;
 
 namespace alps {
-    params::params(hdf5::archive ar, std::string const & path) {
-        std::string context = ar.get_context();
-        ar.set_context(path);
-        load(ar);
-        ar.set_context(context);
-    }
 
-    params::params(boost::filesystem::path const & path) {
-      parse_text_parameters(path);
-    }
-
-    #ifdef ALPS_HAVE_PYTHON_DEPRECATED
-        params::params(boost::python::dict const & arg) {
-            boost::python::extract<boost::python::dict> dict(arg);
-            if (!dict.check())
-                throw std::invalid_argument("parameters can only be created from a dict" + ALPS_STACKTRACE);
-            const boost::python::object kit = dict().iterkeys();
-            const boost::python::object vit = dict().itervalues();
-            for (std::size_t i = 0; i < boost::python::len(dict()); ++i)
-                setter(boost::python::call_method<std::string>(kit.attr("next")().ptr(), "__str__"), vit.attr("next")());
-        }
-    #endif
-
-    std::size_t params::size() const {
-        return keys.size();
-    }
-
-    void params::erase(std::string const & key) {
-        if (!defined(key))
-            throw std::invalid_argument("the key " + key + " does not exists" + ALPS_STACKTRACE);
-        keys.erase(find(keys.begin(), keys.end(), key));
-        values.erase(key);
-    }
-
-    params::value_type params::operator[](std::string const & key) {
-        return value_type(
-            defined(key),
-            boost::bind(&params::getter, boost::ref(*this), key),
-            boost::bind(&params::setter, boost::ref(*this), key, _1),
-            key
-        );
-    }
-
-    params::value_type const params::operator[](std::string const & key) const {
-        return defined(key)
-            ? value_type(values.find(key)->second, key)
-            : value_type(key)
-        ;
-    }
-
-    bool params::defined(std::string const & key) const {
-        return values.find(key) != values.end();
-    }
-
-    params::iterator params::begin() {
-        return iterator(*this, keys.begin());
-    }
-
-    params::const_iterator params::begin() const {
-        return const_iterator(*this, keys.begin());
-    }
-
-    params::iterator params::end() {
-        return iterator(*this, keys.end());
-    }
-
-    params::const_iterator params::end() const {
-        return const_iterator(*this, keys.end());
-    }
-
-    void params::save(hdf5::archive & ar) const {
-        for (params::const_iterator it = begin(); it != end(); ++it)
-            ar[it->first] << it->second;
-    }
-
-    void params::load(hdf5::archive & ar) {
-        keys.clear();
-        values.clear();
-        std::vector<std::string> list = ar.list_children(ar.get_context());
-        for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
-            detail::paramvalue value;
-            ar[*it] >> value;
-            setter(*it, value);
-        }
-    }
-
-    #ifdef ALPS_HAVE_MPI
-        void params::broadcast(boost::mpi::communicator const & comm, int root) {
-            boost::mpi::broadcast(comm, *this, root);
-        }
-    #endif
+    const char* const params::cfgfile_optname_="parameter-file";
     
-    void params::setter(std::string const & key, detail::paramvalue const & value) {
-        if (!defined(key)){
-            keys.push_back(key);
+    params::params(hdf5::archive ar, std::string const & path)
+    {
+        throw std::logic_error("Not implemented yet");
+    }
+
+    void params::certainly_parse() const
+    {
+        // if (argvec_.empty()) return;
+        
+        po::parsed_options cmdline_opts=
+            po::command_line_parser(argvec_).
+            allow_unregistered().
+            positional(po::positional_options_description().add(cfgfile_optname_,1)).  // FIXME: should it be "-1"? How the logic behaves for several positional options?
+            options(descr_).
+            run();
+
+        varmap_=variables_map();
+        po::store(cmdline_opts,*varmap_);
+
+        if (varmap_->count(cfgfile_optname_) == 0) return;
+        
+        const std::string& cfgname=(*varmap_)[cfgfile_optname_].as<std::string>();
+        po::parsed_options cfgfile_opts=
+          po::parse_config_file<char>(cfgname.c_str(),descr_,true); // parse the file, allow unregistered options
+
+        po::store(cfgfile_opts,*varmap_);
+    }        
+
+    void params::save(hdf5::archive& ar) const
+    {
+        throw std::logic_error("params::save() is not implemented yet");
+    }
+
+    void params::load(hdf5::archive& ar)
+    {
+        throw std::logic_error("params::load() is not implemented yet");
+    }
+
+    bool params::help_requested(std::ostream& ostrm)
+    {
+        if (varmap_->count("help")) {
+            ostrm << helpmsg_ << std::endl;
+            ostrm << descr_;
+            return true;
         }
-        values[key] = value;
-    }
+        return false;
+    }        
 
-    detail::paramvalue params::getter(std::string const & key) {
-        return values[key];
-    }
+    // FIXME: should it be moved to a private header? Or hidden as static or in private namespace?
+    namespace {
+
+        /// Service function: output a sequence
+        template <typename T>
+        std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec)
+        {
+            typedef std::vector<T> VT;
+            if (vec.empty()) return os;
+            typename VT::const_iterator it=vec.begin();
+            typename VT::const_iterator end=vec.end();
+            os << *it; // FIXME: possible stream errors ignored!
+            ++it;
+            for (; it!=end; ++it) {
+                os << "," << *it;
+            }
+            return os;
+        }
+        
+        // /// Class providing output function for a boost::any holding a known type T
+        // template <typename T>
+        // struct printout {
+        //     typedef T value_type;
+        //     /// output function for a boost::any holding a known type T; @returns true if the type is guessed right.
+        //     bool operator()(std::ostream& os, const boost::any& a) {
+        //         const value_type* val=boost::any_cast<value_type>(&a);
+        //         if (!val) return false;
+        //         os << *val;
+        //         return true;
+        //     }
+        // };
+
+        // /// Class providing specialization for the output function for a boost::any holding std::string
+        // template <>
+        // struct printout<std::string> {
+        //     typedef std::string value_type;
+        //     /// output function for a boost::any holding std::string; @returns true if the type is guessed right.
+        //     bool operator()(std::ostream& os, const boost::any& a) {
+        //         const value_type* val=boost::any_cast<value_type>(&a);
+        //         if (!val) return false;
+        //         os << "'" << *val << "'";
+        //         return true;
+        //     }
+
+        /// output function for a boost::any holding a known type T; @returns true if the type is guessed right.
+        template <typename T>
+        bool printout(std::ostream& os, const boost::any& a) {
+            typedef T value_type;
+            const value_type* val=boost::any_cast<value_type>(&a);
+            if (!val) return false;
+            os << *val;
+            return true;
+        }
+
+        /// output function for a boost::any holding std::string; @returns true if the type is guessed right.
+        template <>
+        bool printout<std::string>(std::ostream& os, const boost::any& a) {
+            typedef std::string value_type;
+            const value_type* val=boost::any_cast<value_type>(&a);
+            if (!val) return false;
+            os << "'" << *val << "'";
+            return true;
+        }
+
+    } // end anonymous namespace
+        
     
-
-    std::ostream & operator<<(std::ostream & os, params const & v) {
-        for (params::const_iterator it = v.begin(); it != v.end(); ++it)
-            os << it->first << " = " << it->second << std::endl;
+//     /// Output operator for a known boost::any
+//     std::ostream& operator<< (std::ostream& os, const boost::any& a)
+//     {
+//         // FIXME: this is UGLY!
+//         // Logic: we try each type; if the conversion works, we output it, else try next.
+//         // If none works, we throw.
+// #define LOCAL_OUTPUT_AS(_r_,a,T) if (const T* tmp=boost::any_cast<T>(&a)) { os << *tmp; } else
+//         BOOST_PP_SEQ_FOR_EACH(LOCAL_OUTPUT_AS, a, BOOST_PP_TUPLE_TO_SEQ(ALPS_PARAMS_SUPPORTED_TYPES))
+//         {
+//             std::cerr << "Cannot output this type: " << a.type().name() << std::endl;
+//             throw std::logic_error(std::string("Cannot output this type: ")+a.type().name());
+//         }
+// #undef LOCAL_OUTPUT_AS
+//         return os;
+//     }
+            
+    /// Output operator for a known boost::any
+    std::ostream& operator<< (std::ostream& os, const boost::any& a)
+    {
+        // FIXME: this is UGLY!
+        // Logic: we try to output each type; if it does not work, we try next.
+        // If none works, we throw.
+        if (!(
+                   printout<int>(os,a)
+                || printout<unsigned>(os,a)
+                || printout<double>(os,a)
+                || printout<bool>(os,a)
+                || printout<std::string>(os,a)
+                || printout< std::vector<unsigned> >(os,a)
+                || printout< std::vector<double> >(os,a)
+                )) {
+            throw std::logic_error(std::string("Cannot output this type with typeid=")+a.type().name());
+        }
         return os;
     }
-  //this is a trivial parameter parser to handle text parameters
-  //we expect parameters to be of the form key = value
-  //format taken over from legacy ALPS.
-  void params::parse_text_parameters(boost::filesystem::path const & path){
-    keys.clear();
-    values.clear();
-    std::ifstream ifs(path.string().c_str());
-    if(!ifs.is_open()) throw std::runtime_error("Problem reading parameter file at: "+path.string());
-    
-    std::string line;
-    while(std::getline(ifs, line)){
-      std::size_t eqpos=line.find("=");
-      if (eqpos==std::string::npos || eqpos ==0 || eqpos ==line.length()) continue; //no equal sign found in this line or string starting/ending with =
-      std::string key=line.substr(0,eqpos);
-      std::string value=line.substr(eqpos+1,line.length());
-      boost::algorithm::trim(key);
-      boost::algorithm::trim(value);
-      boost::algorithm::trim_if(value, boost::is_any_of(";")); //trim semicolon
-      setter(key,value);
+
+        
+    /// Output parameters to a stream
+    std::ostream& operator<< (std::ostream& os, const params& prm)
+    {
+        BOOST_FOREACH(const params::value_type& pair, prm)
+        {
+            os << pair.first << "=" << pair.second.value() << std::endl;
+        }
+        return os;
     }
-  }
+  
+    // FIXME:ToDo: file parsing, especially for lists (vectors)
+
 }
+
