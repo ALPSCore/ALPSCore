@@ -9,6 +9,7 @@ set (test_src
     merge
     mult_by_constant
     weighted
+    nonexistent
     )
 
 foreach(test ${test_src})
