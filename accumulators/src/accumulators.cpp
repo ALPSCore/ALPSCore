@@ -522,7 +522,7 @@ namespace alps {
             )));                                                                                                        \
             return set;                                                                                                 \
         }                                                                                                               \
-        accumulator_set & operator<<(accumulator_set & set, const NoBinningAccumulator< T > & arg) {                    \
+        accumulator_set & operator<<(accumulator_set & set, const LogBinningAccumulator< T > & arg) {                    \
             set.insert(arg.name(), boost::shared_ptr<accumulators::wrapped::virtual_accumulator_wrapper>(               \
                 new accumulators::wrapped::virtual_accumulator_wrapper(new accumulators::accumulator_wrapper(           \
                     accumulators::impl::Accumulator<                                                                    \
@@ -538,7 +538,7 @@ namespace alps {
             )));                                                                                                        \
             return set;                                                                                                 \
         }                                                                                                               \
-        accumulator_set & operator<<(accumulator_set & set, const NoBinningAccumulator< T > & arg) {                    \
+        accumulator_set & operator<<(accumulator_set & set, const FullBinningAccumulator< T > & arg) {                    \
             set.insert(arg.name(), boost::shared_ptr<accumulators::wrapped::virtual_accumulator_wrapper>(               \
                 new accumulators::wrapped::virtual_accumulator_wrapper(new accumulators::accumulator_wrapper(           \
                     accumulators::impl::Accumulator<                                                                    \
