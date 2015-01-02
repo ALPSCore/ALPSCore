@@ -4,6 +4,7 @@ set (test_src
     add_accumulators
     count
     divide_accumulators
+    invert_accumulators
     mean
     mean_wrapped
     merge
