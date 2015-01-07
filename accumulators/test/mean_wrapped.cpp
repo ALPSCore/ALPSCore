@@ -48,6 +48,8 @@ template<typename A, typename T> void mean_test_body_vector() {
 	alps::result_set results(measurements);
 		std::vector<T> mean_vec_1=results["obs1"].mean<std::vector<T> >();
 		std::vector<T> mean_vec_2=results["obs2"].mean<std::vector<T> >();
+                EXPECT_EQ(mean_vec_1.size(), L);
+                EXPECT_EQ(mean_vec_2.size(), L);
 		for(int i=0;i<mean_vec_1.size();++i){
 	  		EXPECT_EQ(mean_vec_1[i] , T(1.));
 			EXPECT_EQ(mean_vec_2[i] , T(500.));

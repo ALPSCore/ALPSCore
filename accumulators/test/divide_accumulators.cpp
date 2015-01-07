@@ -24,14 +24,20 @@ void test_divide_accumulators_scalar(alps::accumulators::accumulator_set & measu
 void test_divide_accumulators_vector(alps::accumulators::accumulator_set & measurements, std::string name) {
 	std::string name1 = name + "_1_vector";
 	std::string name2 = name + "_2_vector";
+        int L=10;
 	for (int i = 0; i < 1000; ++i) {
-		measurements[name1] << std::vector<double>(10, (i % 2) + 1);
-		measurements[name2] << std::vector<double>(10, 2. * (i % 2));
+		measurements[name1] << std::vector<double>(L, (i % 2) + 1);
+		measurements[name2] << std::vector<double>(L, 2. * (i % 2));
 	}
 	std::cout << measurements << std::endl;
 	alps::accumulators::result_set results(measurements);
 	std::cout << results[name1] * results[name2] << std::endl;
 	std::cout << results[name1] / results[name2] << std::endl;
+        std::vector<double> mean_vec=(results[name1] / results[name2]).mean<std::vector<double> >();
+        EXPECT_EQ(mean_vec.size(), L);
+        for(int i=0;i<L;++i){
+          EXPECT_EQ(mean_vec[i], mean_vec[0]);
+        }
 }
 
 #define ALPS_TEST_RUN_MUL_CONST_TEST(type, name)												\
