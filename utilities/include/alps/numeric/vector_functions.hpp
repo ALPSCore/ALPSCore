@@ -301,6 +301,37 @@ namespace alps {
             return vec;
         }
 
+        /// "Imported" negation functor class (needed to define template specializations in this namespace)
+        template <typename T> struct negate: public std::negate<T> {};
+        
+        /// Negation for vectors (specialization of the standard template, here to avoid changes in std::)
+        template <typename T>
+        struct negate< std::vector<T> > {
+            typedef std::vector<T> VT;
+            VT operator()(VT v)
+            {
+                transform(v.begin(),v.end(),v.begin(),negate<T>());
+                return v;
+            }
+        };
+        
+        /// A service functor class for numerical inversion, to be used in transform()
+        template <typename T>
+        struct invert {
+            T operator()(T x) { return T(1.0)/x; }
+        };
+
+        /// Inversion for vectors, to be used in transform()
+        template <typename T>
+        struct invert< std::vector<T> > {
+            typedef std::vector<T> VT;
+            VT operator()(VT v)
+            {
+                transform(v.begin(),v.end(),v.begin(),invert<T>());
+                return v;
+            }
+        };
+        
     }
 }
 

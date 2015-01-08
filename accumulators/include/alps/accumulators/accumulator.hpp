@@ -342,7 +342,7 @@ namespace alps {
             public:
                 result_wrapper inverse() const {
                     result_wrapper clone(*this);
-                    boost::apply_visitor(inverse_visitor(), m_variant);
+                    boost::apply_visitor(inverse_visitor(), clone.m_variant);
                     return clone;
                 }
 

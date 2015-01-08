@@ -32,6 +32,9 @@ TEST(accumulators, invert_accumulators){
 
   //the inverse of 1/2 should be around two:
   EXPECT_NEAR((results["one"]/results["one_half"]).mean<double>(), 2.0, 1.e-1);
+
+  //the inverse of 1/2 should be around two:
+  EXPECT_NEAR(results["one_half"].inverse().mean<double>(), 2.0, 1.e-1);
 }
 
 int main(int argc, char **argv) {
