@@ -187,7 +187,7 @@ namespace alps {
                     }
             ALPS_ACCUMULATOR_PROPERTY_PROXY(mean, mean_type)
             ALPS_ACCUMULATOR_PROPERTY_PROXY(error, error_type)
-            #undef ALPS_ACCUMULATOR_FUNCTION_PROXY
+            #undef ALPS_ACCUMULATOR_PROPERTY_PROXY
 
             // save
             private:
@@ -424,6 +424,13 @@ namespace alps {
         #undef EXTERNAL_FUNCTION
 
         class ALPS_DECL accumulator_wrapper {
+            private:
+                /// Safety check: verify that a pointer is valid.
+                // FIXME: better initialize the pointer with something reasonable to begin with?
+                template <typename T>
+                static void check_ptr(const boost::shared_ptr<T>& ptr) {
+                    if (!ptr) throw std::runtime_error("Uninitialized accumulator accessed");
+                }
             public:
             // default constructor
                 accumulator_wrapper() 
@@ -462,6 +469,7 @@ namespace alps {
                         throw std::logic_error(std::string("cannot convert: ") + typeid(T).name() + " to " + typeid(typename value_type<X>::type).name() + ALPS_STACKTRACE);
                     }
                     template<typename X> void operator()(X & arg) const {
+                        check_ptr(arg);
                         apply<typename X::element_type>(*arg);
                     }
                     T const & value;
@@ -492,6 +500,7 @@ namespace alps {
                     const P* rhs_ptr=boost::get<P>(& rhs_acc.m_variant);
                     if (!rhs_ptr) throw std::runtime_error("Only accumulators of the same type can be merged"
                                                            + ALPS_STACKTRACE);
+                    check_ptr(*rhs_ptr);
                     lhs_ptr->merge(**rhs_ptr);
                   }
                 };
@@ -555,13 +564,14 @@ namespace alps {
                 template <typename T> base_wrapper<T> & get() {
                     get_visitor<T> visitor;
                     boost::apply_visitor(visitor, m_variant);
+                    check_ptr(visitor.value);
                     return *visitor.value;
                 }
 
             // extract
             private:
                 template<typename A> struct extract_visitor: public boost::static_visitor<> {
-                    template<typename T> void operator()(T const & arg) { value = &arg->template extract<A>(); }
+                    template<typename T> void operator()(T const & arg) { check_ptr(arg); value = &arg->template extract<A>(); }
                     A * value;
                 };
             public:
@@ -574,7 +584,7 @@ namespace alps {
             // count
             private:
                 struct count_visitor: public boost::static_visitor<> {
-                    template<typename T> void operator()(T const & arg) const { value = arg->count(); }
+                    template<typename T> void operator()(T const & arg) const { check_ptr(arg); value = arg->count(); }
                     mutable boost::uint64_t value;
                 };
             public:
@@ -601,6 +611,7 @@ namespace alps {
                                 + typeid(T).name() + ALPS_STACKTRACE);                                              \
                         }                                                                                           \
                         template<typename X> void operator()(X const & arg) const {                                 \
+                            check_ptr(arg);                                                                         \
                             apply<typename X::element_type>(*arg);                                                  \
                         }                                                                                           \
                         mutable T value;                                                                            \
@@ -613,13 +624,13 @@ namespace alps {
                     }
             ALPS_ACCUMULATOR_PROPERTY_PROXY(mean, mean_type)
             ALPS_ACCUMULATOR_PROPERTY_PROXY(error, error_type)
-            #undef ALPS_ACCUMULATOR_FUNCTION_PROXY
+            #undef ALPS_ACCUMULATOR_PROPERTY_PROXY
 
             // save
             private:
                 struct save_visitor: public boost::static_visitor<> {
                     save_visitor(hdf5::archive & a): ar(a) {}
-                    template<typename T> void operator()(T & arg) const { ar[""] = *arg; }
+                    template<typename T> void operator()(T & arg) const { check_ptr(arg); ar[""] = *arg; }
                     hdf5::archive & ar;
                 };
             public:
@@ -631,7 +642,7 @@ namespace alps {
             private:
                 struct load_visitor: public boost::static_visitor<> {
                     load_visitor(hdf5::archive & a): ar(a) {}
-                    template<typename T> void operator()(T const & arg) const { ar[""] >> *arg; }
+                    template<typename T> void operator()(T const & arg) const { check_ptr(arg); ar[""] >> *arg; }
                     hdf5::archive & ar;
                 };
             public:
@@ -642,7 +653,7 @@ namespace alps {
             // reset
             private:
                 struct reset_visitor: public boost::static_visitor<> {
-                    template<typename T> void operator()(T const & arg) const { arg->reset(); }
+                    template<typename T> void operator()(T const & arg) const { check_ptr(arg); arg->reset(); }
                 };
             public:
                 void reset() const {
@@ -653,6 +664,7 @@ namespace alps {
             private:
                 struct result_visitor: public boost::static_visitor<> {
                     template<typename T> void operator()(T const & arg) {
+                        check_ptr(arg);
                         value = boost::shared_ptr<result_wrapper>(new result_wrapper(arg->result()));
                     }
                     boost::shared_ptr<result_wrapper> value;
@@ -668,7 +680,7 @@ namespace alps {
             private:
                 struct print_visitor: public boost::static_visitor<> {
                     print_visitor(std::ostream & o): os(o) {}
-                    template<typename T> void operator()(T const & arg) const { arg->print(os); }
+                    template<typename T> void operator()(T const & arg) const { check_ptr(arg); arg->print(os); }
                     std::ostream & os;
                 };
             public:
