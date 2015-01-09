@@ -4,7 +4,7 @@ set (test_src
     add_accumulators
     count
     divide_accumulators
-    invert_accumulators
+    unary_ops
     mean
     mean_wrapped
     merge
