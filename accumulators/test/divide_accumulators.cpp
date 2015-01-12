@@ -47,13 +47,13 @@ void test_divide_accumulators_vector(alps::accumulators::accumulator_set & measu
 }
 
 #define ALPS_TEST_RUN_MUL_CONST_TEST(type, name)												\
-	TEST(accumulators, add_accumulators_scalar ## name) {										\
+	TEST(accumulators, divide_accumulators_scalar ## name) {										\
 		alps::accumulators::accumulator_set measurements;										\
 		measurements << alps::accumulators:: type <double>( #name "_1_scalar") 					\
 					 << alps::accumulators:: type <double>( #name "_2_scalar");					\
 		test_divide_accumulators_scalar(measurements, #name);										\
 	}																							\
-	TEST(accumulators, add_accumulators_vector ## name) {										\
+	TEST(accumulators, divide_accumulators_vector ## name) {										\
 		alps::accumulators::accumulator_set measurements;										\
 		measurements << alps::accumulators:: type <std::vector<double> >( #name "_1_vector")	\
 					 << alps::accumulators:: type <std::vector<double> >( #name "_2_vector");	\

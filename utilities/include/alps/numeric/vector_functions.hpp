@@ -171,6 +171,7 @@ namespace alps {
         };
 
         //------------------- unary operator - -------------------
+        /// Unary negation of a vector
         template<typename T>
         std::vector<T> operator - (std::vector<T> lhs) {
             std::transform(lhs.begin(), lhs.end(), lhs.begin(), std::negate<T>());
@@ -178,60 +179,84 @@ namespace alps {
         }
 
         //------------------- operator + -------------------
+        /// Sum of two vectors. Note: Treats a default-initialized vector (size 0) as 0-vector.
         template<typename T, typename U>
         std::vector<T> operator + (std::vector<T> const & lhs, std::vector<U> const & rhs) {
             using boost::numeric::operators::operator+;
+            if (lhs.empty()) return rhs;
+            if (rhs.empty()) return lhs;
             return lhs + rhs;
         }
-        //------------------- operator + with scalar -------------------
-        template<typename T, std::size_t N>
-        std::vector<T> operator + (std::vector<T> arg, T const & scalar) {
-            std::transform(arg.begin(), arg.end(), arg.begin(), boost::lambda::_1 + scalar);
-            return arg;
-        }
-        template<typename T, std::size_t N>
-        std::vector<T> operator + (T const & scalar, std::vector<T> arg) {
-            std::transform(arg.begin(), arg.end(), arg.begin(), scalar + boost::lambda::_1);
-            return arg;
-        }
+        /* FIXME: the following appears to be unused, and was incorrect anyway
+           vvvvvvvvvvvvvvvvvvvvvvv */
+        // //------------------- operator + with scalar -------------------
+        // /// Sum of a vector and a scalar
+        // template<typename T, std::size_t N>
+        // std::vector<T> operator + (std::vector<T> arg, T const & scalar) {
+        //     std::transform(arg.begin(), arg.end(), arg.begin(), boost::lambda::_1 + scalar);
+        //     return arg;
+        // }
+        // /// Sum of a scalar and a vector
+        // template<typename T, std::size_t N>
+        // std::vector<T> operator + (T const & scalar, std::vector<T> arg) {
+        //     std::transform(arg.begin(), arg.end(), arg.begin(), scalar + boost::lambda::_1);
+        //     return arg;
+        // }
+        /* ^^^^^^^^^^^^^^^^^^^^^^^ */
 
         //------------------- operator - -------------------
+        /// Difference of two vectors. Note: Treats a default-initialized vector (size 0) as 0-vector.
         template<typename T, typename U>
         std::vector<T> operator - (std::vector<T> const & lhs, std::vector<U> const & rhs) {
             using boost::numeric::operators::operator-;
+            if (rhs.empty()) return lhs;
+            if (lhs.empty()) return -rhs;
             return lhs - rhs;
         }
-        //------------------- operator + with scalar -------------------
-        template<typename T, std::size_t N>
-        std::vector<T> operator - (std::vector<T> arg, T const & scalar) {
-            std::transform(arg.begin(), arg.end(), arg.begin(), boost::lambda::_1 + scalar);
-            return arg;
-        }
-        template<typename T, std::size_t N>
-        std::vector<T> operator - (T const & scalar, std::vector<T> arg) {
-            std::transform(arg.begin(), arg.end(), arg.begin(), scalar + boost::lambda::_1);
-            return arg;
-        }
+        /* FIXME: the following appears to be unused, and was incorrect anyway
+           vvvvvvvvvvvvvvvvvvvvvvv */
+        //------------------- operator - with scalar -------------------
+        // /// Difference of a vector and a scalar.
+        // template<typename T, std::size_t N>
+        // std::vector<T> operator - (std::vector<T> arg, T const & scalar) {
+        //     std::transform(arg.begin(), arg.end(), arg.begin(), boost::lambda::_1 - scalar);
+        //     return arg;
+        // }
+        // /// Difference of a scalar and a vector
+        // template<typename T, std::size_t N>
+        // std::vector<T> operator - (T const & scalar, std::vector<T> arg) {
+        //     std::transform(arg.begin(), arg.end(), arg.begin(), scalar - boost::lambda::_1);
+        //     return arg;
+        // }
+        /* ^^^^^^^^^^^^^^^^^^^^^^^ */
 
         //------------------- operator * vector-vector-------------------
+        /// By-element product of two vectors. Note: Treats a default-initialized vector (size 0) as 0-vector.
         template<typename T, typename U>
         std::vector<T> operator * (std::vector<T> const & lhs, std::vector<U> const & rhs) {
             using boost::numeric::operators::operator*;
+            if (lhs.empty()) return lhs;
+            if (rhs.empty()) return rhs;
             return lhs * rhs;
         }
         //------------------- operator / vector-vector-------------------
+        /// By-element quotient of two vectors. Note: Treats a default-initialized vector (size 0) as 0-vector.
         template<typename T, typename U>
         std::vector<T> operator / (std::vector<T> const & lhs, std::vector<U> const & rhs) {
             using boost::numeric::operators::operator/;
+            if (lhs.empty()) return lhs;
+            if (rhs.empty()) throw std::runtime_error("Division by default-initialized vector");
             return lhs / rhs;
         }
 
         //------------------- operator + with scalar -------------------
+        /// Sum of a scalar and a vector
         template<typename T>
         std::vector<T> operator + (T const & scalar, std::vector<T> lhs) {
             std::transform(lhs.begin(), lhs.end(), lhs.begin(), bind1st(std::plus<T>(), scalar));
             return lhs;
         }
+        /// Sum of a vector and a scalar
         template<typename T>
         std::vector<T> operator + (std::vector<T> lhs, T const & scalar) {
             std::transform(lhs.begin(), lhs.end(), lhs.begin(), bind2nd(std::plus<T>(), scalar));
@@ -239,32 +264,39 @@ namespace alps {
         }
 
         //------------------- operator - with scalar -------------------
+        /// Difference of a scalar and a vector
         template<typename T>
         std::vector<T> operator - (T const & scalar, std::vector<T> const & lhs) {
-            return -scalar + lhs;
+            // return -scalar + lhs; // FIXME??? BUG? This must be wrong?
+            return scalar + -lhs;
         }
+        /// Difference of a vector and a scalar
         template<typename T>
         std::vector<T> operator - (std::vector<T> const & lhs, T const & scalar) {
             return lhs + -scalar;
         }
 
         //------------------- operator * with scalar -------------------
+        /// Returns a vector scaled by a scalar
         template<typename T>
         std::vector<T> operator * (std::vector<T> const & lhs, T const & scalar) {
             using boost::numeric::operators::operator*;
             return lhs * scalar;
         }
+        /// Returns a vector scaled by a scalar
         template<typename T>
         std::vector<T> operator * (T const & scalar, std::vector<T> const & rhs) {
             using boost::numeric::operators::operator*;
             return scalar * rhs;
         }
         //------------------- operator / with scalar -------------------
+        /// Returns a vector divided scaled by a scalar
         template<typename T>
         std::vector<T> operator / (std::vector<T> const & lhs, T const & scalar) {
             using boost::numeric::operators::operator/;
             return lhs / scalar;
         }
+        /// Returns a vector with elements inverted and scaled by a scalar
         template<typename T>
         std::vector<T> operator / (T const & scalar, std::vector<T> rhs) {
             std::transform(rhs.begin(), rhs.end(), rhs.begin(), scalar / boost::lambda::_1);
