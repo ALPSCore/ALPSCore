@@ -113,8 +113,15 @@ namespace alps {
 
             typedef boost::program_options::variables_map variables_map;
             typedef boost::program_options::options_description options_description;
+            typedef void (*printout_type)(std::ostream&);
 
+            /// Contains map(options->values), or empty until a file is parsed. Mutated by diferred fiel parsing.
             mutable boost::optional<variables_map> varmap_;
+
+            /// Map(options->output_functions); filled by define() method or direct assignment
+            std::map<std::string,printout_type> printout_map_;
+
+            /// Options description; filled by define() method
             options_description descr_;
 
             std::string helpmsg_;
@@ -160,27 +167,6 @@ namespace alps {
             // old: typedef detail::paramiterator<params const, iterator_value_type const> const_iterator;
             // old: typedef detail::paramproxy value_type;
 
-            // /// Wrapper class for the variables_map to allow easy assignment
-            // class mapped_type_wrapper: public mapped_type
-            // {
-            //     public:
-            //         mapped_type_wrapper(const mapped_type_wrapper& rhs):
-            //             mapped_type(rhs) {}
-
-            //         mapped_type_wrapper(const mapped_type& rhs):
-            //             mapped_type(rhs) {}
-
-            //         /// Convenience assignment operator of value of T
-            //         template <typename T>
-            //         mapped_type_wrapper& operator= (const T& rhs)
-            //         {
-            //             this->mapped_type::value()=rhs;
-            //             return *this;
-            //         }
-
-            //         // FIXME! How does par[aaa]=par[bbb] work??
-            // };
-            
         
             /** Default constructor */
             params() { init(); }
@@ -211,20 +197,20 @@ namespace alps {
             /** Erase a parameter */
             void erase(std::string const& k) { possibly_parse(); varmap_->erase(k); }
 
-            /** Access a parameter */
-            boost::any& operator[](const std::string& k)
-            {
-                possibly_parse();
-                std::map<std::string,mapped_type>& as_map=*varmap_; //FIXME? does it work as expected?
-                // return (*varmap_)[k].value();
-                return as_map[k].value();
-            }
+            // /** Access a parameter */
+            // boost::any& operator[](const std::string& k)
+            // {
+            //     possibly_parse();
+            //     std::map<std::string,mapped_type>& as_map=*varmap_; //FIXME? does it work as expected?
+            //     // return (*varmap_)[k].value();
+            //     return as_map[k].value();
+            // }
 
-            /** Access a parameter */
-            const boost::any& operator[](const std::string& k) const
+            /** Access a parameter: read-only */
+            const mapped_type& operator[](const std::string& k) const
             {
                 possibly_parse();
-                return (*varmap_)[k].value();
+                return (*varmap_)[k];
             }
 
             /** Check if the parameter is defined */
@@ -304,7 +290,37 @@ namespace alps {
             // std::map<std::string, detail::paramvalue> values;
     };
 
-    /*-ALPS_DECL-*/ std::ostream & operator<<(std::ostream & os, params const & arg);
+    namespace detail {
+
+        /// Service function: output a sequence
+        template <typename T>
+        std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec)
+        {
+            typedef std::vector<T> VT;
+            if (vec.empty()) return os;
+            typename VT::const_iterator it=vec.begin();
+            typename VT::const_iterator end=vec.end();
+            os << *it; // FIXME: possible stream errors ignored!
+            ++it;
+            for (; it!=end; ++it) {
+                os << "," << *it;
+            }
+            return os;
+        }
+        
+        template <typename T>
+        void printout(std::ostream& os, const boost::any& val)
+        {
+          os << boost::any_cast<T>(val);
+        }
+
+        template <>
+        void printout<std::string>(std::ostream& os, const boost::any& val)
+        {
+          typedef std::string T;
+          os << "'" << boost::any_cast<T>(val) << "'";
+        }
+    }
 
     // FIXME: we may consider provide template specializations for specific types? To hide templates inside *.cpp?
     template <typename T>
@@ -312,6 +328,7 @@ namespace alps {
     {
         invalidate();
         descr_.add_options()(optname,boost::program_options::value<T>()->default_value(defval),a_descr);
+        printout_map_[optname]=detail::printout<T>; 
         return *this;
     }
 
@@ -322,5 +339,16 @@ namespace alps {
         descr_.add_options()(optname,boost::program_options::value<T>(),a_descr);
         return *this;
     }
-    
+
+    /*-ALPS_DECL-*/ std::ostream & operator<<(std::ostream & os, params const & arg);
+
+    /// Assign a value to a parameter, as in param["abc"] << x;
+    template <typename T>
+    /*-ALPS_DECL-*/ void operator<<(params::mapped_type& slot, const T& val)
+    {
+        possibly_parse();
+        std::map<std::string,params::mapped_type>& as_map=*varmap_; //FIXME? does it work as expected?
+        as_map[k].value()=val;
+        printout_map_[k]=detail::printout<T>; 
+    }
 }

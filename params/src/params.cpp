@@ -84,31 +84,6 @@ namespace alps {
             return os;
         }
         
-        // /// Class providing output function for a boost::any holding a known type T
-        // template <typename T>
-        // struct printout {
-        //     typedef T value_type;
-        //     /// output function for a boost::any holding a known type T; @returns true if the type is guessed right.
-        //     bool operator()(std::ostream& os, const boost::any& a) {
-        //         const value_type* val=boost::any_cast<value_type>(&a);
-        //         if (!val) return false;
-        //         os << *val;
-        //         return true;
-        //     }
-        // };
-
-        // /// Class providing specialization for the output function for a boost::any holding std::string
-        // template <>
-        // struct printout<std::string> {
-        //     typedef std::string value_type;
-        //     /// output function for a boost::any holding std::string; @returns true if the type is guessed right.
-        //     bool operator()(std::ostream& os, const boost::any& a) {
-        //         const value_type* val=boost::any_cast<value_type>(&a);
-        //         if (!val) return false;
-        //         os << "'" << *val << "'";
-        //         return true;
-        //     }
-
         /// output function for a boost::any holding a known type T; @returns true if the type is guessed right.
         template <typename T>
         bool printout(std::ostream& os, const boost::any& a) {
@@ -174,7 +149,11 @@ namespace alps {
     {
         BOOST_FOREACH(const params::value_type& pair, prm)
         {
-            os << pair.first << "=" << pair.second.value() << std::endl;
+            const std::string& k=pair.first;
+            const boost::any& v=pair.second;
+            os << k << "=";
+            detail::printout(os,v);
+            os << std::endl;
         }
         return os;
     }
