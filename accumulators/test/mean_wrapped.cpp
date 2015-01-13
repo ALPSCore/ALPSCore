@@ -5,14 +5,14 @@
  */
 
 #include <alps/config.hpp>
-#include <alps/accumulators.hpp>
+#include <alps/accumulators_.hpp>
 #include "gtest/gtest.h"
 
 typedef long double longdouble;
 
 template<typename A, typename T> void mean_test_body_scalar() {
 
-	alps::accumulators::accumulator_set measurements;
+	alps::accumulator_set measurements;
 	measurements << A("obs1") << A("obs2");
 
 	for (int i = 1; i < 1000; ++i) {
@@ -22,14 +22,14 @@ template<typename A, typename T> void mean_test_body_scalar() {
 		EXPECT_EQ(measurements["obs2"].mean<double>() , T(i + 1) / 2);
 	}
 
-	alps::accumulators::result_set results(measurements);
+	alps::result_set results(measurements);
 	EXPECT_EQ(results["obs1"].mean<double>() , T(1));
 	EXPECT_EQ(results["obs2"].mean<double>() , T(500));
 }
 
 template<typename A, typename T> void mean_test_body_vector() {
 
-	alps::accumulators::accumulator_set measurements;
+	alps::accumulator_set measurements;
 	measurements << A("obs1") << A("obs2");
 
 	int L = 10;
@@ -45,9 +45,11 @@ template<typename A, typename T> void mean_test_body_vector() {
 		}
 	}
 
-	alps::accumulators::result_set results(measurements);
+	alps::result_set results(measurements);
 		std::vector<T> mean_vec_1=results["obs1"].mean<std::vector<T> >();
 		std::vector<T> mean_vec_2=results["obs2"].mean<std::vector<T> >();
+                EXPECT_EQ(mean_vec_1.size(), L);
+                EXPECT_EQ(mean_vec_2.size(), L);
 		for(int i=0;i<mean_vec_1.size();++i){
 	  		EXPECT_EQ(mean_vec_1[i] , T(1.));
 			EXPECT_EQ(mean_vec_2[i] , T(500.));
@@ -56,10 +58,10 @@ template<typename A, typename T> void mean_test_body_vector() {
 
 #define ALPS_TEST_RUN_MEAN_TEST(A, T, N)														\
 	TEST(accumulator, mean_feature_scalar_ ## A ## _ ## N){										\
-	  	mean_test_body_scalar<alps::accumulators:: A < T >, T >();								\
+	  	mean_test_body_scalar<alps:: A < T >, T >();											\
 	}																							\
 	TEST(accumulator, mean_feature_vector_ ## A ## _vector_ ## N){								\
-	  	mean_test_body_vector<alps::accumulators:: A <std::vector< T > >, T >();				\
+	  	mean_test_body_vector<alps:: A <std::vector< T > >, T >();								\
 	}
 
 #define ALPS_TEST_RUN_MEAN_TEST_EACH_TYPE(A)													\

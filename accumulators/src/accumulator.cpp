@@ -30,5 +30,6 @@ namespace alps {
             EXTERNAL_FUNCTION(cbrt)
 
         #undef EXTERNAL_FUNCTION
+
     }
 }

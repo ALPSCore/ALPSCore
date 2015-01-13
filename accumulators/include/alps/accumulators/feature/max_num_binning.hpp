@@ -640,6 +640,26 @@ namespace alps {
 
                     #undef NUMERIC_FUNCTION_IMPLEMENTATION
 
+                    /// Negate the Result by calling transform() with the corresponding functor object
+                    void negate()
+                    {
+                        using alps::numeric::negate;
+
+                        typedef typename value_type<B>::type value_type;
+                        transform(negate<value_type>());
+                        B::negate();
+                    }
+                    
+                    /// Invert the Result by calling transform() with the corresponding functor object
+                    void inverse()
+                    {
+                        using alps::numeric::invert;
+
+                        typedef typename value_type<B>::type value_type;
+                        transform(invert<value_type>());
+                        B::inverse();
+                    }
+                    
                 private:
                     std::size_t m_mn_max_number;
                     typename B::count_type m_mn_elements_in_bin;

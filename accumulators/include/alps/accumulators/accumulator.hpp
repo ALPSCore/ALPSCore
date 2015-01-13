@@ -10,13 +10,9 @@
 #include <alps/config.hpp>
 #include <alps/hdf5/vector.hpp>
 
-#ifndef ALPS_ACCUMULATOR_VALUE_TYPES
-    #define ALPS_ACCUMULATOR_VALUE_TYPES float, double, long double, std::vector<float>, std::vector<double>, std::vector<long double>
-    // #define ALPS_ACCUMULATOR_VALUE_TYPES double, std::vector<double>, alps::multi_array<double, 2>, alps::multi_array<double, 3>
-#endif
-
 #include <alps/accumulators/wrappers.hpp>
 // #include <alps/accumulators/feature/weight_holder.hpp>
+#include <alps/accumulators/wrapper_set.hpp>
 
 #include <alps/hdf5/archive.hpp>
 
@@ -61,19 +57,19 @@ namespace alps {
         class ALPS_DECL result_wrapper {
             public:
 
-            // default constructor
+                // default constructor
                 result_wrapper() 
                     : m_variant()
                 {}
 
-            // constructor from raw result
+                // constructor from raw result
                 template<typename T> result_wrapper(T arg)
                     : m_variant(typename detail::add_base_wrapper_pointer<typename value_type<T>::type>::type(
                         new derived_result_wrapper<T>(arg))
                       )
                 {}
 
-            // constructor from base_wrapper
+                // constructor from base_wrapper
                 template<typename T> result_wrapper(base_wrapper<T> * arg)
                     : m_variant(typename detail::add_base_wrapper_pointer<T>::type(arg))
                 {}
@@ -95,7 +91,7 @@ namespace alps {
                     boost::apply_visitor(visitor, rhs.m_variant);
                 }
 
-            // constructor from hdf5
+                // constructor from hdf5
                 result_wrapper(hdf5::archive & ar) {
                     ar[""] >> *this;
                 }
@@ -191,7 +187,7 @@ namespace alps {
                     }
             ALPS_ACCUMULATOR_PROPERTY_PROXY(mean, mean_type)
             ALPS_ACCUMULATOR_PROPERTY_PROXY(error, error_type)
-            #undef ALPS_ACCUMULATOR_FUNCTION_PROXY
+            #undef ALPS_ACCUMULATOR_PROPERTY_PROXY
 
             // save
             private:
@@ -346,7 +342,7 @@ namespace alps {
             public:
                 result_wrapper inverse() const {
                     result_wrapper clone(*this);
-                    boost::apply_visitor(inverse_visitor(), m_variant);
+                    boost::apply_visitor(inverse_visitor(), clone.m_variant);
                     return clone;
                 }
 
@@ -428,6 +424,13 @@ namespace alps {
         #undef EXTERNAL_FUNCTION
 
         class ALPS_DECL accumulator_wrapper {
+            private:
+                /// Safety check: verify that a pointer is valid.
+                // FIXME: better initialize the pointer with something reasonable to begin with?
+                template <typename T>
+                static void check_ptr(const boost::shared_ptr<T>& ptr) {
+                    if (!ptr) throw std::runtime_error("Uninitialized accumulator accessed");
+                }
             public:
             // default constructor
                 accumulator_wrapper() 
@@ -466,6 +469,7 @@ namespace alps {
                         throw std::logic_error(std::string("cannot convert: ") + typeid(T).name() + " to " + typeid(typename value_type<X>::type).name() + ALPS_STACKTRACE);
                     }
                     template<typename X> void operator()(X & arg) const {
+                        check_ptr(arg);
                         apply<typename X::element_type>(*arg);
                     }
                     T const & value;
@@ -496,6 +500,7 @@ namespace alps {
                     const P* rhs_ptr=boost::get<P>(& rhs_acc.m_variant);
                     if (!rhs_ptr) throw std::runtime_error("Only accumulators of the same type can be merged"
                                                            + ALPS_STACKTRACE);
+                    check_ptr(*rhs_ptr);
                     lhs_ptr->merge(**rhs_ptr);
                   }
                 };
@@ -559,13 +564,14 @@ namespace alps {
                 template <typename T> base_wrapper<T> & get() {
                     get_visitor<T> visitor;
                     boost::apply_visitor(visitor, m_variant);
+                    check_ptr(visitor.value);
                     return *visitor.value;
                 }
 
             // extract
             private:
                 template<typename A> struct extract_visitor: public boost::static_visitor<> {
-                    template<typename T> void operator()(T const & arg) { value = &arg->template extract<A>(); }
+                    template<typename T> void operator()(T const & arg) { check_ptr(arg); value = &arg->template extract<A>(); }
                     A * value;
                 };
             public:
@@ -578,7 +584,7 @@ namespace alps {
             // count
             private:
                 struct count_visitor: public boost::static_visitor<> {
-                    template<typename T> void operator()(T const & arg) const { value = arg->count(); }
+                    template<typename T> void operator()(T const & arg) const { check_ptr(arg); value = arg->count(); }
                     mutable boost::uint64_t value;
                 };
             public:
@@ -605,6 +611,7 @@ namespace alps {
                                 + typeid(T).name() + ALPS_STACKTRACE);                                              \
                         }                                                                                           \
                         template<typename X> void operator()(X const & arg) const {                                 \
+                            check_ptr(arg);                                                                         \
                             apply<typename X::element_type>(*arg);                                                  \
                         }                                                                                           \
                         mutable T value;                                                                            \
@@ -617,13 +624,13 @@ namespace alps {
                     }
             ALPS_ACCUMULATOR_PROPERTY_PROXY(mean, mean_type)
             ALPS_ACCUMULATOR_PROPERTY_PROXY(error, error_type)
-            #undef ALPS_ACCUMULATOR_FUNCTION_PROXY
+            #undef ALPS_ACCUMULATOR_PROPERTY_PROXY
 
             // save
             private:
                 struct save_visitor: public boost::static_visitor<> {
                     save_visitor(hdf5::archive & a): ar(a) {}
-                    template<typename T> void operator()(T & arg) const { ar[""] = *arg; }
+                    template<typename T> void operator()(T & arg) const { check_ptr(arg); ar[""] = *arg; }
                     hdf5::archive & ar;
                 };
             public:
@@ -635,7 +642,7 @@ namespace alps {
             private:
                 struct load_visitor: public boost::static_visitor<> {
                     load_visitor(hdf5::archive & a): ar(a) {}
-                    template<typename T> void operator()(T const & arg) const { ar[""] >> *arg; }
+                    template<typename T> void operator()(T const & arg) const { check_ptr(arg); ar[""] >> *arg; }
                     hdf5::archive & ar;
                 };
             public:
@@ -646,7 +653,7 @@ namespace alps {
             // reset
             private:
                 struct reset_visitor: public boost::static_visitor<> {
-                    template<typename T> void operator()(T const & arg) const { arg->reset(); }
+                    template<typename T> void operator()(T const & arg) const { check_ptr(arg); arg->reset(); }
                 };
             public:
                 void reset() const {
@@ -657,6 +664,7 @@ namespace alps {
             private:
                 struct result_visitor: public boost::static_visitor<> {
                     template<typename T> void operator()(T const & arg) {
+                        check_ptr(arg);
                         value = boost::shared_ptr<result_wrapper>(new result_wrapper(arg->result()));
                     }
                     boost::shared_ptr<result_wrapper> value;
@@ -672,7 +680,7 @@ namespace alps {
             private:
                 struct print_visitor: public boost::static_visitor<> {
                     print_visitor(std::ostream & o): os(o) {}
-                    template<typename T> void operator()(T const & arg) const { arg->print(os); }
+                    template<typename T> void operator()(T const & arg) const { check_ptr(arg); arg->print(os); }
                     std::ostream & os;
                 };
             public:
@@ -717,267 +725,9 @@ namespace alps {
             return arg.reset();
         }
 
-        namespace detail {
-            
-            template<typename T> struct serializable_type {
-                virtual ~serializable_type() {}
-                virtual std::size_t rank() const = 0;
-                virtual bool can_load(hdf5::archive & ar) const = 0;
-                virtual T * create(hdf5::archive & ar) const = 0;
-            };
-
-            template<typename T, typename A> struct serializable_type_impl : public serializable_type<T> {
-                std::size_t rank() const {
-                    return A::rank();
-                }
-                bool can_load(hdf5::archive & ar) const {
-                    return A::can_load(ar);
-                }
-                T * create(hdf5::archive & ar) const {
-                    return new T(A());
-                }
-            };
-        }
-
-        namespace detail {
-
-            inline void register_predefined_serializable_type();
-
-        }
-
-        namespace impl {
-
-            template <typename T> class wrapper_set {
-
-                public: 
-                    typedef T value_type;
-
-                    typedef typename std::map<std::string, boost::shared_ptr<T> >::iterator iterator;
-                    typedef typename std::map<std::string, boost::shared_ptr<T> >::const_iterator const_iterator;
-
-                    template <typename U> wrapper_set(wrapper_set<U> const & arg, typename boost::disable_if<boost::is_same<result_wrapper, U>, void *>::type = NULL) {
-                        for (typename wrapper_set<U>::const_iterator it = arg.begin(); it != arg.end(); ++it)
-                            insert(it->first, it->second->result());
-                    }
-
-                    wrapper_set() {
-                        if (m_types.empty())
-                            detail::register_predefined_serializable_type();
-                    }
-                    wrapper_set(wrapper_set const &) {} // TODO: how do we handle that?
-
-                    T & operator[](std::string const & name) {
-                        if (!has(name))
-                            m_storage.insert(make_pair(name, boost::shared_ptr<T>(new T())));
-                        return *(m_storage.find(name)->second);
-                    }
-
-                    T const & operator[](std::string const & name) const {
-                        if (!has(name))
-                            throw std::out_of_range("No observable found with the name: " + name + ALPS_STACKTRACE);
-                        return *(m_storage.find(name)->second);
-                    }
-
-                    bool has(std::string const & name) const{
-                        return m_storage.find(name) != m_storage.end();
-                    }
-                    
-                    void insert(std::string const & name, boost::shared_ptr<T> ptr){
-                        if (has(name))
-                            throw std::out_of_range("There exists alrady an accumulator with the name: " + name + ALPS_STACKTRACE);
-                        m_storage.insert(make_pair(name, ptr));
-                    }
-
-                    std::size_t size() const {
-                        return m_storage.size();
-                    }
-
-                    void save(hdf5::archive & ar) const {
-                        for(const_iterator it = begin(); it != end(); ++it)
-                            ar[it->first] = *(it->second);
-                    }
-
-                    void load(hdf5::archive & ar) {
-                        std::vector<std::string> list = ar.list_children("");
-                        for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
-                            ar.set_context(*it);
-                            for (typename std::vector<boost::shared_ptr<detail::serializable_type<T> > >::const_iterator jt = m_types.begin()
-                                ; jt != m_types.end()
-                                ; ++jt
-                            )
-                                if ((*jt)->can_load(ar)) {
-                                    operator[](*it) = boost::shared_ptr<T>((*jt)->create(ar));
-                                    break;
-                                }
-                            if (!has(*it))
-                                throw std::logic_error("The Accumulator/Result " + *it + " cannot be unserilized" + ALPS_STACKTRACE);
-                            operator[](*it).load(ar);
-                            ar.set_context("..");
-                        }
-                    }
-
-                    template<typename A> static void register_serializable_type(bool known = false) {
-                        if (!known && m_types.empty())
-                            detail::register_predefined_serializable_type();
-                        m_types.push_back(boost::shared_ptr<detail::serializable_type<T> >(new detail::serializable_type_impl<T, A>));
-                        for (std::size_t i = m_types.size(); i > 1 && m_types[i - 1]->rank() > m_types[i - 2]->rank(); --i)
-                            m_types[i - 1].swap(m_types[i - 2]);
-                    }
-
-                    /// Merge another accumulator/result set into this one. @param rhs the set to merge.
-                    void merge(wrapper_set const &rhs) {
-                        iterator it1 = this->begin();
-                        const_iterator it2 = rhs.begin();
-                        for(; it1 != end(); ++it1, ++it2) { 
-                            if (it1->first != it2 ->first) throw std::logic_error("Can't merge" + it1->first + " and " + it2->first);
-                            it1->second->merge(*(it2->second));
-                        }
-                    }
-
-                    void print(std::ostream & os) const {
-                        for(const_iterator it = begin(); it != end(); ++it)
-                            os << it->first << ": " << *(it->second) << std::endl;
-                    }
-
-                    void reset() {
-                        for(iterator it = begin(); it != end(); ++it)
-                            it->second->reset();
-                    }
-                    
-                    iterator begin() { return m_storage.begin(); }
-                    iterator end() { return m_storage.end(); }
-
-                    const_iterator begin() const { return m_storage.begin(); }
-                    const_iterator end() const { return m_storage.end(); }
-                    
-                    void clear() { m_storage.clear(); }
-
-                private:
-                    std::map<std::string, boost::shared_ptr<T> > m_storage;
-                    static std::vector<boost::shared_ptr<detail::serializable_type<T> > > m_types;
-            };
-            template<typename T> std::vector<boost::shared_ptr<detail::serializable_type<T> > > wrapper_set<T>::m_types;
-
-            template<typename T> inline std::ostream & operator<<(std::ostream & os, const wrapper_set<T> & arg) {
-                arg.print(os);
-                return os;
-            }
-        }
         typedef impl::wrapper_set<accumulator_wrapper> accumulator_set;
         typedef impl::wrapper_set<result_wrapper> result_set;
 
-        namespace detail {
-
-            template<typename T> struct AccumulatorBase {
-                typedef T accumulator_type;
-                typedef typename T::result_type result_type;
-
-                template<typename ArgumentPack> AccumulatorBase(ArgumentPack const& args) 
-                    : name(args[accumulator_name])
-                    , wrapper(new accumulator_wrapper(T(args)))
-                {}
-
-                std::string name;
-                boost::shared_ptr<accumulator_wrapper> wrapper;
-            };
-
-        }
-
-        template<typename T> struct MeanAccumulator : public detail::AccumulatorBase<
-            impl::Accumulator<T, mean_tag, impl::Accumulator<T, count_tag, impl::AccumulatorBase<T> > >
-        > {
-            typedef typename impl::Accumulator<T, mean_tag, impl::Accumulator<T, count_tag, impl::AccumulatorBase<T> > > accumulator_type;
-            typedef typename accumulator_type::result_type result_type;
-            BOOST_PARAMETER_CONSTRUCTOR(
-                MeanAccumulator, 
-                (detail::AccumulatorBase<accumulator_type>),
-                accumulator_keywords,
-                    (required (_accumulator_name, (std::string)))
-            )
-
-        };
-
-        template<typename T> struct NoBinningAccumulator : public detail::AccumulatorBase<
-            typename impl::Accumulator<T, error_tag, typename MeanAccumulator<T>::accumulator_type>
-        > {
-            typedef typename impl::Accumulator<T, error_tag, typename MeanAccumulator<T>::accumulator_type> accumulator_type;
-            typedef typename accumulator_type::result_type result_type;
-            BOOST_PARAMETER_CONSTRUCTOR(
-                NoBinningAccumulator, 
-                (detail::AccumulatorBase<accumulator_type>),
-                accumulator_keywords,
-                    (required (_accumulator_name, (std::string)))
-            )
-
-        };        
-
-        template<typename T> struct LogBinningAccumulator : public detail::AccumulatorBase<
-            typename impl::Accumulator<T, binning_analysis_tag, typename NoBinningAccumulator<T>::accumulator_type>
-        > {
-            typedef typename impl::Accumulator<T, binning_analysis_tag, typename NoBinningAccumulator<T>::accumulator_type> accumulator_type;
-            typedef typename accumulator_type::result_type result_type;
-            BOOST_PARAMETER_CONSTRUCTOR(
-                LogBinningAccumulator, 
-                (detail::AccumulatorBase<accumulator_type>),
-                accumulator_keywords,
-                    (required (_accumulator_name, (std::string)))
-            )
-
-        }; 
-
-        template<typename T> struct FullBinningAccumulator : public detail::AccumulatorBase<
-            typename impl::Accumulator<T, max_num_binning_tag, typename LogBinningAccumulator<T>::accumulator_type>
-        > {
-            typedef typename impl::Accumulator<T, max_num_binning_tag, typename LogBinningAccumulator<T>::accumulator_type> accumulator_type;
-            typedef typename accumulator_type::result_type result_type;
-            BOOST_PARAMETER_CONSTRUCTOR(
-                FullBinningAccumulator, 
-                (detail::AccumulatorBase<accumulator_type>),
-                accumulator_keywords,
-                    (required (_accumulator_name, (std::string)))
-                    (optional
-                        (_max_bin_number, (std::size_t))
-                    )
-            )
-
-        }; 
-
-        #define ALPS_ACCUMULATOR_REGISTER_OPERATOR(A)                                                               \
-            template<typename T> inline accumulator_set & operator<<(accumulator_set & set, const A <T> & arg) {    \
-                set.insert(arg.name, arg.wrapper);                                                                  \
-                return set;                                                                                         \
-            }
-
-        ALPS_ACCUMULATOR_REGISTER_OPERATOR(MeanAccumulator)
-        ALPS_ACCUMULATOR_REGISTER_OPERATOR(NoBinningAccumulator)
-        ALPS_ACCUMULATOR_REGISTER_OPERATOR(LogBinningAccumulator)
-        ALPS_ACCUMULATOR_REGISTER_OPERATOR(FullBinningAccumulator)
-        #undef ALPS_ACCUMULATOR_REGISTER_OPERATOR
-
-        namespace detail {
-
-            inline void register_predefined_serializable_type() {
-                #define ALPS_ACCUMULATOR_REGISTER_ACCUMULATOR(A)                                                    \
-                    accumulator_set::register_serializable_type<A::accumulator_type>(true);                         \
-                    result_set::register_serializable_type<A::result_type>(true);
-
-                #define ALPS_ACCUMULATOR_REGISTER_TYPE(T)                                                           \
-                    ALPS_ACCUMULATOR_REGISTER_ACCUMULATOR(MeanAccumulator<T>)                                       \
-                    ALPS_ACCUMULATOR_REGISTER_ACCUMULATOR(NoBinningAccumulator<T>)                                  \
-                    ALPS_ACCUMULATOR_REGISTER_ACCUMULATOR(LogBinningAccumulator<T>)                                 \
-                    ALPS_ACCUMULATOR_REGISTER_ACCUMULATOR(FullBinningAccumulator<T>)
-
-                ALPS_ACCUMULATOR_REGISTER_TYPE(float)
-                ALPS_ACCUMULATOR_REGISTER_TYPE(double)
-                ALPS_ACCUMULATOR_REGISTER_TYPE(long double)
-                ALPS_ACCUMULATOR_REGISTER_TYPE(std::vector<float>)
-                ALPS_ACCUMULATOR_REGISTER_TYPE(std::vector<double>)
-                ALPS_ACCUMULATOR_REGISTER_TYPE(std::vector<long double>)
-
-                #undef ALPS_ACCUMULATOR_REGISTER_TYPE
-                #undef ALPS_ACCUMULATOR_REGISTER_ACCUMULATOR
-            }
-        }
     }
 }
 
