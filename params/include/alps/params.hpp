@@ -49,6 +49,13 @@ namespace alps {
         params p(argc,argv);
         double t=p["Temp"].as<double>();
 
+    2.1. The parameters can also be assigned this way:
+    
+        double t=300;
+        p["Temp"]=t;
+
+    FIXME: what to do if parameter Temp is already defined? And is of a different type?
+
     3. Allowed scalar types: double, int, std::string, any type T for
     which boost::lexical_cast<T>() is defined.
     
@@ -103,23 +110,24 @@ namespace alps {
     communicator.
     
 */
+
+    // Some forward declarations
+    namespace detail {
+        template <typename T> void printout(std::ostream&, const boost::any&);
+    }
+
     class /*-ALPS_DECL-*/ params {
-
-
-        // typedef std::map<std::string, detail::paramvalue>::value_type iterator_value_type;
-
-        // friend class detail::paramiterator<params, iterator_value_type>;
-        // friend class detail::paramiterator<params const, iterator_value_type const>;
-
+        private:
             typedef boost::program_options::variables_map variables_map;
             typedef boost::program_options::options_description options_description;
-            typedef void (*printout_type)(std::ostream&);
+            typedef void (*printout_type)(std::ostream&, const boost::any&);
+            typedef std::map<std::string,printout_type> printout_map_type;
 
-            /// Contains map(options->values), or empty until a file is parsed. Mutated by diferred fiel parsing.
+            /// Contains map(options->values), or empty until a file is parsed. Mutated by deferred parsing.
             mutable boost::optional<variables_map> varmap_;
 
             /// Map(options->output_functions); filled by define() method or direct assignment
-            std::map<std::string,printout_type> printout_map_;
+            printout_map_type printout_map_;
 
             /// Options description; filled by define() method
             options_description descr_;
@@ -207,10 +215,24 @@ namespace alps {
             // }
 
             /** Access a parameter: read-only */
-            const mapped_type& operator[](const std::string& k) const
+            const mapped_type& get(const std::string& k) const
             {
                 possibly_parse();
                 return (*varmap_)[k];
+            }
+
+            /** Assign a value to a parameter */
+            template <typename T>
+            void set(const std::string& k, const T& val) // FIXME: what about "small" T types --- should we avoid ref?
+            {
+                possibly_parse();
+                // This is a trickery below: as variables_map does not allow assigning to its elements,
+                // we treat (*varmap_) as an object of its basic class, std::map, to create/change elements.
+                std::map<std::string,mapped_type>& as_map=*varmap_;
+                mapped_type& slot=as_map[k]; // FIXME: we may want to use non-default constructor here.
+                slot.value()=val;
+                printout_map_[k]=detail::printout<T>;
+                // return slot; // FIXME: do we want to allow p[a]=p[b]=x; ??
             }
 
             /** Check if the parameter is defined */
@@ -288,6 +310,39 @@ namespace alps {
 
             // std::vector<std::string> keys;
             // std::map<std::string, detail::paramvalue> values;
+
+            /// Private inner proxy class to handle assignment.
+            class Proxy {
+                private:
+                    params& param_obj_; ///< Reference to the params object to access
+                    const std::string& name_; ///< Name of the parameter to access
+
+                public:
+                    /// Constructor from the params object and a parameter name
+                    Proxy(params& a_obj, const std::string& a_name): param_obj_(a_obj), name_(a_name) {}
+
+                    /// Accessor method casting the parameter as a type T
+                    template <typename T> const
+                    T as() {
+                        return param_obj_.get(name_).as<T>();
+                    }
+
+                    /// Setter method to assign a value to the parameter
+                    template <typename T> const
+                    void operator=(const T& val) // FIXME: what about "small" T types --- should we avoid ref?
+                    {
+                        return param_obj_.set(name_,val);
+                    }
+            };
+
+        public:
+            /// Convenience operator[] to access the parameters:
+            Proxy operator[](const std::string& a_name)
+            {
+                return Proxy(*this,a_name);
+            }
+
+        friend std::ostream & operator<<(std::ostream & os, params const & arg);
     };
 
     namespace detail {
@@ -311,13 +366,20 @@ namespace alps {
         template <typename T>
         void printout(std::ostream& os, const boost::any& val)
         {
-          os << boost::any_cast<T>(val);
+            os << boost::any_cast<T>(val);
         }
 
         template <>
         void printout<std::string>(std::ostream& os, const boost::any& val)
         {
           typedef std::string T;
+          os << "'" << boost::any_cast<T>(val) << "'";
+        }
+
+        template <>
+        void printout<const char*>(std::ostream& os, const boost::any& val)
+        {
+          typedef const char* T;
           os << "'" << boost::any_cast<T>(val) << "'";
         }
     }
@@ -341,14 +403,4 @@ namespace alps {
     }
 
     /*-ALPS_DECL-*/ std::ostream & operator<<(std::ostream & os, params const & arg);
-
-    /// Assign a value to a parameter, as in param["abc"] << x;
-    template <typename T>
-    /*-ALPS_DECL-*/ void operator<<(params::mapped_type& slot, const T& val)
-    {
-        possibly_parse();
-        std::map<std::string,params::mapped_type>& as_map=*varmap_; //FIXME? does it work as expected?
-        as_map[k].value()=val;
-        printout_map_[k]=detail::printout<T>; 
-    }
 }

@@ -150,9 +150,14 @@ namespace alps {
         BOOST_FOREACH(const params::value_type& pair, prm)
         {
             const std::string& k=pair.first;
-            const boost::any& v=pair.second;
+            const params::mapped_type& v=pair.second;
             os << k << "=";
-            detail::printout(os,v);
+            // FIXME: the following game with iterators and assertions can be avoided
+            //        if the printout function would be a member of params::mapped_type;
+            //        however, it requires deriving from boost::variables_map.
+            params::printout_map_type::const_iterator pit=prm.printout_map_.find(k);
+            assert(pit != prm.printout_map_.end() && "Printout function is given for a parameter");
+            (pit->second)(os,v.value());
             os << std::endl;
         }
         return os;

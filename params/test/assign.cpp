@@ -8,35 +8,42 @@
 #include "alps/params.hpp"
 #include "gtest/gtest.h"
 
-TEST(param, TestParamAssignments){
-
+static void test_assignments()
+{
     alps::params parms;
-    // parms["char"] = static_cast<char>(1);
-    // parms["signed char"] = static_cast<signed char>(1);
-    // parms["unsigned char"] = static_cast<unsigned char>(1);
-    // parms["short"] = static_cast<short>(1);
-    // parms["unsigned short"] = static_cast<unsigned short>(1);
-    parms["int"] = static_cast<int>(1);
-    parms["unsigned"] = static_cast<unsigned>(1);
-    // parms["long"] = static_cast<long>(1);
-    // parms["unsigned long"] = static_cast<unsigned long>(1);
-    // parms["long long"] = static_cast<long long>(1);
-    // parms["unsigned long long"] = static_cast<unsigned long long>(1);
-    // parms["float"] = static_cast<float>(1);
-    parms["double"] = static_cast<double>(1);
-    // parms["long double"] = static_cast<long double>(1);
-    parms["bool"] = static_cast<bool>(1);
+    parms["char"] = static_cast<char>(0x41);
+    parms["signed char"] = static_cast<signed char>(0x41);
+    parms["unsigned char"] = static_cast<unsigned char>(0x41);
+    parms["short"] = static_cast<short>(0x41);
+    parms["unsigned short"] = static_cast<unsigned short>(0x41);
+    parms["int"] = static_cast<int>(0x41);
+    parms["unsigned"] = static_cast<unsigned>(0x41);
+    parms["long"] = static_cast<long>(0x41);
+    parms["unsigned long"] = static_cast<unsigned long>(0x41);
+    parms["long long"] = static_cast<long long>(0x41);
+    parms["unsigned long long"] = static_cast<unsigned long long>(0x41);
+    parms["float"] = static_cast<float>(0x41);
+    parms["double"] = static_cast<double>(0x41);
+    parms["long double"] = static_cast<long double>(0x41);
+    parms["bool"] = true;
+    parms["cstring"] = (const char*)"asdf";
     parms["std::string"] = std::string("asdf");
 
     std::vector<double> vd(3);
     vd[0]=1.; vd[1]=2.; vd[2]=4.;
     parms["dblvec"] = vd;
     
-    std::cout << parms << std::endl;
+    std::cout << std::boolalpha << parms << std::endl;
+}
+
+TEST(param, TestParamAssignments){
+  test_assignments();
+  return;
 }
 int main(int argc, char **argv) 
 {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+  // test_assignments();
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }
 
