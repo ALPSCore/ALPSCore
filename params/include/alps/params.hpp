@@ -134,7 +134,6 @@ namespace alps {
 
             std::string helpmsg_;
             std::vector<std::string> argvec_;
-            //?? std::string file_;
 
             /// An option name for the positional file argument.
             static const char* const cfgfile_optname_;
@@ -169,7 +168,6 @@ namespace alps {
             typedef variables_map::const_iterator const_iterator;
             typedef variables_map::value_type value_type;
             typedef variables_map::mapped_type mapped_type;
-            // typedef variables_map::value_type value_type;
 
             // old: typedef detail::paramiterator<params, iterator_value_type> iterator;
             // old: typedef detail::paramiterator<params const, iterator_value_type const> const_iterator;
@@ -205,15 +203,6 @@ namespace alps {
             /** Erase a parameter */
             void erase(std::string const& k) { possibly_parse(); varmap_->erase(k); }
 
-            // /** Access a parameter */
-            // boost::any& operator[](const std::string& k)
-            // {
-            //     possibly_parse();
-            //     std::map<std::string,mapped_type>& as_map=*varmap_; //FIXME? does it work as expected?
-            //     // return (*varmap_)[k].value();
-            //     return as_map[k].value();
-            // }
-
             /** Access a parameter: read-only */
             const mapped_type& get(const std::string& k) const
             {
@@ -226,7 +215,7 @@ namespace alps {
             void set(const std::string& k, const T& val) // FIXME: what about "small" T types --- should we avoid ref?
             {
                 possibly_parse();
-                // This is a trickery below: as variables_map does not allow assigning to its elements,
+                // There is a trickery below: as variables_map does not allow assigning to its elements,
                 // we treat (*varmap_) as an object of its basic class, std::map, to create/change elements.
                 std::map<std::string,mapped_type>& as_map=*varmap_;
                 mapped_type& slot=as_map[k]; // FIXME: we may want to use non-default constructor here.
@@ -303,13 +292,6 @@ namespace alps {
             //     ;
             // }
 
-            // void setter(std::string const &, detail::paramvalue const &);
-            // void parse_text_parameters(boost::filesystem::path const & path);
-
-            // detail::paramvalue getter(std::string const &);
-
-            // std::vector<std::string> keys;
-            // std::map<std::string, detail::paramvalue> values;
 
             /// Private inner proxy class to handle assignment.
             class Proxy {

@@ -24,8 +24,6 @@ namespace alps {
 
     void params::certainly_parse() const
     {
-        // if (argvec_.empty()) return;
-        
         po::parsed_options cmdline_opts=
             po::command_line_parser(argvec_).
             allow_unregistered().
@@ -64,84 +62,6 @@ namespace alps {
         }
         return false;
     }        
-
-    // FIXME: should it be moved to a private header? Or hidden as static or in private namespace?
-    namespace {
-
-        /// Service function: output a sequence
-        template <typename T>
-        std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec)
-        {
-            typedef std::vector<T> VT;
-            if (vec.empty()) return os;
-            typename VT::const_iterator it=vec.begin();
-            typename VT::const_iterator end=vec.end();
-            os << *it; // FIXME: possible stream errors ignored!
-            ++it;
-            for (; it!=end; ++it) {
-                os << "," << *it;
-            }
-            return os;
-        }
-        
-        /// output function for a boost::any holding a known type T; @returns true if the type is guessed right.
-        template <typename T>
-        bool printout(std::ostream& os, const boost::any& a) {
-            typedef T value_type;
-            const value_type* val=boost::any_cast<value_type>(&a);
-            if (!val) return false;
-            os << *val;
-            return true;
-        }
-
-        /// output function for a boost::any holding std::string; @returns true if the type is guessed right.
-        template <>
-        bool printout<std::string>(std::ostream& os, const boost::any& a) {
-            typedef std::string value_type;
-            const value_type* val=boost::any_cast<value_type>(&a);
-            if (!val) return false;
-            os << "'" << *val << "'";
-            return true;
-        }
-
-    } // end anonymous namespace
-        
-    
-//     /// Output operator for a known boost::any
-//     std::ostream& operator<< (std::ostream& os, const boost::any& a)
-//     {
-//         // FIXME: this is UGLY!
-//         // Logic: we try each type; if the conversion works, we output it, else try next.
-//         // If none works, we throw.
-// #define LOCAL_OUTPUT_AS(_r_,a,T) if (const T* tmp=boost::any_cast<T>(&a)) { os << *tmp; } else
-//         BOOST_PP_SEQ_FOR_EACH(LOCAL_OUTPUT_AS, a, BOOST_PP_TUPLE_TO_SEQ(ALPS_PARAMS_SUPPORTED_TYPES))
-//         {
-//             std::cerr << "Cannot output this type: " << a.type().name() << std::endl;
-//             throw std::logic_error(std::string("Cannot output this type: ")+a.type().name());
-//         }
-// #undef LOCAL_OUTPUT_AS
-//         return os;
-//     }
-            
-    /// Output operator for a known boost::any
-    std::ostream& operator<< (std::ostream& os, const boost::any& a)
-    {
-        // FIXME: this is UGLY!
-        // Logic: we try to output each type; if it does not work, we try next.
-        // If none works, we throw.
-        if (!(
-                   printout<int>(os,a)
-                || printout<unsigned>(os,a)
-                || printout<double>(os,a)
-                || printout<bool>(os,a)
-                || printout<std::string>(os,a)
-                || printout< std::vector<unsigned> >(os,a)
-                || printout< std::vector<double> >(os,a)
-                )) {
-            throw std::logic_error(std::string("Cannot output this type with typeid=")+a.type().name());
-        }
-        return os;
-    }
 
         
     /// Output parameters to a stream
