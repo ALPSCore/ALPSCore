@@ -1,8 +1,12 @@
 #include <iostream>
 #include <stdexcept>
+//#include <vector>
+//#include <algorithm>
+//#include <iterator>
 #include "boost/foreach.hpp"
 // #include "boost/preprocessor.hpp"
-#include "boost/algorithm/string/join.hpp"
+#include "boost/algorithm/string/trim.hpp"
+#include "boost/algorithm/string/erase.hpp"
 
 #include "alps/params.hpp"
 
@@ -24,11 +28,13 @@ namespace alps {
 
     void params::certainly_parse() const
     {
+        po::positional_options_description pd;
+        pd.add(cfgfile_optname_,1); // FIXME: should it be "-1"? How the logic behaves for several positional options?
         po::parsed_options cmdline_opts=
             po::command_line_parser(argvec_).
             allow_unregistered().
-            positional(po::positional_options_description().add(cfgfile_optname_,1)).  // FIXME: should it be "-1"? How the logic behaves for several positional options?
             options(descr_).
+            positional(pd).  
             run();
 
         varmap_=variables_map();
@@ -67,8 +73,7 @@ namespace alps {
     /// Output parameters to a stream
     std::ostream& operator<< (std::ostream& os, const params& prm)
     {
-        BOOST_FOREACH(const params::value_type& pair, prm)
-        {
+        BOOST_FOREACH(const params::value_type& pair, prm) {
             const std::string& k=pair.first;
             const params::mapped_type& v=pair.second;
             os << k << "=";
@@ -82,8 +87,35 @@ namespace alps {
         }
         return os;
     }
-  
-    // FIXME:ToDo: file parsing, especially for lists (vectors)
 
 }
 
+namespace boost {
+    namespace program_options {
+        // Declaring validate() function in the boost::program_options namespace for it to be found by boost.
+        void validate(boost::any& outval, const std::vector<std::string>& strvalues,
+                      std::string* target_type, int)
+        {
+            namespace po=boost::program_options;
+            namespace pov=po::validators;
+            namespace alg=boost::algorithm;
+            typedef std::vector<std::string> strvec;
+            typedef boost::char_separator<char> charsep;
+        
+            pov::check_first_occurrence(outval); // check that this option has not yet been assigned
+            std::string in_str=pov::get_single_string(strvalues); // check that this option is passed a single value
+
+            // Now, do parsing:
+            alg::trim(in_str); // Strip trailing and leading blanks
+            if (in_str[in_str.size()-1]==';') alg::erase_tail(in_str,1); // Strip trailing semicolon
+            if (in_str[0]=='"' && in_str[in_str.size()]=='"') { // Check if it is a "quoted string"
+                // Strip surrounding quotes:
+                alg::erase_tail(in_str,1);
+                alg::erase_head(in_str,1);
+                // FIXME? No special processing of the quotes inside the string.
+            }
+            outval=boost::any(in_str);
+            std::cerr << "***DEBUG: returning from validate(...std::string*...) ***" << std::endl;
+        }
+    }
+}

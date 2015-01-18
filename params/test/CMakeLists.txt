@@ -1,10 +1,10 @@
 include(ALPSEnableTests)
 
 set (test_src
-#     param
+     param
      assign
 #     default
-#     not_found
+     not_found
 #     ordering
 #     stream
     )

@@ -24,6 +24,7 @@
 #include "boost/program_options.hpp"
 #include "boost/optional.hpp"
 #include "boost/any.hpp"
+#include "boost/tokenizer.hpp"
 
 #ifdef ALPS_HAVE_MPI
     namespace boost{ namespace mpi{ class communicator; } }
@@ -56,10 +57,15 @@ namespace alps {
 
     FIXME: what to do if parameter Temp is already defined? And is of a different type?
 
-    3. Allowed scalar types: double, int, std::string, any type T for
+    2.2. An attempt to access an undefined parameter is interpreted as accessing a parameter without a defined type.
+
+    2.3. An attempt to access a parameter of a wrong type (including accessing parameter with undefined type) results in
+    boost::bad_any_cast thrown.
+
+    3. FIXME? Allowed scalar types: double, int, std::string, any type T for
     which boost::lexical_cast<T>() is defined.
     
-    4. Allowed vector types: alps::params::intvec,
+    4. FIXME? Allowed vector types: alps::params::intvec,
     alps::params::doublevec for which a parser is defined.
 
     Variant: use alps::param::vector<T> which is derived from
@@ -76,11 +82,23 @@ namespace alps {
     5.1. It is a responsibility of the caller to check for the "--help" option.
          A convenience method checks for the option and outputs the description of the options.
 
-    6. Special case: parameter with no declared type is optional,
-       corresponds to a boolean TRUE if it is defined and true:
+    6. Special cases: for list parameters of type T the parameter must be defined as
+
+        p.define< alps::params::vector<T> >("name","description");
+
+       and accessed as:
+
+        x=p["name"].as< std::vector<T> >();
+
+    (FIXME: There is no default value provisions for list parameters, as of now).
+    Also, lists of strings are not supported (undefined behavior: may or may not work).
+
+    6.1. FIXME? Special case: parameter with no declared type is optional,
+         corresponds to a boolean TRUE if it is defined and true:
 
         p.define<>("X", "The input has property X");
         bool has_x=p["X"].as<bool>();
+
 
     7. The type is NOT derived from, but it CONTAINS (mutable) boost::program_options::variables_map;
     it delegates some methods of std::map.
@@ -98,20 +116,47 @@ namespace alps {
 
     8.4. Parsing occurs and the option map populated at the first access to the option map ("lazy parsing").
 
-    8.5. Unknown (undeclared) options are ignored --- possibly setting a flag "unknown options are present".
+    8.5. Unknown (undeclared) options are ignored --- possibly setting a flag "unknown options are present" (FIXME).
     
     8.6. Options can NOT be redefined --- subclasses must come up with
          their own option names. The description (the help message) can be redefined.
-    
-    9. The state of a parameter object can be saved to and loaded from
-    an HDF5 archive.
 
-    10. The state of a parameter object can be broadcast over an MPI
-    communicator.
+    9. FIXME--CHECK! The ini-file format allows empty lines and comment lines, but not garbage lines.
+
+    9.1. The list values in the ini file are comma/space separated.
+
+    9.2. The strings in the ini file are read according to the following rules (FIXME: test):
+       1) Leading and trailing spaces are stripped.
+       2) A trailing semicolon is stripped, if present (for backward compatibility).
+       3) A pair of surrounding double quotes is stripped, if present (to allow for leading/trailing spaces and semicolons).
+         
+    10. The state of a parameter object can be saved to and loaded from
+    an HDF5 archive. (FIXME: not yet implemented)
+
+    11. The state of a parameter object can be broadcast over an MPI
+    communicator. (FIXME: not yet implemented)
+
+    QUESTIONS:
+
+    1. Is there any code that relies on ordering of parameters? (There
+    was a test checking the same order preservation across save/load).
+
+    2. Is it important to cut trailing semicolons?
+
+    3. Reading of quoted strings must be supported.
+
+    4. Check for printing of the lists: a list parameter must print correctly.
+    In other words, the set of parameters must be printed correctly and then read.
+
+    5. Check for string reading according to the rules.
+
+    6. Check for reading of ini files with sections.
     
 */
 
     // Some forward declarations
+    // FIXME: hide the "detail" namespace inside the class, or another 'params*' namespace;
+    // FIXME: or just move everything inside the private section of the class.
     namespace detail {
         template <typename T> void printout(std::ostream&, const boost::any&);
     }
@@ -150,7 +195,7 @@ namespace alps {
             /// Initialization code common for all constructors
             void init() {
                 descr_.add_options()
-                    ("parameter-file",boost::program_options::value<std::string>())
+                    (cfgfile_optname_,boost::program_options::value<std::string>())
                     ("help","Provides help message");
             }
 
@@ -163,7 +208,7 @@ namespace alps {
             };
             
         public:
-
+            
             typedef variables_map::iterator iterator;
             typedef variables_map::const_iterator const_iterator;
             typedef variables_map::value_type value_type;
@@ -173,7 +218,23 @@ namespace alps {
             // old: typedef detail::paramiterator<params const, iterator_value_type const> const_iterator;
             // old: typedef detail::paramproxy value_type;
 
-        
+            // // DEBUG!!!
+            // /** @brief Derived vector class: convertible to/from std::vector */
+            // template <typename T>
+            // struct some_vec : public std::vector<T> {
+            //         typedef std::vector<T> base_t;
+
+            //         some_vec(const base_t& v): base_t(v) {}
+            //         some_vec(): base_t() {}
+            //         some_vec(size_t sz): base_t(sz) {}
+            // };
+            // typedef some_vec<double> dblvec;
+
+            /// Tag type to indicate vector parameter (FIXME: will it work?? in output too?)
+            template <typename T>
+            struct vector {};
+
+            
             /** Default constructor */
             params() { init(); }
 
@@ -190,6 +251,7 @@ namespace alps {
             params(unsigned int argc, const char* const argv[])
             {
                 std::transform(argv+1,argv+argc, std::back_inserter(argvec_), cstr2string());
+                init();
             }
 
             #ifdef ALPS_HAVE_PYTHON_DEPRECATED
@@ -266,11 +328,11 @@ namespace alps {
 
             /// Define an option with an optional value
             template <typename T>
-            params& define(const std::string& optname, T defval, const std::string& descr);
+            params& define(const char* optname, T defval, const char* descr);
 
             /// Define an option with a required value
             template <typename T>
-            params& define(const std::string& optname, const std::string& descr);
+            params& define(const char* optname, const char* descr);
 
             /// Output the help message, if requested. @returns true if help was indeed requested.
             bool help_requested(std::ostream& ostrm);
@@ -281,6 +343,16 @@ namespace alps {
             // template <>
             // params& define<>(const std::string& optname, const std::string& descr);
 
+            /// Service cast operator to convert std::string to type T, analogous to boost::lexical_cast<T>
+            // FIXME: we could use a simple functional programming
+            // instread, but i don't want to bring those headers here
+            // for one or two simple uses.
+            template <typename T>
+            static T lexical_cast(const std::string& s)
+            {
+                return boost::lexical_cast<T>(s.c_str());
+            }
+            
         private:
 
             friend class boost::serialization::access;
@@ -304,24 +376,37 @@ namespace alps {
                     Proxy(params& a_obj, const std::string& a_name): param_obj_(a_obj), name_(a_name) {}
 
                     /// Accessor method casting the parameter as a type T
-                    template <typename T> const
-                    T as() {
+                    template <typename T>
+                    T as() const {
                         return param_obj_.get(name_).as<T>();
                     }
 
                     /// Setter method to assign a value to the parameter
-                    template <typename T> const
-                    void operator=(const T& val) // FIXME: what about "small" T types --- should we avoid ref?
+                    template <typename T>
+                    void operator=(const T& val) const // FIXME: what about "small" T types --- should we avoid ref?
                     {
                         return param_obj_.set(name_,val);
                     }
+
+                    /// Setter method to assign a value to the parameter: const char* overload. Allows `prm["a"]="abc"`
+                    void operator=(const char* val) const 
+                    {
+                        return param_obj_.set(name_,std::string(val));
+                    }
+
             };
 
         public:
-            /// Convenience operator[] to access the parameters:
+            /// Convenience operator[] to access the parameters for assignment:
             Proxy operator[](const std::string& a_name)
             {
                 return Proxy(*this,a_name);
+            }
+
+            /// Convenience operator[] to access the parameters read-only:
+            const mapped_type& operator[](const std::string& a_name) const
+            {
+                return get(a_name);
             }
 
         friend std::ostream & operator<<(std::ostream & os, params const & arg);
@@ -329,7 +414,7 @@ namespace alps {
 
     namespace detail {
 
-        /// Service function: output a sequence
+        /// Service function: output a vector
         template <typename T>
         std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec)
         {
@@ -355,20 +440,21 @@ namespace alps {
         void printout<std::string>(std::ostream& os, const boost::any& val)
         {
           typedef std::string T;
-          os << "'" << boost::any_cast<T>(val) << "'";
+          os << "\"" << boost::any_cast<T>(val) << "\"";
         }
 
-        template <>
-        void printout<const char*>(std::ostream& os, const boost::any& val)
-        {
-          typedef const char* T;
-          os << "'" << boost::any_cast<T>(val) << "'";
-        }
+        // template <>
+        // void printout<const char*>(std::ostream& os, const boost::any& val)
+        // {
+        //   typedef const char* T;
+        //   os << "'" << boost::any_cast<T>(val) << "'";
+        // }
     }
 
+        
     // FIXME: we may consider provide template specializations for specific types? To hide templates inside *.cpp?
     template <typename T>
-    params& params::define(const std::string& optname, T defval, const std::string& a_descr)
+    params& params::define(const char* optname, T defval, const char* a_descr)
     {
         invalidate();
         descr_.add_options()(optname,boost::program_options::value<T>()->default_value(defval),a_descr);
@@ -377,7 +463,7 @@ namespace alps {
     }
 
     template <typename T>
-    params& params::define(const std::string& optname, const std::string& a_descr)
+    params& params::define(const char* optname, const char* a_descr)
     {
         invalidate();
         descr_.add_options()(optname,boost::program_options::value<T>(),a_descr);
@@ -385,4 +471,43 @@ namespace alps {
     }
 
     /*-ALPS_DECL-*/ std::ostream & operator<<(std::ostream & os, params const & arg);
+
+    
+        /// Validator for vectors, used by boost::program_options
+        // FIXME: in which namespace should it be??
+        template <typename T>
+        void validate(boost::any& outval, const std::vector<std::string>& strvalues,
+                      alps::params::vector<T>*, int)
+        {
+            namespace po=boost::program_options;
+            namespace pov=po::validators;
+            typedef std::vector<std::string> strvec;
+            typedef boost::char_separator<char> charsep;
+        
+            std::cerr << "***DEBUG: entering validate() (templated) ***" << std::endl;
+
+            pov::check_first_occurrence(outval); // check that this option has not yet been assigned
+            const std::string in_str=pov::get_single_string(strvalues); // check that this option is passed a single value
+
+            // Now, do parsing
+            boost::tokenizer<charsep> tok(in_str,charsep(" ;,"));
+            const strvec tokens(tok.begin(),tok.end());
+            std::vector<T> typed_outval(tokens.size());
+            // (Note: what we need is simply boost::lexical_cast<T>(_1.c_str()) in boost::bind parlance)
+            std::transform(tokens.begin(), tokens.end(), typed_outval.begin(), alps::params::lexical_cast<T>);
+
+            outval=boost::any(typed_outval);
+            std::cerr << "***DEBUG: returning from validate() (templated) ***" << std::endl;
+        }
+
+        // }
 }
+
+    namespace boost {
+        namespace program_options {
+            /// Validator for std::string, overriding one defined by boost::program_options
+            // It has to be declared in boost::program_options namespace to work!
+            void validate(boost::any& outval, const std::vector<std::string>& strvalues,
+                          std::string*, int);
+        }
+    }
