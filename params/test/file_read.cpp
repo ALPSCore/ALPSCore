@@ -65,17 +65,6 @@ TEST(param, StringParamRead) {
    //create a file name
    std::string pfilename(alps::temporary_filename("pfile"));
 
-/*     
-     basic
-     no_tl_spaces
-     with_tl_spaces
-     with_tl_spaces_quoted
-     with_tl_spaces_quoted2
-     ends_with_quote
-     starts_with_quote
-*/
-
-
    // Have some sample strings
    std::string basic="hello-world";
    std::string no_tl_spaces="hello, \"my beautiful\" world"; // no trailing/leading spaces
@@ -132,21 +121,244 @@ TEST(param, StringParamRead) {
    EXPECT_EQ(starts_with_quote_rd,starts_with_quote);
 }    
 
-// Scalars and strings with default values
+// Various spaces around the values
+template <typename T>
+void Test_spaces_around(T my_param)
+{
+   //create a file name
+   std::string pfilename(alps::temporary_filename("pfile"));
+
+   // Generate INI file
+   {
+     std::ofstream pfile(pfilename.c_str());
+     pfile << "my_param1=" << my_param << std::endl; // no spaces
+     pfile << "my_param2 =" << my_param << std::endl; // space before '='
+     pfile << "my_param3= " << my_param << std::endl; // space before value
+     pfile << "my_param4 = " << my_param << std::endl; // spaces around '='
+     pfile << "my_param5 = " << my_param << "  " << std::endl; // spaces around '=' and after value
+   }
+
+   // Imitate the command line args
+   const int argc=2;
+   const char* argv[2]={"THIS_PROGRAM",0};
+   argv[1]=pfilename.c_str();
+
+   //define the parameters
+   alps::params p(argc,argv);
+   p.description("This is a test program").
+       template define<T>("my_param1","no spaces").
+       template define<T> ("my_param2","space before =").
+       template define<T>("my_param3","space after =").
+       template define<T>("my_param4","spaces around =").
+       template define<T>("my_param5","trailing spaces");
+   
+   // read the parameters
+   T my_param1_rd=p["my_param1"].as<T>();
+   T my_param2_rd=p["my_param2"].as<T>();
+   T my_param3_rd=p["my_param3"].as<T>();
+   T my_param4_rd=p["my_param4"].as<T>();
+   T my_param5_rd=p["my_param5"].as<T>();
+
+   // verify the parameters
+   EXPECT_EQ(my_param1_rd, my_param);
+   EXPECT_EQ(my_param2_rd, my_param);
+   EXPECT_EQ(my_param3_rd, my_param);
+   EXPECT_EQ(my_param4_rd, my_param);
+   EXPECT_EQ(my_param5_rd, my_param);
+}
+
+#define MakeTest(typ,typ_human,val)             \
+    TEST(param, SpacesRead ## typ_human) { Test_spaces_around< typ > ( val ); } 
+
+MakeTest(int, INT, 1234)
+MakeTest(double, DOUBLE, 4.25)
+MakeTest(std::string, STRING, "hello")
+
+#undef MakeTest
+
+// Sectioned ini file
+TEST(param, SectionedFile) {
+   //create a file name
+   std::string pfilename(alps::temporary_filename("pfile"));
+
+   // Generate INI file
+   int param_int1=1234;
+   int param_int2=5678;
+   double param_double1=1.125;
+   double param_double2=2.250;
+   {
+     std::ofstream pfile(pfilename.c_str());
+     pfile << "[SECTION_ONE]" << std::endl;
+     pfile << "int = " << param_int1 << std::endl;
+     pfile << "double = " << param_double1 << std::endl;
+
+     pfile << "[SECTION_TWO]" << std::endl;
+     pfile << "int = " << param_int2 << std::endl;
+     pfile << "double = " << param_double2 << std::endl;
+   }
+
+   // Imitate the command line args
+   const int argc=2;
+   const char* argv[2]={"THIS_PROGRAM",0};
+   argv[1]=pfilename.c_str();
+
+   //define the parameters
+   alps::params p(argc,argv);
+   p.description("This is a test program").
+       define<int>("SECTION_ONE.int","int1 parameter").
+       define<double>("SECTION_ONE.double","double1 parameter").
+       define<int>("SECTION_TWO.int","int2 parameter").
+       define<double>("SECTION_TWO.double","double2 parameter");
+   
+   // read the parameters
+   int param_int1_rd=p["SECTION_ONE.int"].as<int>();
+   double param_double1_rd=p["SECTION_ONE.double"].as<double>();
+   int param_int2_rd=p["SECTION_TWO.int"].as<int>();
+   double param_double2_rd=p["SECTION_TWO.double"].as<double>();
+
+   // verify the parameters
+   EXPECT_EQ(param_int1_rd, param_int1);
+   EXPECT_EQ(param_int2_rd, param_int2);
+   EXPECT_NEAR(param_double1_rd,param_double1,1.E-12);
+   EXPECT_NEAR(param_double2_rd,param_double2,1.E-12);
+}    
+
+
+// Comments and empty lines
+TEST(param, CommentsInFile) {
+   //create a file name
+   std::string pfilename(alps::temporary_filename("pfile"));
+
+   // Generate INI file
+   int param_int1=1234;
+   int param_int2=5678;
+   double param_double1=1.125;
+   double param_double2=2.250;
+   {
+     std::ofstream pfile(pfilename.c_str());
+     pfile << "int1 = " << param_int1 << std::endl;
+     pfile << std::endl;
+     pfile << "double1 = " << param_double1 << std::endl;
+
+     pfile << "# This is a comment line" << std::endl;
+     pfile << "int2 = " << param_int2 << std::endl;
+     pfile << "double2 = " << param_double2 << std::endl;
+   }
+
+   // Imitate the command line args
+   const int argc=2;
+   const char* argv[2]={"THIS_PROGRAM",0};
+   argv[1]=pfilename.c_str();
+
+   //define the parameters
+   alps::params p(argc,argv);
+   p.description("This is a test program").
+       define<int>("int1","int1 parameter").
+       define<double>("double1","double1 parameter").
+       define<int>("int2","int2 parameter").
+       define<double>("double2","double2 parameter");
+   
+   // read the parameters
+   int param_int1_rd=p["int1"].as<int>();
+   double param_double1_rd=p["double1"].as<double>();
+   int param_int2_rd=p["int2"].as<int>();
+   double param_double2_rd=p["double2"].as<double>();
+
+   // verify the parameters
+   EXPECT_EQ(param_int1_rd, param_int1);
+   EXPECT_EQ(param_int2_rd, param_int2);
+   EXPECT_NEAR(param_double1_rd,param_double1,1.E-12);
+   EXPECT_NEAR(param_double2_rd,param_double2,1.E-12);
+}    
+
+// Incorrect input (garbage lines)
+TEST(param, GarbageInFile) {
+   //create a file name
+   std::string pfilename(alps::temporary_filename("pfile"));
+
+   // Generate INI file with garbage
+   int param_int1=1234;
+   int param_int2=5678;
+   {
+     std::ofstream pfile(pfilename.c_str());
+     pfile << "int1 = " << param_int1 << std::endl;
+     pfile << "Not comment, not empty line" << std::endl;
+     pfile << "int2 = " << param_int2 << std::endl;
+   }
+
+   // Imitate the command line args
+   const int argc=2;
+   const char* argv[2]={"THIS_PROGRAM",0};
+   argv[1]=pfilename.c_str();
+
+   //define the parameters
+   alps::params p(argc,argv);
+   p.description("This is a test program").
+       define<int>("int1","int1 parameter").
+       define<int>("int2","int2 parameter");
+   
+   // read the parameters
+   try {
+       int param_int1_rd=p["int1"].as<int>();
+       FAIL();
+       int param_int2_rd=p["int2"].as<int>();
+   } catch (boost::program_options::invalid_config_file_syntax& ex) {
+       SUCCEED(); 
+       std::cout << "Exception: " << ex.what() << std::endl;
+   }
+}    
+
+// Incorrect input (wrong values)
+
+template <typename T>
+void WrongTypeTest(const std::string& strval)
+{
+   //create a file name
+   std::string pfilename(alps::temporary_filename("pfile"));
+
+   // Generate INI file with wrong-type values
+   {
+     std::ofstream pfile(pfilename.c_str());
+     pfile << "param = " << strval << std::endl;
+   }
+
+   // Imitate the command line args
+   const int argc=2;
+   const char* argv[2]={"THIS_PROGRAM",0};
+   argv[1]=pfilename.c_str();
+
+   //define the parameters
+   alps::params p(argc,argv);
+   p.description("This is a test program").
+       define<T>("param","some parameter");
+   
+   // read the parameter
+   try {
+       T param_rd=p["param"].as<T>();
+       FAIL();
+   } catch (boost::program_options::invalid_option_value& ex) {
+       SUCCEED();
+       // expect that the "wrong" string is somewhere in the exception message
+       EXPECT_TRUE(std::string(ex.what()).find(strval)!=std::string::npos);
+       std::cout << "Exception: " << ex.what() << typeid(ex).name() << std::endl;
+   }
+}    
+
+
+TEST(param, WrongValuesInFile) {
+    WrongTypeTest<int>("123.45");
+    WrongTypeTest<double>("123.45 is not correct");
+}
+
 
 // Vector param read
 
-// Sectioned ini file
-
-// Various spaces around
-
-// Comments and empty lines
-
-// Incorrect input (garbage lines, wrong-type values)
-   
 // Incorrect name access (different test file?)
 
 // Assigned vs file-read parameters (different test file?)
+
+// Scalars and strings with default values (different test file?)
+
 
 #if 0
 void Test(void) {

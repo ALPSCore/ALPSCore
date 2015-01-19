@@ -161,6 +161,8 @@ namespace alps {
     10. Check for overriding name by assignment
 
     11. Check for overriding name and type by assignment
+
+    12. Check for the repetitive definition (the same type, different type)
     
 */
 
