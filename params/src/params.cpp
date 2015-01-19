@@ -107,8 +107,8 @@ namespace boost {
 
             // Now, do parsing:
             alg::trim(in_str); // Strip trailing and leading blanks
-            if (in_str[in_str.size()-1]==';') alg::erase_tail(in_str,1); // Strip trailing semicolon
-            if (in_str[0]=='"' && in_str[in_str.size()]=='"') { // Check if it is a "quoted string"
+            // FIXME? Feature removed: if (in_str[in_str.size()-1]==';') alg::erase_tail(in_str,1); // Strip trailing semicolon
+            if (in_str[0]=='"' && in_str[in_str.size()-1]=='"') { // Check if it is a "quoted string"
                 // Strip surrounding quotes:
                 alg::erase_tail(in_str,1);
                 alg::erase_head(in_str,1);

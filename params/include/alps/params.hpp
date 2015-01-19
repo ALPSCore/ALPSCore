@@ -127,7 +127,7 @@ namespace alps {
 
     9.2. The strings in the ini file are read according to the following rules (FIXME: test):
        1) Leading and trailing spaces are stripped.
-       2) A trailing semicolon is stripped, if present (for backward compatibility).
+       2) FIXME: NOT NEEDED!!! (because then it has to be done for ALL types!) A trailing semicolon is stripped, if present (for backward compatibility).
        3) A pair of surrounding double quotes is stripped, if present (to allow for leading/trailing spaces and semicolons).
          
     10. The state of a parameter object can be saved to and loaded from
@@ -151,6 +151,16 @@ namespace alps {
     5. Check for string reading according to the rules.
 
     6. Check for reading of ini files with sections.
+
+    7. Check for adding parameters by derived classes.
+
+    8. Check for help message request
+
+    9. Check for requesting incorect name or type
+
+    10. Check for overriding name by assignment
+
+    11. Check for overriding name and type by assignment
     
 */
 

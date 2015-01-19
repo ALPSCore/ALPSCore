@@ -1,6 +1,7 @@
 include(ALPSEnableTests)
 
 set (test_src
+     file_read
      param
      assign
 #     default
