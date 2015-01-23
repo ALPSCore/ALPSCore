@@ -13,3 +13,4 @@ setenv      ALPS_INC    $root/include
 prepend-path      LD_LIBRARY_PATH   $root/lib
 prepend-path      PATH              $root/bin
 prepend-path      PYTHONPATH        $root/lib
+prepend-path      CMAKE_MODULE_PATH $root/share/cmake/Modules
