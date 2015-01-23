@@ -1,8 +1,7 @@
 #%Module1.0
 
 set     name        alpscore
-conflict alps
-set     root        @CMAKE_INSTALL_PREFIX@
+set     root        "@CMAKE_INSTALL_PREFIX@"
 
 setenv      ALPS_DIR    $root
 setenv      ALPS_ROOT   $root
