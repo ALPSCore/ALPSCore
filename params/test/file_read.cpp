@@ -4,12 +4,15 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#include <alps/params.hpp>
+#include "alps/params.hpp"
 #include "gtest/gtest.h"
-#include <alps/utilities/temporary_filename.hpp>
+#include "alps/utilities/temporary_filename.hpp"
+
+#include "boost/lexical_cast.hpp"
+
 #include <fstream>
 
-// Scalar param read
+// Scalar param read (except bool which is tested separately)
 TEST(param, ScalarParamRead) {
    //create a file name
    std::string pfilename(alps::temporary_filename("pfile"));
@@ -18,16 +21,12 @@ TEST(param, ScalarParamRead) {
    int param_int=1234;
    double param_double=1.125;
    float param_float=2.25;
-   bool param_true=true;
-   bool param_false=false;
    {
      std::ofstream pfile(pfilename.c_str());
      pfile << std::boolalpha;
      pfile << "int = " << param_int << std::endl;
      pfile << "double = " << param_double << std::endl;
      pfile << "float = " << param_float << std::endl;
-     pfile << "partrue = " << param_true << std::endl;
-     pfile << "parfalse = " << param_false << std::endl;
    }
 
    // Imitate the command line args
@@ -40,26 +39,68 @@ TEST(param, ScalarParamRead) {
    p.description("This is a test program").
        define<int>("int","int parameter").
        define<double>("double","double parameter").
-       define<float>("float","float parameter").
-       define<bool>("partrue","partrue parameter").
-       define<bool>("parfalse","parfalse parameter");
+       define<float>("float","float parameter");
    
    // read the parameters
    
    int param_int_rd=p["int"].as<int>();
    double param_double_rd=p["double"].as<double>();
    float param_float_rd=p["float"].as<float>();
-   bool param_true_rd=p["partrue"].as<bool>();
-   bool param_false_rd=p["parfalse"].as<bool>();
 
    // verify the parameters
    EXPECT_EQ(param_int_rd, param_int);
-   EXPECT_EQ(param_true_rd, param_true);
-   EXPECT_EQ(param_false_rd, param_false);
    EXPECT_NEAR(param_double_rd,param_double,1.E-12);
    EXPECT_NEAR(param_float_rd,param_float,1.E-12);
 }    
 
+// Boolean param read
+TEST(param, BoolParamRead) {
+   //create a file name
+   std::string pfilename(alps::temporary_filename("pfile"));
+
+   // Generate INI file
+   {
+     std::ofstream pfile(pfilename.c_str());
+     pfile <<
+         "ok = 1\n"
+         "nok = 0\n"
+         "truepar = true\n"
+         "falsepar = false\n"
+         "truepar1 = TruE\n"
+         "falsepar1 = FAlse\n"
+         "yespar = YeS\n"
+         "nopar = No\n";
+   }
+
+   // Imitate the command line args
+   const int argc=2;
+   const char* argv[2]={"THIS_PROGRAM",0};
+   argv[1]=pfilename.c_str();
+
+   //define the parameters
+   alps::params p(argc,argv);
+   p.description("This is a test program").
+       define<bool>("ok","ok").
+       define<bool>("nok","nok").
+       define<bool>("truepar","truepar").
+       define<bool>("falsepar","falsepar").
+       define<bool>("truepar1","truepar1").
+       define<bool>("falsepar1","falsepar1").
+       define<bool>("yespar","yespar").
+       define<bool>("nopar","nopar");
+   
+   // read the parameters and compare
+   EXPECT_EQ(p["ok"].as<bool>(),true);
+   EXPECT_EQ(p["nok"].as<bool>(),false);
+   EXPECT_EQ(p["truepar"].as<bool>(),true);
+   EXPECT_EQ(p["falsepar"].as<bool>(),false);
+   EXPECT_EQ(p["truepar1"].as<bool>(),true);
+   EXPECT_EQ(p["falsepar1"].as<bool>(),false);
+   EXPECT_EQ(p["yespar"].as<bool>(),true);
+   EXPECT_EQ(p["nopar"].as<bool>(),false);
+}
+
+    
 // String param read (stripping spaces, stripping quotes)
 TEST(param, StringParamRead) {
    //create a file name
@@ -279,10 +320,11 @@ TEST(param, GarbageInFile) {
    // Generate INI file with garbage
    int param_int1=1234;
    int param_int2=5678;
+   const std::string garbage="Not comment, not empty line";
    {
      std::ofstream pfile(pfilename.c_str());
      pfile << "int1 = " << param_int1 << std::endl;
-     pfile << "Not comment, not empty line" << std::endl;
+     pfile << garbage << std::endl;
      pfile << "int2 = " << param_int2 << std::endl;
    }
 
@@ -303,14 +345,16 @@ TEST(param, GarbageInFile) {
        FAIL();
        int param_int2_rd=p["int2"].as<int>();
    } catch (boost::program_options::invalid_config_file_syntax& ex) {
-       SUCCEED(); 
-       std::cout << "Exception: " << ex.what() << std::endl;
+       SUCCEED();
+       EXPECT_TRUE(std::string(ex.what()).find(garbage) != std::string::npos);
+       // std::cout << "Exception: " << ex.what() << std::endl;
    }
 }    
 
 // Incorrect input (wrong values)
 
-template <typename T>
+/// Tests that an exception of type E is thrown if a deliberately wrong value strval of type T is supplied.
+template <typename T, typename E>
 void WrongTypeTest(const std::string& strval)
 {
    //create a file name
@@ -336,75 +380,122 @@ void WrongTypeTest(const std::string& strval)
    try {
        T param_rd=p["param"].as<T>();
        FAIL();
-   } catch (boost::program_options::invalid_option_value& ex) {
+   } catch (E& ex) {
        SUCCEED();
        // expect that the "wrong" string is somewhere in the exception message
        EXPECT_TRUE(std::string(ex.what()).find(strval)!=std::string::npos);
-       std::cout << "Exception: " << ex.what() << typeid(ex).name() << std::endl;
+       // std::cout << "Exception: " << ex.what() <<  std::endl;
    }
 }    
 
 
 TEST(param, WrongValuesInFile) {
-    WrongTypeTest<int>("123.45");
-    WrongTypeTest<double>("123.45 is not correct");
+    WrongTypeTest<int,boost::program_options::invalid_option_value>("123.45");
+    WrongTypeTest<double,boost::program_options::invalid_option_value>("123.45 is not correct");
+    WrongTypeTest<bool,boost::program_options::invalid_bool_value>("false true");
+}
+
+// Anonymous namespace for service functions
+namespace {
+  // Service function: output vector as a separated list
+  template <typename T>
+  std::ostream& print_vec(std::ostream& os, const std::vector<T>& vec, const char* sep)
+  {
+    typedef std::vector<T> vec_type;
+    if (vec.empty()) return os;
+    for (typename vec_type::const_iterator it=vec.begin(), end=vec.end(); ;) {
+      os << *(it++);
+      if (it == end) break;
+      os << sep;
+    }
+    return os;
+  }
 }
 
 
 // Vector param read
-
-// Incorrect name access (different test file?)
-
-// Assigned vs file-read parameters (different test file?)
-
-// Scalars and strings with default values (different test file?)
-
-
-#if 0
-void Test(void) {
-// TEST(param, TextParamRead){
-   // define a few vector types
-   // typedef alps::params::dblvec dblvec;
-   // typedef alps::params::some_vec<int> intvec;
-    typedef std::vector<double> dblvec;
-    typedef std::vector<int> intvec;
-  
+TEST(param, VectorRead) {
    //create a file name
    std::string pfilename(alps::temporary_filename("pfile"));
 
-   //create a few scalar parameters
-   int int_parameter=1;
-   double double_parameter =2.;
-   bool bool_parameter_true=true;
-   bool bool_parameter_false=false;
-   std::string string_parameter="Hello";
-   std::string string_parameter_semic="Hello;";
-   std::string complicated_string_parameter="/path/to/nowhere -parameter -run --this -program";
+   //have some vector parameters
+   int intvec_param0[]={10, 20, 30, 40};
+   double dblvec_param0[]={1.5, 2.25, 4.125};
+   bool boolvec_param0[]={true, false, false, true};
 
-   //create some vector parameters
-   dblvec dvec_param(3);
-   dvec_param[0]=1.25; dvec_param[1]=2.25; dvec_param[2]=4.25; 
+   //have some delimiters
+   const char* delims[]={ " ", "," , ", " };
+   const int ndelims=sizeof(delims)/sizeof(*delims);
 
-   intvec mvec_param(3);
-   mvec_param[0]=10; mvec_param[1]=20; mvec_param[2]=30;
+   //convert basic type arrays to std::vector
+#define ARRAY_TO_VECTOR(typ, vecval, arrval) \
+   std::vector<typ> vecval(arrval, arrval+sizeof(arrval)/sizeof(*arrval))
+
+   ARRAY_TO_VECTOR(int, intvec_param, intvec_param0);
+   ARRAY_TO_VECTOR(double, dblvec_param, dblvec_param0);
+   ARRAY_TO_VECTOR(bool, boolvec_param, boolvec_param0);
+
+#undef ARRAY_TO_VECTOR
    
+   //create ini file with vector parameters and various delimiters
    {
      std::ofstream pfile(pfilename.c_str());
-     pfile<<"INT = "<<int_parameter<<std::endl;
-     pfile<<"DOUBLE = "<<double_parameter<<std::endl;
-     pfile<<"STRING = "<<string_parameter<<std::endl;
-     pfile<<"STRING_SEMI = "<<string_parameter_semic<<std::endl;
-     pfile<<"BOOL_TRUE = "<<std::boolalpha<<bool_parameter_true<<std::endl;
-     pfile<<"BOOL_FALSE = "<<bool_parameter_false<<std::endl;
-     pfile<<"" <<std::endl; //empty line
-     pfile<<"# this is a  line with some gunk in it" <<std::endl; //non-parameter line
-     pfile<<"complicated_string = "<<complicated_string_parameter<<std::endl;
-     pfile<<"NOSPACE_LEFT= "<<double_parameter<<std::endl;
-     pfile<<"NOSPACE_RIGHT ="<<double_parameter<<std::endl;
-     pfile<<"NOSPACE_BOTH="<<double_parameter<<std::endl;
+     boolalpha(pfile);
 
-     pfile << "DVEC=" << dvec_param[0] << ',' << dvec_param[1] << ',' << dvec_param[2] << std::endl;
-     pfile << "MVEC=" << mvec_param[0] << ',' << mvec_param[1] << ',' << mvec_param[2] << std::endl;
+#define MAKE_PARAM(par) \
+     for (int i=0; i<ndelims; ++i) { pfile << #par << i << " = "; print_vec(pfile,par,delims[i]); pfile << std::endl; }
+
+     MAKE_PARAM(intvec_param);
+     MAKE_PARAM(dblvec_param);
+     MAKE_PARAM(boolvec_param);
+#undef MAKE_PARAM
+
+   }
+
+   // Imitate the command line args
+   const int argc=2;
+   const char* argv[2]={"THIS_PROGRAM",0};
+   argv[1]=pfilename.c_str();
+
+   //define the parameters, for each delimiter
+   alps::params p(argc,argv);
+   p.description("This is a test program");
+#define DEFINE_PARAM(typ, par) \
+   for (int i=0; i<ndelims; ++i) { \
+     const std::string& pname=std::string(#par)+boost::lexical_cast<std::string>(i); \
+     p.define< alps::params::vector<typ> >(pname.c_str(),"No description"); \
+   }
+
+   DEFINE_PARAM(int,intvec_param);
+   DEFINE_PARAM(double,dblvec_param);
+   DEFINE_PARAM(bool,boolvec_param);
+   
+#undef DEFINE_PARAM   
+
+   //verify correctness, for each delimiter
+   for (int i=0; i<ndelims; ++i) {
+#define COMPARE_PARAM(typ,par) \
+     const std::vector<typ>& par ## _rd =p[std::string(#par)+boost::lexical_cast<std::string>(i)].as< std::vector<typ> >(); \
+     EXPECT_EQ(par, par ## _rd)
+
+     COMPARE_PARAM(int, intvec_param);
+     COMPARE_PARAM(double, dblvec_param);
+     COMPARE_PARAM(bool, boolvec_param);
+#undef COMPARE_PARAM
+   }
+}
+
+// Repeating parameters in the INI file
+TEST(param,Repeating) {
+    //create a file name
+    std::string pfilename(alps::temporary_filename("pfile"));
+
+   // Generate INI file
+   {
+     std::ofstream pfile(pfilename.c_str());
+     pfile <<
+         "parname = 1\n"
+         "parname = 2\n";
    }
 
    // Imitate the command line args
@@ -415,61 +506,94 @@ void Test(void) {
    //define the parameters
    alps::params p(argc,argv);
    p.description("This is a test program").
-     define<int>("INT","Int parameter").
-     define<double>("DOUBLE","Double parameter").
-     define<std::string>("STRING","String parameter").
-     define<std::string>("STRING_SEMI","String parameter with semicolon").
-     define<bool>("BOOL_TRUE","Bool parameter which is true").
-     define<bool>("BOOL_FALSE","Bool parameter which is false").
-     define<std::string>("complicated_string","complicated string").
-     define<double>("NOSPACE_LEFT","parameter in INI without space left of '='").
-     define<double>("NOSPACE_RIGHT","parameter in INI without space right of '='").
-     define<double>("NOSPACE_BOTH","parameter in INI without spaces around '='").
-     define< alps::params::vector<double> >("DVEC","double vector").
-     define< alps::params::vector<int> >("MVEC","int vector");
-   
+       define<int>("parname","repeating parameter");
 
-   //  read the parameters (parsing on first access)
-   int int_parameter_read=p["INT"].as<int>();  
-   double double_parameter_read=p["DOUBLE"].as<double>();  
-   std::string string_parameter_read=p["STRING"].as<std::string>();
-   std::string string_parameter_semi_read=p["STRING_SEMI"].as<std::string>();
-   std::string complicated_string_parameter_read=p["complicated_string"].as<std::string>();
-   bool bool_parameter_true_read=p["BOOL_TRUE"].as<bool>();
-   bool bool_parameter_false_read=p["BOOL_FALSE"].as<bool>();
-   double nospace_left=p["NOSPACE_LEFT"].as<double>();  
-   double nospace_right=p["NOSPACE_RIGHT"].as<double>();  
-   double nospace_both=p["NOSPACE_BOTH"].as<double>();
-
-   dblvec dvec_param_read=p["DVEC"].as<dblvec>();
-   intvec mvec_param_read=p["MVEC"].as<intvec>();
-
-   EXPECT_EQ(int_parameter, int_parameter_read);    
-   EXPECT_NEAR(double_parameter, double_parameter_read, 1.e-12);    
-   EXPECT_EQ(string_parameter, string_parameter_read);    
-   EXPECT_EQ(complicated_string_parameter, complicated_string_parameter_read);    
-   EXPECT_EQ(string_parameter, string_parameter_semi_read); //test that the ; gets trimmed
-   EXPECT_EQ(bool_parameter_true, bool_parameter_true_read); 
-   EXPECT_EQ(bool_parameter_false, bool_parameter_false_read); 
-   EXPECT_NEAR(double_parameter, nospace_left, 1.e-12);    
-   EXPECT_NEAR(double_parameter, nospace_right, 1.e-12);    
-   EXPECT_NEAR(double_parameter, nospace_both, 1.e-12);
-
-   EXPECT_EQ(dvec_param.size(),dvec_param_read.size());
-   for (int i=0; i<dvec_param.size(); ++i) {
-       EXPECT_NEAR(dvec_param[i], dvec_param_read[i], 1.e-12);
-   }
-   EXPECT_EQ(mvec_param.size(),mvec_param_read.size());
-   for (int i=0; i<mvec_param.size(); ++i) {
-       EXPECT_EQ(mvec_param[i], mvec_param_read[i]);
-   }
+   int n=0;
+   EXPECT_THROW((n=p["parname"].as<int>()),boost::program_options::multiple_occurrences);
 }
-#endif
+
+// Unknown parameters in the INI file
+TEST(param,Unknown) {
+    //create a file name
+    std::string pfilename(alps::temporary_filename("pfile"));
+
+   // Generate INI file
+   {
+     std::ofstream pfile(pfilename.c_str());
+     pfile <<
+         "unknown = 2\n"
+         "known = 1\n";
+   }
+
+   // Imitate the command line args
+   const int argc=2;
+   const char* argv[2]={"THIS_PROGRAM",0};
+   argv[1]=pfilename.c_str();
+
+   //define the parameters
+   alps::params p(argc,argv);
+   p.description("This is a test program").
+       define<int>("known","known parameter");
+
+   EXPECT_EQ((p["known"].as<int>()),1);
+}
+
+// Scalars and strings with default values
+template <typename T>
+void TestDefaults(T defval1, T defval2, T val1, T val2)
+{
+    //create a file name
+    std::string pfilename(alps::temporary_filename("pfile"));
+    
+    // Generate INI file
+    {
+        std::ofstream pfile(pfilename.c_str());
+     pfile
+         << "with_default = " << val1 << std::endl
+         << "no_default = " << val2 << std::endl;
+    }
+
+    // Imitate the command line args
+    const int argc=2;
+    const char* argv[2]={"THIS_PROGRAM",0};
+    argv[1]=pfilename.c_str();
+
+    //define the parameters
+    alps::params p(argc,argv);
+    p.description("This is a test program").
+        template define<T>("with_default", defval1, "defined parameter with default").
+        template define<T>("no_default", "defined parameter, no default").
+        template define<T>("undefined", defval2, "undefined parameter, with default").
+        template define<T>("undefined2", "undefined parameter, no default");
+
+    //Access the parameters
+    EXPECT_EQ(p["with_default"].as<T>(), val1);
+    EXPECT_EQ(p["no_default"].as<T>(), val2);
+    EXPECT_EQ(p["undefined"].as<T>(), defval2);
+
+    EXPECT_THROW(const T& x=p["undefined2"].as<T>(), boost::bad_any_cast);
+}
+    
+TEST(param,Defaults) {
+    TestDefaults<int>(1,2,3,4);
+    TestDefaults<double>(1.25,2.125,4.5,8.0);
+    TestDefaults<bool>(true,false,false,true);
+    TestDefaults<std::string>("def1", "def2", "val1", "val2");
+}
+
+
+
+    
+// Incorrect name access (different test file?)
+
+// Assigned vs file-read parameters (different test file?)
+
+
 
 int main(int argc, char **argv) 
 {
-//  Test();
-//  return 0;
-   ::testing::InitGoogleTest(&argc, argv);
-   return RUN_ALL_TESTS();
+   // Test();
+   // return 0;
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }

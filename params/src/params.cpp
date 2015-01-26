@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 #include <stdexcept>
 //#include <vector>
 //#include <algorithm>
@@ -61,6 +62,7 @@ namespace alps {
 
     bool params::help_requested(std::ostream& ostrm)
     {
+        possibly_parse();
         if (varmap_->count("help")) {
             ostrm << helpmsg_ << std::endl;
             ostrm << descr_;

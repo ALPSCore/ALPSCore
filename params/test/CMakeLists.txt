@@ -2,10 +2,11 @@ include(ALPSEnableTests)
 
 set (test_src
      file_read
-     param
+#     param
      assign
 #     default
      not_found
+     redefinition
 #     ordering
 #     stream
     )

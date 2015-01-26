@@ -48,29 +48,29 @@ namespace alps {
     2. The parameters are accessed this way:
 
         params p(argc,argv);
+        // ...parameter definition...
         double t=p["Temp"].as<double>();
+
+        An undefined parameter cannot be accessed (throws exception).
+        (FIXME: we can get rid of `as<T>()` necessity --- but should we?)
 
     2.1. The parameters can also be assigned this way:
     
         double t=300;
+        // ...parameter definition...
         p["Temp"]=t;
 
-    FIXME: what to do if parameter Temp is already defined? And is of a different type?
+        An undefined parameter cannot be assigned (throws exception). << FIXME!
 
     2.2. An attempt to access an undefined parameter is interpreted as accessing a parameter without a defined type.
 
     2.3. An attempt to access a parameter of a wrong type (including accessing parameter with undefined type) results in
     boost::bad_any_cast thrown.
 
-    3. FIXME? Allowed scalar types: double, int, std::string, any type T for
-    which boost::lexical_cast<T>() is defined.
-    
-    4. FIXME? Allowed vector types: alps::params::intvec,
-    alps::params::doublevec for which a parser is defined.
+    3. Allowed scalar types: double, int, bool, std::string, any scalar type acceptable by boost::program_options
 
-    Variant: use alps::param::vector<T> which is derived from
-    std::vector<T> and can parse a comma or space-separated list of
-    values of type T.
+    4. Allowed vector types: std::vector<T> for any scalar type T acceptable by boost::program_options, except std::string type.
+      Note that vectors have to be defined in a special way.
 
     5. Way to define the parameters:
 
@@ -91,7 +91,7 @@ namespace alps {
         x=p["name"].as< std::vector<T> >();
 
     (FIXME: There is no default value provisions for list parameters, as of now).
-    Also, lists of strings are not supported (undefined behavior: may or may not work).
+    Also, lists of strings are not supported (undefined behavior: may or may not work)).
 
     6.1. FIXME? Special case: parameter with no declared type is optional,
          corresponds to a boolean TRUE if it is defined and true:
@@ -121,14 +121,15 @@ namespace alps {
     8.6. Options can NOT be redefined --- subclasses must come up with
          their own option names. The description (the help message) can be redefined.
 
-    9. FIXME--CHECK! The ini-file format allows empty lines and comment lines, but not garbage lines.
+    9. The ini-file format allows empty lines and comment lines, but not garbage lines.
 
     9.1. The list values in the ini file are comma/space separated.
 
-    9.2. The strings in the ini file are read according to the following rules (FIXME: test):
+    9.2. The boolean values can be 0|1, yes|no, true|false (case insensitive), as specified by boost::program_options. 
+
+    9.3. The strings in the ini file are read according to the following rules:
        1) Leading and trailing spaces are stripped.
-       2) FIXME: NOT NEEDED!!! (because then it has to be done for ALL types!) A trailing semicolon is stripped, if present (for backward compatibility).
-       3) A pair of surrounding double quotes is stripped, if present (to allow for leading/trailing spaces and semicolons).
+       2) A pair of surrounding double quotes is stripped, if present (to allow for leading/trailing spaces).
          
     10. The state of a parameter object can be saved to and loaded from
     an HDF5 archive. (FIXME: not yet implemented)
@@ -141,16 +142,16 @@ namespace alps {
     1. Is there any code that relies on ordering of parameters? (There
     was a test checking the same order preservation across save/load).
 
-    2. Is it important to cut trailing semicolons?
+    2. Is it important to cut trailing semicolons? -- No
 
-    3. Reading of quoted strings must be supported.
+    3. Reading of quoted strings must be supported. -- Done
 
     4. Check for printing of the lists: a list parameter must print correctly.
     In other words, the set of parameters must be printed correctly and then read.
 
-    5. Check for string reading according to the rules.
+    5. Check for string reading according to the rules. -- Done
 
-    6. Check for reading of ini files with sections.
+    6. Check for reading of ini files with sections. -- Done
 
     7. Check for adding parameters by derived classes.
 
@@ -163,6 +164,8 @@ namespace alps {
     11. Check for overriding name and type by assignment
 
     12. Check for the repetitive definition (the same type, different type)
+
+    13. Check for repetitive parameters in the input file -- Done
     
 */
 
@@ -218,7 +221,7 @@ namespace alps {
                         return std::string(cstr);
                     }
             };
-            
+
         public:
             
             typedef variables_map::iterator iterator;
@@ -298,7 +301,7 @@ namespace alps {
                 // return slot; // FIXME: do we want to allow p[a]=p[b]=x; ??
             }
 
-            /** Check if the parameter is defined */
+            /** Check if the parameter is present */
             bool defined(std::string const & key) const
             {
                 possibly_parse();
@@ -355,16 +358,6 @@ namespace alps {
             // template <>
             // params& define<>(const std::string& optname, const std::string& descr);
 
-            /// Service cast operator to convert std::string to type T, analogous to boost::lexical_cast<T>
-            // FIXME: we could use a simple functional programming
-            // instread, but i don't want to bring those headers here
-            // for one or two simple uses.
-            template <typename T>
-            static T lexical_cast(const std::string& s)
-            {
-                return boost::lexical_cast<T>(s.c_str());
-            }
-            
         private:
 
             friend class boost::serialization::access;
@@ -421,7 +414,20 @@ namespace alps {
                 return get(a_name);
             }
 
-        friend std::ostream & operator<<(std::ostream & os, params const & arg);
+            /// Service cast-via-validate function from a string to (presumably scalar) type T
+            // FIXME: hide it inside some "detail" namespace? (It does not belong to the class interface!)
+            template <typename T>
+            static T validate_cast(const std::string& sval)
+            {
+                using boost::program_options::validate;
+                std::vector<std::string> sval_vec(1);
+                sval_vec[0]=sval;
+                boost::any outval;
+                validate(outval, sval_vec, (T*)0, 0);
+                return boost::any_cast<T>(outval);
+            }
+            
+            friend std::ostream & operator<<(std::ostream & os, params const & arg);
     };
 
     namespace detail {
@@ -469,6 +475,7 @@ namespace alps {
     params& params::define(const char* optname, T defval, const char* a_descr)
     {
         invalidate();
+        
         descr_.add_options()(optname,boost::program_options::value<T>()->default_value(defval),a_descr);
         printout_map_[optname]=detail::printout<T>; 
         return *this;
@@ -505,8 +512,8 @@ namespace alps {
             boost::tokenizer<charsep> tok(in_str,charsep(" ;,"));
             const strvec tokens(tok.begin(),tok.end());
             std::vector<T> typed_outval(tokens.size());
-            // (Note: what we need is simply boost::lexical_cast<T>(_1.c_str()) in boost::bind parlance)
-            std::transform(tokens.begin(), tokens.end(), typed_outval.begin(), alps::params::lexical_cast<T>);
+            // std::transform(tokens.begin(), tokens.end(), typed_outval.begin(), boost::lexical_cast<T,std::string>);
+            std::transform(tokens.begin(), tokens.end(), typed_outval.begin(), alps::params::validate_cast<T>);
 
             outval=boost::any(typed_outval);
             std::cerr << "***DEBUG: returning from validate() (templated) ***" << std::endl;

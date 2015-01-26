@@ -26,7 +26,7 @@ static void test_assignments()
     parms["double"] = static_cast<double>(0x41);
     parms["long double"] = static_cast<long double>(0x41);
     parms["bool"] = true;
-    parms["cstring"] = +"asdf";
+    parms["cstring"] = "asdf";
     parms["std::string"] = std::string("asdf");
 
     std::vector<double> vd(3);
