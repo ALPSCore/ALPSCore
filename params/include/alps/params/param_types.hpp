@@ -33,7 +33,14 @@ namespace alps {
             }
   
             // Vector of allowed scalar types:
-            typedef mpl::vector<int,double,bool>::type scalar_types_vec;
+            typedef mpl::vector<int,unsigned int,
+                                float,double,
+                                long double,
+                                long int, unsigned long int,
+                                long long int, unsigned long long int,
+                                char, signed char, unsigned char,
+                                short int, unsigned short int,
+                                bool>::type scalar_types_vec;
 
             /// Make a set of allowed types (for fast look-up)
             typedef mpl::fold< scalar_types_vec,
