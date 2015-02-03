@@ -168,7 +168,11 @@ namespace alps {
                 template <typename U>
                 // T apply(const U& val, typename boost::disable_if< detail::both_scalar<T,U>, bool>::type =true) const {
                 T apply(const U& val, typename boost::disable_if< boost::is_convertible<U,T>, bool>::type =true) const {
-                    throw visitor_type_mismatch("Attempt to assign non-convertible types");
+                    throw visitor_type_mismatch(
+                        std::string("Attempt to assign incompatible type U=")
+                        +typeid(U).name()
+                        +" to type T="
+                        +typeid(T).name());
                 }
 
                 /// Extracting None type --- always fails

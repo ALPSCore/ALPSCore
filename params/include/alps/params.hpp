@@ -174,6 +174,8 @@ namespace alps {
     12. Check for the repetitive definition (the same type, different type)
 
     13. Check for repetitive parameters in the input file -- Done
+
+    14. Check for command line parameters overriding file
     
 */
 
