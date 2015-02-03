@@ -8,9 +8,9 @@
 
 #include "alps/config.hpp"
 #include "alps/hdf5/archive.hpp"
-#include "alps/params/paramvalue.hpp"
-#include "alps/params/paramproxy.hpp"
-#include "alps/params/paramiterator.hpp"
+// #include "alps/params/paramvalue.hpp"
+// #include "alps/params/paramproxy.hpp"
+// #include "alps/params/paramiterator.hpp"
 
 #ifdef ALPS_HAVE_PYTHON_DEPRECATED
     #include "alps/ngs/boost_python.hpp"
@@ -35,9 +35,15 @@
 #include <string>
 #include <algorithm>
 
+#include "alps/params/option_type.hpp"
+
 namespace alps {
 
+  namespace params_ns {
+    
 /** params: Parameter types.
+
+    FIXME!!! The interface is redefined, must be reviewed!!!
 
     Interface:
 
@@ -49,10 +55,9 @@ namespace alps {
 
         params p(argc,argv);
         // ...parameter definition...
-        double t=p["Temp"].as<double>();
+        double t=p["Temp"];
 
         An undefined parameter cannot be accessed (throws exception).
-        (FIXME: we can get rid of `as<T>()` necessity --- but should we?)
 
     2.1. The parameters can also be assigned this way:
     
@@ -60,19 +65,19 @@ namespace alps {
         // ...parameter definition...
         p["Temp"]=t;
 
-        An undefined parameter cannot be assigned (throws exception). << FIXME!
+        Once assigned, parameter type cannot be changed.
 
-    2.2. An attempt to access an undefined parameter is interpreted as accessing a parameter without a defined type.
+    2.2. An attempt to read an undefined parameter results in exception.
 
-    2.3. An attempt to access a parameter of a wrong type (including accessing parameter with undefined type) results in
-    boost::bad_any_cast thrown.
+    2.3. An attempt to read a parameter of a different type results in a silent type casting between the scalar types,
+    and results in exception if any of the types (LHS or RHS) are vector types or strings.
 
-    3. Allowed scalar types: double, int, bool, std::string, any scalar type acceptable by boost::program_options
+    3. Allowed scalar types: double, int, bool, std::string (FIXME: specify more)
 
-    4. Allowed vector types: std::vector<T> for any scalar type T acceptable by boost::program_options, except std::string type.
-      Note that vectors have to be defined in a special way.
+    4. Allowed vector types: std::vector<T> for any scalar type T except std::string type.
+      (FIXME: get rid of this >) Note that vectors have to be defined in a special way.
 
-    5. Way to define the parameters:
+    5. Way to define the parameters that are expected to be read from a file or command line:
 
         p.description("The description for --help")
          .define<int>("L", 50, "optional int parameter L with default 50")
@@ -82,7 +87,9 @@ namespace alps {
     5.1. It is a responsibility of the caller to check for the "--help" option.
          A convenience method checks for the option and outputs the description of the options.
 
-    6. Special cases: for list parameters of type T the parameter must be defined as
+    5.2. A parameter assigned explicitly before its definition cannot be defined.
+
+    6. FIXME: Special cases: for list parameters of type T the parameter must be defined as
 
         p.define< alps::params::vector<T> >("name","description");
 
@@ -100,8 +107,9 @@ namespace alps {
         bool has_x=p["X"].as<bool>();
 
 
-    7. The type is NOT derived from, but it CONTAINS (mutable) boost::program_options::variables_map;
-    it delegates some methods of std::map.
+    7. The class CONTAINS a (mutable) std::map from parameters names
+    to `option_type`, which is populated every time the file is
+    parsed. The class also delegates some methods of std::map (FIXME: is it needed?)
 
     8. When constructed from (argc,argv), The options are read from the command line first, then from a
     parameter file in ini-file format. The name of the file must be
@@ -112,9 +120,9 @@ namespace alps {
     
     8.2. The options can be defined any time --- probably in the constructor of the class that uses them.
 
-    8.3. Defining an option invalidates (clears) the option map.
+    8.3. Defining an option invalidates the object state, requesting re-parsing.
 
-    8.4. Parsing occurs and the option map populated at the first access to the option map ("lazy parsing").
+    8.4. Parsing occurs and the parameter map is populated at the first access to the parameters ("lazy parsing").
 
     8.5. Unknown (undeclared) options are ignored --- possibly setting a flag "unknown options are present" (FIXME).
     
@@ -169,188 +177,265 @@ namespace alps {
     
 */
 
-    // Some forward declarations
-    // FIXME: hide the "detail" namespace inside the class, or another 'params*' namespace;
-    // FIXME: or just move everything inside the private section of the class.
-    namespace detail {
-        template <typename T> void printout(std::ostream&, const boost::any&);
-    }
+  
 
-    class /*-ALPS_DECL-*/ params {
-        private:
-            typedef boost::program_options::variables_map variables_map;
-            typedef boost::program_options::options_description options_description;
-            typedef void (*printout_type)(std::ostream&, const boost::any&);
-            typedef std::map<std::string,printout_type> printout_map_type;
+      /// Namespace hiding boring/awkward implementation details
+      namespace detail {
 
-            /// Contains map(options->values), or empty until a file is parsed. Mutated by deferred parsing.
-            mutable boost::optional<variables_map> varmap_;
+          /// Service cast-via-validate function from a string to (presumably scalar) type T
+          template <typename T>
+          static T validate_cast(const std::string& sval)
+          {
+              using boost::program_options::validate;
+              std::vector<std::string> sval_vec(1);
+              sval_vec[0]=sval;
+              boost::any outval;
+              validate(outval, sval_vec, (T*)0, 0);
+              return boost::any_cast<T>(outval);
+          }
 
-            /// Map(options->output_functions); filled by define() method or direct assignment
-            printout_map_type printout_map_;
+          /// Service function: output a vector
+          template <typename T>
+          std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec)
+          {
+              typedef std::vector<T> VT;
+              if (vec.empty()) return os;
+              typename VT::const_iterator it=vec.begin();
+              typename VT::const_iterator end=vec.end();
+              os << *it; // FIXME: possible stream errors ignored!
+              ++it;
+              for (; it!=end; ++it) {
+                  os << "," << *it;
+              }
+              return os;
+          }
+        
+          // template <typename T>
+          // void printout(std::ostream& os, const boost::any& val)
+          // {
+          //     os << boost::any_cast<T>(val);
+          // }
 
-            /// Options description; filled by define() method
-            options_description descr_;
+          // template <>
+          // void printout<std::string>(std::ostream& os, const boost::any& val)
+          // {
+          //     typedef std::string T;
+          //     os << "\"" << boost::any_cast<T>(val) << "\"";
+          // }
 
-            std::string helpmsg_;
-            std::vector<std::string> argvec_;
+          /// Tag type to indicate vector parameter (FIXME: make sure it works for output too)
+          template <typename T>
+          struct vector_tag {};
+          
+          /// Service class calling boost::program_options::add_options(), to work around lack of function template specializations
+          /// T is the option type, U is the tag type used to treat parsing of vectors/lists specially
+          template <typename T, typename U=T>
+          struct do_define {
+              /// Add option with a default value
+              static void add_option(boost::program_options::options_description& a_opt_descr,
+                                     const std::string& optname, T defval, const std::string& a_descr)
+              {
+                  a_opt_descr.add_options()(optname.c_str(),
+                                            boost::program_options::value<U>()->default_value(defval),
+                                            a_descr.c_str());
+              }
 
-            /// An option name for the positional file argument.
-            static const char* const cfgfile_optname_;
+              /// Add option with no default value
+              static void add_option(boost::program_options::options_description& a_opt_descr,
+                                     const std::string& optname, const std::string& a_descr)
+              {
+                  a_opt_descr.add_options()(optname.c_str(),
+                                            boost::program_options::value<U>(),
+                                            a_descr.c_str());
+              }
+          };
 
-            /// Parses the parameter file, filling the option map.
-            void certainly_parse() const;
+          /// Specialization of the service do_define class to define a vector/list option 
+          template <typename T>
+          struct do_define< std::vector<T> > {
+              /// Add option with no default value
+              static void add_option(boost::program_options::options_description& a_opt_descr,
+                                     const std::string& optname, const std::string& a_descr)
+              {
+                  // std::cerr << "***DEBUG: calling do_define<std::vector>() ***" << std::endl;
+                  do_define< std::vector<T>, vector_tag<T> >::add_option(a_opt_descr, optname, a_descr);
+              }
+          };
+          
+
+      } // detail
+
+
+      class /*-ALPS_DECL-*/ params {
+      public:
+          // typedef params_ns::options_map_type options_map_type;
+      private:
+          typedef boost::program_options::options_description options_description;
+          typedef void (option_type::*assign_fn_type)(const boost::any&);
+          typedef std::map<std::string, assign_fn_type> anycast_map_type;
+          
+          // typedef boost::program_options::variables_map variables_map;
+          // typedef void (*printout_type)(std::ostream&, const boost::any&);
+          // typedef std::map<std::string,printout_type> printout_map_type;
+
+          /// True if there are no new define<>()-ed parameters since last parsing. Mutated by deferred parsing.
+          mutable bool is_valid_;
+          /// Options (parameters). Mutated by deferred parsing.
+          mutable options_map_type optmap_; 
+          
+          /// Options description; filled by define() method
+          options_description descr_;
+
+          /// Map (option names --> conversion from boost::any). Filled by define<T>() method.
+          anycast_map_type anycast_map_;
+          
+          // /// Map(options->output_functions); filled by define() method or direct assignment
+          // printout_map_type printout_map_;
+
+          std::string helpmsg_;                 ///< Help message
+          std::vector<std::string> argvec_;     ///< Command line arguments
+
+          /// An option name for the positional file argument.
+          static const char* const cfgfile_optname_;
+
+          /// Parses the parameter file, filling the option map.
+          void certainly_parse() const;
             
-            /// Parses the parameters if not already parsed.
-            void possibly_parse() const { if (!varmap_) certainly_parse(); }
+          /// Parses the parameters if not already parsed.
+          void possibly_parse() const { if (!is_valid_) certainly_parse(); }
 
-            /// Invalidates the option map
-            void invalidate() { varmap_=boost::none; }
+          /// Invalidates the option map
+          void invalidate() { is_valid_=false; }
 
-            /// Initialization code common for all constructors
-            void init() {
-                descr_.add_options()
-                    (cfgfile_optname_,boost::program_options::value<std::string>())
-                    ("help","Provides help message");
-            }
+          /// Initialization code common for all constructors
+          void init() {
+              descr_.add_options()
+                  (cfgfile_optname_,boost::program_options::value<std::string>())
+                  ("help","Provides help message");
+              anycast_map_["help"]=&option_type::assign_any<std::string>;
+              anycast_map_[cfgfile_optname_]=&option_type::assign_any<std::string>;
+          }
 
-            /// Service functor class to convert C-string pointer to an std::string
-            struct cstr2string {
-                    std::string operator()(const char* cstr)
-                    {
-                        return std::string(cstr);
-                    }
-            };
+          /// Function to check for redefinition of an already-defined option (throws!)
+          void check_redefine(const std::string& optname) const;
 
-        public:
+          /// Function doing the common part of define(), including checking for redefinition
+          template <typename T>
+          void define_common_part(const std::string& optname)
+          {
+              check_redefine(optname);
+              invalidate();
+              anycast_map_[optname]=&option_type::assign_any<T>;
+              // printout_map_[optname]=detail::printout<T>;
+          }
+          
+          /// Service functor class to convert C-string pointer to an std::string
+          struct cstr2string {
+              std::string operator()(const char* cstr)
+              {
+                  return std::string(cstr);
+              }
+          };
+
+      public:
             
-            typedef variables_map::iterator iterator;
-            typedef variables_map::const_iterator const_iterator;
-            typedef variables_map::value_type value_type;
-            typedef variables_map::mapped_type mapped_type;
+          typedef options_map_type::iterator iterator;
+          typedef options_map_type::const_iterator const_iterator;
+          typedef options_map_type::value_type value_type;
+          typedef options_map_type::mapped_type mapped_type;
 
-            // old: typedef detail::paramiterator<params, iterator_value_type> iterator;
-            // old: typedef detail::paramiterator<params const, iterator_value_type const> const_iterator;
-            // old: typedef detail::paramproxy value_type;
+          // Some more convenience typedefs (exception types)
+          /// Exception type: mismatched parameter types
+          typedef option_type::type_mismatch type_mismatch;
+          /// Exception type: attempt to use uninitialized option
+          typedef option_type::uninitialized_value uninitialized_value;
 
-            // // DEBUG!!!
-            // /** @brief Derived vector class: convertible to/from std::vector */
-            // template <typename T>
-            // struct some_vec : public std::vector<T> {
-            //         typedef std::vector<T> base_t;
+          /** Default constructor */
+          params() { init(); }
 
-            //         some_vec(const base_t& v): base_t(v) {}
-            //         some_vec(): base_t() {}
-            //         some_vec(size_t sz): base_t(sz) {}
-            // };
-            // typedef some_vec<double> dblvec;
+          // /** Copy constructor */
+          // params(params const & arg): {}
 
-            /// Tag type to indicate vector parameter (FIXME: will it work?? in output too?)
-            template <typename T>
-            struct vector {};
+          /** Constructor from HDF5 archive. (FIXME: not implemented yet) */
+          params(hdf5::archive ar, std::string const & path = "/parameters");
 
+          // /** Constructor from parameter file. The parsing of the file is deferred. */
+          // params(boost::filesystem::path const &);
+
+          /// Constructor from command line and a parameter file. The parsing is deferred. 
+          params(unsigned int argc, const char* const argv[])
+          {
+              std::transform(argv+1,argv+argc, std::back_inserter(argvec_), cstr2string());
+              init();
+          }
+
+#ifdef ALPS_HAVE_PYTHON_DEPRECATED
+          params(boost::python::dict const & arg);
+          params(boost::python::str const & arg);
+#endif
+
+          /** Returns number of parameters (size of the map) */
+          std::size_t size() const { possibly_parse(); return optmap_.size(); }
+
+          /** Erase a parameter */
+          void erase(std::string const& k) { possibly_parse(); optmap_.erase(k); }
+
+          /** Check if the parameter is present */
+          bool defined(std::string const & key) const
+          {
+              possibly_parse();
+              return (optmap_.count(key)!=0);
+          }
+
+          /** Returns iterator to the beginning of the option map */
+          iterator begin() { possibly_parse(); return optmap_.begin(); }
             
-            /** Default constructor */
-            params() { init(); }
+          /** Returns iterator to the beginning of the option map */
+          const_iterator begin() const { possibly_parse(); return optmap_.begin(); }
 
-            // /** Copy constructor */
-            // params(params const & arg): {}
+          /** Iterator to the beyond-the-end of the option map */
+          iterator end() { possibly_parse(); return optmap_.end(); }
 
-            /** Constructor from HDF5 archive. (FIXME: not implemented yet) */
-            params(hdf5::archive ar, std::string const & path = "/parameters");
+          /** Iterator to the beyond-the-end of the option map */
+          const_iterator end() const { possibly_parse(); return optmap_.end(); }
 
-            // /** Constructor from parameter file. The parsing of the file is deferred. */
-            // params(boost::filesystem::path const &);
+          /** Access a parameter: read-only */
+          const mapped_type& operator[](const std::string& k) const;
 
-            /// Constructor from command line and a parameter file. The parsing is deferred. 
-            params(unsigned int argc, const char* const argv[])
-            {
-                std::transform(argv+1,argv+argc, std::back_inserter(argvec_), cstr2string());
-                init();
-            }
+          /** Access a parameter --- possibly for assignment */
+          mapped_type& operator[](const std::string& k);
 
-            #ifdef ALPS_HAVE_PYTHON_DEPRECATED
-                params(boost::python::dict const & arg);
-                params(boost::python::str const & arg);
-            #endif
+          /// Save parameters to HDF5 archive (FIXME: not implemented yet)
+          void save(hdf5::archive &) const;
 
-            /** Returns number of parameters (size of the map) */
-            std::size_t size() const { possibly_parse(); return varmap_->size(); }
+          /// Load parameters from HDF5 archive (clearing the object first) (FIXME: not implemented yet)
+          void load(hdf5::archive &);
 
-            /** Erase a parameter */
-            void erase(std::string const& k) { possibly_parse(); varmap_->erase(k); }
+#ifdef ALPS_HAVE_MPI
+          /// Broadcast the parameters to all processes (FIXME: not implemented yet)
+          void broadcast(boost::mpi::communicator const &, int = 0);
+#endif
 
-            /** Access a parameter: read-only */
-            const mapped_type& get(const std::string& k) const
-            {
-                possibly_parse();
-                return (*varmap_)[k];
-            }
+          // -- now for the defining the options ---
 
-            /** Assign a value to a parameter */
-            template <typename T>
-            void set(const std::string& k, const T& val) // FIXME: what about "small" T types --- should we avoid ref?
-            {
-                possibly_parse();
-                // There is a trickery below: as variables_map does not allow assigning to its elements,
-                // we treat (*varmap_) as an object of its basic class, std::map, to create/change elements.
-                std::map<std::string,mapped_type>& as_map=*varmap_;
-                mapped_type& slot=as_map[k]; // FIXME: we may want to use non-default constructor here.
-                slot.value()=val;
-                printout_map_[k]=detail::printout<T>;
-                // return slot; // FIXME: do we want to allow p[a]=p[b]=x; ??
-            }
+          /// Set the help text for '--help' option
+          params& description(const std::string& helpline)
+          {
+              invalidate();
+              helpmsg_=helpline;
+              return *this;
+          }
 
-            /** Check if the parameter is present */
-            bool defined(std::string const & key) const
-            {
-                possibly_parse();
-                return (varmap_->count(key)!=0);
-            }
+          /// Define an option with an optional value
+          template <typename T>
+          params& define(const std::string& optname, T defval, const std::string& descr);
 
-            /** Returns iterator to the beginning of the option map */
-            iterator begin() { possibly_parse(); return varmap_->begin(); }
-            
-            /** Returns iterator to the beginning of the option map */
-            const_iterator begin() const { possibly_parse(); return varmap_->begin(); }
+          /// Define an option with a required value
+          template <typename T>
+          params& define(const std::string& optname, const std::string& descr);
 
-            /** Iterator to the beyond-the-end of the option map */
-            iterator end() { possibly_parse(); return varmap_->end(); }
-
-            /** Iterator to the beyond-the-end of the option map */
-            const_iterator end() const { possibly_parse(); return varmap_->end(); }
-            
-            /// Save parameters to HDF5 archive (FIXME: not implemented yet)
-            void save(hdf5::archive &) const;
-
-            /// Load parameters from HDF5 archive (clearing the object first) (FIXME: not implemented yet)
-            void load(hdf5::archive &);
-
-            #ifdef ALPS_HAVE_MPI
-            /// Broadcast the parameters to all processes (FIXME: not implemented yet)
-                void broadcast(boost::mpi::communicator const &, int = 0);
-            #endif
-
-            // -- now for the defining the options ---
-
-            /// Set the help text for '--help' option
-            params& description(const std::string& helpline)
-            {
-                invalidate();
-                helpmsg_=helpline;
-                return *this;
-            }
-
-            /// Define an option with an optional value
-            template <typename T>
-            params& define(const char* optname, T defval, const char* descr);
-
-            /// Define an option with a required value
-            template <typename T>
-            params& define(const char* optname, const char* descr);
-
-            /// Output the help message, if requested. @returns true if help was indeed requested.
-            bool help_requested(std::ostream& ostrm);
+          /// Output the help message, if requested. @returns true if help was indeed requested.
+          bool help_requested(std::ostream& ostrm);
 
             // FIXME: what the following should mean exactly?
             //        possibly a shortcut for a boolean option with default false?
@@ -358,9 +443,9 @@ namespace alps {
             // template <>
             // params& define<>(const std::string& optname, const std::string& descr);
 
-        private:
+      private:
 
-            friend class boost::serialization::access;
+          friend class boost::serialization::access;
 
             // FIXME: implement serialization
             // template<class Archive> void serialize(Archive & ar, const unsigned int) {
@@ -370,163 +455,109 @@ namespace alps {
             // }
 
 
-            /// Private inner proxy class to handle assignment.
-            class Proxy {
-                private:
-                    params& param_obj_; ///< Reference to the params object to access
-                    const std::string& name_; ///< Name of the parameter to access
+            // /// Private inner proxy class to handle assignment.
+            // class Proxy {
+            //     private:
+            //         params& param_obj_; ///< Reference to the params object to access
+            //         const std::string& name_; ///< Name of the parameter to access
 
-                public:
-                    /// Constructor from the params object and a parameter name
-                    Proxy(params& a_obj, const std::string& a_name): param_obj_(a_obj), name_(a_name) {}
+            //     public:
+            //         /// Constructor from the params object and a parameter name
+            //         Proxy(params& a_obj, const std::string& a_name): param_obj_(a_obj), name_(a_name) {}
 
-                    /// Accessor method casting the parameter as a type T
-                    template <typename T>
-                    T as() const {
-                        return param_obj_.get(name_).as<T>();
-                    }
+            //         /// Accessor method casting the parameter as a type T
+            //         template <typename T>
+            //         T as() const {
+            //             return param_obj_.get(name_).as<T>();
+            //         }
 
-                    /// Setter method to assign a value to the parameter
-                    template <typename T>
-                    void operator=(const T& val) const // FIXME: what about "small" T types --- should we avoid ref?
-                    {
-                        return param_obj_.set(name_,val);
-                    }
+            //         /// Setter method to assign a value to the parameter
+            //         template <typename T>
+            //         void operator=(const T& val) const // FIXME: what about "small" T types --- should we avoid ref?
+            //         {
+            //             return param_obj_.set(name_,val);
+            //         }
 
-                    /// Setter method to assign a value to the parameter: const char* overload. Allows `prm["a"]="abc"`
-                    void operator=(const char* val) const 
-                    {
-                        return param_obj_.set(name_,std::string(val));
-                    }
+            //         /// Setter method to assign a value to the parameter: const char* overload. Allows `prm["a"]="abc"`
+            //         void operator=(const char* val) const 
+            //         {
+            //             return param_obj_.set(name_,std::string(val));
+            //         }
 
-            };
+            // };
 
-        public:
-            /// Convenience operator[] to access the parameters for assignment:
-            Proxy operator[](const std::string& a_name)
-            {
-                return Proxy(*this,a_name);
-            }
-
-            /// Convenience operator[] to access the parameters read-only:
-            const mapped_type& operator[](const std::string& a_name) const
-            {
-                return get(a_name);
-            }
-
-            /// Service cast-via-validate function from a string to (presumably scalar) type T
-            // FIXME: hide it inside some "detail" namespace? (It does not belong to the class interface!)
-            template <typename T>
-            static T validate_cast(const std::string& sval)
-            {
-                using boost::program_options::validate;
-                std::vector<std::string> sval_vec(1);
-                sval_vec[0]=sval;
-                boost::any outval;
-                validate(outval, sval_vec, (T*)0, 0);
-                return boost::any_cast<T>(outval);
-            }
+      public:
             
-            friend std::ostream & operator<<(std::ostream & os, params const & arg);
-    };
-
-    namespace detail {
-
-        /// Service function: output a vector
-        template <typename T>
-        std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec)
-        {
-            typedef std::vector<T> VT;
-            if (vec.empty()) return os;
-            typename VT::const_iterator it=vec.begin();
-            typename VT::const_iterator end=vec.end();
-            os << *it; // FIXME: possible stream errors ignored!
-            ++it;
-            for (; it!=end; ++it) {
-                os << "," << *it;
-            }
-            return os;
-        }
-        
-        template <typename T>
-        void printout(std::ostream& os, const boost::any& val)
-        {
-            os << boost::any_cast<T>(val);
-        }
-
-        template <>
-        void printout<std::string>(std::ostream& os, const boost::any& val)
-        {
-          typedef std::string T;
-          os << "\"" << boost::any_cast<T>(val) << "\"";
-        }
-
-        // template <>
-        // void printout<const char*>(std::ostream& os, const boost::any& val)
-        // {
-        //   typedef const char* T;
-        //   os << "'" << boost::any_cast<T>(val) << "'";
-        // }
-    }
+          friend std::ostream & operator<<(std::ostream & os, params const & arg);
+      };
 
         
-    // FIXME: we may consider provide template specializations for specific types? To hide templates inside *.cpp?
-    template <typename T>
-    params& params::define(const char* optname, T defval, const char* a_descr)
-    {
-        invalidate();
-        
-        descr_.add_options()(optname,boost::program_options::value<T>()->default_value(defval),a_descr);
-        printout_map_[optname]=detail::printout<T>; 
-        return *this;
-    }
+      // FIXME: we may consider provide template specializations for specific types? To hide templates inside *.cpp?
 
-    template <typename T>
-    params& params::define(const char* optname, const char* a_descr)
-    {
-        invalidate();
-        descr_.add_options()(optname,boost::program_options::value<T>(),a_descr);
-        return *this;
-    }
+      /// Define an option of a generic type with a default value
+      template <typename T>
+      params& params::define(const std::string& optname, T defval, const std::string& a_descr)
+      {
+          define_common_part<T>(optname);
+          detail::do_define<T>::add_option(descr_,optname,defval,a_descr);
+          // descr_.add_options()(optname.c_str(),boost::program_options::value<T>()->default_value(defval),a_descr.c_str());
+          
+          return *this;
+      }
 
-    /*-ALPS_DECL-*/ std::ostream & operator<<(std::ostream & os, params const & arg);
+      /// Define an option of a generic type without default
+      template <typename T>
+      params& params::define(const std::string& optname, const std::string& a_descr)
+      {
+          define_common_part<T>(optname);
 
+          detail::do_define<T>::add_option(descr_,optname,a_descr);
+          // descr_.add_options()(optname.c_str(),boost::program_options::value<T>(),a_descr.c_str());
+
+          return *this;
+      }
+
+      /*-ALPS_DECL-*/ std::ostream & operator<<(std::ostream & os, params const & arg);
+
+      namespace detail {
+          /// Validator for vectors, used by boost::program_options
+          // FIXME: in which namespace should it be??
+          template <typename T>
+          void validate(boost::any& outval, const std::vector<std::string>& strvalues,
+                        vector_tag<T>*, int)
+          {
+              namespace po=boost::program_options;
+              namespace pov=po::validators;
+              typedef std::vector<std::string> strvec;
+              typedef boost::char_separator<char> charsep;
+          
+              // std::cerr << "***DEBUG: entering validate() (templated) ***" << std::endl;
+
+              pov::check_first_occurrence(outval); // check that this option has not yet been assigned
+              const std::string in_str=pov::get_single_string(strvalues); // check that this option is passed a single value
+
+              // Now, do parsing
+              boost::tokenizer<charsep> tok(in_str,charsep(" ;,"));
+              const strvec tokens(tok.begin(),tok.end());
+              std::vector<T> typed_outval(tokens.size());
+              std::transform(tokens.begin(), tokens.end(), typed_outval.begin(), detail::validate_cast<T>);
+
+              outval=boost::any(typed_outval);
+              // std::cerr << "***DEBUG: returning from validate() (templated) ***" << std::endl;
+          }
+      } // detail
+  } // params_ns
+
+    // Elevate relevant class to the alps NS:
+    using params_ns::params;
     
-        /// Validator for vectors, used by boost::program_options
-        // FIXME: in which namespace should it be??
-        template <typename T>
+} // alps
+
+namespace boost {
+    namespace program_options {
+        /// Validator for std::string, overriding one defined by boost::program_options
+        // It has to be declared in boost::program_options namespace to work!
         void validate(boost::any& outval, const std::vector<std::string>& strvalues,
-                      alps::params::vector<T>*, int)
-        {
-            namespace po=boost::program_options;
-            namespace pov=po::validators;
-            typedef std::vector<std::string> strvec;
-            typedef boost::char_separator<char> charsep;
-        
-            std::cerr << "***DEBUG: entering validate() (templated) ***" << std::endl;
-
-            pov::check_first_occurrence(outval); // check that this option has not yet been assigned
-            const std::string in_str=pov::get_single_string(strvalues); // check that this option is passed a single value
-
-            // Now, do parsing
-            boost::tokenizer<charsep> tok(in_str,charsep(" ;,"));
-            const strvec tokens(tok.begin(),tok.end());
-            std::vector<T> typed_outval(tokens.size());
-            // std::transform(tokens.begin(), tokens.end(), typed_outval.begin(), boost::lexical_cast<T,std::string>);
-            std::transform(tokens.begin(), tokens.end(), typed_outval.begin(), alps::params::validate_cast<T>);
-
-            outval=boost::any(typed_outval);
-            std::cerr << "***DEBUG: returning from validate() (templated) ***" << std::endl;
-        }
-
-        // }
-}
-
-    namespace boost {
-        namespace program_options {
-            /// Validator for std::string, overriding one defined by boost::program_options
-            // It has to be declared in boost::program_options namespace to work!
-            void validate(boost::any& outval, const std::vector<std::string>& strvalues,
-                          std::string*, int);
-        }
+                      std::string*, int);
     }
+}

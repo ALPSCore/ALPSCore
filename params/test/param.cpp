@@ -73,24 +73,24 @@ void Test(void) {
      define<double>("NOSPACE_LEFT","parameter in INI without space left of '='").
      define<double>("NOSPACE_RIGHT","parameter in INI without space right of '='").
      define<double>("NOSPACE_BOTH","parameter in INI without spaces around '='").
-     define< alps::params::vector<double> >("DVEC","double vector").
-     define< alps::params::vector<int> >("MVEC","int vector");
+     define< std::vector<double> >("DVEC","double vector").
+     define< std::vector<int> >("MVEC","int vector");
    
 
    //  read the parameters (parsing on first access)
-   int int_parameter_read=p["INT"].as<int>();  
-   double double_parameter_read=p["DOUBLE"].as<double>();  
-   std::string string_parameter_read=p["STRING"].as<std::string>();
-   std::string string_parameter_semi_read=p["STRING_SEMI"].as<std::string>();
-   std::string complicated_string_parameter_read=p["complicated_string"].as<std::string>();
-   bool bool_parameter_true_read=p["BOOL_TRUE"].as<bool>();
-   bool bool_parameter_false_read=p["BOOL_FALSE"].as<bool>();
-   double nospace_left=p["NOSPACE_LEFT"].as<double>();  
-   double nospace_right=p["NOSPACE_RIGHT"].as<double>();  
-   double nospace_both=p["NOSPACE_BOTH"].as<double>();
+   int int_parameter_read=p["INT"];  
+   double double_parameter_read=p["DOUBLE"];  
+   std::string string_parameter_read=p["STRING"];
+   std::string string_parameter_semi_read=p["STRING_SEMI"];
+   std::string complicated_string_parameter_read=p["complicated_string"];
+   bool bool_parameter_true_read=p["BOOL_TRUE"];
+   bool bool_parameter_false_read=p["BOOL_FALSE"];
+   double nospace_left=p["NOSPACE_LEFT"];  
+   double nospace_right=p["NOSPACE_RIGHT"];  
+   double nospace_both=p["NOSPACE_BOTH"];
 
-   dblvec dvec_param_read=p["DVEC"].as<dblvec>();
-   intvec mvec_param_read=p["MVEC"].as<intvec>();
+   dblvec dvec_param_read=p["DVEC"];
+   intvec mvec_param_read=p["MVEC"];
 
    EXPECT_EQ(int_parameter, int_parameter_read);    
    EXPECT_NEAR(double_parameter, double_parameter_read, 1.e-12);    

@@ -23,10 +23,10 @@ TEST(param,Redefinition) {
 
   // p.help_requested(std::cerr); // throws too
 
-  EXPECT_THROW((p["param"].as<int>()),boost::program_options::ambiguous_option);
+  EXPECT_THROW((p["param"]),boost::program_options::ambiguous_option);
 
-  // EXPECT_THROW((p["param"].as<int>()),boost::program_options::ambiguous_option);
-  // EXPECT_EQ(p["param"].as<int>(), 1234);
+  // EXPECT_THROW((p["param"]),boost::program_options::ambiguous_option);
+  // EXPECT_EQ(p["param"], 1234);
 }
 
 int main(int argc, char **argv) 

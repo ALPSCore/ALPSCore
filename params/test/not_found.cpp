@@ -13,24 +13,31 @@ TEST(param,AccessNonExisting) {
     alps::params p(argc, argv);
 
     p.define<int>("defined_par","Defined non-existing parameter");
-    
-    EXPECT_THROW(p["defined_par"].as<int>(), boost::bad_any_cast);
+
+    {
+      EXPECT_THROW(int i=p["defined_par"], alps::params::uninitialized_value);
+    }
 
     const alps::params p1(p);
-    EXPECT_THROW(p1["defined_par"].as<int>(), boost::bad_any_cast);
+    {
+      EXPECT_THROW(int i=p1["defined_par"], alps::params::uninitialized_value);
+    }
 }
 
 TEST(param, AccessUndefined){
     alps::params parms;
     parms["hello"]="world";
 
-    EXPECT_EQ(std::string("world"),parms["hello"].as<std::string>());
-    EXPECT_THROW(parms["not_in_parms"].as<std::string>(),boost::bad_any_cast);
-    
+    EXPECT_EQ(std::string("world"),parms["hello"]);
+    {
+      EXPECT_THROW(std::string s=parms["not_in_parms"], alps::params::uninitialized_value);
+    }
     const alps::params p(parms);
 
-    EXPECT_THROW(p["not_in_parms"].as<std::string>(), boost::bad_any_cast);
-    EXPECT_EQ(std::string("world"),p["hello"].as<std::string>());
+    {
+      EXPECT_THROW(std::string s=p["not_in_parms"], alps::params::uninitialized_value);
+    }
+    EXPECT_EQ(std::string("world"),p["hello"]);
 }
 
 int main(int argc, char **argv) 

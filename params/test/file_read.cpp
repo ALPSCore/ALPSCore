@@ -43,9 +43,9 @@ TEST(param, ScalarParamRead) {
    
    // read the parameters
    
-   int param_int_rd=p["int"].as<int>();
-   double param_double_rd=p["double"].as<double>();
-   float param_float_rd=p["float"].as<float>();
+   int param_int_rd=p["int"];
+   double param_double_rd=p["double"];
+   float param_float_rd=p["float"];
 
    // verify the parameters
    EXPECT_EQ(param_int_rd, param_int);
@@ -90,14 +90,14 @@ TEST(param, BoolParamRead) {
        define<bool>("nopar","nopar");
    
    // read the parameters and compare
-   EXPECT_EQ(p["ok"].as<bool>(),true);
-   EXPECT_EQ(p["nok"].as<bool>(),false);
-   EXPECT_EQ(p["truepar"].as<bool>(),true);
-   EXPECT_EQ(p["falsepar"].as<bool>(),false);
-   EXPECT_EQ(p["truepar1"].as<bool>(),true);
-   EXPECT_EQ(p["falsepar1"].as<bool>(),false);
-   EXPECT_EQ(p["yespar"].as<bool>(),true);
-   EXPECT_EQ(p["nopar"].as<bool>(),false);
+   EXPECT_EQ(bool(p["ok"]),true);
+   EXPECT_EQ(bool(p["nok"]),false);
+   EXPECT_EQ(bool(p["truepar"]),true);
+   EXPECT_EQ(bool(p["falsepar"]),false);
+   EXPECT_EQ(bool(p["truepar1"]),true);
+   EXPECT_EQ(bool(p["falsepar1"]),false);
+   EXPECT_EQ(bool(p["yespar"]),true);
+   EXPECT_EQ(bool(p["nopar"]),false);
 }
 
     
@@ -144,13 +144,13 @@ TEST(param, StringParamRead) {
        define<std::string>("starts_with_quote","starting with quote");
    
    // read the parameters
-   std::string basic_rd=p["basic"].as<std::string>();
-   std::string no_tl_spaces_rd=p["no_tl_spaces"].as<std::string>();
-   std::string with_tl_spaces_rd=p["with_tl_spaces"].as<std::string>();
-   std::string with_tl_spaces_quoted_rd=p["with_tl_spaces_quoted"].as<std::string>();
-   std::string with_tl_spaces_quoted2_rd=p["with_tl_spaces_quoted2"].as<std::string>();
-   std::string ends_with_quote_rd=p["ends_with_quote"].as<std::string>();
-   std::string starts_with_quote_rd=p["starts_with_quote"].as<std::string>();
+   std::string basic_rd=p["basic"];
+   std::string no_tl_spaces_rd=p["no_tl_spaces"];
+   std::string with_tl_spaces_rd=p["with_tl_spaces"];
+   std::string with_tl_spaces_quoted_rd=p["with_tl_spaces_quoted"];
+   std::string with_tl_spaces_quoted2_rd=p["with_tl_spaces_quoted2"];
+   std::string ends_with_quote_rd=p["ends_with_quote"];
+   std::string starts_with_quote_rd=p["starts_with_quote"];
 
    // verify the parameters
    EXPECT_EQ(basic_rd, basic);
@@ -194,11 +194,11 @@ void Test_spaces_around(T my_param)
        template define<T>("my_param5","trailing spaces");
    
    // read the parameters
-   T my_param1_rd=p["my_param1"].as<T>();
-   T my_param2_rd=p["my_param2"].as<T>();
-   T my_param3_rd=p["my_param3"].as<T>();
-   T my_param4_rd=p["my_param4"].as<T>();
-   T my_param5_rd=p["my_param5"].as<T>();
+   T my_param1_rd=p["my_param1"];
+   T my_param2_rd=p["my_param2"];
+   T my_param3_rd=p["my_param3"];
+   T my_param4_rd=p["my_param4"];
+   T my_param5_rd=p["my_param5"];
 
    // verify the parameters
    EXPECT_EQ(my_param1_rd, my_param);
@@ -252,10 +252,10 @@ TEST(param, SectionedFile) {
        define<double>("SECTION_TWO.double","double2 parameter");
    
    // read the parameters
-   int param_int1_rd=p["SECTION_ONE.int"].as<int>();
-   double param_double1_rd=p["SECTION_ONE.double"].as<double>();
-   int param_int2_rd=p["SECTION_TWO.int"].as<int>();
-   double param_double2_rd=p["SECTION_TWO.double"].as<double>();
+   int param_int1_rd=p["SECTION_ONE.int"];
+   double param_double1_rd=p["SECTION_ONE.double"];
+   int param_int2_rd=p["SECTION_TWO.int"];
+   double param_double2_rd=p["SECTION_TWO.double"];
 
    // verify the parameters
    EXPECT_EQ(param_int1_rd, param_int1);
@@ -300,10 +300,10 @@ TEST(param, CommentsInFile) {
        define<double>("double2","double2 parameter");
    
    // read the parameters
-   int param_int1_rd=p["int1"].as<int>();
-   double param_double1_rd=p["double1"].as<double>();
-   int param_int2_rd=p["int2"].as<int>();
-   double param_double2_rd=p["double2"].as<double>();
+   int param_int1_rd=p["int1"];
+   double param_double1_rd=p["double1"];
+   int param_int2_rd=p["int2"];
+   double param_double2_rd=p["double2"];
 
    // verify the parameters
    EXPECT_EQ(param_int1_rd, param_int1);
@@ -341,9 +341,9 @@ TEST(param, GarbageInFile) {
    
    // read the parameters
    try {
-       int param_int1_rd=p["int1"].as<int>();
+       int param_int1_rd=p["int1"];
        FAIL();
-       int param_int2_rd=p["int2"].as<int>();
+       int param_int2_rd=p["int2"];
    } catch (boost::program_options::invalid_config_file_syntax& ex) {
        SUCCEED();
        EXPECT_TRUE(std::string(ex.what()).find(garbage) != std::string::npos);
@@ -378,7 +378,7 @@ void WrongTypeTest(const std::string& strval)
    
    // read the parameter
    try {
-       T param_rd=p["param"].as<T>();
+       T param_rd=p["param"];
        FAIL();
    } catch (E& ex) {
        SUCCEED();
@@ -463,7 +463,7 @@ TEST(param, VectorRead) {
 #define DEFINE_PARAM(typ, par) \
    for (int i=0; i<ndelims; ++i) { \
      const std::string& pname=std::string(#par)+boost::lexical_cast<std::string>(i); \
-     p.define< alps::params::vector<typ> >(pname.c_str(),"No description"); \
+     p.define< std::vector<typ> >(pname.c_str(),"No description"); \
    }
 
    DEFINE_PARAM(int,intvec_param);
@@ -475,7 +475,7 @@ TEST(param, VectorRead) {
    //verify correctness, for each delimiter
    for (int i=0; i<ndelims; ++i) {
 #define COMPARE_PARAM(typ,par) \
-     const std::vector<typ>& par ## _rd =p[std::string(#par)+boost::lexical_cast<std::string>(i)].as< std::vector<typ> >(); \
+     const std::vector<typ>& par ## _rd =p[std::string(#par)+boost::lexical_cast<std::string>(i)]; \
      EXPECT_EQ(par, par ## _rd)
 
      COMPARE_PARAM(int, intvec_param);
@@ -509,7 +509,7 @@ TEST(param,Repeating) {
        define<int>("parname","repeating parameter");
 
    int n=0;
-   EXPECT_THROW((n=p["parname"].as<int>()),boost::program_options::multiple_occurrences);
+   EXPECT_THROW((n=p["parname"]),boost::program_options::multiple_occurrences);
 }
 
 // Unknown parameters in the INI file
@@ -535,7 +535,7 @@ TEST(param,Unknown) {
    p.description("This is a test program").
        define<int>("known","known parameter");
 
-   EXPECT_EQ((p["known"].as<int>()),1);
+   EXPECT_EQ((p["known"]),1);
 }
 
 // Scalars and strings with default values
@@ -567,11 +567,11 @@ void TestDefaults(T defval1, T defval2, T val1, T val2)
         template define<T>("undefined2", "undefined parameter, no default");
 
     //Access the parameters
-    EXPECT_EQ(p["with_default"].as<T>(), val1);
-    EXPECT_EQ(p["no_default"].as<T>(), val2);
-    EXPECT_EQ(p["undefined"].as<T>(), defval2);
+    EXPECT_EQ(p["with_default"], val1);
+    EXPECT_EQ(p["no_default"], val2);
+    EXPECT_EQ(p["undefined"], defval2);
 
-    EXPECT_THROW(const T& x=p["undefined2"].as<T>(), boost::bad_any_cast);
+    EXPECT_THROW(const T& x=p["undefined2"], alps::params::uninitialized_value);
 }
     
 TEST(param,Defaults) {
