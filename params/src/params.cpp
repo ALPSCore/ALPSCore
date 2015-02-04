@@ -49,11 +49,11 @@ namespace alps {
         {
             if (anycast_map_.count(optname)) {
                 // The option was already defined
-                throw std::runtime_error("Option redefenition"); // FIXME: include name in the message
+                throw double_definition(optname,"Attempt to define already defined parameter");
             }
             if (optmap_.count(optname)) {
                 // The option was already explicitly assigned or defined
-                throw std::runtime_error("Attempt to define assigned option"); // FIXME: include name in the message
+                throw extra_definition(optname, "Attempt to define explicitly assigned parameter");
             }
         }
         
@@ -81,16 +81,20 @@ namespace alps {
             }
 
             // Now copy the parsed options to the this's option map
-            // NOTE: if file has changed since the last parsing, option values will be reassigned!
+            // NOTE: if file has changed since the last parsing, option values will NOT be reassigned!
+            // (only options that are not yet in optmap_ are affected here,
+            // to avoid overwriting an optionthat was assigned earlier.)
             BOOST_FOREACH(const po::variables_map::value_type& slot, vm) {
                 const std::string& k=slot.first;
                 const boost::any& val=slot.second.value();
+                if (optmap_.count(k)) continue; // skip the keys that are already there
                 anycast_map_type::const_iterator assign_it=anycast_map_.find(k);
                 assert(assign_it!=anycast_map_.end()
                        && "Key always exists in anycast_map_: only explicitly-defined options are processed here");
                 const assign_fn_type& assign_fn=assign_it->second;
                 (optmap_[k].*assign_fn)(val); // using the saved assign_any() function to assign the value
             }
+            is_valid_=true;
         }        
 
         void params::save(hdf5::archive& ar) const

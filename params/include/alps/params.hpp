@@ -352,6 +352,18 @@ namespace alps {
           /// Exception type: attempt to use uninitialized option
           typedef option_type::uninitialized_value uninitialized_value;
 
+          /// Exception type: attempt to redefine a parameter
+          struct double_definition : public option_type::exception_base {
+              double_definition(const std::string& a_name, const std::string& a_what)
+                  : option_type::exception_base(a_name, a_what) {}
+          };
+          
+          /// Exception type: attempt to define explicitly assigned parameter
+          struct extra_definition : public option_type::exception_base {
+              extra_definition(const std::string& a_name, const std::string& a_what)
+                  : option_type::exception_base(a_name, a_what) {}
+          };
+          
           /** Default constructor */
           params() { init(); }
 

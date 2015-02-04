@@ -63,11 +63,117 @@ TEST(param,assignments)
     // FIXME!!! Not yet implemented!!!
     // std::cout << std::boolalpha << parms << std::endl;
 }
-   
+
+// void In_exception(const std::exception& x)
+// {
+//     return;
+// }
+
+// void Test()
+// #undef EXPECT_THROW
+// #define EXPECT_THROW(s, e) do { try { s; } catch (const e& x) { In_exception(x); } } while (0)
+
+// Testing explicitly assigned/implicitly defined parameters and implicit type conversion
+TEST(param,ImplicitDefine)
+{
+    const char* argv[]={"THIS PROGRAM", "--param1=abc", "--param2=4.25"};
+    const int argc=sizeof(argv)/sizeof(*argv);
+
+    alps::params p(argc,argv);
+
+    // Explicitly assigning a parameter
+    p["param1"]=3.125;
+    EXPECT_EQ(p["param1"],3.125);
+
+    {
+        // It is not a string, whatever command line is
+        EXPECT_THROW(const std::string& s=p["param1"], alps::params::type_mismatch);
+
+        // It can be assigned to an integer
+        int n=p["param1"];
+        EXPECT_EQ(n, 3);
+    }
+
+    // String cannot be assigned to it
+    EXPECT_THROW(p["param1"]="abc", alps::params::type_mismatch);
+
+    // Integer cannot be assigned to it either
+    EXPECT_THROW(p["param1"]=3, alps::params::type_mismatch);
+
+    // It cannot be defined now, once it was assigned
+    EXPECT_THROW((p.define<double>("param1", "Double parameter")), alps::params::extra_definition);
+
+    // Defining another parameter
+    p.define<double>("param2", "Another double parameter");
+
+    // Redefinition of the same parameter
+    EXPECT_THROW((p.define<double>("param2", "Double parameter again")), alps::params::double_definition);
+    EXPECT_THROW((p.define<int>("param2", "Int parameter now")), alps::params::double_definition);
+
+    // Reading the parameter
+    EXPECT_EQ(4.25, p["param2"]);
+    
+    // Assigning to and from the parameter
+
+    // Assign double --- should work
+    p["param2"]=5.0;
+    EXPECT_EQ(5.0, p["param2"]);
+
+    // Assign int --- should fail
+    EXPECT_THROW(p["param2"]=5, alps::params::type_mismatch);
+    
+    EXPECT_THROW(p["param2"]="abc", alps::params::type_mismatch);
+}
+
+// Test object invariants: defining a parameter or parsing a file should not affect the visible state
+TEST(param,Invariance)
+{
+    const char* argv[]={"THIS PROGRAM", "--str=abc", "--int1=111", "--int2=222" };
+    const int argc=sizeof(argv)/sizeof(*argv);
+
+    alps::params p(argc,argv);
+
+    p["int3"]=333;
+
+    // Define the string parameter
+    p.define<std::string>("str","String parameter");
+    // Check the state (triggers parsing!)
+    EXPECT_EQ(333, p["int3"]);
+    EXPECT_EQ(std::string("abc"), p["str"]);
+
+    // Define the int1 parameter
+    p.define<int>("int1","Int parameter1");
+    // Check the state (triggers parsing!)
+    EXPECT_EQ(std::string("abc"), p["str"]);
+    EXPECT_EQ(111, p["int1"]);
+    EXPECT_EQ(333, p["int3"]);
+
+    // Change the state
+    p["int3"]=-3333;
+    p["int1"]=-1111;
+    
+    // Define the int2 parameter
+    p.define<int>("int2","Int parameter2");
+    // Check the state (triggers parsing!)
+    EXPECT_EQ(222, p["int2"]);
+    EXPECT_EQ(std::string("abc"), p["str"]);
+    EXPECT_EQ(-1111, p["int1"]);
+    EXPECT_EQ(-3333, p["int3"]);
+
+    // Define a non-exisiting parameter
+    p.define<int>("int4","Int parameter4 (not provided)");
+    // Check the state (triggers parsing!)
+    EXPECT_EQ(222, p["int2"]);
+    EXPECT_EQ(std::string("abc"), p["str"]);
+    EXPECT_EQ(-1111, p["int1"]);
+    EXPECT_EQ(-3333, p["int3"]);
+}
+
 
 int main(int argc, char **argv) 
 {
-  // test_assignments();
+    // Test();
+    // return 0;
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
