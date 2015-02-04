@@ -6,7 +6,7 @@ set (test_src
      assign
 #     default
      not_found
-     redefinition
+#     redefinition
 #     ordering
 #     stream
     )
