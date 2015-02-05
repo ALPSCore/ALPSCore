@@ -6,6 +6,7 @@ set (test_src
      assign
 #     default
      not_found
+     short_options
 #     redefinition
 #     ordering
 #     stream

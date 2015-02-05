@@ -8,8 +8,8 @@
 #include "gtest/gtest.h"
 
 TEST(param,AccessNonExisting) {
-    int argc=2;
-    const char* argv[]={"THIS_PROGRAM", "/dev/null"};
+    int argc=1;
+    const char* argv[]={"THIS_PROGRAM"};
     alps::params p(argc, argv);
 
     p.define<int>("defined_par","Defined non-existing parameter");
@@ -38,6 +38,20 @@ TEST(param, AccessUndefined){
       EXPECT_THROW(std::string s=p["not_in_parms"], alps::params::uninitialized_value);
     }
     EXPECT_EQ(std::string("world"),p["hello"]);
+}
+
+// Extra (undefined) options in command line (not accessed)
+TEST(param, ExtraOptions)
+{
+    // const char* argv[]={"THIS PROGRAM", "--param1=111", "--param2=222"};
+    const char* argv[]={"THIS PROGRAM", "--paramABC", "111", "--paramXYZ", "222" };
+    const int argc=sizeof(argv)/sizeof(*argv);
+
+    alps::params p(argc,argv);
+
+    p.define<int>("paramABC","Integer parameter");
+    // p["param2"]=999;
+    EXPECT_EQ(111, p["paramABC"]);
 }
 
 int main(int argc, char **argv) 

@@ -84,6 +84,9 @@ namespace alps {
          .define<double>("T", "required double parameter T with no default")
         ;
 
+      NOTE: definition of both short and long variants of an option,
+      while allowed by boost::program_options, is prohibited by this library.
+
     5.1. It is a responsibility of the caller to check for the "--help" option.
          A convenience method checks for the option and outputs the description of the options.
 
@@ -165,13 +168,11 @@ namespace alps {
 
     8. Check for help message request
 
-    9. Check for requesting incorect name or type
+    9. Check for requesting incorect name or type -- Done
 
-    10. Check for overriding name by assignment
+    10. Check for overriding type by assignment -- Done
 
-    11. Check for overriding name and type by assignment
-
-    12. Check for the repetitive definition (the same type, different type)
+    12. Check for the repetitive definition (the same type, different type) -- Done
 
     13. Check for repetitive parameters in the input file -- Done
 
@@ -296,9 +297,7 @@ namespace alps {
 
           std::string helpmsg_;                 ///< Help message
           std::vector<std::string> argvec_;     ///< Command line arguments
-
-          /// An option name for the positional file argument.
-          static const char* const cfgfile_optname_;
+          std::string infile_;                  ///< File name to read from (if not empty)
 
           /// Parses the parameter file, filling the option map.
           void certainly_parse() const;
@@ -311,21 +310,20 @@ namespace alps {
 
           /// Initialization code common for all constructors
           void init() {
+              is_valid_=false;
               descr_.add_options()
-                  (cfgfile_optname_,boost::program_options::value<std::string>())
                   ("help","Provides help message");
               anycast_map_["help"]=&option_type::assign_any<std::string>;
-              anycast_map_[cfgfile_optname_]=&option_type::assign_any<std::string>;
           }
 
-          /// Function to check for redefinition of an already-defined option (throws!)
-          void check_redefine(const std::string& optname) const;
+          /// Function to check for validity/redefinition of an option (throws!)
+          void check_validity(const std::string& optname) const;
 
           /// Function doing the common part of define(), including checking for redefinition
           template <typename T>
           void define_common_part(const std::string& optname)
           {
-              check_redefine(optname);
+              check_validity(optname);
               invalidate();
               anycast_map_[optname]=&option_type::assign_any<T>;
               // printout_map_[optname]=detail::printout<T>;
@@ -364,6 +362,12 @@ namespace alps {
                   : option_type::exception_base(a_name, a_what) {}
           };
           
+          /// Exception type: incorrect parameter name
+          struct invalid_name : public option_type::exception_base {
+              invalid_name(const std::string& a_name, const std::string& a_what)
+                  : option_type::exception_base(a_name, a_what) {}
+          };
+          
           /** Default constructor */
           params() { init(); }
 
@@ -377,9 +381,17 @@ namespace alps {
           // params(boost::filesystem::path const &);
 
           /// Constructor from command line and a parameter file. The parsing is deferred. 
-          params(unsigned int argc, const char* const argv[])
+          params(unsigned int argc, const char* argv[])
           {
-              std::transform(argv+1,argv+argc, std::back_inserter(argvec_), cstr2string());
+              if (argc>1) {
+                  if (argv[1][0]!='-') {
+                      // first argument exists and is not an option
+                      infile_=argv[1];
+                      --argc;
+                      ++argv;
+                  }
+                  std::transform(argv+1,argv+argc, std::back_inserter(argvec_), cstr2string());
+              }
               init();
           }
 

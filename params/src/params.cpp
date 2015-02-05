@@ -8,6 +8,8 @@
 // #include "boost/preprocessor.hpp"
 #include "boost/algorithm/string/trim.hpp"
 #include "boost/algorithm/string/erase.hpp"
+#include "boost/algorithm/string/classification.hpp"
+#include "boost/algorithm/string/predicate.hpp"
 
 #include "alps/params.hpp"
 
@@ -22,8 +24,6 @@ namespace alps {
   
         namespace po=boost::program_options;
     
-        const char* const params::cfgfile_optname_="parameter-file";
-
         params::params(hdf5::archive ar, std::string const & path)
         {
             throw std::logic_error("Not implemented yet");
@@ -44,9 +44,14 @@ namespace alps {
         }
 
 
-        /// Function to check for redefinition of an already-defined option (throws!)
-        void params::check_redefine(const std::string& optname) const
+        /// Function to check for validity/redefinition of an option (throws!)
+        void params::check_validity(const std::string& optname) const
         {
+            if ( ! (boost::all(optname, boost::is_alnum()||boost::is_any_of("_.-"))
+                    && boost::all(optname.substr(0,1), boost::is_alnum()) ))  {
+                // The name is not alphanum-underscore-dot-dash, or does not start with alnum
+                throw invalid_name(optname, "Invalid parameter name");
+            }
             if (anycast_map_.count(optname)) {
                 // The option was already defined
                 throw double_definition(optname,"Attempt to define already defined parameter");
@@ -60,22 +65,21 @@ namespace alps {
         
         void params::certainly_parse() const
         {
-            po::positional_options_description pd;
-            pd.add(cfgfile_optname_,1); // FIXME: should it be "-1"? How the logic behaves for several positional options?
-            po::parsed_options cmdline_opts=
-                po::command_line_parser(argvec_).
-                allow_unregistered().
-                options(descr_).
-                positional(pd).  
-                run();
-
             po::variables_map vm;
-            po::store(cmdline_opts,vm);
 
-            if (vm.count(cfgfile_optname_) != 0) {
-                const std::string& cfgname=vm[cfgfile_optname_].as<std::string>();
+            if (!argvec_.empty()) {
+                po::parsed_options cmdline_opts=
+                    po::command_line_parser(argvec_).
+                    allow_unregistered().
+                    options(descr_).
+                    run();
+
+                po::store(cmdline_opts,vm);
+            }
+
+            if (!infile_.empty()) {
                 po::parsed_options cfgfile_opts=
-                    po::parse_config_file<char>(cfgname.c_str(),descr_,true); // parse the file, allow unregistered options
+                    po::parse_config_file<char>(infile_.c_str(),descr_,true); // parse the file, allow unregistered options
 
                 po::store(cfgfile_opts,vm);
             }
