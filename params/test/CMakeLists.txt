@@ -7,6 +7,7 @@ set (test_src
 #     default
      not_found
      short_options
+     subclass
 #     redefinition
 #     ordering
 #     stream
