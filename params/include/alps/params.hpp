@@ -453,14 +453,13 @@ namespace alps {
           /// Interface to serialization
           template<class Archive> void serialize(Archive & ar, const unsigned int)
           {
-              throw std::logic_error("Serialization is not implemented yet");
-              //     ar  & is_valid_
-              //         & optmap_
-              //         & descr_
-              //         & anycast_map_
-              //         & helpmsg_
-              //         & argvec_
-              //         & infile_;
+              // throw std::logic_error("Serialization is not implemented yet");
+              ar  & is_valid_
+                  & optmap_
+                  & descr_map_
+                  & helpmsg_
+                  & argvec_
+                  & infile_;
           }
           
 

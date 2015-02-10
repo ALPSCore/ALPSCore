@@ -11,6 +11,10 @@
 #include "boost/algorithm/string/classification.hpp"
 #include "boost/algorithm/string/predicate.hpp"
 
+
+// Serialization headers:
+#include "boost/archive/text_oarchive.hpp"
+#include "boost/archive/text_iarchive.hpp"
 #include "alps/params.hpp"
 
 /* Supported parameter types: */
@@ -26,7 +30,11 @@ namespace alps {
     
         params::params(hdf5::archive ar, std::string const & path)
         {
-            throw std::logic_error("Not implemented yet");
+            // throw std::logic_error("Not implemented yet");
+            std::string context = ar.get_context();
+            ar.set_context(path);
+            this->load(ar);
+            ar.set_context(context);
         }
 
         /** Access a parameter: read-only */
@@ -109,12 +117,25 @@ namespace alps {
 
         void params::save(hdf5::archive& ar) const
         {
-            throw std::logic_error("params::save() is not implemented yet");
+            // throw std::logic_error("params::save() is not implemented yet");
+            std::ostringstream outs; 
+            {
+                boost::archive::text_oarchive boost_ar(outs);
+                boost_ar << *this;
+            }
+            ar["alps::params"] << outs.str();
         }
 
         void params::load(hdf5::archive& ar)
         {
-            throw std::logic_error("params::load() is not implemented yet");
+            // throw std::logic_error("params::load() is not implemented yet");
+            std::string buf;
+            ar["alps::params"] >> buf;
+            std::istringstream ins(buf);
+            {
+                boost::archive::text_iarchive boost_ar(ins);
+                boost_ar >> *this;
+            }
         }
 
         bool params::help_requested(std::ostream& ostrm)

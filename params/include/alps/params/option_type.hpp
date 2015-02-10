@@ -31,6 +31,12 @@
 #include "boost/utility.hpp" // for enable_if
 #include "boost/type_traits.hpp" // for is_convertible
 
+#include "boost/serialization/base_object.hpp"
+#include "boost/serialization/map.hpp"
+#include "boost/serialization/optional.hpp"
+#include "boost/serialization/variant.hpp"
+
+
 #include "alps/params/param_types.hpp" // Sequences of supported types
 
 namespace alps {
@@ -213,8 +219,21 @@ namespace alps {
             option_type(const std::string& a_name):
                 name_(a_name) {}
 
-            // /// Default constructor of anonymous option (FIXME: can we avoid using it?)
-            // option_type(): name_("") {}
+            /// A fake constructor to create uninitialized object for serialization --- DO NOT USE IT!!!
+            // FIXME: can i avoid it?
+            option_type()
+                : name_("**UNINITIALIZED**") {}
+                
+        private:
+            friend class boost::serialization::access;
+
+            /// Interface to serialization
+            template<class Archive> void serialize(Archive & ar, const unsigned int)
+            {
+                ar  & val_
+                    & name_;
+            }
+                    
         };
 
         /// Equality operator for option_type
@@ -258,6 +277,16 @@ namespace alps {
                 // return reference to the existing or the newly-created element
                 return it->second;
             }
+
+        private:
+            friend class boost::serialization::access;
+
+            /// Interface to serialization
+            template<class Archive> void serialize(Archive & ar, const unsigned int)
+            {
+                ar & boost::serialization::base_object< std::map<key_type,mapped_type> >(*this);
+            }
+            
         };
 
         namespace detail {
@@ -318,13 +347,6 @@ namespace alps {
                     a_opt_descr.add_options()(optname.c_str(),
                                               a_descr.c_str());
                 }
-
-                // /// Add option with default value: should never be called (a plug to keep boost::variant happy)
-                // static void add_option(boost::program_options::options_description& a_opt_descr,
-                //                        const std::string& optname, const bool* defval, const std::string& a_descr)
-                // {
-                //     throw std::logic_error("Should not happen: setting default value for \"trigger\" parameter");
-                // }
             };
           
             
@@ -402,7 +424,6 @@ namespace alps {
                 /// Constructor for a trigger option
                 option_description_type(const std::string& a_descr): descr_(a_descr), deflt_(trigger_tag()) 
                 { }
-                
 
                 /// Adds to program_options options_description
                 void add_option(boost::program_options::options_description& a_po_desc, const std::string& a_name) const
@@ -415,7 +436,21 @@ namespace alps {
                 {
                     boost::apply_visitor(set_option_visitor(opt, a_val), deflt_);
                 }
+
+                /// Fake constructor to create uninitialized object for serialization --- DO NOT USE IT!!!
+                // FIXME: can i avoid it?
+                option_description_type()
+                    : descr_("**UNINITIALIZED**") {}
                 
+            private:
+                friend class boost::serialization::access;
+
+                /// Interface to serialization
+                template<class Archive> void serialize(Archive & ar, const unsigned int)
+                {
+                    ar  & descr_
+                        & deflt_;
+                }
             };
 
             typedef std::map<std::string, option_description_type> description_map_type;
@@ -427,5 +462,55 @@ namespace alps {
     } // params_ns
 } // alps
 
+// // The following is needed for the serialization interface
+// namespace boost {
+//     namespace serialization {
+//         /// Called to reconstruct option_description_type on deserialization
+//         template <typename Archive>
+//         inline void load_construct_data(Archive & ar,
+//                                         alps::params_ns::detail::option_description_type* self,
+//                                         const unsigned int)
+//         {
+//             // Calling the fake constructor 
+//             ::new(self) alps::params_ns::detail::option_description_type(alps::params_ns::detail::option_description_type::serialization_init_tag());
+//         }
 
+//         /// Called to reconstruct option_description_type map elements on deserialization
+//         template <typename Archive>
+//         inline void load_construct_data(Archive & ar,
+//                                         std::pair<std::string, alps::params_ns::detail::option_description_type>* self,
+//                                         const unsigned int)
+//         {
+//             typedef std::pair<std::string, alps::params_ns::detail::option_description_type> pair;
+//             // Calling the fake constructor 
+//             ::new(self) pair("**UNINITIALIZED**",
+//                              alps::params_ns::detail::option_description_type(alps::params_ns::detail::option_description_type::serialization_init_tag()));
+//         }
+
+//         /// Called to reconstruct option_type on deserialization
+//         template <typename Archive>
+//         inline void load_construct_data(Archive & ar,
+//                                         alps::params_ns::option_type* self,
+//                                         const unsigned int)
+//         {
+//             // Calling the fake constructor 
+//             ::new(self) alps::params_ns::option_type(alps::params_ns::option_type::serialization_init_tag());
+//         }
+
+//         /// Called to reconstruct option_type map element on deserialization
+//         template <typename Archive>
+//         inline void load_construct_data(Archive & ar,
+//                                         std::pair<std::string, alps::params_ns::option_type>* self,
+//                                         const unsigned int)
+//         {
+//             typedef std::pair<std::string, alps::params_ns::option_type> pair;
+//             // Calling the fake constructor 
+//             ::new(self) pair("**UNINITIALIZED**",
+//                              alps::params_ns::option_type(alps::params_ns::option_type::serialization_init_tag()));
+//         }
+        
+//     } // serialization
+// } // boost
+
+        
 #endif // ALPS_PARAMS_OPTION_TYPE_INCLUDED

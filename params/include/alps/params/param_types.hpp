@@ -28,11 +28,11 @@ namespace alps {
             struct None {};
 
             /// Output operator for the "empty value" (@throws runtime_error always)
-            std::ostream& operator<<(std::ostream& s, const detail::None&)
+            inline std::ostream& operator<<(std::ostream& s, const None&)
             {
                 throw std::runtime_error("Attempt to print uninitialized option value");
             }
-  
+
             // Vector of allowed scalar types:
             typedef mpl::vector<int,unsigned int,
                                 float,double,
@@ -94,7 +94,6 @@ namespace alps {
                 throw std::logic_error("Attempt to use undefined operator<< for trigger_tag");
             }
 
-            
             /// A variant of the trigger_tag and optionals of all types
             typedef boost::make_variant_over< mpl::push_back<optional_types_vec,trigger_tag>::type >::type variant_all_optional_type;
             
@@ -115,5 +114,22 @@ namespace alps {
         using detail::variant_all_type;
     } // params_ns
 }// alps
+
+// The following is needed for serialization support
+namespace boost {
+    namespace serialization {
+        /// Serialization function for the "empty value" (does nothing)
+        template<class Archive>
+        inline void serialize(Archive & ar, alps::params_ns::detail::None&, const unsigned int)
+        { }
+
+        /// Serialization function for the "trigger type" (does nothing)
+        template<class Archive>
+        inline void serialize(Archive & ar, alps::params_ns::detail::trigger_tag&, const unsigned int)
+        { }
+    } // serialization
+} // boost
+
+
 
 #endif // ALPS_PARAMS_PARAM_TYPES_INCLUDED
