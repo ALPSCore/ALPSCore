@@ -85,7 +85,7 @@ TEST(param, SubclassWork)
 // How the help request functionality works
 TEST(param, SubclassHelp)
 {
-    const char* help_argv[]={"", "--help"};
+    const char* help_argv[]={"", "--help"}; 
     const int help_argc=sizeof(help_argv)/sizeof(*help_argv);
 
     std::ostringstream ostr;

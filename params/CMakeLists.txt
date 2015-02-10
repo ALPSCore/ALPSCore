@@ -21,7 +21,7 @@ if (NOT DocumentationOnly)
   if(ALPS_HAVE_MPI)
     add_boost(filesystem system serialization mpi)
   else()
-    add_boost(filesystem system)
+    add_boost(filesystem system serialization)
   endif()
   add_hdf5()
 

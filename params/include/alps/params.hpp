@@ -230,43 +230,6 @@ namespace alps {
           //     os << "\"" << boost::any_cast<T>(val) << "\"";
           // }
 
-          /// Tag type to indicate vector parameter (FIXME: make sure it works for output too)
-          template <typename T>
-          struct vector_tag {};
-          
-          /// Service class calling boost::program_options::add_options(), to work around lack of function template specializations
-          /// T is the option type, U is the tag type used to treat parsing of vectors/lists specially
-          template <typename T, typename U=T>
-          struct do_define {
-              /// Add option with a default value
-              static void add_option(description_map_type& a_dmap,
-                                     const std::string& optname, T defval, const std::string& a_descr)
-              {
-                  bool result=a_dmap.insert(description_map_type::value_type(optname, option_description_type(a_descr,defval))).second;
-                  assert(result && "The inserted element is always new");
-              }
-
-              /// Add option with no default value
-              static void add_option(description_map_type& a_dmap,
-                                     const std::string& optname, const std::string& a_descr)
-              {
-                  bool result=a_dmap.insert(description_map_type::value_type(optname, option_description_type(a_descr, (U*)0))).second;
-                  assert(result && "The inserted element is always new");
-              }
-          };
-
-          /// Specialization of the service do_define class to define a vector/list option 
-          template <typename T>
-          struct do_define< std::vector<T> > {
-              /// Add option with no default value
-              static void add_option(description_map_type& a_dmap,
-                                     const std::string& optname, const std::string& a_descr)
-              {
-                  // std::cerr << "***DEBUG: calling do_define<std::vector>() ***" << std::endl;
-                  do_define< std::vector<T>, vector_tag<T> >::add_option(a_dmap, optname, a_descr);
-              }
-          };
-          
 
       } // detail
 
@@ -324,21 +287,21 @@ namespace alps {
           /// Initialization code common for all constructors
           void init() {
               is_valid_=false;
-              this->define<std::string>("help", "Provides help message");
+              this->define("help", "Provides help message");
           }
 
           /// Function to check for validity/redefinition of an option (throws!)
           void check_validity(const std::string& optname) const;
 
-          /// Function doing the common part of define(), including checking for redefinition
-          template <typename T>
-          void define_common_part(const std::string& optname)
-          {
-              check_validity(optname);
-              invalidate();
-              // anycast_map_[optname]=&option_type::assign_any<T>;
-              // printout_map_[optname]=detail::printout<T>;
-          }
+          // /// Function doing the common part of define(), including checking for redefinition
+          // template <typename T>
+          // void define_common_part(const std::string& optname)
+          // {
+          //     check_validity(optname);
+          //     invalidate();
+          //     // anycast_map_[optname]=&option_type::assign_any<T>;
+          //     // printout_map_[optname]=detail::printout<T>;
+          // }
           
           /// Service functor class to convert C-string pointer to an std::string
           struct cstr2string {
@@ -471,6 +434,9 @@ namespace alps {
           template <typename T>
           params& define(const std::string& optname, const std::string& descr);
 
+          // template <typename T>
+          params& define(const std::string& optname, const std::string& a_descr);
+
           /// Output the help message, if requested. @returns true if help was indeed requested.
           bool help_requested(std::ostream& ostrm);
 
@@ -484,16 +450,18 @@ namespace alps {
 
           friend class boost::serialization::access;
 
-          // /// Interface to serialization
-          // template<class Archive> void serialize(Archive & ar, const unsigned int) {
-          //     ar  & is_valid_
-          //         & optmap_
-          //         & descr_
-          //         & anycast_map_
-          //         & helpmsg_
-          //         & argvec_
-          //         & infile_;
-          // }
+          /// Interface to serialization
+          template<class Archive> void serialize(Archive & ar, const unsigned int)
+          {
+              throw std::logic_error("Serialization is not implemented yet");
+              //     ar  & is_valid_
+              //         & optmap_
+              //         & descr_
+              //         & anycast_map_
+              //         & helpmsg_
+              //         & argvec_
+              //         & infile_;
+          }
           
 
 
@@ -509,8 +477,12 @@ namespace alps {
       template <typename T>
       params& params::define(const std::string& optname, T defval, const std::string& a_descr)
       {
-          define_common_part<T>(optname);
-          detail::do_define<T>::add_option(descr_map_,optname,defval,a_descr);
+          // define_common_part<T>(optname);
+          check_validity(optname);
+          invalidate();
+          typedef detail::description_map_type::value_type value_type;
+          bool result=descr_map_.insert(value_type(optname, detail::option_description_type(a_descr,defval))).second;
+          assert(result && "The inserted element is always new");
           return *this;
       }
 
@@ -518,8 +490,23 @@ namespace alps {
       template <typename T>
       params& params::define(const std::string& optname, const std::string& a_descr)
       {
-          define_common_part<T>(optname);
-          detail::do_define<T>::add_option(descr_map_,optname,a_descr);
+          // define_common_part<T>(optname);
+          check_validity(optname);
+          invalidate();
+          typedef detail::description_map_type::value_type value_type;
+          bool result=descr_map_.insert(value_type(optname, detail::option_description_type(a_descr, (T*)0))).second;
+          assert(result && "The inserted element is always new");
+          return *this;
+      }
+
+      /// Define a trigger option
+      params& params::define(const std::string& optname, const std::string& a_descr)
+      {
+          check_validity(optname);
+          invalidate();
+          typedef detail::description_map_type::value_type value_type;
+          bool result=descr_map_.insert(value_type(optname, detail::option_description_type(a_descr))).second;
+          assert(result && "The inserted element is always new");
           return *this;
       }
 

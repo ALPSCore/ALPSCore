@@ -260,9 +260,75 @@ namespace alps {
             }
         };
 
-        /// Option (parameter) description class. Used to interface with boost::program_options
         namespace detail {
 
+            /// Tag type to indicate vector/list parameter (FIXME: make sure it works for output too)
+            template <typename T>
+            struct vector_tag {};
+
+            /// Service class calling boost::program_options::add_options(), to work around lack of function template specializations
+            /// T is the option type, U is the tag type used to treat parsing of vectors/lists specially
+            template <typename T, typename U=T>
+            struct do_define {
+                /// Add option with a default value
+                static void add_option(boost::program_options::options_description& a_opt_descr,
+                                       const std::string& optname, T defval, const std::string& a_descr)
+                {
+                    a_opt_descr.add_options()(optname.c_str(),
+                                              boost::program_options::value<U>()->default_value(defval),
+                                              a_descr.c_str());
+                }
+
+                /// Add option with no default value
+                static void add_option(boost::program_options::options_description& a_opt_descr,
+                                       const std::string& optname, const std::string& a_descr)
+                {
+                    a_opt_descr.add_options()(optname.c_str(),
+                                              boost::program_options::value<U>(),
+                                              a_descr.c_str());
+                }
+            };
+
+            /// Specialization of the service do_define class to define a vector/list option 
+            template <typename T>
+            struct do_define< std::vector<T> > {
+                /// Add option with no default value
+                static void add_option(boost::program_options::options_description& a_opt_descr,
+                                       const std::string& optname, const std::string& a_descr)
+                {
+                    // std::cerr << "***DEBUG: calling do_define<std::vector>() ***" << std::endl;
+                    do_define< std::vector<T>, vector_tag<T> >::add_option(a_opt_descr, optname, a_descr);
+                }
+
+                /// Add option with default value: should never be called (a plug to keep boost::variant happy)
+                static void add_option(boost::program_options::options_description& a_opt_descr,
+                                       const std::string& optname, const std::vector<T>& defval, const std::string& a_descr)
+                {
+                    throw std::logic_error("Should not happen: setting default value for vector/list parameter");
+                }
+            };
+          
+            /// Specialization of the service do_define class to define a "trigger" (parameterless) option
+            template <>
+            struct do_define<trigger_tag> {
+                /// Add option with no default value
+                static void add_option(boost::program_options::options_description& a_opt_descr,
+                                       const std::string& optname, const std::string& a_descr)
+                {
+                    a_opt_descr.add_options()(optname.c_str(),
+                                              a_descr.c_str());
+                }
+
+                // /// Add option with default value: should never be called (a plug to keep boost::variant happy)
+                // static void add_option(boost::program_options::options_description& a_opt_descr,
+                //                        const std::string& optname, const bool* defval, const std::string& a_descr)
+                // {
+                //     throw std::logic_error("Should not happen: setting default value for \"trigger\" parameter");
+                // }
+            };
+          
+            
+            /// Option (parameter) description class. Used to interface with boost::program_options
             class option_description_type {
                 typedef boost::program_options::options_description po_descr;
                 
@@ -278,44 +344,23 @@ namespace alps {
                     add_option_visitor(po_descr& a_po_descr, const std::string& a_name, const std::string& a_strdesc):
                         odesc_(a_po_descr), name_(a_name), strdesc_(a_strdesc) {}
 
-
-                    /// add to options_description, no default value (U is option type)
-                    template <typename U>
-                    void apply_no_def() const
-                    {
-                        odesc_.add_options()(name_.c_str(),
-                                             boost::program_options::value<U>(),
-                                             strdesc_.c_str());
-                    }
-
-                    /// add to options_description, with default value (U is a scalar or string type)
-                    template <typename U>
-                    void apply_with_def(U a_defval) const
-                    {
-                        odesc_.add_options()(name_.c_str(),
-                                             boost::program_options::value<U>()->default_value(a_defval),
-                                             strdesc_.c_str());
-                    }
-
-                    /// should be never called: add to options_description, with default value (U is a vector)
-                    template <typename U>
-                    void apply_with_def(const std::vector<U>& a_defval) const
-                    {
-                        throw std::logic_error("Setting default value for a list type parameter: should never be called");
-                    }
-                        
-                    /// Called by apply_visitor(): T is expected to be boost::optional<U>
+                    /// Called by apply_visitor(), for a optional<T> bound type
                     template <typename T>
-                    void operator()(const T& a_val) const
+                    void operator()(const boost::optional<T>& a_val) const
                     {
-                        typedef typename T::value_type U;
                         if (a_val) {
                             // a default value is provided
-                            apply_with_def(*a_val);
+                            do_define<T>::add_option(odesc_, name_, *a_val, strdesc_);
                         } else {
                             // no default value
-                            apply_no_def<U>();
+                            do_define<T>::add_option(odesc_, name_, strdesc_);
                         }
+                    }
+
+                    /// Called by apply_visitor(), for a trigger_tag type
+                    void operator()(const trigger_tag& a_val) const
+                    {
+                        do_define<trigger_tag>::add_option(odesc_, name_, strdesc_);
                     }
                 };
                     
@@ -328,10 +373,18 @@ namespace alps {
                     set_option_visitor(option_type& a_opt, const boost::any& a_anyval):
                         opt_(a_opt), anyval_(a_anyval) {}
 
+                    /// Called by apply_visitor(), for a optional<T> bound type
                     template <typename T>
-                    void operator()(const T& ) const
+                    void operator()(const boost::optional<T>& a_val) const
                     {
-                        opt_.val_=boost::any_cast<typename T::value_type>(anyval_);
+                        opt_.val_=boost::any_cast<T>(anyval_);
+                    }
+
+                    
+                    /// Called by apply_visitor(), for a trigger_tag type
+                    void operator()(const trigger_tag& ) const
+                    {
+                        opt_.val_=true; // if present, has "true" value
                     }
                 };
                     
@@ -345,6 +398,11 @@ namespace alps {
                 template <typename T>
                 option_description_type(const std::string& a_descr, T a_deflt): descr_(a_descr), deflt_(boost::optional<T>(a_deflt)) 
                 { }
+
+                /// Constructor for a trigger option
+                option_description_type(const std::string& a_descr): descr_(a_descr), deflt_(trigger_tag()) 
+                { }
+                
 
                 /// Adds to program_options options_description
                 void add_option(boost::program_options::options_description& a_po_desc, const std::string& a_name) const

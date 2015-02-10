@@ -86,9 +86,17 @@ namespace alps {
                 throw std::logic_error("Attempt to use undefined operator<< for boost::optional<T>");
             }
 
+            /// Tag type to indicate "trigger" option type (FIXME: it's a hack and must be redone)
+            struct trigger_tag {};
+
+            std::ostream& operator<<(std::ostream&, const trigger_tag&)
+            {
+                throw std::logic_error("Attempt to use undefined operator<< for trigger_tag");
+            }
+
             
-            /// A variant of optionals of all types
-            typedef boost::make_variant_over<optional_types_vec>::type variant_all_optional_type;
+            /// A variant of the trigger_tag and optionals of all types
+            typedef boost::make_variant_over< mpl::push_back<optional_types_vec,trigger_tag>::type >::type variant_all_optional_type;
             
             /// A meta-function determining if both types are scalar
             template <typename T, typename U>
