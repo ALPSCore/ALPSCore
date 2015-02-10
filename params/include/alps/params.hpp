@@ -305,9 +305,16 @@ namespace alps {
           std::vector<std::string> argvec_;     ///< Command line arguments
           std::string infile_;                  ///< File name to read from (if not empty)
 
-          /// Parses the parameter file, filling the option map.
-          void certainly_parse() const;
+          /// Parses the parameter file, filling the option map, and using the provided options_description instance
+          void certainly_parse(boost::program_options::options_description&) const;
             
+          /// Parses the parameter file, filling the option map.
+          void certainly_parse() const
+          {
+              boost::program_options::options_description odescr;
+              certainly_parse(odescr);
+          }
+        
           /// Parses the parameters if not already parsed.
           void possibly_parse() const { if (!is_valid_) certainly_parse(); }
 

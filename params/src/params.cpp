@@ -63,11 +63,9 @@ namespace alps {
         }
         
         
-        void params::certainly_parse() const
+        void params::certainly_parse(po::options_description& odescr) const
         {
-
             // First, create program_options::options_description from the description map
-            po::options_description odescr;
             BOOST_FOREACH(const detail::description_map_type::value_type& kv, descr_map_)
             {
                 kv.second.add_option(odescr, kv.first);
@@ -121,10 +119,11 @@ namespace alps {
 
         bool params::help_requested(std::ostream& ostrm)
         {
-            possibly_parse();
+            po::options_description odescr;
+            certainly_parse(odescr);
             if (optmap_.count("help")) { // FIXME: will conflict with explicitly-assigned "help" parameter
                 ostrm << helpmsg_ << std::endl;
-                ostrm << descr_;
+                ostrm << odescr;
                 return true;
             }
             return false;
