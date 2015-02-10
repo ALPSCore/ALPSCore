@@ -8,6 +8,7 @@ set (test_src
      not_found
      short_options
      subclass
+     serialize
 #     redefinition
 #     ordering
 #     stream

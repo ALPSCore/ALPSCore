@@ -18,11 +18,15 @@
 #endif
 
 #include "boost/filesystem.hpp"
+
+// Serialization headers:
 #include "boost/serialization/map.hpp"
 #include "boost/serialization/vector.hpp"
-#include "boost/serialization/string.hpp" 
+#include "boost/serialization/string.hpp"
+#include "boost/serialization/variant.hpp"
+
 #include "boost/program_options.hpp"
-#include "boost/optional.hpp"
+// #include "boost/optional.hpp"
 #include "boost/any.hpp"
 #include "boost/tokenizer.hpp"
 
@@ -235,21 +239,19 @@ namespace alps {
           template <typename T, typename U=T>
           struct do_define {
               /// Add option with a default value
-              static void add_option(boost::program_options::options_description& a_opt_descr,
+              static void add_option(description_map_type& a_dmap,
                                      const std::string& optname, T defval, const std::string& a_descr)
               {
-                  a_opt_descr.add_options()(optname.c_str(),
-                                            boost::program_options::value<U>()->default_value(defval),
-                                            a_descr.c_str());
+                  bool result=a_dmap.insert(description_map_type::value_type(optname, option_description_type(a_descr,defval))).second;
+                  assert(result && "The inserted element is always new");
               }
 
               /// Add option with no default value
-              static void add_option(boost::program_options::options_description& a_opt_descr,
+              static void add_option(description_map_type& a_dmap,
                                      const std::string& optname, const std::string& a_descr)
               {
-                  a_opt_descr.add_options()(optname.c_str(),
-                                            boost::program_options::value<U>(),
-                                            a_descr.c_str());
+                  bool result=a_dmap.insert(description_map_type::value_type(optname, option_description_type(a_descr, (U*)0))).second;
+                  assert(result && "The inserted element is always new");
               }
           };
 
@@ -257,11 +259,11 @@ namespace alps {
           template <typename T>
           struct do_define< std::vector<T> > {
               /// Add option with no default value
-              static void add_option(boost::program_options::options_description& a_opt_descr,
+              static void add_option(description_map_type& a_dmap,
                                      const std::string& optname, const std::string& a_descr)
               {
                   // std::cerr << "***DEBUG: calling do_define<std::vector>() ***" << std::endl;
-                  do_define< std::vector<T>, vector_tag<T> >::add_option(a_opt_descr, optname, a_descr);
+                  do_define< std::vector<T>, vector_tag<T> >::add_option(a_dmap, optname, a_descr);
               }
           };
           
@@ -273,9 +275,10 @@ namespace alps {
       public:
           // typedef params_ns::options_map_type options_map_type;
       private:
-          typedef boost::program_options::options_description options_description;
-          typedef void (option_type::*assign_fn_type)(const boost::any&);
-          typedef std::map<std::string, assign_fn_type> anycast_map_type;
+          // typedef boost::program_options::options_description options_description;
+          // typedef void (option_type::*assign_fn_type)(const boost::any&);
+          // typedef std::map<std::string, assign_fn_type> anycast_map_type;
+
           
           // typedef boost::program_options::variables_map variables_map;
           // typedef void (*printout_type)(std::ostream&, const boost::any&);
@@ -286,11 +289,14 @@ namespace alps {
           /// Options (parameters). Mutated by deferred parsing.
           mutable options_map_type optmap_; 
           
-          /// Options description; filled by define() method
-          options_description descr_;
+          // /// Options description; filled by define() method
+          // options_description descr_;
 
-          /// Map (option names --> conversion from boost::any). Filled by define<T>() method.
-          anycast_map_type anycast_map_;
+          // /// Map (option names --> conversion from boost::any). Filled by define<T>() method.
+          // anycast_map_type anycast_map_;
+
+          /// Map (option names --> definition). Filled by define<T>() method.
+          detail::description_map_type descr_map_;
           
           // /// Map(options->output_functions); filled by define() method or direct assignment
           // printout_map_type printout_map_;
@@ -311,9 +317,7 @@ namespace alps {
           /// Initialization code common for all constructors
           void init() {
               is_valid_=false;
-              descr_.add_options()
-                  ("help","Provides help message");
-              anycast_map_["help"]=&option_type::assign_any<std::string>;
+              this->define<std::string>("help", "Provides help message");
           }
 
           /// Function to check for validity/redefinition of an option (throws!)
@@ -325,7 +329,7 @@ namespace alps {
           {
               check_validity(optname);
               invalidate();
-              anycast_map_[optname]=&option_type::assign_any<T>;
+              // anycast_map_[optname]=&option_type::assign_any<T>;
               // printout_map_[optname]=detail::printout<T>;
           }
           
@@ -406,7 +410,7 @@ namespace alps {
           /** Erase a parameter */
           void erase(std::string const& k) { possibly_parse(); optmap_.erase(k); }
 
-          /** Check if the parameter is present */
+          /** Check if the parameter is present. FIXME: semantics?? */
           bool defined(std::string const & key) const
           {
               possibly_parse();
@@ -473,44 +477,18 @@ namespace alps {
 
           friend class boost::serialization::access;
 
-            // FIXME: implement serialization
-            // template<class Archive> void serialize(Archive & ar, const unsigned int) {
-            //     ar & keys
-            //        & values
-            //     ;
-            // }
+          // /// Interface to serialization
+          // template<class Archive> void serialize(Archive & ar, const unsigned int) {
+          //     ar  & is_valid_
+          //         & optmap_
+          //         & descr_
+          //         & anycast_map_
+          //         & helpmsg_
+          //         & argvec_
+          //         & infile_;
+          // }
+          
 
-
-            // /// Private inner proxy class to handle assignment.
-            // class Proxy {
-            //     private:
-            //         params& param_obj_; ///< Reference to the params object to access
-            //         const std::string& name_; ///< Name of the parameter to access
-
-            //     public:
-            //         /// Constructor from the params object and a parameter name
-            //         Proxy(params& a_obj, const std::string& a_name): param_obj_(a_obj), name_(a_name) {}
-
-            //         /// Accessor method casting the parameter as a type T
-            //         template <typename T>
-            //         T as() const {
-            //             return param_obj_.get(name_).as<T>();
-            //         }
-
-            //         /// Setter method to assign a value to the parameter
-            //         template <typename T>
-            //         void operator=(const T& val) const // FIXME: what about "small" T types --- should we avoid ref?
-            //         {
-            //             return param_obj_.set(name_,val);
-            //         }
-
-            //         /// Setter method to assign a value to the parameter: const char* overload. Allows `prm["a"]="abc"`
-            //         void operator=(const char* val) const 
-            //         {
-            //             return param_obj_.set(name_,std::string(val));
-            //         }
-
-            // };
 
       public:
             
@@ -525,9 +503,7 @@ namespace alps {
       params& params::define(const std::string& optname, T defval, const std::string& a_descr)
       {
           define_common_part<T>(optname);
-          detail::do_define<T>::add_option(descr_,optname,defval,a_descr);
-          // descr_.add_options()(optname.c_str(),boost::program_options::value<T>()->default_value(defval),a_descr.c_str());
-          
+          detail::do_define<T>::add_option(descr_map_,optname,defval,a_descr);
           return *this;
       }
 
@@ -536,10 +512,7 @@ namespace alps {
       params& params::define(const std::string& optname, const std::string& a_descr)
       {
           define_common_part<T>(optname);
-
-          detail::do_define<T>::add_option(descr_,optname,a_descr);
-          // descr_.add_options()(optname.c_str(),boost::program_options::value<T>(),a_descr.c_str());
-
+          detail::do_define<T>::add_option(descr_map_,optname,a_descr);
           return *this;
       }
 

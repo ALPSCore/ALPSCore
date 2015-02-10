@@ -38,6 +38,8 @@ namespace alps {
         
         class option_type {
 
+            friend class option_description_type;  // to interface with boost::program_options
+
             public: // FIXME: not everything is public
 
             /// "Empty value" type
@@ -200,14 +202,14 @@ namespace alps {
                 }
             }
 
-            /// Assignment from boost::any containing type T
-            template <typename T>
-            void assign_any(const boost::any& aval)
-            {
-                val_=boost::any_cast<T>(aval);
-            }
+            // /// Assignment from boost::any containing type T
+            // template <typename T>
+            // void assign_any(const boost::any& aval)
+            // {
+            //     val_=boost::any_cast<T>(aval);
+            // }
 
-            /// Constructor preserving the option name
+            // /// Constructor preserving the option name
             option_type(const std::string& a_name):
                 name_(a_name) {}
 
@@ -257,6 +259,113 @@ namespace alps {
                 return it->second;
             }
         };
+
+        /// Option (parameter) description class. Used to interface with boost::program_options
+        namespace detail {
+
+            class option_description_type {
+                typedef boost::program_options::options_description po_descr;
+                
+                std::string descr_; ///< Parameter description
+                variant_all_optional_type deflt_; ///< To keep type and defaults(if any)
+
+                /// Visitor class to add the stored description to boost::program_options
+                struct add_option_visitor: public boost::static_visitor<> {
+                    po_descr& odesc_;
+                    const std::string& name_;
+                    const std::string& strdesc_;
+
+                    add_option_visitor(po_descr& a_po_descr, const std::string& a_name, const std::string& a_strdesc):
+                        odesc_(a_po_descr), name_(a_name), strdesc_(a_strdesc) {}
+
+
+                    /// add to options_description, no default value (U is option type)
+                    template <typename U>
+                    void apply_no_def() const
+                    {
+                        odesc_.add_options()(name_.c_str(),
+                                             boost::program_options::value<U>(),
+                                             strdesc_.c_str());
+                    }
+
+                    /// add to options_description, with default value (U is a scalar or string type)
+                    template <typename U>
+                    void apply_with_def(U a_defval) const
+                    {
+                        odesc_.add_options()(name_.c_str(),
+                                             boost::program_options::value<U>()->default_value(a_defval),
+                                             strdesc_.c_str());
+                    }
+
+                    /// should be never called: add to options_description, with default value (U is a vector)
+                    template <typename U>
+                    void apply_with_def(const std::vector<U>& a_defval) const
+                    {
+                        throw std::logic_error("Setting default value for a list type parameter: should never be called");
+                    }
+                        
+                    /// Called by apply_visitor(): T is expected to be boost::optional<U>
+                    template <typename T>
+                    void operator()(const T& a_val) const
+                    {
+                        typedef typename T::value_type U;
+                        if (a_val) {
+                            // a default value is provided
+                            apply_with_def(*a_val);
+                        } else {
+                            // no default value
+                            apply_no_def<U>();
+                        }
+                    }
+                };
+                    
+
+                /// Visitor class to set option_type instance from boost::any; visitor is used ONLY to extract type information
+                struct set_option_visitor: public boost::static_visitor<> {
+                    option_type& opt_;
+                    const boost::any& anyval_;
+
+                    set_option_visitor(option_type& a_opt, const boost::any& a_anyval):
+                        opt_(a_opt), anyval_(a_anyval) {}
+
+                    template <typename T>
+                    void operator()(const T& ) const
+                    {
+                        opt_.val_=boost::any_cast<typename T::value_type>(anyval_);
+                    }
+                };
+                    
+            public:
+                /// Constructor for description without the default
+                template <typename T>
+                option_description_type(const std::string& a_descr, T*): descr_(a_descr), deflt_(boost::optional<T>(boost::none))
+                { }
+
+                /// Constructor for description with default
+                template <typename T>
+                option_description_type(const std::string& a_descr, T a_deflt): descr_(a_descr), deflt_(boost::optional<T>(a_deflt)) 
+                { }
+
+                /// Adds to program_options options_description
+                void add_option(boost::program_options::options_description& a_po_desc, const std::string& a_name) const
+                {
+                    boost::apply_visitor(add_option_visitor(a_po_desc,a_name,descr_), deflt_);
+                }
+
+                /// Sets option_type instance to a correct value extracted from boost::any
+                void set_option(option_type& opt, const boost::any& a_val) const
+                {
+                    boost::apply_visitor(set_option_visitor(opt, a_val), deflt_);
+                }
+                
+            };
+
+            typedef std::map<std::string, option_description_type> description_map_type;
+
+        } // detail
+
+            
+        
     } // params_ns
 } // alps
 

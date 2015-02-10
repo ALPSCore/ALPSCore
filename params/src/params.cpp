@@ -52,7 +52,7 @@ namespace alps {
                 // The name is not alphanum-underscore-dot-dash, or does not start with alnum
                 throw invalid_name(optname, "Invalid parameter name");
             }
-            if (anycast_map_.count(optname)) {
+            if (descr_map_.count(optname)) {
                 // The option was already defined
                 throw double_definition(optname,"Attempt to define already defined parameter");
             }
@@ -65,13 +65,22 @@ namespace alps {
         
         void params::certainly_parse() const
         {
+
+            // First, create program_options::options_description from the description map
+            po::options_description odescr;
+            BOOST_FOREACH(const detail::description_map_type::value_type& kv, descr_map_)
+            {
+                kv.second.add_option(odescr, kv.first);
+            }
+
+            // Second, parse the parameters according to the description into the variables_map
             po::variables_map vm;
 
             if (!argvec_.empty()) {
                 po::parsed_options cmdline_opts=
                     po::command_line_parser(argvec_).
                     allow_unregistered().
-                    options(descr_).
+                    options(odescr).
                     run();
 
                 po::store(cmdline_opts,vm);
@@ -79,7 +88,7 @@ namespace alps {
 
             if (!infile_.empty()) {
                 po::parsed_options cfgfile_opts=
-                    po::parse_config_file<char>(infile_.c_str(),descr_,true); // parse the file, allow unregistered options
+                    po::parse_config_file<char>(infile_.c_str(),odescr,true); // parse the file, allow unregistered options
 
                 po::store(cfgfile_opts,vm);
             }
@@ -87,16 +96,15 @@ namespace alps {
             // Now copy the parsed options to the this's option map
             // NOTE: if file has changed since the last parsing, option values will NOT be reassigned!
             // (only options that are not yet in optmap_ are affected here,
-            // to avoid overwriting an optionthat was assigned earlier.)
+            // to avoid overwriting an option that was assigned earlier.)
             BOOST_FOREACH(const po::variables_map::value_type& slot, vm) {
                 const std::string& k=slot.first;
                 const boost::any& val=slot.second.value();
                 if (optmap_.count(k)) continue; // skip the keys that are already there
-                anycast_map_type::const_iterator assign_it=anycast_map_.find(k);
-                assert(assign_it!=anycast_map_.end()
-                       && "Key always exists in anycast_map_: only explicitly-defined options are processed here");
-                const assign_fn_type& assign_fn=assign_it->second;
-                (optmap_[k].*assign_fn)(val); // using the saved assign_any() function to assign the value
+                detail::description_map_type::const_iterator descr_it=descr_map_.find(k);
+                assert(descr_it!=descr_map_.end()
+                       && "Key always exists in descr_map_: po::options_description is generated from it");
+                (descr_it->second).set_option(optmap_[k], val); // set the value of the option using the type info stored in the description
             }
             is_valid_=true;
         }        

@@ -11,6 +11,7 @@
 #include <boost/mpl/logical.hpp>
 
 #include "boost/variant.hpp"
+#include "boost/optional.hpp"
 
 #ifndef ALPS_PARAMS_PARAM_TYPES_INCLUDED
 #define ALPS_PARAMS_PARAM_TYPES_INCLUDED
@@ -75,12 +76,27 @@ namespace alps {
             /// A variant of all types, including None (as the first one)
             typedef boost::make_variant_over< mpl::push_front<all_types_vec,None>::type >::type variant_all_type;
 
+            /// A vector of `optional` types for each of the vectors and scalar types
+            typedef mpl::transform< all_types_vec, boost::optional<mplh::_1> >::type optional_types_vec;
+
+            /// An output operator for optionals of any type (throws unconditionally)
+            template <typename T>
+            std::ostream& operator<<(std::ostream& , const boost::optional<T>&)
+            {
+                throw std::logic_error("Attempt to use undefined operator<< for boost::optional<T>");
+            }
+
+            
+            /// A variant of optionals of all types
+            typedef boost::make_variant_over<optional_types_vec>::type variant_all_optional_type;
+            
             /// A meta-function determining if both types are scalar
             template <typename T, typename U>
             struct both_scalar
                 : mpl::and_< mpl::has_key<scalar_types_set,U>,
                              mpl::has_key<scalar_types_set,T> >
             {};
+
 
         }
 
