@@ -50,6 +50,7 @@ namespace alps {
         */
         params::params(unsigned int argc, const char* argv[], const char* hdfpath)
         {
+            if (argc>0) argv0_=argv[0];
             if (argc>1) {
                 if (argv[1][0]!='-') {
                     // first argument exists and is not an option
@@ -135,19 +136,18 @@ namespace alps {
                 po::store(cfgfile_opts,vm);
             }
 
-            // Now copy the parsed options to the this's option map
-            // NOTE: if file has changed since the last parsing, option values will NOT be reassigned!
+            // Now for each defined option, copy the corresponding parsed option to the this's option map
+            // NOTE#1: If file has changed since the last parsing, option values will NOT be reassigned!
             // (only options that are not yet in optmap_ are affected here,
             // to avoid overwriting an option that was assigned earlier.)
-            // BOOST_FOREACH(const po::variables_map::value_type& slot, vm) {
+            // NOTE#2: The loop is over the content of the define()'d options (descr_map_)
+            // so that options that are defined but are not in the command line and are without default will be set:
+            // it is needed for "trigger" options. It may also be an opportunity to distinguish between
+            // options that are define()'d but are missing and those which were never even define()'d.
             BOOST_FOREACH(const detail::description_map_type::value_type& slot, descr_map_) {
                 const std::string& k=slot.first;
                 const detail::description_map_type::mapped_type& dscval=slot.second;
                 if (optmap_.count(k)) continue; // skip the keys that are already there
-                // detail::description_map_type::const_iterator descr_it=descr_map_.find(k);
-                // assert(descr_it!=descr_map_.end()
-                //        && "Key always exists in descr_map_: po::options_description is generated from it");
-                // (descr_it->second).set_option(optmap_[k], val); // set the value of the option using the type info stored in the description
                 dscval.set_option(optmap_[k], vm[k].value());
             }
             is_valid_=true;
@@ -201,25 +201,6 @@ namespace alps {
             }
             return false;
         }        
-
-        
-        // /// Output parameters to a stream
-        // std::ostream& operator<< (std::ostream& os, const params& prm)
-        // {
-        //     BOOST_FOREACH(const params::value_type& pair, prm) {
-        //         const std::string& k=pair.first;
-        //         const params::mapped_type& v=pair.second;
-        //         os << k << "=";
-        //         // FIXME: the following game with iterators and assertions can be avoided
-        //         //        if the printout function would be a member of params::mapped_type;
-        //         //        however, it requires deriving from boost::variables_map.
-        //         params::printout_map_type::const_iterator pit=prm.printout_map_.find(k);
-        //         assert(pit != prm.printout_map_.end() && "Printout function is given for a parameter");
-        //         (pit->second)(os,v.value());
-        //         os << std::endl;
-        //     }
-        //     return os;
-        // }
 
     } // params_ns
 } // alps

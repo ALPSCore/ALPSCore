@@ -53,7 +53,7 @@ namespace alps {
 
     1. The objects are copyable and default-constructible.
 
-    1.1. The constructor needs (argc, argv), a file name, or an (HDF5) archive
+    1.1. The constructor needs (argc, argv) with an optional HDF5 path, or an (HDF5) archive wih an optional path.
     
     2. The parameters are accessed this way:
 
@@ -78,14 +78,18 @@ namespace alps {
 
     3. Allowed scalar types: double, int, bool, std::string (FIXME: specify more)
 
+    3.1. A special type of parameter: "trigger"; these parameters can be given only in the command line,
+         do not accept associated values, and are considered boolean and "true" if present, "false" if absent.
+         E.g., a pre-defined parameter '--help' is a trigger parameter.
+
     4. Allowed vector types: std::vector<T> for any scalar type T except std::string type.
-      (FIXME: get rid of this >) Note that vectors have to be defined in a special way.
 
     5. Way to define the parameters that are expected to be read from a file or command line:
 
         p.description("The description for --help")
          .define<int>("L", 50, "optional int parameter L with default 50")
          .define<double>("T", "required double parameter T with no default")
+         .define("continue", "trigger parameter with boolean value")
         ;
 
       NOTE: definition of both short and long variants of an option,
@@ -96,29 +100,22 @@ namespace alps {
 
     5.2. A parameter assigned explicitly before its definition cannot be defined.
 
-    6. FIXME: Special cases: for list parameters of type T the parameter must be defined as
+    6. List parameters of type T are defined as
 
-        p.define< alps::params::vector<T> >("name","description");
+        p.define< std::vector<T> >("name","description");
 
        and accessed as:
 
         x=p["name"].as< std::vector<T> >();
 
-    (FIXME: There is no default value provisions for list parameters, as of now).
-    Also, lists of strings are not supported (undefined behavior: may or may not work)).
-
-    6.1. FIXME? Special case: parameter with no declared type is optional,
-         corresponds to a boolean TRUE if it is defined and true:
-
-        p.define<>("X", "The input has property X");
-        bool has_x=p["X"].as<bool>();
-
+    List parameters cannot have a default value.
+    Lists of strings are not supported (undefined behavior: may or may not work).
 
     7. The class CONTAINS a (mutable) std::map from parameters names
     to `option_type`, which is populated every time the file is
     parsed. The class also delegates some methods of std::map (FIXME: is it needed?)
 
-    8. When constructed from (argc,argv), The options are read from the command line first, then from a
+    8. When constructed from (argc,argv), the options are read from the command line first, then from a
     parameter file in ini-file format. The name of the file must be
     given in the command line. The command-line options take priority
     over file options. The following specifications are devised:
@@ -147,40 +144,12 @@ namespace alps {
        2) A pair of surrounding double quotes is stripped, if present (to allow for leading/trailing spaces).
          
     10. The state of a parameter object can be saved to and loaded from
-    an HDF5 archive. (FIXME: not yet implemented)
+    an HDF5 archive.
 
     11. The state of a parameter object can be broadcast over an MPI
     communicator. (FIXME: not yet implemented)
 
     QUESTIONS:
-
-    1. Is there any code that relies on ordering of parameters? (There
-    was a test checking the same order preservation across save/load).
-
-    2. Is it important to cut trailing semicolons? -- No
-
-    3. Reading of quoted strings must be supported. -- Done
-
-    4. Check for printing of the lists: a list parameter must print correctly.
-    In other words, the set of parameters must be printed correctly and then read.
-
-    5. Check for string reading according to the rules. -- Done
-
-    6. Check for reading of ini files with sections. -- Done
-
-    7. Check for adding parameters by derived classes.
-
-    8. Check for help message request
-
-    9. Check for requesting incorect name or type -- Done
-
-    10. Check for overriding type by assignment -- Done
-
-    12. Check for the repetitive definition (the same type, different type) -- Done
-
-    13. Check for repetitive parameters in the input file -- Done
-
-    14. Check for command line parameters overriding file
     
 */
 
@@ -247,20 +216,18 @@ namespace alps {
           // typedef void (*printout_type)(std::ostream&, const boost::any&);
           // typedef std::map<std::string,printout_type> printout_map_type;
 
-          /// True if there are no new define<>()-ed parameters since last parsing. Mutated by deferred parsing.
+          /// True if there are no new define<>()-ed parameters since last parsing. Mutated by deferred parsing: certainly_parse()
           mutable bool is_valid_;
-          /// Options (parameters). Mutated by deferred parsing.
+          /// Options (parameters). Mutated by deferred parsing: certainly_parse()
           mutable options_map_type optmap_; 
           
           /// Map (option names --> definition). Filled by define<T>() method.
           detail::description_map_type descr_map_;
           
-          // /// Map(options->output_functions); filled by define() method or direct assignment
-          // printout_map_type printout_map_;
-
           std::string helpmsg_;                 ///< Help message
           std::vector<std::string> argvec_;     ///< Command line arguments
           std::string infile_;                  ///< File name to read from (if not empty)
+          std::string argv0_;                   ///< 0-th argument (program name)
           boost::optional<std::string> archname_; ///< Archive name (if restored from archive)
 
           /// Parses the parameter file, filling the option map, and using the provided options_description instance
@@ -288,16 +255,6 @@ namespace alps {
           /// Function to check for validity/redefinition of an option (throws!)
           void check_validity(const std::string& optname) const;
 
-          // /// Function doing the common part of define(), including checking for redefinition
-          // template <typename T>
-          // void define_common_part(const std::string& optname)
-          // {
-          //     check_validity(optname);
-          //     invalidate();
-          //     // anycast_map_[optname]=&option_type::assign_any<T>;
-          //     // printout_map_[optname]=detail::printout<T>;
-          // }
-          
       public:
             
           typedef options_map_type::iterator iterator;
@@ -338,23 +295,17 @@ namespace alps {
           /** Default constructor */
           params() { init(); }
 
-          // /** Copy constructor */
-          // params(params const & arg): {}
-
           /** Constructor from HDF5 archive. */
           params(hdf5::archive ar, std::string const & path = "/parameters")
           {
               this->load(ar, path);
           }
 
-          // /** Constructor from parameter file. The parsing of the file is deferred. */
-          // params(boost::filesystem::path const &);
-
           /// Constructor from command line and a parameter file. The parsing is deferred.
           /** Tries to see if the file is an HDF5, in which case restores the object from the
               HDF5 file, ignoring the command line.
               @param hdfpath : path to HDF5 dataset containing the saved parameter object
-                             (0 if this functionality is not needed)
+                               (NULL if this functionality is not needed)
           */
           params(unsigned int argc, const char* argv[], const char* hdfpath = "/parameters");
 
@@ -375,6 +326,14 @@ namespace alps {
               if (archname_) return *archname_;
               throw not_restored("This instance of parameters was not restored from an archive");
           }
+
+          /// Returns the "base name": (parameter file name) || (restart file name) || (program name) || (empty string)
+          std::string get_base_name() const
+          {
+              if (!infile_.empty()) return infile_;
+              if (archname_) return *archname_;
+              return argv0_;
+          }
           
           /** Returns number of parameters (size of the map) */
           std::size_t size() const { possibly_parse(); return optmap_.size(); }
@@ -385,6 +344,7 @@ namespace alps {
           /** Check if the parameter is present. FIXME: semantics?? */
           bool defined(std::string const & key) const
           {
+              throw std::logic_error("Called defined('"+key+"'): semantic is not yet clearly defined.");
               possibly_parse();
               return (optmap_.count(key)!=0);
           }
@@ -434,25 +394,19 @@ namespace alps {
               return *this;
           }
 
-          /// Define an option with an optional value
+          /// Define an option of type T with an optional value
           template <typename T>
           params& define(const std::string& optname, T defval, const std::string& descr);
 
-          /// Define an option with a required value
+          /// Define an option of type T with a required value
           template <typename T>
           params& define(const std::string& optname, const std::string& descr);
 
-          // template <typename T>
+          /// Define a "trigger" command-line option (like "--help")
           params& define(const std::string& optname, const std::string& a_descr);
 
           /// Output the help message, if requested. @returns true if help was indeed requested.
           bool help_requested(std::ostream& ostrm);
-
-            // FIXME: what the following should mean exactly?
-            //        possibly a shortcut for a boolean option with default false?
-            // /// Define an option that may be omitted from the parameter file
-            // template <>
-            // params& define<>(const std::string& optname, const std::string& descr);
 
       private:
 
@@ -467,7 +421,8 @@ namespace alps {
                   & descr_map_
                   & helpmsg_
                   & argvec_
-                  & infile_;
+                  & infile_
+                  & argv0_;
           }
       };
 
@@ -477,7 +432,6 @@ namespace alps {
       template <typename T>
       params& params::define(const std::string& optname, T defval, const std::string& a_descr)
       {
-          // define_common_part<T>(optname);
           check_validity(optname);
           invalidate();
           typedef detail::description_map_type::value_type value_type;
@@ -490,7 +444,6 @@ namespace alps {
       template <typename T>
       params& params::define(const std::string& optname, const std::string& a_descr)
       {
-          // define_common_part<T>(optname);
           check_validity(optname);
           invalidate();
           typedef detail::description_map_type::value_type value_type;
@@ -499,7 +452,7 @@ namespace alps {
           return *this;
       }
 
-      /// Define a trigger option
+      /// Define a "trigger" option
       params& params::define(const std::string& optname, const std::string& a_descr)
       {
           check_validity(optname);
@@ -510,7 +463,7 @@ namespace alps {
           return *this;
       }
 
-      /*-ALPS_DECL-*/ std::ostream & operator<<(std::ostream & os, params const & arg);
+      // /*-ALPS_DECL-*/ std::ostream & operator<<(std::ostream & os, params const & arg);
 
       namespace detail {
           /// Validator for vectors, used by boost::program_options

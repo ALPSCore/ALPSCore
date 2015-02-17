@@ -4,8 +4,9 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#include <vector>
+#include <fstream>
 #include "alps/params.hpp"
+#include "alps/utilities/temporary_filename.hpp"
 #include "gtest/gtest.h"
 
 // Test interaction with boost::program_options --- short options are prohibited
@@ -21,6 +22,89 @@ TEST(param, ProgramOptions)
     // if allowed boost::po style of option names as "long,short", these 2 below would crash on assertion failure.
     { EXPECT_THROW(int i=p["param"], alps::params::uninitialized_value); }
     { EXPECT_THROW(int i=p["p"], alps::params::uninitialized_value); } 
+}
+
+// Shortened versions of options in the command line.
+TEST(param, ShortenedInCmdline)
+{
+    const char* argv[]={ "THIS PROGRAM", "--par=123" };
+    const int argc=sizeof(argv)/sizeof(*argv);
+
+    alps::params p(argc, argv);
+    p.define<int>("param", "Int parameter");
+
+    EXPECT_EQ(123,int(p["param"]));
+    EXPECT_THROW(int i=p["par"], alps::params::uninitialized_value);
+}
+
+// Shortened versions of options in the INI file -- not allowed
+TEST(param, ShortenedInFile)
+{
+    std::string pfilename(alps::temporary_filename("pfile"));
+    const char* argv[]={ "THIS PROGRAM", pfilename.c_str() };
+    const int argc=sizeof(argv)/sizeof(*argv);
+
+    // Generate INI file
+    {
+        std::ofstream pfile(pfilename.c_str());
+        pfile << "par = 123\n";
+    }
+    
+    alps::params p(argc, argv);
+    p.define<int>("param", "Int parameter");
+
+    EXPECT_THROW(int i=p["param"], alps::params::uninitialized_value);
+    EXPECT_THROW(int i=p["par"], alps::params::uninitialized_value);
+}
+
+// Shorter and longer options in the command line.
+TEST(param, ShortAndLongCmdline)
+{
+    const char* argv[]={ "THIS PROGRAM", "--par=123", "--param=456" };
+    const int argc=sizeof(argv)/sizeof(*argv);
+
+    alps::params p(argc, argv);
+    p.define<int>("param", "Int parameter");
+
+    // Parsing occurs here, and program_options throwns an exception:
+    EXPECT_THROW(int i=p["par"], boost::program_options::multiple_occurrences);
+    // Parsing occurs here again, and program_options throwns an exception again:
+    EXPECT_THROW(int i=p["param"], boost::program_options::multiple_occurrences);
+}
+
+// Shorter and longer options defined
+TEST(param, ShortAndLongDefined)
+{
+    const char* argv[]={ "THIS PROGRAM", "--par=123", "--param=456" };
+    const int argc=sizeof(argv)/sizeof(*argv);
+
+    alps::params p(argc, argv);
+    p   .define<int>("param", "Int parameter 1")
+        .define<int>("par", "Int parameter 2");
+
+    EXPECT_EQ(123,int(p["par"]));
+    EXPECT_EQ(456,int(p["param"]));
+}
+
+// Shorter and longer options in the INI file --- are distinct
+TEST(param, ShortAndLongFile)
+{
+    std::string pfilename(alps::temporary_filename("pfile"));
+    const char* argv[]={ "THIS PROGRAM", pfilename.c_str() };
+    const int argc=sizeof(argv)/sizeof(*argv);
+
+    // Generate INI file
+    {
+        std::ofstream pfile(pfilename.c_str());
+        pfile << "par = 123\n"
+              << "param = 456\n";
+    }
+    
+    alps::params p(argc, argv);
+    p.define<int>("param", "Int parameter");
+
+    EXPECT_THROW(int i=p["par"], alps::params::uninitialized_value);
+    EXPECT_EQ(456, int(p["param"]));
 }
 
 

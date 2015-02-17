@@ -54,6 +54,29 @@ TEST(param, ExtraOptions)
     EXPECT_EQ(111, p["paramABC"]);
 }
 
+// Definition of the option after access attempt
+TEST(param, DefineAfterAccess)
+{
+    const char* argv[]={"THIS PROGRAM", "--param", "111"};
+    const int argc=sizeof(argv)/sizeof(*argv);
+
+    alps::params p(argc,argv);
+
+    {
+      EXPECT_THROW(int i=p["param"], alps::params::uninitialized_value);
+    }
+    // After access attempt, the option becomes "explicitly assigned" and cannot be defined
+    EXPECT_THROW((p.define<int>("param","Integer parameter")), alps::params::extra_definition);
+
+    // Still, it cannot be read...
+    {
+      EXPECT_THROW(int i=p["param"], alps::params::uninitialized_value);
+    }
+    // ...until assigned (any type)
+    p["param"]=999.25;
+    EXPECT_EQ(999.25, p["param"]);
+}
+
 int main(int argc, char **argv) 
 {
 //    Test();
