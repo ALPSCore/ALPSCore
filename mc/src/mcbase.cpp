@@ -14,6 +14,7 @@ namespace alps {
         , params(parameters) // TODO: remove, deprecated!
         , random((parameters["SEED"] | 42) + seed_offset)
     {
+        // ?? define_parameters(parms);
         alps::signal::listen();
     }
 

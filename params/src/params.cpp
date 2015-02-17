@@ -15,26 +15,62 @@
 // Serialization headers:
 #include "boost/archive/text_oarchive.hpp"
 #include "boost/archive/text_iarchive.hpp"
+
+#include <alps/hdf5/archive.hpp>
+
 #include "alps/params.hpp"
 
-/* Supported parameter types: */
-#ifndef ALPS_PARAMS_SUPPORTED_TYPES
-#define ALPS_PARAMS_SUPPORTED_TYPES (5, (int,unsigned,double,bool,std::string))
-#endif
+// /* Supported parameter types: */
+// #ifndef ALPS_PARAMS_SUPPORTED_TYPES
+// #define ALPS_PARAMS_SUPPORTED_TYPES (5, (int,unsigned,double,bool,std::string))
+// #endif
 
+
+// Anonymous namespace for service functions & classes
+namespace {
+    // Service functor class to convert C-string pointer to an std::string
+    struct cstr2string {
+        std::string operator()(const char* cstr)
+        {
+            return std::string(cstr);
+        }
+    };
+}
 
 namespace alps {
     namespace params_ns {
   
         namespace po=boost::program_options;
     
-        params::params(hdf5::archive ar, std::string const & path)
+        /// Constructor from command line and a parameter file. The parsing is deferred.
+        /** Tries to see if the file is an HDF5, in which case restores the object from the
+            HDF5 file, ignoring the command line.
+            @param hdfpath : path to HDF5 dataset containing the saved parameter object
+            (0 if this functionality is not needed)
+        */
+        params::params(unsigned int argc, const char* argv[], const char* hdfpath)
         {
-            // throw std::logic_error("Not implemented yet");
-            std::string context = ar.get_context();
-            ar.set_context(path);
-            this->load(ar);
-            ar.set_context(context);
+            if (argc>1) {
+                if (argv[1][0]!='-') {
+                    // first argument exists and is not an option
+                    infile_=argv[1];
+                    if (hdfpath) {
+                        try {
+                            alps::hdf5::archive ar(infile_,"r");
+                            this->load(ar);
+                            archname_=argv[1];
+                            return; // nothing else to be done
+                        } catch (alps::hdf5::archive_error& ) {
+                            // then it's not a valid HDF5 file:
+                            // treat it as an INI file.
+                        }
+                    }   
+                    --argc;
+                    ++argv;
+                }
+                std::transform(argv+1,argv+argc, std::back_inserter(argvec_), cstr2string());
+            }
+            init();
         }
 
         /** Access a parameter: read-only */
@@ -103,21 +139,22 @@ namespace alps {
             // NOTE: if file has changed since the last parsing, option values will NOT be reassigned!
             // (only options that are not yet in optmap_ are affected here,
             // to avoid overwriting an option that was assigned earlier.)
-            BOOST_FOREACH(const po::variables_map::value_type& slot, vm) {
+            // BOOST_FOREACH(const po::variables_map::value_type& slot, vm) {
+            BOOST_FOREACH(const detail::description_map_type::value_type& slot, descr_map_) {
                 const std::string& k=slot.first;
-                const boost::any& val=slot.second.value();
+                const detail::description_map_type::mapped_type& dscval=slot.second;
                 if (optmap_.count(k)) continue; // skip the keys that are already there
-                detail::description_map_type::const_iterator descr_it=descr_map_.find(k);
-                assert(descr_it!=descr_map_.end()
-                       && "Key always exists in descr_map_: po::options_description is generated from it");
-                (descr_it->second).set_option(optmap_[k], val); // set the value of the option using the type info stored in the description
+                // detail::description_map_type::const_iterator descr_it=descr_map_.find(k);
+                // assert(descr_it!=descr_map_.end()
+                //        && "Key always exists in descr_map_: po::options_description is generated from it");
+                // (descr_it->second).set_option(optmap_[k], val); // set the value of the option using the type info stored in the description
+                dscval.set_option(optmap_[k], vm[k].value());
             }
             is_valid_=true;
         }        
 
         void params::save(hdf5::archive& ar) const
         {
-            // throw std::logic_error("params::save() is not implemented yet");
             std::ostringstream outs; 
             {
                 boost::archive::text_oarchive boost_ar(outs);
@@ -126,9 +163,16 @@ namespace alps {
             ar["alps::params"] << outs.str();
         }
 
+        void params::save(hdf5::archive& ar, const std::string& path) const
+        {
+            std::string context = ar.get_context();
+            ar.set_context(path);
+            save(ar);
+            ar.set_context(context);
+        }
+            
         void params::load(hdf5::archive& ar)
         {
-            // throw std::logic_error("params::load() is not implemented yet");
             std::string buf;
             ar["alps::params"] >> buf;
             std::istringstream ins(buf);
@@ -138,11 +182,19 @@ namespace alps {
             }
         }
 
+        void params::load(hdf5::archive& ar, const std::string& path)
+        {
+            std::string context = ar.get_context();
+            ar.set_context(path);
+            load(ar);
+            ar.set_context(context);
+        }
+
         bool params::help_requested(std::ostream& ostrm)
         {
             po::options_description odescr;
             certainly_parse(odescr);
-            if (optmap_.count("help")) { // FIXME: will conflict with explicitly-assigned "help" parameter
+            if (optmap_["help"]) { // FIXME: will conflict with explicitly-assigned "help" parameter
                 ostrm << helpmsg_ << std::endl;
                 ostrm << odescr;
                 return true;

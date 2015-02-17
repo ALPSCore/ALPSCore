@@ -581,6 +581,19 @@ TEST(param,Defaults) {
     TestDefaults<std::string>("def1", "def2", "val1", "val2");
 }
 
+// Trigger options in the command line
+TEST(param,Triggers)
+{
+    const char* argv[]={ "", "--trigger_opt" };
+    int argc=sizeof(argv)/sizeof(*argv);
+
+    alps::params p(argc, argv);
+    p.description("Trigger options test").
+        define("trigger_opt","Trigger option").
+        define("trigger_opt2","Trigger option, missing");
+    EXPECT_TRUE(bool(p["trigger_opt"]));
+    EXPECT_FALSE(bool(p["trigger_opt2"]));
+}
 
 // Command-line options overriding file options
 TEST(param,CmdlineOverride)
@@ -600,18 +613,21 @@ TEST(param,CmdlineOverride)
     const char* argv[]={"THIS_PROGRAM",         // argv[0]
                         pfilename.c_str(),      // filename is the 1st argument
                         "--param1=999",         // override param1
-                        "--param3=333"};        // one more parameter
+                        "--param3=333",         // one more parameter
+                        "--trigger_opt" };      // a trigger option  
     const int argc=sizeof(argv)/sizeof(*argv);
     
     alps::params p(argc, argv);
     p.
         define<int>("param1","Parameter 1").
         define<int>("param2","Parameter 2").
-        define<int>("param3","Parameter 3");
+        define<int>("param3","Parameter 3").
+        define("trigger_opt","Trigger param");
 
     EXPECT_EQ(999,p["param1"]);
     EXPECT_EQ(222,p["param2"]);
     EXPECT_EQ(333,p["param3"]);
+    EXPECT_TRUE(bool(p["trigger_opt"]));
 }
 
 int main(int argc, char **argv) 

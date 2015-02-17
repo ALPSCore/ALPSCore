@@ -252,12 +252,6 @@ namespace alps {
           /// Options (parameters). Mutated by deferred parsing.
           mutable options_map_type optmap_; 
           
-          // /// Options description; filled by define() method
-          // options_description descr_;
-
-          // /// Map (option names --> conversion from boost::any). Filled by define<T>() method.
-          // anycast_map_type anycast_map_;
-
           /// Map (option names --> definition). Filled by define<T>() method.
           detail::description_map_type descr_map_;
           
@@ -267,6 +261,7 @@ namespace alps {
           std::string helpmsg_;                 ///< Help message
           std::vector<std::string> argvec_;     ///< Command line arguments
           std::string infile_;                  ///< File name to read from (if not empty)
+          boost::optional<std::string> archname_; ///< Archive name (if restored from archive)
 
           /// Parses the parameter file, filling the option map, and using the provided options_description instance
           void certainly_parse(boost::program_options::options_description&) const;
@@ -303,14 +298,6 @@ namespace alps {
           //     // printout_map_[optname]=detail::printout<T>;
           // }
           
-          /// Service functor class to convert C-string pointer to an std::string
-          struct cstr2string {
-              std::string operator()(const char* cstr)
-              {
-                  return std::string(cstr);
-              }
-          };
-
       public:
             
           typedef options_map_type::iterator iterator;
@@ -341,6 +328,12 @@ namespace alps {
               invalid_name(const std::string& a_name, const std::string& a_what)
                   : option_type::exception_base(a_name, a_what) {}
           };
+
+          /// Exception type: the object was not restored from archive
+          struct not_restored : public std::runtime_error {
+              not_restored(const std::string& a_what)
+                  : std::runtime_error(a_what) {}
+          };
           
           /** Default constructor */
           params() { init(); }
@@ -348,32 +341,41 @@ namespace alps {
           // /** Copy constructor */
           // params(params const & arg): {}
 
-          /** Constructor from HDF5 archive. (FIXME: not implemented yet) */
-          params(hdf5::archive ar, std::string const & path = "/parameters");
+          /** Constructor from HDF5 archive. */
+          params(hdf5::archive ar, std::string const & path = "/parameters")
+          {
+              this->load(ar, path);
+          }
 
           // /** Constructor from parameter file. The parsing of the file is deferred. */
           // params(boost::filesystem::path const &);
 
-          /// Constructor from command line and a parameter file. The parsing is deferred. 
-          params(unsigned int argc, const char* argv[])
-          {
-              if (argc>1) {
-                  if (argv[1][0]!='-') {
-                      // first argument exists and is not an option
-                      infile_=argv[1];
-                      --argc;
-                      ++argv;
-                  }
-                  std::transform(argv+1,argv+argc, std::back_inserter(argvec_), cstr2string());
-              }
-              init();
-          }
+          /// Constructor from command line and a parameter file. The parsing is deferred.
+          /** Tries to see if the file is an HDF5, in which case restores the object from the
+              HDF5 file, ignoring the command line.
+              @param hdfpath : path to HDF5 dataset containing the saved parameter object
+                             (0 if this functionality is not needed)
+          */
+          params(unsigned int argc, const char* argv[], const char* hdfpath = "/parameters");
 
 #ifdef ALPS_HAVE_PYTHON_DEPRECATED
           params(boost::python::dict const & arg);
           params(boost::python::str const & arg);
 #endif
 
+          /// Returns whether the parameters are restored from archive by the constructor
+          bool is_restored() const
+          {
+              return bool(archname_);
+          }
+
+          /// Returns the name of the archive the parameters were restarted from (or throw)
+          std::string get_archive_name() const
+          {
+              if (archname_) return *archname_;
+              throw not_restored("This instance of parameters was not restored from an archive");
+          }
+          
           /** Returns number of parameters (size of the map) */
           std::size_t size() const { possibly_parse(); return optmap_.size(); }
 
@@ -405,11 +407,17 @@ namespace alps {
           /** Access a parameter --- possibly for assignment */
           mapped_type& operator[](const std::string& k);
 
-          /// Save parameters to HDF5 archive (FIXME: not implemented yet)
+          /// Save parameters to HDF5 archive
           void save(hdf5::archive &) const;
 
-          /// Load parameters from HDF5 archive (clearing the object first) (FIXME: not implemented yet)
+          /// Save parameters to HDF5 archive to a given path
+          void save(hdf5::archive &, const std::string&) const;
+
+          /// Load parameters from HDF5 archive (overwriting the object)
           void load(hdf5::archive &);
+
+          /// Load parameters from HDF5 archive (overwriting the object) from a given path
+          void load(hdf5::archive &, const std::string&);
 
 #ifdef ALPS_HAVE_MPI
           /// Broadcast the parameters to all processes (FIXME: not implemented yet)
@@ -453,23 +461,16 @@ namespace alps {
           /// Interface to serialization
           template<class Archive> void serialize(Archive & ar, const unsigned int)
           {
-              // throw std::logic_error("Serialization is not implemented yet");
               ar  & is_valid_
+                  & archname_
                   & optmap_
                   & descr_map_
                   & helpmsg_
                   & argvec_
                   & infile_;
           }
-          
-
-
-      public:
-            
-          friend std::ostream & operator<<(std::ostream & os, params const & arg);
       };
 
-        
       // FIXME: we may consider provide template specializations for specific types? To hide templates inside *.cpp?
 
       /// Define an option of a generic type with a default value
@@ -513,7 +514,6 @@ namespace alps {
 
       namespace detail {
           /// Validator for vectors, used by boost::program_options
-          // FIXME: in which namespace should it be??
           template <typename T>
           void validate(boost::any& outval, const std::vector<std::string>& strvalues,
                         vector_tag<T>*, int)

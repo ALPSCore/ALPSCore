@@ -399,14 +399,17 @@ namespace alps {
                     template <typename T>
                     void operator()(const boost::optional<T>& a_val) const
                     {
-                        opt_.val_=boost::any_cast<T>(anyval_);
+                        if (anyval_.empty()) {
+                            opt_.val_=None();
+                        } else {
+                            opt_.val_=boost::any_cast<T>(anyval_);
+                        }
                     }
 
-                    
                     /// Called by apply_visitor(), for a trigger_tag type
                     void operator()(const trigger_tag& ) const
                     {
-                        opt_.val_=true; // if present, has "true" value
+                        opt_.val_=!anyval_.empty(); // non-empty value means the option is present
                     }
                 };
                     

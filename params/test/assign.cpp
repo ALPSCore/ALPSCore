@@ -64,10 +64,10 @@ TEST(param,assignments)
     // std::cout << std::boolalpha << parms << std::endl;
 }
 
-// void In_exception(const std::exception& x)
-// {
-//     return;
-// }
+void In_exception(const std::exception& x)
+{
+    return;
+}
 
 // void Test()
 // #undef EXPECT_THROW
@@ -172,8 +172,7 @@ TEST(param,Invariance)
 
 int main(int argc, char **argv) 
 {
-    // Test();
-    // return 0;
+  // return Test(), 0;
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

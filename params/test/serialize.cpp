@@ -64,6 +64,10 @@ TEST(param, Archive)
         define<double>("param2",22.25,"double");
     p["param3"]=333;
 
+    EXPECT_FALSE(p.is_restored());
+    EXPECT_THROW(p.get_archive_name(), alps::params::not_restored);
+    
+
     // Save to archive
     std::string filename(alps::temporary_filename("hdf5_file"));
     {
@@ -81,13 +85,34 @@ TEST(param, Archive)
     EXPECT_EQ(22.25, p2["param2"]);
     EXPECT_EQ(333, p2["param3"]);
 
+    EXPECT_FALSE(p2.is_restored());
+    EXPECT_THROW(p2.get_archive_name(), alps::params::not_restored);
+    
+
     // Create from archive
     alps::hdf5::archive iar3(filename, "r");
     alps::params p3(iar3, "/");
     EXPECT_EQ(111, p3["param1"]);
     EXPECT_EQ(22.25, p3["param2"]);
     EXPECT_EQ(333, p3["param3"]);
+
+    EXPECT_FALSE(p3.is_restored());
+    EXPECT_THROW(p3.get_archive_name(), alps::params::not_restored);
+    
+
+    // Create from commandline containing an archive
+    const char* argv2[]={ "", filename.c_str(), "--param1=999" };
+    const int argc2=sizeof(argv2)/sizeof(*argv2);
+    alps::params p4(argc2,argv2);
+    EXPECT_EQ(111, p4["param1"]); // note: not 999; cmdline is not processed!
+    EXPECT_EQ(22.25, p4["param2"]);
+    EXPECT_EQ(333, p4["param3"]);
+
+    EXPECT_TRUE(p4.is_restored());
+    EXPECT_EQ(filename, p4.get_archive_name());
 }
+
+
 
 int main(int argc, char** argv)
 {
