@@ -538,49 +538,6 @@ TEST(param,Unknown) {
    EXPECT_EQ((p["known"]),1);
 }
 
-// Scalars and strings with default values
-template <typename T>
-void TestDefaults(T defval1, T defval2, T val1, T val2)
-{
-    //create a file name
-    std::string pfilename(alps::temporary_filename("pfile"));
-    
-    // Generate INI file
-    {
-        std::ofstream pfile(pfilename.c_str());
-     pfile
-         << "with_default = " << val1 << std::endl
-         << "no_default = " << val2 << std::endl;
-    }
-
-    // Imitate the command line args
-    const int argc=2;
-    const char* argv[2]={"THIS_PROGRAM",0};
-    argv[1]=pfilename.c_str();
-
-    //define the parameters
-    alps::params p(argc,argv);
-    p.description("This is a test program").
-        template define<T>("with_default", defval1, "defined parameter with default").
-        template define<T>("no_default", "defined parameter, no default").
-        template define<T>("undefined", defval2, "undefined parameter, with default").
-        template define<T>("undefined2", "undefined parameter, no default");
-
-    //Access the parameters
-    EXPECT_EQ(p["with_default"], val1);
-    EXPECT_EQ(p["no_default"], val2);
-    EXPECT_EQ(p["undefined"], defval2);
-
-    EXPECT_THROW(const T& x=p["undefined2"], alps::params::uninitialized_value);
-}
-    
-TEST(param,Defaults) {
-    TestDefaults<int>(1,2,3,4);
-    TestDefaults<double>(1.25,2.125,4.5,8.0);
-    TestDefaults<bool>(true,false,false,true);
-    TestDefaults<std::string>("def1", "def2", "val1", "val2");
-}
-
 // Trigger options in the command line
 TEST(param,Triggers)
 {

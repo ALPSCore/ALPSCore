@@ -119,7 +119,8 @@ namespace alps {
             // Second, parse the parameters according to the description into the variables_map
             po::variables_map vm;
 
-            if (!argvec_.empty()) {
+            // Parse even if the commandline is empty, to set default values.
+            {
                 po::parsed_options cmdline_opts=
                     po::command_line_parser(argvec_).
                     allow_unregistered().

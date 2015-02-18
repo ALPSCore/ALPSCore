@@ -4,7 +4,7 @@ set (test_src
      file_read
 #     param
      assign
-#     default
+     defaults
      not_found
      short_options
      subclass
