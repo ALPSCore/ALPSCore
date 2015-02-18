@@ -4,7 +4,8 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#pragma once
+#ifndef ALPS_PARAMS_INCLUDED
+#define ALPS_PARAMS_INCLUDED
 
 #include "alps/config.hpp"
 #include "alps/hdf5/archive.hpp"
@@ -430,7 +431,7 @@ namespace alps {
 
       /// Define an option of a generic type with a default value
       template <typename T>
-      params& params::define(const std::string& optname, T defval, const std::string& a_descr)
+      inline params& params::define(const std::string& optname, T defval, const std::string& a_descr)
       {
           check_validity(optname);
           invalidate();
@@ -442,7 +443,7 @@ namespace alps {
 
       /// Define an option of a generic type without default
       template <typename T>
-      params& params::define(const std::string& optname, const std::string& a_descr)
+      inline params& params::define(const std::string& optname, const std::string& a_descr)
       {
           check_validity(optname);
           invalidate();
@@ -453,7 +454,7 @@ namespace alps {
       }
 
       /// Define a "trigger" option
-      params& params::define(const std::string& optname, const std::string& a_descr)
+      inline params& params::define(const std::string& optname, const std::string& a_descr)
       {
           check_validity(optname);
           invalidate();
@@ -506,3 +507,5 @@ namespace boost {
                       std::string*, int);
     }
 }
+
+#endif // ALPS_PARAMS_INCLUDED

@@ -1,3 +1,6 @@
+#ifndef ALPS_PARAMS_PARAM_TYPES_INCLUDED
+#define ALPS_PARAMS_PARAM_TYPES_INCLUDED
+
 #include <vector>
 
 #include "boost/mpl/vector.hpp"
@@ -12,9 +15,6 @@
 
 #include "boost/variant.hpp"
 #include "boost/optional.hpp"
-
-#ifndef ALPS_PARAMS_PARAM_TYPES_INCLUDED
-#define ALPS_PARAMS_PARAM_TYPES_INCLUDED
 
 namespace alps {
     namespace params_ns {
@@ -81,7 +81,7 @@ namespace alps {
 
             /// An output operator for optionals of any type (throws unconditionally)
             template <typename T>
-            std::ostream& operator<<(std::ostream& , const boost::optional<T>&)
+            inline std::ostream& operator<<(std::ostream& , const boost::optional<T>&)
             {
                 throw std::logic_error("Attempt to use undefined operator<< for boost::optional<T>");
             }
@@ -89,7 +89,7 @@ namespace alps {
             /// Tag type to indicate "trigger" option type (FIXME: it's a hack and must be redone)
             struct trigger_tag {};
 
-            std::ostream& operator<<(std::ostream&, const trigger_tag&)
+            inline std::ostream& operator<<(std::ostream&, const trigger_tag&)
             {
                 throw std::logic_error("Attempt to use undefined operator<< for trigger_tag");
             }

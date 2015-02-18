@@ -23,6 +23,7 @@
 */
 
 #ifndef ALPS_PARAMS_OPTION_TYPE_INCLUDED
+#define ALPS_PARAMS_OPTION_TYPE_INCLUDED
 
 #include <iostream>
 #include <stdexcept>
