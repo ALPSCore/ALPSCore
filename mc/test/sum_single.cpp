@@ -67,7 +67,7 @@ TEST(mc, sum_single){
 
     params["COUNT"]=1000;
 
-
+    my_sim_type::define_parameters(params); // do parameters definitions
     my_sim_type my_sim(params); // create a simulation
     my_sim.run(alps::stop_callback(5)); // run the simulation for 1 second
 
@@ -75,5 +75,5 @@ TEST(mc, sum_single){
 
     std::cout << "e^(-x*x): " << results["SValue"] << std::endl;
     std::cout << "e^(-x*x): " << results["VValue"] << std::endl;
-    save_results(results, params, alps::temporary_filename("sum_single"), "/simulation/results");
+    alps::save_results(results, params, alps::temporary_filename("sum_single"), "/simulation/results");
 }

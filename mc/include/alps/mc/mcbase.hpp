@@ -34,7 +34,7 @@ namespace alps {
 
             mcbase(parameters_type const & parms, std::size_t seed_offset = 0);
 
-            // static void define_parameters(parameters_type & parameters);
+            static void define_parameters(parameters_type & parameters);
 
             virtual void update() = 0;
             virtual void measure() = 0;
@@ -54,7 +54,7 @@ namespace alps {
         protected:
 
             parameters_type parameters;
-            parameters_type & params; // TODO: deprecated, remove!
+            // parameters_type & params; // TODO: deprecated, remove!
             alps::random01 mutable random;
             observable_collection_type measurements;
     };

@@ -11,22 +11,22 @@ namespace alps {
 
     mcbase::mcbase(parameters_type const & parms, std::size_t seed_offset)
         : parameters(parms)
-        , params(parameters) // TODO: remove, deprecated!
-        , random((parameters["SEED"] | 42) + seed_offset)
+          // , params(parameters) // TODO: remove, deprecated!
+        , random(std::size_t(parameters["SEED"]) + seed_offset)
     {
-        // ?? define_parameters(parms);
         alps::signal::listen();
     }
 
-    // static void mcbase::define_parameters(parameters_type & parameters) {
-    //     parameters
-    //         .define<void>("continue,c", "load simulation from checkpoint")
-    //         .define<std::size_t>("timelimit,T", 0, "time limit for the simulation")
-    //         .define<std::size_t>("Tmin,i", 600, "maximum time to check if simulation has finished")
-    //         .define<std::size_t>("Tmax,a", "number of sweeps for thermalization")
-    //         .define<std::string>("outputfile", "name of the output file")
-    //     ;
-    // }
+    void mcbase::define_parameters(parameters_type & parameters) {
+        parameters
+            .define("continue", "load simulation from checkpoint")
+            .define<std::size_t>("SEED", 42, "PRNG seed")
+            .define<std::size_t>("timelimit", 0, "time limit for the simulation")
+            // .define<std::size_t>("Tmin", 600, "maximum time to check if simulation has finished")
+            // .define<std::size_t>("Tmax", "number of sweeps for thermalization")
+            .define<std::string>("outputfile", "name of the output file")
+        ;
+    }
 
     void mcbase::save(boost::filesystem::path const & filename) const {
         alps::hdf5::archive ar(filename, "w");
