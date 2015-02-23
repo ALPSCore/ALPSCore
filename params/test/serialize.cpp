@@ -103,7 +103,7 @@ TEST(param, Archive)
     // Create from commandline containing an archive
     const char* argv2[]={ "", filename.c_str(), "--param1=999" };
     const int argc2=sizeof(argv2)/sizeof(*argv2);
-    alps::params p4(argc2,argv2);
+    alps::params p4(argc2,argv2,"/");
     EXPECT_EQ(111, p4["param1"]); // note: not 999; cmdline is not processed!
     EXPECT_EQ(22.25, p4["param2"]);
     EXPECT_EQ(333, p4["param3"]);

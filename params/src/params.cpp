@@ -11,6 +11,7 @@
 #include "boost/algorithm/string/classification.hpp"
 #include "boost/algorithm/string/predicate.hpp"
 
+#include "boost/optional.hpp"
 
 // Serialization headers:
 #include "boost/archive/text_oarchive.hpp"
@@ -35,6 +36,16 @@ namespace {
             return std::string(cstr);
         }
     };
+
+    // Service function to try to open an HDF5 archive, return "none" if it fails
+    boost::optional<alps::hdf5::archive> try_open_ar(const std::string& fname, const char* mode)
+    {
+        try {
+            return alps::hdf5::archive(fname, mode);
+        } catch (alps::hdf5::archive_error& ) {
+            return boost::none;
+        }
+    };
 }
 
 namespace alps {
@@ -56,19 +67,18 @@ namespace alps {
                     // first argument exists and is not an option
                     infile_=argv[1];
                     if (hdfpath) {
-                        try {
-                            alps::hdf5::archive ar(infile_,"r");
-                            this->load(ar);
+                        boost::optional<alps::hdf5::archive> ar=try_open_ar(infile_, "r");
+                        if (ar) {
+                            this->load(*ar, hdfpath);
                             archname_=argv[1];
                             return; // nothing else to be done
-                        } catch (alps::hdf5::archive_error& ) {
-                            // then it's not a valid HDF5 file:
-                            // treat it as an INI file.
                         }
-                    }   
+                    }
+                    // skip the first argument
                     --argc;
                     ++argv;
                 }
+                // save the command line
                 std::transform(argv+1,argv+argc, std::back_inserter(argvec_), cstr2string());
             }
             init();
