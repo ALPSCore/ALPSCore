@@ -8,9 +8,19 @@
 
 #include <boost/lambda/lambda.hpp>
 
+void ising_sim::define_parameters(parameters_type& params)
+{
+    params.description("Tutorial example: 1D Ising simulation")
+        .define<int>("SEED", 42, "PRNG seed")
+        .define<int>("L", "Simulation length")
+        .define<int>("THERMALIZATION", "Number of thermalization sweeps")
+        .define<int>("SWEEPS", "Total sweeps")
+        .define<double>("T", "Simulation temperature");
+}
+
 ising_sim::ising_sim(parameters_type const & params)
     : parameters(params)
-    , random(boost::mt19937((parameters["SEED"] | 42)), boost::uniform_real<>())
+    , random(boost::mt19937(int(parameters["SEED"])), boost::uniform_real<>())
     , length(parameters["L"])
     , sweeps(0)
     , thermalization_sweeps(int(parameters["THERMALIZATION"]))

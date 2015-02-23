@@ -18,35 +18,23 @@
 #include <iostream>
 #include <stdexcept>
 
-int main(int argc, char *argv[]) {
+int main(int argc, const char *argv[]) {
 
     try {
 
-        // alps::parameters_type<ising_sim>::type parameters;        
-        // ising_sim::define_parameters(parameters);
-        // parameters.parse(argc, argv);
+        alps::params pars(argc,argv,"/parameters"); // reads from HDF5 if supplied
+        std::string checkpoint_file = pars.get_base_name().substr(0, pars.get_base_name().find_last_of('.')) +  ".clone0.h5";
 
-        alps::parseargs options(argc, argv);
-        std::string checkpoint_file = options.input_file.substr(0, options.input_file.find_last_of('.')) +  ".clone0.h5";
+        alps::parameters_type<ising_sim>::type parameters(pars); // initializable from alps::params (and presumably is identical to it).
+        ising_sim::define_parameters(parameters); // parameters are defined here inside, ahead of the constructor
+        if (parameters.help_requested(std::cerr)) return 1; // Stop if help requested
 
-        // TODO: make load_params
-        alps::parameters_type<ising_sim>::type parameters;
-        // TODO: better check the first few bytes. provide an ALPS function to do so
-        // if (boost::filesystem::extension(options.input_file) == ".xml")
-        //     parameters = alps::make_parameters_from_xml(options.input_file);
-        // else 
-        if (boost::filesystem::extension(options.input_file) == ".h5")
-            alps::hdf5::archive(options.input_file)["/parameters"] >> parameters;
-        else
-            parameters = alps::parameters_type<ising_sim>::type(options.input_file);
+        ising_sim sim(parameters); // some of the options are used in the constructor, so we needed to define them in advance
 
-        ising_sim sim(parameters);
-
-        // if (parameters["continue"].as<bool>())
-        if (options.resume)
+        if (parameters["continue"])
             sim.load(checkpoint_file);
 
-        sim.run(alps::stop_callback(options.timelimit));
+        sim.run(alps::stop_callback(int(parameters["timelimit"])));
 
         sim.save(checkpoint_file);
 
@@ -54,7 +42,7 @@ int main(int argc, char *argv[]) {
         alps::results_type<ising_sim>::type results = collect_results(sim);
 
         std::cout << results << std::endl;
-        alps::hdf5::archive ar(options.output_file, "w");
+        alps::hdf5::archive ar(parameters["output_file"], "w");
         ar["/parameters"] << parameters;
         ar["/simulation/results"] << results;
 

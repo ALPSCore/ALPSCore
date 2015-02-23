@@ -43,6 +43,8 @@ class ALPS_DECL ising_sim {
         results_type collect_results() const;
         results_type collect_results(result_names_type const & names) const;
 
+        static void define_parameters(parameters_type&);
+        
         void save(boost::filesystem::path const & filename) const;
         void load(boost::filesystem::path const & filename);
         void save(alps::hdf5::archive & ar) const;
