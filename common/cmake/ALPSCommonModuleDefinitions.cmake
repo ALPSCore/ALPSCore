@@ -131,3 +131,11 @@ macro(gen_find_module project_search_file_)
   install(FILES "${PROJECT_SOURCE_DIR}/../common/cmake/FindALPSCore.cmake" DESTINATION "share/cmake/Modules")
 endmacro(gen_find_module)
 
+macro(gen_header_only_find_module project_search_file_)
+  set(PROJECT_SEARCH_FILE ${project_search_file_})
+  configure_file("${PROJECT_SOURCE_DIR}/../common/cmake/FindALPSHeaderOnlyModule.cmake.in" "${PROJECT_BINARY_DIR}/Find${PROJECT_NAME}.cmake" @ONLY)
+  install(FILES "${PROJECT_BINARY_DIR}/Find${PROJECT_NAME}.cmake" DESTINATION "share/cmake/Modules")
+  install(FILES "${PROJECT_SOURCE_DIR}/../common/cmake/FindALPSCore.cmake" DESTINATION "share/cmake/Modules")
+endmacro(gen_header_only_find_module)
+
+

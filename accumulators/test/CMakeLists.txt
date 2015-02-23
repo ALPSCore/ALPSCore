@@ -11,6 +11,7 @@ set (test_src
     mult_by_constant
     weighted
     nonexistent
+    acc_count_test
     )
 
 foreach(test ${test_src})

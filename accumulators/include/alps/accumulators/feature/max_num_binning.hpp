@@ -403,8 +403,13 @@ namespace alps {
                     {}
 
                     typename B::count_type count() const { 
-                        analyze();
+                        if (!m_mn_data_is_analyzed) { 
+                            return m_mn_elements_in_bin * m_mn_bins.size(); 
+                            }
+                        else { 
                         return m_mn_count;
+                            };
+                        //analyze();
                     }
 
                     typename mean_type<B>::type const & mean() const {

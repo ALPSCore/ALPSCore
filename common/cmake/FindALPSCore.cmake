@@ -8,7 +8,8 @@
 
 list(APPEND CMAKE_MODULE_PATH ${ALPS_ROOT}/share/cmake/Modules)
 
-list(APPEND known_components hdf5 accumulators params mc)
+# Create a list of know components
+list(APPEND known_components hdf5 accumulators params mc python)
 
 # Start searching from utility
 find_package(alps-utilities)
@@ -36,11 +37,13 @@ foreach(component ${ALPSCore_FIND_COMPONENTS})
             list(APPEND ALPSCore_INCLUDES ${${alps_module}_INCLUDE_DIRS}) 
         endif(${is_already_there} EQUAL -1)
 
-        # Add libraries (do not add more than once)
-        list(FIND ALPSCore_LIBRARIES ${${alps_module}_LIBRARIES} is_already_there)
-        if (${is_already_there} EQUAL -1)
-            list(APPEND ALPSCore_LIBRARIES ${${alps_module}_LIBRARIES})
-        endif(${is_already_there} EQUAL -1)
+        if (NOT ${${alps_module}_LIBRARIES} STREQUAL "")
+            # Add libraries (do not add more than once)
+            list(FIND ALPSCore_LIBRARIES ${${alps_module}_LIBRARIES} is_already_there)
+            if (${is_already_there} EQUAL -1)
+                list(APPEND ALPSCore_LIBRARIES ${${alps_module}_LIBRARIES})
+            endif(${is_already_there} EQUAL -1)
+        endif (NOT ${${alps_module}_LIBRARIES} STREQUAL "")
     endif()
 endforeach()
 
