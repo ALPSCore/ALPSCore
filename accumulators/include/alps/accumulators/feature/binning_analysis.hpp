@@ -36,6 +36,9 @@
 #include <limits>
 #include <stdexcept>
 
+// FIXME:DEBUG:
+#include "boost/assert.hpp"
+
 namespace alps {
     namespace accumulators {
         // this should be called namespace tag { struct binning_analysis; }
@@ -159,8 +162,11 @@ namespace alps {
                         error_scalar_type one = 1;
 
                         error_scalar_type binlen = 1ll << bin_level;
+                        BOOST_ASSERT_MSG(bin_level<m_ac_count.size(),"bin_level within the range of m_ac_count");
                         error_scalar_type N_i = m_ac_count[bin_level];
+                        BOOST_ASSERT_MSG(bin_level<m_ac_sum.size(),"bin_level within the range of m_ac_sum");
                         error_type sum_i = m_ac_sum[bin_level];
+                        BOOST_ASSERT_MSG(bin_level<m_ac_sum2.size(),"bin_level within the range of m_ac_sum2");
                         error_type sum2_i = m_ac_sum2[bin_level];
                         error_type var_i = (sum2_i / binlen - sum_i * sum_i / (N_i * binlen)) / (N_i * binlen);
                         return sqrt(var_i / (N_i - one));
