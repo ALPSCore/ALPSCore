@@ -36,9 +36,6 @@
 #include <limits>
 #include <stdexcept>
 
-// FIXME:DEBUG:
-#include "boost/assert.hpp"
-
 namespace alps {
     namespace accumulators {
         // this should be called namespace tag { struct binning_analysis; }
@@ -148,13 +145,17 @@ namespace alps {
                         using std::sqrt;
                         using alps::numeric::sqrt;
 
-                        if (bin_level > m_ac_sum2.size() - 8)
-                            bin_level = m_ac_sum2.size() < 8 ? 0 : m_ac_sum2.size() - 8;
+                        // FIXME: here and in other places there are magic numbers: 8, 7 (presumably 8-1) and 4 (presumably 8/2).
+                        if (m_ac_sum2.size()<8) {
+                            bin_level = 0;
+                        } else if (bin_level > m_ac_sum2.size() - 8) {
+                            bin_level = m_ac_sum2.size() - 8;
+                        }
 
                         typedef typename alps::accumulators::error_type<B>::type error_type;
                         typedef typename alps::hdf5::scalar_type<error_type>::type error_scalar_type;
 
-                        // if not enoght bins are available, return infinity
+                        // if not enough bins are available, return infinity
                         if (m_ac_sum2.size() < 2)
                             return alps::numeric::inf<error_type>();
 
@@ -162,11 +163,11 @@ namespace alps {
                         error_scalar_type one = 1;
 
                         error_scalar_type binlen = 1ll << bin_level;
-                        BOOST_ASSERT_MSG(bin_level<m_ac_count.size(),"bin_level within the range of m_ac_count");
+                        // BOOST_ASSERT_MSG(bin_level<m_ac_count.size(),"bin_level within the range of m_ac_count");
                         error_scalar_type N_i = m_ac_count[bin_level];
-                        BOOST_ASSERT_MSG(bin_level<m_ac_sum.size(),"bin_level within the range of m_ac_sum");
+                        // BOOST_ASSERT_MSG(bin_level<m_ac_sum.size(),"bin_level within the range of m_ac_sum");
                         error_type sum_i = m_ac_sum[bin_level];
-                        BOOST_ASSERT_MSG(bin_level<m_ac_sum2.size(),"bin_level within the range of m_ac_sum2");
+                        // BOOST_ASSERT_MSG(bin_level<m_ac_sum2.size(),"bin_level within the range of m_ac_sum2");
                         error_type sum2_i = m_ac_sum2[bin_level];
                         error_type var_i = (sum2_i / binlen - sum_i * sum_i / (N_i * binlen)) / (N_i * binlen);
                         return sqrt(var_i / (N_i - one));

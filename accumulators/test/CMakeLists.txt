@@ -1,6 +1,7 @@
 include(ALPSEnableTests)
 
 set (test_src
+    get_results
     add_accumulators
     count
     divide_accumulators
