@@ -13,6 +13,7 @@ set (test_src
     weighted
     nonexistent
     acc_count_test
+    save_load
     )
 
 foreach(test ${test_src})

@@ -89,7 +89,7 @@ namespace alps {
                     
                     void insert(std::string const & name, boost::shared_ptr<T> ptr){
                         if (has(name))
-                            throw std::out_of_range("There exists alrady an accumulator with the name: " + name + ALPS_STACKTRACE);
+                            throw std::out_of_range("There exists already an accumulator with the name: " + name + ALPS_STACKTRACE);
                         m_storage.insert(make_pair(name, ptr));
                     }
 
