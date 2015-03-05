@@ -279,6 +279,8 @@ namespace alps {
                         if (B::count())
                             ar["tau/partialbin"] = m_ac_sum;
                         ar["tau/data"] = m_ac_sum2;
+                        ar["tau/ac_count"] = m_ac_count; // FIXME: proper dataset name? to be saved always?
+                        ar["tau/ac_partial"] = m_ac_partial;  // FIXME: proper dataset name? to be saved always?
                     }
 
                     void load(hdf5::archive & ar) { // TODO: make archive const
@@ -286,6 +288,10 @@ namespace alps {
                         if (ar.is_data("tau/partialbin"))
                             ar["tau/partialbin"] >> m_ac_sum;
                         ar["tau/data"] >> m_ac_sum2;
+                        if (ar.is_data("tau/ac_count"))
+                            ar["tau/ac_count"] >> m_ac_count; // FIXME: proper dataset name?
+                        if (ar.is_data("tau/ac_partial"))
+                            ar["tau/ac_partial"] >> m_ac_partial;  // FIXME: proper dataset name?
                     }
 
                     static std::size_t rank() { return B::rank() + 1; }
