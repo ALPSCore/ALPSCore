@@ -12,6 +12,19 @@
 #include "gtest/gtest.h"
 // Test for saving/restoring accumulators and results to/from archives.
 
+// Service functions to generate scalar or vector data points
+template <typename T>
+T get_datum(T*)
+{
+  return T(0.5);
+}
+
+template <typename T>
+std::vector<T> get_datum(std::vector<T>*)
+{
+  return std::vector<T>(10, 0.5);
+}
+
 // using Google Test Fixture
 template <typename A>
 class AccumulatorTest : public ::testing::Test {
@@ -45,7 +58,7 @@ class AccumulatorTest : public ::testing::Test {
 
         // Generate more samples
         for(int count=0; count<howmany; ++count){
-            measurements["one_half"] << 0.5;
+            measurements["one_half"] << get_datum((value_type*)0);
         }
         nsamples+=howmany;
 
@@ -67,18 +80,38 @@ class AccumulatorTest : public ::testing::Test {
         const alps::accumulators::result_wrapper& res=results["one_half"];
         value_type xmean=res.mean<value_type>();
         
-        EXPECT_EQ(value_type(0.5), xmean);
+        EXPECT_EQ(get_datum((value_type*)0), xmean);
         EXPECT_EQ(nsamples, res.count());
     }
 };
+
+typedef std::vector<double> doublevec;
+typedef std::vector<float> floatvec;
 
 typedef ::testing::Types<
     alps::accumulators::MeanAccumulator<double>,
     alps::accumulators::NoBinningAccumulator<double>,
     alps::accumulators::LogBinningAccumulator<double>,
-    alps::accumulators::FullBinningAccumulator<double> > MyTypes;
+    alps::accumulators::FullBinningAccumulator<double>,
+
+    alps::accumulators::MeanAccumulator<float>,
+    alps::accumulators::NoBinningAccumulator<float>,
+    alps::accumulators::LogBinningAccumulator<float>,
+    alps::accumulators::FullBinningAccumulator<float>,
+
+    alps::accumulators::MeanAccumulator<floatvec>,
+    alps::accumulators::NoBinningAccumulator<floatvec>,
+    alps::accumulators::LogBinningAccumulator<floatvec>,
+    alps::accumulators::FullBinningAccumulator<floatvec>,
+
+    alps::accumulators::MeanAccumulator<doublevec>,
+    alps::accumulators::NoBinningAccumulator<doublevec>,
+    alps::accumulators::LogBinningAccumulator<doublevec>,
+    alps::accumulators::FullBinningAccumulator<doublevec> > MyTypes;
+
 
 TYPED_TEST_CASE(AccumulatorTest, MyTypes);
+
 
 // Saving and loading only
 TYPED_TEST(AccumulatorTest,SaveLoad)
