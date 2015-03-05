@@ -8,21 +8,28 @@
 
 #include "alps/config.hpp"
 #include "alps/accumulators.hpp"
+#include "alps/utilities/temporary_filename.hpp"
 #include "alps/hdf5.hpp"
 #include "gtest/gtest.h"
 // Test for saving/restoring accumulators and results to/from archives.
 
 // Service functions to generate scalar or vector data points
-template <typename T>
-T get_datum(T*)
+template <typename T, typename U>
+inline T get_datum(U val, T*)
 {
-  return T(0.5);
+  return val;
 }
 
-template <typename T>
-std::vector<T> get_datum(std::vector<T>*)
+template <typename T, typename U>
+inline std::vector<T> get_datum(U val, std::vector<T>*)
 {
-  return std::vector<T>(10, 0.5);
+  return std::vector<T>(10, val);
+}
+
+// Service function to generate a filename
+static inline std::string gen_fname()
+{
+  return alps::temporary_filename("save_load")+".h5";
 }
 
 // using Google Test Fixture
@@ -33,18 +40,22 @@ class AccumulatorTest : public ::testing::Test {
 
     unsigned int nsamples;
     std::string h5name;
+    double dval;
 
     AccumulatorTest() : nsamples(0) {}
 
     // Add measurements to an existing file, or start a new one if the name is given
-    void add_samples(const unsigned int howmany, const char* fname=0)
+    void add_samples(const unsigned int howmany,
+                     const std::string& fname="",
+                     const double v = 0.5)
     {
         alps::accumulators::accumulator_set measurements;
 
-        if (fname) {
-            // Initialize new name
+        if (!fname.empty()) {
+            // Initialize new name and fill value
             h5name = fname;
             nsamples = 0;
+            dval = v;
             // and create an accumulator
             measurements<<A("one_half");
         } else {
@@ -58,7 +69,7 @@ class AccumulatorTest : public ::testing::Test {
 
         // Generate more samples
         for(int count=0; count<howmany; ++count){
-            measurements["one_half"] << get_datum((value_type*)0);
+            measurements["one_half"] << get_datum(dval, (value_type*)0);
         }
         nsamples+=howmany;
 
@@ -80,7 +91,7 @@ class AccumulatorTest : public ::testing::Test {
         const alps::accumulators::result_wrapper& res=results["one_half"];
         value_type xmean=res.mean<value_type>();
         
-        EXPECT_EQ(get_datum((value_type*)0), xmean);
+        EXPECT_EQ(get_datum(dval, (value_type*)0), xmean);
         EXPECT_EQ(nsamples, res.count());
     }
 };
@@ -107,7 +118,8 @@ typedef ::testing::Types<
     alps::accumulators::MeanAccumulator<doublevec>,
     alps::accumulators::NoBinningAccumulator<doublevec>,
     alps::accumulators::LogBinningAccumulator<doublevec>,
-    alps::accumulators::FullBinningAccumulator<doublevec> > MyTypes;
+    alps::accumulators::FullBinningAccumulator<doublevec>
+    > MyTypes;
 
 
 TYPED_TEST_CASE(AccumulatorTest, MyTypes);
@@ -116,17 +128,25 @@ TYPED_TEST_CASE(AccumulatorTest, MyTypes);
 // Saving and loading only
 TYPED_TEST(AccumulatorTest,SaveLoad)
 {
-    this->add_samples(1000, "saveload.h5");
+    this->add_samples(1000, gen_fname(), 0.5);
     this->test_samples();
 }
 
 // Saving, adding and loading
 TYPED_TEST(AccumulatorTest,SaveAddLoad)
 {
-    this->add_samples(1000, "saveload.h5");
+    this->add_samples(1000, gen_fname(), 0.5);
     this->add_samples(500);
     this->test_samples();
 }
+
+// Saving and loading with number that differs in double and float
+TYPED_TEST(AccumulatorTest,SaveLoadConversion)
+{
+    this->add_samples(1, gen_fname(), 0.3);
+    this->test_samples();
+}
+
 
 
 int main(int argc, char **argv) {
