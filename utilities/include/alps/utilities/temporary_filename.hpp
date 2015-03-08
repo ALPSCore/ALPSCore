@@ -10,7 +10,10 @@
 #include <alps/config.hpp>
 #include <string>
 
-namespace alps { 
+namespace alps {
+  /** @brief Generates a random file name with a given prefix
+      @param prefix : the file prefix
+  */
   ALPS_DECL std::string temporary_filename(std::string prefix);
 }
 #endif // ALPS_UTILITY_TEMPORARU_FILENAME_HPP
