@@ -297,10 +297,11 @@ namespace alps {
                     static std::size_t rank() { return B::rank() + 1; }
                     static bool can_load(hdf5::archive & ar) { // TODO: make archive const
                         using alps::hdf5::get_extent;
-
+                        const char name[]="tau/data";
                         return B::can_load(ar)
-                            && ar.is_data("tau/data")
-                            && get_extent(T()).size() + 1 == ar.dimensions("tau/data")
+                            && ar.is_data(name)
+                            && ar.is_datatype<typename alps::hdf5::scalar_type<T>::type>(name)
+                            && get_extent(T()).size() + 1 == ar.dimensions(name)
                         ;
                     }
 
@@ -442,10 +443,11 @@ namespace alps {
                     static std::size_t rank() { return B::rank() + 1; }
                     static bool can_load(hdf5::archive & ar) { // TODO: make archive const
                         using alps::hdf5::get_extent;
-
+                        const char name[]="tau";
                         return B::can_load(ar)
-                            && ar.is_data("tau")
-                            && get_extent(T()).size() + 1 == ar.dimensions("tau")
+                            && ar.is_data(name)
+                            && ar.is_datatype<typename alps::hdf5::scalar_type<T>::type>(name)
+                            && get_extent(T()).size() + 1 == ar.dimensions(name)
                         ;
                     }
 

@@ -133,11 +133,12 @@ namespace alps {
                     static std::size_t rank() { return B::rank() + 1; }
                     static bool can_load(hdf5::archive & ar) { // TODO: make archive const
                         using alps::hdf5::get_extent;
-
+                        const char name[]="mean/error";
                         return B::can_load(ar)
-                            && ar.is_data("mean/error") 
-                            && boost::is_scalar<T>::value == ar.is_scalar("mean/error")
-                            && (boost::is_scalar<T>::value || get_extent(T()).size() == ar.dimensions("mean/error"))
+                            && ar.is_data(name) 
+                            && ar.is_datatype<error_scalar_type>(name)
+                            && boost::is_scalar<T>::value == ar.is_scalar(name)
+                            && (boost::is_scalar<T>::value || get_extent(T()).size() == ar.dimensions(name))
                         ;
                     }
 
@@ -220,11 +221,13 @@ namespace alps {
                     static std::size_t rank() { return B::rank() + 1; }
                     static bool can_load(hdf5::archive & ar) { // TODO: make archive const
                         using alps::hdf5::get_extent;
+                        const char name[]="mean/error";
 
                         return B::can_load(ar) 
-                            && ar.is_data("mean/error") 
-                            && boost::is_scalar<T>::value == ar.is_scalar("mean/error")
-                            && (boost::is_scalar<T>::value || get_extent(T()).size() == ar.dimensions("mean/error"))
+                            && ar.is_data(name) 
+                            && ar.is_datatype<error_scalar_type>(name)
+                            && boost::is_scalar<T>::value == ar.is_scalar(name)
+                            && (boost::is_scalar<T>::value || get_extent(T()).size() == ar.dimensions(name))
                         ;
                     }
 
