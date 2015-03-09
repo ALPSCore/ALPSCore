@@ -2,6 +2,7 @@ set (alps_utils_src
     # copyright.cpp //FIXME
     os.cpp
     temporary_filename.cpp
+    remove_extensions.cpp
     stacktrace.cpp
     signal.cpp
     parseargs.cpp
