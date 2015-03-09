@@ -36,6 +36,31 @@
 #include <limits>
 #include <stdexcept>
 
+// DEBUG: to force boost assertion to be an exception, to work nicely with google test
+#define BOOST_ENABLE_ASSERT_HANDLER
+#include "boost/assert.hpp"
+
+namespace boost {
+    inline void assertion_failed_msg(char const * expr, char const * msg, char const * function, char const * file, long line)
+    {
+        std::ostringstream errmsg;
+        errmsg << "Boost assertion " << expr << " failed in "
+               << function << ":\n"
+               << file << "(" << line << "): "
+               << msg;
+        throw std::logic_error(errmsg.str());
+    }
+
+    inline void assertion_failed(char const * expr, char const * function, char const * file, long line)
+    {
+        std::ostringstream errmsg;
+        errmsg << "Boost assertion " << expr << " failed in "
+               << function << ":\n"
+               << file << "(" << line << ")";
+        throw std::logic_error(errmsg.str());
+    }
+}
+
 namespace alps {
     namespace accumulators {
         // this should be called namespace tag { struct binning_analysis; }
@@ -145,13 +170,17 @@ namespace alps {
                         using std::sqrt;
                         using alps::numeric::sqrt;
 
-                        if (bin_level > m_ac_sum2.size() - 8)
-                            bin_level = m_ac_sum2.size() < 8 ? 0 : m_ac_sum2.size() - 8;
+                        // FIXME: here and in other places there are magic numbers: 8, 7 (presumably 8-1) and 4 (presumably 8/2).
+                        if (m_ac_sum2.size()<8) {
+                            bin_level = 0;
+                        } else if (bin_level > m_ac_sum2.size() - 8) {
+                            bin_level = m_ac_sum2.size() - 8;
+                        }
 
                         typedef typename alps::accumulators::error_type<B>::type error_type;
                         typedef typename alps::hdf5::scalar_type<error_type>::type error_scalar_type;
 
-                        // if not enoght bins are available, return infinity
+                        // if not enough bins are available, return infinity
                         if (m_ac_sum2.size() < 2)
                             return alps::numeric::inf<error_type>();
 
@@ -159,8 +188,11 @@ namespace alps {
                         error_scalar_type one = 1;
 
                         error_scalar_type binlen = 1ll << bin_level;
+                        BOOST_ASSERT_MSG(bin_level<m_ac_count.size(),"bin_level within the range of m_ac_count");
                         error_scalar_type N_i = m_ac_count[bin_level];
+                        BOOST_ASSERT_MSG(bin_level<m_ac_sum.size(),"bin_level within the range of m_ac_sum");
                         error_type sum_i = m_ac_sum[bin_level];
+                        BOOST_ASSERT_MSG(bin_level<m_ac_sum2.size(),"bin_level within the range of m_ac_sum2");
                         error_type sum2_i = m_ac_sum2[bin_level];
                         error_type var_i = (sum2_i / binlen - sum_i * sum_i / (N_i * binlen)) / (N_i * binlen);
                         return sqrt(var_i / (N_i - one));
@@ -213,6 +245,9 @@ namespace alps {
                             check_size(m_ac_partial.back(), val);
                             m_ac_count.push_back(typename count_type<B>::type());
                         }
+                        BOOST_ASSERT_MSG(m_ac_partial.size() >= m_ac_sum2.size(), "m_ac_partial is as large as m_ac_sum2");
+                        BOOST_ASSERT_MSG(m_ac_count.size() >= m_ac_sum2.size(), "m_ac_count is as large as m_ac_sum2");
+                        BOOST_ASSERT_MSG(m_ac_sum.size() >= m_ac_sum2.size(), "m_ac_sum is as large as m_ac_sum2");
                         for (unsigned i = 0; i < m_ac_sum2.size(); ++i) {
                             m_ac_partial[i] += val;
                             if (!(B::count() & ((1ll << i) - 1))) {
@@ -244,6 +279,8 @@ namespace alps {
                         if (B::count())
                             ar["tau/partialbin"] = m_ac_sum;
                         ar["tau/data"] = m_ac_sum2;
+                        ar["tau/ac_count"] = m_ac_count; // FIXME: proper dataset name? to be saved always?
+                        ar["tau/ac_partial"] = m_ac_partial;  // FIXME: proper dataset name? to be saved always?
                     }
 
                     void load(hdf5::archive & ar) { // TODO: make archive const
@@ -251,15 +288,20 @@ namespace alps {
                         if (ar.is_data("tau/partialbin"))
                             ar["tau/partialbin"] >> m_ac_sum;
                         ar["tau/data"] >> m_ac_sum2;
+                        if (ar.is_data("tau/ac_count"))
+                            ar["tau/ac_count"] >> m_ac_count; // FIXME: proper dataset name?
+                        if (ar.is_data("tau/ac_partial"))
+                            ar["tau/ac_partial"] >> m_ac_partial;  // FIXME: proper dataset name?
                     }
 
                     static std::size_t rank() { return B::rank() + 1; }
                     static bool can_load(hdf5::archive & ar) { // TODO: make archive const
                         using alps::hdf5::get_extent;
-
+                        const char name[]="tau/data";
                         return B::can_load(ar)
-                            && ar.is_data("tau/data")
-                            && get_extent(T()).size() + 1 == ar.dimensions("tau/data")
+                            && ar.is_data(name)
+                            && ar.is_datatype<typename alps::hdf5::scalar_type<T>::type>(name)
+                            && get_extent(T()).size() + 1 == ar.dimensions(name)
                         ;
                     }
 
@@ -401,10 +443,11 @@ namespace alps {
                     static std::size_t rank() { return B::rank() + 1; }
                     static bool can_load(hdf5::archive & ar) { // TODO: make archive const
                         using alps::hdf5::get_extent;
-
+                        const char name[]="tau";
                         return B::can_load(ar)
-                            && ar.is_data("tau")
-                            && get_extent(T()).size() + 1 == ar.dimensions("tau")
+                            && ar.is_data(name)
+                            && ar.is_datatype<typename alps::hdf5::scalar_type<T>::type>(name)
+                            && get_extent(T()).size() + 1 == ar.dimensions(name)
                         ;
                     }
 

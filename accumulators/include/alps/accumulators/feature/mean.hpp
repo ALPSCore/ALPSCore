@@ -125,11 +125,12 @@ namespace alps {
                     static std::size_t rank() { return B::rank() + 1; }
                     static bool can_load(hdf5::archive & ar) { // TODO: make archive const
                         using alps::hdf5::get_extent;
-
+                        const char name[]="mean/value";
                         return B::can_load(ar)
-                            && ar.is_data("mean/value") 
-                            && boost::is_scalar<T>::value == ar.is_scalar("mean/value")
-                            && (boost::is_scalar<T>::value || get_extent(T()).size() == ar.dimensions("mean/value"))
+                            && ar.is_data(name)
+                            && ar.is_datatype<typename alps::hdf5::scalar_type<mean_type>::type>(name)
+                            && boost::is_scalar<T>::value == ar.is_scalar(name)
+                            && (boost::is_scalar<T>::value || get_extent(T()).size() == ar.dimensions(name))
                         ;
                     }
 
@@ -218,11 +219,12 @@ namespace alps {
                     static std::size_t rank() { return B::rank() + 1; }
                     static bool can_load(hdf5::archive & ar) { // TODO: make archive const
                         using alps::hdf5::get_extent;
-
+                        const char name[]="mean/value";
                         return B::can_load(ar) 
-                            && ar.is_data("mean/value") 
-                            && boost::is_scalar<T>::value == ar.is_scalar("mean/value")
-                            && (boost::is_scalar<T>::value || get_extent(T()).size() == ar.dimensions("mean/value"))
+                            && ar.is_data(name) 
+                            && ar.is_datatype<typename alps::hdf5::scalar_type<mean_type>::type>(name)
+                            && boost::is_scalar<T>::value == ar.is_scalar(name)
+                            && (boost::is_scalar<T>::value || get_extent(T()).size() == ar.dimensions(name))
                         ;
                     }
 

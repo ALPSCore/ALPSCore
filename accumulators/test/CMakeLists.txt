@@ -1,6 +1,7 @@
 include(ALPSEnableTests)
 
 set (test_src
+    get_results
     add_accumulators
     count
     divide_accumulators
@@ -12,6 +13,7 @@ set (test_src
     weighted
     nonexistent
     acc_count_test
+    save_load
     )
 
 foreach(test ${test_src})

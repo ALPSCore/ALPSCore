@@ -9,9 +9,12 @@
 #include <boost/filesystem.hpp>
 
 namespace alps {
+  /** @warning Current implementation provides not more than 32 bits
+      of randomness, which may have security implications.
+  */
   std::string temporary_filename(std::string name)
   {
-    name +="XXXXXX";
+    name +="%%%%%%%%";
 
     return boost::filesystem::unique_path(name).native();
   }
