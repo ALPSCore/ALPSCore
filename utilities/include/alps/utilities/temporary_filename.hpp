@@ -4,8 +4,8 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_UTILITY_TEMPORARU_FILENAME_HPP
-#define ALPS_UTILITY_TEMPORARU_FILENAME_HPP
+#ifndef ALPS_UTILITY_TEMPORARY_FILENAME_HPP
+#define ALPS_UTILITY_TEMPORARY_FILENAME_HPP
 
 #include <alps/config.hpp>
 #include <string>
@@ -16,4 +16,4 @@ namespace alps {
   */
   ALPS_DECL std::string temporary_filename(std::string prefix);
 }
-#endif // ALPS_UTILITY_TEMPORARU_FILENAME_HPP
+#endif // ALPS_UTILITY_TEMPORARY_FILENAME_HPP
