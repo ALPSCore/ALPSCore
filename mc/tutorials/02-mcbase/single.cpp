@@ -21,17 +21,17 @@
 int main(int argc, const char *argv[]) {
 
     try {
+        alps::parameters_type<ising_sim>::type parameters(argc,argv,"/parameters"); // reads from HDF5 if supplied
+        // if parameters are restored from the archive, all definitions are already there
+        if (!parameters.is_restored()) {
+          ising_sim::define_parameters(parameters); // parameters are defined here inside, ahead of the constructor
+        }
+        if (parameters.help_requested(std::cerr)) return EXIT_FAILURE; // Stop if help requested
+        std::string checkpoint_file=parameters["checkpoint"];
 
-        alps::params pars(argc,argv,"/parameters"); // reads from HDF5 if supplied
-        std::string checkpoint_file = pars.get_base_name().substr(0, pars.get_base_name().find_last_of('.')) +  ".clone0.h5";
+        ising_sim sim(parameters); 
 
-        alps::parameters_type<ising_sim>::type parameters(pars); // initializable from alps::params (and presumably is identical to it).
-        ising_sim::define_parameters(parameters); // parameters are defined here inside, ahead of the constructor
-        if (parameters.help_requested(std::cerr)) return 1; // Stop if help requested
-
-        ising_sim sim(parameters); // some of the options are used in the constructor, so we needed to define them in advance
-
-        if (parameters["continue"])
+        if (parameters.is_restored()) // if the parameters are restored from a checkpoint file
             sim.load(checkpoint_file);
 
         sim.run(alps::stop_callback(int(parameters["timelimit"])));
@@ -42,7 +42,7 @@ int main(int argc, const char *argv[]) {
         alps::results_type<ising_sim>::type results = collect_results(sim);
 
         std::cout << results << std::endl;
-        alps::hdf5::archive ar(parameters["output_file"], "w");
+        alps::hdf5::archive ar(parameters["outputfile"], "w");
         ar["/parameters"] << parameters;
         ar["/simulation/results"] << results;
 
