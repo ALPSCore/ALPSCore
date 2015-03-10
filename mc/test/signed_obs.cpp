@@ -43,7 +43,8 @@ int main(int argc, char* argv[]) {
     boost::mpi::communicator comm;
     alps::params p; 
     p["nsweeps"] = 100;
-    alps::mcmpiadapter<sim1> sim (p,comm, alps::check_schedule(0.001, 60));
+    sim1::define_parameters(p); // do parameters definitions
+   alps::mcmpiadapter<sim1> sim (p,comm, alps::check_schedule(0.001, 60));
     sim.run(alps::stop_callback(1));
     if (comm.rank() == 0) {
         alps::results_type<sim1>::type res = alps::collect_results(sim);

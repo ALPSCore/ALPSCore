@@ -49,6 +49,7 @@ int main() {
     boost::mpi::communicator comm;
     alps::params p;
     p["nsweeps"] = 10000;
+    sim1::define_parameters(p); // do parameters definitions
     alps::mcmpiadapter<sim1> sim (p,comm, alps::check_schedule(0.001, 60));
     sim.run(alps::stop_callback(1));
     if (comm.rank() == 0) {

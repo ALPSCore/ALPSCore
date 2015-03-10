@@ -69,7 +69,9 @@ TEST(mc, sum_mpi){
 
         alps::mcbase::parameters_type params;
         params["COUNT"]=1000;
-        broadcast(c, params);
+        my_sim_type::define_parameters(params); // do parameters definitions
+
+        broadcast(c, params, 0);
         
         int t_min_check=1, t_max_check=1, timelimit=1;
 
@@ -86,7 +88,7 @@ TEST(mc, sum_mpi){
             using std::sin;
             std::cout << results["SValue"] + 1 << std::endl;
             std::cout << results["SValue"] + results["SValue"] << std::endl;
-            save_results(results, params, alps::temporary_filename("sum_mpi") , "/simulation/results");
+            alps::save_results(results, params, alps::temporary_filename("sum_mpi") , "/simulation/results");
         } else
             collect_results(my_sim);
 }
