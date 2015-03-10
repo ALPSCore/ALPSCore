@@ -83,7 +83,7 @@ namespace alps {
          do not accept associated values, and are considered boolean and "true" if present, "false" if absent.
          E.g., a pre-defined parameter '--help' is a trigger parameter.
 
-    4. Allowed vector types: std::vector<T> for any scalar type T except std::string type.
+    4. Allowed vector types: std::vector<T> for any allowed scalar type T except std::string type.
 
     5. Way to define the parameters that are expected to be read from a file or command line:
 
@@ -99,7 +99,7 @@ namespace alps {
     5.1. It is a responsibility of the caller to check for the "--help" option.
          A convenience method checks for the option and outputs the description of the options.
 
-    5.2. A parameter assigned explicitly before its definition cannot be defined.
+    5.2. A parameter that has been assigned explicitly before its definition cannot be defined.
 
     6. List parameters of type T are defined as
 
@@ -107,7 +107,7 @@ namespace alps {
 
        and accessed as:
 
-        x=p["name"].as< std::vector<T> >();
+        std::vector<T> x=p["name"];                          // implicit type conversion
 
     List parameters cannot have a default value.
     Lists of strings are not supported (undefined behavior: may or may not work).
@@ -147,6 +147,10 @@ namespace alps {
     10. The state of a parameter object can be saved to and loaded from
     an HDF5 archive.
 
+    10.5. The parameter object can be constructed from an HDF5 archive
+    given in the command line; the rest of the command line is then
+    processed, overriding the options restored from the archive.
+
     11. The state of a parameter object can be broadcast over an MPI
     communicator. (FIXME: not yet implemented)
 
@@ -171,21 +175,21 @@ namespace alps {
               return boost::any_cast<T>(outval);
           }
 
-          /// Service function: output a vector
-          template <typename T>
-          std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec)
-          {
-              typedef std::vector<T> VT;
-              if (vec.empty()) return os;
-              typename VT::const_iterator it=vec.begin();
-              typename VT::const_iterator end=vec.end();
-              os << *it; // FIXME: possible stream errors ignored!
-              ++it;
-              for (; it!=end; ++it) {
-                  os << "," << *it;
-              }
-              return os;
-          }
+          // /// Service function: output a vector
+          // template <typename T>
+          // std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec)
+          // {
+          //     typedef std::vector<T> VT;
+          //     if (vec.empty()) return os;
+          //     typename VT::const_iterator it=vec.begin();
+          //     typename VT::const_iterator end=vec.end();
+          //     os << *it; // FIXME: possible stream errors ignored!
+          //     ++it;
+          //     for (; it!=end; ++it) {
+          //         os << "," << *it;
+          //     }
+          //     return os;
+          // }
         
           // template <typename T>
           // void printout(std::ostream& os, const boost::any& val)
@@ -232,13 +236,13 @@ namespace alps {
           boost::optional<std::string> archname_; ///< Archive name (if restored from archive)
 
           /// Parses the parameter file, filling the option map, and using the provided options_description instance
-          void certainly_parse(boost::program_options::options_description&) const;
+          void certainly_parse(boost::program_options::options_description&, bool reassign=false) const;
             
           /// Parses the parameter file, filling the option map.
-          void certainly_parse() const
+          void certainly_parse(bool reassign=false) const
           {
               boost::program_options::options_description odescr;
-              certainly_parse(odescr);
+              certainly_parse(odescr,reassign);
           }
         
           /// Parses the parameters if not already parsed.
@@ -328,45 +332,53 @@ namespace alps {
               throw not_restored("This instance of parameters was not restored from an archive");
           }
 
-          /// Returns the "base name": (parameter file name) || (restart file name) || (program name) || (empty string)
-          std::string get_base_name() const
-          {
-              if (!infile_.empty()) return infile_;
-              if (archname_) return *archname_;
-              return argv0_;
-          }
-          
+          /// @brief Convenience function: returns the "origin name"
+          /// @Returns (parameter_file_name || restart_file name || program_name || "")
+          std::string get_origin_name() const;
+        
           /** Returns number of parameters (size of the map) */
           std::size_t size() const { possibly_parse(); return optmap_.size(); }
 
-          /** Erase a parameter */
-          void erase(std::string const& k) { possibly_parse(); optmap_.erase(k); }
+          // /** Erase a parameter. FIXME: semantics?? */
+          // void erase(std::string const& k)
+          // {
+          //     throw std::logic_error("Called erase('"+key+"'): semantics is not yet clearly defined.");
+          //     possibly_parse(); optmap_.erase(k);
+          // }
 
-          /** Check if the parameter is present. FIXME: semantics?? */
-          bool defined(std::string const & key) const
+          /** Access a parameter: read-only */
+          const mapped_type& operator[](const std::string& k) const
           {
-              throw std::logic_error("Called defined('"+key+"'): semantic is not yet clearly defined.");
               possibly_parse();
-              return (optmap_.count(key)!=0);
+              return optmap_[k];
           }
 
-          /** Returns iterator to the beginning of the option map */
-          iterator begin() { possibly_parse(); return optmap_.begin(); }
+          /** Access a parameter: possibly for assignment */
+          mapped_type& operator[](const std::string& k)
+          {
+              possibly_parse();
+              return optmap_[k];
+          }
+
+          // /** Check if the parameter is present. FIXME: semantics?? */
+          // bool defined(std::string const & key) const
+          // {
+          //     throw std::logic_error("Called defined('"+key+"'): semantics is not yet clearly defined.");
+          //     possibly_parse();
+          //     return (optmap_.count(key)!=0);
+          // }
+
+          // /** Returns iterator to the beginning of the option map */
+          // iterator begin() { possibly_parse(); return optmap_.begin(); }
             
           /** Returns iterator to the beginning of the option map */
           const_iterator begin() const { possibly_parse(); return optmap_.begin(); }
 
-          /** Iterator to the beyond-the-end of the option map */
-          iterator end() { possibly_parse(); return optmap_.end(); }
+          // /** Iterator to the beyond-the-end of the option map */
+          // iterator end() { possibly_parse(); return optmap_.end(); }
 
           /** Iterator to the beyond-the-end of the option map */
           const_iterator end() const { possibly_parse(); return optmap_.end(); }
-
-          /** Access a parameter: read-only */
-          const mapped_type& operator[](const std::string& k) const;
-
-          /** Access a parameter --- possibly for assignment */
-          mapped_type& operator[](const std::string& k);
 
           /// Save parameters to HDF5 archive
           void save(hdf5::archive &) const;

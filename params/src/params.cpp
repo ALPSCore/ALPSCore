@@ -13,6 +13,8 @@
 
 #include "boost/optional.hpp"
 
+// #include "boost/filesystem.hpp"
+
 // Serialization headers:
 #include "boost/archive/text_oarchive.hpp"
 #include "boost/archive/text_iarchive.hpp"
@@ -53,12 +55,6 @@ namespace alps {
   
         namespace po=boost::program_options;
     
-        /// Constructor from command line and a parameter file. The parsing is deferred.
-        /** Tries to see if the file is an HDF5, in which case restores the object from the
-            HDF5 file, ignoring the command line.
-            @param hdfpath : path to HDF5 dataset containing the saved parameter object
-            (0 if this functionality is not needed)
-        */
         params::params(unsigned int argc, const char* argv[], const char* hdfpath)
         {
             if (argc>0) argv0_=argv[0];
@@ -70,8 +66,10 @@ namespace alps {
                         boost::optional<alps::hdf5::archive> ar=try_open_ar(infile_, "r");
                         if (ar) {
                             this->load(*ar, hdfpath);
-                            archname_=argv[1];
-                            return; // nothing else to be done
+                            archname_=argv[1]; 
+                            infile_.clear();
+                            argvec_.clear();
+                            argv0_=argv[0];
                         }
                     }
                     // skip the first argument
@@ -81,23 +79,27 @@ namespace alps {
                 // save the command line
                 std::transform(argv+1,argv+argc, std::back_inserter(argvec_), cstr2string());
             }
-            init();
+            if (is_restored()) {
+                // re-parse the command line (overriding values)
+                // and skip default initialization
+                certainly_parse(true);
+            } else {
+                // no use to parse command line, default init is needed
+                init();
+            }
         }
 
-        /** Access a parameter: read-only */
-        const params::mapped_type& params::operator[](const std::string& k) const
+        /// @brief Convenience function: returns the "origin name"
+        /// @Returns (parameter_file_name || restart_file name || program_name || "")
+        // Rationale: the "origin name" is a useful info, otherwise
+        // inaccessible. But it is a caller's responsibility to make
+        // sense of it.
+        std::string params::get_origin_name() const
         {
-            possibly_parse();
-            return optmap_[k];
+            if (!infile_.empty()) return infile_;
+            if (archname_) return *archname_;
+            return argv0_;
         }
-
-        /** Access a parameter: possibly for assignment */
-        params::mapped_type& params::operator[](const std::string& k)
-        {
-            possibly_parse();
-            return optmap_[k];
-        }
-
 
         /// Function to check for validity/redefinition of an option (throws!)
         void params::check_validity(const std::string& optname) const
@@ -118,7 +120,7 @@ namespace alps {
         }
         
         
-        void params::certainly_parse(po::options_description& odescr) const
+        void params::certainly_parse(po::options_description& odescr, bool reassign) const
         {
             // First, create program_options::options_description from the description map
             BOOST_FOREACH(const detail::description_map_type::value_type& kv, descr_map_)
@@ -148,17 +150,28 @@ namespace alps {
             }
 
             // Now for each defined option, copy the corresponding parsed option to the this's option map
-            // NOTE#1: If file has changed since the last parsing, option values will NOT be reassigned!
-            // (only options that are not yet in optmap_ are affected here,
-            // to avoid overwriting an option that was assigned earlier.)
-            // NOTE#2: The loop is over the content of the define()'d options (descr_map_)
-            // so that options that are defined but are not in the command line and are without default will be set:
-            // it is needed for "trigger" options. It may also be an opportunity to distinguish between
-            // options that are define()'d but are missing and those which were never even define()'d.
+
+            // NOTE#1: If file has changed since the last parsing,
+            //         option values will NOT be reassigned!  (only
+            //         options that are not yet in optmap_ are
+            //         affected here, to avoid overwriting an option
+            //         that was assigned earlier) --- unless @param
+            //         reassign is set to true, indicating that the
+            //         command line options take precedence.
+            // NOTE#2:
+            //         The loop is over the content of the define()'d
+            //         options (descr_map_) so that options that are
+            //         defined but are not in the command line and are
+            //         without default will be set: it is needed for
+            //         "trigger" options. It may also be an
+            //         opportunity to distinguish between options that
+            //         are define()'d but are missing and those which
+            //         were never even define()'d.
+            
             BOOST_FOREACH(const detail::description_map_type::value_type& slot, descr_map_) {
                 const std::string& k=slot.first;
                 const detail::description_map_type::mapped_type& dscval=slot.second;
-                if (optmap_.count(k)) continue; // skip the keys that are already there
+                if (optmap_.count(k) && !reassign) continue; // skip the keys that are already there
                 dscval.set_option(optmap_[k], vm[k].value());
             }
             is_valid_=true;
