@@ -171,7 +171,13 @@ namespace alps {
             BOOST_FOREACH(const detail::description_map_type::value_type& slot, descr_map_) {
                 const std::string& k=slot.first;
                 const detail::description_map_type::mapped_type& dscval=slot.second;
-                if (optmap_.count(k) && !reassign) continue; // skip the keys that are already there
+                if (reassign) {
+                    // options in the command line must override stored options
+                    if (vm[k].empty() || vm[k].defaulted()) continue; // skip options missing from cmdline
+                } else {
+                    // no override, stored options take precedence
+                    if (optmap_.count(k)) continue; // skip the keys that are already stored and have value assigned
+                }
                 dscval.set_option(optmap_[k], vm[k].value());
             }
             is_valid_=true;
