@@ -23,6 +23,11 @@
 
 #include "alps/params.hpp"
 
+#ifdef ALPS_HAVE_MPI
+#include "boost/mpi/collectives.hpp"
+#endif
+
+
 // /* Supported parameter types: */
 // #ifndef ALPS_PARAMS_SUPPORTED_TYPES
 // #define ALPS_PARAMS_SUPPORTED_TYPES (5, (int,unsigned,double,bool,std::string))
@@ -232,6 +237,12 @@ namespace alps {
             return false;
         }        
 
+#ifdef ALPS_HAVE_MPI
+        void params::broadcast(boost::mpi::communicator const & comm, int root)
+        {
+            boost::mpi::broadcast(comm, *this, root);
+        }
+#endif
     } // params_ns
 } // alps
 
