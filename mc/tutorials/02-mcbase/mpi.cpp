@@ -10,6 +10,7 @@
 #include <alps/mc/parseargs.hpp>
 #include <alps/mc/mpiadapter.hpp>
 #include <alps/mc/stop_callback.hpp>
+#include "alps/utilities/remove_extensions.hpp"
 // #include <alps/ngs/make_parameters_from_xml.hpp>
 
 #include <boost/chrono.hpp>
@@ -26,25 +27,26 @@ int main(int argc, char *argv[]) {
         boost::mpi::environment env(argc, argv);
         boost::mpi::communicator comm;
 
-        alps::parseargs options(argc, argv);
-        std::string checkpoint_file = options.input_file.substr(0, options.input_file.find_last_of('.')) 
-                                    +  ".clone" + boost::lexical_cast<std::string>(comm.rank()) + ".h5";
-
         alps::parameters_type<ising_sim>::type parameters;
-        // only load parameter if rank is 0 and brcast them to other ranks, els do nothing
-        if (comm.rank() > 0)
-            /* do nothing */ ;
-        // else if (boost::filesystem::extension(options.input_file) == ".xml")
-        //     parameters = alps::make_parameters_from_xml(options.input_file);
-        else if (boost::filesystem::extension(options.input_file) == ".h5")
-            alps::hdf5::archive(options.input_file)["/parameters"] >> parameters;
-        else
-            parameters = alps::parameters_type<ising_sim>::type(options.input_file);
-        broadcast(comm, parameters);
+        if (comm.rank() == 0) {
+            // on master:
+            alps::parameters_type<ising_sim>::type p(argc, (const char**)argv, "/parameters"); // reads from HDF5 if supplied
+            // if parameters are restored from the archive, all definitions are already there
+            if (!p.is_restored()) {
+                ising_sim::define_parameters(p);
+            }
+            parameters=p;
+        }
+        broadcast(comm, parameters, 0); // all slaves get parameters from the master
+        
+        if (parameters.help_requested(std::cerr)) return EXIT_FAILURE; // Stop if help requested
+        std::string checkpoint_file=alps::remove_extensions(parameters.get_origin_name())
+            + ".clone" + boost::lexical_cast<std::string>(comm.rank()) + ".h5";
 
-        alps::mcmpiadapter<ising_sim> sim(parameters, comm, alps::check_schedule(options.tmin, options.tmax));
+        alps::mcmpiadapter<ising_sim> sim(parameters, comm, alps::check_schedule(parameters["Tmin"],
+                                                                                 parameters["Tmax"]));
 
-        if (options.resume)
+        if (parameters.is_restored())
             sim.load(checkpoint_file);
 
         // TODO: how do we handle signels in mpi context? do we want to handle these in the callback or in the simulation?
@@ -52,7 +54,7 @@ int main(int argc, char *argv[]) {
         //  Additionally this causes a race cond and deadlocks as mcmpiadapter::run will always call the stop_callback broadcast
         //  but only sometimes all_reduce on the fraction. Timers on different procs are not synchronized so they may not agree
         //  on the mpi call.
-        sim.run(alps::stop_callback(comm, options.timelimit));
+        sim.run(alps::stop_callback(comm, parameters["timelimit"]));
 
         sim.save(checkpoint_file);
 
@@ -61,7 +63,7 @@ int main(int argc, char *argv[]) {
 
         if (comm.rank() == 0) {
             std::cout << results << std::endl;
-            alps::hdf5::archive ar(options.output_file, "w");
+            alps::hdf5::archive ar(parameters["outputfile"], "w");
             ar["/parameters"] << parameters;
             ar["/simulation/results"] << results;
         }

@@ -8,8 +8,9 @@ if (ENABLE_MPI)
 	add_executable(tutorial_02_mpi ising.cpp mpi.cpp)
 	target_link_libraries(tutorial_02_mpi ${PROJECT_NAME} ${LINK_ALL})
 
-	add_executable(tutorial_02_pscan ising.cpp mpi_pscan.cpp)
-	target_link_libraries(tutorial_02_pscan ${PROJECT_NAME} ${LINK_ALL})
+        #FIXME: removed for now!
+	#add_executable(tutorial_02_pscan ising.cpp mpi_pscan.cpp)
+	#target_link_libraries(tutorial_02_pscan ${PROJECT_NAME} ${LINK_ALL})
 
 endif(ENABLE_MPI)
 
