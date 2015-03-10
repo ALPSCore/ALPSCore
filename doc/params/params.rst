@@ -15,19 +15,19 @@ Interface:
 
 #. The parameters are accessed this way: ::
 
-     params p(argc,argv);
-     // ...parameter definition...
-     double t=p["Temp"];  // implicit type cast
-     double t2=p["Temp"].as<double>()+123.4; // explicit type cast
+        params p(argc,argv);
+        // ...parameter definition...
+        double t=p["Temp"];  // implicit type cast
+        double t2=p["Temp"].as<double>()+123.4; // explicit type cast
 
-An undefined parameter cannot be accessed (throws exception).
+   An undefined parameter cannot be accessed (throws exception).
 
 #. The parameters can also be assigned this way: ::
-                   
-     double t=300;
-     p["Temp"]=t; // creates a parameter of type double
 
-Once assigned, parameter type cannot be changed.
+        double t=300;
+        p["Temp"]=t; // creates a parameter of type double
+
+   Once assigned, parameter type cannot be changed.
 
 #. An attempt to read a parameter of a different type results in a silent type casting between the scalar types,
    and results in exception if any of the types (LHS or RHS) are vector types or strings.
@@ -44,13 +44,13 @@ Once assigned, parameter type cannot be changed.
    file or command line: ::
 
         p.description("The description for --help")
-          .define<int>("L", 50, "optional int parameter L with default 50")
-          .define<double>("T", "required double parameter T with no default")
-          .define("continue", "trigger parameter with boolean value")
+         .define<int>("L", 50, "optional int parameter L with default 50")
+         .define<double>("T", "required double parameter T with no default")
+         .define("continue", "trigger parameter with boolean value")
         ;
 
-*NOTE*: definition of both short and long variants of a parameter name,
-while allowed by ``boost::program_options``, is prohibited by this library.
+   *NOTE*: definition of both short and long variants of a parameter name,
+   while allowed by ``boost::program_options``, is prohibited by this library.
 
 #. It is a responsibility of the caller to check for the ``--help`` flag.
    A convenience method checks for the option and outputs the description of the options.
@@ -59,15 +59,16 @@ while allowed by ``boost::program_options``, is prohibited by this library.
 
 #. List parameters of type T are defined as ::
 
-     p.define< std::vector<T> >("name","description");
+        p.define< std::vector<T> >("name","description");
 
-and accessed as: ::
+   and accessed as: ::
 
-     std::vector<T> x=p["name"];                          // implicit type cast
-     size_t len=p["name"].as< std::vector<T> >().size();  // explicit type cast
+        std::vector<T> x=p["name"];                          // implicit type cast
+        size_t len=p["name"].as< std::vector<T> >().size();  //
+        explicit type cast
 
-List parameters cannot have a default value.
-Lists of strings are not supported (undefined behavior: may or may not work).
+   List parameters cannot have a default value.
+   Lists of strings are not supported (undefined behavior: may or may not work).
 
 #. Parameters can *NOT* be redefined. That means that subclasses that rely
    on their base class's parameter definitions must come up with
@@ -107,18 +108,18 @@ Implementation notes
    given in the command line. The command-line options take priority
    over file options. The following specifications are devised:
 
-1) The parser and the option map are combined --- it makes a user's life easier.
+        #) The parser and the option map are combined --- it makes a user's life easier.
                           
-2) The parameters can be defined any time --- probably in the constructor
-   of the class that uses them. *However*, see a limitation below.
+        #) The parameters can be defined any time --- probably in the constructor
+           of the class that uses them. *However*, see a limitation below.
 
-3) Defining an option invalidates the object state, requesting
-   re-parsing.
+        #) Defining an option invalidates the object state, requesting
+           re-parsing.
 
-4) *Therefore*, currently an attempt to
-   define a parameter after loading the parameters object from an
-   archive or receiving it by MPI broadcast results in undefined
-   behavior (in particular, because the INI file may not be available).
+        #) *Therefore*, currently an attempt to
+           define a parameter after loading the parameters object from an
+           archive or receiving it by MPI broadcast results in undefined
+           behavior (in particular, because the INI file may not be available).
 
-5) Parsing occurs and the parameter map is populated at the first access to the parameters ("lazy parsing").
+        #) Parsing occurs and the parameter map is populated at the first access to the parameters ("lazy parsing").
 
