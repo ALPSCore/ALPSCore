@@ -314,6 +314,7 @@ namespace alps {
           /// Interface to serialization
           template<class Archive> void serialize(Archive & ar, const unsigned int)
           {
+              possibly_parse();
               ar  & is_valid_
                   & archname_
                   & optmap_
