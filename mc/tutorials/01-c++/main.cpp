@@ -9,10 +9,11 @@
 #include <alps/mc/api.hpp>
 #include <alps/mc/parseargs.hpp>
 #include <alps/mc/stop_callback.hpp>
+#include "alps/utilities/remove_extensions.hpp"
 // #include <alps/ngs/make_parameters_from_xml.hpp>
 
 #include <boost/chrono.hpp>
-#include <boost/filesystem/path.hpp>
+// #include <boost/filesystem/path.hpp>
 
 #include <string>
 #include <iostream>
@@ -20,21 +21,22 @@
 
 int main(int argc, const char *argv[]) {
 
-    try {
+     try {
         typedef alps::parameters_type<ising_sim>::type params_type;
         params_type parameters(argc, argv, "/parameters"); // reads from HDF5 if need be
         
-        std::string checkpoint_file = boost::filesystem::path(parameters.get_base_name()).replace_extension(".clone0.h5").string();
-
+        std::string checkpoint_file;
         if (parameters.is_restored()) {
             checkpoint_file = parameters.get_archive_name();
         } else {
-            parameters
-                .define<double>("timelimit", "Time limit")
-                .define<std::string>("output_file", "Name of the output file");
             ising_sim::define_parameters(parameters);
+            checkpoint_file=alps::remove_extensions(parameters.get_origin_name())+".clone0.h5";
         }
         if (parameters.help_requested(std::cerr)) return 1; // Stop if help requested.
+
+        if (parameters["output_file"].as<std::string>().empty()) {
+            parameters["output_file"] = alps::remove_extensions(parameters.get_origin_name()) + ".out.h5";
+        }
 
         ising_sim sim(parameters);
 

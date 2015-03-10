@@ -15,7 +15,10 @@ void ising_sim::define_parameters(parameters_type& params)
         .define<int>("L", "Simulation length")
         .define<int>("THERMALIZATION", "Number of thermalization sweeps")
         .define<int>("SWEEPS", "Total sweeps")
-        .define<double>("T", "Simulation temperature");
+        .define<double>("T", "Simulation temperature")
+        .define<double>("timelimit", 0, "Time limit")
+        .define<std::string>("output_file", "", "Name of the output file");
+    ;
 }
 
 ising_sim::ising_sim(parameters_type const & params)
