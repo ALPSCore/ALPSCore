@@ -60,7 +60,8 @@ namespace alps {
 
         params p(argc,argv);
         // ...parameter definition...
-        double t=p["Temp"];
+        double t=p["Temp"];  // implicit type cast
+        double t2=p["Temp"].as<double>()+123.4; // explicit type cast
 
         An undefined parameter cannot be accessed (throws exception).
 
@@ -107,7 +108,8 @@ namespace alps {
 
        and accessed as:
 
-        std::vector<T> x=p["name"];                          // implicit type conversion
+        std::vector<T> x=p["name"];                          // implicit type cast
+        size_t len=p["name"].as< std::vector<T> >().size();  // explicit type cast
 
     List parameters cannot have a default value.
     Lists of strings are not supported (undefined behavior: may or may not work).

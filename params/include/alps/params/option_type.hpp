@@ -209,6 +209,14 @@ namespace alps {
                 }
             }
 
+            /// Explicit conversion to a generic type T
+            template <typename T>
+            T as() const
+            {
+                return *this;
+            }
+                
+
             // /// Assignment from boost::any containing type T
             // template <typename T>
             // void assign_any(const boost::any& aval)
@@ -216,7 +224,7 @@ namespace alps {
             //     val_=boost::any_cast<T>(aval);
             // }
 
-            // /// Constructor preserving the option name
+            /// Constructor preserving the option name
             option_type(const std::string& a_name):
                 name_(a_name) {}
 
@@ -224,7 +232,7 @@ namespace alps {
             // FIXME: can i avoid it?
             option_type()
                 : name_("**UNINITIALIZED**") {}
-                
+
         private:
             friend class boost::serialization::access;
 
