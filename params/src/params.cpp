@@ -200,6 +200,7 @@ namespace alps {
 
         void params::save(hdf5::archive& ar, const std::string& path) const
         {
+            possibly_parse();
             std::string context = ar.get_context();
             ar.set_context(path);
             save(ar);
@@ -240,6 +241,7 @@ namespace alps {
 #ifdef ALPS_HAVE_MPI
         void params::broadcast(boost::mpi::communicator const & comm, int root)
         {
+            if (comm.rank()==root) possibly_parse();
             boost::mpi::broadcast(comm, *this, root);
         }
 #endif
