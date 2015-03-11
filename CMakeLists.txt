@@ -16,6 +16,9 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/./common/cmake)
 # check that compiler version is OK.
 include(ALPSCompilerVersionCheck)
 
+# take care of compiler-specific tweaks
+include(ALPSCompilerTweaks)
+
 # ALPS_GLOBAL_BUILD means building project all at once
 set(ALPS_GLOBAL_BUILD true)
 
