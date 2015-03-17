@@ -17,19 +17,19 @@ TEST(param,assignments)
     alps::params parms;
     
     ALPS_ASSIGN_PARAM(char);
-    ALPS_ASSIGN_PARAM(signed char);
-    ALPS_ASSIGN_PARAM(unsigned char);
-    ALPS_ASSIGN_PARAM(short);
-    ALPS_ASSIGN_PARAM(unsigned short);
+    // ALPS_ASSIGN_PARAM(signed char);
+    // ALPS_ASSIGN_PARAM(unsigned char);
+    // ALPS_ASSIGN_PARAM(short);
+    // ALPS_ASSIGN_PARAM(unsigned short);
     ALPS_ASSIGN_PARAM(int);
     ALPS_ASSIGN_PARAM(unsigned);
     ALPS_ASSIGN_PARAM(long);
     ALPS_ASSIGN_PARAM(unsigned long);
-    ALPS_ASSIGN_PARAM(long long);
-    ALPS_ASSIGN_PARAM(unsigned long long);
-    ALPS_ASSIGN_PARAM(float);
+    // ALPS_ASSIGN_PARAM(long long);
+    // ALPS_ASSIGN_PARAM(unsigned long long);
+    // ALPS_ASSIGN_PARAM(float);
     ALPS_ASSIGN_PARAM(double);
-    ALPS_ASSIGN_PARAM(long double);
+    // ALPS_ASSIGN_PARAM(long double);
 
     parms["bool"] = true;
     parms["cstring"] = "asdf";
@@ -40,38 +40,26 @@ TEST(param,assignments)
     parms["dblvec"] = vd;
   
     ALPS_TEST_PARAM(char);
-    ALPS_TEST_PARAM(signed char);
-    ALPS_TEST_PARAM(unsigned char);
-    ALPS_TEST_PARAM(short);
-    ALPS_TEST_PARAM(unsigned short);
+    // ALPS_TEST_PARAM(signed char);
+    // ALPS_TEST_PARAM(unsigned char);
+    // ALPS_TEST_PARAM(short);
+    // ALPS_TEST_PARAM(unsigned short);
     ALPS_TEST_PARAM(int);
     ALPS_TEST_PARAM(unsigned);
     ALPS_TEST_PARAM(long);
     ALPS_TEST_PARAM(unsigned long);
-    ALPS_TEST_PARAM(long long);
-    ALPS_TEST_PARAM(unsigned long long);
-    ALPS_TEST_PARAM(float);
+    // ALPS_TEST_PARAM(long long);
+    // ALPS_TEST_PARAM(unsigned long long);
+    // ALPS_TEST_PARAM(float);
     ALPS_TEST_PARAM(double);
-    ALPS_TEST_PARAM(long double);
+    // ALPS_TEST_PARAM(long double);
 
     EXPECT_TRUE(bool(parms["bool"]));
     EXPECT_EQ(parms["cstring"],std::string("asdf"));
     EXPECT_EQ(parms["std::string"],std::string("asdf"));
 
     EXPECT_EQ(parms["dblvec"],vd);
-
-    // FIXME!!! Not yet implemented!!!
-    // std::cout << std::boolalpha << parms << std::endl;
 }
-
-void In_exception(const std::exception& x)
-{
-    return;
-}
-
-// void Test()
-// #undef EXPECT_THROW
-// #define EXPECT_THROW(s, e) do { try { s; } catch (const e& x) { In_exception(x); } } while (0)
 
 // Testing explicitly assigned/implicitly defined parameters and implicit type conversion
 TEST(param,ImplicitDefine)

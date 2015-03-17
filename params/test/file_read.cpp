@@ -20,13 +20,11 @@ TEST(param, ScalarParamRead) {
    // Generate INI file
    int param_int=1234;
    double param_double=1.125;
-   float param_float=2.25;
    {
      std::ofstream pfile(pfilename.c_str());
      pfile << std::boolalpha;
      pfile << "int = " << param_int << std::endl;
      pfile << "double = " << param_double << std::endl;
-     pfile << "float = " << param_float << std::endl;
    }
 
    // Imitate the command line args
@@ -38,19 +36,16 @@ TEST(param, ScalarParamRead) {
    alps::params p(argc,argv);
    p.description("This is a test program").
        define<int>("int","int parameter").
-       define<double>("double","double parameter").
-       define<float>("float","float parameter");
+       define<double>("double","double parameter");
    
    // read the parameters
    
    int param_int_rd=p["int"];
    double param_double_rd=p["double"];
-   float param_float_rd=p["float"];
 
    // verify the parameters
    EXPECT_EQ(param_int_rd, param_int);
    EXPECT_NEAR(param_double_rd,param_double,1.E-12);
-   EXPECT_NEAR(param_float_rd,param_float,1.E-12);
 }    
 
 // Boolean param read

@@ -34,20 +34,22 @@ namespace alps {
             }
 
             // Vector of allowed scalar types:
-            typedef mpl::vector<int,unsigned int,
-                                float,double,
-                                long double,
+            typedef mpl::vector<int,
+				unsigned int,
+                                // float,
+				double,
+                                // long double,
                                 long int, unsigned long int,
-                                long long int, unsigned long long int,
-                                char, signed char, unsigned char,
-                                short int, unsigned short int,
+                                // long long int, unsigned long long int,
+                                char, // signed char, unsigned char,
+                                // short int, unsigned short int,
                                 bool>::type scalar_types_vec;
 
-            /// Make a set of allowed types (for fast look-up)
-            typedef mpl::fold< scalar_types_vec,
-                               mpl::set<>, // empty set
-                               mpl::insert<mplh::_1,mplh::_2>
-                               >::type scalar_types_set;
+            // /// Make a set of allowed types (for fast look-up)
+            // typedef mpl::fold< scalar_types_vec,
+            //                    mpl::set<>, // empty set
+            //                    mpl::insert<mplh::_1,mplh::_2>
+            //                    >::type scalar_types_set;
 
             // Vector of std::vector<T> types (aka "vector types")
             typedef mpl::transform< scalar_types_vec, std::vector<mplh::_1> >::type vector_types_subvec;
@@ -55,17 +57,17 @@ namespace alps {
             // Add std::string to the vector of the "vector types"
             typedef mpl::push_front<vector_types_subvec, std::string>::type vector_types_vec;
 
-            /// Make a set of "vector types" (for fast look-up):
-            typedef mpl::fold< vector_types_vec,
-                               mpl::set<>, // empty set
-                               mpl::insert<mplh::_1,mplh::_2>
-                               >::type vector_types_set;
+            // /// Make a set of "vector types" (for fast look-up):
+            // typedef mpl::fold< vector_types_vec,
+            //                    mpl::set<>, // empty set
+            //                    mpl::insert<mplh::_1,mplh::_2>
+            //                    >::type vector_types_set;
 
-            // Make a set of all types (for fast look-up):
-            typedef mpl::fold< vector_types_set,
-                               scalar_types_set, 
-                               mpl::insert<mplh::_1,mplh::_2>
-                               >::type all_types_set;
+            // // Make a set of all types (for fast look-up):
+            // typedef mpl::fold< vector_types_set,
+            //                    scalar_types_set, 
+            //                    mpl::insert<mplh::_1,mplh::_2>
+            //                    >::type all_types_set;
 
             // Make a vector of all types (for boost::variant, starting with the scalar types)
             typedef mpl::fold< vector_types_vec, 
@@ -97,20 +99,20 @@ namespace alps {
             /// A variant of the trigger_tag and optionals of all types
             typedef boost::make_variant_over< mpl::push_back<optional_types_vec,trigger_tag>::type >::type variant_all_optional_type;
             
-            /// A meta-function determining if both types are scalar
-            template <typename T, typename U>
-            struct both_scalar
-                : mpl::and_< mpl::has_key<scalar_types_set,U>,
-                             mpl::has_key<scalar_types_set,T> >
-            {};
+            // /// A meta-function determining if both types are scalar
+            // template <typename T, typename U>
+            // struct both_scalar
+            //     : mpl::and_< mpl::has_key<scalar_types_set,U>,
+            //                  mpl::has_key<scalar_types_set,T> >
+            // {};
 
 
         }
 
         // Elevate choosen generated types:
-        using detail::scalar_types_set;
-        using detail::vector_types_set;
-        using detail::all_types_set;
+        // using detail::scalar_types_set;
+        // using detail::vector_types_set;
+        // using detail::all_types_set;
         using detail::variant_all_type;
     } // params_ns
 }// alps
