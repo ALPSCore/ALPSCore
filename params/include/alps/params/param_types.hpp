@@ -1,17 +1,15 @@
 #ifndef ALPS_PARAMS_PARAM_TYPES_INCLUDED
 #define ALPS_PARAMS_PARAM_TYPES_INCLUDED
 
-#include <vector>
+/* Using Boost preprocessor macros rather than MPL. */
 
-#include "boost/mpl/vector.hpp"
-#include "boost/mpl/set.hpp"
-#include "boost/mpl/insert.hpp"
-#include "boost/mpl/transform.hpp"
-#include "boost/mpl/fold.hpp"
-#include "boost/mpl/placeholders.hpp"
-#include "boost/mpl/bool.hpp"
-#include <boost/mpl/and.hpp>
-#include <boost/mpl/logical.hpp>
+#include <stdexcept>
+#include <vector>
+#include <iostream>
+
+#include "boost/preprocessor/array/to_seq.hpp"
+#include "boost/preprocessor/seq/transform.hpp"
+#include "boost/preprocessor/seq/enum.hpp"
 
 #include "boost/variant.hpp"
 #include "boost/optional.hpp"
@@ -20,9 +18,18 @@ namespace alps {
     namespace params_ns {
         namespace detail {
             
-            // Have namespaces handy
-            namespace mpl=::boost::mpl;
-            namespace mplh=::boost::mpl::placeholders;
+	    // Allowed basic numerical types.
+	    // NOTE 1: do not forget to change "7" to the correct number if editing!
+	    // NOTE 2: currently, not more than (20-2)/2 = 9 types are supported
+	    //         (20 is boost::variant limit; we have std::vector<T> for each of
+	    //         these basic types, plus std::string and None.)
+#define	    ALPS_PARAMS_DETAIL_STYPES_VEC (7,(int, \
+					      unsigned int,	\
+					      double,		\
+					      long int,		\
+					      unsigned long int,	\
+					      char,			\
+					      bool))
 
             /// "Empty value" type
             struct None {};
@@ -33,53 +40,24 @@ namespace alps {
                 throw std::runtime_error("Attempt to print uninitialized option value");
             }
 
-            // Vector of allowed scalar types:
-            typedef mpl::vector<int,
-				unsigned int,
-                                // float,
-				double,
-                                // long double,
-                                long int, unsigned long int,
-                                // long long int, unsigned long long int,
-                                char, // signed char, unsigned char,
-                                // short int, unsigned short int,
-                                bool>::type scalar_types_vec;
 
-            // /// Make a set of allowed types (for fast look-up)
-            // typedef mpl::fold< scalar_types_vec,
-            //                    mpl::set<>, // empty set
-            //                    mpl::insert<mplh::_1,mplh::_2>
-            //                    >::type scalar_types_set;
+	    // BOOST-PP Sequence of numerical types types
+#define     ALPS_PARAMS_DETAIL_STYPES_SEQ BOOST_PP_ARRAY_TO_SEQ(ALPS_PARAMS_DETAIL_STYPES_VEC)
 
-            // Vector of std::vector<T> types (aka "vector types")
-            typedef mpl::transform< scalar_types_vec, std::vector<mplh::_1> >::type vector_types_subvec;
+	    // Macro to make derived types
+#define     ALPS_PARAMS_DETAIL_MAKE_TYPE(s,atype,elem) atype< elem >
 
-            // Add std::string to the vector of the "vector types"
-            typedef mpl::push_front<vector_types_subvec, std::string>::type vector_types_vec;
+            // Sequence of std::vector<T> types (aka "vector types")
+#define     ALPS_PARAMS_DETAIL_VTYPES_SEQ BOOST_PP_SEQ_TRANSFORM(ALPS_PARAMS_DETAIL_MAKE_TYPE, std::vector, ALPS_PARAMS_DETAIL_STYPES_SEQ)
+	  
+	    // Make a sequence of all parameter types (for boost::variant), including std::string
+#define     ALPS_PARAMS_DETAIL_ALLTYPES_SEQ ALPS_PARAMS_DETAIL_STYPES_SEQ(std::string)ALPS_PARAMS_DETAIL_VTYPES_SEQ
+	  
+            /// A variant of all types, including None (as the first one -- important!)
+	    typedef boost::variant< None, BOOST_PP_SEQ_ENUM(ALPS_PARAMS_DETAIL_ALLTYPES_SEQ) > variant_all_type;
 
-            // /// Make a set of "vector types" (for fast look-up):
-            // typedef mpl::fold< vector_types_vec,
-            //                    mpl::set<>, // empty set
-            //                    mpl::insert<mplh::_1,mplh::_2>
-            //                    >::type vector_types_set;
-
-            // // Make a set of all types (for fast look-up):
-            // typedef mpl::fold< vector_types_set,
-            //                    scalar_types_set, 
-            //                    mpl::insert<mplh::_1,mplh::_2>
-            //                    >::type all_types_set;
-
-            // Make a vector of all types (for boost::variant, starting with the scalar types)
-            typedef mpl::fold< vector_types_vec, 
-                               scalar_types_vec, 
-                               mpl::push_back<mplh::_1, mplh::_2>
-                               >::type all_types_vec;
-
-            /// A variant of all types, including None (as the first one)
-            typedef boost::make_variant_over< mpl::push_front<all_types_vec,None>::type >::type variant_all_type;
-
-            /// A vector of `optional` types for each of the vectors and scalar types
-            typedef mpl::transform< all_types_vec, boost::optional<mplh::_1> >::type optional_types_vec;
+            // Sequence of `boost::optional<T>` types for scalar and vector all types (except None)
+#define     ALPS_PARAMS_DETAIL_OTYPES_SEQ BOOST_PP_SEQ_TRANSFORM(ALPS_PARAMS_DETAIL_MAKE_TYPE, boost::optional, ALPS_PARAMS_DETAIL_ALLTYPES_SEQ)
 
             /// An output operator for optionals of any type (throws unconditionally)
             template <typename T>
@@ -97,23 +75,20 @@ namespace alps {
             }
 
             /// A variant of the trigger_tag and optionals of all types
-            typedef boost::make_variant_over< mpl::push_back<optional_types_vec,trigger_tag>::type >::type variant_all_optional_type;
-            
-            // /// A meta-function determining if both types are scalar
-            // template <typename T, typename U>
-            // struct both_scalar
-            //     : mpl::and_< mpl::has_key<scalar_types_set,U>,
-            //                  mpl::has_key<scalar_types_set,T> >
-            // {};
-
-
+            typedef boost::variant<BOOST_PP_SEQ_ENUM(ALPS_PARAMS_DETAIL_OTYPES_SEQ), trigger_tag> variant_all_optional_type;
         }
 
         // Elevate choosen generated types:
-        // using detail::scalar_types_set;
-        // using detail::vector_types_set;
-        // using detail::all_types_set;
         using detail::variant_all_type;
+
+	// Undefine local macros
+#undef  ALPS_PARAMS_DETAIL_STYPES_VEC
+#undef  ALPS_PARAMS_DETAIL_STYPES_SEQ
+#undef  ALPS_PARAMS_DETAIL_MAKE_TYPE
+#undef  ALPS_PARAMS_DETAIL_VTYPES_SEQ
+#undef  ALPS_PARAMS_DETAIL_ALLTYPES_SEQ
+#undef  ALPS_PARAMS_DETAIL_OTYPES_SEQ
+	
     } // params_ns
 }// alps
 
@@ -131,7 +106,6 @@ namespace boost {
         { }
     } // serialization
 } // boost
-
 
 
 #endif // ALPS_PARAMS_PARAM_TYPES_INCLUDED
