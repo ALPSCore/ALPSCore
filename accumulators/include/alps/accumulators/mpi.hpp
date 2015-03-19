@@ -93,7 +93,7 @@
                         using alps::hdf5::get_extent;
                         typedef typename alps::hdf5::scalar_type<T>::type scalar_type;
                         std::vector<std::size_t> extent(get_extent(in_values));
-                        std::vector<scalar_type> in_buffer(std::accumulate(extent.begin(), extent.end(), 0));
+			std::vector<scalar_type> in_buffer(std::accumulate(extent.begin(), extent.end(), 1, std::multiplies<std::size_t>()));
                         using detail::copy_to_buffer;
                         copy_to_buffer(in_values, in_buffer, 0, typename hdf5::is_content_continuous<T>::type());
 
