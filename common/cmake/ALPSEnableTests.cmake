@@ -40,7 +40,7 @@ function(UseGtest)
     set (GTEST_INCLUDE_DIR ${gtest_root}/include PARENT_SCOPE)
     set (GTEST_MAIN_LIBRARIES gtest_main PARENT_SCOPE)
     set (GTEST_MAIN_LIBRARY gtest_main PARENT_SCOPE)
-    set (GTEST_LIBRARY gtest_main PARENT_SCOPE)
+    set (GTEST_LIBRARY gtest PARENT_SCOPE)
 endfunction()
 
 # enable testing with gtest - fetch it if needed
@@ -52,25 +52,47 @@ if (NOT tests_are_already_enabled)
         find_package(GTest)
     endif (NOT GTEST_FOUND) 
 
-    set (LINK_TEST  ${GTEST_MAIN_LIBRARIES}) 
+    # set (LINK_TEST  ${GTEST_MAIN_LIBRARIES}) 
     include_directories(${GTEST_INCLUDE_DIRS})
     set(tests_are_already_enabled TRUE)
 endif(NOT tests_are_already_enabled)
 
 # custom function to add test with xml output and linked to gtest
 # arg0 - test (assume the source is ${test}.cpp
+# optional arg: NOMAIN: do not link libgtest_main containing main()
+# optional arg: MAIN: do link libgtest_main containing main()
+# optional arg: directory containing source file 
 function(alps_add_gtest test)
     if (TestXMLOutput)
         set (test_xml_output --gtest_output=xml:${test}.xml)
     endif(TestXMLOutput)
 
-    if(${ARGC} EQUAL 2)
-        set(source "${ARGV1}/${test}.cpp")
-    else(${ARGC} EQUAL 2)
+    unset(source)
+    set (nomain 0)
+    foreach(a ${ARGN})
+        if (${a} STREQUAL "NOMAIN")
+          set (nomain 1)
+        elseif (${a} STREQUAL "MAIN")
+          set (nomain 0)
+        else()
+          if (DEFINED source)
+            message(FATAL_ERROR "Incorrect use of alps_add_gtest(testname [NOMAIN] [test_src])")
+          endif()
+          set (source "${a}/${test}.cpp")
+        endif()
+    endforeach()
+    if (NOT DEFINED source)
         set(source "${test}.cpp")
-    endif(${ARGC} EQUAL 2)
-
+    endif()
+    
     add_executable(${test} ${source})
-    target_link_libraries(${test} ${PROJECT_NAME} ${LINK_ALL} ${LINK_TEST})
+    
+    if (${nomain})
+        set(link_test ${GTEST_LIBRARY})
+    else()
+        set(link_test ${GTEST_MAIN_LIBRARIES})
+    endif()
+
+    target_link_libraries(${test} ${PROJECT_NAME} ${LINK_ALL} ${link_test})
     add_test(NAME ${test} COMMAND ${test} ${test_xml_output})
 endfunction(alps_add_gtest)
