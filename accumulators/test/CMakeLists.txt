@@ -16,6 +16,17 @@ set (test_src
     save_load
     )
 
+#add tests for MPI
+if(ALPS_HAVE_MPI)
+  set (test_src_nomain
+    mpi_merge
+    )
+endif()
+
 foreach(test ${test_src})
     alps_add_gtest(${test})
+endforeach(test)
+
+foreach(test ${test_src_nomain})
+    alps_add_gtest(${test} NOMAIN)
 endforeach(test)
