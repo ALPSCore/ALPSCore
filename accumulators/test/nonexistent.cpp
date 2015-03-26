@@ -22,9 +22,3 @@ TEST(accumulator, nonexistent_acc){
         EXPECT_THROW(null_acc.error<double>(), std::runtime_error);
         EXPECT_THROW(null_acc.print(std::cout), std::runtime_error);
 }
-int main(int argc, char **argv) 
-{
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}
-

@@ -89,9 +89,3 @@ TEST(hdf5, TestingIoOfBoolVars){
         std:: cout << "Read bf=" << bf << ", should be " << false << endl;
     }
 }
-int main(int argc, char **argv) 
-{
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}
-

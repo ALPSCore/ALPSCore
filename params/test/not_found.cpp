@@ -77,11 +77,3 @@ TEST(param, DefineAfterAccess)
     EXPECT_EQ(999.25, p["param"]);
 }
 
-int main(int argc, char **argv) 
-{
-//    Test();
-//    return 0;
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}
-

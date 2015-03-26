@@ -55,7 +55,3 @@ MAKE_TEST(LogBinningAccumulator,double, 127)
 MAKE_TEST(FullBinningAccumulator,double, 127)
 
 
-int main(int argc, char **argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}

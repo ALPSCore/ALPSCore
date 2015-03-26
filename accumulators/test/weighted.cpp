@@ -40,8 +40,3 @@ TEST(accumulators, WeightedObservable){
 	std::cout << (results["x*sign vec"] / results["sign vec"]) << std::endl;
 }
 
-int main(int argc, char **argv) 
-{
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}

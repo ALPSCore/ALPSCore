@@ -119,9 +119,3 @@ ALPS_TEST_RUN_MERGE_TEST(MeanAccumulator,double,double,true)
 ALPS_TEST_RUN_MERGE_TEST(NoBinningAccumulator,double,double,false)
 
 
-int main(int argc, char **argv) 
-{
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}
-

@@ -75,9 +75,3 @@ ALPS_TEST_RUN_MEAN_TEST_EACH_TYPE(FullBinningAccumulator)
 #undef ALPS_TEST_RUN_MEAN_TEST
 #undef ALPS_TEST_RUN_MEAN_TEST_EACH_TYPE
 
-int main(int argc, char **argv) 
-{
-	::testing::InitGoogleTest(&argc, argv);
-	return RUN_ALL_TESTS();
-}
-

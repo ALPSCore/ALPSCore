@@ -25,9 +25,3 @@ TEST(accumulator, count_feature){
 	EXPECT_EQ(count(results["scalar"]) , 1000);
 	EXPECT_EQ(count(results["vector"]) , 1000);
 }
-int main(int argc, char **argv) 
-{
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}
-

@@ -15,9 +15,4 @@ TEST(temporary_fname, main)
   std::string filename=alps::temporary_filename(prefix);
 }
 
-int main(int argc, char **argv) 
-{
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}
 

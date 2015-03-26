@@ -87,9 +87,3 @@ TEST(hdf5_complex, TestingOfHDF5Copy){
         std::abort();
     }
  }
-int main(int argc, char **argv) 
-{
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}
-

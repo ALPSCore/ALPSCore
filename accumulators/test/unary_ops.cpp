@@ -91,8 +91,3 @@ MAKE_TEST(LogBinningAccumulator,double,negation)
 MAKE_TEST(NoBinningAccumulator,double,negation)
 MAKE_TEST(MeanAccumulator,double,negation)
 
-int main(int argc, char **argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}
-

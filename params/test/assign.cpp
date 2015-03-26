@@ -158,10 +158,3 @@ TEST(param,Invariance)
 }
 
 
-int main(int argc, char **argv) 
-{
-  // return Test(), 0;
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}
-

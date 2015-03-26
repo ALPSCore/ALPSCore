@@ -36,9 +36,3 @@ TEST(hdf5, TestingCopyingOfHDF5){
     }
     boost::filesystem::remove(boost::filesystem::path(filename));
 }
-int main(int argc, char **argv) 
-{
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}
-

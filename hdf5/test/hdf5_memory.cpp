@@ -40,9 +40,3 @@ TEST(hdf5, TestingHDF5Memory){
     }
     boost::filesystem::remove(boost::filesystem::path("test_hdf5_memory.h5"));
 }
-int main(int argc, char **argv) 
-{
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}
-
