@@ -6,6 +6,7 @@ set (alps_utils_src
     stacktrace.cpp
     signal.cpp
     parseargs.cpp
+    gtest_par_xml_output.cpp
     )
 
 #include_directories(
