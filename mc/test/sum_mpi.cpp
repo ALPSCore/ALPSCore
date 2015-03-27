@@ -4,6 +4,8 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
+#include <algorithm>
+
 #include <alps/mc/mcbase.hpp>
 #include <alps/mc/api.hpp>
 #include <alps/mc/mpiadapter.hpp>
@@ -21,13 +23,25 @@ class my_sim_type : public alps::mcbase {
 
     public:
 
+        static const int VSIZE=3;
+
+        typedef std::vector<double> double_vector_type;
+
+        void init()
+        {
+            measurements << alps::accumulators::FullBinningAccumulator<double>("SValue")
+                         << alps::accumulators::FullBinningAccumulator<double_vector_type>("VValue")
+                         << alps::accumulators::NoBinningAccumulator<double_vector_type>("VValue1");
+        }
+  
         my_sim_type(parameters_type const & params, std::size_t seed_offset = 42)
             : alps::mcbase(params, seed_offset)
             , total_count(params["COUNT"])
+            , count(0)
+            , value(0)
 
         {
-            measurements << alps::accumulators::FullBinningAccumulator<double>("SValue")
-                         << alps::accumulators::FullBinningAccumulator<std::vector<double> >("VValue");
+            init();
         }
 
         // if not compiled with mpi boost::mpi::communicator does not exists, 
@@ -35,22 +49,24 @@ class my_sim_type : public alps::mcbase {
         template <typename Arg> my_sim_type(parameters_type const & params, Arg comm)
             : alps::mcbase(params, comm)
             , total_count(params["COUNT"])
+            , count(0)
+            , value(0)
         {
-            measurements << alps::accumulators::FullBinningAccumulator<double>("SValue")
-                         << alps::accumulators::FullBinningAccumulator<std::vector<double> >("VValue");
+            init();
         }
 
         // do the calculation in this function
         void update() {
             double x = random();
-            value = exp(-x * x);
+            value = 1+x;
         };
 
         // do the measurements here
         void measure() {
             ++count;
             measurements["SValue"] << value;
-            measurements["VValue"] << std::vector<double>(3, value);
+            measurements["VValue"] << double_vector_type(VSIZE, value);
+            measurements["VValue1"] << double_vector_type(VSIZE, value);
         };
 
         double fraction_completed() const {
@@ -64,18 +80,18 @@ class my_sim_type : public alps::mcbase {
 };
 
 TEST(mc, sum_mpi){
-        boost::mpi::environment env;
         boost::mpi::communicator c;
 
         alps::mcbase::parameters_type params;
-        params["COUNT"]=1000;
+        const int maxcount=1000;
+        params["COUNT"]=maxcount;
         my_sim_type::define_parameters(params); // do parameters definitions
 
         broadcast(c, params, 0);
         
-        int t_min_check=1, t_max_check=1, timelimit=1;
+        int t_min_check=1, t_max_check=1, timelimit=300;
 
-        alps::mcmpiadapter<my_sim_type> my_sim(params, c, alps::check_schedule(t_min_check, t_max_check)); // creat a simulation
+        alps::mcmpiadapter<my_sim_type> my_sim(params, c, alps::check_schedule(t_min_check, t_max_check)); // create a simulation
 
         my_sim.run(alps::stop_callback(c, timelimit)); // run the simulation
 
@@ -83,12 +99,45 @@ TEST(mc, sum_mpi){
 
         if (c.rank() == 0) { // print the results and save it to hdf5
             alps::results_type<alps::mcmpiadapter<my_sim_type> >::type results = collect_results(my_sim);
-            std::cout << "e^(-x*x): " << results["SValue"] << std::endl;
-            std::cout << "e^(-x*x): " << results["VValue"] << std::endl;
-            using std::sin;
-            std::cout << results["SValue"] + 1 << std::endl;
-            std::cout << results["SValue"] + results["SValue"] << std::endl;
-            alps::save_results(results, params, alps::temporary_filename("sum_mpi") , "/simulation/results");
+            std::cout << "1+x: " << results["SValue"] << std::endl;
+            std::cout << "1+x: " << results["VValue"] << std::endl;
+
+            const double expected_mean=1.5;
+            const double expected_err=(1./12)/sqrt(results["SValue"].count()-1);
+            EXPECT_NEAR(expected_mean, results["SValue"].mean<double>(), 1.E-2) << "Scalar (FullBinning) mean is incorrect";
+            EXPECT_NEAR(expected_err, results["SValue"].error<double>(), 1.E-2) << "Scalar (FullBinning) error is incorrect";
+
+            // Test using NoBinningAccumulator
+            {
+                const my_sim_type::double_vector_type& vv_mean=results["VValue1"].mean<my_sim_type::double_vector_type>();
+                const my_sim_type::double_vector_type& vv_err=results["VValue1"].error<my_sim_type::double_vector_type>();
+                EXPECT_EQ(my_sim_type::VSIZE+0, vv_mean.size());
+                for (int i=0; i<my_sim_type::VSIZE; ++i) {
+                    EXPECT_NEAR(expected_mean, vv_mean[i], 1.E-2) << "Vector (NoBinning) mean is incorrect at #" << i;
+                    EXPECT_NEAR(expected_err, vv_err[i], 1.E-2)  << "Vector (NoBinning) error is incorrect at #" << i;
+                }
+            }
+            
+            // Test using FullBinningAccumulator
+            {
+                const my_sim_type::double_vector_type& vv_mean=results["VValue"].mean<my_sim_type::double_vector_type>();
+                const my_sim_type::double_vector_type& vv_err=results["VValue"].error<my_sim_type::double_vector_type>();
+                EXPECT_EQ(my_sim_type::VSIZE+0, vv_mean.size());
+                for (int i=0; i<my_sim_type::VSIZE; ++i) {
+                    EXPECT_NEAR(expected_mean, vv_mean[i], 1.E-2)  << "Vector (FullBinning) mean is incorrect at #" << i;
+                    EXPECT_NEAR(expected_err, vv_err[i], 1.E-2) << "Vector (FullBinning) error is incorrect at #" << i;
+                }
+            }
+
+            alps::save_results(results, params, alps::temporary_filename("sum_mpi")+".h5" , "/simulation/results");
+            EXPECT_TRUE(results["SValue"].count() >= maxcount);
         } else
             collect_results(my_sim);
 }
+
+int main(int argc, char** argv)
+{
+   boost::mpi::environment env(argc, argv, false);
+   ::testing::InitGoogleTest(&argc, argv);
+   return RUN_ALL_TESTS();
+}    

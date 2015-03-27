@@ -17,7 +17,7 @@ set (test_src_mpi
     signed_obs
     )
 foreach(test ${test_src_mpi})
-    alps_add_gtest(${test})
+    alps_add_gtest(${test} NOMAIN PARTEST)
 endforeach(test)
 
 endif(ALPS_HAVE_MPI)
