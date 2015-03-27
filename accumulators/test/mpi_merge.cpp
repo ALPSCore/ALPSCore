@@ -7,7 +7,11 @@
 #include "alps/config.hpp"
 #include "alps/accumulators.hpp"
 
+#include "alps/utilities/gtest_par_xml_output.hpp"
 #include "gtest/gtest.h"
+
+
+
 
 // Name for the observable
 #define OBSNAME "value"
@@ -124,9 +128,11 @@ TYPED_TEST(AccumulatorTest, CollectResults)
     this->Test(nsamples, comm);
 }
 
+
 int main(int argc, char** argv)
 {
-   ::testing::InitGoogleTest(&argc, argv);
    boost::mpi::environment env(argc, argv, false);
+   alps::gtest_par_xml_output(boost::mpi::communicator().rank(), argc, argv);
+   ::testing::InitGoogleTest(&argc, argv);
    return RUN_ALL_TESTS();
 }    
