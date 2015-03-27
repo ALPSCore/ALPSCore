@@ -58,10 +58,12 @@ if (NOT tests_are_already_enabled)
 endif(NOT tests_are_already_enabled)
 
 # custom function to add test with xml output and linked to gtest
-# arg0 - test (assume the source is ${test}.cpp
+# arg0 - test (assume the source is ${test}.cpp)
 # optional arg: NOMAIN: do not link libgtest_main containing main()
 # optional arg: MAIN: do link libgtest_main containing main()
-# optional arg: directory containing source file 
+# optional arg: PARTEST: run test in parallel using N processes, where N is run-time value of environment variable ALPS_TEST_MPI_NPROC
+#               (or 1 if the variable is not set) (FIXME: make this a configurable constant!)
+# optional arg: directory containing the source file 
 function(alps_add_gtest test)
     if (TestXMLOutput)
         set (test_xml_output --gtest_output=xml:${test}.xml)
@@ -69,14 +71,17 @@ function(alps_add_gtest test)
 
     unset(source)
     set (nomain 0)
+    set (partest 0)
     foreach(a ${ARGN})
         if (${a} STREQUAL "NOMAIN")
           set (nomain 1)
         elseif (${a} STREQUAL "MAIN")
           set (nomain 0)
+        elseif (${a} STREQUAL "PARTEST")
+          set (partest 1)
         else()
           if (DEFINED source)
-            message(FATAL_ERROR "Incorrect use of alps_add_gtest(testname [NOMAIN] [test_src])")
+            message(FATAL_ERROR "Incorrect use of alps_add_gtest(testname [MAIN|NOMAIN] [PARTEST] [test_src])")
           endif()
           set (source "${a}/${test}.cpp")
         endif()
@@ -86,13 +91,22 @@ function(alps_add_gtest test)
     endif()
     
     add_executable(${test} ${source})
-    
-    if (${nomain})
+
+    if (nomain)
         set(link_test ${GTEST_LIBRARY})
     else()
         set(link_test ${GTEST_MAIN_LIBRARIES})
     endif()
 
     target_link_libraries(${test} ${PROJECT_NAME} ${LINK_ALL} ${link_test})
-    add_test(NAME ${test} COMMAND ${test} ${test_xml_output})
+    # FIXME: if compiler supports MPI directly, the MPIEXEC program is not deduced!
+    # FIXME: in the MPI test command, POSIX shell is assumed
+    message(STATUS "DEBUG: test=${test} partest=${partest} mpiexec=${MPIEXEC}")
+    if (partest AND MPIEXEC)
+        set(cmd "/bin/sh" "-c" "${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} \${ALPS_TEST_MPI_NPROC:-1} ${MPIEXEC_PREFLAGS} ${test} ${MPIEXEC_POSTFLAGS}")
+        message(STATUS "DEBUG: cmd=${cmd}")
+    else()
+        set(cmd ${test})
+    endif()
+    add_test(NAME ${test} COMMAND ${cmd} ${test_xml_output})
 endfunction(alps_add_gtest)
