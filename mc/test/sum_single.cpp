@@ -75,5 +75,5 @@ TEST(mc, sum_single){
 
     std::cout << "e^(-x*x): " << results["SValue"] << std::endl;
     std::cout << "e^(-x*x): " << results["VValue"] << std::endl;
-    alps::save_results(results, params, alps::temporary_filename("sum_single"), "/simulation/results");
+    alps::save_results(results, params, alps::temporary_filename("sum_single")+".h5", "/simulation/results");
 }
