@@ -101,10 +101,8 @@ function(alps_add_gtest test)
     target_link_libraries(${test} ${PROJECT_NAME} ${LINK_ALL} ${link_test})
     # FIXME: if compiler supports MPI directly, the MPIEXEC program is not deduced!
     # FIXME: in the MPI test command, POSIX shell is assumed
-    message(STATUS "DEBUG: test=${test} partest=${partest} mpiexec=${MPIEXEC}")
     if (partest AND MPIEXEC)
         set(cmd "/bin/sh" "-c" "${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} \${ALPS_TEST_MPI_NPROC:-1} ${MPIEXEC_PREFLAGS} ${test} ${MPIEXEC_POSTFLAGS}")
-        message(STATUS "DEBUG: cmd=${cmd}")
     else()
         set(cmd ${test})
     endif()
