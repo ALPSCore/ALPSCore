@@ -102,9 +102,9 @@ function(alps_add_gtest test)
     # FIXME: if compiler supports MPI directly, the MPIEXEC program is not deduced!
     # FIXME: in the MPI test command, POSIX shell is assumed
     if (partest AND MPIEXEC)
-        set(cmd "/bin/sh" "-c" "${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} \${ALPS_TEST_MPI_NPROC:-1} ${MPIEXEC_PREFLAGS} ${test} ${MPIEXEC_POSTFLAGS}")
+        set(cmd "/bin/sh" "-c" "${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} \${ALPS_TEST_MPI_NPROC:-1} ${MPIEXEC_PREFLAGS} ${test} ${MPIEXEC_POSTFLAGS} ${test_xml_output}")
     else()
-        set(cmd ${test})
+        set(cmd ${test} ${test_xml_output})
     endif()
-    add_test(NAME ${test} COMMAND ${cmd} ${test_xml_output})
+    add_test(NAME ${test} COMMAND ${cmd})
 endfunction(alps_add_gtest)
