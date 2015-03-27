@@ -18,7 +18,7 @@ set (test_src
 
 #add tests for MPI
 if(ALPS_HAVE_MPI)
-  set (test_src_nomain
+  set (test_src_mpi
     mpi_merge
     )
 endif()
@@ -27,6 +27,6 @@ foreach(test ${test_src})
     alps_add_gtest(${test})
 endforeach(test)
 
-foreach(test ${test_src_nomain})
-    alps_add_gtest(${test} NOMAIN)
+foreach(test ${test_src_mpi})
+    alps_add_gtest(${test} NOMAIN PARTEST)
 endforeach(test)
