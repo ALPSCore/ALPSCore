@@ -1,3 +1,9 @@
+/*
+ * Copyright (C) 1998-2014 ALPS Collaboration. See COPYRIGHT.TXT
+ * All rights reserved. Use is subject to license terms. See LICENSE.TXT
+ * For use in publications, see ACKNOWLEDGE.TXT
+ */
+
 /** Designing a suitable type to hold parameters */
 
 /** Requirements:
@@ -37,6 +43,7 @@
 #include "boost/serialization/optional.hpp"
 #include "boost/serialization/variant.hpp"
 
+#include <alps/utilities/short_print.hpp> // for streaming
 
 #include "alps/params/param_types.hpp" // Sequences of supported types
 
@@ -215,6 +222,26 @@ namespace alps {
             {
                 return *this;
             }
+
+
+            /// Visitor to call alps::utilities::short_print on the type, hidden in boost::variant
+            struct option_ostream : public boost::static_visitor<> {
+            public:
+                option_ostream(std::ostream & arg) : os(arg) {}
+                template <typename U> void operator()(U const & v) const {
+                    os << short_print(v);
+                }
+            private:
+                std::ostream & os;
+            };
+
+            /// Output an option
+            friend std::ostream& operator<< (std::ostream& out, option_type const& x) 
+            {
+                option_ostream visitor(out);
+                boost::apply_visitor(visitor, x.val_);
+                return out;
+            } 
                 
 
             // /// Assignment from boost::any containing type T

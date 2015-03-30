@@ -307,6 +307,9 @@ namespace alps {
           /// Output the help message, if requested. @returns true if help was indeed requested.
           bool help_requested(std::ostream& ostrm);
 
+          /// Stream parameters 
+          friend std::ostream& operator<<(std::ostream& str, params const& x);
+
       private:
 
           friend class boost::serialization::access;

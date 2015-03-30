@@ -1,3 +1,9 @@
+/*
+ * Copyright (C) 1998-2014 ALPS Collaboration. See COPYRIGHT.TXT
+ * All rights reserved. Use is subject to license terms. See LICENSE.TXT
+ * For use in publications, see ACKNOWLEDGE.TXT
+ */
+
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
@@ -245,6 +251,14 @@ namespace alps {
             boost::mpi::broadcast(comm, *this, root);
         }
 #endif
+
+        std::ostream& operator<<(std::ostream& str, params const& x) 
+        {
+            for (params::const_iterator it = x.begin(); it != x.end(); ++it) { 
+                str << it->first << " : " << it->second << std::endl;
+            } 
+            return str;
+        }
     } // params_ns
 } // alps
 
