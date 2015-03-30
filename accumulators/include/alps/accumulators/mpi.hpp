@@ -15,37 +15,106 @@
 
     #include <alps/utilities/boost_mpi.hpp>
 
+    #include <cassert>
+
     namespace alps {
         namespace mpi {
             namespace detail {
 
+                /** @brief Copy a continous-type value (array of values) into a buffer.
+
+                    The value is of type T representable as an array
+                    of values of type S. The values are copied from `values` to `buffer[offset]`.
+
+                    @warning FIXME (design bug?) The buffer (which is
+                    a vector of type S) is accessed via a direct
+                    memory copy and is assumed to have sufficient
+                    size.
+                    
+                    @param values: value to copy from;
+                    @param buffer: vector to copy to, starting from offset;
+                    @param offset: position in the buffer to copy to;
+                    @returns the new offset pointing right after the last used position in the buffer.
+                 */
                 template<typename T, typename S> std::size_t copy_to_buffer(T const & values, std::vector<S> & buffer, std::size_t offset, boost::true_type) {
                     using alps::hdf5::get_extent;
                     std::vector<std::size_t> extent(get_extent(values));
-                    std::size_t size = std::accumulate(extent.begin(), extent.end(), 0);
+                    std::size_t size = std::accumulate(extent.begin(), extent.end(), 1, std::multiplies<std::size_t>());
+                    assert(buffer.size()>=offset+size && "buffer has sufficient size to accommodate values");
                     using alps::hdf5::get_pointer;
                     std::memcpy(&buffer[offset], const_cast<S *>(get_pointer(values)), sizeof(typename hdf5::scalar_type<T>::type) * size);
-                    return size;
+                    return offset+size;
                 }
 
+                /** @brief Copy a container value into a buffer.
+
+                    The container value is of type T which ultimately
+                    holds values of a scalar type S (T can, e.g., be a
+                    container of containers of containers... of
+                    S). The values are copied from `values` to
+                    `buffer[offset]`.
+
+                    @param values: container to copy from;
+                    @param buffer: vector to copy to, starting from offset;
+                    @param offset: position in the buffer to copy to;
+                    @returns the new offset pointing right after the last used position in the buffer.
+                 */
                 template<typename T, typename S> std::size_t copy_to_buffer(T const & values, std::vector<S> & buffer, std::size_t offset, boost::false_type) {
                     for(typename T::const_iterator it = values.begin(); it != values.end(); ++it)
-                        offset += copy_to_buffer(*it, buffer, offset, typename hdf5::is_continuous<typename T::value_type>::type());
+                        offset = copy_to_buffer(*it, buffer, offset, typename hdf5::is_continuous<typename T::value_type>::type());
                     return offset;
                 }
 
+                /** @brief Copy a buffer into a continous-type value (array of values).
+
+                    The value is of type T representable as an array
+                    of values of type S. The values are copied from
+                    `buffer[offset]` to `values`.
+
+                    @warning FIXME (design bug?) The buffer (which is
+                    a vector of type S) is accessed via a direct
+                    memory copy and is assumed to have sufficient
+                    size.
+                    
+                    @warning FIXME (design bug?) Although the
+                    container `values` is declared as a const
+                    reference, its contents is modified by this
+                    function.
+
+                    @param values: value to copy to;
+                    @param buffer: vector to copy from, starting from offset;
+                    @param offset: position in the buffer to copy from;
+                    @returns the new offset pointing right after the last used position in the buffer.
+                 */
                 template<typename T, typename S> std::size_t copy_from_buffer(T const & values, std::vector<S> & buffer, std::size_t offset, boost::true_type) {
                     using alps::hdf5::get_extent;
                     std::vector<std::size_t> extent(get_extent(values));
-                    std::size_t size = std::accumulate(extent.begin(), extent.end(), 0);
+                    std::size_t size = std::accumulate(extent.begin(), extent.end(), 1, std::multiplies<std::size_t>());
                     using alps::hdf5::get_pointer;
                     std::memcpy(const_cast<S *>(get_pointer(values)), &buffer[offset], sizeof(typename hdf5::scalar_type<T>::type) * size);
-                    return size;
+                    return offset+size;
                 }
 
+                /** @brief Copy a buffer into a container value.
+
+                    The container value is of type T which ultimately
+                    holds values of a scalar type S (T can, e.g., be a
+                    container of containers of containers... of
+                    S). The values are copied from `buffer[offset]` to `values`.
+
+                    @param values: container to copy to;
+                    @param buffer: vector to copy from, starting from offset;
+                    @param offset: position in the buffer to copy from;
+                    @returns the new offset pointing right after the last used position in the buffer.
+
+                    @warning FIXME (design bug?) Although the
+                    container `values` is declared as a const
+                    reference, its content is modified by this
+                    function.
+                 */
                 template<typename T, typename S> std::size_t copy_from_buffer(T const & values, std::vector<S> & buffer, std::size_t offset, boost::false_type) {
                     for(typename T::const_iterator it = values.begin(); it != values.end(); ++it)
-                        offset += copy_from_buffer(*it, buffer, offset, typename hdf5::is_continuous<typename T::value_type>::type());
+                        offset = copy_from_buffer(*it, buffer, offset, typename hdf5::is_continuous<typename T::value_type>::type());
                     return offset;
                 }
 
@@ -64,7 +133,7 @@
                     // reduce(comm, get_pointer(in_values), std::accumulate(extent.begin(), extent.end(), 0), op, root);
 
                     using boost::mpi::get_mpi_datatype;
-                    MPI_Reduce(const_cast<scalar_type*>(get_pointer(in_values)), NULL, std::accumulate(extent.begin(), extent.end(), 0), get_mpi_datatype(scalar_type()), boost::mpi::is_mpi_op<Op, scalar_type>::op(), root, comm);
+                    MPI_Reduce(const_cast<scalar_type*>(get_pointer(in_values)), NULL, std::accumulate(extent.begin(), extent.end(), 1, std::multiplies<std::size_t>()), get_mpi_datatype(scalar_type()), boost::mpi::is_mpi_op<Op, scalar_type>::op(), root, comm);
                 }
 
                 template<typename T, typename Op, typename C> void reduce_impl(const boost::mpi::communicator & comm, T const & in_values, T & out_values, Op op, int root, boost::true_type, C) {
@@ -84,7 +153,7 @@
                     // reduce(comm, get_pointer(in_values), std::accumulate(extent.begin(), extent.end(), 0), get_pointer(out_values), op, root);
 
                     using boost::mpi::get_mpi_datatype;
-                    MPI_Reduce(const_cast<scalar_type*>(get_pointer(in_values)), get_pointer(out_values), std::accumulate(extent.begin(), extent.end(), 0), get_mpi_datatype(scalar_type()), boost::mpi::is_mpi_op<Op, scalar_type>::op(), root, comm);
+                    MPI_Reduce(const_cast<scalar_type*>(get_pointer(in_values)), get_pointer(out_values), std::accumulate(extent.begin(), extent.end(), 1, std::multiplies<std::size_t>()), get_mpi_datatype(scalar_type()), boost::mpi::is_mpi_op<Op, scalar_type>::op(), root, comm);
                 }
 
                 template<typename T, typename Op> void reduce_impl(const boost::mpi::communicator & comm, T const & in_values, Op op, int root, boost::false_type, boost::false_type) {
