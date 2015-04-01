@@ -337,7 +337,10 @@ namespace alps {
           check_validity(optname);
           invalidate();
           typedef detail::description_map_type::value_type value_type;
-          bool result=descr_map_.insert(value_type(optname, detail::option_description_type(a_descr,defval))).second;
+#ifndef NDEBUG
+          bool result=
+#endif 
+          descr_map_.insert(value_type(optname, detail::option_description_type(a_descr,defval))).second;
           assert(result && "The inserted element is always new");
           return *this;
       }
@@ -349,7 +352,10 @@ namespace alps {
           check_validity(optname);
           invalidate();
           typedef detail::description_map_type::value_type value_type;
-          bool result=descr_map_.insert(value_type(optname, detail::option_description_type(a_descr, (T*)0))).second;
+#ifndef NDEBUG
+          bool result=
+#endif
+          descr_map_.insert(value_type(optname, detail::option_description_type(a_descr, (T*)0))).second;
           assert(result && "The inserted element is always new");
           return *this;
       }
@@ -360,7 +366,10 @@ namespace alps {
           check_validity(optname);
           invalidate();
           typedef detail::description_map_type::value_type value_type;
-          bool result=descr_map_.insert(value_type(optname, detail::option_description_type(a_descr))).second;
+#ifndef NDEBUG
+          bool result=
+#endif 
+          descr_map_.insert(value_type(optname, detail::option_description_type(a_descr))).second;
           assert(result && "The inserted element is always new");
           return *this;
       }
