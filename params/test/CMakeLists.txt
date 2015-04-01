@@ -9,6 +9,7 @@ set (test_src
      short_options
      subclass
      serialize
+     ostream
 #     redefinition
 #     ordering
 #     stream
