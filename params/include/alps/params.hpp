@@ -61,36 +61,6 @@ namespace alps {
               return boost::any_cast<T>(outval);
           }
 
-          // /// Service function: output a vector
-          // template <typename T>
-          // std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec)
-          // {
-          //     typedef std::vector<T> VT;
-          //     if (vec.empty()) return os;
-          //     typename VT::const_iterator it=vec.begin();
-          //     typename VT::const_iterator end=vec.end();
-          //     os << *it; // FIXME: possible stream errors ignored!
-          //     ++it;
-          //     for (; it!=end; ++it) {
-          //         os << "," << *it;
-          //     }
-          //     return os;
-          // }
-        
-          // template <typename T>
-          // void printout(std::ostream& os, const boost::any& val)
-          // {
-          //     os << boost::any_cast<T>(val);
-          // }
-
-          // template <>
-          // void printout<std::string>(std::ostream& os, const boost::any& val)
-          // {
-          //     typedef std::string T;
-          //     os << "\"" << boost::any_cast<T>(val) << "\"";
-          // }
-
-
       } // detail
 
 
@@ -225,13 +195,6 @@ namespace alps {
           /** Returns number of parameters (size of the map) */
           std::size_t size() const { possibly_parse(); return optmap_.size(); }
 
-          // /** Erase a parameter. FIXME: semantics?? */
-          // void erase(std::string const& k)
-          // {
-          //     throw std::logic_error("Called erase('"+key+"'): semantics is not yet clearly defined.");
-          //     possibly_parse(); optmap_.erase(k);
-          // }
-
           /** Access a parameter: read-only */
           const mapped_type& operator[](const std::string& k) const
           {
@@ -246,22 +209,8 @@ namespace alps {
               return optmap_[k];
           }
 
-          // /** Check if the parameter is present. FIXME: semantics?? */
-          // bool defined(std::string const & key) const
-          // {
-          //     throw std::logic_error("Called defined('"+key+"'): semantics is not yet clearly defined.");
-          //     possibly_parse();
-          //     return (optmap_.count(key)!=0);
-          // }
-
-          // /** Returns iterator to the beginning of the option map */
-          // iterator begin() { possibly_parse(); return optmap_.begin(); }
-            
           /** Returns iterator to the beginning of the option map */
           const_iterator begin() const { possibly_parse(); return optmap_.begin(); }
-
-          // /** Iterator to the beyond-the-end of the option map */
-          // iterator end() { possibly_parse(); return optmap_.end(); }
 
           /** Iterator to the beyond-the-end of the option map */
           const_iterator end() const { possibly_parse(); return optmap_.end(); }
@@ -279,7 +228,7 @@ namespace alps {
           void load(hdf5::archive &, const std::string&);
 
 #ifdef ALPS_HAVE_MPI
-          /// Broadcast the parameters to all processes (FIXME: not implemented yet)
+          /// Broadcast the parameters to all processes (FIXME: does not have a test yet)
           void broadcast(boost::mpi::communicator const &, int = 0);
 #endif
 

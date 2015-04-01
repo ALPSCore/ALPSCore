@@ -182,7 +182,6 @@ namespace alps {
 
                 /// Types are not convertible (One of the types is not a scalar)
                 template <typename U>
-                // T apply(const U& val, typename boost::disable_if< detail::both_scalar<T,U>, bool>::type =true) const {
                 T apply(const U& val, typename boost::disable_if< boost::is_convertible<U,T>, bool>::type =true) const {
                     throw visitor_type_mismatch(
                         std::string("Attempt to assign incompatible type U=")
@@ -361,7 +360,6 @@ namespace alps {
                 static void add_option(boost::program_options::options_description& a_opt_descr,
                                        const std::string& optname, const std::string& a_descr)
                 {
-                    // std::cerr << "***DEBUG: calling do_define<std::vector>() ***" << std::endl;
                     do_define< std::vector<T>, vector_tag<T> >::add_option(a_opt_descr, optname, a_descr);
                 }
 
