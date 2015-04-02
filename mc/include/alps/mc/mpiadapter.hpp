@@ -6,14 +6,15 @@
 
 #pragma once
 
+#include <boost/function.hpp>
+#include <boost/utility/enable_if.hpp>
+
 #include <alps/config.hpp>
 
 #if defined(ALPS_HAVE_MPI)
 
 #include <alps/utilities/boost_mpi.hpp>
 #include <alps/mc/check_schedule.hpp>
-
-#include <boost/function.hpp>
 
 namespace alps {
 
@@ -35,17 +36,17 @@ namespace alps {
             {}
 
             /// Construct mcmpiadapter with alps::check_schedule with the relevant parameters Tmin and Tmax taken from the provided parameters
+            template <typename S2 = ScheduleChecker>
             mcmpiadapter(
                   parameters_type const & parameters
                 , boost::mpi::communicator const & comm
+                , typename boost::enable_if<boost::is_same<S2,  alps::check_schedule>, bool>::type* dummy = 0
             )
                 : Base(parameters, comm.rank())
                 , communicator(comm)
+                , schedule_checker(parameters["Tmin"], parameters["Tmax"])
                 , clone(comm.rank())
             {
-                parameters_type p2(parameters);
-                mcmpiadapter::define_parameters(p2);
-                schedule_checker = ScheduleChecker(p2["Tmin"], p2["Tmax"]);
             }
 
 
