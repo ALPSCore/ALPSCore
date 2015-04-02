@@ -17,7 +17,10 @@ namespace alps {
         typedef clock::time_point time_point;
         typedef boost::chrono::duration<double> duration;
 
-        check_schedule(double tmin=60., double tmax=900.)
+        /// Constructor
+        /// \param[in] tmin minimum time to check if simulation has finished 
+        /// \param[in] tmax maximum time to check if simulation has finished 
+        check_schedule(double tmin, double tmax)
         :   min_check_(tmin)
         ,   max_check_(tmax)
         {

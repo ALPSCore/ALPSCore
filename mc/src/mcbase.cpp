@@ -13,30 +13,13 @@ namespace alps {
 
     mcbase::mcbase(parameters_type const & parms, std::size_t seed_offset)
         : parameters(parms)
-          // , params(parameters) // TODO: remove, deprecated!
         , random(std::size_t(parameters["SEED"]) + seed_offset)
     {
         alps::signal::listen();
     }
 
-    void mcbase::define_parameters(parameters_type & parameters) {
-        parameters
-            // .define<std::string>("continue", "", "load simulation from the given checkpoint")
-            .define<std::size_t>("timelimit", 0, "time limit for the simulation")
-            .define<std::size_t>("Tmin", 1, "minimum time to check if simulation has finished")
-            .define<std::size_t>("Tmax", 600, "maximum time to check if simulation has finished")
-            .define<std::size_t>("SEED", 42, "PRNG seed")
-            .define<std::string>("outputfile", "*.out.h5", "name of the output file")
-            .define<std::string>("checkpoint", "*.clone.h5", "name of the checkpoint file to save to")
-        ;
-        // FIXME: this is a hack. I need a method to see if a parameter is actually supplied.
-        if (parameters["outputfile"].as<std::string>()[0]=='*') {
-            parameters["outputfile"]=alps::remove_extensions(parameters.get_origin_name())+".out.h5";
-        }
-        // FIXME: this is a hack. I need a method to see if a parameter is actually supplied.
-        if (parameters["checkpoint"].as<std::string>()[0]=='*') {
-            parameters["checkpoint"]=alps::remove_extensions(parameters.get_origin_name())+".clone.h5";
-        }
+    mcbase::parameters_type& mcbase::define_parameters(parameters_type & parameters) {
+        return parameters.define<std::size_t>("SEED", 42, "PRNG seed");
     }
 
     void mcbase::save(boost::filesystem::path const & filename) const {

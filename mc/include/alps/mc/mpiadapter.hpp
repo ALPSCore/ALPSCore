@@ -20,17 +20,41 @@ namespace alps {
     template<typename Base, typename ScheduleChecker = alps::check_schedule> class mcmpiadapter : public Base {
 
         public:
+            typedef typename Base::parameters_type parameters_type;
 
+            /// Construct mcmpiadapter with a custom scheduler
             mcmpiadapter(
-                  typename Base::parameters_type const & parameters
+                  parameters_type const & parameters
                 , boost::mpi::communicator const & comm
-                , ScheduleChecker const & check = ScheduleChecker()
+                , ScheduleChecker const & check
             )
                 : Base(parameters, comm.rank())
                 , communicator(comm)
                 , schedule_checker(check)
                 , clone(comm.rank())
             {}
+
+            /// Construct mcmpiadapter with alps::check_schedule with the relevant parameters Tmin and Tmax taken from the provided parameters
+            mcmpiadapter(
+                  parameters_type const & parameters
+                , boost::mpi::communicator const & comm
+            )
+                : Base(parameters, comm.rank())
+                , communicator(comm)
+                , clone(comm.rank())
+            {
+                parameters_type p2(parameters);
+                mcmpiadapter::define_parameters(p2);
+                schedule_checker = ScheduleChecker(p2["Tmin"], p2["Tmax"]);
+            }
+
+
+            static parameters_type& define_parameters(parameters_type & parameters) {
+                Base::define_parameters(parameters);
+                parameters.template define<std::size_t>("Tmin", 1, "minimum time to check if simulation has finished");
+                parameters.template define<std::size_t>("Tmax", 600, "maximum time to check if simulation has finished");
+                return parameters;
+            }
 
             double fraction_completed() const {
                 return fraction;
