@@ -36,11 +36,10 @@ namespace alps {
             {}
 
             /// Construct mcmpiadapter with alps::check_schedule with the relevant parameters Tmin and Tmax taken from the provided parameters
-            template <typename S2 = ScheduleChecker>
             mcmpiadapter(
                   parameters_type const & parameters
                 , boost::mpi::communicator const & comm
-                , typename boost::enable_if<boost::is_same<S2,  alps::check_schedule>, bool>::type* dummy = 0
+                , typename boost::enable_if<boost::is_same<ScheduleChecker,  alps::check_schedule>, bool>::type* dummy = 0
             )
                 : Base(parameters, comm.rank())
                 , communicator(comm)
