@@ -37,6 +37,7 @@
 #include "boost/variant.hpp"
 #include "boost/utility.hpp" // for enable_if
 #include "boost/type_traits.hpp" // for is_convertible
+// FIXME: needs boost 1.56.0+  #include "boost/type_index.hpp"
 
 #include "boost/serialization/base_object.hpp"
 #include "boost/serialization/map.hpp"
@@ -120,11 +121,11 @@ namespace alps {
                 template <typename U>
                 void apply(U& lhs) const
                 {
-                    std::string msg="Attempt to assign type T=";
-                    msg += typeid(T).name();
-                    msg += " to the option_type object containing type U=";
-                    msg += typeid(U).name();
-                    throw visitor_type_mismatch(msg);
+                    throw visitor_type_mismatch(
+                        std::string("Attempt to assign a value of type \"")
+                        + detail::type_id<T>().pretty_name()
+                        + "\" to the option_type object containing type \""
+                        + detail::type_id<U>().pretty_name()+"\"");
                 }
 
                 /// Called when the bound type U is None (should never happen, option_type::operator=() must take care of this)
@@ -180,14 +181,14 @@ namespace alps {
                     return val; // invokes implicit conversion 
                 }
 
-                /// Types are not convertible (One of the types is not a scalar)
+                /// Types are not convertible 
                 template <typename U>
                 T apply(const U& val, typename boost::disable_if< boost::is_convertible<U,T>, bool>::type =true) const {
                     throw visitor_type_mismatch(
-                        std::string("Attempt to assign incompatible type U=")
-                        +typeid(U).name()
-                        +" to type T="
-                        +typeid(T).name());
+                        std::string("Attempt to assign an option_type object containing a value of type \"")
+                        + detail::type_id<U>().pretty_name()
+                        + "\" to a value of an incompatible type \""
+                        + detail::type_id<T>().pretty_name()+"\"");
                 }
 
                 /// Extracting None type --- always fails

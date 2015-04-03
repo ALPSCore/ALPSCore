@@ -10,9 +10,13 @@
 #include "boost/preprocessor/array/to_seq.hpp"
 #include "boost/preprocessor/seq/transform.hpp"
 #include "boost/preprocessor/seq/enum.hpp"
+#include "boost/preprocessor/seq/for_each.hpp"
 
 #include "boost/variant.hpp"
 #include "boost/optional.hpp"
+
+// FIXME: will go away with acceptance of boost::TypeIndex
+#include "alps/params/typeindex.hpp"
 
 namespace alps {
     namespace params_ns {
@@ -52,7 +56,12 @@ namespace alps {
 	  
 	    // Make a sequence of all parameter types (for boost::variant), including std::string
 #define     ALPS_PARAMS_DETAIL_ALLTYPES_SEQ ALPS_PARAMS_DETAIL_STYPES_SEQ(std::string)ALPS_PARAMS_DETAIL_VTYPES_SEQ
-	  
+
+            // FIXME: will go away with acceptance of boost::TypeIndex
+            // Generate a pretty-name specialization for scalar and vector types
+#define     ALPS_PARAMS_DETAIL_GEN_TYPID(s, data, elem) ALPS_PARAMS_DETAIL_TYPID_NAME(elem)
+            BOOST_PP_SEQ_FOR_EACH(ALPS_PARAMS_DETAIL_GEN_TYPID,~,ALPS_PARAMS_DETAIL_ALLTYPES_SEQ);
+          
             /// A variant of all types, including None (as the first one -- important!)
 	    typedef boost::variant< None, BOOST_PP_SEQ_ENUM(ALPS_PARAMS_DETAIL_ALLTYPES_SEQ) > variant_all_type;
 
@@ -87,6 +96,7 @@ namespace alps {
 #undef  ALPS_PARAMS_DETAIL_MAKE_TYPE
 #undef  ALPS_PARAMS_DETAIL_VTYPES_SEQ
 #undef  ALPS_PARAMS_DETAIL_ALLTYPES_SEQ
+#undef  ALPS_PARAMS_DETAIL_GEN_TYPID
 #undef  ALPS_PARAMS_DETAIL_OTYPES_SEQ
 	
     } // params_ns
