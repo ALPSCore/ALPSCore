@@ -296,9 +296,10 @@ namespace alps {
 #ifndef NDEBUG
           .second;
           assert(result && "The inserted element is always new");
+#else
+          ;
 #endif
           return *this;
-          (void)result; // to silence unused warnings
       }
 
       /// Define an option of a generic type without default
@@ -315,6 +316,8 @@ namespace alps {
 #ifndef NDEBUG
           .second;
           assert(result && "The inserted element is always new");
+#else
+          ;
 #endif
           return *this;
       }
@@ -332,6 +335,8 @@ namespace alps {
 #ifndef NDEBUG
           .second;
           assert(result && "The inserted element is always new");
+#else
+          ;
 #endif
           return *this;
       }
