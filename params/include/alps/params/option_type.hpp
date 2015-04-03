@@ -141,12 +141,18 @@ namespace alps {
                     apply(lhs);
                 }
             };
-      
+
+            /// Checks if the type it contains is None
+            bool isNone() const
+            {
+                return val_.which()==0;  // NOTE:Caution -- relies on None being the first type!
+            }
+          
             /// Assignment operator: assigns a value of type T
             template <typename T>
             void operator=(const T& rhs)
             {
-                if (val_.which()==0) { // NOTE:Caution -- relies on None being the first type!
+                if (isNone()) { 
                     val_=rhs;
                     return;
                 }

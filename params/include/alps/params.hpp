@@ -216,7 +216,12 @@ namespace alps {
           const_iterator end() const { possibly_parse(); return optmap_.end(); }
 
           /// Check if a parameter is defined
-          bool defined(std::string name) const { possibly_parse(); return optmap_.find(name) != optmap_.end(); }
+          bool defined(std::string name) const
+          {
+              possibly_parse();
+              options_map_type::const_iterator it=optmap_.find(name);
+              return (it!=optmap_.end()) && !(it->second).isNone();
+          }
 
           /// Save parameters to HDF5 archive
           void save(hdf5::archive &) const;
