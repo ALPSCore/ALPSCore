@@ -51,7 +51,7 @@ namespace alps {
 
             /// Utility function: generate a test value of scalar type T
             template <typename T>
-            inline void gen_data(T& val) { val=321.125; } // good enough for any integer and floating point
+            inline void gen_data(T& val) { val=T(321.125); } // good enough for any integer and floating point
 
 #define ALPS_TEST_DEF_GENERATOR(atype,aval) inline void gen_data(atype& val) { val=aval; }
             ALPS_TEST_DEF_GENERATOR(std::string,"hello, world!");
