@@ -8,6 +8,8 @@
 #include "alps/params.hpp"
 #include "gtest/gtest.h"
 
+#include "param_generators.hpp"
+
 #define ALPS_ASSIGN_PARAM(a_type)  parms[ #a_type ] = static_cast<a_type>(0x41)
 
 #define ALPS_TEST_PARAM(a_type) do { a_type x=parms[ #a_type ]; EXPECT_EQ(x,0x41); } while(0)
@@ -158,3 +160,45 @@ TEST(param,Invariance)
 }
 
 
+// FIXME: test type mismatch (on get and on set) systematically for all scalar and vector types
+
+
+// Testing type mismatch exception and message
+TEST(param,SetTypeMismatchMessage)
+{
+    alps::params_ns::testing::CmdlineParameter<int> gen_int("myparam");
+    alps::params p=gen_int.params();
+
+    bool thrown=false;
+    try {
+      p["myparam"]=1L; // attempt to assing long to an integer parameter
+    } catch (alps::params::type_mismatch& exc) {
+      thrown=true;
+      std::string msg=exc.what();
+      // std::cerr << "DEBUG: msg='" << msg << "'\n";
+      EXPECT_TRUE(msg.find("myparam")!=std::string::npos) << "Option name is not mentioned in exception message: "+msg;
+      EXPECT_TRUE(msg.find("int")!=std::string::npos) << "Option type is not mentioned in exception message: "+msg;
+      EXPECT_TRUE(msg.find("long")!=std::string::npos) << "RHS type is not mentioned in exception message: "+msg;
+    }
+    EXPECT_TRUE(thrown) << "Exception was not thrown!";
+}
+
+// Testing type mismatch exception and message
+TEST(param,GetTypeMismatchMessage)
+{
+    alps::params_ns::testing::CmdlineParameter<unsigned long> gen_ulong("myparam");
+    alps::params p=gen_ulong.params();
+
+    bool thrown=false;
+    try {
+      std::string s=p["myparam"]; // attempt to assing integer parameter to a string
+    } catch (alps::params::type_mismatch& exc) {
+      thrown=true;
+      std::string msg=exc.what();
+      // std::cerr << "DEBUG: msg='" << msg << "'\n";
+      EXPECT_TRUE(msg.find("myparam")!=std::string::npos) << "Option name is not mentioned in exception message: "+msg;
+      EXPECT_TRUE(msg.find("unsigned long int")!=std::string::npos) << "Option type is not mentioned in exception message: "+msg;
+      EXPECT_TRUE(msg.find("std::string")!=std::string::npos) << "LHS type is not mentioned in exception message: "+msg;
+    }
+    EXPECT_TRUE(thrown) << "Exception was not thrown!";
+}
