@@ -72,6 +72,11 @@ void TestDefaults(bool from_file, T defval1, T defval2, T val1, T val2)
     EXPECT_EQ(p["no_default"], val2);
     EXPECT_EQ(p["undefined"], defval2);
 
+    //Check the "defaulted" status
+    EXPECT_FALSE(p.defaulted("with_default"));
+    EXPECT_FALSE(p.defaulted("no_default"));
+    EXPECT_TRUE(p.defaulted("undefined"));
+    
     EXPECT_THROW(const T& x=p["undefined2"], alps::params::uninitialized_value);
 }
 

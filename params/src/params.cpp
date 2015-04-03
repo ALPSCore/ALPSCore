@@ -166,8 +166,8 @@ namespace alps {
             //         option values will NOT be reassigned!  (only
             //         options that are not yet in optmap_ are
             //         affected here, to avoid overwriting an option
-            //         that was assigned earlier) --- unless @param
-            //         reassign is set to true, indicating that the
+            //         that was assigned earlier) --- unless @param reassign
+            //         is set to true, indicating that the
             //         command line options take precedence.
             // NOTE#2:
             //         The loop is over the content of the define()'d
@@ -178,18 +178,24 @@ namespace alps {
             //         opportunity to distinguish between options that
             //         are define()'d but are missing and those which
             //         were never even define()'d.
-            
+
+            defaulted_options_.clear(); // FIXME!!! can we avoid this lengthy operation?
             BOOST_FOREACH(const detail::description_map_type::value_type& slot, descr_map_) {
                 const std::string& k=slot.first;
                 const detail::description_map_type::mapped_type& dscval=slot.second;
+                const po::variables_map::mapped_type& cmdline_var=vm[k];
+                
+                // Mark the options that have default values (not in command line)
+                if (cmdline_var.defaulted()) defaulted_options_.insert(k); // FIXME: it's a temporary hack
+                  
                 if (reassign) {
                     // options in the command line must override stored options
-                    if (vm[k].empty() || vm[k].defaulted()) continue; // skip options missing from cmdline
+                    if (cmdline_var.empty() || cmdline_var.defaulted()) continue; // skip options missing from cmdline
                 } else {
                     // no override, stored options take precedence
                     if (optmap_.count(k)) continue; // skip the keys that are already stored and have value assigned
                 }
-                dscval.set_option(optmap_[k], vm[k].value());
+                dscval.set_option(optmap_[k], cmdline_var.value());
             }
             is_valid_=true;
         }        

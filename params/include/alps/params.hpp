@@ -65,26 +65,23 @@ namespace alps {
 
 
       class /*-ALPS_DECL-*/ params {
-      public:
-          // typedef params_ns::options_map_type options_map_type;
       private:
-          // typedef boost::program_options::options_description options_description;
-          // typedef void (option_type::*assign_fn_type)(const boost::any&);
-          // typedef std::map<std::string, assign_fn_type> anycast_map_type;
 
+          /// Type for the set of key names. Used in recording defaulted options. (FIXME: think of a better solution)
+          typedef std::set<std::string> keys_set_type;
           
-          // typedef boost::program_options::variables_map variables_map;
-          // typedef void (*printout_type)(std::ostream&, const boost::any&);
-          // typedef std::map<std::string,printout_type> printout_map_type;
-
           /// True if there are no new define<>()-ed parameters since last parsing. Mutated by deferred parsing: certainly_parse()
           mutable bool is_valid_;
           /// Options (parameters). Mutated by deferred parsing: certainly_parse()
           mutable options_map_type optmap_; 
           
+          /// Set of options having their default value. Mutated by deferred parsing: certainly_parse()
+          // FIXME: it is a quick hack. Should be merged with descr_map_ below.
+          mutable keys_set_type defaulted_options_;
+          
           /// Map (option names --> definition). Filled by define<T>() method.
           detail::description_map_type descr_map_;
-          
+
           std::string helpmsg_;                 ///< Help message
           std::vector<std::string> argvec_;     ///< Command line arguments
           std::string infile_;                  ///< File name to read from (if not empty)
@@ -215,13 +212,23 @@ namespace alps {
           /** Iterator to the beyond-the-end of the option map */
           const_iterator end() const { possibly_parse(); return optmap_.end(); }
 
-          /// Check if a parameter is defined
-          bool defined(std::string name) const
+          /// Check if a parameter is defined (that is: attempt to assign to/from it will not throw)
+          bool defined(const std::string& name) const
           {
               possibly_parse();
               options_map_type::const_iterator it=optmap_.find(name);
               return (it!=optmap_.end()) && !(it->second).isNone();
           }
+
+          /// Check if parameter has default value (does not present in the command line).
+          /// @remark For non-existing and implicitly defined (by assignment) parameters the result is undefined (currently: false).
+          // FIXME: what if it does not exist? what if it was explicitly assigned?
+          bool defaulted(const std::string& name) const
+          {
+              possibly_parse();
+              return defaulted_options_.count(name)!=0; // FIXME: the implementation via set is a quick hack
+          }
+        
 
           /// Save parameters to HDF5 archive
           void save(hdf5::archive &) const;
