@@ -14,6 +14,32 @@ namespace alps {
     namespace params_ns {
         namespace testing {
 
+            /// Utility function: cast a value as an input string
+            template <typename T>
+            std::string toInputString(T val)
+            {
+                return boost::lexical_cast<std::string>(val); // good for numeric types and bool
+            }
+
+            std::string toInputString(const std::string& val)
+            {
+                return "\""+val+"\"";
+            }
+
+            template <typename T>
+            std::string toInputString(const std::vector<T>& vec)
+            {
+                typename std::vector<T>::const_iterator it=vec.begin(), end=vec.end();
+                std::string out;
+                while (it!=end) {
+                    out += toInputString(*it);
+                    ++it;
+                    if (it!=end)  out+=",";
+                }
+                return out;
+            }
+
+            
             /// Utility function: generate a parameter from string as if from a command line
             inline params gen_param(const std::string& name, const std::string& val)
             {
@@ -23,23 +49,30 @@ namespace alps {
                 return params(argc,argv);
             }
 
-            /// Utility function: generate a test value of type T
+            /// Utility function: generate a test value of scalar type T
             template <typename T>
-            inline void gen_data(T& val) { throw std::logic_error("Data generator is not defined"); }
+            inline void gen_data(T& val) { val=321.125; } // good enough for any integer and floating point
 
 #define ALPS_TEST_DEF_GENERATOR(atype,aval) inline void gen_data(atype& val) { val=aval; }
-            ALPS_TEST_DEF_GENERATOR(int,123);
-            ALPS_TEST_DEF_GENERATOR(double,124.25);
             ALPS_TEST_DEF_GENERATOR(std::string,"hello, world!");
             ALPS_TEST_DEF_GENERATOR(bool,true);
 #undef ALPS_TEST_DEF_GENERATOR
 
-            // Utility function: generate "another" test value of type T (not equal to one from `gen_data<T>()`)
+            /// Utility function: generate a test value of std::vector<T>
             template <typename T>
-            inline void gen_other_data(T& val) { gen_data(val); val+=boost::lexical_cast<T>(1); } // works even for strings
+            inline void gen_data(std::vector<T>& val)
+            {
+                T x;
+                gen_data(x);
+                std::vector<T> vec(3,x);
+                val=vec;
+            }
+          
+            /// Utility function: generate "another" test value of type T (not equal to one from `gen_data<T>()`)
+            template <typename T>
+            inline void gen_other_data(T& val) { gen_data(val); val+=boost::lexical_cast<T>(1); } // works for scalars and strings
             
-            inline void gen_other_data(bool& val) { gen_data(val); val=!val; } 
-
+            inline void gen_other_data(bool& val) { gen_data(val); val=!val; }
 
             /// Base class: stores name and value associated with a parameter of type T
             template <typename T>
@@ -56,8 +89,8 @@ namespace alps {
                     gen_data(val_);
                 }
 
-                /// Returns associated value as a string
-                std::string sdata() const { return boost::lexical_cast<std::string>(val_); } 
+                /// Returns associated value
+                T data() const { return val_; } 
 
                 /// Returns a value that is not equal to the stored one
                 T other_data() const { T v; gen_other_data(v); return v; } // data "other than" stored value
@@ -74,7 +107,7 @@ namespace alps {
                 /// Returns parameters object generated from a command line
                 alps::params params() const
                 {
-                    alps::params p=gen_param(B::name_, B::sdata());
+                    alps::params p=gen_param(B::name_, toInputString(B::data()));
                     return p.define<typename B::value_type>(B::name_,"some parameter");
                 }
             };
@@ -90,7 +123,7 @@ namespace alps {
                 /// Returns parameters object generated from a command line, but having a default value
                 alps::params params() const
                 {
-                    alps::params p=gen_param(B::name_, B::sdata());
+                    alps::params p=gen_param(B::name_, toInputString(B::data()));
                     return p.define<typename B::value_type>(B::name_, B::other_data(), "some parameter");
                 }
             };
@@ -122,7 +155,7 @@ namespace alps {
                 /// Returns parameters object generated from a command line and then assigned to
                 alps::params params() const
                 {
-                    alps::params p=gen_param(B::name_, boost::lexical_cast<std::string>(B::other_data()));
+                    alps::params p=gen_param(B::name_, toInputString(B::other_data()));
                     p.define<typename B::value_type>(B::name_, "some parameter");
                     p[B::name_]=B::val_;
                     return p;

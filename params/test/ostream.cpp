@@ -15,6 +15,7 @@
 #include "gtest/gtest.h"
 
 #include "param_generators.hpp"
+#include "alps/utilities/short_print.hpp"
 using namespace alps::params_ns::testing;
 
 
@@ -22,28 +23,49 @@ using namespace alps::params_ns::testing;
  * line, from default, by explicit assignment), and then check that
  * they are printed correctly. */
 
-/* FIXME: Vectors and trigger values are not tested; */
+/* FIXME: Trigger values are not tested; */
 
 /* FIXME: the whole thing looks way too complicated for such a simple task? */
 
+namespace {
 
+    // NOTE: Adjust the functions below if the print format changes
+    
+    // utility function: stringify a name-value (scalar) from parameter as it would be expected on print
+    template <typename T>
+    std::string toPrintString(const std::string& name, T val)
+    {
+        return name + " : " + boost::lexical_cast<std::string>(val);
+    }
+
+    // utility function: stringify a name-value (vector) from parameter as it would be expected on print
+    template <typename T>
+    std::string toPrintString(const std::string& name, const std::vector<T>& vec)
+    {
+        std::ostringstream s;
+        s << alps::short_print(vec);
+        return name + " : " + s.str();
+    }
+}
+    
 // using type-parametrized test fixture; the type is a alps::params-generating class.
 template <typename T>
 class ParamTest : public ::testing::Test {
     public:
 
-    void ScalarPrintTest() const
+    void PrintTest() const
     {
         typedef typename T::value_type value_type;
         T gen("myparam"); // prepare to generate a parameter with the name "myparam"
-        std::string sval=gen.sdata(); // value of the parameter as a string
         alps::params p=gen.params(); // get the parameter
 
-        std::string expected="myparam : "+sval+"\n"; // NOTE: change here if output format changes
+        std::string expected=toPrintString("myparam", gen.data()); // get the name and the value and print them
+
         std::ostringstream s;
         s << p;
         EXPECT_TRUE(s.str().find(expected)!=std::string::npos) << "Expected: "+expected+"Got:"+s.str();
     }
+        
 };
 
 
@@ -66,13 +88,22 @@ typedef ::testing::Types<
     CmdlineParameter<bool>,
     CmdlineParameterWithDefault<bool>,
     AssignedParameter<bool>,
-    OverriddenParameter<bool>
+    OverriddenParameter<bool>,
+
+    CmdlineParameter< std::vector<int> >,
+    AssignedParameter< std::vector<int> >,
+
+    CmdlineParameter< std::vector<double> >,
+    AssignedParameter< std::vector<double> >,
+
+    CmdlineParameter< std::vector<bool> >,
+    AssignedParameter< std::vector<bool> >
 
     > ParamGenTypes;
 
 TYPED_TEST_CASE(ParamTest, ParamGenTypes);
 
-TYPED_TEST(ParamTest,ScalarPrint)
+TYPED_TEST(ParamTest,Print)
 {
-    this->ScalarPrintTest();
+    this->PrintTest();
 }
