@@ -18,6 +18,11 @@ else()
  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 endif()
 
+#policy update CMP0042
+if(APPLE)
+  set(CMAKE_MACOSX_RPATH ON)
+endif()
+
 # Build static XOR shared 
 # Defines ALPS_BUILD_TYPE=STATIC|DYNAMIC .
 option(BuildStatic "Build static libraries" OFF)
