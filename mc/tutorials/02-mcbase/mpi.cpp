@@ -23,8 +23,8 @@
 
 int main(int argc, char *argv[]) {
 
+    boost::mpi::environment env(argc, argv,false);
     try {
-        boost::mpi::environment env(argc, argv);
         boost::mpi::communicator comm;
 
         alps::parameters_type<ising_sim>::type parameters;
@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
             alps::parameters_type<ising_sim>::type p(argc, (const char**)argv, "/parameters"); // reads from HDF5 if supplied
             // if parameters are restored from the archive, all definitions are already there
             if (!p.is_restored()) {
-                ising_sim::define_parameters(p);
+                alps::mcmpiadapter<ising_sim>::define_parameters(p);
             }
             parameters=p;
         }
