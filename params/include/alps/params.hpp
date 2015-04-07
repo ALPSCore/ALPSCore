@@ -167,6 +167,14 @@ namespace alps {
           */
           params(unsigned int argc, const char* argv[], const char* hdfpath = "/parameters");
 
+
+          /// Constructor from INI file (without command line)
+          params(const std::string& inifile): infile_(inifile)
+          {
+              init();
+          }
+
+
 #ifdef ALPS_HAVE_PYTHON_DEPRECATED
           params(boost::python::dict const & arg);
           params(boost::python::str const & arg);

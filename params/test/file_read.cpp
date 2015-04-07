@@ -582,3 +582,28 @@ TEST(param,CmdlineOverride)
     EXPECT_TRUE(bool(p["trigger_opt"]));
 }
 
+// Reading from a file without a command line
+// FIXME: use the helper generator classes, check all types
+// FIXME: check all features of alps::params
+TEST(param,IniFileConstructor)
+{
+    //create a file name
+    std::string pfilename(alps::temporary_filename("pfile"));
+    
+    // Generate INI file
+    {
+        std::ofstream pfile(pfilename.c_str());
+        pfile <<
+            "param1 = 111\n"
+            "param2 = 3.125\n";
+    }
+
+    // Read the INI file
+    alps::params p(pfilename);
+    p.
+        define<int>("param1","Parameter 1").
+        define<double>("param2","Parameter 2");
+
+    EXPECT_EQ(111,p["param1"]);
+    EXPECT_EQ(3.125,p["param2"]);
+}
