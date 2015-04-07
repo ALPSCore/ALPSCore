@@ -36,9 +36,6 @@
 #define MATRIX_SIZE 5
 #define SEED 42
 
-#define TYPE @HDF5_DATA_TYPE@
-#define NAME @HDF5_TEST_NAME@
-
 #ifndef SZIP_COMPRESS
     #define SZIP_COMPRESS false
 #endif
@@ -989,7 +986,7 @@ template<typename T> bool equal(T * const & a, T * const & b, std::size_t size) 
     return true;
 }
 
-template<typename base_type> struct test {
+template<typename base_type> struct hdf5_test {
     static bool write(std::string const & filename, boost::true_type) {
         std::vector<std::size_t> size_0;
         base_type* write_0_value = NULL;
@@ -1110,7 +1107,7 @@ template<typename base_type> struct test {
     }
 };
 
-template<typename T> struct test<boost::shared_array<T> > {
+template<typename T> struct hdf5_test<boost::shared_array<T> > {
     static bool write(std::string const & filename, boost::mpl::false_) {
         std::size_t length = MATRIX_SIZE;
         std::vector<std::size_t> size_1(1, MATRIX_SIZE);
@@ -1208,28 +1205,221 @@ template<typename T> struct skip_attribute<boost::shared_array<T> >: public skip
 
 #include "gtest/gtest.h"
 
-TEST(hdf5, NAME) {
-    std::string const filename = alps::temporary_filename(ALPS_STRINGIFY(NAME)) + ".h5";
+template<typename XXXX> class TypedTestEncapsulation: public ::testing::Test{
+public:
+  TypedTestEncapsulation(){
+    std::string const filename = alps::temporary_filename("hdf5_io_generic_test") + ".h5";
     if (boost::filesystem::exists(boost::filesystem::path(filename)))
-        boost::filesystem::remove(boost::filesystem::path(filename));
-    bool result = true;
-    if (IS_ATTRIBUTE && skip_attribute< TYPE >::value)
-        std::cout << "SKIP" << std::endl;
+      boost::filesystem::remove(boost::filesystem::path(filename));
+    result_ = true;
+    if (IS_ATTRIBUTE && skip_attribute<XXXX >::value)
+      std::cout << "SKIP" << std::endl;
     else {
-        for (std::size_t i = 32; i && result; --i)
-            result = test<boost::remove_pointer< TYPE >::type >::write(filename, boost::is_pointer< TYPE >::type());
-        {
-            alps::hdf5::archive iar1(filename, SZIP_COMPRESS ? "ca" : "a");
-            alps::hdf5::archive iar2(filename, SZIP_COMPRESS ? "ca" : "a");
-            alps::hdf5::archive iar3 = iar1;
-            for (std::size_t i = 32; i && result; --i)
-                result = test<boost::remove_pointer< TYPE >::type >::overwrite(filename, boost::is_pointer< TYPE >::type());
-        }
-        boost::filesystem::remove(boost::filesystem::path(filename));
-        std::cout << (result ? "SUCCESS" : "FAILURE") << std::endl;
+      for (std::size_t i = 32; i && result_; --i){
+        EXPECT_TRUE(hdf5_test<typename boost::remove_pointer<XXXX>::type >::write(filename,  boost::is_pointer< XXXX >::type()));
+      }
+      {
+        alps::hdf5::archive iar1(filename, SZIP_COMPRESS ? "ca" : "a");
+        alps::hdf5::archive iar2(filename, SZIP_COMPRESS ? "ca" : "a");
+        alps::hdf5::archive iar3 = iar1;
+        for (std::size_t i = 32; i && result_; --i)
+          EXPECT_TRUE(hdf5_test<typename boost::remove_pointer< XXXX >::type >::overwrite(filename, boost::is_pointer< XXXX >::type()));
+      }
+      boost::filesystem::remove(boost::filesystem::path(filename));
+      //std::cout << (result_ ? "SUCCESS" : "FAILURE") << std::endl;
     }
-    EXPECT_TRUE(result);
+  }
+  bool result_;
+};
+
+template<typename TYPE> class ScalarTypedTestEncapsulation: public TypedTestEncapsulation<TYPE>{};
+template<typename TYPE> class VectorTypedTestEncapsulation: public TypedTestEncapsulation<TYPE>{};
+template<typename TYPE> class ValarrayTypedTestEncapsulation: public TypedTestEncapsulation<TYPE>{};
+template<typename TYPE> class PairTypedTestEncapsulation: public TypedTestEncapsulation<TYPE>{};
+template<typename TYPE> class VectorVectorTypedTestEncapsulation: public TypedTestEncapsulation<TYPE>{};
+template<typename TYPE> class VectorValarrayTypedTestEncapsulation: public TypedTestEncapsulation<TYPE>{};
+template<typename TYPE> class PairVectorTypedTestEncapsulation: public TypedTestEncapsulation<TYPE>{};
+template<typename TYPE> class EnumTypedTestEncapsulation: public TypedTestEncapsulation<TYPE>{};
+template<typename TYPE> class UserDefinedTypedTestEncapsulation: public TypedTestEncapsulation<TYPE>{};
+template<typename TYPE> class CastTypedTestEncapsulation: public TypedTestEncapsulation<TYPE>{};
+template<typename TYPE> class PointerTypedTestEncapsulation: public TypedTestEncapsulation<TYPE>{};
+template<typename TYPE> class RemainingTypedTestEncapsulation: public TypedTestEncapsulation<TYPE>{};
+
+
+typedef ::testing::Types<
+bool, int, short, long, float, double,
+std::size_t, std::string, std::complex<float>, std::complex<double>, std::complex<long double>,
+boost::int8_t, boost::uint8_t, boost::int16_t, boost::uint16_t, boost::int32_t, boost::uint32_t, boost::int64_t, boost::uint64_t> hdf5ScalarTypes;
+
+typedef ::testing::Types<std::vector<bool>,
+std::pair<std::vector<bool> *, std::vector<std::size_t> >,
+std::vector<std::size_t>, std::vector<short>, std::vector<int>, std::vector<long>, std::vector<float>, std::vector<double>, std::vector<std::complex<double> >, std::vector<std::string> >hdf5VectorTypes;
+
+typedef ::testing::Types<
+std::valarray<int>, std::valarray<double>, std::valarray<std::complex<double> > > hdf5ValarrayTypes;
+
+typedef ::testing::Types<
+std::pair<int *, std::vector<std::size_t> >,
+std::pair<double *, std::vector<std::size_t> >,
+std::pair<std::complex<double> *,std::vector<std::size_t> >,
+std::pair<std::string *,std::vector<std::size_t> > > hdf5PairTypes;
+
+typedef ::testing::Types<
+std::vector<std::vector<int> >,
+std::vector<std::vector<double> >,
+std::vector<std::vector<std::complex<double> > >,
+std::vector<std::vector<std::string> >,
+std::vector<std::vector<std::vector<int> > >,
+std::vector<std::vector<std::vector<double> > >,
+std::vector<std::vector<std::vector<std::complex<double> > > >,
+std::vector<std::vector<std::vector<std::string> > > > hdf5VectorVectorTypes;
+
+
+typedef ::testing::Types<
+std::vector<std::valarray<int> >,
+std::valarray<std::vector<double> > >hdf5VectorValarrayTypes;
+
+typedef ::testing::Types<
+std::pair<std::vector<int> *, std::vector<std::size_t> >,
+std::pair<std::vector<double> *, std::vector<std::size_t> >,
+std::pair<std::vector<std::complex<double> > *, std::vector<std::size_t> >,
+std::pair<std::vector<std::string> *, std::vector<std::size_t> > >hdf5PairVectorTypes;
+
+typedef ::testing::Types<
+enum_type,
+std::vector<enum_type>,
+std::vector<std::vector<enum_type> >,
+std::pair<enum_type *, std::vector<std::size_t> >,
+std::vector<std::valarray<enum_type> >,
+std::pair<std::vector<enum_type> *, std::vector<std::size_t> >,
+std::pair<std::vector<std::vector<enum_type> > *, std::vector<std::size_t> >,
+enum_vec_type,
+std::vector<enum_vec_type>,
+std::vector<std::vector<enum_vec_type> >,
+std::pair<enum_vec_type *, std::vector<std::size_t> >,
+std::vector<std::valarray<enum_vec_type> >,
+std::pair<std::vector<enum_vec_type> *,
+std::vector<std::size_t> >,
+std::pair<std::vector<std::vector<enum_vec_type> > *, std::vector<std::size_t> > >hdf5EnumTypes;
+
+
+typedef ::testing::Types<
+ userdefined_class<std::size_t>,
+userdefined_class<short>,
+userdefined_class<int>,
+userdefined_class<long>,
+userdefined_class<float>,
+userdefined_class<double>,
+userdefined_class<std::complex<double> >,
+userdefined_class<std::string>,
+std::vector<userdefined_class<double> >,
+std::vector<std::vector<userdefined_class<double> > >,
+std::pair<userdefined_class<double> *, std::vector<std::size_t> >  > hdf5UserDefinedTypes;
+
+typedef ::testing::Types<
+cast_type<int, long>,
+cast_type<int, double>,
+cast_type<double, std::string>,
+cast_type<int, std::string>,
+cast_type<float, double>,
+cast_type<short, float>,
+std::vector<cast_type<int, double> >,
+std::vector<std::vector<cast_type<int, double> > >,
+std::pair<cast_type<int, double> *, std::vector<std::size_t> >,
+std::vector<std::valarray<cast_type<int, double> > >,
+std::vector<cast_type<double, std::string> >,
+std::vector<std::vector<cast_type<double, std::string> > >,
+std::pair<cast_type<double, std::string> *, std::vector<std::size_t> > > hdf5CastTypes;
+
+typedef ::testing::Types<
+int *,short *,long *,float *,double *,
+std::size_t *,std::string *,std::complex<double> *,
+enum_type *,enum_vec_type *,userdefined_class<double> *,cast_type<int, double> *,cast_type<int, std::string> * >hdf5PointerTypes;
+
+typedef ::testing::Types<
+boost::shared_array<int>,boost::shared_array<short>,boost::shared_array<long>,boost::shared_array<float>,boost::shared_array<double>, boost::shared_array<std::size_t>,boost::shared_array<std::string>,boost::shared_array<std::complex<double> >,boost::shared_array<enum_type>,boost::shared_array<enum_vec_type>,boost::shared_array<userdefined_class<double> >,boost::shared_array<cast_type<int, double> >,boost::shared_array<cast_type<int, std::string> >,cast_type<std::vector<int>, std::valarray<int> >,std::pair<double, int>,std::pair<double, std::complex<double> >,std::pair<cast_type<int, std::string>, enum_type>,std::pair<enum_type, cast_type<int, double> >,std::pair<std::vector<cast_type<int, std::string> >, std::pair<double, int> >,std::pair<std::pair<std::vector<enum_type> *, std::vector<std::size_t> >, enum_type>,cast_type<std::valarray<int>, std::vector<int> >,cast_type<std::pair<int *, std::vector<std::size_t> >, std::vector<std::vector<std::vector<int> > > >,cast_type<std::pair<int *, std::vector<std::size_t> >, std::vector<std::vector<std::vector<double> > > >,std::pair<cast_type<std::vector<int>, std::valarray<long> > *, std::vector<std::size_t> >,cast_type<std::vector<int>, std::valarray<double> >,std::vector<std::size_t, std::allocator<std::size_t> >,std::vector<short, std::allocator<short> >,std::vector<int, std::allocator<int> >,std::vector<long, std::allocator<long> >,std::vector<float, std::allocator<float> >,std::vector<double, std::allocator<double> >,std::vector<std::complex<double>, std::allocator<std::complex<double> > >,std::vector<std::string, std::allocator<std::string> >,std::vector<std::vector<int, std::allocator<int> > >,std::vector<std::vector<double>, std::allocator<std::vector<double> > >,std::vector<std::vector<std::complex<double>, std::allocator<std::complex<double> > >, std::allocator<std::vector<std::complex<double>, std::allocator<std::complex<double> > > > >,std::vector<std::vector<std::string, std::allocator<std::string> >, std::allocator<std::vector<std::string, std::allocator<std::string> > > >,boost::array<int, 20>,boost::array<long double, 20>,boost::array<float, 20>,boost::array<unsigned long long, 20>,boost::array<boost::array<std::complex<double>, 20>, 20>,std::vector<boost::array<int, 4> >,boost::array<std::vector<int>, 4>,std::vector<boost::array<std::vector<int>, 4> >,boost::tuple<int, double, float, std::complex<double> >,std::vector<boost::tuple<char, bool, long long> > > hdf5RemainingTypes;
+
+/*#    "std::vector<std::vector<bool> >"
+#    "boost::numeric::ublas::vector<bool>"
+#    boost::numeric::ublas::vector<int> boost::numeric::ublas::vector<double> "boost::numeric::ublas::vector<std::complex<double> >"
+#    "std::vector<boost::numeric::ublas::vector<std::complex<double> > >"
+#    "boost::numeric::ublas::matrix<double, boost::numeric::ublas::column_major>" "boost::numeric::ublas::matrix<std::complex<double>, boost::numeric::ublas::column_major>"
+#    "cast_type<std::vector<int>, boost::numeric::ublas::vector<int> >"
+#    "cast_type<std::valarray<int>, boost::numeric::ublas::vector<int> >"
+#    "cast_type<boost::numeric::ublas::vector<int>, std::vector<int> >" "cast_type<boost::numeric::ublas::vector<int>, std::valarray<int> >"
+#    "cast_type<std::vector<int>, boost::numeric::ublas::vector<double> >"
+#    "std::vector<cast_type<std::vector<int>, boost::numeric::ublas::vector<double> > >"
+#    "alps::numeric::matrix<unsigned int>" alps::numeric::matrix<float> alps::numeric::matrix<double> "alps::numeric::matrix<std::complex<float> >" "alps::numeric::matrix<std::complex<double> >"
+#    "std::vector<alps::numeric::matrix<unsigned int> >" "std::vector<alps::numeric::matrix<float> >" "std::vector<alps::numeric::matrix<double> >"
+#    "std::vector<alps::numeric::matrix<std::complex<float> > >" "std::vector<alps::numeric::matrix<std::complex<double> > >"
+#    "alps::numeric::matrix<std::vector<double> >" "alps::numeric::matrix<std::vector<std::complex<float> > >" "alps::numeric::matrix<alps::numeric::matrix<int> >"
+#    "alps::numeric::matrix<alps::numeric::matrix<double> >" "alps::numeric::matrix<alps::numeric::matrix<std::complex<double> > >"
+#    "boost::multi_array<double, 1>" "boost::multi_array<int, 1>" "boost::multi_array<std::complex<double>, 1>" "boost::multi_array<std::string, 1>"
+#    "boost::multi_array<double, 2>" "boost::multi_array<int, 2>" "boost::multi_array<std::complex<double>, 2>" "boost::multi_array<std::string, 2>"
+#    "boost::multi_array<double, 3>" "boost::multi_array<int, 3>" "boost::multi_array<std::complex<double>, 3>" "boost::multi_array<std::string, 3>"
+#    "std::vector<boost::multi_array<double, 2> >" "std::vector<boost::multi_array<double, 3> >" "std::vector<boost::multi_array<double, 4> >"
+#    "std::pair<boost::multi_array<std::complex<double>, 3> *, std::vector<std::size_t> >" "boost::multi_array<std::complex<double>, 1> *"
+#    "alps::multi_array<double, 1>" "alps::multi_array<int, 1>" "alps::multi_array<std::complex<double>, 1>" "alps::multi_array<std::string, 1>"
+#    "alps::multi_array<double, 2>" "alps::multi_array<int, 2>" "alps::multi_array<std::complex<double>, 2>" "alps::multi_array<std::string, 2>"
+#    "alps::multi_array<double, 3>" "alps::multi_array<int, 3>" "alps::multi_array<std::complex<double>, 3>" "alps::multi_array<std::string, 3>"
+#    "std::vector<alps::multi_array<double, 2> >" "std::vector<alps::multi_array<double, 3> >" "std::vector<alps::multi_array<double, 4> >"
+#    "std::pair<alps::multi_array<std::complex<double>, 3> *, std::vector<std::size_t> >" "alps::multi_array<std::complex<double>, 1> *"
+
+
+double, int, unsigned int*/
+//> hdf5Types;
+
+TYPED_TEST_CASE(ScalarTypedTestEncapsulation, hdf5ScalarTypes);
+TYPED_TEST(ScalarTypedTestEncapsulation, TestTypes) {
+  EXPECT_TRUE(this->result_);
 }
+TYPED_TEST_CASE(VectorTypedTestEncapsulation, hdf5ScalarTypes);
+TYPED_TEST(VectorTypedTestEncapsulation, TestTypes) {
+  EXPECT_TRUE(this->result_);
+}
+TYPED_TEST_CASE(ValarrayTypedTestEncapsulation, hdf5ValarrayTypes);
+TYPED_TEST(ValarrayTypedTestEncapsulation, TestTypes) {
+  EXPECT_TRUE(this->result_);
+}
+TYPED_TEST_CASE(PairTypedTestEncapsulation, hdf5PairTypes);
+TYPED_TEST(PairTypedTestEncapsulation, TestTypes) {
+  EXPECT_TRUE(this->result_);
+}
+TYPED_TEST_CASE(VectorVectorTypedTestEncapsulation, hdf5VectorVectorTypes);
+TYPED_TEST(VectorVectorTypedTestEncapsulation, TestTypes) {
+  EXPECT_TRUE(this->result_);
+}
+TYPED_TEST_CASE(VectorValarrayTypedTestEncapsulation, hdf5VectorValarrayTypes);
+TYPED_TEST(VectorValarrayTypedTestEncapsulation, TestTypes) {
+  EXPECT_TRUE(this->result_);
+}
+TYPED_TEST_CASE(PairVectorTypedTestEncapsulation, hdf5PairVectorTypes);
+TYPED_TEST(PairVectorTypedTestEncapsulation, TestTypes) {
+  EXPECT_TRUE(this->result_);
+}
+TYPED_TEST_CASE(EnumTypedTestEncapsulation, hdf5EnumTypes);
+TYPED_TEST(EnumTypedTestEncapsulation, TestTypes) {
+  EXPECT_TRUE(this->result_);
+}
+TYPED_TEST_CASE(UserDefinedTypedTestEncapsulation, hdf5UserDefinedTypes);
+TYPED_TEST(UserDefinedTypedTestEncapsulation, TestTypes) {
+  EXPECT_TRUE(this->result_);
+}
+TYPED_TEST_CASE(CastTypedTestEncapsulation, hdf5CastTypes);
+TYPED_TEST(CastTypedTestEncapsulation, TestTypes) {
+  EXPECT_TRUE(this->result_);
+}
+TYPED_TEST_CASE(PointerTypedTestEncapsulation, hdf5PointerTypes);
+TYPED_TEST(PointerTypedTestEncapsulation, TestTypes) {
+  EXPECT_TRUE(this->result_);
+}
+TYPED_TEST_CASE(RemainingTypedTestEncapsulation, hdf5RemainingTypes);
+TYPED_TEST(RemainingTypedTestEncapsulation, TestTypes) {
+  EXPECT_TRUE(this->result_);
+}
+
+
+
 
 // int main(int argc, char **argv) 
 // {
