@@ -1216,14 +1216,17 @@ public:
       std::cout << "SKIP" << std::endl;
     else {
       for (std::size_t i = 32; i && result_; --i){
-        EXPECT_TRUE(hdf5_test<typename boost::remove_pointer<XXXX>::type >::write(filename,  boost::is_pointer< XXXX >::type()));
+        result_=hdf5_test<typename boost::remove_pointer<XXXX>::type >::write(filename, boost::is_pointer< XXXX >::type());
+        EXPECT_TRUE(result_);
       }
       {
         alps::hdf5::archive iar1(filename, SZIP_COMPRESS ? "ca" : "a");
         alps::hdf5::archive iar2(filename, SZIP_COMPRESS ? "ca" : "a");
         alps::hdf5::archive iar3 = iar1;
-        for (std::size_t i = 32; i && result_; --i)
-          EXPECT_TRUE(hdf5_test<typename boost::remove_pointer< XXXX >::type >::overwrite(filename, boost::is_pointer< XXXX >::type()));
+        for (std::size_t i = 32; i && result_; --i){
+          result_=hdf5_test<typename boost::remove_pointer< XXXX >::type >::overwrite(filename, boost::is_pointer< XXXX >::type());
+          EXPECT_TRUE(result_);
+        }
       }
       boost::filesystem::remove(boost::filesystem::path(filename));
       //std::cout << (result_ ? "SUCCESS" : "FAILURE") << std::endl;
