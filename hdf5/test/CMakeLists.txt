@@ -23,6 +23,9 @@ foreach(test ${test_src})
     alps_add_gtest(${test})
 endforeach(test)
 
+if(ExtensiveTesting)
+  SET_TARGET_PROPERTIES(hdf5_io_types PROPERTIES COMPILE_FLAGS "-DExtensiveTesting")
+endif (ExtensiveTesting)
 
     # TODO: fix szip and attribute dependence ...
 #    if (SZIP_FOUND)

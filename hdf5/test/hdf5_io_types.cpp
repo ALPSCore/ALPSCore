@@ -1376,6 +1376,7 @@ TYPED_TEST_CASE(ScalarTypedTestEncapsulation, hdf5ScalarTypes);
 TYPED_TEST(ScalarTypedTestEncapsulation, TestTypes) {
   EXPECT_TRUE(this->result_);
 }
+#ifdef ExtensiveTesting
 TYPED_TEST_CASE(VectorTypedTestEncapsulation, hdf5ScalarTypes);
 TYPED_TEST(VectorTypedTestEncapsulation, TestTypes) {
   EXPECT_TRUE(this->result_);
@@ -1420,7 +1421,7 @@ TYPED_TEST_CASE(RemainingTypedTestEncapsulation, hdf5RemainingTypes);
 TYPED_TEST(RemainingTypedTestEncapsulation, TestTypes) {
   EXPECT_TRUE(this->result_);
 }
-
+#endif
 
 
 
