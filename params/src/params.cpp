@@ -265,33 +265,33 @@ namespace alps {
             } 
             return str;
         }
+
+
+        namespace detail {
+            // Validator for strings
+            void validate(boost::any& outval, const std::vector<std::string>& strvalues,
+                          string_container* target_type, int)
+            {
+                namespace po=boost::program_options;
+                namespace pov=po::validators;
+                namespace alg=boost::algorithm;
+                typedef std::vector<std::string> strvec;
+                typedef boost::char_separator<char> charsep;
+        
+                pov::check_first_occurrence(outval); // check that this option has not yet been assigned
+                std::string in_str=pov::get_single_string(strvalues); // check that this option is passed a single value
+
+                // Now, do parsing:
+                alg::trim(in_str); // Strip trailing and leading blanks
+                if (in_str[0]=='"' && in_str[in_str.size()-1]=='"') { // Check if it is a "quoted string"
+                    // Strip surrounding quotes:
+                    alg::erase_tail(in_str,1);
+                    alg::erase_head(in_str,1);
+                }
+                outval=boost::any(in_str);
+                // std::cerr << "***DEBUG: returning from validate(...std::string*...) ***" << std::endl;
+            }
+        } // detail
     } // params_ns
 } // alps
 
-namespace boost {
-    namespace program_options {
-        // Declaring validate() function in the boost::program_options namespace for it to be found by boost.
-        void validate(boost::any& outval, const std::vector<std::string>& strvalues,
-                      std::string* target_type, int)
-        {
-            namespace po=boost::program_options;
-            namespace pov=po::validators;
-            namespace alg=boost::algorithm;
-            typedef std::vector<std::string> strvec;
-            typedef boost::char_separator<char> charsep;
-        
-            pov::check_first_occurrence(outval); // check that this option has not yet been assigned
-            std::string in_str=pov::get_single_string(strvalues); // check that this option is passed a single value
-
-            // Now, do parsing:
-            alg::trim(in_str); // Strip trailing and leading blanks
-            if (in_str[0]=='"' && in_str[in_str.size()-1]=='"') { // Check if it is a "quoted string"
-                // Strip surrounding quotes:
-                alg::erase_tail(in_str,1);
-                alg::erase_head(in_str,1);
-            }
-            outval=boost::any(in_str);
-            // std::cerr << "***DEBUG: returning from validate(...std::string*...) ***" << std::endl;
-        }
-    } // program_options
-} // boost

@@ -364,6 +364,10 @@ namespace alps {
       // /*-ALPS_DECL-*/ std::ostream & operator<<(std::ostream & os, params const & arg);
 
       namespace detail {
+          /// Validator for strings, used by boost::program_options
+          void validate(boost::any& outval, const std::vector<std::string>& strvalues,
+                        string_container*, int);
+        
           /// Validator for vectors, used by boost::program_options
           template <typename T>
           void validate(boost::any& outval, const std::vector<std::string>& strvalues,
@@ -395,14 +399,5 @@ namespace alps {
     using params_ns::params;
     
 } // alps
-
-namespace boost {
-    namespace program_options {
-        /// Validator for std::string, overriding one defined by boost::program_options
-        // It has to be declared in boost::program_options namespace to work!
-        void validate(boost::any& outval, const std::vector<std::string>& strvalues,
-                      std::string*, int);
-    }
-}
 
 #endif // ALPS_PARAMS_INCLUDED

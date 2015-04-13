@@ -337,8 +337,17 @@ namespace alps {
             template <typename T>
             struct vector_tag {};
 
+            /// Type to indicate string parameter and hold default value (for our own string validator)
+            class string_container {
+                std::string contains_;
+              public:
+                string_container(const std::string& s): contains_(s) {}
+                operator std::string() const { return contains_; } 
+            };
+            
+
             /// Service class calling boost::program_options::add_options(), to work around lack of function template specializations
-            /// T is the option type, U is the tag type used to treat parsing of vectors/lists specially
+            /// T is the option type, U is the tag type used to treat parsing of strings and vectors/lists specially
             template <typename T, typename U=T>
             struct do_define {
                 /// Add option with a default value
@@ -347,6 +356,16 @@ namespace alps {
                 {
                     a_opt_descr.add_options()(optname.c_str(),
                                               boost::program_options::value<U>()->default_value(defval),
+                                              a_descr.c_str());
+                }
+
+                /// Add option with a default value with known string representation
+                static void add_option(boost::program_options::options_description& a_opt_descr,
+                                       const std::string& optname, T defval, const std::string& defval_str,
+                                       const std::string& a_descr)
+                {
+                    a_opt_descr.add_options()(optname.c_str(),
+                                              boost::program_options::value<U>()->default_value(defval,defval_str),
                                               a_descr.c_str());
                 }
 
@@ -389,7 +408,25 @@ namespace alps {
                                               a_descr.c_str());
                 }
             };
-          
+
+            /// Specialization of the service do_define class for std::string parameter
+            template <>
+            struct do_define<std::string> {
+                /// Add option with a default value
+                static void add_option(boost::program_options::options_description& a_opt_descr,
+                                       const std::string& optname, const std::string& defval, const std::string& a_descr)
+                {
+                    do_define<std::string, string_container>::add_option(a_opt_descr, optname, defval, defval, a_descr); // defval is passed as both default val and its string representation
+                }
+
+                /// Add option with no default value
+                static void add_option(boost::program_options::options_description& a_opt_descr,
+                                       const std::string& optname, const std::string& a_descr)
+                {
+                    do_define<std::string, string_container>::add_option(a_opt_descr, optname, a_descr);
+                }
+            };
+
             
             /// Option (parameter) description class. Used to interface with boost::program_options
             class option_description_type {
@@ -444,6 +481,23 @@ namespace alps {
                             opt_.val_=None();
                         } else {
                             opt_.val_=boost::any_cast<T>(anyval_);
+                        }
+                    }
+
+                    /// Called by apply_visitor(), for a optional<std::string> bound type
+                    void operator()(const boost::optional<std::string>& a_val) const
+                    {
+                        if (anyval_.empty()) {
+                            opt_.val_=None();
+                        } else {
+                            // The value may contain a string or a default value, which is hidden inside string_container
+                            // (FIXME: this mess of a design must be fixed).
+                            const std::string* ptr=boost::any_cast<std::string>(&anyval_);
+                            if (ptr) {
+                                opt_.val_=*ptr;
+                            } else {
+                                opt_.val_=boost::any_cast<string_container>(anyval_);
+                            }
                         }
                     }
 
