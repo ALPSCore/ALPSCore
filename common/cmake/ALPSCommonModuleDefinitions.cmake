@@ -85,6 +85,7 @@ macro(add_alps_package) # usage add_alps_package(pkgname1 pkgname2...)
     include_directories(${${pkg_}_INCLUDE_DIRS})
     list(APPEND LINK_ALL ${${pkg_}_LIBRARIES})
   endforeach(pkg_)
+  gen_cfg_module(${ARGV})
 endmacro(add_alps_package) 
 
 
@@ -98,6 +99,19 @@ macro(add_this_package)
           FILES_MATCHING PATTERN "*.hpp" PATTERN "*.hxx"
          )
 endmacro(add_this_package)
+
+# Parameters: list of source files
+macro(add_source_files)
+  add_library(${PROJECT_NAME} ${ALPS_BUILD_TYPE} ${ARGV})
+  set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
+  target_link_libraries(${PROJECT_NAME} ${LINK_ALL})
+  install(TARGETS ${PROJECT_NAME} 
+          EXPORT ${PROJECT_NAME} 
+          LIBRARY DESTINATION lib
+          ARCHIVE DESTINATION lib
+          INCLUDES DESTINATION include)
+  install(EXPORT ${PROJECT_NAME} NAMESPACE alps:: DESTINATION share/${PROJECT_NAME})
+endmacro(add_source_files)  
 
 
 macro(add_testing)
@@ -129,18 +143,33 @@ macro(gen_pkg_config)
   install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}.pc" DESTINATION "lib/pkgconfig")
 endmacro(gen_pkg_config)
 
-macro(gen_find_module project_search_file_)
-  set(PROJECT_SEARCH_FILE ${project_search_file_})
-  configure_file("${PROJECT_SOURCE_DIR}/../common/cmake/FindALPSModule.cmake.in" "${PROJECT_BINARY_DIR}/Find${PROJECT_NAME}.cmake" @ONLY)
-  install(FILES "${PROJECT_BINARY_DIR}/Find${PROJECT_NAME}.cmake" DESTINATION "share/cmake/Modules")
-  install(FILES "${PROJECT_SOURCE_DIR}/../common/cmake/FindALPSCore.cmake" DESTINATION "share/cmake/Modules")
-endmacro(gen_find_module)
 
-macro(gen_header_only_find_module project_search_file_)
-  set(PROJECT_SEARCH_FILE ${project_search_file_})
-  configure_file("${PROJECT_SOURCE_DIR}/../common/cmake/FindALPSHeaderOnlyModule.cmake.in" "${PROJECT_BINARY_DIR}/Find${PROJECT_NAME}.cmake" @ONLY)
-  install(FILES "${PROJECT_BINARY_DIR}/Find${PROJECT_NAME}.cmake" DESTINATION "share/cmake/Modules")
-  install(FILES "${PROJECT_SOURCE_DIR}/../common/cmake/FindALPSCore.cmake" DESTINATION "share/cmake/Modules")
-endmacro(gen_header_only_find_module)
+# Function: generates package-specific CMake configs
+# Arguments: list of dependencies
+function(gen_cfg_module)
+  set(DEPENDS ${ARGV})
+  configure_file("${PROJECT_SOURCE_DIR}/../common/cmake/ALPSModuleConfig.cmake.in" 
+                 "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" @ONLY)
+  install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" DESTINATION "share/${PROJECT_NAME}/")
+endfunction()
 
-
+# # Requred parameters:
+# #  project_search_file_ : filename helping to identify the location of the project 
+# # Optional parameters:
+# #  HEADER_ONLY : the package does not contain libraries
+# #
+# function(gen_find_module project_search_file_)
+#   set(PROJECT_SEARCH_FILE ${project_search_file_})
+#   set (NOT_HEADER_ONLY true)
+#   foreach(arg ${ARGV})
+#     if (arg STREQUAL "HEADER_ONLY")
+#       set(NOT_HEADER_ONLY false)
+#     endif()
+#   endforeach()
+#   configure_file("${PROJECT_SOURCE_DIR}/../common/cmake/ALPSModuleConfig.cmake.in" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" @ONLY)
+#   # configure_file("${PROJECT_SOURCE_DIR}/../common/cmake/FindALPSModule.cmake.in" "${PROJECT_BINARY_DIR}/Find${PROJECT_NAME}.cmake" @ONLY)
+#   # install(FILES "${PROJECT_BINARY_DIR}/Find${PROJECT_NAME}.cmake" DESTINATION "share/cmake/Modules/")
+#   install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" DESTINATION "share/${PROJECT_NAME}/")
+#   install(FILES "${PROJECT_SOURCE_DIR}/../common/cmake/ALPSCoreConfig.cmake" DESTINATION "share/ALPSCore/")
+#   install(FILES "${PROJECT_SOURCE_DIR}/../common/cmake/FindALPSCore.cmake" DESTINATION "share/cmake/Modules/")
+# endfunction(gen_find_module)

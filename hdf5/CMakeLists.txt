@@ -28,6 +28,6 @@ if (NOT DocumentationOnly)
   add_testing()
 
   gen_pkg_config()
-  gen_find_module(alps/hdf5.hpp)
+  # gen_find_module(alps/hdf5.hpp)
 endif (NOT DocumentationOnly)
 gen_documentation()

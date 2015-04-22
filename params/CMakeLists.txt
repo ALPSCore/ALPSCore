@@ -31,6 +31,6 @@ if (NOT DocumentationOnly)
   add_testing()
 
   gen_pkg_config()
-  gen_find_module(alps/params.hpp)
+  # gen_find_module(alps/params.hpp)
 endif (NOT DocumentationOnly)
 gen_documentation()

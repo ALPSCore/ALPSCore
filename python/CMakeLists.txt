@@ -52,5 +52,4 @@ add_this_package()
 add_testing()
 
 gen_pkg_config()
-gen_header_only_find_module(alps/utilities/boost_python.hpp) 
-
+#gen_find_module(alps/utilities/boost_python.hpp HEADER_ONLY) 
