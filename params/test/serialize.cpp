@@ -69,7 +69,7 @@ TEST(param, Archive)
     
 
     // Save to archive
-    std::string filename(alps::temporary_filename("hdf5_file"));
+    std::string filename(alps::temporary_filename("hdf5_file")+".h5");
     {
         alps::hdf5::archive oar(filename, "w");
         p.save(oar);

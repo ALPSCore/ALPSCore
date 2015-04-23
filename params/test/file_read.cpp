@@ -15,7 +15,7 @@
 // Scalar param read (except bool which is tested separately)
 TEST(param, ScalarParamRead) {
    //create a file name
-   std::string pfilename(alps::temporary_filename("pfile"));
+   std::string pfilename(alps::temporary_filename("pfile")+".ini");
 
    // Generate INI file
    int param_int=1234;
@@ -51,7 +51,7 @@ TEST(param, ScalarParamRead) {
 // Boolean param read
 TEST(param, BoolParamRead) {
    //create a file name
-   std::string pfilename(alps::temporary_filename("pfile"));
+   std::string pfilename(alps::temporary_filename("pfile")+".ini");
 
    // Generate INI file
    {
@@ -99,7 +99,7 @@ TEST(param, BoolParamRead) {
 // String param read (stripping spaces, stripping quotes)
 TEST(param, StringParamRead) {
    //create a file name
-   std::string pfilename(alps::temporary_filename("pfile"));
+   std::string pfilename(alps::temporary_filename("pfile")+".ini");
 
    // Have some sample strings
    std::string basic="hello-world";
@@ -162,7 +162,7 @@ template <typename T>
 void Test_spaces_around(T my_param)
 {
    //create a file name
-   std::string pfilename(alps::temporary_filename("pfile"));
+   std::string pfilename(alps::temporary_filename("pfile")+".ini");
 
    // Generate INI file
    {
@@ -215,7 +215,7 @@ MakeTest(std::string, STRING, "hello")
 // Sectioned ini file
 TEST(param, SectionedFile) {
    //create a file name
-   std::string pfilename(alps::temporary_filename("pfile"));
+   std::string pfilename(alps::temporary_filename("pfile")+".ini");
 
    // Generate INI file
    int param_int1=1234;
@@ -263,7 +263,7 @@ TEST(param, SectionedFile) {
 // Comments and empty lines
 TEST(param, CommentsInFile) {
    //create a file name
-   std::string pfilename(alps::temporary_filename("pfile"));
+   std::string pfilename(alps::temporary_filename("pfile")+".ini");
 
    // Generate INI file
    int param_int1=1234;
@@ -310,7 +310,7 @@ TEST(param, CommentsInFile) {
 // Incorrect input (garbage lines)
 TEST(param, GarbageInFile) {
    //create a file name
-   std::string pfilename(alps::temporary_filename("pfile"));
+   std::string pfilename(alps::temporary_filename("pfile")+".ini");
 
    // Generate INI file with garbage
    int param_int1=1234;
@@ -353,7 +353,7 @@ template <typename T, typename E>
 void WrongTypeTest(const std::string& strval)
 {
    //create a file name
-   std::string pfilename(alps::temporary_filename("pfile"));
+   std::string pfilename(alps::temporary_filename("pfile")+".ini");
 
    // Generate INI file with wrong-type values
    {
@@ -411,7 +411,7 @@ namespace {
 // Vector param read
 TEST(param, VectorRead) {
    //create a file name
-   std::string pfilename(alps::temporary_filename("pfile"));
+   std::string pfilename(alps::temporary_filename("pfile")+".ini");
 
    //have some vector parameters
    int intvec_param0[]={10, 20, 30, 40};
@@ -483,7 +483,7 @@ TEST(param, VectorRead) {
 // Repeating parameters in the INI file
 TEST(param,Repeating) {
     //create a file name
-    std::string pfilename(alps::temporary_filename("pfile"));
+    std::string pfilename(alps::temporary_filename("pfile")+".ini");
 
    // Generate INI file
    {
@@ -510,7 +510,7 @@ TEST(param,Repeating) {
 // Unknown parameters in the INI file
 TEST(param,Unknown) {
     //create a file name
-    std::string pfilename(alps::temporary_filename("pfile"));
+    std::string pfilename(alps::temporary_filename("pfile")+".ini");
 
    // Generate INI file
    {
@@ -551,7 +551,7 @@ TEST(param,Triggers)
 TEST(param,CmdlineOverride)
 {
     //create a file name
-    std::string pfilename(alps::temporary_filename("pfile"));
+    std::string pfilename(alps::temporary_filename("pfile")+".ini");
     
     // Generate INI file
     {
@@ -588,7 +588,7 @@ TEST(param,CmdlineOverride)
 TEST(param,IniFileConstructor)
 {
     //create a file name
-    std::string pfilename(alps::temporary_filename("pfile"));
+    std::string pfilename(alps::temporary_filename("pfile")+".ini");
     
     // Generate INI file
     {

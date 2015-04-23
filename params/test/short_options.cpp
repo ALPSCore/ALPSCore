@@ -40,7 +40,7 @@ TEST(param, ShortenedInCmdline)
 // Shortened versions of options in the INI file -- not allowed
 TEST(param, ShortenedInFile)
 {
-    std::string pfilename(alps::temporary_filename("pfile"));
+    std::string pfilename(alps::temporary_filename("pfile")+".ini");
     const char* argv[]={ "THIS PROGRAM", pfilename.c_str() };
     const int argc=sizeof(argv)/sizeof(*argv);
 
@@ -89,7 +89,7 @@ TEST(param, ShortAndLongDefined)
 // Shorter and longer options in the INI file --- are distinct
 TEST(param, ShortAndLongFile)
 {
-    std::string pfilename(alps::temporary_filename("pfile"));
+    std::string pfilename(alps::temporary_filename("pfile")+".ini");
     const char* argv[]={ "THIS PROGRAM", pfilename.c_str() };
     const int argc=sizeof(argv)/sizeof(*argv);
 

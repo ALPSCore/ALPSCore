@@ -32,7 +32,7 @@ template <typename T>
 alps::params get_file_param(const std::string& name1, const std::string& name2, T val1, T val2)
 {
     //create a file name
-    std::string pfilename(alps::temporary_filename("pfile"));
+    std::string pfilename(alps::temporary_filename("pfile")+".ini");
     // Generate INI file
     {
         std::ofstream pfile(pfilename.c_str());
