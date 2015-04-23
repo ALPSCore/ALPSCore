@@ -24,6 +24,7 @@ using namespace alps::params_ns::testing;
  * they are printed correctly. */
 
 /* FIXME: Trigger values are not tested; */
+/* FIXME: None-values are not tested; */
 
 /* FIXME: the whole thing looks way too complicated for such a simple task? */
 

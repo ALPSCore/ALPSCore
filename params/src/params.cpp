@@ -208,6 +208,10 @@ namespace alps {
                 boost_ar << *this;
             }
             ar["alps::params"] << outs.str();
+            BOOST_FOREACH(const options_map_type::value_type& slot, optmap_)
+            {
+                slot.second.save(ar);
+            }
         }
 
         void params::save(hdf5::archive& ar, const std::string& path) const

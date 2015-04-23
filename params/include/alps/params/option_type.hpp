@@ -44,7 +44,9 @@
 #include "boost/serialization/optional.hpp"
 #include "boost/serialization/variant.hpp"
 
-#include <alps/utilities/short_print.hpp> // for streaming
+#include "alps/utilities/short_print.hpp" // for streaming
+#include "alps/hdf5/archive.hpp"          // archive support
+#include "alps/hdf5/vector.hpp"          //  vector archiving support
 
 #include "alps/params/param_types.hpp" // Sequences of supported types
 
@@ -231,9 +233,9 @@ namespace alps {
 
 
             /// Visitor to call alps::utilities::short_print on the type, hidden in boost::variant
-            struct option_ostream : public boost::static_visitor<> {
+            struct ostream_visitor : public boost::static_visitor<> {
             public:
-                option_ostream(std::ostream & arg) : os(arg) {}
+                ostream_visitor(std::ostream & arg) : os(arg) {}
                 template <typename U> void operator()(U const & v) const {
                     os << short_print(v);
                 }
@@ -244,12 +246,40 @@ namespace alps {
             /// Output an option
             friend std::ostream& operator<< (std::ostream& out, option_type const& x) 
             {
-                option_ostream visitor(out);
+                ostream_visitor visitor(out);
                 boost::apply_visitor(visitor, x.val_);
                 return out;
             } 
                 
 
+            /// Visitor to archive an option with a proper type
+            struct archive_visitor : public boost::static_visitor<> {
+                hdf5::archive& ar_;
+                const std::string& name_;
+
+                archive_visitor(hdf5::archive& ar, const std::string& name) : ar_(ar), name_(name) {}
+
+                /// sends value of the bound type U to an archive
+                template <typename U>
+                void operator()(const U& val) const
+                {
+                    ar_[name_] << val;
+                    // ar_ << make_pvp(name_, val);
+                }
+
+                /// specialization for U==None: skips the value
+                void operator()(const None&) const
+                { }
+            };
+
+            /// Outputs the option to an archive
+            void save(hdf5::archive& ar) const
+            {
+                archive_visitor visitor(ar,this->name_);
+                boost::apply_visitor(visitor, this->val_);
+            }
+                
+          
             // /// Assignment from boost::any containing type T
             // template <typename T>
             // void assign_any(const boost::any& aval)
