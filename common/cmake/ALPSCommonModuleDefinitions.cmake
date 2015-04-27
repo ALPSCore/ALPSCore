@@ -123,11 +123,19 @@ macro(add_source_files)
   add_library(${PROJECT_NAME} ${ALPS_BUILD_TYPE} ${ARGV})
   set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
   target_link_libraries(${PROJECT_NAME} ${LINK_ALL})
+  # (FIXME) The following requires a newer (2.8.12 ?) CMake:
+  # install(TARGETS ${PROJECT_NAME} 
+  #         EXPORT ${PROJECT_NAME} 
+  #         LIBRARY DESTINATION lib
+  #         ARCHIVE DESTINATION lib
+  #         INCLUDES DESTINATION include)
+  # so it is replaced: BEGIN...
   install(TARGETS ${PROJECT_NAME} 
           EXPORT ${PROJECT_NAME} 
           LIBRARY DESTINATION lib
-          ARCHIVE DESTINATION lib
-          INCLUDES DESTINATION include)
+          ARCHIVE DESTINATION lib)
+  set_target_properties(${PROJECT_NAME} PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_INSTALL_PREFIX}/include)
+  # ... END
   install(EXPORT ${PROJECT_NAME} NAMESPACE alps:: DESTINATION share/${PROJECT_NAME})
 endmacro(add_source_files)  
 

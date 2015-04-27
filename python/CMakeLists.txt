@@ -57,7 +57,12 @@ foreach (name
     add_library(${name}_c MODULE src/${name}.cpp src/import_numpy.cpp)
     list(APPEND libs_ ${name}_c)
 
-    target_compile_definitions(${name}_c PUBLIC "${ALPS_SHARED_CPPFLAGS}") # FIXME: public or private?
+    # (FIXME) This requires a newer CMake (2.8.12 ?):
+    # target_compile_definitions(${name}_c PUBLIC "${ALPS_SHARED_CPPFLAGS}") # FIXME: public or private?
+    # so it is replaced with:
+    set_target_properties(${name}_c PROPERTIES COMPILE_DEFINITIONS "${ALPS_SHARED_CPPFLAGS}"
+                                               INTERFACE_COMPILE_DEFINITIONS "${ALPS_SHARED_CPPFLAGS}")
+
     set_target_properties(${name}_c PROPERTIES PREFIX "")
     target_link_libraries(${name}_c ${PYTHON_LIBRARIES} ${LINK_ALL})
     include_directories(${PYTHON_INCLUDE_DIRS})
@@ -65,6 +70,9 @@ foreach (name
     install(TARGETS ${name}_c 
             EXPORT ${PROJECT_NAME}
             DESTINATION python)
+    # (FIXME) with the newer CMake, the following will go to install(TARGETS) above (INCLUDE DIRS include):
+    set_target_properties(${name}_c PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_INSTALL_PREFIX}/include)
+    
 endforeach(name)
 install(EXPORT ${PROJECT_NAME} NAMESPACE alps:: DESTINATION share/${PROJECT_NAME})
 
