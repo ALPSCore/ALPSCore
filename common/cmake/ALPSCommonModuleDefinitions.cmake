@@ -43,18 +43,11 @@ if (BuildPython AND NOT BuildShared)
     message(FATAL_ERROR "Python interface requires a shared (BuildShared=ON) build")
 endif()
 
-
-# Define ALPS_ROOT and add it to cmake module path 
-if (NOT DEFINED ALPS_ROOT)
-    set(ALPS_ROOT ${CMAKE_INSTALL_PREFIX})
-endif ()
-
-if (NOT IS_ABSOLUTE ${ALPS_ROOT})
-    set (ALPS_ROOT ${CMAKE_BINARY_DIR}/${ALPS_ROOT}) # FIXME: unstable
+# Set ALPS_ROOT as a hint for standalone component builds
+if (DEFINED ENV{ALPS_ROOT})
+  set(ALPS_ROOT "$ENV{ALPS_ROOT}" CACHE PATH "Path to ALPSCore installation (for standalone component builds)")
+  mark_as_advanced(ALPS_ROOT)
 endif()
-
-message (STATUS "ALPS_ROOT: ${ALPS_ROOT}")
-list(APPEND CMAKE_MODULE_PATH ${ALPS_ROOT}/share/cmake/Modules)
 
 
 ## Some macros
@@ -75,20 +68,36 @@ macro(add_hdf5)
   list(APPEND LINK_ALL ${HDF5_LIBRARIES})
 endmacro(add_hdf5)
 
-macro(add_alps_package) # usage add_alps_package(pkgname1 pkgname2...)
-  foreach(pkg_ ${ARGV})
-    if (NOT DEFINED ALPS_GLOBAL_BUILD)
-      find_package(${pkg_} REQUIRED)
-      message(STATUS "${pkg_} includes: ${${pkg_}_INCLUDE_DIRS}" )
-      message(STATUS "${pkg_} libs: ${${pkg_}_LIBRARIES}" )
-    endif (NOT DEFINED ALPS_GLOBAL_BUILD)
-    include_directories(${${pkg_}_INCLUDE_DIRS})
-    list(APPEND LINK_ALL ${${pkg_}_LIBRARIES})
-  endforeach(pkg_)
+# Usage: add_alps_package(pkgname1 pkgname2...)
+# Sets variable ${PROJECT_NAME}_DEPENDS
+# Adds to variable LINK_ALL
+macro(add_alps_package)
+    set(${PROJECT_NAME}_DEPENDS "${ARGV}")
+    foreach(pkg_ ${ARGV})
+        if (DEFINED ALPS_GLOBAL_BUILD)
+            include_directories(${${pkg_}_INCLUDE_DIRS})
+            message(STATUS "${pkg_} includes: ${${pkg_}_INCLUDE_DIRS}" )
+        else(DEFINED ALPS_GLOBAL_BUILD)
+            string(REGEX REPLACE "^alps-" "" pkgcomp_ ${pkg_})
+            find_package(ALPSCore QUIET COMPONENTS ${pkgcomp_} HINTS ${ALPS_ROOT})
+            if (ALPSCore_${pkgcomp_}_FOUND) 
+              # message(STATUS "DEBUG: found as an ALPSCore component")
+              set(${pkg_}_LIBRARIES ${ALPSCore_${pkgcomp_}_LIBRARIES})
+            else()
+              # message(STATUS "DEBUG: could not find ALPSCore, searching for the component directly")
+              find_package(${pkg_} REQUIRED HINTS ${ALPS_ROOT})
+            endif()
+            # Imported targets returned by find_package() contain info about include dirs, no need to assign them
+        endif (DEFINED ALPS_GLOBAL_BUILD)
+        list(APPEND LINK_ALL ${${pkg_}_LIBRARIES})
+        message(STATUS "${pkg_} libs: ${${pkg_}_LIBRARIES}")
+    endforeach(pkg_)
 endmacro(add_alps_package) 
 
-
-macro(add_this_package)
+# Usage: add_this_package([exported_target1 exported_target2...])
+# (by default, alps::${PROJECT_NAME} is the only exported target)
+# Affected by variable ${PROJECT_NAME}_DEPENDS
+function(add_this_package)
   include_directories(
     ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_BINARY_DIR}/include
@@ -97,7 +106,30 @@ macro(add_this_package)
   install(DIRECTORY include DESTINATION .
           FILES_MATCHING PATTERN "*.hpp" PATTERN "*.hxx"
          )
-endmacro(add_this_package)
+  # FIXME: exported targets are explicitly listed for Python only -- this logic should be separated.
+  set(tgt_list_ "")
+  foreach(tgt_ ${ARGV})
+      list(APPEND tgt_list_ "alps::${tgt_}")
+  endforeach()
+  if (tgt_list_)
+      gen_cfg_module(DEPENDS ${${PROJECT_NAME}_DEPENDS} EXPORTS ${tgt_list_})
+  else()
+      gen_cfg_module(DEPENDS ${${PROJECT_NAME}_DEPENDS})
+  endif()
+endfunction(add_this_package)
+
+# Parameters: list of source files
+macro(add_source_files)
+  add_library(${PROJECT_NAME} ${ALPS_BUILD_TYPE} ${ARGV})
+  set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
+  target_link_libraries(${PROJECT_NAME} ${LINK_ALL})
+  install(TARGETS ${PROJECT_NAME} 
+          EXPORT ${PROJECT_NAME} 
+          LIBRARY DESTINATION lib
+          ARCHIVE DESTINATION lib
+          INCLUDES DESTINATION include)
+  install(EXPORT ${PROJECT_NAME} NAMESPACE alps:: DESTINATION share/${PROJECT_NAME})
+endmacro(add_source_files)  
 
 
 macro(add_testing)
@@ -129,18 +161,45 @@ macro(gen_pkg_config)
   install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}.pc" DESTINATION "lib/pkgconfig")
 endmacro(gen_pkg_config)
 
-macro(gen_find_module project_search_file_)
-  set(PROJECT_SEARCH_FILE ${project_search_file_})
-  configure_file("${PROJECT_SOURCE_DIR}/../common/cmake/FindALPSModule.cmake.in" "${PROJECT_BINARY_DIR}/Find${PROJECT_NAME}.cmake" @ONLY)
-  install(FILES "${PROJECT_BINARY_DIR}/Find${PROJECT_NAME}.cmake" DESTINATION "share/cmake/Modules")
-  install(FILES "${PROJECT_SOURCE_DIR}/../common/cmake/FindALPSCore.cmake" DESTINATION "share/cmake/Modules")
-endmacro(gen_find_module)
 
-macro(gen_header_only_find_module project_search_file_)
-  set(PROJECT_SEARCH_FILE ${project_search_file_})
-  configure_file("${PROJECT_SOURCE_DIR}/../common/cmake/FindALPSHeaderOnlyModule.cmake.in" "${PROJECT_BINARY_DIR}/Find${PROJECT_NAME}.cmake" @ONLY)
-  install(FILES "${PROJECT_BINARY_DIR}/Find${PROJECT_NAME}.cmake" DESTINATION "share/cmake/Modules")
-  install(FILES "${PROJECT_SOURCE_DIR}/../common/cmake/FindALPSCore.cmake" DESTINATION "share/cmake/Modules")
-endmacro(gen_header_only_find_module)
+# Function: generates package-specific CMake configs
+# Arguments: [DEPENDS <list-of-dependencies>] [EXPORTS <list-of-exported-targets>]
+# If no exported targets are present, alps::${PROJECT_NAME} is assumed.
+function(gen_cfg_module)
+    include(CMakeParseArguments) # arg parsing helper
+    cmake_parse_arguments(gen_cfg_module "" "" "DEPENDS;EXPORTS" ${ARGV})
+    if (gen_cfg_module_UNPARSED_ARGUMENTS)
+        message(FATAL_ERROR "Incorrect call of gen_cfg_module(DEPENDS ... [EXPORTS ...]): ARGV=${ARGV}")
+    endif()
+    set(DEPENDS ${gen_cfg_module_DEPENDS})
+    if (gen_cfg_module_EXPORTS)
+        set(EXPORTS ${gen_cfg_module_EXPORTS})
+    else()
+        set(EXPORTS alps::${PROJECT_NAME})
+    endif()
+    configure_file("${PROJECT_SOURCE_DIR}/../common/cmake/ALPSModuleConfig.cmake.in" 
+                   "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" @ONLY)
+    install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" DESTINATION "share/${PROJECT_NAME}/")
+    install(FILES "${PROJECT_SOURCE_DIR}/../common/cmake/ALPSCoreConfig.cmake" DESTINATION "share/ALPSCore/")
+endfunction()
 
-
+# # Requred parameters:
+# #  project_search_file_ : filename helping to identify the location of the project 
+# # Optional parameters:
+# #  HEADER_ONLY : the package does not contain libraries
+# #
+# function(gen_find_module project_search_file_)
+#   set(PROJECT_SEARCH_FILE ${project_search_file_})
+#   set (NOT_HEADER_ONLY true)
+#   foreach(arg ${ARGV})
+#     if (arg STREQUAL "HEADER_ONLY")
+#       set(NOT_HEADER_ONLY false)
+#     endif()
+#   endforeach()
+#   configure_file("${PROJECT_SOURCE_DIR}/../common/cmake/ALPSModuleConfig.cmake.in" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" @ONLY)
+#   # configure_file("${PROJECT_SOURCE_DIR}/../common/cmake/FindALPSModule.cmake.in" "${PROJECT_BINARY_DIR}/Find${PROJECT_NAME}.cmake" @ONLY)
+#   # install(FILES "${PROJECT_BINARY_DIR}/Find${PROJECT_NAME}.cmake" DESTINATION "share/cmake/Modules/")
+#   install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" DESTINATION "share/${PROJECT_NAME}/")
+#   install(FILES "${PROJECT_SOURCE_DIR}/../common/cmake/ALPSCoreConfig.cmake" DESTINATION "share/ALPSCore/")
+#   install(FILES "${PROJECT_SOURCE_DIR}/../common/cmake/FindALPSCore.cmake" DESTINATION "share/cmake/Modules/")
+# endfunction(gen_find_module)

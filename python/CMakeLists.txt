@@ -47,10 +47,30 @@ add_boost(${BOOST_LIBRARY_LIST})
 add_hdf5()
 add_alps_package(alps-utilities alps-hdf5 alps-params alps-accumulators alps-mc)
 
-add_this_package()
+set (libs_ "")
+foreach (name    
+        pyrandom01 
+	pyhdf5
+	api
+	pymcbase)
+    
+    add_library(${name}_c MODULE src/${name}.cpp src/import_numpy.cpp)
+    list(APPEND libs_ ${name}_c)
+
+    target_compile_definitions(${name}_c PUBLIC "${ALPS_SHARED_CPPFLAGS}") # FIXME: public or private?
+    set_target_properties(${name}_c PROPERTIES PREFIX "")
+    target_link_libraries(${name}_c ${PYTHON_LIBRARIES} ${LINK_ALL})
+    include_directories(${PYTHON_INCLUDE_DIRS})
+
+    install(TARGETS ${name}_c 
+            EXPORT ${PROJECT_NAME}
+            DESTINATION python)
+endforeach(name)
+install(EXPORT ${PROJECT_NAME} NAMESPACE alps:: DESTINATION share/${PROJECT_NAME})
+
+add_this_package(${libs_})
 
 add_testing()
 
 gen_pkg_config()
-gen_header_only_find_module(alps/utilities/boost_python.hpp) 
-
+#gen_find_module(alps/utilities/boost_python.hpp HEADER_ONLY) 

@@ -39,7 +39,7 @@ if (NOT DocumentationOnly)
   endif(ALPS_BUILD_TUTORIALS)
 
   gen_pkg_config()
-  gen_find_module(alps/mc/mcbase.hpp)
+  # gen_find_module(alps/mc/mcbase.hpp)
 
 endif (NOT DocumentationOnly)
 gen_documentation()
