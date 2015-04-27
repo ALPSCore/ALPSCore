@@ -1,5 +1,0 @@
-# FIXME: FindALPSModule.cmake for module @PROJECT_NAME@
-include(FindPackageHandleStandardArgs)
-
-find_package(@PROJECT_NAME@ CONFIG QUIET)
-find_package_handle_standard_args(@PROJECT_NAME@ CONFIG_MODE)
