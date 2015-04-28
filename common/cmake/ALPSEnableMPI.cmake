@@ -9,7 +9,7 @@
 
 # configurable option
 option(ENABLE_MPI "Enable MPI build" ON)
-
+set(ALPS_HAVE_MPI false)
 if (ENABLE_MPI)
   # try compiling sample mpi code 
   set(scratch_directory ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY})

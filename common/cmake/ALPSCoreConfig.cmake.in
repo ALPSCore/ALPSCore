@@ -52,6 +52,7 @@ function(alpscore_config_main_)
 endfunction(alpscore_config_main_)
 
 alpscore_config_main_()
+set(ALPSCore_HAS_MPI @ALPS_HAVE_MPI@)
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(ALPSCore REQUIRED_VARS ALPSCore_LIBRARIES HANDLE_COMPONENTS)
 

@@ -187,8 +187,10 @@ function(gen_cfg_module)
     endif()
     configure_file("${PROJECT_SOURCE_DIR}/../common/cmake/ALPSModuleConfig.cmake.in" 
                    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" @ONLY)
+    configure_file("${PROJECT_SOURCE_DIR}/../common/cmake/ALPSCoreConfig.cmake.in" 
+                   "${PROJECT_BINARY_DIR}/ALPSCoreConfig.cmake" @ONLY)
     install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" DESTINATION "share/${PROJECT_NAME}/")
-    install(FILES "${PROJECT_SOURCE_DIR}/../common/cmake/ALPSCoreConfig.cmake" DESTINATION "share/ALPSCore/")
+    install(FILES "${PROJECT_BINARY_DIR}/ALPSCoreConfig.cmake" DESTINATION "share/ALPSCore/")
 endfunction()
 
 # # Requred parameters:
