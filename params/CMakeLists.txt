@@ -2,7 +2,7 @@
 # alps-params cmake configuration script.
 # 
 
-cmake_minimum_required (VERSION 2.8)
+cmake_minimum_required (VERSION 2.8.12)
 
 # define project name
 project (alps-params CXX)

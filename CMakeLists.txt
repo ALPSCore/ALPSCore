@@ -2,7 +2,7 @@
 # global cmake configuration file for ALPSCore
 #
 
-cmake_minimum_required (VERSION 2.8)
+cmake_minimum_required (VERSION 2.8.12)
 
 # add includes and libs for each module
 macro(alps_add_module module module_path)
