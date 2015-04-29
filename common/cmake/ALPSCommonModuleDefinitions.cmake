@@ -53,7 +53,7 @@ endif()
 ## Some macros
 
 macro(add_boost) # usage: add_boost(component1 component2...)
-  find_package (Boost COMPONENTS ${ARGV} REQUIRED)
+  find_package (Boost 1.54.0 COMPONENTS ${ARGV} REQUIRED)
   message(STATUS "Boost includes: ${Boost_INCLUDE_DIRS}" )
   message(STATUS "Boost libs: ${Boost_LIBRARIES}" )
   include_directories(${Boost_INCLUDE_DIRS})
