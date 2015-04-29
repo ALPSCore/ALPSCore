@@ -20,7 +20,7 @@ if (NOT DocumentationOnly)
   # Boost
   #set(Boost_USE_STATIC_LIBS        ON)
   #set(Boost_USE_STATIC_RUNTIME    OFF)
-  set(BOOST_LIBRARY_LIST chrono program_options filesystem system)
+  set(BOOST_LIBRARY_LIST chrono program_options filesystem system serialization)
   if(ENABLE_MPI)
     list(APPEND BOOST_LIBRARY_LIST mpi)
   endif(ENABLE_MPI)
