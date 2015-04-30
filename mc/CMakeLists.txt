@@ -33,10 +33,11 @@ if (NOT DocumentationOnly)
 
   add_testing()
 
-  if (ALPS_BUILD_TUTORIALS)
-      # add tutorial
-      add_subdirectory(tutorials)
-  endif(ALPS_BUILD_TUTORIALS)
+  # FIXME: Remove the following
+  # if (ALPS_BUILD_TUTORIALS)
+  #     # add tutorial
+  #     add_subdirectory(tutorials)
+  # endif(ALPS_BUILD_TUTORIALS)
 
   gen_pkg_config()
   # gen_find_module(alps/mc/mcbase.hpp)

@@ -51,11 +51,12 @@ if (Testing AND NOT DocumentationOnly)
     include(ALPSEnableTests) #defined in common/cmake
 endif(Testing AND NOT DocumentationOnly)
 
-# enable tutorials
-option(BuildTutorials "Build tutorials" OFF)
-if (BuildTutorials)
-    set(ALPS_BUILD_TUTORIALS ON)
-endif()
+# FIXME: remove the following
+# # enable tutorials
+# option(BuildTutorials "Build tutorials" OFF)
+# if (BuildTutorials)
+#     set(ALPS_BUILD_TUTORIALS ON)
+# endif()
 
 # each module is defined as a cmake project in a subdirectory
 add_subdirectory(utilities)
