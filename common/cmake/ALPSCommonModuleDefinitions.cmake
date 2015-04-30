@@ -27,7 +27,9 @@ endif()
 # Defines ALPS_BUILD_TYPE=STATIC|DYNAMIC .
 option(BuildStatic "Build static libraries" OFF)
 option(BuildShared "Build shared libraries" ON)
-option(BuildPython "Build Python interface" ON)
+# FIXME: Python must be moved out, now switched off by default
+option(BuildPython "Build Python interface" OFF)
+mark_as_advanced(BuildPython)
 if (BuildStatic AND NOT BuildShared) 
     message(STATUS "Building static libraries")
     set(ALPS_BUILD_TYPE STATIC)
