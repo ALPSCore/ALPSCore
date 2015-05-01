@@ -6,7 +6,7 @@
 #include "alps/params.hpp"
 
 /**
- * This example shows how to read parameters through the command-line arguments.
+ * This example shows how to read parameters from command-line arguments.
  * The supported parameters are:
  * <ul>
  *   <li>--count   integer, default 0</li>
