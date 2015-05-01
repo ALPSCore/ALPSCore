@@ -44,6 +44,12 @@ int main(int argc, const char* argv[])
     par.define<int>("count", 0, "Number of interconnected elements");
     par.define<double>("val", 6.28, "Value of implosion constant");
     par.define<std::string>("name", "Judas", "Name of de-construction algorithm");
+    
+    // If request, we print the help message, which is constructed from the
+    // information we gave when defining the parameters.
+    if (par.help_requested(std::cout)) {
+        return 0;
+    }
 
     // Printing parameter to standard output.
     std::cout << "Parameter values" << std::endl;    
