@@ -6,19 +6,15 @@
 #include "alps/params.hpp"
 
 /**
- * This example shows how to read parameters from command-line arguments.
- * The supported parameters are:
- * <ul>
- *   <li>--count   integer, default 0</li>
- *   <li>--val     double, default 6.28</li>
- *   <li>--name    std:string, default "Judas"</li>
- * </ul>
- * <p>
+ * This example shows how to read parameters from a .ini file.
+ * The file is passed through the first command-line argument.
+ * A couple of example .ini files are provided in this directory.
+ * The parameters can also be overridden using command-line options.
  * Run the example with different arguments combinations. For example:
  * <ul>
- *   <li>./cmd_params</li>
- *   <li>./cmd_params --count 3 --val 2.71 --name "Superman"</li>
- *   <li>./cmd_params --count 100 --val 2.71 </li>
+ *   <li>./ini_params configurationA.ini</li>
+ *   <li>./ini_params configurationA.ini --count 3</li>
+ *   <li>./ini_params configurationB.ini</li>
  * </ul>
  * 
  * @param argc the number of arguments
@@ -37,15 +33,15 @@ int main(int argc, const char* argv[])
     // names, default values, and descriptions. By default, only the "help" 
     // parameter is defined, and is initialized to false.
     //
-    // If a command-line argument matches "--parameterName" then the parameter 
-    // is set to the value; if no command-line argument matches, the default
-    // value is used. Command-line arguments that do not match any parameter are ignored.
+    // If an ini file entry matches "parameterName=Xxx" then the parameter 
+    // is set to the value; if no ini file entry matches, the default
+    // value is used. Command-line options will override the ini file entry.
     std::cout << "Defining parameters..." << std::endl;
     par.define<int>("count", 0, "Number of interconnected elements");
     par.define<double>("val", 6.28, "Value of implosion constant");
     par.define<std::string>("name", "Judas", "Name of de-construction algorithm");
     
-    // If request, we print the help message, which is constructed from the
+    // If requested, we print the help message, which is constructed from the
     // information we gave when defining the parameters.
     if (par.help_requested(std::cout)) {
         return 0;
