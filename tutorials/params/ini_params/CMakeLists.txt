@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 2.8.12)
-project(params_example3 CXX)
+project(ini_params CXX)
 
 # Not strictly necessary, but will create executables that are
 # aware of ALPSCore location
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
-add_executable(${PROJECT_NAME} params_example3.cpp)
+add_executable(${PROJECT_NAME} main.cpp)
 
 # Request the ALPSCore package with `parms` components.
 # The ALPSCore package must be installed in some standard place (like /usr/local),
