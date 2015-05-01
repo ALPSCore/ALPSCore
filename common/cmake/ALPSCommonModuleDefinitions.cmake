@@ -151,7 +151,7 @@ macro(add_testing)
 endmacro(add_testing)
 
 macro(gen_documentation)
-  set(DOXYFILE_EXTRA_SOURCES "${DOXYFILE_EXTRA_SOURCES} ${PROJECT_SOURCE_DIR}/include" PARENT_SCOPE)
+  set(DOXYFILE_EXTRA_SOURCES "${DOXYFILE_EXTRA_SOURCES} ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src" PARENT_SCOPE)
   option(Documentation "Build documentation" OFF)
   if (Documentation)
     set(DOXYFILE_SOURCE_DIR "${PROJECT_SOURCE_DIR}/include")
