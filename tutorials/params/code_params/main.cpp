@@ -29,8 +29,7 @@ int main(int argc, const char* argv[])
     par["name"] = "Endurance";
     
     // You can read the parameter value and use it to set other parameters.
-    int count = par["count"];
-    if (count > 100) {
+    if (par["count"].as<int>() > 100) {
         par["high"] = true;
     } else {
         par["high"] = false;
