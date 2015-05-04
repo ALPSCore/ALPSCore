@@ -44,17 +44,31 @@ int main(int argc, const char* argv[])
     // Extracts the results    
     alps::accumulators::result_set results(set);
     
-    // Prints out the restult.
+    // Prints out the direct result from the accumulator.
     // The "mean" accumulator will have no error associated with it.
     // The "nobin" accumulator will have an error, but it will be underestimated.
     // The "logbin" accumulator will have the correct error, and the estimation
     //     becomes better with the bigger bin size.
     // The "fullbin" accumulator error estimation will be the same as the "logbin".
-    std::cout << "Results:" << std::endl;
+    std::cout << "Results from accumulators:" << std::endl;
     std::cout << "mean:    " << results[mean] << std::endl;
     std::cout << "nobin:   " << results[nobin] << std::endl;
     std::cout << "logbin:  " << results[logbin] << std::endl;
     std::cout << "fullbin: " << results[fullbin] << std::endl;
+    
+    // Prints out the result obtained by squaring the accumulator, after
+    // the results are computed.
+    // The "mean" accumulator will have no error associated with it.
+    // The "nobin" accumulator will have an error, but it will be underestimated
+    //     because of the auto-correlation and the computation.
+    // The "logbin" accumulator will have an error, also underestimated but
+    //     because of the computation only.
+    // The "fullbin" accumulator will have the correct error.
+    std::cout << "Results from squared accumulators:" << std::endl;
+    std::cout << "mean:    " << results[mean] * results[mean] << std::endl;
+    std::cout << "nobin:   " << results[nobin] * results[nobin] << std::endl;
+    std::cout << "logbin:  " << results[logbin] * results[logbin] << std::endl;
+    std::cout << "fullbin: " << results[fullbin] * results[fullbin] << std::endl;
     return 0;
 }
 
