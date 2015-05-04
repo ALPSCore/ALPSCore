@@ -27,9 +27,6 @@ endif()
 # Defines ALPS_BUILD_TYPE=STATIC|DYNAMIC .
 option(BuildStatic "Build static libraries" OFF)
 option(BuildShared "Build shared libraries" ON)
-# FIXME: Python must be moved out, now switched off by default
-option(BuildPython "Build Python interface" OFF)
-mark_as_advanced(BuildPython)
 if (BuildStatic AND NOT BuildShared) 
     message(STATUS "Building static libraries")
     set(ALPS_BUILD_TYPE STATIC)
@@ -41,9 +38,13 @@ elseif(BuildShared AND NOT BuildStatic)
 else()
     message(FATAL_ERROR "Please choose EITHER BuildStatic OR BuildShared type of building libraries, NOT both")
 endif()
-if (BuildPython AND NOT BuildShared)
-    message(FATAL_ERROR "Python interface requires a shared (BuildShared=ON) build")
-endif()
+
+# Python is moved out of the main ALPSCore build
+# option(BuildPython "Build Python interface" OFF)
+# mark_as_advanced(BuildPython)
+# if (BuildPython AND NOT BuildShared)
+#     message(FATAL_ERROR "Python interface requires a shared (BuildShared=ON) build")
+# endif()
 
 # Set ALPS_ROOT as a hint for standalone component builds
 if (DEFINED ENV{ALPS_ROOT})
@@ -108,16 +109,17 @@ function(add_this_package)
   install(DIRECTORY include DESTINATION .
           FILES_MATCHING PATTERN "*.hpp" PATTERN "*.hxx"
          )
-  # FIXME: exported targets are explicitly listed for Python only -- this logic should be separated.
-  set(tgt_list_ "")
-  foreach(tgt_ ${ARGV})
-      list(APPEND tgt_list_ "alps::${tgt_}")
-  endforeach()
-  if (tgt_list_)
-      gen_cfg_module(DEPENDS ${${PROJECT_NAME}_DEPENDS} EXPORTS ${tgt_list_})
-  else()
-      gen_cfg_module(DEPENDS ${${PROJECT_NAME}_DEPENDS})
-  endif()
+  gen_cfg_module(DEPENDS ${${PROJECT_NAME}_DEPENDS})
+  # FIXME: modify and move this commented-out code to Python build
+  # set(tgt_list_ "")
+  # foreach(tgt_ ${ARGV})
+  #     list(APPEND tgt_list_ "alps::${tgt_}")
+  # endforeach()
+  # if (tgt_list_)
+  #     gen_cfg_module(DEPENDS ${${PROJECT_NAME}_DEPENDS} EXPORTS ${tgt_list_})
+  # else()
+  #     gen_cfg_module(DEPENDS ${${PROJECT_NAME}_DEPENDS})
+  # endif()
 endfunction(add_this_package)
 
 # Parameters: list of source files
