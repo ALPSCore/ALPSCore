@@ -232,6 +232,37 @@ namespace alps {
             }
 
 
+            /// Visitor to check if the bound type U is convertible to type T
+            template <typename T>
+            struct typecheck_visitor : public boost::static_visitor<bool> {
+              public: // FIXME: not everything has to be public!
+                /// Called by apply_visitor() for a bound type U
+                template <typename U>
+                bool operator()(const U& val) const
+                {
+                    return apply(val);
+                }
+
+                /// The bound type U is the same as requested type T:
+                bool apply(const T&) { return true; }
+
+                /// The bound type U {is / is not} convertible to T:
+                template <typename U>
+                bool apply(const U&) const
+                {
+                    return boost::is_convertible<U,T>::value;
+                }
+            };
+
+            /// Check if the bound type is convertible to the type T
+            template <typename T>
+            bool is_convertible() const
+            {
+                typecheck_visitor<T> visitor;
+                return boost::apply_visitor(visitor, this->val_);
+            }
+                    
+            
             /// Visitor to call alps::utilities::short_print on the type, hidden in boost::variant
             struct ostream_visitor : public boost::static_visitor<> {
             public:

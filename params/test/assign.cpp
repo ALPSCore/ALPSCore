@@ -169,6 +169,10 @@ TEST(param,SetTypeMismatchMessage)
     alps::params_ns::testing::CmdlineParameter<int> gen_int("myparam");
     alps::params p=gen_int.params();
 
+    // FIXME: probably deserve a separate test
+    EXPECT_TRUE(  p.exists<int>("myparam") );
+    EXPECT_FALSE( p.exists<std::string>("myparam") );
+   
     bool thrown=false;
     try {
       p["myparam"]=1L; // attempt to assing long to an integer parameter

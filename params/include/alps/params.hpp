@@ -220,12 +220,21 @@ namespace alps {
           /** Iterator to the beyond-the-end of the option map */
           const_iterator end() const { possibly_parse(); return optmap_.end(); }
 
-          /// Check if a parameter is defined (that is: attempt to assign to/from it will not throw)
-          bool defined(const std::string& name) const
+          /// Check if a parameter exists (that is: attempt to assign to/from it will not throw)
+          bool exists(const std::string& name) const
           {
               possibly_parse();
               options_map_type::const_iterator it=optmap_.find(name);
               return (it!=optmap_.end()) && !(it->second).isNone();
+          }
+
+          /// Check if a parameter exists and is convertible to type T (that is: attempt to assign T to/from it will not throw)
+          template <typename T>
+          bool exists(const std::string& name) const
+          {
+              possibly_parse();
+              options_map_type::const_iterator it=optmap_.find(name);
+              return (it!=optmap_.end()) && (it->second).is_convertible<T>();
           }
 
           /// Check if parameter has default value (does not present in the command line).

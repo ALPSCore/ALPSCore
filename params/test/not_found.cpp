@@ -7,7 +7,7 @@
 
 #include "gtest/gtest.h"
 
-// FIXME: test the defined() method separately?
+// FIXME: test the exists() method separately?
 
 
 TEST(param,AccessNonExisting) {
@@ -21,7 +21,7 @@ TEST(param,AccessNonExisting) {
       EXPECT_THROW(int i=p["defined_par"], alps::params::uninitialized_value);
     }
 
-    EXPECT_FALSE(p.defined("defined_par"));
+    EXPECT_FALSE(p.exists("defined_par"));
 
     const alps::params p1(p);
     {
@@ -43,7 +43,7 @@ TEST(param, AccessUndefined){
       EXPECT_THROW(std::string s=p["not_in_parms"], alps::params::uninitialized_value);
     }
 
-    EXPECT_FALSE(p.defined("not_in_parms"));
+    EXPECT_FALSE(p.exists("not_in_parms"));
 
     EXPECT_EQ(std::string("world"),p["hello"]);
 }

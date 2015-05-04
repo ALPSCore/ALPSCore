@@ -48,8 +48,8 @@ int main(int argc, const char* argv[])
     
     // Parameter validation. We check each condition. If not met, we print an
     // error and flag the help to be printed later.
-    // The "name" parameter must be defined
-    if (!par.defined("name")) {
+    // The "name" parameter must be present
+    if (!par.exists("name")) {
         std::cout << "You must provide the name of the de-construction algorithm" << std::endl;
         par["help"] = true;
     }
@@ -59,7 +59,7 @@ int main(int argc, const char* argv[])
         par["help"] = true;
     }
     
-    // If request, we print the help message, which is constructed from the
+    // If requested, we print the help message, which is constructed from the
     // information we gave when defining the parameters.
     if (par.help_requested(std::cout)) {
         return 0;
