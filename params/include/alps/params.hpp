@@ -276,8 +276,14 @@ namespace alps {
           /// Define a "trigger" command-line option (like "--help")
           params& define(const std::string& optname, const std::string& a_descr);
 
-          /// Output the help message, if requested. @returns true if help was indeed requested.
+          /// Output the help message, if requested. @param ostrm: Output stream @returns true if help was indeed requested.
           bool help_requested(std::ostream& ostrm);
+
+          /// Check if help requested. @returns true if help was requested.
+          bool help_requested() { possibly_parse(); return optmap_["help"]; }
+
+          /// Output the help message. @param ostrm: Output stream @returns true if help was indeed requested.
+          void print_help(std::ostream& ostrm);
 
           /// Stream parameters 
           friend std::ostream& operator<<(std::ostream& str, params const& x);

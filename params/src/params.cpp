@@ -244,14 +244,19 @@ namespace alps {
 
         bool params::help_requested(std::ostream& ostrm)
         {
-            po::options_description odescr;
-            certainly_parse(odescr);
-            if (optmap_["help"]) { // FIXME: will conflict with explicitly-assigned "help" parameter
-                ostrm << helpmsg_ << std::endl;
-                ostrm << odescr;
+            if (help_requested()) { 
+                print_help(ostrm);
                 return true;
             }
             return false;
+        }
+        
+        void params::print_help(std::ostream& ostrm)
+        {
+            po::options_description odescr;
+            certainly_parse(odescr);
+            ostrm << helpmsg_ << std::endl;
+            ostrm << odescr;
         }        
 
 #ifdef ALPS_HAVE_MPI
