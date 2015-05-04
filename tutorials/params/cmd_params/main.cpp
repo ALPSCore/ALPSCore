@@ -6,19 +6,20 @@
 #include "alps/params.hpp"
 
 /**
- * This example shows how to read parameters from command-line arguments.
+ * This example shows how to read and validate parameters from command-line arguments.
  * The supported parameters are:
  * <ul>
  *   <li>--count   integer, default 0</li>
  *   <li>--val     double, default 6.28</li>
- *   <li>--name    std:string, default "Judas"</li>
+ *   <li>--name    std:string, no default, mandatory</li>
  * </ul>
  * <p>
  * Run the example with different arguments combinations. For example:
  * <ul>
- *   <li>./cmd_params</li>
- *   <li>./cmd_params --count 3 --val 2.71 --name "Superman"</li>
- *   <li>./cmd_params --count 100 --val 2.71 </li>
+ *   <li>./cmd_params --name "Superman"</li>
+ *   <li>./cmd_params </li>
+ *   <li>./cmd_params --count -100  </li>
+ *   <li>./cmd_params --count 200 --val 2.71 --name "Luthor" </li>
  * </ul>
  * 
  * @param argc the number of arguments
@@ -41,9 +42,22 @@ int main(int argc, const char* argv[])
     // is set to the value; if no command-line argument matches, the default
     // value is used. Command-line arguments that do not match any parameter are ignored.
     std::cout << "Defining parameters..." << std::endl;
-    par.define<int>("count", 0, "Number of interconnected elements");
+    par.define<int>("count", 100, "Number of interconnected elements");
     par.define<double>("val", 6.28, "Value of implosion constant");
-    par.define<std::string>("name", "Judas", "Name of de-construction algorithm");
+    par.define<std::string>("name", "Name of de-construction algorithm");
+    
+    // Parameter validation. We check each condition. If not met, we print an
+    // error and flag the help to be printed later.
+    // The "name" parameter must be defined
+    if (!par.defined("name")) {
+        std::cout << "You must provide the name of the de-construction algorithm" << std::endl;
+        par["help"] = true;
+    }
+    // The "count" parameter must be greater than zero
+    if (par["count"].as<int>() <= 0) {
+        std::cout << "The number of interconnected elements must be positive" << std::endl;
+        par["help"] = true;
+    }
     
     // If request, we print the help message, which is constructed from the
     // information we gave when defining the parameters.
