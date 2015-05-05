@@ -80,6 +80,13 @@ class my_sim_type : public alps::mcbase {
  * 1.0, and estimates the average and the variance. Full binning
  * accumulators are used to collect X and X^2 at each MC step, and to
  * calculate the variance at the end of the simulation.
+ * <p>
+ * Run the example with different arguments combinations. For example:
+ * <ul>
+ *   <li>./simple_mc_--help</li>
+ *   <li>./simple_mc </li>
+ *   <li>./simple_mc --nSteps 10000 </li>
+ * </ul>
  * 
  * @param argc the number of arguments
  * @param argv the argument array
@@ -95,6 +102,9 @@ int main(int argc, const char* argv[])
     // base class
     params.define("nSteps", 1000, "Number of MC steps to perform");
     my_sim_type::define_parameters(params);
+    if (params.help_requested(std::cout)) {
+        exit(0);
+    }
     
     // Create and run the simulation
     std::cout << "Running simulation..." << std::endl;
