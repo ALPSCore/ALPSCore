@@ -64,7 +64,7 @@ foreach (name
                                                INTERFACE_COMPILE_DEFINITIONS "${ALPS_SHARED_CPPFLAGS}")
 
     set_target_properties(${name}_c PROPERTIES PREFIX "")
-    target_link_libraries(${name}_c ${PYTHON_LIBRARIES} ${LINK_ALL})
+    target_link_libraries(${name}_c ${PYTHON_LIBRARIES})
     include_directories(${PYTHON_INCLUDE_DIRS})
 
     install(TARGETS ${name}_c 
@@ -77,6 +77,18 @@ endforeach(name)
 install(EXPORT ${PROJECT_NAME} NAMESPACE alps:: DESTINATION share/${PROJECT_NAME})
 
 add_this_package(${libs_})
+
+# FIXME: modify this code (transplanted from ALPSCommonModuleDefinitions.cmake) to make it work:
+# set(tgt_list_ "")
+# foreach(tgt_ ${ARGV})
+#     list(APPEND tgt_list_ "alps::${tgt_}")
+# endforeach()
+# if (tgt_list_)
+#     gen_cfg_module(DEPENDS ${${PROJECT_NAME}_DEPENDS} EXPORTS ${tgt_list_})
+# else()
+#     gen_cfg_module(DEPENDS ${${PROJECT_NAME}_DEPENDS})
+# endif()
+
 
 add_testing()
 

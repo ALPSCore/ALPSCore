@@ -2,8 +2,9 @@
 # This cmake script enables MPI support in ALPSCore.
 # It is done in the following way
 # 1. Check the CXX compiler for MPI support.
-# 2. If CXX doesn't support MPI - try to find the MPI compiler
-# and check it for being the same compiler as CXX 
+# 2. If CXX doesn't support MPI - try to find the MPI compiler,
+#    check it for being the same compiler as CXX,
+#    and add libraries and headers to the target ${PROJECT_NAME}
 # 3. Otherwise disable MPI 
 # 
 
@@ -39,8 +40,10 @@ if (ENABLE_MPI)
             set(ALPS_HAVE_MPI TRUE)
             message(STATUS "MPI : Using ${MPI_CXX_COMPILER}")
             list(APPEND CMAKE_CXX_FLAGS ${MPI_CXX_COMPILE_FLAGS}) 
-            include_directories(${MPI_CXX_INCLUDE_PATH} ${MPI_C_INCLUDE_PATH})
-            link_libraries(${MPI_CXX_LIBRARIES})
+            # include_directories(${MPI_CXX_INCLUDE_PATH} ${MPI_C_INCLUDE_PATH})
+            # link_libraries(${MPI_CXX_LIBRARIES})
+            target_include_directories(${PROJECT_NAME} PUBLIC ${MPI_CXX_INCLUDE_PATH} ${MPI_C_INCLUDE_PATH})
+            target_link_libraries(${PROJECT_NAME} PUBLIC ${MPI_CXX_LIBRARIES})
         else()
             message(WARNING "mpi compiler doesn't match the cxx compiler. Please specify mpicxx wrapper as CXX to enable MPI")
         endif()

@@ -64,6 +64,7 @@ endif(NOT tests_are_already_enabled)
 # optional arg: PARTEST: run test in parallel using N processes, where N is run-time value of environment variable ALPS_TEST_MPI_NPROC
 #               (or 1 if the variable is not set) (FIXME: make this a configurable constant!)
 # optional arg: directory containing the source file 
+# Affected by: ${PROJECT_NAME}_DEPENDS variable.
 function(alps_add_gtest test)
     if (TestXMLOutput)
         set (test_xml_output --gtest_output=xml:${test}.xml)
@@ -98,7 +99,7 @@ function(alps_add_gtest test)
         set(link_test ${GTEST_MAIN_LIBRARIES})
     endif()
 
-    target_link_libraries(${test} ${PROJECT_NAME} ${LINK_ALL} ${link_test})
+    target_link_libraries(${test} ${PROJECT_NAME} ${${PROJECT_NAME}_DEPENDS} ${link_test})
     # FIXME: if compiler supports MPI directly, the MPIEXEC program is not deduced!
     # FIXME: in the MPI test command, POSIX shell is assumed
     if (partest AND MPIEXEC)
