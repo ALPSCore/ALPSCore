@@ -40,23 +40,13 @@ class my_sim_type : public alps::mcbase {
                          << alps::accumulators::FullBinningAccumulator<double>("X2");
         }
 
-        // if not compiled with mpi boost::mpi::communicator does not exists, 
-        // so template the function
-//        template <typename Arg> my_sim_type(parameters_type const & params, Arg comm)
-//            : alps::mcbase(params, comm)
-//            , total_count(params["COUNT"])
-//        {
-//            measurements << alps::accumulators::FullBinningAccumulator<double>("SValue")
-//                         << alps::accumulators::FullBinningAccumulator<std::vector<double> >("VValue");
-//        }
-
-        // This performs the actual calculate at each MC step.
+        // This performs the actual calculation at each MC step.
         // In this example we simply take a value from a uniform distribution.
         void update() {
             value = drand48();
         };
 
-        // This collects the measurements at each time step.
+        // This collects the measurements at each MC step.
         void measure() {
             // Increase the count
             count++;
@@ -113,7 +103,7 @@ int main(int argc, const char* argv[])
 
     // Collect the results from the simulation
     std::cout << "Collecting results..." << std::endl;
-    alps::results_type<my_sim_type>::type results = collect_results(my_sim);
+    alps::results_type<my_sim_type>::type results = alps::collect_results(my_sim);
 
     // Print the mean and the standard deviation
     std::cout << "Results:" << std::endl;
