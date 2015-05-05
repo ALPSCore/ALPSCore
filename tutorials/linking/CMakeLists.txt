@@ -14,10 +14,6 @@ project(linking CXX)
 # export ALPSCore_DIR=/location/to/ALPSCORE/
 find_package(ALPSCore)
 
-# for now including boost is necessary, resolution of #125 will fix this:
-find_package(Boost)
-include_directories(${Boost_INCLUDE_DIRS})
-
 # we only have one cpp file: it's called linking.cpp
 add_executable(${PROJECT_NAME} linking.cpp)
 
