@@ -56,29 +56,30 @@ endif()
 ## Some macros
 
 macro(add_boost) # usage: add_boost(component1 component2...)
+  #set(Boost_USE_STATIC_LIBS        ON)
+  #set(Boost_USE_STATIC_RUNTIME    OFF)
   find_package (Boost 1.54.0 COMPONENTS ${ARGV} REQUIRED)
   message(STATUS "Boost includes: ${Boost_INCLUDE_DIRS}" )
   message(STATUS "Boost libs: ${Boost_LIBRARIES}" )
-  include_directories(${Boost_INCLUDE_DIRS})
-  list(APPEND LINK_ALL ${Boost_LIBRARIES})
+  target_include_directories(${PROJECT_NAME} PUBLIC ${Boost_INCLUDE_DIRS})
+  target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
 endmacro(add_boost)
 
 macro(add_hdf5) 
   find_package (HDF5 REQUIRED)
   message(STATUS "HDF5 includes: ${HDF5_INCLUDE_DIRS}" )
   message(STATUS "HDF5 libs: ${HDF5_LIBRARIES}" )
-  include_directories(${HDF5_INCLUDE_DIRS})
-  list(APPEND LINK_ALL ${HDF5_LIBRARIES})
+  target_include_directories(${PROJECT_NAME} PUBLIC ${HDF5_INCLUDE_DIRS})
+  target_link_libraries(${PROJECT_NAME} ${HDF5_LIBRARIES})
 endmacro(add_hdf5)
 
 # Usage: add_alps_package(pkgname1 pkgname2...)
 # Sets variable ${PROJECT_NAME}_DEPENDS
-# Adds to variable LINK_ALL
 macro(add_alps_package)
-    set(${PROJECT_NAME}_DEPENDS "${ARGV}")
+    list(APPEND ${PROJECT_NAME}_DEPENDS ${ARGV})
     foreach(pkg_ ${ARGV})
         if (DEFINED ALPS_GLOBAL_BUILD)
-            include_directories(${${pkg_}_INCLUDE_DIRS})
+            include_directories(${${pkg_}_INCLUDE_DIRS}) # this is needed to compile tests
             message(STATUS "${pkg_} includes: ${${pkg_}_INCLUDE_DIRS}" )
         else(DEFINED ALPS_GLOBAL_BUILD)
             string(REGEX REPLACE "^alps-" "" pkgcomp_ ${pkg_})
@@ -92,57 +93,41 @@ macro(add_alps_package)
             endif()
             # Imported targets returned by find_package() contain info about include dirs, no need to assign them
         endif (DEFINED ALPS_GLOBAL_BUILD)
-        list(APPEND LINK_ALL ${${pkg_}_LIBRARIES})
+        target_link_libraries(${PROJECT_NAME} ${${pkg_}_LIBRARIES})
         message(STATUS "${pkg_} libs: ${${pkg_}_LIBRARIES}")
     endforeach(pkg_)
 endmacro(add_alps_package) 
 
-# Usage: add_this_package([exported_target1 exported_target2...])
-# (by default, alps::${PROJECT_NAME} is the only exported target)
-# Affected by variable ${PROJECT_NAME}_DEPENDS
+# Usage: add_this_package(srcs...)
+# The `srcs` are source file names in directory "src/"
+# Defines ${PROJECT_NAME} target
+# Exports alps::${PROJECT_NAME} target
 function(add_this_package)
-  include_directories(
-    ${PROJECT_SOURCE_DIR}/include
-    ${PROJECT_BINARY_DIR}/include
-  )
-  add_subdirectory(src)
-  install(DIRECTORY include DESTINATION .
-          FILES_MATCHING PATTERN "*.hpp" PATTERN "*.hxx"
-         )
-  gen_cfg_module(DEPENDS ${${PROJECT_NAME}_DEPENDS})
-  # FIXME: modify and move this commented-out code to Python build
-  # set(tgt_list_ "")
-  # foreach(tgt_ ${ARGV})
-  #     list(APPEND tgt_list_ "alps::${tgt_}")
-  # endforeach()
-  # if (tgt_list_)
-  #     gen_cfg_module(DEPENDS ${${PROJECT_NAME}_DEPENDS} EXPORTS ${tgt_list_})
-  # else()
-  #     gen_cfg_module(DEPENDS ${${PROJECT_NAME}_DEPENDS})
-  # endif()
-endfunction(add_this_package)
-
-# Parameters: list of source files
-macro(add_source_files)
-  add_library(${PROJECT_NAME} ${ALPS_BUILD_TYPE} ${ARGV})
+   # This is needed to compile tests:
+   include_directories(
+     ${PROJECT_SOURCE_DIR}/include
+     ${PROJECT_BINARY_DIR}/include
+   )
+  
+  set(src_list_ "")
+  foreach(src_ ${ARGV})
+    list(APPEND src_list_ "src/${src_}.cpp")
+  endforeach()
+  add_library(${PROJECT_NAME} ${ALPS_BUILD_TYPE} ${src_list_})
   set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
-  target_link_libraries(${PROJECT_NAME} ${LINK_ALL})
-  # (FIXME) The following requires a newer (2.8.12 ?) CMake:
-  # install(TARGETS ${PROJECT_NAME} 
-  #         EXPORT ${PROJECT_NAME} 
-  #         LIBRARY DESTINATION lib
-  #         ARCHIVE DESTINATION lib
-  #         INCLUDES DESTINATION include)
-  # so it is replaced: BEGIN...
+
   install(TARGETS ${PROJECT_NAME} 
           EXPORT ${PROJECT_NAME} 
           LIBRARY DESTINATION lib
-          ARCHIVE DESTINATION lib)
-  set_target_properties(${PROJECT_NAME} PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_INSTALL_PREFIX}/include)
-  # ... END
+          ARCHIVE DESTINATION lib
+          INCLUDES DESTINATION include)
   install(EXPORT ${PROJECT_NAME} NAMESPACE alps:: DESTINATION share/${PROJECT_NAME})
-endmacro(add_source_files)  
+  target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/include ${PROJECT_BINARY_DIR}/include)
 
+  install(DIRECTORY include DESTINATION .
+          FILES_MATCHING PATTERN "*.hpp" PATTERN "*.hxx"
+         )
+endfunction(add_this_package)
 
 macro(add_testing)
   option(Testing "Enable testing" ON)
@@ -176,14 +161,19 @@ endmacro(gen_pkg_config)
 
 # Function: generates package-specific CMake configs
 # Arguments: [DEPENDS <list-of-dependencies>] [EXPORTS <list-of-exported-targets>]
+# If no <list-of-dependencies> are present, the contents of ${PROJECT_NAME}_DEPENDS is used
 # If no exported targets are present, alps::${PROJECT_NAME} is assumed.
 function(gen_cfg_module)
     include(CMakeParseArguments) # arg parsing helper
     cmake_parse_arguments(gen_cfg_module "" "" "DEPENDS;EXPORTS" ${ARGV})
     if (gen_cfg_module_UNPARSED_ARGUMENTS)
-        message(FATAL_ERROR "Incorrect call of gen_cfg_module(DEPENDS ... [EXPORTS ...]): ARGV=${ARGV}")
+        message(FATAL_ERROR "Incorrect call of gen_cfg_module([DEPENDS ...] [EXPORTS ...]): ARGV=${ARGV}")
     endif()
-    set(DEPENDS ${gen_cfg_module_DEPENDS})
+    if (gen_cfg_module_DEPENDS)
+        set(DEPENDS ${gen_cfg_module_DEPENDS})
+    else()
+        set(DEPENDS ${${PROJECT_NAME}_DEPENDS})
+    endif()
     if (gen_cfg_module_EXPORTS)
         set(EXPORTS ${gen_cfg_module_EXPORTS})
     else()
