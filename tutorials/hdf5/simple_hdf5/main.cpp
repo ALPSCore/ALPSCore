@@ -66,7 +66,7 @@ int main(int argc, const char* argv[])
     std::complex<double> sComplexValue;
     std::string sStringValue;
     std::vector<double> vDoubleValue;
-    std::vector<double> vIntValue;
+    std::vector<int> vIntValue;
 
     // Open the hdf5 file with read permission
     std::cout << "Opening parameters.h5..." << std::endl;
