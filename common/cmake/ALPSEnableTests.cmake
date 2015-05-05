@@ -99,7 +99,6 @@ function(alps_add_gtest test)
         set(link_test ${GTEST_MAIN_LIBRARIES})
     endif()
 
-    message(STATUS "DEBUG: test link libraries ${PROJECT_NAME} # ${${PROJECT_NAME}_DEPENDS} # ${link_test}")
     target_link_libraries(${test} ${PROJECT_NAME} ${${PROJECT_NAME}_DEPENDS} ${link_test})
     # FIXME: if compiler supports MPI directly, the MPIEXEC program is not deduced!
     # FIXME: in the MPI test command, POSIX shell is assumed
