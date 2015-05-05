@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 1998-2015 ALPS Collaboration. See COPYRIGHT.TXT
+ * All rights reserved. Use is subject to license terms. See LICENSE.TXT
+ * For use in publications, see ACKNOWLEDGE.TXT
+ */
 #ifndef ALPS_PARAMS_PARAM_TYPES_MPL_INCLUDED
 #define ALPS_PARAMS_PARAM_TYPES_MPL_INCLUDED
 

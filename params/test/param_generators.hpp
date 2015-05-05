@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 1998-2015 ALPS Collaboration. See COPYRIGHT.TXT
+ * All rights reserved. Use is subject to license terms. See LICENSE.TXT
+ * For use in publications, see ACKNOWLEDGE.TXT
+ */
 #ifndef PARAMS_TEST_PARAM_GENERATORS_HPP_INCLUDED
 #define PARAMS_TEST_PARAM_GENERATORS_HPP_INCLUDED
 
