@@ -14,17 +14,16 @@
 #include <alps/mc/stop_callback.hpp>
 
 /**
- * This example shows how to setup a simple simulation and retrieve some results.
- * The simulation just takes samples from a uniform distribution from 0.0 to 
- * 1.0, and estimates the average and the variance. Full binning
- * accumulators are used to collect X and X^2 at each MC step, and to
- * calculate the variance at the end of the simulation.
+ * This example shows how to setup a simple Monte Carlo simulation and retrieve some results.
  * <p>
- * Run the example with different arguments combinations. For example:
+ * The actual work is done inside the `ising_sim` class (see file "ising.cpp" and "ising.hpp"
+ * in this directory). The simulation sets up a 1-dimensional Ising model and runs a Monte Carlo
+ * simulation for the requested number of steps and at the requested temperature. This example
+ * also shows how to read simulation parameters and save/restore the state of the simulation.
+ * <p>
+ * Run the example with `--help` argument to obtain the list of supported parameters.
  * <ul>
- *   <li>./simple_mc_--help</li>
- *   <li>./simple_mc </li>
- *   <li>./simple_mc --nSteps 10000 </li>
+ *   <li>./ising_mc_--help</li>
  * </ul>
  * 
  * @param argc the number of arguments
@@ -42,7 +41,7 @@ int main(int argc, const char* argv[])
         exit(0);
     }
     
-
+    std::cout << "Creating simulation..." << std::endl;
     ising_sim sim(parameters); 
 
     // If needed, restore the last checkpoint
