@@ -64,7 +64,7 @@ namespace alps {
       } // detail
 
 
-      class /*-ALPS_DECL-*/ params {
+      class params {
       private:
 
           /// Type for the set of key names. Used in recording defaulted options. (FIXME: think of a better solution)
@@ -375,8 +375,6 @@ namespace alps {
 #endif
           return *this;
       }
-
-      // /*-ALPS_DECL-*/ std::ostream & operator<<(std::ostream & os, params const & arg);
 
       namespace detail {
           /// Validator for strings, used by boost::program_options

@@ -47,7 +47,7 @@ namespace alps {
             };
         }
 
-        ALPS_DECL void save(
+        void save(
               archive & ar
             , std::string const & path
             , boost::python::object const & value
@@ -56,7 +56,7 @@ namespace alps {
             , std::vector<std::size_t> offset = std::vector<std::size_t>()
         );
 
-        ALPS_DECL void load(
+        void load(
               archive & ar
             , std::string const & path
             , boost::python::object & value
@@ -79,7 +79,7 @@ namespace alps {
             };
         }
 
-        ALPS_DECL void save(
+        void save(
               archive & ar
             , std::string const & path
             , boost::python::list const & value
@@ -88,7 +88,7 @@ namespace alps {
             , std::vector<std::size_t> offset = std::vector<std::size_t>()
         );
 
-        ALPS_DECL void load(
+        void load(
               archive & ar
             , std::string const & path
             , boost::python::list & value
@@ -107,7 +107,7 @@ namespace alps {
             };
         }
 
-        ALPS_DECL void save(
+        void save(
               archive & ar
             , std::string const & path
             , boost::python::tuple const & value
@@ -132,7 +132,7 @@ namespace alps {
             };
         }
 
-        ALPS_DECL void save(
+        void save(
               archive & ar
             , std::string const & path
             , boost::python::numeric::array const & value
@@ -141,7 +141,7 @@ namespace alps {
             , std::vector<std::size_t> offset = std::vector<std::size_t>()
         );
 
-        ALPS_DECL void load(
+        void load(
               archive & ar
             , std::string const & path
             , boost::python::numeric::array & value
@@ -149,7 +149,7 @@ namespace alps {
             , std::vector<std::size_t> offset = std::vector<std::size_t>()
         );
         
-        ALPS_DECL void save(
+        void save(
               archive & ar
             , std::string const & path
             , boost::python::dict const & value
@@ -158,7 +158,7 @@ namespace alps {
             , std::vector<std::size_t> offset = std::vector<std::size_t>()
         );
         
-        ALPS_DECL void load(
+        void load(
               archive & ar
             , std::string const & path
             , boost::python::dict & value

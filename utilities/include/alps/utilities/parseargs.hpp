@@ -11,7 +11,7 @@
 
 namespace alps {
 
-	struct ALPS_DECL parseargs {
+	struct parseargs {
 	    parseargs(int argc, char *argv[]);
 
 	    bool resume;

@@ -54,7 +54,7 @@ namespace alps {
         }
 
         // TODO: merge with accumulator_wrapper, at least make common base ...
-        class ALPS_DECL result_wrapper {
+        class result_wrapper {
             public:
 
                 // default constructor
@@ -423,7 +423,7 @@ namespace alps {
 
         #undef EXTERNAL_FUNCTION
 
-        class ALPS_DECL accumulator_wrapper {
+        class accumulator_wrapper {
             private:
                 /// Safety check: verify that a pointer is valid.
                 // FIXME: better initialize the pointer with something reasonable to begin with?
@@ -721,7 +721,7 @@ namespace alps {
             return m.extract<A>();
         }
 
-        inline void ALPS_DECL reset(accumulator_wrapper & arg) {
+        inline void reset(accumulator_wrapper & arg) {
             return arg.reset();
         }
 

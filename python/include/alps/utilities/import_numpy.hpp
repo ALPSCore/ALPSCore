@@ -15,6 +15,6 @@
 namespace alps {
     namespace detail {
 
-        ALPS_DECL void import_numpy();
+        void import_numpy();
     }
 }

@@ -15,7 +15,7 @@
 namespace alps {
     namespace detail {
 
-        ALPS_DECL void import_numpy() {
+        void import_numpy() {
             static bool initialized = false;
             if (!initialized) {
                 import_array();  

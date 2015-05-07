@@ -179,32 +179,6 @@ using boost::uint_fast64_t;
 #endif
 
 //
-// for Microsoft Visual C++
-//
-
-#if defined(BOOST_HAS_DECLSPEC)
-# if defined(ALPS_EXPORTS)
-#  define ALPS_DECL __declspec(dllexport)
-#  define ALPS_TEMPL_DECL __declspec(dllexport)
-# else
-#  define ALPS_DECL __declspec(dllimport)
-#  define ALPS_TEMPL_DECL
-# endif
-# if defined(PYALPS_EXPORTS)
-#  define PYALPS_DECL __declspec(dllexport)
-#  define PYALPS_TEMPL_DECL __declspec(dllexport)
-# else
-#  define PYALPS_DECL __declspec(dllimport)
-#  define PYALPS_TEMPL_DECL
-# endif
-#else
-# define ALPS_TEMPL_DECL
-# define ALPS_DECL
-# define PYALPS_TEMPL_DECL
-# define PYALPS_DECL
-#endif
-
-//
 // Enable HDF5 checkpoints: no ALPS checkpoint data is written into XDR files 
 // anymore, but they can still be read
 //

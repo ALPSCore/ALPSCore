@@ -86,7 +86,7 @@ namespace alps {
             };
         }
 
-        class ALPS_DECL archive {
+        class archive {
 
             public:
 
@@ -330,23 +330,23 @@ namespace alps {
             {};                                                                                                                                                        \
                                                                                                                                                                        \
             namespace detail {                                                                                                                                         \
-                template<> struct ALPS_DECL is_vectorizable< T > {                                                                                                     \
+                template<> struct is_vectorizable< T > {                                                                                                     \
                     static bool apply(T const & value);                                                                                                                \
                 };                                                                                                                                                     \
-                template<> struct ALPS_DECL is_vectorizable< T const > {                                                                                               \
+                template<> struct is_vectorizable< T const > {                                                                                               \
                     static bool apply(T & value);                                                                                                                      \
                 };                                                                                                                                                     \
                                                                                                                                                                        \
-                template<> struct ALPS_DECL get_pointer< T > {                                                                                                         \
+                template<> struct get_pointer< T > {                                                                                                         \
                     static alps::hdf5::scalar_type< T >::type * apply( T & value);                                                                                     \
                 };                                                                                                                                                     \
                                                                                                                                                                        \
-                template<> struct ALPS_DECL get_pointer< T const > {                                                                                                   \
+                template<> struct get_pointer< T const > {                                                                                                   \
                     static alps::hdf5::scalar_type< T >::type const * apply( T const & value);                                                                         \
                 };                                                                                                                                                     \
             }                                                                                                                                                          \
                                                                                                                                                                        \
-            ALPS_DECL void save(                                                                                                                                       \
+            void save(                                                                                                                                       \
                   archive & ar                                                                                                                                         \
                 , std::string const & path                                                                                                                             \
                 , T const & value                                                                                                                                      \
@@ -355,7 +355,7 @@ namespace alps {
                 , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                         \
             );                                                                                                                                                         \
                                                                                                                                                                        \
-            ALPS_DECL void load(                                                                                                                                       \
+            void load(                                                                                                                                       \
                   archive & ar                                                                                                                                         \
                 , std::string const & path                                                                                                                             \
                 , T & value                                                                                                                                            \

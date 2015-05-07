@@ -21,7 +21,7 @@
 #include <vector>
 #include <string>
 
-class ALPS_DECL ising_sim {
+class ising_sim {
 
     typedef alps::accumulators::accumulator_set accumulators_type;
 

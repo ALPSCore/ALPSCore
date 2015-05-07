@@ -44,7 +44,7 @@
 
 namespace alps {
 
-    ALPS_DECL std::string stacktrace();
+    std::string stacktrace();
 
 }
 

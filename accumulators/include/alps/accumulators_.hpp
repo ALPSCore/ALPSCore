@@ -33,12 +33,12 @@
 namespace alps {
     namespace accumulators {
 
-        class ALPS_DECL result_wrapper;
-        class ALPS_DECL accumulator_wrapper;
+        class result_wrapper;
+        class accumulator_wrapper;
 
         namespace wrapped {
 
-            template<typename accumulator_type> class ALPS_DECL virtual_result_wrapper {
+            template<typename accumulator_type> class virtual_result_wrapper {
                 public:
 
                     // default constructor
@@ -381,7 +381,7 @@ namespace alps {
             // #undef EXTERNAL_FUNCTION
 
 
-            class ALPS_DECL virtual_accumulator_wrapper {
+            class virtual_accumulator_wrapper {
                 public:
                     // default constructor
                     virtual_accumulator_wrapper();
@@ -488,7 +488,7 @@ namespace alps {
             //     return m.extract<A>();
             // }
 
-            inline void ALPS_DECL reset(virtual_accumulator_wrapper & arg) {
+            inline void reset(virtual_accumulator_wrapper & arg) {
                 return arg.reset();
             }
 

@@ -14,6 +14,6 @@ namespace alps {
   /** @brief Generates a random file name with a given prefix
       @param prefix : the file prefix
   */
-  ALPS_DECL std::string temporary_filename(std::string prefix);
+  std::string temporary_filename(std::string prefix);
 }
 #endif // ALPS_UTILITY_TEMPORARY_FILENAME_HPP

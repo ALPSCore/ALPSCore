@@ -17,7 +17,7 @@
 
 namespace alps {
 
-	class ALPS_DECL stop_callback {
+	class stop_callback {
 		public:
 		    stop_callback(std::size_t timelimit);
 #ifdef ALPS_HAVE_MPI
