@@ -33,7 +33,8 @@ TEST(gtest_par_xml_output, main)
         argv[i]=const_cast<char*>(argv_copy[i].c_str()); // dirty, but would work here
     }
 
-    alps::gtest_par_xml_output(123, argc, argv);
+    alps::gtest_par_xml_output tweak; // hold memory
+    tweak(123, argc, argv); // do tweaking
 
     {
         // These arguments should stay intact

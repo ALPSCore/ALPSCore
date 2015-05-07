@@ -6,23 +6,28 @@
 
 #include <string>
 #include <cstring>
-#include "boost/filesystem.hpp"
-#include "boost/lexical_cast.hpp"
+
+#include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/foreach.hpp>
+
+#include "alps/utilities/gtest_par_xml_output.hpp"
 
 namespace alps {
 
-    /// @warning Current implementation heap-allocates a char[] array
-    /// for each "--gtest=xml..." command-line argument, that never gets deallocated.
-    void gtest_par_xml_output(unsigned int irank, int argc, char** argv)
+    void gtest_par_xml_output::operator()(unsigned int irank, int argc, char** argv)
     {
-        static const char option_prefix[]="--gtest_output=xml";
-        static const size_t option_prefix_len=sizeof(option_prefix)-1;
-
-        const std::string srank=boost::lexical_cast<std::string>(irank);
         if (argc<2) return;
+
+        const std::string option_prefix="--gtest_output=xml";
+        const size_t prefix_len=option_prefix.size();
+        const std::string srank=boost::lexical_cast<std::string>(irank);
+        const size_t npos=std::string::npos;
+
         for (int i=1; i<argc; ++i) {
-            if (std::string(argv[i]).find(option_prefix)!=0) continue;
-            std::string arg(argv[i]+option_prefix_len);
+            std::string arg(argv[i]);
+            if (arg.compare(0,prefix_len,option_prefix)!=0) continue; // starts with prefix? 
+            arg.replace(0,prefix_len, "",0); // remove the prefix; arg is "argument" after "=xml"
             std::string arg_new;
             if (arg.empty()) { // "=xml"
                 arg_new=":test_details"+srank+".xml";
@@ -36,11 +41,19 @@ namespace alps {
                             +srank+ext;
                 }
             }
-            argv[i]=new char[option_prefix_len+arg_new.size()+1]; // NOTE: this memory will never be deallocated :(
-            memcpy(argv[i], option_prefix, option_prefix_len);
-            memcpy(argv[i]+option_prefix_len, arg_new.c_str(), arg_new.size()+1);
-            // FIXME: An alternative would be a proper "Argv class" that would free all associated memory on destruction,
-            // FIXME: possibly having Gtest_Mod_Argv as a derived class.
+            std::string new_argv_i=option_prefix+arg_new;
+            argv[i]=new char[new_argv_i.size()+1];
+            // std::cerr << "DEBUG: gtest_par_xml_output() allocate ptr=" << (void*)argv[i] << "\n";
+            keeper_.push_back(argv[i]);
+            strcpy(argv[i],new_argv_i.c_str());
+        }
+    }
+
+    gtest_par_xml_output::~gtest_par_xml_output()
+    {
+        BOOST_FOREACH(char* p, keeper_) {
+            // std::cerr << "DEBUG: gtest_par_xml_output() deallocate ptr=" << (void*)p << "\n";
+            delete[] p;
         }
     }
 }

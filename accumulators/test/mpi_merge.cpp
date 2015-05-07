@@ -138,7 +138,8 @@ TYPED_TEST(AccumulatorTest, CollectResults)
 int main(int argc, char** argv)
 {
    boost::mpi::environment env(argc, argv, false);
-   alps::gtest_par_xml_output(boost::mpi::communicator().rank(), argc, argv);
+   alps::gtest_par_xml_output tweak;
+   tweak(boost::mpi::communicator().rank(), argc, argv);
    ::testing::InitGoogleTest(&argc, argv);
    return RUN_ALL_TESTS();
 }    

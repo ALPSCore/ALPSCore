@@ -7,26 +7,42 @@
 #ifndef ALPS_UTILITY_GTEST_PAR_XML_OUTPUT_HPP
 #define ALPS_UTILITY_GTEST_PAR_XML_OUTPUT_HPP
 
-#include <alps/config.hpp>
+#include <vector>
+
+#include "alps/config.hpp"
 
 namespace alps {
-    /** @brief Tweaks (argc,argv) to redirect GTest XML output to different files.
-        @param irank : A number added to XML output file name (usually, MPI rank)
-        @param argc : main()'s argc
-        @param argv : main()'s argv
 
-        This function scans argv[] for '--gtest=xml' argument and tweaks it by adding irank
-        to the output file name (preserving the last extension, if any). Its intended use
-        is for unit tests that use Google Test and are run in parallel via MPI. Suggested use:
+    /** @brief Functor class to tweak (argc,argv).
 
-        int main(int argc, char**argv) {
-        boost::mpi::environment env(argc, argv);
-        gtest_par_xml_output(argc, argv, boost::mpi::communicator().rank() );
-        ::testing::InitGoogleTest(&argc, argv);
-        // .....
-        }
-    */
+        Its intended use is for unit tests that use Google Test and
+        are run in parallel via MPI. Suggested use:
 
-    ALPS_DECL void gtest_par_xml_output(unsigned int irank, int argc, char** argv);
+            int main(int argc, char**argv) {
+              boost::mpi::environment env(argc, argv);
+              gtest_par_xml_output tweak; // holds the memory
+              tweak(argc, argv, boost::mpi::communicator().rank() ); // does tweaking
+              ::testing::InitGoogleTest(&argc, argv);
+              // .....
+              // destructor releases the memory
+            }
+
+    */        
+    class gtest_par_xml_output {
+        std::vector<char*> keeper_; ///< Holds pointers to allocated argv[i]
+        // Note: we could use shared_ptr<>, but why bring in yet another header for a simple task?
+      public:
+        virtual ~gtest_par_xml_output();
+        
+        /** @brief Tweaks (argc,argv) to redirect GTest XML output to different files.
+            @param irank : A number added to XML output file name (usually, MPI rank)
+            @param argc : main()'s argc
+            @param argv : main()'s argv
+
+            This method scans argv[] for '--gtest=xml' argument and tweaks it by adding irank
+            to the output file name (preserving the last extension, if any).
+        */
+        void operator()(unsigned int irank, int argc, char** argv);
+    };
 }
 #endif // ALPS_UTILITY_GTEST_PAR_XML_OUTPUT_HPP
