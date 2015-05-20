@@ -14,6 +14,8 @@ set (test_src
     nonexistent
     acc_count_test
     save_load
+#    binary_with_constant
+    vec_scalar_binop_simple
     )
 
 #add tests for MPI
