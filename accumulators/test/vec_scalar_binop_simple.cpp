@@ -46,4 +46,3 @@ TEST(AccumulatorTest,AddFloatToDoubleVec)
 {
   do_sum<double,float>();
 }
-
