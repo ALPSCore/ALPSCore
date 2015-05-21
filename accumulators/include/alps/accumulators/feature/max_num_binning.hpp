@@ -739,29 +739,20 @@ namespace alps {
                             transform(boost::function<self_value_type(self_value_type, arg_value_type)>( OP_STD <self_value_type, self_value_type, arg_value_type>()), arg);    \
                             B:: OPEQ_NAME (arg);                                                                                                                                \
                         }                                                                                                                                                       \
-                        template<typename U> void aug ## OP_TOKEN (U const & arg, typename boost::enable_if<boost::mpl::and_<                                                   \
-                              boost::is_scalar<U>                                                                                                                               \
-                            , typename has_operator_ ## OP_TOKEN <typename mean_type<B>::type, U>::type                                                                         \
-                        >, int>::type = 0) {                                                                                                                                    \
-                            using alps::numeric:: OP_NAME ;                                                                                                                \
+                        template<typename U> void aug ## OP_TOKEN (U const & arg, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {                              \
+                            using alps::numeric:: OP_NAME ;                                                                                                                     \
+                            typedef typename mean_type<B>::type mean_type;                                                                                                      \
                             generate_jackknife();                                                                                                                               \
                             m_mn_data_is_analyzed = false;                                                                                                                      \
                             m_mn_cannot_rebin = true;                                                                                                                           \
-                            typename std::vector<typename mean_type<B>::type>::iterator it;                                                                                     \
+                            typename std::vector<mean_type>::iterator it;                                                                                                       \
                             for (it = m_mn_bins.begin(); it != m_mn_bins.end(); ++it)                                                                                           \
-                                *it = *it OP arg;                                                                                                                               \
+                                *it = *it OP static_cast<typename alps::element_type<mean_type>::type>(arg);                                                                    \
                             for (it = m_mn_jackknife_bins.begin(); it != m_mn_jackknife_bins.end(); ++it)                                                                       \
-                                *it = *it OP arg;                                                                                                                               \
+                                *it = *it OP static_cast<typename alps::element_type<mean_type>::type>(arg);                                                                    \
                             analyze();                                                                                                                                          \
                             B:: OPEQ_NAME (arg);                                                                                                                                \
                         }                                                                                                                                                       \
-                        template<typename U> void aug ## OP_TOKEN (U const & arg, typename boost::enable_if<boost::mpl::and_<                                                   \
-                              boost::is_scalar<U>                                                                                                                               \
-                            , boost::mpl::not_<typename has_operator_ ## OP_TOKEN <typename mean_type<B>::type, U>::type>                                                       \
-                        >, int>::type = 0) {                                                                                                                                    \
-                            throw std::runtime_error(std::string(typeid(typename mean_type<B>::type).name())                                                                    \
-                                + " has no operator " #OP " with " + typeid(U).name() + ALPS_STACKTRACE);                                                                       \
-                        }
 
                     NUMERIC_FUNCTION_OPERATOR(operator+, operator+=, +, add, alps::numeric::plus)
                     NUMERIC_FUNCTION_OPERATOR(operator-, operator-=, -, sub, alps::numeric::minus)

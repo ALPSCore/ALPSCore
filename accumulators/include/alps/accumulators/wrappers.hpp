@@ -86,10 +86,11 @@ namespace alps {
                 virtual void operator*=(base_wrapper const &) = 0;
                 virtual void operator/=(base_wrapper const &) = 0;
 
-                virtual void operator+=(double) = 0;
-                virtual void operator-=(double) = 0;
-                virtual void operator*=(double) = 0;
-                virtual void operator/=(double) = 0;
+                // These virtual functions accept `long double`: it's the "widest" RHS scalar type.
+                virtual void operator+=(long double) = 0;
+                virtual void operator-=(long double) = 0;
+                virtual void operator*=(long double) = 0;
+                virtual void operator/=(long double) = 0;
 
                 virtual void negate() = 0;
                 virtual void inverse() = 0;
@@ -244,7 +245,8 @@ namespace alps {
                     void AUGOPNAME(base_wrapper<typename value_type<A>::type> const & arg) {        \
                         this->m_data AUGOP arg.template extract<A>();                               \
                     }                                                                               \
-                    void AUGOPNAME(double arg) {                                                    \
+                    /* takes `long double`: it's the widest scalar numeric type */                  \
+                    void AUGOPNAME(long double arg) {                                               \
                         this->m_data AUGOP arg;                                                     \
                     }
                 OPERATOR_PROXY(operator+=, +=)
@@ -313,16 +315,16 @@ namespace alps {
                     throw std::runtime_error("The Operator /= is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
                 }
 
-                void operator+=(double) {
+                void operator+=(long double) {
                     throw std::runtime_error("The operator += is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
                 }
-                void operator-=(double) {
+                void operator-=(long double) {
                     throw std::runtime_error("The operator -= is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
                 }
-                void operator*=(double) {
+                void operator*=(long double) {
                     throw std::runtime_error("The operator *= is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
                 }
-                void operator/=(double) {
+                void operator/=(long double) {
                     throw std::runtime_error("The operator /= is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
                 }
 

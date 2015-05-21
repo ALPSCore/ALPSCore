@@ -622,16 +622,7 @@ namespace alps {
                         for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
                             *it = *it + dynamic_cast<self_type const &>(arg).error(it - m_ac_errors.begin());
                     }
-                    template<typename U> void augaddsub (U const & arg, typename boost::enable_if<boost::mpl::and_<
-                          boost::is_scalar<U>
-                        , typename has_operator_add<error_type, U>::type
-                    >, int>::type = 0) {}
-                    template<typename U> void augaddsub (U const & arg, typename boost::enable_if<boost::mpl::and_<
-                          boost::is_scalar<U>
-                        , boost::mpl::not_<typename has_operator_add<error_type, U>::type>
-                    >, int>::type = 0) {
-                        throw std::runtime_error(std::string(typeid(error_type).name()) + " has no operator + " + typeid(U).name() + ALPS_STACKTRACE);
-                    }
+                    template<typename U> void augaddsub (U const & arg, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {}
 
                     template<typename U> void augmul (U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {
                         using alps::numeric::operator*;
@@ -640,20 +631,11 @@ namespace alps {
                             *it = arg.mean() * *it + this->mean() * dynamic_cast<self_type const &>(arg).error(it - m_ac_errors.begin());
                         B::operator*=(arg);
                     }
-                    template<typename U> void augmul (U const & arg, typename boost::enable_if<boost::mpl::and_<
-                          boost::is_scalar<U>
-                        , typename has_operator_mul<error_type, U>::type
-                    >, int>::type = 0) {
+                    template<typename U> void augmul (U const & arg, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {
                         using alps::numeric::operator*;
                         for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
-                            *it = *it * arg;
+                            *it = *it * static_cast<typename alps::element_type<error_type>::type>(arg);
                         B::operator*=(arg);
-                    }
-                    template<typename U> void augmul (U const & arg, typename boost::enable_if<boost::mpl::and_<
-                          boost::is_scalar<U>
-                        , boost::mpl::not_<typename has_operator_mul<error_type, U>::type>
-                    >, int>::type = 0) {
-                        throw std::runtime_error(std::string(typeid(error_type).name()) + " has no operator * " + typeid(U).name() + ALPS_STACKTRACE);
                     }
 
                     template<typename U> void augdiv (U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {
@@ -664,21 +646,12 @@ namespace alps {
                             *it = *it / arg.mean() + this->mean() * dynamic_cast<self_type const &>(arg).error(it - m_ac_errors.begin()) / (arg.mean() * arg.mean());
                         B::operator/=(arg);
                     }
-                    template<typename U> void augdiv (U const & arg, typename boost::enable_if<boost::mpl::and_<
-                          boost::is_scalar<U>
-                        , typename has_operator_div<error_type, U>::type
-                    >, int>::type = 0) {
+                    template<typename U> void augdiv (U const & arg, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {
                         using alps::numeric::operator/;
                         for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
-                            *it = *it / arg;
+                            *it = *it / static_cast<typename alps::element_type<error_type>::type>(arg);
                         B::operator/=(arg);
                     }
-                    template<typename U> void augdiv (U const & arg, typename boost::enable_if<boost::mpl::and_<
-                          boost::is_scalar<U>
-                        , boost::mpl::not_<typename has_operator_div<error_type, U>::type>
-                    >, int>::type = 0) {
-                        throw std::runtime_error(std::string(typeid(error_type).name()) + " has no operator / " + typeid(U).name() + ALPS_STACKTRACE);
-                    }                    
             };
 
             template<typename T, typename B> class BaseWrapper<T, binning_analysis_tag, B> : public B {

@@ -300,12 +300,15 @@ namespace alps {
                         }                                                                                           \
                         result_wrapper const & value;                                                               \
                     };                                                                                              \
-                    struct FUN ## _double_visitor: public boost::static_visitor<> {                                 \
-                        FUN ## _double_visitor(double v): value(v) {}                                               \
+                    /** @brief Visitor to do AUGOP with a constant value */                                         \
+                    /* @note `long double` is chosen as the widest scalar numeric type */                           \
+                    /* @note No use of template: calls non-templatable virtual function. */                         \
+                    struct FUN ## _ldouble_visitor: public boost::static_visitor<> {                                \
+                        FUN ## _ldouble_visitor(long double v): value(v) {}                                         \
                         template<typename X> void operator()(X & arg) const {                                       \
                             *arg AUGOP value;                                                                       \
                         }                                                                                           \
-                        double value;                                                                               \
+                        long double value;                                                                          \
                     };                                                                                              \
                 public:                                                                                             \
                     result_wrapper & AUGOPNAME (result_wrapper const & arg) {                                       \
@@ -313,8 +316,9 @@ namespace alps {
                         boost::apply_visitor(visitor, m_variant);                                                   \
                         return *this;                                                                               \
                     }                                                                                               \
-                    result_wrapper & AUGOPNAME (double arg) {                                                       \
-                        FUN ## _double_visitor visitor(arg);                                                        \
+                    /** @brief Do AUGOP with a constant value */                                                    \
+                    result_wrapper & AUGOPNAME (long double arg) {                                                  \
+                        FUN ## _ldouble_visitor visitor(arg);                                                       \
                         boost::apply_visitor(visitor, m_variant);                                                   \
                         return *this;                                                                               \
                     }                                                                                               \
@@ -323,7 +327,8 @@ namespace alps {
                         clone AUGOP arg;                                                                            \
                         return clone;                                                                               \
                     }                                                                                               \
-                    result_wrapper OPNAME (double arg) const {                                                      \
+                    /** @brief Visitor to do OP with RHS constant value */                                          \
+                    result_wrapper OPNAME (long double arg) const {                                                 \
                         result_wrapper clone(*this);                                                                \
                         clone AUGOP arg;                                                                            \
                         return clone;                                                                               \
@@ -380,16 +385,16 @@ namespace alps {
 
                 detail::variant_type m_variant;
         };
-        inline result_wrapper operator+(double arg1, result_wrapper const & arg2) {
+        inline result_wrapper operator+(long double arg1, result_wrapper const & arg2) {
             return arg2 + arg1;
         }
-        inline result_wrapper operator-(double arg1, result_wrapper const & arg2) {
+        inline result_wrapper operator-(long double arg1, result_wrapper const & arg2) {
             return -arg2 + arg1;
         }
-        inline result_wrapper operator*(double arg1, result_wrapper const & arg2) {
+        inline result_wrapper operator*(long double arg1, result_wrapper const & arg2) {
             return arg2 * arg1;
         }
-        inline result_wrapper operator/(double arg1, result_wrapper const & arg2) {
+        inline result_wrapper operator/(long double arg1, result_wrapper const & arg2) {
             return arg2.inverse() * arg1;
         }
 

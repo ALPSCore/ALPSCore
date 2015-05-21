@@ -21,6 +21,8 @@
 #include <alps/utilities/stacktrace.hpp>
 #include <alps/utilities/short_print.hpp>
 
+#include <alps/type_traits/element_type.hpp>
+
 #include <boost/mpl/if.hpp>
 #include <boost/utility.hpp>
 #include <boost/type_traits/is_scalar.hpp>
@@ -288,23 +290,15 @@ namespace alps {
 
                     #define NUMERIC_FUNCTION_OPERATOR(OP_NAME, OPEQ_NAME, OP, OP_TOKEN)                                                                                         \
                         template<typename U> void aug ## OP_TOKEN (U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {                             \
-                            using alps::numeric:: OP_NAME ;                                                                                                                \
+                            using alps::numeric:: OP_NAME ;                                                                                                                     \
                             m_mean = m_mean OP arg.mean();                                                                                                                      \
                             B:: OPEQ_NAME (arg);                                                                                                                                \
                         }                                                                                                                                                       \
-                        template<typename U> void aug ## OP_TOKEN (U const & arg, typename boost::enable_if<boost::mpl::and_<                                                   \
-                              boost::is_scalar<U>                                                                                                                               \
-                            , typename has_operator_ ## OP_TOKEN <mean_type, U>::type                                                                                           \
-                        >, int>::type = 0) {                                                                                                                                    \
-                            using alps::numeric:: OP_NAME ;                                                                                                                \
-                            m_mean = m_mean OP arg;                                                                                                                             \
+                       template<typename U> void aug ## OP_TOKEN (U const & arg,                                                                                                \
+                                                                  typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {                                              \
+                            using alps::numeric:: OP_NAME ;                                                                                                                     \
+                            m_mean = m_mean OP static_cast<typename alps::element_type<mean_type>::type>(arg);                                                                  \
                             B:: OPEQ_NAME (arg);                                                                                                                                \
-                        }                                                                                                                                                       \
-                        template<typename U> void aug ## OP_TOKEN (U const & arg, typename boost::enable_if<boost::mpl::and_<                                                   \
-                              boost::is_scalar<U>                                                                                                                               \
-                            , boost::mpl::not_<typename has_operator_ ## OP_TOKEN <mean_type, U>::type>                                                                         \
-                        >, int>::type = 0) {                                                                                                                                    \
-                            throw std::runtime_error(std::string(typeid(mean_type).name()) + " has no operator " #OP " with " + typeid(U).name() + ALPS_STACKTRACE);            \
                         }
 
                     NUMERIC_FUNCTION_OPERATOR(operator+, operator+=, +, add)

@@ -319,16 +319,7 @@ namespace alps {
                         using alps::numeric::operator+;
                         m_error = m_error + arg.error();
                     }
-                    template<typename U> void augaddsub (U const & arg, typename boost::enable_if<boost::mpl::and_<
-                          boost::is_scalar<U>
-                        , typename has_operator_add<error_type, U>::type
-                    >, int>::type = 0) {}
-                    template<typename U> void augaddsub (U const & arg, typename boost::enable_if<boost::mpl::and_<
-                          boost::is_scalar<U>
-                        , boost::mpl::not_<typename has_operator_add<error_type, U>::type>
-                    >, int>::type = 0) {
-                        throw std::runtime_error(std::string(typeid(error_type).name()) + " has no operator + " + typeid(U).name() + ALPS_STACKTRACE);
-                    }
+                    template<typename U> void augaddsub (U const & arg, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {}
 
                     template<typename U> void augmul (U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {
                         using alps::numeric::operator*;
@@ -336,19 +327,10 @@ namespace alps {
                         m_error = arg.mean() * m_error + this->mean() * arg.error();
                         B::operator*=(arg);
                     }
-                    template<typename U> void augmul (U const & arg, typename boost::enable_if<boost::mpl::and_<
-                          boost::is_scalar<U>
-                        , typename has_operator_mul<error_type, U>::type
-                    >, int>::type = 0) {
+                    template<typename U> void augmul (U const & arg, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {
                         using alps::numeric::operator*;
-                        m_error = m_error * arg;
+                        m_error = m_error * static_cast<typename alps::element_type<error_type>::type>(arg);
                         B::operator*=(arg);
-                    }
-                    template<typename U> void augmul (U const & arg, typename boost::enable_if<boost::mpl::and_<
-                          boost::is_scalar<U>
-                        , boost::mpl::not_<typename has_operator_mul<error_type, U>::type>
-                    >, int>::type = 0) {
-                        throw std::runtime_error(std::string(typeid(error_type).name()) + " has no operator * " + typeid(U).name() + ALPS_STACKTRACE);
                     }
 
                     template<typename U> void augdiv (U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {
@@ -358,19 +340,10 @@ namespace alps {
                         m_error = m_error / arg.mean() + this->mean() * arg.error() / (arg.mean() * arg.mean());
                         B::operator/=(arg);
                     }
-                    template<typename U> void augdiv (U const & arg, typename boost::enable_if<boost::mpl::and_<
-                          boost::is_scalar<U>
-                        , typename has_operator_div<error_type, U>::type
-                    >, int>::type = 0) {
+                    template<typename U> void augdiv (U const & arg, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {
                         using alps::numeric::operator/;
-                        m_error = m_error / arg;
+                        m_error = m_error / static_cast<typename alps::element_type<error_type>::type>(arg);
                         B::operator/=(arg);
-                    }
-                    template<typename U> void augdiv (U const & arg, typename boost::enable_if<boost::mpl::and_<
-                          boost::is_scalar<U>
-                        , boost::mpl::not_<typename has_operator_div<error_type, U>::type>
-                    >, int>::type = 0) {
-                        throw std::runtime_error(std::string(typeid(error_type).name()) + " has no operator / " + typeid(U).name() + ALPS_STACKTRACE);
                     }
             };
 
