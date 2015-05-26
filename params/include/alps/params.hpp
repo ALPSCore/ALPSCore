@@ -237,15 +237,22 @@ namespace alps {
               return (it!=optmap_.end()) && (it->second).is_convertible<T>();
           }
 
-          /// Check if parameter has default value (does not present in the command line).
-          /// @remark For non-existing and implicitly defined (by assignment) parameters the result is undefined (currently: false).
+          /// Check if parameter has default value (because it's not present in the command line).
+          /// @details Returns false for unknown and missing parameters
+          /// @remark Undefined (currently: false) for implicitly defined (by assignment) parameters
           // FIXME: what if it does not exist? what if it was explicitly assigned?
           bool defaulted(const std::string& name) const
           {
               possibly_parse();
-              return defaulted_options_.count(name)!=0; // FIXME: the implementation via set is a quick hack
+              return exists(name) && defaulted_options_.count(name)!=0; // FIXME: the implementation via set is a quick hack
           }
-        
+
+          /// Check if the parameter was ever `define()`-d or has a pre-assigned value (attempt to define() will throw)
+          bool defined(const std::string& name) const
+          {
+              possibly_parse(); // it fills optmap_ (FIXME: may not be needed actually?)
+              return optmap_.count(name)!=0 || descr_map_.count(name)!=0;
+          }
 
           /// Save parameters to HDF5 archive
           void save(hdf5::archive &) const;

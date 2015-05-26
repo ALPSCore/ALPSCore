@@ -2,17 +2,14 @@ include(ALPSEnableTests)
 
 set (test_src
      file_read
-#     param
      assign
      defaults
      not_found
+     predicates_and_actions
      short_options
      subclass
      serialize
      ostream
-#     redefinition
-#     ordering
-#     stream
     )
 
 
