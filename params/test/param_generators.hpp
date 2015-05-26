@@ -133,6 +133,38 @@ namespace alps {
                 }
             };
 
+            /// Generate a parameter object with the option having a default value, not present in command line
+            template <typename T>
+            class ParameterWithDefault: public BasicParameter<T>
+            {
+                public:
+                typedef BasicParameter<T> B;
+                ParameterWithDefault(const std::string& name): B(name) {}
+
+                /// Returns parameters object having a default value
+                alps::params params() const
+                {
+                    alps::params p;
+                    return p.define<typename B::value_type>(B::name_, B::data(), "some parameter");
+                }
+            };
+
+            /// Generate a parameter object without a default value, not present in command line
+            template <typename T>
+            class ParameterNoDefault: public BasicParameter<T>
+            {
+                public:
+                typedef BasicParameter<T> B;
+                ParameterNoDefault(const std::string& name): B(name) {}
+
+                /// Returns parameters object w/o default
+                alps::params params() const
+                {
+                    alps::params p;
+                    return p.define<typename B::value_type>(B::name_, "some parameter");
+                }
+            };
+
             /// Generate a parameter object by direct assignment
             template <typename T>
             class AssignedParameter: public BasicParameter<T>
@@ -166,7 +198,6 @@ namespace alps {
                     return p;
                 }
             };
-
         } // namespace testing
     } // namespace params_ns
 } // namespace alps
