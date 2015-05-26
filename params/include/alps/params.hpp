@@ -237,7 +237,7 @@ namespace alps {
               return (it!=optmap_.end()) && (it->second).is_convertible<T>();
           }
 
-          /// Check if parameter has default value (because it's not present in the command line).
+          /// @brief Check if parameter has default value (because it's not present in the command line).
           /// @details Returns false for unknown and missing parameters
           /// @remark Undefined (currently: false) for implicitly defined (by assignment) parameters
           // FIXME: what if it does not exist? what if it was explicitly assigned?
