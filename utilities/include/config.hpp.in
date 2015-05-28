@@ -109,13 +109,6 @@
 #cmakedefine ALPS_HAVE_XERCES_PARSER
 
 //
-// Python
-//
-
-// Define to 1 if you have Python on your system.
-#cmakedefine ALPS_HAVE_PYTHON
-
-//
 // OpenMP
 //
 

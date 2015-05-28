@@ -9,14 +9,6 @@
 
 #include "alps/config.hpp"
 #include "alps/hdf5/archive.hpp"
-// #include "alps/params/paramvalue.hpp"
-// #include "alps/params/paramproxy.hpp"
-// #include "alps/params/paramiterator.hpp"
-
-#ifdef ALPS_HAVE_PYTHON_DEPRECATED
-    #include "alps/ngs/boost_python.hpp"
-    #include "boost/python/dict.hpp"
-#endif
 
 #include "boost/filesystem.hpp"
 
@@ -27,7 +19,6 @@
 #include "boost/serialization/variant.hpp"
 
 #include "boost/program_options.hpp"
-// #include "boost/optional.hpp"
 #include "boost/any.hpp"
 #include "boost/tokenizer.hpp"
 
@@ -173,12 +164,6 @@ namespace alps {
           {
               init();
           }
-
-
-#ifdef ALPS_HAVE_PYTHON_DEPRECATED
-          params(boost::python::dict const & arg);
-          params(boost::python::str const & arg);
-#endif
 
           /// Returns whether the parameters are restored from archive by the constructor
           bool is_restored() const
