@@ -4,7 +4,7 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
  
-#include <alps/utilities/get_numpy_type.hpp>
+#include "alps/python/utilities/get_numpy_type.hpp"
 
 namespace alps {
     namespace detail {

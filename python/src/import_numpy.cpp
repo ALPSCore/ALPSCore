@@ -5,9 +5,9 @@
  */
 
 // this must be first
-#include <alps/utilities/boost_python.hpp>
+#include "alps/python/utilities/boost_python.hpp"
 
-#include <alps/utilities/import_numpy.hpp>
+#include "alps/python/utilities/import_numpy.hpp"
 
 #include <boost/python/numeric.hpp>
 #include <numpy/arrayobject.h>

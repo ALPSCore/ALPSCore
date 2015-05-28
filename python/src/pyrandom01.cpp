@@ -7,9 +7,9 @@
 #define PY_ARRAY_UNIQUE_SYMBOL pyrandom_PyArrayHandle
 
 // this must be first
-#include <alps/utilities/boost_python.hpp>
+#include "alps/python/utilities/boost_python.hpp"
 
-#include <alps/utilities/make_deepcopy.hpp>
+#include "alps/python/utilities/make_deepcopy.hpp"
 
 #include <alps/mc/random01.hpp>
 

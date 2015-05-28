@@ -8,10 +8,6 @@
 
 #include <alps/config.hpp>
 
-#ifndef ALPS_HAVE_PYTHON
-    #error numpy is only available if python is enabled
-#endif
-
 namespace alps {
     namespace detail {
 

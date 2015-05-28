@@ -7,19 +7,20 @@
 #define PY_ARRAY_UNIQUE_SYMBOL pyhdf5_PyArrayHandle
 
 // this must be first
-#include <alps/utilities/boost_python.hpp>
+#include "alps/python/utilities/boost_python.hpp"
 
 #include <alps/hdf5/archive.hpp>
 #include <alps/hdf5/pair.hpp>
 #include <alps/hdf5/vector.hpp>
-#include <alps/hdf5/python.hpp>
 #include <alps/hdf5/complex.hpp>
 
-#include <alps/hdf5/python.ipp>
-#include <alps/utilities/get_numpy_type.ipp>
+#include "alps/python/hdf5/hdf5.hpp"
+#include "alps/python/hdf5/hdf5.ipp"
+
+#include "alps/python/utilities/get_numpy_type.ipp"
 
 #include <alps/utilities/stacktrace.hpp>
-#include <alps/utilities/make_deepcopy.hpp>
+#include "alps/python/utilities/make_deepcopy.hpp"
 
 #include <boost/array.hpp>
 #include <boost/scoped_ptr.hpp>

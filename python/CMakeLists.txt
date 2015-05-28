@@ -20,32 +20,24 @@ if (DocumentationOnly)
   return()
 endif (DocumentationOnly)
 
-# enable mpi
-include(ALPSEnableMPI)
 # search for python
-find_package(PythonLibs)
-if (NOT PYTHONLIBS_FOUND)
-  message(FATAL_ERROR " Python libraries not found")
-else(NOT PYTHONLIBS_FOUND)
-  set(ALPS_HAVE_PYTHON True)
-endif (NOT PYTHONLIBS_FOUND)
+find_package(PythonLibs REQUIRED)
+include_directories(${PYTHON_INCLUDE_DIRS})
+
 # find numpy
 find_package(NumPy REQUIRED)
 include_directories(${NUMPY_INCLUDE_DIRS})
+
 # Boost
 #set(Boost_USE_STATIC_LIBS        ON)
 #set(Boost_USE_STATIC_RUNTIME    OFF)
-set(BOOST_LIBRARY_LIST chrono program_options filesystem system)
-if(ENABLE_MPI)
-  list(APPEND BOOST_LIBRARY_LIST mpi)
-endif(ENABLE_MPI)
-if(ALPS_HAVE_PYTHON)
-  list(APPEND BOOST_LIBRARY_LIST python)
-endif(ALPS_HAVE_PYTHON)
-add_boost(${BOOST_LIBRARY_LIST})
 
-add_hdf5()
-add_alps_package(alps-utilities alps-hdf5 alps-params alps-accumulators alps-mc)
+find_package(ALPSCore REQUIRED)
+
+find_package(Boost REQUIRED COMPONENTS python)
+include_directories(${Boost_INCLUDE_DIRS})
+
+include_directories(${PROJECT_SOURCE_DIR}/include)
 
 set (libs_ "")
 foreach (name    
@@ -57,26 +49,17 @@ foreach (name
     add_library(${name}_c MODULE src/${name}.cpp src/import_numpy.cpp)
     list(APPEND libs_ ${name}_c)
 
-    # (FIXME) This requires a newer CMake (2.8.12 ?):
-    # target_compile_definitions(${name}_c PUBLIC "${ALPS_SHARED_CPPFLAGS}") # FIXME: public or private?
-    # so it is replaced with:
-    set_target_properties(${name}_c PROPERTIES COMPILE_DEFINITIONS "${ALPS_SHARED_CPPFLAGS}"
-                                               INTERFACE_COMPILE_DEFINITIONS "${ALPS_SHARED_CPPFLAGS}")
+    target_compile_definitions(${name}_c PUBLIC "${ALPS_SHARED_CPPFLAGS}") # FIXME: public or private?
 
     set_target_properties(${name}_c PROPERTIES PREFIX "")
-    target_link_libraries(${name}_c ${PYTHON_LIBRARIES})
-    include_directories(${PYTHON_INCLUDE_DIRS})
+    target_link_libraries(${name}_c ${PYTHON_LIBRARIES} ${Boost_LIBRARIES} ${ALPSCore_LIBRARIES})
 
     install(TARGETS ${name}_c 
             EXPORT ${PROJECT_NAME}
-            DESTINATION python)
-    # (FIXME) with the newer CMake, the following will go to install(TARGETS) above (INCLUDE DIRS include):
-    set_target_properties(${name}_c PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_INSTALL_PREFIX}/include)
-    
+            DESTINATION python
+            INCLUDES DESTINATION include)
 endforeach(name)
-install(EXPORT ${PROJECT_NAME} NAMESPACE alps:: DESTINATION share/${PROJECT_NAME})
-
-add_this_package(${libs_})
+install(EXPORT ${PROJECT_NAME} NAMESPACE alps-python:: DESTINATION share/${PROJECT_NAME})
 
 # FIXME: modify this code (transplanted from ALPSCommonModuleDefinitions.cmake) to make it work:
 # set(tgt_list_ "")

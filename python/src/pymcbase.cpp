@@ -7,8 +7,9 @@
 #define PY_ARRAY_UNIQUE_SYMBOL pymcbase_PyArrayHandle
 
 // this must be first
-#include <alps/utilities/boost_python.hpp>
+#include "alps/python/utilities/boost_python.hpp"
 
+#include <alps/config.hpp>
 #include <alps/mc/mcbase.hpp>
 #include <alps/hdf5/archive.hpp>
 #include <alps/utilities/make_copy.hpp>

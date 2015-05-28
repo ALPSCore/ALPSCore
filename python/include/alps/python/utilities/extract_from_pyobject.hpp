@@ -8,18 +8,14 @@
 
 #include <alps/config.hpp>
 
-#ifndef ALPS_HAVE_PYTHON
-    #error python for hdf5 is only available if python is enabled
-#endif
-
 // this must be first
-#include <alps/utilities/boost_python.hpp>
+#include "alps/python/utilities/boost_python.hpp"
 
 #include <alps/utilities/cast.hpp>
 
 #include <alps/utilities/type_wrapper.hpp>
-#include <alps/utilities/import_numpy.hpp>
-#include <alps/utilities/get_numpy_type.hpp>
+#include "alps/python/utilities/import_numpy.hpp"
+#include "alps/python/utilities/get_numpy_type.hpp"
 
 #include <boost/python/list.hpp>
 #include <boost/python/dict.hpp>

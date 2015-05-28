@@ -8,14 +8,10 @@
 
 #include <alps/config.hpp>
 
-#ifndef ALPS_HAVE_PYTHON
-    #error numpy is only available if python is enabled
-#endif
-
 // this must be first
-#include <alps/utilities/boost_python.hpp>
+#include "alps/python/utilities/boost_python.hpp"
 
-#include <alps/utilities/import_numpy.hpp>
+#include "alps/python/utilities/import_numpy.hpp"
 
 #include <complex>
 
@@ -42,7 +38,7 @@
 namespace alps {
     namespace detail {
         #define ALPS_DECL_NUMPY_TYPE(T)                                                                                                         \
-            ALPS_DECL int get_numpy_type(T);
+            int get_numpy_type(T);
         ALPS_FOREACH_NATIVE_NUMPY_TYPE(ALPS_DECL_NUMPY_TYPE)
         #undef ALPS_DECL_NUMPY_TYPE
     }

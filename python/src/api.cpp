@@ -7,7 +7,7 @@
 #define PY_ARRAY_UNIQUE_SYMBOL pyapi_PyArrayHandle
 
 // this must be first
-#include <alps/utilities/boost_python.hpp>
+#include "alps/python/utilities/boost_python.hpp"
 
 #include <alps/mc/api.hpp>
 #include <alps/mc/mcbase.hpp>

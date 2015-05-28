@@ -7,7 +7,7 @@
 #pragma once
 
 // this must be first
-#include <alps/utilities/boost_python.hpp>
+#include "alps/python/utilities/boost_python.hpp"
 
 #include <alps/hdf5/archive.hpp>
 #include <alps/hdf5/pair.hpp>
@@ -16,7 +16,7 @@
 
 #include <alps/utilities/cast.hpp>
 #include <alps/utilities/stacktrace.hpp>
-#include <alps/utilities/import_numpy.hpp>
+#include "alps/python/utilities/import_numpy.hpp"
 
 #include <boost/scoped_ptr.hpp>
 
