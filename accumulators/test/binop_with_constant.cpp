@@ -69,7 +69,7 @@ class AccResultGenerator  {
     typedef typename alps::accumulators::value_type<typename named_acc_type::accumulator_type>::type value_type;
 
     static const unsigned long int NPOINTS=10000; /// < Number of data points
-    static const double TOL=5E-3;  /// < Recommended tolerance to compare expected and actual results
+    static double tol() { return 5.E-3; }         /// < Recommended tolerance to compare expected and actual results
     /// Free the memory allocated in the constructor
     virtual ~AccResultGenerator()
     {
@@ -130,32 +130,32 @@ class AccumulatorBinaryOpTest : public ::testing::Test {
     void add()  const
     {
         const alps::accumulators::result_wrapper& res=acc_gen_.result() + get_data<rhs_data_type>(2.0);
-        compare_near(get_data<lhs_data_type>(acc_gen_.expected_mean()+2.0), res.mean<lhs_data_type>(), acc_gen_type::TOL, "Mean value");
-        compare_near(get_data<lhs_data_type>(acc_gen_.expected_err()), res.error<lhs_data_type>(), acc_gen_type::TOL, "Error value");
+        compare_near(get_data<lhs_data_type>(acc_gen_.expected_mean()+2.0), res.mean<lhs_data_type>(), acc_gen_type::tol(), "Mean value");
+        compare_near(get_data<lhs_data_type>(acc_gen_.expected_err()), res.error<lhs_data_type>(), acc_gen_type::tol(), "Error value");
     }
     
     /// Test subtraction
     void sub()  const
     {
         const alps::accumulators::result_wrapper& res=acc_gen_.result() - get_data<rhs_data_type>(2.0);
-        compare_near(get_data<lhs_data_type>(acc_gen_.expected_mean()-2.0), res.mean<lhs_data_type>(), acc_gen_type::TOL, "Mean value");
-        compare_near(get_data<lhs_data_type>(acc_gen_.expected_err()), res.error<lhs_data_type>(), acc_gen_type::TOL, "Error value");
+        compare_near(get_data<lhs_data_type>(acc_gen_.expected_mean()-2.0), res.mean<lhs_data_type>(), acc_gen_type::tol(), "Mean value");
+        compare_near(get_data<lhs_data_type>(acc_gen_.expected_err()), res.error<lhs_data_type>(), acc_gen_type::tol(), "Error value");
     }
     
     /// Test multiplication
     void mul()  const
     {
         const alps::accumulators::result_wrapper& res=acc_gen_.result() * get_data<rhs_data_type>(2.0);
-        compare_near(get_data<lhs_data_type>(acc_gen_.expected_mean()*2.0), res.mean<lhs_data_type>(), acc_gen_type::TOL, "Mean value");
-        compare_near(get_data<lhs_data_type>(acc_gen_.expected_err()*2.0), res.error<lhs_data_type>(), acc_gen_type::TOL, "Error value");
+        compare_near(get_data<lhs_data_type>(acc_gen_.expected_mean()*2.0), res.mean<lhs_data_type>(), acc_gen_type::tol(), "Mean value");
+        compare_near(get_data<lhs_data_type>(acc_gen_.expected_err()*2.0), res.error<lhs_data_type>(), acc_gen_type::tol(), "Error value");
     }
     
     /// Test division
     void div()  const
     {
         const alps::accumulators::result_wrapper& res=acc_gen_.result() / get_data<rhs_data_type>(2.0);
-        compare_near(get_data<lhs_data_type>(acc_gen_.expected_mean()/2.0), res.mean<lhs_data_type>(), acc_gen_type::TOL, "Mean value");
-        compare_near(get_data<lhs_data_type>(acc_gen_.expected_err()/2.0), res.error<lhs_data_type>(), acc_gen_type::TOL, "Error value");
+        compare_near(get_data<lhs_data_type>(acc_gen_.expected_mean()/2.0), res.mean<lhs_data_type>(), acc_gen_type::tol(), "Mean value");
+        compare_near(get_data<lhs_data_type>(acc_gen_.expected_err()/2.0), res.error<lhs_data_type>(), acc_gen_type::tol(), "Error value");
     }
 };
 
