@@ -16,6 +16,7 @@ set (test_src
     save_load
     binop_with_constant
     vec_scalar_binop_simple
+    single_accumulator
     )
 
 #add tests for MPI

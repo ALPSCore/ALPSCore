@@ -23,6 +23,20 @@ namespace alps {
                     , wrapper(new accumulator_wrapper(T(args)))
                 {}
 
+                /// Adds value directly to this named accumulator
+                template <typename U>
+                const AccumulatorBase& operator<<(const U& value) const
+                {
+                    (*wrapper) << value;
+                    return *this;
+                }
+
+                /// Returns a shared pointer to the result associated with this named accumulator
+                boost::shared_ptr<result_wrapper> result() const
+                {
+                    return wrapper->result();
+                }
+
                 std::string name;
                 boost::shared_ptr<accumulator_wrapper> wrapper;
             };
