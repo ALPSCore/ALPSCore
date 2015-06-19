@@ -437,19 +437,20 @@ namespace alps {
                     if (!ptr) throw std::runtime_error("Uninitialized accumulator accessed");
                 }
             public:
-            // default constructor
+            /// default constructor
                 accumulator_wrapper() 
                     : m_variant()
                 {}
 
-            // constructor from raw accumulator
+            /// constructor from raw accumulator
                 template<typename T> accumulator_wrapper(T arg)
                     : m_variant(typename detail::add_base_wrapper_pointer<typename value_type<T>::type>::type(
                         new derived_accumulator_wrapper<T>(arg))
                       )
                 {}
 
-            // copy constructor
+            /// copy constructor
+            /// @note The wrapped accumulator object is NOT copied!
                 accumulator_wrapper(accumulator_wrapper const & rhs)
                     : m_variant(rhs.m_variant)
                 {}
@@ -541,6 +542,42 @@ namespace alps {
             //         boost::apply_visitor(call_2_visitor<T, W>(value, weight), m_variant);
             //     }
 
+
+            // Cloning, private code.
+            private:
+            // Copy/cloning visitor
+            struct copy_visitor: public boost::static_visitor<> {
+                accumulator_wrapper& acc_wrap_;
+                copy_visitor(accumulator_wrapper& aw): acc_wrap_(aw) {}
+
+                template <typename T> // T is shared_ptr< base_wrapper<U> >
+                void operator()(const T& val)
+                {
+                    acc_wrap_.m_variant=T(val->clone());
+                }
+            };
+            
+            // Cloning, public code.
+            public:
+            /// Returns a copy with the wrapped accumulator cloned
+            accumulator_wrapper clone() const
+            {
+                accumulator_wrapper result;
+                copy_visitor vis(result);
+                boost::apply_visitor(vis, m_variant);
+                return result;
+            }
+            
+            /// Returns a pointer to a new-allocated copy with the wrapped accumulator cloned
+            accumulator_wrapper* new_clone() const
+            {
+                accumulator_wrapper* result=new accumulator_wrapper();
+                copy_visitor vis(*result);
+                boost::apply_visitor(vis, m_variant);
+                return result;
+            }
+            
+          
             // operator=
             private:
                 struct assign_visitor: public boost::static_visitor<> {

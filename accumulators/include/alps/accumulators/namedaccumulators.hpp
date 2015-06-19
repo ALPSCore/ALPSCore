@@ -14,14 +14,29 @@ namespace alps {
 
         namespace detail {
 
+            // template <typename T> struct AccumulatorBase;
+            // template <typename T> struct is_AccumulatorBase : public boost::false_type {};
+            // template <typename T> struct is_AccumulatorBase< AccumulatorBase<T> > : public boost::true_type {};
+
             template<typename T> struct AccumulatorBase {
                 typedef T accumulator_type;
                 typedef typename T::result_type result_type;
 
-                template<typename ArgumentPack> AccumulatorBase(ArgumentPack const& args) 
+                /// Named-argument constructor: takes `name`, forwards the ArgumentPack to the wrapped accumulator constructor
+                template<typename ArgumentPack>
+                AccumulatorBase(const ArgumentPack& args,
+                                typename boost::disable_if<boost::is_base_of<AccumulatorBase,ArgumentPack>,int>::type =0) 
                     : name(args[accumulator_name])
                     , wrapper(new accumulator_wrapper(T(args)))
                 {}
+
+                /// Copy constructor: clones the wrapped accumulator
+                template<typename ArgumentPack>
+                AccumulatorBase(const ArgumentPack& rhs,
+                                typename boost::enable_if<boost::is_base_of<AccumulatorBase,ArgumentPack>,int>::type =0)
+                    : name(rhs.name),
+                      wrapper(boost::shared_ptr<accumulator_wrapper>(rhs.wrapper->new_clone()))
+                { }
 
                 /// Adds value directly to this named accumulator
                 template <typename U>
@@ -35,6 +50,15 @@ namespace alps {
                 boost::shared_ptr<result_wrapper> result() const
                 {
                     return wrapper->result();
+                }
+
+                /// Assignment operator: duplicates the wrapped accumulator.
+                AccumulatorBase& operator=(const AccumulatorBase& rhs)
+                {
+                    // Self-assignment is handled correctly (albeit inefficiently)
+                    this->name=rhs.name;
+                    this->wrapper = boost::shared_ptr<accumulator_wrapper>(rhs.wrapper->new_clone());
+                    return *this;
                 }
 
                 std::string name;
@@ -54,7 +78,9 @@ namespace alps {
                 accumulator_keywords,
                     (required (_accumulator_name, (std::string)))
             )
-
+            
+            MeanAccumulator& operator=(const MeanAccumulator& rhs) { return static_cast<MeanAccumulator&>(*this=rhs); }
+            MeanAccumulator(const MeanAccumulator& rhs) : detail::AccumulatorBase<accumulator_type>(rhs) {}
         };
 
         template<typename T> struct NoBinningAccumulator : public detail::AccumulatorBase<
@@ -68,7 +94,11 @@ namespace alps {
                 accumulator_keywords,
                     (required (_accumulator_name, (std::string)))
             )
-
+            NoBinningAccumulator& operator=(const NoBinningAccumulator& rhs)
+            {
+                return static_cast<NoBinningAccumulator&>(*this=rhs);
+            }
+            NoBinningAccumulator(const NoBinningAccumulator& rhs) : detail::AccumulatorBase<accumulator_type>(rhs) {}
         };        
 
         template<typename T> struct LogBinningAccumulator : public detail::AccumulatorBase<
@@ -82,7 +112,11 @@ namespace alps {
                 accumulator_keywords,
                     (required (_accumulator_name, (std::string)))
             )
-
+            LogBinningAccumulator& operator=(const LogBinningAccumulator& rhs)
+            {
+                return static_cast<LogBinningAccumulator&>(*this=rhs);
+            }
+            LogBinningAccumulator(const LogBinningAccumulator& rhs) : detail::AccumulatorBase<accumulator_type>(rhs) {}
         }; 
 
         template<typename T> struct FullBinningAccumulator : public detail::AccumulatorBase<
@@ -99,6 +133,11 @@ namespace alps {
                         (_max_bin_number, (std::size_t))
                     )
             )
+            FullBinningAccumulator& operator=(const FullBinningAccumulator& rhs)
+            {
+                return static_cast<FullBinningAccumulator&>(*this=rhs);
+            }
+            FullBinningAccumulator(const FullBinningAccumulator& rhs) : detail::AccumulatorBase<accumulator_type>(rhs) {}
 
         }; 
 

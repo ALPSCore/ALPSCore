@@ -62,6 +62,18 @@ class SingleAccumulatorTest : public ::testing::Test {
         EXPECT_EQ(1, n);
         EXPECT_EQ(1.0, res.mean<value_type>());
     }
+
+    /// Vector of named accumulators
+    static void VectorOfAcc()
+    {
+        std::vector<named_acc_type> acc_vec(2,named_acc_type("")); // accumulators are copied here to fill the vector
+
+        acc_vec[0] << 1.;
+
+        EXPECT_EQ(1.0, acc_vec[0].result()->template mean<value_type>());
+        EXPECT_EQ(1, acc_vec[0].result()->count());
+        EXPECT_EQ(0, acc_vec[1].result()->count()); //verify that the wrapped accumulator is not shared
+    }
 };
 
 typedef ::testing::Types<
@@ -76,6 +88,4 @@ TYPED_TEST_CASE(SingleAccumulatorTest, named_acc_test_types);
 TYPED_TEST(SingleAccumulatorTest, Conventional) { TestFixture::Conventional(); }
 TYPED_TEST(SingleAccumulatorTest, Elaborate) { TestFixture::Elaborate(); }
 TYPED_TEST(SingleAccumulatorTest, Simple) { TestFixture::Simple(); }
-
-
-
+TYPED_TEST(SingleAccumulatorTest, VectorOfAcc) { TestFixture::VectorOfAcc(); }
