@@ -61,6 +61,13 @@ namespace alps {
                     return *this;
                 }
 
+                /// Collective MPI merge.
+                // FIXME! TODO: Introduce a proper "interface"-like superclass? with all relevant accumulator methods?
+                void collective_merge(boost::mpi::communicator const & comm, int root)
+                {
+                    this->wrapper->collective_merge(comm,root);
+                }
+
                 std::string name;
                 boost::shared_ptr<accumulator_wrapper> wrapper;
             };

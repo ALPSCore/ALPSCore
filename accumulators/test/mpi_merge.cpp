@@ -67,8 +67,8 @@ class AccumulatorTest : public ::testing::Test {
         }
     }
 
-    // the actual test
-    void Test(const std::vector<unsigned>& nsamples, const boost::mpi::communicator& comm)
+    // the actual test: merging as a part of a set
+    void TestInSet(const std::vector<unsigned>& nsamples, const boost::mpi::communicator& comm)
     {
         // Prepare data for each rank (note: value_type may be a vector<T>!)
         alps::accumulators::accumulator_set measurements;
@@ -101,6 +101,38 @@ class AccumulatorTest : public ::testing::Test {
             comm.barrier();
         }
     }
+  
+    // the same test for an individual accumulator
+    void TestIndividual(const std::vector<unsigned>& nsamples, const boost::mpi::communicator& comm)
+    {
+        // Prepare data for each rank (note: value_type may be a vector<T>!)
+        A acc(OBSNAME);
+        const unsigned ns=nsamples[comm.rank()];
+        srand48(43);
+        for (int i=0; i<ns; ++i) {
+            acc << get_data(drand48(), VECSIZE, (value_type*)0);
+        }
+
+        // merge data
+        acc.collective_merge(comm, 0);
+
+        // extract results
+        const boost::shared_ptr<alps::accumulators::result_wrapper> resptr=acc.result();
+
+        // test results
+        int ntot=std::accumulate(nsamples.begin(), nsamples.end(), 0);
+        const double expected_mean=0.5;
+        const double expected_err=1./(12*sqrt(ntot-1.0));
+
+        // Each rank does tests in turn
+        for (int talking_rank=0; talking_rank<comm.size(); ++talking_rank) {
+            if (comm.rank()==talking_rank) {
+                compare_values(expected_mean, resptr->mean<value_type>(), "mean", comm.rank());
+                compare_values(expected_err, resptr->error<value_type>(), "error", comm.rank());
+            }
+            comm.barrier();
+        }
+    }
 };
 
 
@@ -127,11 +159,18 @@ typedef ::testing::Types<
 
 TYPED_TEST_CASE(AccumulatorTest, MyTypes);
 
-TYPED_TEST(AccumulatorTest, CollectResults)
+TYPED_TEST(AccumulatorTest, SetCollectResults)
 {
     boost::mpi::communicator comm;
     std::vector<unsigned> nsamples(comm.size(), 100000); // 100000 samples for each rank
-    this->Test(nsamples, comm);
+    this->TestInSet(nsamples, comm);
+}
+
+TYPED_TEST(AccumulatorTest, SingleCollectResults)
+{
+    boost::mpi::communicator comm;
+    std::vector<unsigned> nsamples(comm.size(), 100000); // 100000 samples for each rank
+    this->TestIndividual(nsamples,comm);
 }
 
 
