@@ -18,16 +18,16 @@ namespace alps {
             // template <typename T> struct is_AccumulatorBase : public boost::false_type {};
             // template <typename T> struct is_AccumulatorBase< AccumulatorBase<T> > : public boost::true_type {};
 
-            template<typename T> struct AccumulatorBase {
-                typedef T accumulator_type;
-                typedef typename T::result_type result_type;
+            template<typename A> struct AccumulatorBase {
+                typedef A accumulator_type;
+                typedef typename A::result_type result_type;
 
                 /// Named-argument constructor: takes `name`, forwards the ArgumentPack to the wrapped accumulator constructor
                 template<typename ArgumentPack>
                 AccumulatorBase(const ArgumentPack& args,
                                 typename boost::disable_if<boost::is_base_of<AccumulatorBase,ArgumentPack>,int>::type =0) 
                     : name(args[accumulator_name])
-                    , wrapper(new accumulator_wrapper(T(args)))
+                    , wrapper(new accumulator_wrapper(A(args)))
                 {}
 
                 /// Copy constructor: clones the wrapped accumulator
@@ -39,8 +39,8 @@ namespace alps {
                 { }
 
                 /// Adds value directly to this named accumulator
-                template <typename U>
-                const AccumulatorBase& operator<<(const U& value) const
+                template <typename T>
+                const AccumulatorBase& operator<<(const T& value) const
                 {
                     (*wrapper) << value;
                     return *this;
