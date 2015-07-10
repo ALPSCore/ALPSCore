@@ -43,9 +43,9 @@ class sim1 : public alps::mcbase {
         int count;
 };
 
-int main() {
+int main(int argc, char **argv) {
 // TEST(mc, reduce){
-    boost::mpi::environment env;
+    boost::mpi::environment env(argc, argv);
     boost::mpi::communicator comm;
     alps::params p;
     p["nsweeps"] = 10000;
