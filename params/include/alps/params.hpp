@@ -278,13 +278,13 @@ namespace alps {
           params& define(const std::string& optname, const std::string& a_descr);
 
           /// Output the help message, if requested. @param ostrm: Output stream @returns true if help was indeed requested.
-          bool help_requested(std::ostream& ostrm);
+          bool help_requested(std::ostream& ostrm) const;
 
           /// Check if help requested. @returns true if help was requested.
-          bool help_requested() { possibly_parse(); return optmap_["help"]; }
+          bool help_requested() const { possibly_parse(); return optmap_["help"]; }
 
           /// Output the help message. @param ostrm: Output stream @returns true if help was indeed requested.
-          void print_help(std::ostream& ostrm);
+          void print_help(std::ostream& ostrm) const;
 
           /// Stream parameters 
           friend std::ostream& operator<<(std::ostream& str, params const& x);

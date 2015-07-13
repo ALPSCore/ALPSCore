@@ -242,7 +242,7 @@ namespace alps {
             ar.set_context(context);
         }
 
-        bool params::help_requested(std::ostream& ostrm)
+        bool params::help_requested(std::ostream& ostrm) const
         {
             if (help_requested()) { 
                 print_help(ostrm);
@@ -251,7 +251,7 @@ namespace alps {
             return false;
         }
         
-        void params::print_help(std::ostream& ostrm)
+        void params::print_help(std::ostream& ostrm) const
         {
             po::options_description odescr;
             certainly_parse(odescr);

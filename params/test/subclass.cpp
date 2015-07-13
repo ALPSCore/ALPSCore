@@ -26,7 +26,7 @@ public:
             define<int>("par2", "Base class parameter2");
     };
 
-    void do_work(void)
+    void do_work(void) const
     {
         int n1=par["par1"];
         EXPECT_EQ(111, n1);
@@ -35,7 +35,7 @@ public:
         EXPECT_EQ(222, n2);
     }
 
-    bool check_help(std::ostream& ostr)
+    bool check_help(std::ostream& ostr) const
     {
         return par.help_requested(ostr);
     }
@@ -50,7 +50,7 @@ public:
             define<int>("par4", 444, "Derived class parameter4 with default");
     }
 
-    void do_work(void)
+    void do_work(void) const
     {
         BaseClass::do_work();
         
