@@ -34,8 +34,8 @@ int main(int argc, const char *argv[]) {
         }
         if (parameters.help_requested(std::cerr)) return 1; // Stop if help requested.
 
-        if (parameters["output_file"].as<std::string>().empty()) {
-            parameters["output_file"] = alps::remove_extensions(parameters.get_origin_name()) + ".out.h5";
+        if (parameters["outputfile"].as<std::string>().empty()) {
+            parameters["outputfile"] = alps::remove_extensions(parameters.get_origin_name()) + ".out.h5";
         }
 
         ising_sim sim(parameters);
@@ -52,7 +52,7 @@ int main(int argc, const char *argv[]) {
         alps::results_type<ising_sim>::type results = collect_results(sim);
 
         std::cout << results << std::endl;
-        alps::hdf5::archive ar(parameters["output_file"], "w");
+        alps::hdf5::archive ar(parameters["outputfile"], "w");
         ar["/parameters"] << parameters;
         ar["/simulation/results"] << results;
 
