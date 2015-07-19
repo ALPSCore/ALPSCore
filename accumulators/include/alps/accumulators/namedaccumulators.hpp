@@ -75,6 +75,7 @@ namespace alps {
             }; // end struct AccumulatorBase
         } // end namespace detail
 
+
         template<typename T> struct MeanAccumulator : public detail::AccumulatorBase<
             impl::Accumulator<T, mean_tag, impl::Accumulator<T, count_tag, impl::AccumulatorBase<T> > >
         > {
@@ -147,6 +148,10 @@ namespace alps {
             }
             FullBinningAccumulator(const FullBinningAccumulator& rhs) : detail::AccumulatorBase<accumulator_type>(rhs) {}
 
+            /// Data type corresponding to autocorrelation
+            typedef typename autocorrelation_type<accumulator_type>::type autocorrelation_type;
+            /// Returns autocorrelation for this accumulator.
+            autocorrelation_type tau() { return this->wrapper->extract<accumulator_type>().autocorrelation(); }
         }; 
 
         #define ALPS_ACCUMULATOR_REGISTER_OPERATOR(A)                                                               \

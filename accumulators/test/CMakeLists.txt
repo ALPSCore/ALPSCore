@@ -17,6 +17,7 @@ set (test_src
     binop_with_constant
     vec_scalar_binop_simple
     single_accumulator
+    autocorrelation
     )
 
 #add tests for MPI
