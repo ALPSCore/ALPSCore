@@ -12,6 +12,8 @@
 
 /* FIXME: the code can be used for testing of MPI and serialization too. */
 /* FIXME: uninitialized parameters, "trigger" type and vector types are not considered */
+/* FIXME: constructing from INI files is not considered */
+/* FIXME: constructing from archive is not considered */
 
 #include "alps/params.hpp"
 
@@ -133,7 +135,41 @@ namespace alps {
                 }
             };
 
-            /// Generate a parameter object with the option having a default value, not present in command line
+            /// Generate a parameter object without a default value, missing from a command line
+            template <typename T>
+            class MissingParameterNoDefault: public BasicParameter<T>
+            {
+                public:
+                typedef BasicParameter<T> B;
+                MissingParameterNoDefault(const std::string& name): B(name) {}
+
+                /// Returns parameters object w/o default
+                alps::params params() const
+                {
+                    // generate parameter from cmdline with other-name and other-data
+                    alps::params p=gen_param(B::name_+"_other",toInputString(B::other_data()));
+                    return p.define<typename B::value_type>(B::name_, "some parameter");
+                }
+            };
+
+            /// Generate a parameter object with a default value, missing from a command line
+            template <typename T>
+            class MissingParameterWithDefault: public BasicParameter<T>
+            {
+                public:
+                typedef BasicParameter<T> B;
+                MissingParameterWithDefault(const std::string& name): B(name) {}
+
+                /// Returns parameters object with default
+                alps::params params() const
+                {
+                    // generate parameter from cmdline with other-name and other-data
+                    alps::params p=gen_param(B::name_+"_other",boost::lexical_cast<std::string>(this->other_data()));
+                    return p.define<typename B::value_type>(B::name_, this->other_data(), "some parameter");
+                }
+            };
+
+            /// Generate a parameter object with the option having a default value, without any command line
             template <typename T>
             class ParameterWithDefault: public BasicParameter<T>
             {
@@ -149,7 +185,7 @@ namespace alps {
                 }
             };
 
-            /// Generate a parameter object without a default value, not present in command line
+            /// Generate a parameter object without a default value, without any command line
             template <typename T>
             class ParameterNoDefault: public BasicParameter<T>
             {
