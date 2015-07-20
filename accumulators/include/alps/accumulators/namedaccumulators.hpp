@@ -151,7 +151,7 @@ namespace alps {
             /// Data type corresponding to autocorrelation
             typedef typename autocorrelation_type<accumulator_type>::type autocorrelation_type;
             /// Returns autocorrelation for this accumulator.
-            autocorrelation_type tau() { return this->wrapper->template extract<accumulator_type>().autocorrelation(); }
+            autocorrelation_type tau() const { return this->wrapper->template extract<accumulator_type>().autocorrelation(); }
         }; 
 
         #define ALPS_ACCUMULATOR_REGISTER_OPERATOR(A)                                                               \
