@@ -126,6 +126,10 @@ namespace alps {
                 return static_cast<LogBinningAccumulator&>(*this=rhs);
             }
             LogBinningAccumulator(const LogBinningAccumulator& rhs) : detail::AccumulatorBase<accumulator_type>(rhs) {}
+            /// Data type corresponding to autocorrelation
+            typedef typename autocorrelation_type<accumulator_type>::type autocorrelation_type;
+            /// Returns autocorrelation for this accumulator.
+            autocorrelation_type tau() const { return this->wrapper->template extract<accumulator_type>().autocorrelation(); }
         }; 
 
         template<typename T> struct FullBinningAccumulator : public detail::AccumulatorBase<

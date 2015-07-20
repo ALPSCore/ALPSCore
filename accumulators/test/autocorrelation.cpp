@@ -11,10 +11,12 @@
 #include <iostream>
 
 // Google Test fixture: type T is the data type
+// FIXME: make it over accumulator types rather than data types
 template <typename T>
 class AccumulatorAutocorrelationTest : public ::testing::Test {
   public:
-    typedef alps::accumulators::FullBinningAccumulator<T> named_acc_type;
+    // typedef alps::accumulators::FullBinningAccumulator<T> named_acc_type;
+    typedef alps::accumulators::LogBinningAccumulator<T> named_acc_type;
     typedef T value_type;
     typedef typename named_acc_type::accumulator_type acc_type;
     typedef typename alps::accumulators::autocorrelation_type<acc_type>::type autocorrelation_type;
