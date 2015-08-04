@@ -24,9 +24,9 @@ TEST(param,assignments)
     // ALPS_ASSIGN_PARAM(short);
     // ALPS_ASSIGN_PARAM(unsigned short);
     ALPS_ASSIGN_PARAM(int);
-    ALPS_ASSIGN_PARAM(unsigned);
+    // ALPS_ASSIGN_PARAM(unsigned);
     ALPS_ASSIGN_PARAM(long);
-    ALPS_ASSIGN_PARAM(unsigned long);
+    // ALPS_ASSIGN_PARAM(unsigned long);
     // ALPS_ASSIGN_PARAM(long long);
     // ALPS_ASSIGN_PARAM(unsigned long long);
     // ALPS_ASSIGN_PARAM(float);
@@ -47,9 +47,9 @@ TEST(param,assignments)
     // ALPS_TEST_PARAM(short);
     // ALPS_TEST_PARAM(unsigned short);
     ALPS_TEST_PARAM(int);
-    ALPS_TEST_PARAM(unsigned);
+    // ALPS_TEST_PARAM(unsigned);
     ALPS_TEST_PARAM(long);
-    ALPS_TEST_PARAM(unsigned long);
+    // ALPS_TEST_PARAM(unsigned long);
     // ALPS_TEST_PARAM(long long);
     // ALPS_TEST_PARAM(unsigned long long);
     // ALPS_TEST_PARAM(float);
@@ -190,8 +190,8 @@ TEST(param,SetTypeMismatchMessage)
 // Testing type mismatch exception and message
 TEST(param,GetTypeMismatchMessage)
 {
-    alps::params_ns::testing::CmdlineParameter<unsigned long> gen_ulong("myparam");
-    alps::params p=gen_ulong.params();
+    alps::params_ns::testing::CmdlineParameter<long> gen_long("myparam");
+    alps::params p=gen_long.params();
 
     bool thrown=false;
     try {
@@ -201,7 +201,7 @@ TEST(param,GetTypeMismatchMessage)
       std::string msg=exc.what();
       // std::cerr << "DEBUG: msg='" << msg << "'\n";
       EXPECT_TRUE(msg.find("myparam")!=std::string::npos) << "Option name is not mentioned in exception message: "+msg;
-      EXPECT_TRUE(msg.find("unsigned long int")!=std::string::npos) << "Option type is not mentioned in exception message: "+msg;
+      EXPECT_TRUE(msg.find("long")!=std::string::npos) << "Option type is not mentioned in exception message: "+msg;
       EXPECT_TRUE(msg.find("std::string")!=std::string::npos) << "LHS type is not mentioned in exception message: "+msg;
     }
     EXPECT_TRUE(thrown) << "Exception was not thrown!";

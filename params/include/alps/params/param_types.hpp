@@ -28,17 +28,20 @@ namespace alps {
         namespace detail {
             
 	    // Allowed basic numerical types.
-	    // NOTE 1: do not forget to change "7" to the correct number if editing!
-	    // NOTE 2: currently, not more than (20-2)/2 = 9 types are supported
+	    // NOTE 1: do not forget to change "6" to the correct number if editing!
+	    // NOTE 2: currently, not more than (20-1)/2 = 9 types are supported
 	    //         (20 is boost::variant limit; we have std::vector<T> for each of
-	    //         these basic types, plus std::string and None.)
-#define	    ALPS_PARAMS_DETAIL_STYPES_VEC (7,(int, \
-					      unsigned int,	\
-					      double,		\
-					      long int,		\
-					      unsigned long int,	\
-					      char,			\
-					      bool))
+	    //         these basic types, plus None.)
+            // NOTE 3: we support both `int` and `long`; supporting only `long` would be enough,
+            //         but it's convenient for a user to use <int> when an integer parameter is needed.
+            //         Although it's possible to "translate" <int> to <long> when needed,
+            //         it is deemed to be an unnecessary complication.
+#define	    ALPS_PARAMS_DETAIL_STYPES_VEC (6,(int,            \
+                                              long,           \
+					      double,         \
+                                              char,           \
+                                              bool,           \
+					      std::string))
 
             /// "Empty value" type
             struct None {};
@@ -59,8 +62,8 @@ namespace alps {
             // Sequence of std::vector<T> types (aka "vector types")
 #define     ALPS_PARAMS_DETAIL_VTYPES_SEQ BOOST_PP_SEQ_TRANSFORM(ALPS_PARAMS_DETAIL_MAKE_TYPE, std::vector, ALPS_PARAMS_DETAIL_STYPES_SEQ)
 	  
-	    // Make a sequence of all parameter types (for boost::variant), including std::string
-#define     ALPS_PARAMS_DETAIL_ALLTYPES_SEQ ALPS_PARAMS_DETAIL_STYPES_SEQ(std::string)ALPS_PARAMS_DETAIL_VTYPES_SEQ
+	    // Make a sequence of all parameter types (for boost::variant)
+#define     ALPS_PARAMS_DETAIL_ALLTYPES_SEQ ALPS_PARAMS_DETAIL_STYPES_SEQ/**/ALPS_PARAMS_DETAIL_VTYPES_SEQ
 
             // FIXME: will go away with acceptance of boost::TypeIndex
             // Generate a pretty-name specialization for scalar and vector types
