@@ -79,16 +79,19 @@ TEST(param,ImplicitDefine)
         // It is not a string, whatever command line is
         EXPECT_THROW(const std::string& s=p["param1"], alps::params::type_mismatch);
 
-        // It can be assigned to an integer
-        int n=p["param1"];
-        EXPECT_EQ(n, 3);
+        // It is not an int either
+        EXPECT_THROW(int n=p["param1"], alps::params::type_mismatch);
     }
 
     // String cannot be assigned to it
     EXPECT_THROW(p["param1"]="abc", alps::params::type_mismatch);
 
-    // Integer cannot be assigned to it either
-    EXPECT_THROW(p["param1"]=3, alps::params::type_mismatch);
+    // Integer can be assigned to it...
+    p["param1"]=3;
+    // ...but it is still not an integer:
+    {
+        EXPECT_THROW(int n=p["param1"], alps::params::type_mismatch);
+    }
 
     // It cannot be defined now, once it was assigned
     EXPECT_THROW((p.define<double>("param1", "Double parameter")), alps::params::extra_definition);
@@ -109,8 +112,11 @@ TEST(param,ImplicitDefine)
     p["param2"]=5.0;
     EXPECT_EQ(5.0, p["param2"]);
 
-    // Assign int --- should fail
-    EXPECT_THROW(p["param2"]=5, alps::params::type_mismatch);
+    // Assign int --- should work, but remain double
+    p["param2"]=5;
+    {
+        EXPECT_THROW(int n=p["param2"], alps::params::type_mismatch);
+    }
     
     EXPECT_THROW(p["param2"]="abc", alps::params::type_mismatch);
 }

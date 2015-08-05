@@ -20,18 +20,18 @@ class ParamsTest :public ::testing::Test {
     ParamsTest()
     {
         const char* argv[]={ "program",
-                             "--present_no_default=100.5",
-                             "--present_has_default=200.5" };
+                             "--present_no_default=100",
+                             "--present_has_default=200" };
         const int argc=sizeof(argv)/sizeof(*argv);
 
         par=alps::params(argc,argv);
         par
-            .define<double>("present_no_default","Option w/o default")
-            .define<double>("present_has_default",999.5,"Option with default")
-            .define<double>("missing_no_default", "Another option w/o default")
-            .define<double>("missing_has_default", 300.5, "Another option with default")
+            .define<long>("present_no_default","Option w/o default")
+            .define<long>("present_has_default",999,"Option with default")
+            .define<long>("missing_no_default", "Another option w/o default")
+            .define<long>("missing_has_default", 300, "Another option with default")
             ;
-        par["assigned"]=400.5;
+        par["assigned"]=400L;
     }
 
     template <typename T>
@@ -58,6 +58,32 @@ TEST_F(ParamsTest,Exists)
 
 TEST_F(ParamsTest,ExistsTypedExact)
 {
+    EXPECT_FALSE(this->par.exists<long>("no_such_name"));
+    
+    EXPECT_TRUE( this->par.exists<long>("assigned"));
+    
+    EXPECT_TRUE( this->par.exists<long>("present_no_default"));
+    EXPECT_TRUE( this->par.exists<long>("present_has_default"));
+
+    EXPECT_FALSE(this->par.exists<long>("missing_no_default"));
+    EXPECT_TRUE( this->par.exists<long>("missing_has_default"));
+}
+
+TEST_F(ParamsTest,ExistsTypedTruncation)
+{
+    EXPECT_FALSE(this->par.exists<int>("no_such_name"));
+    
+    EXPECT_FALSE( this->par.exists<int>("assigned"));
+    
+    EXPECT_FALSE( this->par.exists<int>("present_no_default"));
+    EXPECT_FALSE( this->par.exists<int>("present_has_default"));
+
+    EXPECT_FALSE(this->par.exists<int>("missing_no_default"));
+    EXPECT_FALSE( this->par.exists<int>("missing_has_default"));
+}
+
+TEST_F(ParamsTest,ExistsTypedExtension)
+{
     EXPECT_FALSE(this->par.exists<double>("no_such_name"));
     
     EXPECT_TRUE( this->par.exists<double>("assigned"));
@@ -67,19 +93,6 @@ TEST_F(ParamsTest,ExistsTypedExact)
 
     EXPECT_FALSE(this->par.exists<double>("missing_no_default"));
     EXPECT_TRUE( this->par.exists<double>("missing_has_default"));
-}
-
-TEST_F(ParamsTest,ExistsTypedTruncation)
-{
-    EXPECT_FALSE(this->par.exists<int>("no_such_name"));
-    
-    EXPECT_TRUE( this->par.exists<int>("assigned"));
-    
-    EXPECT_TRUE( this->par.exists<int>("present_no_default"));
-    EXPECT_TRUE( this->par.exists<int>("present_has_default"));
-
-    EXPECT_FALSE(this->par.exists<int>("missing_no_default"));
-    EXPECT_TRUE( this->par.exists<int>("missing_has_default"));
 }
 
 TEST_F(ParamsTest,ExistsTypedIncompatible)
@@ -118,13 +131,14 @@ TEST_F(ParamsTest,ReadAttemptTruncation)
 {
     EXPECT_THROW(this->get<int>("no_such_name"), alps::params::uninitialized_value);
     
-    this->get<int>("assigned");
+    EXPECT_THROW(this->get<int>("assigned"), alps::params::type_mismatch);
+
     
-    this->get<int>("present_no_default");
-    this->get<int>("present_has_default");
+    EXPECT_THROW(this->get<int>("present_no_default"), alps::params::type_mismatch);
+    EXPECT_THROW(this->get<int>("present_has_default"), alps::params::type_mismatch);
 
     EXPECT_THROW(this->get<int>("missing_no_default"), alps::params::uninitialized_value);
-    this->get<int>("missing_has_default");
+    EXPECT_THROW(this->get<int>("missing_has_default"), alps::params::type_mismatch);
 }
 
 // (FIXME: also tested elsewhere)
