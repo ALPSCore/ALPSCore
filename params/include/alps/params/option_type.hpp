@@ -4,28 +4,23 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-/** Designing a suitable type to hold parameters */
+/** @file option_type.hpp Defines type(s) used to hold parameters and populate `alps::params` container. */
 
-/** Requirements:
+/*  Requirements for the `option_type`:
 
-    1. Can hold `None`, a scalar type, a vector type.
+    1. Can hold `None`, a value of a scalar type, a value of a vector type.
 
-    2. `None` cannot be assigned to anything.
+    2. If holds `None`, it cannot be assigned to anything.
 
-    3. Vector type can be assigned only to the same type.
+    3. If holds a value of some type, it can be assigned to the same or a "larger" type
+       (as defined by `detail::is_convertible<FROM,TO>`).
 
-    4. Scalar type can be assigned to any compatible (by implicit cast) type.
+    4. If holds `None`, any value can be assigned to it, and it will acquire the new type.
 
-    5. Anything can be assigned to `None`.
+    5. If holds a value of some type, only the same or a smaller typed value can be assigned to it
+       (as defined by `detail::is_convertible<FROM,TO>`), and the assignment will not change the type.
 
-    6. Only the same type can be assigned to any vector or scalar type.
-
-    7. Models of scalar type: `int`, `double`, `bool`.
-
-    8. Models of vector type: `std::string`, `std::vector<T>`
-
-    9. The parameter must hold its name (and possibly typename?), for error reporting purposes
-
+    6. The parameter must hold its name (and possibly typename?), for error reporting purposes
 */
 
 #ifndef ALPS_PARAMS_OPTION_TYPE_INCLUDED
@@ -34,21 +29,20 @@
 #include <iostream>
 #include <stdexcept>
 
-#include "boost/variant.hpp"
-#include "boost/utility.hpp" // for enable_if
-#include "boost/type_traits.hpp" // for is_convertible
-// FIXME: needs boost 1.56.0+  #include "boost/type_index.hpp"
+#include <boost/variant.hpp>
+#include <boost/utility.hpp> /* for enable_if */
 
-#include "boost/serialization/base_object.hpp"
-#include "boost/serialization/map.hpp"
-#include "boost/serialization/optional.hpp"
-#include "boost/serialization/variant.hpp"
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/map.hpp>
+#include <boost/serialization/optional.hpp>
+#include <boost/serialization/variant.hpp>
 
 #include "alps/utilities/short_print.hpp" // for streaming
 #include "alps/hdf5/archive.hpp"          // archive support
 #include "alps/hdf5/vector.hpp"          //  vector archiving support
 
 #include "alps/params/param_types.hpp" // Sequences of supported types
+#include "alps/params/param_types_ranking.hpp" // for detail::is_convertible<F,T>
 
 namespace alps {
     namespace params_ns {
@@ -104,41 +98,50 @@ namespace alps {
                     : exception_base(a_name, a_reason) {};
             };
             
-            /// Visitor to assign a value of type T to a variant containing type U
-            template <typename T>
+            /// Visitor to assign a value of type RHS_T to a variant containing type LHS_T
+            template <typename RHS_T>
             struct setter_visitor: public boost::static_visitor<>
             {
-                const T& rhs; ///< The rhs value to be assigned
+                const RHS_T& rhs; ///< The rhs value to be assigned
 
                 /// Constructor save the value to be assigned
-                setter_visitor(const T& a_rhs): rhs(a_rhs) {}
+                setter_visitor(const RHS_T& a_rhs): rhs(a_rhs) {}
 
-                /// Called when the bound type U is the same as T
-                void apply(T& lhs) const
+                /// Called when the bound type LHS_T is the same as RHS_T
+                void apply(RHS_T& lhs) const
                 {
                     lhs=rhs;
                 }
 
-                /// Called when the bound type U and rhs type T are distinct types
-                template <typename U>
-                void apply(U& lhs) const
+                /// Called when the bound type LHS_T and rhs type RHS_T are distinct, convertible types
+                template <typename LHS_T>
+                void apply(LHS_T& lhs,
+                           typename boost::enable_if< detail::is_convertible<RHS_T,LHS_T> >::type* =0) const
+                {
+                    lhs=rhs;
+                }
+
+                /// Called when the bound type LHS_T and rhs type RHS_T are distinct, non-convertible types
+                template <typename LHS_T>
+                void apply(LHS_T& lhs,
+                           typename boost::disable_if< detail::is_convertible<RHS_T,LHS_T> >::type* =0) const
                 {
                     throw visitor_type_mismatch(
                         std::string("Attempt to assign a value of type \"")
-                        + detail::type_id<T>().pretty_name()
+                        + detail::type_id<RHS_T>().pretty_name()
                         + "\" to the option_type object containing type \""
-                        + detail::type_id<U>().pretty_name()+"\"");
+                        + detail::type_id<LHS_T>().pretty_name()+"\"");
                 }
 
-                /// Called when the bound type U is None (should never happen, option_type::operator=() must take care of this)
+                /// Called when the bound type RHS_T is None (should never happen, option_type::operator=() must take care of this)
                 void apply(None& lhs) const
                 {
                     throw std::logic_error("Should not happen: setting an option_type object containing None");
                 }
 
                 /// Called by apply_visitor()
-                template <typename U>
-                void operator()(U& lhs) const
+                template <typename LHS_T>
+                void operator()(LHS_T& lhs) const
                 {
                     apply(lhs);
                 }
@@ -172,46 +175,47 @@ namespace alps {
                 *this=std::string(rhs);
             }
 
-            /// Visitor to get a value (with conversion): returns type T, converts from the bound type U
-            template <typename T>
-            struct getter_visitor: public boost::static_visitor<T> {
+            /// Visitor to get a value (with conversion): returns type LHS_T, converts from the bound type RHS_T
+            template <typename LHS_T>
+            struct getter_visitor: public boost::static_visitor<LHS_T> {
 
                 /// Simplest case: the values are of the same type
-                T apply(const T& val) const {
+                LHS_T apply(const LHS_T& val) const {
                     return val; // no conversion 
                 }
 
     
                 /// Types are convertible (Both are scalar types)
-                template <typename U>
-                // T apply(const U& val, typename boost::enable_if< detail::both_scalar<T,U>, bool>::type =true) const {
-                T apply(const U& val, typename boost::enable_if< boost::is_convertible<U,T>, bool>::type =true) const {
+                template <typename RHS_T>
+                LHS_T apply(const RHS_T& val,
+                            typename boost::enable_if< detail::is_convertible<RHS_T,LHS_T> >::type* =0) const {
                     return val; // invokes implicit conversion 
                 }
 
                 /// Types are not convertible 
-                template <typename U>
-                T apply(const U& val, typename boost::disable_if< boost::is_convertible<U,T>, bool>::type =true) const {
+                template <typename RHS_T>
+                LHS_T apply(const RHS_T& val,
+                            typename boost::disable_if< detail::is_convertible<RHS_T,LHS_T> >::type* =0) const {
                     throw visitor_type_mismatch(
                         std::string("Attempt to assign an option_type object containing a value of type \"")
-                        + detail::type_id<U>().pretty_name()
+                        + detail::type_id<RHS_T>().pretty_name()
                         + "\" to a value of an incompatible type \""
-                        + detail::type_id<T>().pretty_name()+"\"");
+                        + detail::type_id<LHS_T>().pretty_name()+"\"");
                 }
 
                 /// Extracting None type --- always fails
-                T apply(const None& val) const {
+                LHS_T apply(const None& val) const {
                     throw visitor_none_used("Attempt to use uninitialized option value");
                 }
 
                 /// Called by apply_visitor()
-                template <typename U>
-                T operator()(const U& val) const {
+                template <typename RHS_T>
+                LHS_T operator()(const RHS_T& val) const {
                     return apply(val);
                 }
             };
 
-            /// Conversion operator to a generic type T
+            /// Conversion operator to a generic type T (invoked by implicit conversion)
             template <typename T>
             operator T() const
             {
@@ -250,7 +254,7 @@ namespace alps {
                 template <typename U>
                 bool apply(const U&) const
                 {
-                    return boost::is_convertible<U,T>::value;
+                    return detail::is_convertible<U,T>::value;
                 }
             };
 
@@ -295,7 +299,6 @@ namespace alps {
                 void operator()(const U& val) const
                 {
                     ar_[name_] << val;
-                    // ar_ << make_pvp(name_, val);
                 }
 
                 /// specialization for U==None: skips the value
@@ -311,13 +314,6 @@ namespace alps {
             }
                 
           
-            // /// Assignment from boost::any containing type T
-            // template <typename T>
-            // void assign_any(const boost::any& aval)
-            // {
-            //     val_=boost::any_cast<T>(aval);
-            // }
-
             /// Constructor preserving the option name
             option_type(const std::string& a_name):
                 name_(a_name) {}

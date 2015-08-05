@@ -6,7 +6,11 @@
 #ifndef ALPS_PARAMS_PARAM_TYPES_INCLUDED
 #define ALPS_PARAMS_PARAM_TYPES_INCLUDED
 
-/* Using Boost preprocessor macros rather than MPL. */
+/** @file param_types.hpp Defines data types acceptable for alps::params parameters,
+    as well as alps::param type machinery deried from these types.
+
+    This version uses Boost preprocessor macros rather than MPL.
+*/
 
 #include <stdexcept>
 #include <vector>
@@ -36,6 +40,8 @@ namespace alps {
             //         but it's convenient for a user to use <int> when an integer parameter is needed.
             //         Although it's possible to "translate" <int> to <long> when needed,
             //         it is deemed to be an unnecessary complication.
+            // NOTE 4: If new types are introduced, add them to type ranking in `param_types_ranking.hpp` also,
+            //         to define what type is "convertible" to what.
 #define	    ALPS_PARAMS_DETAIL_STYPES_VEC (6,(int,            \
                                               long,           \
 					      double,         \

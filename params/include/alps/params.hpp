@@ -189,7 +189,7 @@ namespace alps {
           const mapped_type& operator[](const std::string& k) const
           {
               possibly_parse();
-              return optmap_[k];
+              return const_cast<const options_map_type&>(optmap_)[k];
           }
 
           /** Access a parameter: possibly for assignment */
@@ -205,7 +205,7 @@ namespace alps {
           /** Iterator to the beyond-the-end of the option map */
           const_iterator end() const { possibly_parse(); return optmap_.end(); }
 
-          /// Check if a parameter exists (that is: attempt to assign to/from it will not throw)
+          /// Check if a parameter exists (that is: attempt to read a compatible-typed value from it will not throw)
           bool exists(const std::string& name) const
           {
               possibly_parse();
@@ -213,7 +213,7 @@ namespace alps {
               return (it!=optmap_.end()) && !(it->second).isNone();
           }
 
-          /// Check if a parameter exists and is convertible to type T (that is: attempt to assign T to/from it will not throw)
+          /// Check if a parameter exists and is convertible to type T (that is: attempt to read T from it will not throw)
           template <typename T>
           bool exists(const std::string& name) const
           {
