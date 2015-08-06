@@ -10,7 +10,7 @@ set (test_src
      subclass
      serialize
      ostream
-     ryan_test
+     valid_param_tests
     )
 
 
