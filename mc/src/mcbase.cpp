@@ -19,7 +19,7 @@ namespace alps {
     }
 
     mcbase::parameters_type& mcbase::define_parameters(parameters_type & parameters) {
-        return parameters.define<std::size_t>("SEED", 42, "PRNG seed");
+        return parameters.define<long>("SEED", 42, "PRNG seed");
     }
 
     void mcbase::save(boost::filesystem::path const & filename) const {
