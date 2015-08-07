@@ -29,7 +29,6 @@ namespace alps {
             int operator()(){return get();}
             int get() { return index_; }
         };
-
         class matsubara_mesh {
             double beta_;
             int nfreq_;
@@ -43,7 +42,7 @@ namespace alps {
            private:
             statistics::statistics_type statistics_;
             frequency_positivity_type positivity_;
-            
+
            public:
             matsubara_mesh(double b, int nfr): beta_(b), nfreq_(nfr), statistics_(statistics::FERMIONIC), positivity_(POSITIVE_ONLY) {}
             int extent() const{return nfreq_;}
@@ -53,7 +52,7 @@ namespace alps {
             {
                 ar[path+"/kind"] << "MATSUBARA";
                 ar[path+"/N"] << nfreq_;
-                ar[path+"/statistics"] << int(statistics_); // 
+                ar[path+"/statistics"] << int(statistics_); //
                 ar[path+"/beta"] << beta_;
                 ar[path+"/positive_only"] << int(positivity_);
                 // ...and optional ["points"]
@@ -66,9 +65,9 @@ namespace alps {
                 if (kind!="MATSUBARA") throw std::runtime_error("Attempt to read Matsubara mesh from non-Matsubara data, kind="+kind); // FIXME: specific exception
                 double nfr, beta;
                 int stat, posonly;
-                
+
                 ar[path+"/N"] >> nfr;
-                ar[path+"/statistics"] >> stat; 
+                ar[path+"/statistics"] >> stat;
                 ar[path+"/beta"] >> beta;
                 ar[path+"/positive_only"] >> posonly;
 
@@ -76,6 +75,51 @@ namespace alps {
                 positivity_=frequency_positivity_type(posonly); // FIXME: check range
                 beta_=beta;
                 nfreq_=nfr;
+            }
+        };
+
+        class itime_mesh {
+            double beta_;
+            int ntau_;
+            bool last_point_included_;
+            bool half_point_mesh_;
+            statistics::statistics_type statistics_;
+            
+           public:
+            itime_mesh(double beta, int ntau): beta_(beta), ntau_(ntau), statistics_(statistics::FERMIONIC), last_point_included_(true), half_point_mesh_(false){}
+            int extent() const{return ntau_;}
+            typedef generic_index<itime_mesh> index_type;
+
+            void save(alps::hdf5::archive& ar, const std::string& path) const
+            {
+                ar[path+"/kind"] << "IMAGINARY_TIME";
+                ar[path+"/N"] << ntau_;
+                ar[path+"/statistics"] << int(statistics_); // 
+                ar[path+"/beta"] << beta_;
+                ar[path+"/half_point_mesh"] << int(half_point_mesh_);
+                ar[path+"/last_point_included"] << int(last_point_included_);
+                // ...and optional ["points"]
+            }
+
+            void load(alps::hdf5::archive& ar, const std::string& path)
+            {
+                std::string kind;
+                ar[path+"/kind"] >> kind;
+                if (kind!="IMAGINARY_TIME") throw std::runtime_error("Attempt to read Imaginary time mesh from non-itime data, kind="+kind); // FIXME: specific exception
+                double ntau, beta;
+                int stat, half_point_mesh, last_point_included;
+                
+                ar[path+"/N"] >> ntau;
+                ar[path+"/statistics"] >> stat; 
+                ar[path+"/beta"] >> beta;
+                ar[path+"/half_point_mesh"] >> half_point_mesh;
+                ar[path+"/last_point_included"] >> last_point_included;
+
+                statistics_=statistics::statistics_type(stat); // FIXME: check range
+                half_point_mesh_=half_point_mesh;
+                last_point_included_=last_point_included;
+                beta_=beta;
+                ntau_=ntau;
             }
         };
 
@@ -139,105 +183,10 @@ namespace alps {
         };
         
         typedef matsubara_mesh::index_type matsubara_index;
+        typedef itime_mesh::index_type itime_index;
         typedef momentum_index_mesh::index_type momentum_index;
         typedef index_mesh::index_type index;
 
 
-        /// Matsubara GF(omega, k1_2d, k2_2d, spin)
-        class matsubara_gf {
-            static const int minor_version_=1;
-            static const int major_version_=0;
-            typedef std::complex<double> value_type;
-            typedef boost::multi_array<value_type,4> container_type;
-
-            matsubara_mesh mesh1_;
-            momentum_index_mesh mesh2_;
-            momentum_index_mesh mesh3_;
-            index_mesh mesh4_;
-
-            container_type data_;
-          public:
-            matsubara_gf(const matsubara_mesh& mesh1,
-                         const momentum_index_mesh& mesh2,
-                         const momentum_index_mesh& mesh3,
-                         const index_mesh& mesh4)
-                : mesh1_(mesh1), mesh2_(mesh2), mesh3_(mesh3), mesh4_(mesh4),
-                  data_(boost::extents[mesh1_.extent()][mesh2_.extent()][mesh3_.extent()][mesh4_.extent()])
-            {
-            }
-            
-            const std::complex<double>& operator()(matsubara_index omega, momentum_index i, momentum_index j, index sigma) const
-            {
-                return data_[omega()][i()][j()][sigma()];
-            }
-
-            std::complex<double>& operator()(matsubara_index omega, momentum_index i, momentum_index j, index sigma)
-            {
-                return data_[omega()][i()][j()][sigma()];
-            }
-
-            /// Initialize the GF data to value_type(0.)
-            void initialize()
-            {
-                for (int i=0; i<mesh1_.extent(); ++i) {
-                    for (int j=0; j<mesh2_.extent(); ++j) {
-                        for (int k=0; k<mesh3_.extent(); ++k) {
-                            for (int l=0; l<mesh4_.extent(); ++l) {
-                                data_[i][j][k][l]=value_type(0.0);
-                            }
-                        }
-                    }
-                }
-            }
-
-            /// Save the GF to HDF5
-            void save(alps::hdf5::archive& ar, const std::string& path) const
-            {
-                save_version(ar,path);
-                ar[path+"/data"] << data_;
-                ar[path+"/mesh/N"] << int(container_type::dimensionality);
-                mesh1_.save(ar,path+"/mesh/1");
-                mesh2_.save(ar,path+"/mesh/2");
-                mesh3_.save(ar,path+"/mesh/3");
-                mesh4_.save(ar,path+"/mesh/4");
-            }
-
-            /// Load the GF from HDF5
-            void load(alps::hdf5::archive& ar, const std::string& path)
-            {
-                if (!check_version(ar,path)) throw std::runtime_error("Incompatible archive version");
-
-                int ndim;
-                ar[path+"/mesh/N"] >> ndim;
-                if (ndim != container_type::dimensionality) throw std::runtime_error("Wrong number of dimension reading Matsubara GF, ndim="+ndim);
-
-                mesh1_.load(ar,path+"/mesh/1");
-                mesh2_.load(ar,path+"/mesh/2");
-                mesh3_.load(ar,path+"/mesh/3");
-                mesh4_.load(ar,path+"/mesh/4");
-
-                data_.resize(boost::extents[mesh1_.extent()][mesh2_.extent()][mesh3_.extent()][mesh4_.extent()]);
-                
-                ar[path+"/data"] >> data_;
-            }
-
-            static void save_version(alps::hdf5::archive& ar, const std::string& path)
-            {
-                std::string vp=path+"/version/";
-                ar[vp+"minor"]<< int(minor_version_);
-                ar[vp+"major"]<< int(major_version_);
-                ar[vp+"reference"]<<"https://github.com/ALPSCore/H5GF/blob/master/H5GF.rst";
-                ar[vp+"originator"]<<"ALPSCore GF library, see http://www.alpscore.org";
-            }
-
-            static bool check_version(alps::hdf5::archive& ar, const std::string& path)
-            {
-                std::string vp=path+"/version/";
-                int ver;
-                ar[vp+"major"]>>ver;
-                return (major_version_==ver);
-            }
-                
-        };
     }
 }
