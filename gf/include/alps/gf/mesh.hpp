@@ -26,9 +26,19 @@ namespace alps {
             explicit generic_index(int i): index_(i) {}
             generic_index() : index_(0) {}
             void operator=(int i) { index_=i; }
+            void operator++() { index_++; }
+            void operator+=(int i) { index_+=i; }
+            void operator-=(int i) { index_-=i; }
+            void operator--() { index_--; }
+            bool operator<(int x) const { return index_ <x; }
+            bool operator<=(int x) const { return index_ <=x; }
+            bool operator>(int x) const { return index_ >x; }
+            bool operator>=(int x) const { return index_ >=x; }
+            bool operator==(int x) const { return index_==x; }
             int operator()(){return get();}
             int get() { return index_; }
         };
+        template <typename T> bool operator==(int q, const generic_index<T> &p){ return p.operator==(q);}
         class matsubara_mesh {
             double beta_;
             int nfreq_;

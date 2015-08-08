@@ -152,3 +152,19 @@ TEST_F(ItimeTestGF,saveload)
     
     //boost::filesystem::remove("g5.h5");
 }
+
+TEST(Index, UnaryAndComparisonOperators){
+   alps::gf::matsubara_index omega(5);
+   ++omega;
+   EXPECT_EQ(6, omega);
+   omega+=2;
+   EXPECT_EQ(8, omega);
+   omega-=3;
+   EXPECT_EQ(5, omega);
+   --omega;
+   EXPECT_EQ(4, omega);
+   EXPECT_LT(omega,5);
+   EXPECT_LE(omega,4);
+   EXPECT_GT(omega,3);
+   EXPECT_GE(omega,4);
+}
