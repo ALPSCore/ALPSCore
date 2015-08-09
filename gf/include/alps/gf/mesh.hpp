@@ -133,7 +133,7 @@ namespace alps {
             }
         };
 
-        class momentum_index_mesh {
+        class momentum_index_mesh{
           public:
             typedef boost::multi_array<double,2> container_type;
           private:
@@ -166,7 +166,41 @@ namespace alps {
                 ar[path+"/points"] >> points_;
             }
         };
-        
+       
+        class real_space_index_mesh {
+          public:
+            typedef boost::multi_array<double,2> container_type;
+          private:
+            container_type points_;
+          public:
+            real_space_index_mesh(int ns,int ndim): points_(boost::extents[ns][ndim])
+            {
+            }
+
+            real_space_index_mesh(const container_type& mesh_points): points_(mesh_points)
+            {
+            }
+
+            typedef generic_index<real_space_index_mesh> index_type;
+
+            // Returns the number of points
+            int extent() const { return points_.shape()[0];}
+
+            void save(alps::hdf5::archive& ar, const std::string& path) const
+            {
+                ar[path+"/kind"] << "REAL_SPACE_INDEX";
+                ar[path+"/points"] << points_;
+            }
+
+            void load(alps::hdf5::archive& ar, const std::string& path)
+            {
+                std::string kind;
+                ar[path+"/kind"] >> kind;
+                if (kind!="REAL_SPACE_INDEX") throw std::runtime_error("Attempt to load real space index mesh from incorrect mesh kind="+kind);
+                ar[path+"/points"] >> points_;
+            }
+        };
+ 
         class index_mesh {
             int npoints_;
           public:
@@ -195,8 +229,7 @@ namespace alps {
         typedef matsubara_mesh::index_type matsubara_index;
         typedef itime_mesh::index_type itime_index;
         typedef momentum_index_mesh::index_type momentum_index;
+        typedef real_space_index_mesh::index_type real_space_index;
         typedef index_mesh::index_type index;
-
-
     }
 }

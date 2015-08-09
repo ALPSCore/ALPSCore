@@ -11,38 +11,125 @@
 
 namespace alps {
     namespace gf {
+   
+      template<class value_type, class MESH1, class MESH2, class MESH3> class three_index_gf {
+        static const int minor_version_=1;
+        static const int major_version_=0;
+        typedef boost::multi_array<value_type,3> container_type;
         
-        /// Matsubara GF(omega, k1_2d, k2_2d, spin)
-        class matsubara_gf {
+        MESH1 mesh1_;
+        MESH2 mesh2_;
+        MESH3 mesh3_;
+        
+        container_type data_;
+      public:
+        three_index_gf(const MESH1& mesh1,
+                      const MESH2& mesh2,
+                      const MESH3& mesh3)
+        : mesh1_(mesh1), mesh2_(mesh2), mesh3_(mesh3),
+        data_(boost::extents[mesh1_.extent()][mesh2_.extent()][mesh3_.extent()])
+        {
+        }
+        
+        const value_type& operator()(typename MESH1::index_type i1, typename MESH2::index_type i2, typename MESH3::index_type i3) const
+        {
+          return data_[i1()][i2()][i3()];
+        }
+        
+        value_type& operator()(typename MESH1::index_type i1, typename MESH2::index_type i2, typename MESH3::index_type i3)
+        {
+          return data_[i1()][i2()][i3()];
+        }
+        
+        /// Initialize the GF data to value_type(0.)
+        void initialize()
+        {
+          for (int i=0; i<mesh1_.extent(); ++i) {
+            for (int j=0; j<mesh2_.extent(); ++j) {
+              for (int k=0; k<mesh3_.extent(); ++k) {
+                  data_[i][j][k]=value_type(0.0);
+              }
+            }
+          }
+        }
+        
+        /// Save the GF to HDF5
+        void save(alps::hdf5::archive& ar, const std::string& path) const
+        {
+          save_version(ar,path);
+          ar[path+"/data"] << data_;
+          ar[path+"/mesh/N"] << int(container_type::dimensionality);
+          mesh1_.save(ar,path+"/mesh/1");
+          mesh2_.save(ar,path+"/mesh/2");
+          mesh3_.save(ar,path+"/mesh/3");
+        }
+        
+        /// Load the GF from HDF5
+        void load(alps::hdf5::archive& ar, const std::string& path)
+        {
+          if (!check_version(ar,path)) throw std::runtime_error("Incompatible archive version");
+          
+          int ndim;
+          ar[path+"/mesh/N"] >> ndim;
+          if (ndim != container_type::dimensionality) throw std::runtime_error("Wrong number of dimension reading Matsubara GF, ndim="+ndim);
+          
+          mesh1_.load(ar,path+"/mesh/1");
+          mesh2_.load(ar,path+"/mesh/2");
+          mesh3_.load(ar,path+"/mesh/3");
+          
+          data_.resize(boost::extents[mesh1_.extent()][mesh2_.extent()][mesh3_.extent()]);
+          
+          ar[path+"/data"] >> data_;
+        }
+        
+        static void save_version(alps::hdf5::archive& ar, const std::string& path)
+        {
+          std::string vp=path+"/version/";
+          ar[vp+"minor"]<< int(minor_version_);
+          ar[vp+"major"]<< int(major_version_);
+          ar[vp+"reference"]<<"https://github.com/ALPSCore/H5GF/blob/master/H5GF.rst";
+          ar[vp+"originator"]<<"ALPSCore GF library, see http://www.alpscore.org";
+        }
+        
+        static bool check_version(alps::hdf5::archive& ar, const std::string& path)
+        {
+          std::string vp=path+"/version/";
+          int ver;
+          ar[vp+"major"]>>ver;
+          return (major_version_==ver);
+        }
+        
+      };
+
+        template<class value_type, class MESH1, class MESH2, class MESH3, class MESH4> class four_index_gf {
             static const int minor_version_=1;
             static const int major_version_=0;
-            typedef std::complex<double> value_type;
             typedef boost::multi_array<value_type,4> container_type;
 
-            matsubara_mesh mesh1_;
-            momentum_index_mesh mesh2_;
-            momentum_index_mesh mesh3_;
-            index_mesh mesh4_;
+            MESH1 mesh1_;
+            MESH2 mesh2_;
+            MESH3 mesh3_;
+            MESH4 mesh4_;
 
             container_type data_;
           public:
-            matsubara_gf(const matsubara_mesh& mesh1,
-                         const momentum_index_mesh& mesh2,
-                         const momentum_index_mesh& mesh3,
-                         const index_mesh& mesh4)
+            four_index_gf(const MESH1& mesh1,
+                         const MESH2& mesh2,
+                         const MESH3& mesh3,
+                         const MESH4& mesh4)
                 : mesh1_(mesh1), mesh2_(mesh2), mesh3_(mesh3), mesh4_(mesh4),
                   data_(boost::extents[mesh1_.extent()][mesh2_.extent()][mesh3_.extent()][mesh4_.extent()])
             {
             }
             
-            const value_type& operator()(matsubara_index omega, momentum_index i, momentum_index j, index sigma) const
+            const value_type& operator()(typename MESH1::index_type i1, typename MESH2::index_type i2, typename MESH3::index_type i3, typename MESH4::index_type i4) const
             {
-                return data_[omega()][i()][j()][sigma()];
+                return data_[i1()][i2()][i3()][i4()];
             }
 
-            value_type& operator()(matsubara_index omega, momentum_index i, momentum_index j, index sigma)
+            value_type& operator()(typename MESH1::index_type i1, typename MESH2::index_type i2, typename MESH3::index_type i3, typename MESH4::index_type i4)
             {
-                return data_[omega()][i()][j()][sigma()];
+                return data_[i1()][i2()][i3()][i4()];
             }
 
             /// Initialize the GF data to value_type(0.)
@@ -108,99 +195,16 @@ namespace alps {
             }
                 
         };
-        class itime_gf {
-            static const int minor_version_=1;
-            static const int major_version_=0;
-            typedef double value_type;
-            typedef boost::multi_array<value_type,4> container_type;
 
-            itime_mesh mesh1_;
-            momentum_index_mesh mesh2_;
-            momentum_index_mesh mesh3_;
-            index_mesh mesh4_;
+        typedef four_index_gf<std::complex<double>, matsubara_mesh, momentum_index_mesh, momentum_index_mesh, index_mesh> omega_k1_k2_sigma_gf;
+        typedef four_index_gf<             double , itime_mesh    , momentum_index_mesh, momentum_index_mesh, index_mesh> itime_k1_k2_sigma_gf;
+        typedef four_index_gf<std::complex<double>, matsubara_mesh, real_space_index_mesh, real_space_index_mesh, index_mesh> omega_r1_r2_sigma_gf;
+        typedef four_index_gf<             double , itime_mesh    , real_space_index_mesh, real_space_index_mesh, index_mesh> itime_r1_r2_sigma_gf;
 
-            container_type data_;
-          public:
-            itime_gf(const itime_mesh& mesh1,
-                         const momentum_index_mesh& mesh2,
-                         const momentum_index_mesh& mesh3,
-                         const index_mesh& mesh4)
-                : mesh1_(mesh1), mesh2_(mesh2), mesh3_(mesh3), mesh4_(mesh4),
-                  data_(boost::extents[mesh1_.extent()][mesh2_.extent()][mesh3_.extent()][mesh4_.extent()])
-            {
-            }
-            
-            const value_type & operator()(itime_index tau, momentum_index i, momentum_index j, index sigma) const
-            {
-                return data_[tau()][i()][j()][sigma()];
-            }
-
-            value_type & operator()(itime_index tau, momentum_index i, momentum_index j, index sigma)
-            {
-                return data_[tau()][i()][j()][sigma()];
-            }
-
-            /// Initialize the GF data to value_type(0.)
-            void initialize()
-            {
-                for (int i=0; i<mesh1_.extent(); ++i) {
-                    for (int j=0; j<mesh2_.extent(); ++j) {
-                        for (int k=0; k<mesh3_.extent(); ++k) {
-                            for (int l=0; l<mesh4_.extent(); ++l) {
-                                data_[i][j][k][l]=value_type(0.0);
-                            }
-                        }
-                    }
-                }
-            }
-
-            /// Save the GF to HDF5
-            void save(alps::hdf5::archive& ar, const std::string& path) const
-            {
-                save_version(ar,path);
-                ar[path+"/data"] << data_;
-                ar[path+"/mesh/N"] << int(container_type::dimensionality);
-                mesh1_.save(ar,path+"/mesh/1");
-                mesh2_.save(ar,path+"/mesh/2");
-                mesh3_.save(ar,path+"/mesh/3");
-                mesh4_.save(ar,path+"/mesh/4");
-            }
-
-            /// Load the GF from HDF5
-            void load(alps::hdf5::archive& ar, const std::string& path)
-            {
-                if (!check_version(ar,path)) throw std::runtime_error("Incompatible archive version");
-
-                int ndim;
-                ar[path+"/mesh/N"] >> ndim;
-                if (ndim != container_type::dimensionality) throw std::runtime_error("Wrong number of dimension reading Matsubara GF, ndim="+ndim);
-
-                mesh1_.load(ar,path+"/mesh/1");
-                mesh2_.load(ar,path+"/mesh/2");
-                mesh3_.load(ar,path+"/mesh/3");
-                mesh4_.load(ar,path+"/mesh/4");
-
-                data_.resize(boost::extents[mesh1_.extent()][mesh2_.extent()][mesh3_.extent()][mesh4_.extent()]);
-                
-                ar[path+"/data"] >> data_;
-            }
-
-            static void save_version(alps::hdf5::archive& ar, const std::string& path)
-            {
-                std::string vp=path+"/version/";
-                ar[vp+"minor"]<< int(minor_version_);
-                ar[vp+"major"]<< int(major_version_);
-                ar[vp+"reference"]<<"https://github.com/ALPSCore/H5GF/blob/master/H5GF.rst";
-                ar[vp+"originator"]<<"ALPSCore GF library, see http://www.alpscore.org";
-            }
-
-            static bool check_version(alps::hdf5::archive& ar, const std::string& path)
-            {
-                std::string vp=path+"/version/";
-                int ver;
-                ar[vp+"major"]>>ver;
-                return (major_version_==ver);
-            }
-        };
+        typedef three_index_gf<std::complex<double>, matsubara_mesh, momentum_index_mesh, index_mesh> omega_k_sigma_gf;
+        typedef three_index_gf<             double , itime_mesh    , momentum_index_mesh, index_mesh> itime_k_sigma_gf;
+        
+        typedef omega_k1_k2_sigma_gf matsubara_gf;
+        typedef itime_k1_k2_sigma_gf itime_gf;
     }
 }

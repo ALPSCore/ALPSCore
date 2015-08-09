@@ -168,3 +168,67 @@ TEST(Index, UnaryAndComparisonOperators){
    EXPECT_GT(omega,3);
    EXPECT_GE(omega,4);
 }
+
+class ThreeIndexTestGF : public ::testing::Test
+{
+  public:
+    const double beta;
+    const int nsites;
+    const int nfreq ;
+    const int nspins;
+    alps::gf::omega_k_sigma_gf gf;
+    alps::gf::omega_k_sigma_gf gf2;
+
+    ThreeIndexTestGF():beta(10), nsites(4), nfreq(10), nspins(2),
+             gf(alps::gf::matsubara_mesh(beta,nfreq),
+                alps::gf::momentum_index_mesh(get_data_for_mesh()),
+                alps::gf::index_mesh(nspins)),
+             gf2(gf) {}
+};
+TEST_F(ThreeIndexTestGF,access)
+{
+    alps::gf::matsubara_index omega; omega=4;
+    alps::gf::momentum_index i; i=2;
+    alps::gf::index sigma(1);
+
+    gf(omega, i,sigma)=std::complex<double>(3,4);
+    std::complex<double> x=gf(omega,i,sigma);
+    EXPECT_EQ(3, x.real());
+    EXPECT_EQ(4, x.imag());
+}
+
+TEST_F(ThreeIndexTestGF,init)
+{
+    alps::gf::matsubara_index omega; omega=4;
+    alps::gf::momentum_index i; i=2;
+    alps::gf::index sigma(1);
+
+    gf.initialize();
+    std::complex<double> x=gf(omega,i,sigma);
+    EXPECT_EQ(0, x.real());
+    EXPECT_EQ(0, x.imag());
+}
+
+TEST_F(ThreeIndexTestGF,saveload)
+{
+    namespace g=alps::gf;
+    {
+        alps::hdf5::archive oar("gf.h5","w");
+        gf(g::matsubara_index(4),g::momentum_index(3), g::index(1))=std::complex<double>(7., 3.);
+        gf.save(oar,"/gf");
+    }
+    {
+        alps::hdf5::archive iar("gf.h5");
+        gf2.load(iar,"/gf");
+    }
+    EXPECT_EQ(7, gf2(g::matsubara_index(4),g::momentum_index(3), g::index(1)).real());
+    EXPECT_EQ(3, gf2(g::matsubara_index(4),g::momentum_index(3), g::index(1)).imag());
+    {
+        alps::hdf5::archive oar("gf.h5","rw");
+        oar["/gf/version/major"]<<7;
+        EXPECT_THROW(gf2.load(oar,"/gf"),std::runtime_error);
+    }
+    EXPECT_EQ(7, gf2(g::matsubara_index(4),g::momentum_index(3), g::index(1)).real());
+    EXPECT_EQ(3, gf2(g::matsubara_index(4),g::momentum_index(3), g::index(1)).imag());
+
+}
