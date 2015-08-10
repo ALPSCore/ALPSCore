@@ -21,9 +21,9 @@ namespace alps {
         /// A generic index
         template <typename X>
         class generic_index :
-            boost::additive2<generic_index<X>, int>,
-            boost::unit_steppable< generic_index<X> >,
-            boost::totally_ordered2< generic_index<X>, int>
+            boost::additive2<generic_index<X>, int,
+            boost::unit_steppable< generic_index<X>,
+            boost::totally_ordered2< generic_index<X>, int> > >
         {
             private:
             int index_;

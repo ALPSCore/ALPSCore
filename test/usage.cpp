@@ -192,6 +192,11 @@ TEST(Index, BinaryOperators){
    EXPECT_EQ(-6, omegaprime2);
 }
 
+// TEST(Index, SizeofTest) {
+//     alps::gf::matsubara_index omega(5);
+//     std::cout << "sizeof(omega)=" << sizeof(omega) << std::endl;
+// }
+
 class ThreeIndexTestGF : public ::testing::Test
 {
   public:
