@@ -14,8 +14,9 @@ namespace alps {
 
         const int minor_version=1;
         const int major_version=0;
-        
-        void save_version(alps::hdf5::archive& ar, const std::string& path)
+       
+        //FIXME: problem here when we have multiple includes 
+        inline void save_version(alps::hdf5::archive& ar, const std::string& path)
         {
             std::string vp=path+"/version/";
             ar[vp+"minor"]<< int(minor_version);
@@ -24,7 +25,7 @@ namespace alps {
             ar[vp+"originator"]<<"ALPSCore GF library, see http://www.alpscore.org";
         }
         
-        bool check_version(alps::hdf5::archive& ar, const std::string& path)
+        inline bool check_version(alps::hdf5::archive& ar, const std::string& path)
         {
             std::string vp=path+"/version/";
             int ver;
