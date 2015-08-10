@@ -11,99 +11,98 @@
 
 namespace alps {
     namespace gf {
-   
-      template<class value_type, class MESH1, class MESH2, class MESH3> class three_index_gf {
-        static const int minor_version_=1;
-        static const int major_version_=0;
-        typedef boost::multi_array<value_type,3> container_type;
+
+        const int minor_version=1;
+        const int major_version=0;
         
-        MESH1 mesh1_;
-        MESH2 mesh2_;
-        MESH3 mesh3_;
-        
-        container_type data_;
-      public:
-        three_index_gf(const MESH1& mesh1,
-                      const MESH2& mesh2,
-                      const MESH3& mesh3)
-        : mesh1_(mesh1), mesh2_(mesh2), mesh3_(mesh3),
-        data_(boost::extents[mesh1_.extent()][mesh2_.extent()][mesh3_.extent()])
+        void save_version(alps::hdf5::archive& ar, const std::string& path)
         {
+            std::string vp=path+"/version/";
+            ar[vp+"minor"]<< int(minor_version);
+            ar[vp+"major"]<< int(major_version);
+            ar[vp+"reference"]<<"https://github.com/ALPSCore/H5GF/blob/master/H5GF.rst";
+            ar[vp+"originator"]<<"ALPSCore GF library, see http://www.alpscore.org";
         }
         
-        const value_type& operator()(typename MESH1::index_type i1, typename MESH2::index_type i2, typename MESH3::index_type i3) const
+        bool check_version(alps::hdf5::archive& ar, const std::string& path)
         {
-          return data_[i1()][i2()][i3()];
+            std::string vp=path+"/version/";
+            int ver;
+            ar[vp+"major"]>>ver;
+            return (major_version==ver);
         }
         
-        value_type& operator()(typename MESH1::index_type i1, typename MESH2::index_type i2, typename MESH3::index_type i3)
-        {
-          return data_[i1()][i2()][i3()];
-        }
+        template<class value_type, class MESH1, class MESH2, class MESH3> class three_index_gf {
+            typedef boost::multi_array<value_type,3> container_type;
         
-        /// Initialize the GF data to value_type(0.)
-        void initialize()
-        {
-          for (int i=0; i<mesh1_.extent(); ++i) {
-            for (int j=0; j<mesh2_.extent(); ++j) {
-              for (int k=0; k<mesh3_.extent(); ++k) {
-                  data_[i][j][k]=value_type(0.0);
-              }
+            MESH1 mesh1_;
+            MESH2 mesh2_;
+            MESH3 mesh3_;
+        
+            container_type data_;
+            public:
+            three_index_gf(const MESH1& mesh1,
+                           const MESH2& mesh2,
+                           const MESH3& mesh3)
+                : mesh1_(mesh1), mesh2_(mesh2), mesh3_(mesh3),
+                  data_(boost::extents[mesh1_.extent()][mesh2_.extent()][mesh3_.extent()])
+            {
             }
-          }
-        }
         
-        /// Save the GF to HDF5
-        void save(alps::hdf5::archive& ar, const std::string& path) const
-        {
-          save_version(ar,path);
-          ar[path+"/data"] << data_;
-          ar[path+"/mesh/N"] << int(container_type::dimensionality);
-          mesh1_.save(ar,path+"/mesh/1");
-          mesh2_.save(ar,path+"/mesh/2");
-          mesh3_.save(ar,path+"/mesh/3");
-        }
+            const value_type& operator()(typename MESH1::index_type i1, typename MESH2::index_type i2, typename MESH3::index_type i3) const
+            {
+                return data_[i1()][i2()][i3()];
+            }
         
-        /// Load the GF from HDF5
-        void load(alps::hdf5::archive& ar, const std::string& path)
-        {
-          if (!check_version(ar,path)) throw std::runtime_error("Incompatible archive version");
+            value_type& operator()(typename MESH1::index_type i1, typename MESH2::index_type i2, typename MESH3::index_type i3)
+            {
+                return data_[i1()][i2()][i3()];
+            }
+        
+            /// Initialize the GF data to value_type(0.)
+            void initialize()
+            {
+                for (int i=0; i<mesh1_.extent(); ++i) {
+                    for (int j=0; j<mesh2_.extent(); ++j) {
+                        for (int k=0; k<mesh3_.extent(); ++k) {
+                            data_[i][j][k]=value_type(0.0);
+                        }
+                    }
+                }
+            }
+        
+            /// Save the GF to HDF5
+            void save(alps::hdf5::archive& ar, const std::string& path) const
+            {
+                save_version(ar,path);
+                ar[path+"/data"] << data_;
+                ar[path+"/mesh/N"] << int(container_type::dimensionality);
+                mesh1_.save(ar,path+"/mesh/1");
+                mesh2_.save(ar,path+"/mesh/2");
+                mesh3_.save(ar,path+"/mesh/3");
+            }
+        
+            /// Load the GF from HDF5
+            void load(alps::hdf5::archive& ar, const std::string& path)
+            {
+                if (!check_version(ar,path)) throw std::runtime_error("Incompatible archive version");
           
-          int ndim;
-          ar[path+"/mesh/N"] >> ndim;
-          if (ndim != container_type::dimensionality) throw std::runtime_error("Wrong number of dimension reading Matsubara GF, ndim="+ndim);
+                int ndim;
+                ar[path+"/mesh/N"] >> ndim;
+                if (ndim != container_type::dimensionality) throw std::runtime_error("Wrong number of dimension reading Matsubara GF, ndim="+ndim);
           
-          mesh1_.load(ar,path+"/mesh/1");
-          mesh2_.load(ar,path+"/mesh/2");
-          mesh3_.load(ar,path+"/mesh/3");
+                mesh1_.load(ar,path+"/mesh/1");
+                mesh2_.load(ar,path+"/mesh/2");
+                mesh3_.load(ar,path+"/mesh/3");
           
-          data_.resize(boost::extents[mesh1_.extent()][mesh2_.extent()][mesh3_.extent()]);
+                data_.resize(boost::extents[mesh1_.extent()][mesh2_.extent()][mesh3_.extent()]);
           
-          ar[path+"/data"] >> data_;
-        }
+                ar[path+"/data"] >> data_;
+            }
         
-        static void save_version(alps::hdf5::archive& ar, const std::string& path)
-        {
-          std::string vp=path+"/version/";
-          ar[vp+"minor"]<< int(minor_version_);
-          ar[vp+"major"]<< int(major_version_);
-          ar[vp+"reference"]<<"https://github.com/ALPSCore/H5GF/blob/master/H5GF.rst";
-          ar[vp+"originator"]<<"ALPSCore GF library, see http://www.alpscore.org";
-        }
-        
-        static bool check_version(alps::hdf5::archive& ar, const std::string& path)
-        {
-          std::string vp=path+"/version/";
-          int ver;
-          ar[vp+"major"]>>ver;
-          return (major_version_==ver);
-        }
-        
-      };
+        };
 
         template<class value_type, class MESH1, class MESH2, class MESH3, class MESH4> class four_index_gf {
-            static const int minor_version_=1;
-            static const int major_version_=0;
             typedef boost::multi_array<value_type,4> container_type;
 
             MESH1 mesh1_;
@@ -112,11 +111,11 @@ namespace alps {
             MESH4 mesh4_;
 
             container_type data_;
-          public:
+            public:
             four_index_gf(const MESH1& mesh1,
-                         const MESH2& mesh2,
-                         const MESH3& mesh3,
-                         const MESH4& mesh4)
+                          const MESH2& mesh2,
+                          const MESH3& mesh3,
+                          const MESH4& mesh4)
                 : mesh1_(mesh1), mesh2_(mesh2), mesh3_(mesh3), mesh4_(mesh4),
                   data_(boost::extents[mesh1_.extent()][mesh2_.extent()][mesh3_.extent()][mesh4_.extent()])
             {
@@ -176,24 +175,6 @@ namespace alps {
                 
                 ar[path+"/data"] >> data_;
             }
-
-            static void save_version(alps::hdf5::archive& ar, const std::string& path)
-            {
-                std::string vp=path+"/version/";
-                ar[vp+"minor"]<< int(minor_version_);
-                ar[vp+"major"]<< int(major_version_);
-                ar[vp+"reference"]<<"https://github.com/ALPSCore/H5GF/blob/master/H5GF.rst";
-                ar[vp+"originator"]<<"ALPSCore GF library, see http://www.alpscore.org";
-            }
-
-            static bool check_version(alps::hdf5::archive& ar, const std::string& path)
-            {
-                std::string vp=path+"/version/";
-                int ver;
-                ar[vp+"major"]>>ver;
-                return (major_version_==ver);
-            }
-                
         };
 
         typedef four_index_gf<std::complex<double>, matsubara_mesh, momentum_index_mesh, momentum_index_mesh, index_mesh> omega_k1_k2_sigma_gf;

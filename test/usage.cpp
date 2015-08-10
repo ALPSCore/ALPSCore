@@ -155,9 +155,13 @@ TEST_F(ItimeTestGF,saveload)
 
 TEST(Index, UnaryAndComparisonOperators){
    alps::gf::matsubara_index omega(5);
-   ++omega;
-   EXPECT_EQ(6, omega);
-   omega+=2;
+   alps::gf::matsubara_index omega5=omega++;
+   alps::gf::matsubara_index omega7=++omega;
+   EXPECT_EQ(7, omega);
+   EXPECT_EQ(5, omega5);
+   EXPECT_EQ(7, omega7);
+   
+   omega+=1;
    EXPECT_EQ(8, omega);
    omega-=3;
    EXPECT_EQ(5, omega);
@@ -167,6 +171,25 @@ TEST(Index, UnaryAndComparisonOperators){
    EXPECT_LE(omega,4);
    EXPECT_GT(omega,3);
    EXPECT_GE(omega,4);
+
+   EXPECT_GT(5,omega);
+   EXPECT_GE(4,omega);
+   EXPECT_LT(3,omega);
+   EXPECT_LE(4,omega);
+}
+
+TEST(Index, BinaryOperators){
+   alps::gf::matsubara_index omega(5);
+   alps::gf::matsubara_index omegaprime=omega+11;
+   alps::gf::matsubara_index omegaprime1=11+omega;
+   alps::gf::matsubara_index omegaprime2=omega-11;
+
+   EXPECT_EQ(5, omega);
+
+   EXPECT_EQ(16, omegaprime);
+   EXPECT_EQ(16, omegaprime1);
+
+   EXPECT_EQ(-6, omegaprime2);
 }
 
 class ThreeIndexTestGF : public ::testing::Test

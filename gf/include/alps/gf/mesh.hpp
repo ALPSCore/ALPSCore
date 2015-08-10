@@ -1,6 +1,7 @@
 #pragma once
 #include <complex>
 #include <boost/multi_array.hpp>
+#include <boost/operators.hpp>
 
 #include <alps/hdf5/archive.hpp>
 #include <alps/hdf5/complex.hpp>
@@ -18,26 +19,34 @@ namespace alps {
         }
         
         /// A generic index
-        template <typename>
-        class generic_index {
+        template <typename X>
+        class generic_index :
+            boost::additive2<generic_index<X>, int>,
+            boost::unit_steppable< generic_index<X> >,
+            boost::totally_ordered2< generic_index<X>, int>
+        {
             private:
             int index_;
             public:
             explicit generic_index(int i): index_(i) {}
             generic_index() : index_(0) {}
+
             void operator=(int i) { index_=i; }
-            void operator++() { index_++; }
-            void operator+=(int i) { index_+=i; }
-            void operator-=(int i) { index_-=i; }
-            void operator--() { index_--; }
+
+            generic_index& operator++() { index_++; return *this; }
+            generic_index& operator--() { index_--; return *this; }
+
+            generic_index& operator+=(int i) { index_+=i; return *this; }
+            generic_index& operator-=(int i) { index_-=i; return *this; }
+
             bool operator<(int x) const { return index_ <x; }
-            bool operator<=(int x) const { return index_ <=x; }
             bool operator>(int x) const { return index_ >x; }
-            bool operator>=(int x) const { return index_ >=x; }
             bool operator==(int x) const { return index_==x; }
+
             int operator()(){return get();}
             int get() { return index_; }
         };
+
         template <typename T> bool operator==(int q, const generic_index<T> &p){ return p.operator==(q);}
         class matsubara_mesh {
             double beta_;
