@@ -265,11 +265,80 @@ namespace alps {
             }
         };
  
-        /// Definition policy: do not define a parameter at all
-        template <typename T>
-        struct NoDefine {
-            static void define_param(alps::params& p) { }
-        };
+
+        /*
+          All ways to generate a parameter object.
+
+          #!/usr/bin/bash
+
+          declare -A Table Row States
+
+          States=( [C]=CONSTRUCTION [D]=DEFINITION [U]=UNDEFINED )
+
+          Table=(                                                       \
+                   [DefaultConstruct]='([AssignDefine]=D [DefaultDefine]=D [NoDefaultDefine]=U )' \
+            [PresentCmdlineConstruct]='([AssignDefine]=D [DefaultDefine]=C [NoDefaultDefine]=C )' \
+            [MissingCmdlineConstruct]='([AssignDefine]=D [DefaultDefine]=D [NoDefaultDefine]=U )' \
+                )
+
+
+          declare -a x_par_set nx_par_set all_par_set
+          
+          for cons in DefaultConstruct PresentCmdlineConstruct MissingCmdlineConstruct; do \
+          for def  in AssignDefine DefaultDefine NoDefaultDefine; do \
+
+          eval Row=${Table[$cons]}
+          state=${States[${Row[$def]}]}
+
+          type="ParamGenerator<T, $cons, $def, value_choice::$state>"
+          all_par_set[${#all_par_set[*]}]="$type"
+          if [ $state = UNDEFINED ]; then
+            nx_par_set[${#nx_par_set[*]}]="$type"
+          else
+            x_par_set[${#x_par_set[*]}]="$type"
+          fi
+
+          done; done;
+
+          echo '#define ALPS_PARAMS_TEST_AllParamTestTypes(T) \'
+          for s in "${all_par_set[@]:0:$[${#all_par_set[*]}-1]}"; do echo "$s, \\"; done
+          echo ${all_par_set[-1]}
+
+          echo '#define ALPS_PARAMS_TEST_ExParamTestTypes(T) \'
+          for s in "${x_par_set[@]:0:$[${#x_par_set[*]}-1]}"; do echo "$s, \\"; done
+          echo ${x_par_set[-1]}
+
+          echo '#define ALPS_PARAMS_TEST_NxParamTestTypes(T) \'
+          for s in "${nx_par_set[@]:0:$[${#nx_par_set[*]}-1]}"; do echo "$s, \\"; done
+          echo ${nx_par_set[-1]}
+        */
+
+// All parameters generated in all possible ways
+#define ALPS_PARAMS_TEST_AllParamTestTypes(T)                           \
+        ParamGenerator<T, DefaultConstruct, AssignDefine, value_choice::DEFINITION>, \
+        ParamGenerator<T, DefaultConstruct, DefaultDefine, value_choice::DEFINITION>, \
+        ParamGenerator<T, DefaultConstruct, NoDefaultDefine, value_choice::UNDEFINED>, \
+        ParamGenerator<T, PresentCmdlineConstruct, AssignDefine, value_choice::DEFINITION>, \
+        ParamGenerator<T, PresentCmdlineConstruct, DefaultDefine, value_choice::CONSTRUCTION>, \
+        ParamGenerator<T, PresentCmdlineConstruct, NoDefaultDefine, value_choice::CONSTRUCTION>, \
+        ParamGenerator<T, MissingCmdlineConstruct, AssignDefine, value_choice::DEFINITION>, \
+        ParamGenerator<T, MissingCmdlineConstruct, DefaultDefine, value_choice::DEFINITION>, \
+        ParamGenerator<T, MissingCmdlineConstruct, NoDefaultDefine, value_choice::UNDEFINED>
+
+#define ALPS_PARAMS_TEST_ExParamTestTypes(T)                            \
+        ParamGenerator<T, DefaultConstruct, AssignDefine, value_choice::DEFINITION>, \
+        ParamGenerator<T, DefaultConstruct, DefaultDefine, value_choice::DEFINITION>, \
+        ParamGenerator<T, PresentCmdlineConstruct, AssignDefine, value_choice::DEFINITION>, \
+        ParamGenerator<T, PresentCmdlineConstruct, DefaultDefine, value_choice::CONSTRUCTION>, \
+        ParamGenerator<T, PresentCmdlineConstruct, NoDefaultDefine, value_choice::CONSTRUCTION>, \
+        ParamGenerator<T, MissingCmdlineConstruct, AssignDefine, value_choice::DEFINITION>, \
+        ParamGenerator<T, MissingCmdlineConstruct, DefaultDefine, value_choice::DEFINITION>
+
+#define ALPS_PARAMS_TEST_NxParamTestTypes(T)                            \
+        ParamGenerator<T, DefaultConstruct, NoDefaultDefine, value_choice::UNDEFINED>, \
+        ParamGenerator<T, MissingCmdlineConstruct, NoDefaultDefine, value_choice::UNDEFINED>
+        
+        
     } // namespace testing
   } // namespace params_ns
 } // namespace alps

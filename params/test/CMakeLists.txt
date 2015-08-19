@@ -11,6 +11,7 @@ set (test_src
      serialize
      ostream
      valid_param_tests
+     undef_param_tests
     )
 
 

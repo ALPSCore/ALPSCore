@@ -268,11 +268,11 @@ TYPED_TEST_P(ValidParamTest,ExistsSmaller) { this->exists_smaller(); }
 TYPED_TEST_P(ValidParamTest,ExplicitCastToIncompatible ) { this->explicit_cast_to_incompatible(); }
 TYPED_TEST_P(ValidParamTest,ImplicitCastToIncompatible ) { this->implicit_cast_to_incompatible(); }
 TYPED_TEST_P(ValidParamTest,ExistsIncompatible) { this->exists_incompatible(); }
-TYPED_TEST_P(ValidParamTest,AccessNonexistentConst ) { this->access_nonexistent_const(); }
-TYPED_TEST_P(ValidParamTest,AccessNonexistent ) { this->access_nonexistent(); }
-TYPED_TEST_P(ValidParamTest,AssignNonexistent ) { this->assign_nonexistent(); }
-TYPED_TEST_P(ValidParamTest,ExistsNonexistent) { this->exists_nonexistent(); }
-TYPED_TEST_P(ValidParamTest,ExistsNonexistentTyped) { this->exists_nonexistent_typed(); }
+// TYPED_TEST_P(ValidParamTest,AccessNonexistentConst ) { this->access_nonexistent_const(); }
+// TYPED_TEST_P(ValidParamTest,AccessNonexistent ) { this->access_nonexistent(); }
+// TYPED_TEST_P(ValidParamTest,AssignNonexistent ) { this->assign_nonexistent(); }
+// TYPED_TEST_P(ValidParamTest,ExistsNonexistent) { this->exists_nonexistent(); }
+// TYPED_TEST_P(ValidParamTest,ExistsNonexistentTyped) { this->exists_nonexistent_typed(); }
 TYPED_TEST_P(ValidParamTest,AssignSameType ) { this->assign_same_type(); }
 TYPED_TEST_P(ValidParamTest,AssignSmallerType ) { this->assign_smaller_type(); }
 TYPED_TEST_P(ValidParamTest,AssignLargerType ) { this->assign_larger_type(); }
@@ -280,7 +280,7 @@ TYPED_TEST_P(ValidParamTest,AssignIncompatibleType ) { this->assign_incompatible
 TYPED_TEST_P(ValidParamTest,RedefineSameType ) { this->redefine_same_type(); }
 TYPED_TEST_P(ValidParamTest,RedefineAnotherType ) { this->redefine_another_type(); }
 TYPED_TEST_P(ValidParamTest,Defined) { this->defined(); }
-TYPED_TEST_P(ValidParamTest,DefinedNonexistent) { this->defined_nonexistent(); }
+// TYPED_TEST_P(ValidParamTest,DefinedNonexistent) { this->defined_nonexistent(); }
 TYPED_TEST_P(ValidParamTest,SaveRestore ) { this->save_restore(); }
 
 REGISTER_TYPED_TEST_CASE_P(ValidParamTest,
@@ -297,11 +297,11 @@ REGISTER_TYPED_TEST_CASE_P(ValidParamTest,
                            ExplicitCastToIncompatible,
                            ImplicitCastToIncompatible,
                            ExistsIncompatible,
-                           AccessNonexistentConst,
-                           AccessNonexistent,
-                           AssignNonexistent,
-                           ExistsNonexistent,
-                           ExistsNonexistentTyped,
+                           // AccessNonexistentConst,
+                           // AccessNonexistent,
+                           // AssignNonexistent,
+                           // ExistsNonexistent,
+                           // ExistsNonexistentTyped,
                            AssignSameType,
                            AssignSmallerType,
                            AssignLargerType,
@@ -309,93 +309,27 @@ REGISTER_TYPED_TEST_CASE_P(ValidParamTest,
                            RedefineSameType,
                            RedefineAnotherType,
                            Defined,
-                           DefinedNonexistent,
+                           // DefinedNonexistent,
                            SaveRestore);
 
 
-/* A defined-value parameter can be created by:
-   1) [ default, parsing missing, parsing existing ] x [ assignment, defining with default]
-   2) [ parsing existing ] x [ defining without default ]
-   3) copy (not tested here)
-   4) load (not tested here)
-*/
-
-
 /*
-  Here is the helper `sh` script to generate test cases::
-  
-  for type in bool char int long double; do \
-  echo "typedef ::testing::Types<"; \
-  for cons in DefaultConstruct MissingCmdlineConstruct PresentCmdlineConstruct; do \
-  for def  in AssignDefine DefaultDefine; do \
-  expected='DEFINITION'; \
-  [ $cons = PresentCmdlineConstruct ] && [ $def = DefaultDefine ] && expected='CONSTRUCTION'; \
-  echo "ParamGenerator<$type, $cons, $def, value_choice::$expected>,"; \
-  done; done; \
-  echo "ParamGenerator<$type, PresentCmdlineConstruct, NoDefaultDefine, value_choice::CONSTRUCTION>"; \
-  typename=${type/ /_}_params_generators; \
-  echo "> $typename;"; echo; \
-  echo "INSTANTIATE_TYPED_TEST_CASE_P(${type/ }ValidParamTest, ValidParamTest, $typename);"; echo; \
+  for type in bool char int long double; do
+  echo "typedef ::testing::Types<ALPS_PARAMS_TEST_ExParamTestTypes($type)> ${type}_Params_Generators;";
+  echo "INSTANTIATE_TYPED_TEST_CASE_P(${type}ParamTest, ValidParamTest, ${type}_Params_Generators);";
   done
 */
+typedef ::testing::Types<ALPS_PARAMS_TEST_ExParamTestTypes(bool)> bool_Params_Generators;
+INSTANTIATE_TYPED_TEST_CASE_P(boolParamTest, ValidParamTest, bool_Params_Generators);
+typedef ::testing::Types<ALPS_PARAMS_TEST_ExParamTestTypes(char)> char_Params_Generators;
+INSTANTIATE_TYPED_TEST_CASE_P(charParamTest, ValidParamTest, char_Params_Generators);
+typedef ::testing::Types<ALPS_PARAMS_TEST_ExParamTestTypes(int)> int_Params_Generators;
+INSTANTIATE_TYPED_TEST_CASE_P(intParamTest, ValidParamTest, int_Params_Generators);
+typedef ::testing::Types<ALPS_PARAMS_TEST_ExParamTestTypes(long)> long_Params_Generators;
+INSTANTIATE_TYPED_TEST_CASE_P(longParamTest, ValidParamTest, long_Params_Generators);
+typedef ::testing::Types<ALPS_PARAMS_TEST_ExParamTestTypes(double)> double_Params_Generators;
+INSTANTIATE_TYPED_TEST_CASE_P(doubleParamTest, ValidParamTest, double_Params_Generators);
 
-typedef ::testing::Types<
-    ParamGenerator<bool, DefaultConstruct, AssignDefine, value_choice::DEFINITION>,
-    ParamGenerator<bool, DefaultConstruct, DefaultDefine, value_choice::DEFINITION>,
-    ParamGenerator<bool, MissingCmdlineConstruct, AssignDefine, value_choice::DEFINITION>,
-    ParamGenerator<bool, MissingCmdlineConstruct, DefaultDefine, value_choice::DEFINITION>,
-    ParamGenerator<bool, PresentCmdlineConstruct, AssignDefine, value_choice::DEFINITION>,
-    ParamGenerator<bool, PresentCmdlineConstruct, DefaultDefine, value_choice::CONSTRUCTION>,
-    ParamGenerator<bool, PresentCmdlineConstruct, NoDefaultDefine, value_choice::CONSTRUCTION>
-    > bool_params_generators;
 
-INSTANTIATE_TYPED_TEST_CASE_P(boolValidParamTest, ValidParamTest, bool_params_generators);
 
-typedef ::testing::Types<
-    ParamGenerator<char, DefaultConstruct, AssignDefine, value_choice::DEFINITION>,
-    ParamGenerator<char, DefaultConstruct, DefaultDefine, value_choice::DEFINITION>,
-    ParamGenerator<char, MissingCmdlineConstruct, AssignDefine, value_choice::DEFINITION>,
-    ParamGenerator<char, MissingCmdlineConstruct, DefaultDefine, value_choice::DEFINITION>,
-    ParamGenerator<char, PresentCmdlineConstruct, AssignDefine, value_choice::DEFINITION>,
-    ParamGenerator<char, PresentCmdlineConstruct, DefaultDefine, value_choice::CONSTRUCTION>,
-    ParamGenerator<char, PresentCmdlineConstruct, NoDefaultDefine, value_choice::CONSTRUCTION>
-    > char_params_generators;
-
-INSTANTIATE_TYPED_TEST_CASE_P(charValidParamTest, ValidParamTest, char_params_generators);
-
-typedef ::testing::Types<
-    ParamGenerator<int, DefaultConstruct, AssignDefine, value_choice::DEFINITION>,
-    ParamGenerator<int, DefaultConstruct, DefaultDefine, value_choice::DEFINITION>,
-    ParamGenerator<int, MissingCmdlineConstruct, AssignDefine, value_choice::DEFINITION>,
-    ParamGenerator<int, MissingCmdlineConstruct, DefaultDefine, value_choice::DEFINITION>,
-    ParamGenerator<int, PresentCmdlineConstruct, AssignDefine, value_choice::DEFINITION>,
-    ParamGenerator<int, PresentCmdlineConstruct, DefaultDefine, value_choice::CONSTRUCTION>,
-    ParamGenerator<int, PresentCmdlineConstruct, NoDefaultDefine, value_choice::CONSTRUCTION>
-    > int_params_generators;
-
-INSTANTIATE_TYPED_TEST_CASE_P(intValidParamTest, ValidParamTest, int_params_generators);
-
-typedef ::testing::Types<
-    ParamGenerator<long, DefaultConstruct, AssignDefine, value_choice::DEFINITION>,
-    ParamGenerator<long, DefaultConstruct, DefaultDefine, value_choice::DEFINITION>,
-    ParamGenerator<long, MissingCmdlineConstruct, AssignDefine, value_choice::DEFINITION>,
-    ParamGenerator<long, MissingCmdlineConstruct, DefaultDefine, value_choice::DEFINITION>,
-    ParamGenerator<long, PresentCmdlineConstruct, AssignDefine, value_choice::DEFINITION>,
-    ParamGenerator<long, PresentCmdlineConstruct, DefaultDefine, value_choice::CONSTRUCTION>,
-    ParamGenerator<long, PresentCmdlineConstruct, NoDefaultDefine, value_choice::CONSTRUCTION>
-    > long_params_generators;
-
-INSTANTIATE_TYPED_TEST_CASE_P(longValidParamTest, ValidParamTest, long_params_generators);
-
-typedef ::testing::Types<
-    ParamGenerator<double, DefaultConstruct, AssignDefine, value_choice::DEFINITION>,
-    ParamGenerator<double, DefaultConstruct, DefaultDefine, value_choice::DEFINITION>,
-    ParamGenerator<double, MissingCmdlineConstruct, AssignDefine, value_choice::DEFINITION>,
-    ParamGenerator<double, MissingCmdlineConstruct, DefaultDefine, value_choice::DEFINITION>,
-    ParamGenerator<double, PresentCmdlineConstruct, AssignDefine, value_choice::DEFINITION>,
-    ParamGenerator<double, PresentCmdlineConstruct, DefaultDefine, value_choice::CONSTRUCTION>,
-    ParamGenerator<double, PresentCmdlineConstruct, NoDefaultDefine, value_choice::CONSTRUCTION>
-    > double_params_generators;
-
-INSTANTIATE_TYPED_TEST_CASE_P(doubleValidParamTest, ValidParamTest, double_params_generators);
 
