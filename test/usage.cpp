@@ -23,9 +23,10 @@ class TestGF : public ::testing::Test
     const int nspins;
     alps::gf::matsubara_gf gf;
     alps::gf::matsubara_gf gf2;
+    typedef alps::gf::matsubara_mesh<alps::gf::mesh::POSITIVE_ONLY> matsubara_mesh;
 
     TestGF():beta(10), nsites(4), nfreq(10), nspins(2),
-             gf(alps::gf::matsubara_mesh(beta,nfreq),
+             gf(matsubara_mesh(beta,nfreq),
                 alps::gf::momentum_index_mesh(get_data_for_mesh()),
                 alps::gf::momentum_index_mesh(get_data_for_mesh()),
                 alps::gf::index_mesh(nspins)),
@@ -35,7 +36,7 @@ class TestGF : public ::testing::Test
 
 TEST_F(TestGF,access)
 {
-    alps::gf::matsubara_index omega; omega=4;
+    alps::gf::matsubara_index omega=gf.mesh1().generate_index(0); omega=4;
     alps::gf::momentum_index i; i=2;
     alps::gf::momentum_index j=alps::gf::momentum_index(3);
     alps::gf::index sigma(1);
@@ -48,7 +49,7 @@ TEST_F(TestGF,access)
 
 TEST_F(TestGF,init)
 {
-    alps::gf::matsubara_index omega; omega=4;
+    alps::gf::matsubara_index omega=gf1.mesh1().generate_index(); omega=4;
     alps::gf::momentum_index i; i=2;
     alps::gf::momentum_index j=alps::gf::momentum_index(3);
     alps::gf::index sigma(1);
@@ -64,22 +65,22 @@ TEST_F(TestGF,saveload)
     namespace g=alps::gf;
     {
         alps::hdf5::archive oar("gf.h5","w");
-        gf(g::matsubara_index(4),g::momentum_index(3), g::momentum_index(2), g::index(1))=std::complex<double>(7., 3.);
+        gf(gf.mesh1().generate_index(4),g::momentum_index(3), g::momentum_index(2), g::index(1))=std::complex<double>(7., 3.);
         gf.save(oar,"/gf");
     }
     {
         alps::hdf5::archive iar("gf.h5");
         gf2.load(iar,"/gf");
     }
-    EXPECT_EQ(7, gf2(g::matsubara_index(4),g::momentum_index(3), g::momentum_index(2), g::index(1)).real());
-    EXPECT_EQ(3, gf2(g::matsubara_index(4),g::momentum_index(3), g::momentum_index(2), g::index(1)).imag());
+    EXPECT_EQ(7, gf2(gf.mesh1().generate_index(4),g::momentum_index(3), g::momentum_index(2), g::index(1)).real());
+    EXPECT_EQ(3, gf2(gf.mesh1().generate_index(4),g::momentum_index(3), g::momentum_index(2), g::index(1)).imag());
     {
         alps::hdf5::archive oar("gf.h5","rw");
         oar["/gf/version/major"]<<7;
         EXPECT_THROW(gf2.load(oar,"/gf"),std::runtime_error);
     }
-    EXPECT_EQ(7, gf2(g::matsubara_index(4),g::momentum_index(3), g::momentum_index(2), g::index(1)).real());
-    EXPECT_EQ(3, gf2(g::matsubara_index(4),g::momentum_index(3), g::momentum_index(2), g::index(1)).imag());
+    EXPECT_EQ(7, gf2(gf.mesh1().generate_index(4),g::momentum_index(3), g::momentum_index(2), g::index(1)).real());
+    EXPECT_EQ(3, gf2(gf.mesh1().generate_index(4),g::momentum_index(3), g::momentum_index(2), g::index(1)).imag());
     
     
     //boost::filesystem::remove("g5.h5");
@@ -154,7 +155,8 @@ TEST_F(ItimeTestGF,saveload)
 }
 
 TEST(Index, UnaryAndComparisonOperators){
-   alps::gf::matsubara_index omega(5);
+    alps::gf::matsubara_mesh<mesh::POSITIVE_NEGATIVE> mesh(5.0, 20);
+   alps::gf::matsubara_index omega=mesh.generate_index(5);
    alps::gf::matsubara_index omega5=omega++;
    alps::gf::matsubara_index omega7=++omega;
    EXPECT_EQ(7, omega);
@@ -179,7 +181,8 @@ TEST(Index, UnaryAndComparisonOperators){
 }
 
 TEST(Index, BinaryOperators){
-   alps::gf::matsubara_index omega(5);
+   alps::gf::matsubara_mesh<mesh::POSITIVE_NEGATIVE> mesh(5.0, 20);
+   alps::gf::matsubara_index omega=mesh.generate_index(5);
    alps::gf::matsubara_index omegaprime=omega+11;
    alps::gf::matsubara_index omegaprime1=11+omega;
    alps::gf::matsubara_index omegaprime2=omega-11;
@@ -215,7 +218,7 @@ class ThreeIndexTestGF : public ::testing::Test
 };
 TEST_F(ThreeIndexTestGF,access)
 {
-    alps::gf::matsubara_index omega; omega=4;
+    alps::gf::matsubara_index omega=gf.mesh1().generate_index(4);
     alps::gf::momentum_index i; i=2;
     alps::gf::index sigma(1);
 
@@ -227,7 +230,7 @@ TEST_F(ThreeIndexTestGF,access)
 
 TEST_F(ThreeIndexTestGF,init)
 {
-    alps::gf::matsubara_index omega; omega=4;
+    alps::gf::matsubara_index omega=gf.mesh1().generate_index(4);
     alps::gf::momentum_index i; i=2;
     alps::gf::index sigma(1);
 
@@ -242,21 +245,22 @@ TEST_F(ThreeIndexTestGF,saveload)
     namespace g=alps::gf;
     {
         alps::hdf5::archive oar("gf.h5","w");
-        gf(g::matsubara_index(4),g::momentum_index(3), g::index(1))=std::complex<double>(7., 3.);
+        gf(gf.mesh1().generate_index(4),g::momentum_index(3), g::index(1))=std::complex<double>(7., 3.);
         gf.save(oar,"/gf");
     }
     {
         alps::hdf5::archive iar("gf.h5");
         gf2.load(iar,"/gf");
     }
-    EXPECT_EQ(7, gf2(g::matsubara_index(4),g::momentum_index(3), g::index(1)).real());
-    EXPECT_EQ(3, gf2(g::matsubara_index(4),g::momentum_index(3), g::index(1)).imag());
+    EXPECT_EQ(7, gf2(gf2.mesh1().generate_index(4),g::momentum_index(3), g::index(1)).real());
+    EXPECT_EQ(3, gf2(gf2.mesh1().generate_index(4),g::momentum_index(3), g::index(1)).imag());
     {
         alps::hdf5::archive oar("gf.h5","rw");
         oar["/gf/version/major"]<<7;
         EXPECT_THROW(gf2.load(oar,"/gf"),std::runtime_error);
     }
-    EXPECT_EQ(7, gf2(g::matsubara_index(4),g::momentum_index(3), g::index(1)).real());
-    EXPECT_EQ(3, gf2(g::matsubara_index(4),g::momentum_index(3), g::index(1)).imag());
+    EXPECT_EQ(7, gf2(gf2.mesh1().generate_index(4),g::momentum_index(3), g::index(1)).real());
+    EXPECT_EQ(3, gf2(gf2.mesh1().generate_index(4),g::momentum_index(3), g::index(1)).imag());
 
 }
+

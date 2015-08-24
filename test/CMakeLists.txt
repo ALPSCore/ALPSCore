@@ -1,5 +1,6 @@
 set (test_src
      usage
+     matsubara_gf
     )
 
 

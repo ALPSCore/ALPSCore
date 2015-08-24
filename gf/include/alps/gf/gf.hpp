@@ -121,6 +121,8 @@ namespace alps {
                   data_(boost::extents[mesh1_.extent()][mesh2_.extent()][mesh3_.extent()][mesh4_.extent()])
             {
             }
+
+            const MESH1& mesh1() const { return mesh1_; } 
             
             const value_type& operator()(typename MESH1::index_type i1, typename MESH2::index_type i2, typename MESH3::index_type i3, typename MESH4::index_type i4) const
             {
@@ -178,12 +180,12 @@ namespace alps {
             }
         };
 
-        typedef four_index_gf<std::complex<double>, matsubara_mesh, momentum_index_mesh, momentum_index_mesh, index_mesh> omega_k1_k2_sigma_gf;
+        typedef four_index_gf<std::complex<double>, matsubara_mesh<mesh::POSITIVE_ONLY>, momentum_index_mesh, momentum_index_mesh, index_mesh> omega_k1_k2_sigma_gf;
         typedef four_index_gf<             double , itime_mesh    , momentum_index_mesh, momentum_index_mesh, index_mesh> itime_k1_k2_sigma_gf;
-        typedef four_index_gf<std::complex<double>, matsubara_mesh, real_space_index_mesh, real_space_index_mesh, index_mesh> omega_r1_r2_sigma_gf;
+        typedef four_index_gf<std::complex<double>, matsubara_mesh<mesh::POSITIVE_ONLY>, real_space_index_mesh, real_space_index_mesh, index_mesh> omega_r1_r2_sigma_gf;
         typedef four_index_gf<             double , itime_mesh    , real_space_index_mesh, real_space_index_mesh, index_mesh> itime_r1_r2_sigma_gf;
 
-        typedef three_index_gf<std::complex<double>, matsubara_mesh, momentum_index_mesh, index_mesh> omega_k_sigma_gf;
+        typedef three_index_gf<std::complex<double>, matsubara_mesh<mesh::POSITIVE_ONLY>, momentum_index_mesh, index_mesh> omega_k_sigma_gf;
         typedef three_index_gf<             double , itime_mesh    , momentum_index_mesh, index_mesh> itime_k_sigma_gf;
         
         typedef omega_k1_k2_sigma_gf matsubara_gf;
