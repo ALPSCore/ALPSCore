@@ -64,26 +64,22 @@ namespace alps {
             statistics::statistics_type statistics_;
             static const mesh::frequency_positivity_type positivity_=PTYPE;
       
+            const int offset_;
+
             public:
-            matsubara_mesh(double b, int nfr): beta_(b), nfreq_(nfr), statistics_(statistics::FERMIONIC) {
+            typedef generic_index<matsubara_mesh> index_type;
+
+            matsubara_mesh(double b, int nfr): beta_(b), nfreq_(nfr), statistics_(statistics::FERMIONIC), offset_((PTYPE==mesh::POSITIVE_ONLY)?0:nfr) {
                 check_range();
                 compute_points();
             }
             int extent() const{return nfreq_;}
-          
-            class index_type : public generic_index<matsubara_mesh>  {
-                typedef generic_index<matsubara_mesh> base_type;
-                const int offset_;
-                index_type(int offs,int idx): offset_(offs), base_type(idx) {}
-                public:
-                int operator()() const { return offset_+ base_type::operator()(); }
-                friend class matsubara_mesh;
-            };
 
-            index_type generate_index(int idx) const {
-                return index_type((PTYPE==mesh::POSITIVE_ONLY)?0:nfreq_, idx);
+
+            int operator()(index_type idx) const {
+                return offset_+idx(); // FIXME: can be improved by specialization?
             }
-          
+            
             void save(alps::hdf5::archive& ar, const std::string& path) const
             {
                 ar[path+"/kind"] << "MATSUBARA";
@@ -108,7 +104,9 @@ namespace alps {
                 ar[path+"/positive_only"] >> posonly;
         
                 statistics_=statistics::statistics_type(stat);
-                positivity_=mesh::frequency_positivity_type(posonly);
+                if (mesh::frequency_positivity_type(posonly)!=positivity_) {
+                    throw std::invalid_argument("Attempt to read Matsubara mesh with the wrong positivity type "+posonly); // FIXME: specific exception? Verbose positivity?
+                };
                 beta_=beta;
                 nfreq_=nfr;
                 check_range();
@@ -137,9 +135,11 @@ namespace alps {
             statistics::statistics_type statistics_;
       
             public:
-            itime_mesh(double beta, int ntau): beta_(beta), ntau_(ntau), statistics_(statistics::FERMIONIC), last_point_included_(true), half_point_mesh_(false){}
-            int extent() const{return ntau_;}
             typedef generic_index<itime_mesh> index_type;
+
+            itime_mesh(double beta, int ntau): beta_(beta), ntau_(ntau), statistics_(statistics::FERMIONIC), last_point_included_(true), half_point_mesh_(false){}
+                int operator()(index_type idx) const { return idx(); }
+            int extent() const{return ntau_;}
       
             void save(alps::hdf5::archive& ar, const std::string& path) const
             {
@@ -180,6 +180,8 @@ namespace alps {
             private:
             container_type points_;
             public:
+            typedef generic_index<momentum_index_mesh> index_type;
+
             momentum_index_mesh(int ns,int ndim): points_(boost::extents[ns][ndim])
             {
             }
@@ -188,10 +190,10 @@ namespace alps {
             {
             }
       
-            typedef generic_index<momentum_index_mesh> index_type;
       
             // Returns the number of points
             int extent() const { return points_.shape()[0];}
+            int operator()(index_type idx) const { return idx(); }
       
             void save(alps::hdf5::archive& ar, const std::string& path) const
             {
@@ -214,6 +216,8 @@ namespace alps {
             private:
             container_type points_;
             public:
+            typedef generic_index<real_space_index_mesh> index_type;
+
             real_space_index_mesh(int ns,int ndim): points_(boost::extents[ns][ndim])
             {
             }
@@ -222,10 +226,10 @@ namespace alps {
             {
             }
       
-            typedef generic_index<real_space_index_mesh> index_type;
       
             // Returns the number of points
             int extent() const { return points_.shape()[0];}
+            int operator()(index_type idx) const { return idx(); }
       
             void save(alps::hdf5::archive& ar, const std::string& path) const
             {
@@ -245,9 +249,11 @@ namespace alps {
         class index_mesh {
             int npoints_;
             public:
-            index_mesh(int np): npoints_(np) {}
             typedef generic_index<index_mesh> index_type;
+
+            index_mesh(int np): npoints_(np) {}
             int extent() const{return npoints_;}
+            int operator()(index_type idx) const { return idx(); }
       
             void save(alps::hdf5::archive& ar, const std::string& path) const
             {
@@ -267,6 +273,8 @@ namespace alps {
             }
         };
     
+        typedef matsubara_mesh<mesh::POSITIVE_ONLY> matsubara_positive_mesh;
+        typedef matsubara_mesh<mesh::POSITIVE_NEGATIVE> matsubara_pn_mesh;
         typedef matsubara_mesh<mesh::POSITIVE_ONLY>::index_type matsubara_index;
         typedef matsubara_mesh<mesh::POSITIVE_NEGATIVE>::index_type matsubara_pn_index;
         typedef itime_mesh::index_type itime_index;

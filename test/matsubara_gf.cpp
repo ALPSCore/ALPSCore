@@ -61,7 +61,7 @@ TEST_F(TestGF,PositiveNegative)
     alps::gf::momentum_index j=alps::gf::momentum_index(3);
     alps::gf::index sigma(1);
 
-    matsubara_indexp_type omega=gf1.mesh1().generate_index(4);
+    matsubara_indexp_type omega; omega=4;
     
     gf1(omega, i,j,sigma)=std::complex<double>(3,4);
     std::complex<double> x=gf1(omega,i,j,sigma);
@@ -69,7 +69,7 @@ TEST_F(TestGF,PositiveNegative)
     EXPECT_EQ(3,x.real());
     EXPECT_EQ(4,x.imag());
 
-    matsubara_indexn_type omega2=gf2.mesh1().generate_index(-4);
+    matsubara_indexn_type omega2; omega2=-4;
     gf2(omega2, i,j,sigma)=std::complex<double>(3,4);
     x=gf2(omega2,i,j,sigma);
 

@@ -126,12 +126,12 @@ namespace alps {
             
             const value_type& operator()(typename MESH1::index_type i1, typename MESH2::index_type i2, typename MESH3::index_type i3, typename MESH4::index_type i4) const
             {
-                return data_[i1()][i2()][i3()][i4()];
+                return data_[mesh1_(i1)][mesh2_(i2)][mesh3_(i3)][mesh4_(i4)];
             }
 
             value_type& operator()(typename MESH1::index_type i1, typename MESH2::index_type i2, typename MESH3::index_type i3, typename MESH4::index_type i4)
             {
-                return data_[i1()][i2()][i3()][i4()];
+                return data_[mesh1_(i1)][mesh2_(i2)][mesh3_(i3)][mesh4_(i4)];
             }
 
             /// Initialize the GF data to value_type(0.)
