@@ -7,6 +7,8 @@
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
+#include <string.h>
+#include <fstream>
 //#include <vector>
 //#include <algorithm>
 //#include <iterator>
@@ -54,6 +56,14 @@ namespace {
     boost::optional<alps::hdf5::archive> try_open_ar(const std::string& fname, const char* mode)
     {
         try {
+            //read in hdf5 checksum of file and verify it's a hdf5 file
+            {
+              std::ifstream f(fname.c_str(),std::ios::binary);
+              if(!f.good()) return boost::none;
+              char hdf5_checksum[]={137,72,68,70,13,10,26,10};
+              char firstbytes[8]; f.read(firstbytes, 8);
+              if(strncmp(hdf5_checksum,firstbytes,8)!=0) return boost::none;
+            }
             return alps::hdf5::archive(fname, mode);
         } catch (alps::hdf5::archive_error& ) {
             return boost::none;
