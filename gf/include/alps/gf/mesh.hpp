@@ -173,31 +173,32 @@ namespace alps {
                 ntau_=ntau;
             }
         };
-    
-        class momentum_index_mesh{
+
+
+        class momentum_realspace_index_mesh {
             public:
             typedef boost::multi_array<double,2> container_type;
-            private:
+            protected:
             container_type points_;
-            public:
-            typedef generic_index<momentum_index_mesh> index_type;
+            private:
+            const std::string kind_;
 
-            momentum_index_mesh(int ns,int ndim): points_(boost::extents[ns][ndim])
+            protected:
+            momentum_realspace_index_mesh(const std::string& kind, int ns,int ndim): points_(boost::extents[ns][ndim]), kind_(kind)
             {
             }
       
-            momentum_index_mesh(const container_type& mesh_points): points_(mesh_points)
+            momentum_realspace_index_mesh(const std::string& kind, const container_type& mesh_points): points_(mesh_points), kind_(kind)
             {
             }
       
-      
+            public:
             // Returns the number of points
             int extent() const { return points_.shape()[0];}
-            int operator()(index_type idx) const { return idx(); }
-      
+
             void save(alps::hdf5::archive& ar, const std::string& path) const
             {
-                ar[path+"/kind"] << "MOMENTUM_INDEX";
+                ar[path+"/kind"] << kind_;
                 ar[path+"/points"] << points_;
             }
       
@@ -205,45 +206,47 @@ namespace alps {
             {
                 std::string kind;
                 ar[path+"/kind"] >> kind;
-                if (kind!="MOMENTUM_INDEX") throw std::runtime_error("Attempt to load momentum index mesh from incorrect mesh kind="+kind);
+                if (kind!=kind_) throw std::runtime_error("Attempt to load momentum/realspace index mesh from incorrect mesh kind="+kind+ " (expected: "+kind_+")");
                 ar[path+"/points"] >> points_;
             }
         };
     
-        class real_space_index_mesh {
+        class momentum_index_mesh: public momentum_realspace_index_mesh {
+            typedef momentum_realspace_index_mesh base_type;
+            
             public:
-            typedef boost::multi_array<double,2> container_type;
-            private:
-            container_type points_;
-            public:
-            typedef generic_index<real_space_index_mesh> index_type;
+            
+            typedef generic_index<momentum_index_mesh> index_type;
 
-            real_space_index_mesh(int ns,int ndim): points_(boost::extents[ns][ndim])
+            momentum_index_mesh(int ns,int ndim): base_type("MOMENTUM_INDEX",ns,ndim)
             {
             }
       
-            real_space_index_mesh(const container_type& mesh_points): points_(mesh_points)
+            momentum_index_mesh(const container_type& mesh_points): base_type("MOMENTUM_INDEX",mesh_points)
             {
             }
       
-      
-            // Returns the number of points
-            int extent() const { return points_.shape()[0];}
+            /// Returns the index of the mesh point in the data array
             int operator()(index_type idx) const { return idx(); }
-      
-            void save(alps::hdf5::archive& ar, const std::string& path) const
+        };
+    
+        class real_space_index_mesh: public momentum_realspace_index_mesh {
+            typedef momentum_realspace_index_mesh base_type;
+            
+            public:
+            
+            typedef generic_index<momentum_index_mesh> index_type;
+
+            real_space_index_mesh(int ns,int ndim): base_type("REAL_SPACE_INDEX",ns,ndim)
             {
-                ar[path+"/kind"] << "REAL_SPACE_INDEX";
-                ar[path+"/points"] << points_;
             }
       
-            void load(alps::hdf5::archive& ar, const std::string& path)
+            real_space_index_mesh(const container_type& mesh_points): base_type("REAL_SPACE_INDEX",mesh_points)
             {
-                std::string kind;
-                ar[path+"/kind"] >> kind;
-                if (kind!="REAL_SPACE_INDEX") throw std::runtime_error("Attempt to load real space index mesh from incorrect mesh kind="+kind);
-                ar[path+"/points"] >> points_;
             }
+      
+            /// Returns the index of the mesh point in the data array
+            int operator()(index_type idx) const { return idx(); }
         };
     
         class index_mesh {
