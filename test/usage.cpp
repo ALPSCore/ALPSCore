@@ -86,6 +86,18 @@ TEST_F(TestGF,saveload)
     //boost::filesystem::remove("g5.h5");
 }
 
+TEST_F(TestGF, tail)
+{
+    namespace g=alps::gf;
+
+    
+    
+    // // Make a tail on this GF's meshes and attach it
+    // int min_order=1;
+    // int max_order=3;
+    
+    // g::matsubara_gf::tail_type tail= gf.make_tail(min_order,max_order);
+}
 
 class ItimeTestGF : public ::testing::Test
 {

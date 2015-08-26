@@ -33,6 +33,70 @@ namespace alps {
             return (major_version==ver);
         }
         
+        template<class value_type, class MESH1, class MESH2, class MESH3> class two_index_gf {
+            typedef boost::multi_array<value_type,2> container_type;
+        
+            MESH1 mesh1_;
+            MESH2 mesh2_;
+        
+            container_type data_;
+            public:
+            two_index_gf(const MESH1& mesh1,
+                           const MESH2& mesh2)
+                         : mesh1_(mesh1), mesh2_(mesh2),
+                           data_(boost::extents[mesh1_.extent()][mesh2_.extent()])
+            {
+            }
+        
+            const value_type& operator()(typename MESH1::index_type i1, typename MESH2::index_type i2) const
+            {
+                return data_[i1()][i2()];
+            }
+        
+            value_type& operator()(typename MESH1::index_type i1, typename MESH2::index_type i2)
+            {
+                return data_[i1()][i2()];
+            }
+        
+            /// Initialize the GF data to value_type(0.)
+            void initialize()
+            {
+                for (int i=0; i<mesh1_.extent(); ++i) {
+                    for (int j=0; j<mesh2_.extent(); ++j) {
+                        data_[i][j]=value_type(0.0);
+                    }
+                }
+            }
+        
+            /// Save the GF to HDF5
+            void save(alps::hdf5::archive& ar, const std::string& path) const
+            {
+                save_version(ar,path);
+                ar[path+"/data"] << data_;
+                ar[path+"/mesh/N"] << int(container_type::dimensionality);
+                mesh1_.save(ar,path+"/mesh/1");
+                mesh2_.save(ar,path+"/mesh/2");
+            }
+        
+            /// Load the GF from HDF5
+            void load(alps::hdf5::archive& ar, const std::string& path)
+            {
+                if (!check_version(ar,path)) throw std::runtime_error("Incompatible archive version");
+          
+                int ndim;
+                ar[path+"/mesh/N"] >> ndim;
+                if (ndim != container_type::dimensionality) throw std::runtime_error("Wrong number of dimension reading Matsubara GF, ndim="+ndim);
+          
+                mesh1_.load(ar,path+"/mesh/1");
+                mesh2_.load(ar,path+"/mesh/2");
+          
+                data_.resize(boost::extents[mesh1_.extent()][mesh2_.extent()]);
+          
+                ar[path+"/data"] >> data_;
+            }
+        
+        };
+
         template<class value_type, class MESH1, class MESH2, class MESH3> class three_index_gf {
             typedef boost::multi_array<value_type,3> container_type;
         
