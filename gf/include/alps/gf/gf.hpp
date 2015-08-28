@@ -1,5 +1,7 @@
 #pragma once
 #include <complex>
+#include <algorithm>
+#include <functional>
 #include <boost/multi_array.hpp>
 
 #include <alps/hdf5/archive.hpp>
@@ -143,6 +145,62 @@ namespace alps {
                 }
             }
         
+            /// Norm operation (FIXME: is it always double??)
+            double norm() const
+            {
+                using std::abs;
+                double v=0;
+                for (value_type* ptr=data_.origin(); ptr!=data_.origin()+data_.num_elements(); ++ptr) {
+                    v=std::max(abs(*ptr), v);
+                }
+                return v;
+            }
+
+            /// Assignment-op
+            template <typename op>
+            three_index_gf& do_op(const three_index_gf& rhs)
+            {
+                // if (mesh1_!=rhs.mesh1_ ||
+                //     mesh2_!=rhs.mesh2_ ||
+                //     mesh3_!=rhs.mesh3_ ) {
+                    
+                //     throw std::runtime_error("Incompatible meshes in three_index_gf::operator+=");
+                // }
+
+                std::transform(data_.origin(), data_.origin()+data_.num_elements(), rhs.data_.origin(), // inputs
+                               data_.origin(), // output
+                               op());
+
+                return *this;
+            }
+
+            template <typename> class dummy {};
+
+            /// Element-wise addition
+            three_index_gf& operator+=(const three_index_gf& rhs)
+            {
+                return do_op< std::plus<value_type> >(rhs);
+            }
+
+            /// Element-wise subtraction
+            three_index_gf& operator-=(const three_index_gf& rhs)
+            {
+                return do_op< std::minus<value_type> >(rhs);
+            }
+
+            /// Element-wise multipication
+            three_index_gf& operator*=(const three_index_gf& rhs)
+            {
+                return do_op< std::multiplies<value_type> >(rhs);
+            }
+
+            /// Element-wise division
+            three_index_gf& operator/=(const three_index_gf& rhs)
+            {
+                return do_op< std::divides<value_type> >(rhs);
+            }
+
+
             /// Save the GF to HDF5
             void save(alps::hdf5::archive& ar, const std::string& path) const
             {
@@ -207,6 +265,7 @@ namespace alps {
             {
                 return data_[mesh1_(i1)][mesh2_(i2)][mesh3_(i3)][mesh4_(i4)];
             }
+
 
             /// Initialize the GF data to value_type(0.)
             void initialize()
