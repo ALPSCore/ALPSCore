@@ -47,7 +47,10 @@ namespace alps {
                            data_(boost::extents[mesh1_.extent()][mesh2_.extent()])
             {
             }
-        
+
+            const MESH1& mesh1() const { return mesh1_; } 
+            const MESH2& mesh2() const { return mesh2_; } 
+
             const value_type& operator()(typename MESH1::index_type i1, typename MESH2::index_type i2) const
             {
                 return data_[i1()][i2()];
@@ -113,7 +116,11 @@ namespace alps {
                   data_(boost::extents[mesh1_.extent()][mesh2_.extent()][mesh3_.extent()])
             {
             }
-        
+
+            const MESH1& mesh1() const { return mesh1_; } 
+            const MESH2& mesh2() const { return mesh2_; } 
+            const MESH3& mesh3() const { return mesh3_; } 
+
             const value_type& operator()(typename MESH1::index_type i1, typename MESH2::index_type i2, typename MESH3::index_type i3) const
             {
                 return data_[i1()][i2()][i3()];
@@ -187,6 +194,9 @@ namespace alps {
             }
 
             const MESH1& mesh1() const { return mesh1_; } 
+            const MESH2& mesh2() const { return mesh2_; } 
+            const MESH3& mesh3() const { return mesh3_; } 
+            const MESH4& mesh4() const { return mesh4_; } 
             
             const value_type& operator()(typename MESH1::index_type i1, typename MESH2::index_type i2, typename MESH3::index_type i3, typename MESH4::index_type i4) const
             {
