@@ -105,7 +105,7 @@ namespace alps {
         
                 statistics_=statistics::statistics_type(stat);
                 if (mesh::frequency_positivity_type(posonly)!=positivity_) {
-                    throw std::invalid_argument("Attempt to read Matsubara mesh with the wrong positivity type "+posonly); // FIXME: specific exception? Verbose positivity?
+                    throw std::invalid_argument("Attempt to read Matsubara mesh with the wrong positivity type "+boost::lexical_cast<std::string>(posonly) ); // FIXME: specific exception? Verbose positivity?
                 };
                 beta_=beta;
                 nfreq_=nfr;

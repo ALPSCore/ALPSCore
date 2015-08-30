@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <functional>
 #include <boost/multi_array.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <alps/hdf5/archive.hpp>
 #include <alps/hdf5/complex.hpp>
@@ -90,7 +91,7 @@ namespace alps {
           
                 int ndim;
                 ar[path+"/mesh/N"] >> ndim;
-                if (ndim != container_type::dimensionality) throw std::runtime_error("Wrong number of dimension reading Matsubara GF, ndim="+ndim);
+                if (ndim != container_type::dimensionality) throw std::runtime_error("Wrong number of dimension reading Matsubara GF, ndim="+boost::lexical_cast<std::string>(ndim) );
           
                 mesh1_.load(ar,path+"/mesh/1");
                 mesh2_.load(ar,path+"/mesh/2");
@@ -219,7 +220,7 @@ namespace alps {
           
                 int ndim;
                 ar[path+"/mesh/N"] >> ndim;
-                if (ndim != container_type::dimensionality) throw std::runtime_error("Wrong number of dimension reading Matsubara GF, ndim="+ndim);
+                if (ndim != container_type::dimensionality) throw std::runtime_error("Wrong number of dimension reading Matsubara GF, ndim="+boost::lexical_cast<std::string>(ndim));
           
                 mesh1_.load(ar,path+"/mesh/1");
                 mesh2_.load(ar,path+"/mesh/2");
@@ -300,7 +301,7 @@ namespace alps {
 
                 int ndim;
                 ar[path+"/mesh/N"] >> ndim;
-                if (ndim != container_type::dimensionality) throw std::runtime_error("Wrong number of dimension reading Matsubara GF, ndim="+ndim);
+                if (ndim != container_type::dimensionality) throw std::runtime_error("Wrong number of dimension reading Matsubara GF, ndim="+boost::lexical_cast<std::string>(ndim));
 
                 mesh1_.load(ar,path+"/mesh/1");
                 mesh2_.load(ar,path+"/mesh/2");
