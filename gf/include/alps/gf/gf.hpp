@@ -161,12 +161,12 @@ namespace alps {
             template <typename op>
             three_index_gf& do_op(const three_index_gf& rhs)
             {
-                // if (mesh1_!=rhs.mesh1_ ||
-                //     mesh2_!=rhs.mesh2_ ||
-                //     mesh3_!=rhs.mesh3_ ) {
+                if (mesh1_!=rhs.mesh1_ ||
+                    mesh2_!=rhs.mesh2_ ||
+                    mesh3_!=rhs.mesh3_ ) {
                     
-                //     throw std::runtime_error("Incompatible meshes in three_index_gf::operator+=");
-                // }
+                    throw std::runtime_error("Incompatible meshes in three_index_gf::operator+=");
+                }
 
                 std::transform(data_.origin(), data_.origin()+data_.num_elements(), rhs.data_.origin(), // inputs
                                data_.origin(), // output

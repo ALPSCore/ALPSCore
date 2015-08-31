@@ -80,7 +80,17 @@ namespace alps {
             int operator()(index_type idx) const {
                 return offset_+idx(); // FIXME: can be improved by specialization?
             }
-            
+
+            /// Comparison operators
+            bool operator==(const matsubara_mesh &mesh) const {
+                return beta_==mesh.beta_ && nfreq_==mesh.nfreq_ && statistics_==mesh.statistics_;
+            }
+          
+            /// Comparison operators
+            bool operator!=(const matsubara_mesh &mesh) const {
+                return !(*this==mesh);
+            }
+          
             void save(alps::hdf5::archive& ar, const std::string& path) const
             {
                 ar[path+"/kind"] << "MATSUBARA";
@@ -142,6 +152,17 @@ namespace alps {
                 int operator()(index_type idx) const { return idx(); }
             int extent() const{return ntau_;}
       
+            /// Comparison operators
+            bool operator==(const itime_mesh &mesh) const {
+                return beta_==mesh.beta_ && ntau_==mesh.ntau_ && last_point_included_==mesh.last_point_included_ &&
+                    half_point_mesh_ == mesh.half_point_mesh_ && statistics_==mesh.statistics_;
+            }
+          
+            /// Comparison operators
+            bool operator!=(const itime_mesh &mesh) const {
+                return !(*this==mesh);
+            }
+
             void save(alps::hdf5::archive& ar, const std::string& path) const
             {
                 ar[path+"/kind"] << "IMAGINARY_TIME";
@@ -196,6 +217,17 @@ namespace alps {
             public:
             // Returns the number of points
             int extent() const { return points_.shape()[0];}
+
+            /// Comparison operators
+            bool operator==(const momentum_realspace_index_mesh &mesh) const {
+                return kind_ == mesh.kind_ &&
+                    points_ == mesh.points_;
+            }
+          
+            /// Comparison operators
+            bool operator!=(const momentum_realspace_index_mesh &mesh) const {
+                return !(*this==mesh);
+            }
             
             const container_type &points() const{return points_;}
 
@@ -261,6 +293,16 @@ namespace alps {
             int extent() const{return npoints_;}
             int operator()(index_type idx) const { return idx(); }
       
+            /// Comparison operators
+            bool operator==(const index_mesh &mesh){
+                return npoints_==mesh.npoints_;
+            }
+          
+            /// Comparison operators
+            bool operator!=(const index_mesh &mesh){
+                return !(*this==mesh);
+            }
+
             void save(alps::hdf5::archive& ar, const std::string& path) const
             {
                 ar[path+"/kind"] << "INDEX";
