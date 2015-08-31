@@ -10,7 +10,6 @@
 
 #include "alps/params.hpp"
 #include "gtest/gtest.h"
-// #include "param_generators_v2.hpp"
 #include "param_generators_v3.hpp"
 
 #include "alps/utilities/temporary_filename.hpp"

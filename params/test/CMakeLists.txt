@@ -10,8 +10,6 @@ set (test_src
      subclass
      serialize
      ostream
-     valid_param_tests
-     undef_param_tests
      common_param_tests_v2
     )
 
