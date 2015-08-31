@@ -4,13 +4,15 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-/** Generate a parameter object with in a various ways, test conformance to specifications */
+/** @file common_param_tests.cpp
+    Generate a parameter object with in a various ways, test conformance to specifications
+*/
 
 #include <boost/lexical_cast.hpp>
 
 #include "alps/params.hpp"
 #include "gtest/gtest.h"
-#include "param_generators_v3.hpp"
+#include "param_generators_v2.hpp"
 
 #include "alps/utilities/temporary_filename.hpp"
 #include "alps/hdf5/archive.hpp"
