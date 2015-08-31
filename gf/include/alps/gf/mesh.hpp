@@ -74,6 +74,7 @@ namespace alps {
                 compute_points();
             }
             int extent() const{return nfreq_;}
+            const std::vector<double> &points() const{return points_;}
 
 
             int operator()(index_type idx) const {
@@ -195,6 +196,8 @@ namespace alps {
             public:
             // Returns the number of points
             int extent() const { return points_.shape()[0];}
+            
+            const container_type &points() const{return points_;}
 
             void save(alps::hdf5::archive& ar, const std::string& path) const
             {
