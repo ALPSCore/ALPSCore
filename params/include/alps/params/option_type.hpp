@@ -357,8 +357,8 @@ namespace alps {
             const mapped_type& operator[](const key_type& k) const
             {
                 const_iterator it=find(k);
-                if (it == end()) {
-                    throw std::runtime_error("Attempt to access non-existing key '"+k+"'");
+                if (it == end() || it->second.isNone() ) {
+                    throw option_type::uninitialized_value(k, "Attempt to access non-existing key '"+k+"'");
                 }
                 return it->second;
             }

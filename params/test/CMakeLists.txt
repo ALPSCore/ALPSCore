@@ -12,6 +12,7 @@ set (test_src
      ostream
      valid_param_tests
      undef_param_tests
+     common_param_tests_v2
     )
 
 
