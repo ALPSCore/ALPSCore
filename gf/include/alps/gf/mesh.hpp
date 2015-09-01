@@ -23,8 +23,8 @@ namespace alps {
         template <typename X>
         class generic_index :
             boost::additive2<generic_index<X>, int,
-                             boost::unit_steppable< generic_index<X>,
-                                                    boost::totally_ordered2< generic_index<X>, int> > >
+            boost::unit_steppable< generic_index<X>,
+            boost::totally_ordered2< generic_index<X>, int> > >
         {
             private:
             int index_;
@@ -203,7 +203,7 @@ namespace alps {
             protected:
             container_type points_;
             private:
-            const std::string kind_;
+            std::string kind_;
 
             protected:
             momentum_realspace_index_mesh(const std::string& kind, int ns,int ndim): points_(boost::extents[ns][ndim]), kind_(kind)
@@ -294,12 +294,12 @@ namespace alps {
             int operator()(index_type idx) const { return idx(); }
       
             /// Comparison operators
-            bool operator==(const index_mesh &mesh){
+            bool operator==(const index_mesh &mesh) const {
                 return npoints_==mesh.npoints_;
             }
           
             /// Comparison operators
-            bool operator!=(const index_mesh &mesh){
+            bool operator!=(const index_mesh &mesh) const {
                 return !(*this==mesh);
             }
 

@@ -36,7 +36,9 @@ namespace alps {
             return (major_version==ver);
         }
         
-        template<class value_type, class MESH1, class MESH2, class MESH3> class two_index_gf {
+        template<class value_type, class MESH1, class MESH2> class two_index_gf
+        :boost::additive<two_index_gf<value_type,MESH1,MESH2> >
+        {
             typedef boost::multi_array<value_type,2> container_type;
         
             MESH1 mesh1_;
@@ -45,9 +47,9 @@ namespace alps {
             container_type data_;
             public:
             two_index_gf(const MESH1& mesh1,
-                           const MESH2& mesh2)
-                         : mesh1_(mesh1), mesh2_(mesh2),
-                           data_(boost::extents[mesh1_.extent()][mesh2_.extent()])
+                         const MESH2& mesh2)
+                : mesh1_(mesh1), mesh2_(mesh2),
+                  data_(boost::extents[mesh1_.extent()][mesh2_.extent()])
             {
             }
 
@@ -72,6 +74,45 @@ namespace alps {
                         data_[i][j]=value_type(0.0);
                     }
                 }
+            }
+            /// Norm operation (FIXME: is it always double??)
+            double norm() const
+            {
+                using std::abs;
+                double v=0;
+                for (const value_type* ptr=data_.origin(); ptr!=data_.origin()+data_.num_elements(); ++ptr) {
+                    v=std::max(abs(*ptr), v);
+                }
+                return v;
+            }
+
+            /// Assignment-op
+            template <typename op>
+            two_index_gf& do_op(const two_index_gf& rhs)
+            {
+                if (mesh1_!=rhs.mesh1_ ||
+                    mesh2_!=rhs.mesh2_ ) {
+                    
+                    throw std::runtime_error("Incompatible meshes in three_index_gf::operator+=");
+                }
+
+                std::transform(data_.origin(), data_.origin()+data_.num_elements(), rhs.data_.origin(), // inputs
+                               data_.origin(), // output
+                               op());
+
+                return *this;
+            }
+
+            /// Element-wise addition
+            two_index_gf& operator+=(const two_index_gf& rhs)
+            {
+                return do_op< std::plus<value_type> >(rhs);
+            }
+
+            /// Element-wise subtraction
+            two_index_gf& operator-=(const two_index_gf& rhs)
+            {
+                return do_op< std::minus<value_type> >(rhs);
             }
         
             /// Save the GF to HDF5
@@ -103,14 +144,19 @@ namespace alps {
         
         };
 
-        template<class value_type, class MESH1, class MESH2, class MESH3> class three_index_gf {
+        template<class value_type, class MESH1, class MESH2, class MESH3> class three_index_gf
+        :boost::additive<three_index_gf<value_type,MESH1,MESH2,MESH3> >
+        {
+            public:
             typedef boost::multi_array<value_type,3> container_type;
-        
+
+            private:
             MESH1 mesh1_;
             MESH2 mesh2_;
             MESH3 mesh3_;
         
             container_type data_;
+            
             public:
             three_index_gf(const MESH1& mesh1,
                            const MESH2& mesh2,
@@ -123,7 +169,7 @@ namespace alps {
             const MESH1& mesh1() const { return mesh1_; } 
             const MESH2& mesh2() const { return mesh2_; } 
             const MESH3& mesh3() const { return mesh3_; } 
-
+            
             const value_type& operator()(typename MESH1::index_type i1, typename MESH2::index_type i2, typename MESH3::index_type i3) const
             {
                 return data_[i1()][i2()][i3()];
@@ -175,8 +221,6 @@ namespace alps {
                 return *this;
             }
 
-            template <typename> class dummy {};
-
             /// Element-wise addition
             three_index_gf& operator+=(const three_index_gf& rhs)
             {
@@ -188,19 +232,6 @@ namespace alps {
             {
                 return do_op< std::minus<value_type> >(rhs);
             }
-
-            /// Element-wise multipication
-            three_index_gf& operator*=(const three_index_gf& rhs)
-            {
-                return do_op< std::multiplies<value_type> >(rhs);
-            }
-
-            /// Element-wise division
-            three_index_gf& operator/=(const three_index_gf& rhs)
-            {
-                return do_op< std::divides<value_type> >(rhs);
-            }
-
 
             /// Save the GF to HDF5
             void save(alps::hdf5::archive& ar, const std::string& path) const

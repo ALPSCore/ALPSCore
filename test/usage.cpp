@@ -1,5 +1,6 @@
 #include "gtest/gtest.h"
 #include "alps/gf/gf.hpp"
+#include "alps/gf/tail.hpp"
 
 /// This generates some "outside" data to fill the mesh: 4 2-d points
 alps::gf::momentum_index_mesh::container_type get_data_for_mesh()
@@ -86,35 +87,6 @@ TEST_F(TestGF,saveload)
     //boost::filesystem::remove("g5.h5");
 }
 
-
-// TEST_F(TestGF, tail)
-// {
-//     namespace g=alps::gf;
-//     typedef g::three_index_gf<double, g::momentum_index_mesh, g::momentum_index_mesh, g::index_mesh> density_matrix_type;
-//     density_matrix_type denmat(alps::gf::momentum_index_mesh(get_data_for_mesh()),
-//                                alps::gf::momentum_index_mesh(get_data_for_mesh()),
-//                                alps::gf::index_mesh(nspins));
-
-//     // prepare diagonal matrix
-//     double U=3.0;
-//     denmat.initialize();
-//     for (g::momentum_index i=g::momentum_index(0); i<denmat.mesh1().extent(); ++i) {
-//         denmat(i,i,g::index(0))=0.5*U;
-//         denmat(i,i,g::index(1))=0.5*U;
-//     }
-//     // FIXME: we want instead:
-//     // denmat *= U;
-
-//     // Attach a tail to the GF
-//     int order=0;
-    
-//     // FIXME: TODO: gf.set_tail(min_order, max_order, denmat, ...);
-//     gf.set_tail(order, denmat)
-//     // .set_tail(order+1, other_gf) ....
-//         ;
-    
-//     EXPECT_TRUE(almost_equal(denmat, gf.tail(order), 1.e-8));
-// }
 
 class ItimeTestGF : public ::testing::Test
 {
@@ -316,12 +288,6 @@ TEST(Mesh,CompareIndex) {
 
 
 
-
-// TEST(Index, SizeofTest) {
-//     alps::gf::matsubara_index omega(5);
-//     std::cout << "sizeof(omega)=" << sizeof(omega) << std::endl;
-// }
-
 class ThreeIndexTestGF : public ::testing::Test
 {
   public:
@@ -387,38 +353,32 @@ TEST_F(ThreeIndexTestGF,saveload)
 
 }
 
-// TEST_F(TestGF,operators)
-// {
-//     namespace g=alps::gf;
+TEST_F(ThreeIndexTestGF, tail)
+{
+    namespace g=alps::gf;
+    typedef g::two_index_gf<double, g::momentum_index_mesh, g::index_mesh> density_matrix_type;
+    density_matrix_type denmat=density_matrix_type(g::momentum_index_mesh(get_data_for_mesh()),
+                                      g::index_mesh(nspins));
 
-//     for (g::matsubara_index om=g::matsubara_index(0); om<gf.mesh1().extent(); ++om) {
-//         for (g::momentum_index ii=g::momentum_index(0); ii<gf.mesh2().extent(); ++ii) {
-//             for (g::momentum_index sig=g::index(0); sig<gf.mesh4().extent(); ++sig) {
-//                 gf(om,ii,sig)=double(om+ii+sig);
-//                 gf2(om,ii,sig)=1./double(om+ii+sig);
-//             }
-//         }
-//     }
+    // prepare diagonal matrix
+    double U=3.0;
+    denmat.initialize();
+    for (g::momentum_index i=g::momentum_index(0); i<denmat.mesh1().extent(); ++i) {
+        denmat(i,g::index(0))=0.5*U;
+        denmat(i,g::index(1))=0.5*U;
+    }
 
-
-//     g::matsubara_gf g_plus=gf+gf2;
-//     g::matsubara_gf g_minus=gf-gf2;
-//     g::matsubara_gf g_mult=gf*gf2;
-//     g::matsubara_gf g_div=gf/gf2;
-
-//     const double tol=1E-8;
-                    
-//     for (g::matsubara_index om=g::matsubara_index(0); om<gf.mesh1().extent(); ++om) {
-//         for (g::momentum_index ii=g::momentum_index(0); ii<gf.mesh2().extent(); ++ii) {
-//             for (g::momentum_index sig=g::index(0); sig<gf.mesh4().extent(); ++sig) {
-//                 ASSERT_NEAR(g_plus(om,ii,sig),double(om+ii+sig)+1./double(om+ii+sig),tol);
-//                 ASSERT_NEAR(g_minus(om,ii,sig),double(om+ii+sig)-1./double(om+ii+sig),tol);
-//                 ASSERT_NEAR(g_mult(om,ii,sig),1.,tol);
-//                 ASSERT_NEAR(g_div(om,ii,sig),double(om+ii+sig)*double(om+ii+sig),tol);
-//             }
-//         }
-//     }
-// }
+    // Attach a tail to the GF
+    int order=0;
+    
+    // FIXME: TODO: gf.set_tail(min_order, max_order, denmat, ...);
+    g::omega_k_sigma_gf_with_tail gft(gf);
+    gft.set_tail(order, denmat)
+    // .set_tail(order+1, other_gf) ....
+        ;
+    
+    EXPECT_NEAR((denmat-gft.tail(order)).norm(), 0, 1.e-8);
+}
 
 TEST_F(ThreeIndexTestGF,EqOperators)
 {
@@ -438,8 +398,6 @@ TEST_F(ThreeIndexTestGF,EqOperators)
 
     gf_type g_plus=gf; g_plus+=gf2;
     gf_type g_minus=gf; g_minus-=gf2;
-    gf_type g_mult=gf; g_mult*=gf2;
-    gf_type g_div=gf; g_div/=gf2;
 
     const double tol=1E-8;
                     
@@ -452,21 +410,55 @@ TEST_F(ThreeIndexTestGF,EqOperators)
                 
                 std::complex<double> r1=v1+v2;
                 std::complex<double> r2=v1-v2;
-                std::complex<double> r3=1.;
-                std::complex<double> r4=v1*v1;
                 
                 ASSERT_NEAR(r1.real(),g_plus(om,ii,sig).real(),tol);
                 ASSERT_NEAR(r1.imag(),g_plus(om,ii,sig).imag(),tol);
 
                 ASSERT_NEAR(r2.real(),g_minus(om,ii,sig).real(),tol);
                 ASSERT_NEAR(r2.imag(),g_minus(om,ii,sig).imag(),tol);
-                
-                ASSERT_NEAR(r3.real(),g_mult(om,ii,sig).real(),tol);
-                ASSERT_NEAR(r3.imag(),g_mult(om,ii,sig).imag(),tol);
-
-                ASSERT_NEAR(r4.real(),g_div(om,ii,sig).real(),tol);
-                ASSERT_NEAR(r4.imag(),g_div(om,ii,sig).imag(),tol);
             }
         }
     }
 }
+
+TEST_F(ThreeIndexTestGF,Operators)
+{
+    namespace g=alps::gf;
+
+    for (g::matsubara_index om=g::matsubara_index(0); om<gf.mesh1().extent(); ++om) {
+        for (g::momentum_index ii=g::momentum_index(0); ii<gf.mesh2().extent(); ++ii) {
+            for (g::index sig=g::index(0); sig<gf.mesh3().extent(); ++sig) {
+                std::complex<double> v1(1+om()+ii(), 1+sig());
+                std::complex<double> v2=1./v1;
+                gf(om,ii,sig)=v1;
+                gf2(om,ii,sig)=v2;
+            }
+        }
+    }
+
+
+    gf_type g_plus=gf+gf2;
+    gf_type g_minus=gf-gf2;
+
+    const double tol=1E-8;
+                    
+    for (g::matsubara_index om=g::matsubara_index(0); om<gf.mesh1().extent(); ++om) {
+        for (g::momentum_index ii=g::momentum_index(0); ii<gf.mesh2().extent(); ++ii) {
+            for (g::index sig=g::index(0); sig<gf.mesh3().extent(); ++sig) {
+
+                std::complex<double> v1(1+om()+ii(), 1+sig());
+                std::complex<double> v2=1./v1;
+                
+                std::complex<double> r1=v1+v2;
+                std::complex<double> r2=v1-v2;
+                
+                ASSERT_NEAR(r1.real(),g_plus(om,ii,sig).real(),tol);
+                ASSERT_NEAR(r1.imag(),g_plus(om,ii,sig).imag(),tol);
+
+                ASSERT_NEAR(r2.real(),g_minus(om,ii,sig).real(),tol);
+                ASSERT_NEAR(r2.imag(),g_minus(om,ii,sig).imag(),tol);
+            }
+        }
+    }
+}
+
