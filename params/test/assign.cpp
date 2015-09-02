@@ -57,11 +57,63 @@ TEST(param,assignments)
     // ALPS_TEST_PARAM(long double);
 
     EXPECT_TRUE(bool(parms["bool"]));
+
     EXPECT_EQ(parms["cstring"],std::string("asdf"));
     EXPECT_EQ(parms["std::string"],std::string("asdf"));
 
     EXPECT_EQ(parms["dblvec"],vd);
 }
+
+TEST(param, StringAssignments)
+{
+    alps::params p;
+    p["std::string"]=std::string("a string");
+    p["cstring"]="C-string";
+
+  {
+      EXPECT_THROW(char* s1=p["cstring"], alps::params::type_mismatch);
+      EXPECT_THROW(const char* s1=p["cstring"], alps::params::type_mismatch);
+      EXPECT_THROW(const char* s2=p["std::string"], alps::params::type_mismatch);
+  }
+
+  {
+      const char* s1=p["cstring"].as<std::string>().c_str();
+      EXPECT_TRUE(strcmp("C-string",s1)==0);
+    
+      const char* s2=p["std::string"].as<std::string>().c_str();
+      EXPECT_TRUE(strcmp("a string",s2)==0);
+  }
+
+  {
+      std::string s1=p["cstring"];
+      EXPECT_EQ(s1,"C-string");
+      
+      std::string s2=p["std::string"];
+      EXPECT_EQ(s2,"a string");
+  }
+
+  // This will not compile:
+  /*
+  {
+    std::string s1; s1=p["cstring"];
+    EXPECT_EQ(s1,"C-string");
+
+    std::string s2; s2=p["std::string"];
+    EXPECT_EQ(s2,"a string");
+  }
+  */
+
+  {
+    std::string s1; s1=p["cstring"].as<std::string>();
+    EXPECT_EQ(s1,"C-string");
+
+    std::string s2; s2=p["std::string"].as<std::string>();
+    EXPECT_EQ(s2,"a string");
+  }
+}
+  
+  
+  
 
 // Testing explicitly assigned/implicitly defined parameters and implicit type conversion
 TEST(param,ImplicitDefine)
