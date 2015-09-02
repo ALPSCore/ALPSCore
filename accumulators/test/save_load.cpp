@@ -37,63 +37,61 @@ template <typename A>
 class AccumulatorTest : public ::testing::Test {
   public:
     typedef typename alps::accumulators::value_type<typename A::accumulator_type>::type value_type;
+    typedef A accumulator_type;
 
-    unsigned int nsamples;
-    std::string h5name;
-    double dval;
+    // std::string h5name;
+    // double dval;
 
-    AccumulatorTest() : nsamples(0) {}
+    int nsamples;
+    const std::string h5name;
 
-    // Add measurements to an existing file, or start a new one if the name is given
-    void add_samples(const unsigned int howmany,
-                     const std::string& fname="",
-                     const double v = 0.5)
+    AccumulatorTest() : nsamples(0), h5name(alps::temporary_filename("save_load")+".h5")
+    { }
+  
+    // Add (constant) data to an accumulator
+    void add_samples(alps::accumulators::accumulator_set& measurements,
+                     const int howmany,
+                     const double v)
     {
-        alps::accumulators::accumulator_set measurements;
-
-        if (!fname.empty()) {
-            // Initialize new name and fill value
-            h5name = fname;
-            nsamples = 0;
-            dval = v;
-            // and create an accumulator
-            measurements<<A("one_half");
-        } else {
-            // Or read measurements
-            if (h5name.empty())
-                throw std::logic_error("Incorrect test usage: call add_samples(n,fname) first.");
-        
-            alps::hdf5::archive ar(h5name,"r");
-            ar["measurements"] >> measurements;
-        }
-
-        // Generate more samples
         for(int count=0; count<howmany; ++count){
-            measurements["one_half"] << get_datum(dval, (value_type*)0);
+            measurements["my_acc"] << get_datum(v, (value_type*)0);
         }
-        nsamples+=howmany;
-
-        // Save the samples
-        alps::hdf5::archive ar(h5name,"w");
-        ar["measurements"] << measurements;
+        nsamples += howmany;
     }
 
-    void test_samples()
+    // Compare the results only
+    void test_results(const alps::accumulators::result_wrapper& res,
+                      const double v)
     {
-        if (h5name.empty())
-            throw std::logic_error("Incorrect test usage: call add_samples(n,fname) first.");
-        
-        alps::accumulators::accumulator_set measurements;
-        alps::hdf5::archive ar(h5name,"r");
-        ar["measurements"] >> measurements;
-
-        alps::accumulators::result_set results(measurements);
-        const alps::accumulators::result_wrapper& res=results["one_half"];
         value_type xmean=res.mean<value_type>();
         
-        EXPECT_EQ(get_datum(dval, (value_type*)0), xmean);
+        EXPECT_EQ(get_datum(v, (value_type*)0), xmean);
         EXPECT_EQ(nsamples, res.count());
     }
+
+    // Compare the expected and actual accumulator data
+    void test_samples(alps::accumulators::accumulator_set& measurements,
+                      const double v)
+    {
+        alps::accumulators::result_set results(measurements);
+        const alps::accumulators::result_wrapper& res=results["my_acc"];
+        test_results(res,v);
+    }
+
+    // Save measurements
+    void save(const alps::accumulators::accumulator_set& measurements) const
+    {
+        alps::hdf5::archive ar(h5name,"w");
+        ar["measurements"] << measurements;
+    }        
+  
+    // Load measurements
+    void load(alps::accumulators::accumulator_set& measurements) const
+    {
+        alps::hdf5::archive ar(h5name,"w");
+        ar["measurements"] >> measurements;
+    }        
+  
 };
 
 typedef std::vector<double> doublevec;
@@ -128,24 +126,65 @@ TYPED_TEST_CASE(AccumulatorTest, MyTypes);
 // Saving and loading only
 TYPED_TEST(AccumulatorTest,SaveLoad)
 {
-    this->add_samples(1000, gen_fname(), 0.5);
-    this->test_samples();
+    alps::accumulators::accumulator_set measurements;
+    typedef typename TestFixture::accumulator_type accumulator_type;
+    measurements << accumulator_type("my_acc");
+    
+    this->add_samples(measurements, 1000, 0.5);
+    this->save(measurements);
+
+    alps::accumulators::accumulator_set new_measurements;
+    this->load(new_measurements);
+
+    this->test_samples(new_measurements, 0.5);
 }
 
-// Saving, adding and loading
-TYPED_TEST(AccumulatorTest,SaveAddLoad)
+// Saving and loading a single sample, which is different in float and double representation,
+// to be sure that the correct type is restored.
+TYPED_TEST(AccumulatorTest,SaveLoadTypecheck)
 {
-    this->add_samples(1000, gen_fname(), 0.5);
-    this->add_samples(500);
-    this->test_samples();
+    alps::accumulators::accumulator_set measurements;
+    typedef typename TestFixture::accumulator_type accumulator_type;
+    measurements << accumulator_type("my_acc");
+    
+    this->add_samples(measurements, 1, 0.3);
+    this->save(measurements);
+
+    alps::accumulators::accumulator_set new_measurements;
+    this->load(new_measurements);
+
+    this->test_samples(new_measurements, 0.3);
 }
 
-// Saving and loading with number that differs in double and float
-TYPED_TEST(AccumulatorTest,SaveLoadConversion)
+// Saving and loading an empty accumulator
+TYPED_TEST(AccumulatorTest,SaveLoadEmpty)
 {
-    this->add_samples(1, gen_fname(), 0.3);
-    this->test_samples();
+    alps::accumulators::accumulator_set measurements;
+    typedef typename TestFixture::accumulator_type accumulator_type;
+    measurements << accumulator_type("my_acc");
+    
+    this->add_samples(measurements, 0, 0.3);
+    this->save(measurements);
+
+    alps::accumulators::accumulator_set new_measurements;
+    this->load(new_measurements);
+
+    this->test_samples(new_measurements, 0.3);
 }
 
+// Saving, loading and adding
+TYPED_TEST(AccumulatorTest,SaveLoadAdd)
+{
+    alps::accumulators::accumulator_set measurements;
+    typedef typename TestFixture::accumulator_type accumulator_type;
+    measurements << accumulator_type("my_acc");
+    
+    this->add_samples(measurements, 1000, 0.5);
+    this->save(measurements);
 
-
+    alps::accumulators::accumulator_set new_measurements;
+    this->load(new_measurements);
+    this->add_samples(new_measurements, 500, 0.5);
+    
+    this->test_samples(new_measurements, 0.5);
+}
