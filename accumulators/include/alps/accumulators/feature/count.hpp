@@ -91,11 +91,20 @@ namespace alps {
                     }
 
                     void save(hdf5::archive & ar) const {
+                        if (m_count==0) {
+                            throw std::logic_error("Attempt to save an empty result" + ALPS_STACKTRACE);
+                        }
                         ar["count"] = m_count;
                     }
 
                     void load(hdf5::archive & ar) {
-                        ar["count"] >> m_count;
+                        count_type cnt;
+                        ar["count"] >> cnt;
+                        if (cnt==0) {
+                            throw std::runtime_error("Malformed archive containing an empty result"
+                                                     + ALPS_STACKTRACE);
+                        }
+                        m_count=cnt;
                     }
 
                     static std::size_t rank() { return 1; }
@@ -196,15 +205,24 @@ namespace alps {
                     }
 
                     void save(hdf5::archive & ar) const {
+                        if (m_count==0) {
+                            throw std::logic_error("Attempt to save an empty accumulator" + ALPS_STACKTRACE);
+                        }
                         ar["count"] = m_count;
                     }
 
                     void load(hdf5::archive & ar) { // TODO: make archive const
-                        ar["count"] >> m_count;
+                        count_type cnt;
+                        ar["count"] >> cnt;
+                        if (cnt==0) {
+                            throw std::runtime_error("Malformed archive containing an empty accumulator"
+                                                     + ALPS_STACKTRACE);
+                        }
+                        m_count=cnt;
                     }
 
                     static std::size_t rank() { return 1; }
-                    static bool can_load(hdf5::archive & ar) { // TODO: make archive const
+                    static bool can_load(const hdf5::archive & ar) {
                         return ar.is_data("count");
                     }
 
