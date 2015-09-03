@@ -378,6 +378,22 @@ TEST_F(ThreeIndexTestGF, tail)
         ;
     
     EXPECT_NEAR((denmat-gft.tail(order)).norm(), 0, 1.e-8);
+
+    /* The following does not compile, as expected:
+       
+    typedef g::three_index_gf<double, g::momentum_index_mesh, g::momentum_index_mesh, g::index_mesh> some_matrix_type;
+    typedef g::three_index_gf_with_tail<some_matrix_type, g::two_index_gf<double, g::momentum_index_mesh, g::index_mesh> > some_matrix_type_with_tail;
+    some_matrix_type* ptr=0;
+    some_matrix_type_with_tail wrong(*ptr);
+    */
+    
+
+    /* The following does not compile, as expected:
+
+    typedef g::three_index_gf<double, g::itime_mesh, g::itime_mesh, g::index_mesh> some_gf_type;
+    typedef g::three_index_gf_with_tail<some_gf_type, g::two_index_gf<double, g::momentum_index_mesh, g::index_mesh> > some_gf_type_with_tail;
+    some_gf_type_with_tail wrong(*(some_gf_type*)0);
+    */
 }
 
 TEST_F(ThreeIndexTestGF,EqOperators)

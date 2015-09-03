@@ -149,11 +149,14 @@ namespace alps {
         {
             public:
             typedef boost::multi_array<value_type,3> container_type;
+            typedef MESH1 mesh1_type;
+            typedef MESH2 mesh2_type;
+            typedef MESH3 mesh3_type;
 
             private:
-            MESH1 mesh1_;
-            MESH2 mesh2_;
-            MESH3 mesh3_;
+            mesh1_type mesh1_;
+            mesh2_type mesh2_;
+            mesh3_type mesh3_;
         
             container_type data_;
             
@@ -355,5 +358,6 @@ namespace alps {
         
         typedef omega_k1_k2_sigma_gf matsubara_gf;
         typedef itime_k1_k2_sigma_gf itime_gf;
+
     }
 }

@@ -2,6 +2,7 @@
 #include <complex>
 #include <boost/multi_array.hpp>
 #include <boost/operators.hpp>
+#include <boost/type_traits/integral_constant.hpp>
 
 #include <alps/hdf5/archive.hpp>
 #include <alps/hdf5/complex.hpp>
@@ -329,5 +330,31 @@ namespace alps {
         typedef momentum_index_mesh::index_type momentum_index;
         typedef real_space_index_mesh::index_type real_space_index;
         typedef index_mesh::index_type index;
+
+        namespace detail {
+            /* The following is an in-house implementation of a static_assert
+               with the intent to generate a compile-time error message
+               that has some relevance to the asserted condition
+               (unlike BOOST_STATIC_ASSERT).
+            */
+            
+            /// A helper class: indicator that a mesh can have a tail
+            struct can_have_tail_yes { typedef bool mesh_can_have_tail; };
+            /// A helper class: indicator that a mesh can NOT have a tail
+            struct can_have_tail_no  { typedef bool mesh_cannot_have_tail; };
+                
+            /// Trait: whether a mesh can have a tail (general meshes cannot have tails)
+            template <typename> struct can_have_tail: public can_have_tail_no {};
+
+            /// Trait: Matsubara meshes can have tails
+            template <> struct can_have_tail<matsubara_positive_mesh>: public can_have_tail_yes {};
+            /// Trait: Matsubara meshes can have tails
+            template <> struct can_have_tail<matsubara_pn_mesh>: public can_have_tail_yes {};
+            /// Trait: Imaginary time meshes can have tails
+            template <> struct can_have_tail<itime_mesh>: public can_have_tail_yes {};
+
+            /* ^^^^ End of static_assert code */
+            
+        } // ::detail
     }
 }
