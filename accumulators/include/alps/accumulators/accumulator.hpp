@@ -276,26 +276,34 @@ namespace alps {
                 }
 
             // operators
+            // Naming conventions:
+            //   Operation is `lhs_var AUGOP rhs_var`, where AUGOP is `+=` , `-=` etc.
+            //   lhsvar contains a variant over LHSPT types
+            //   rhsvar contains a variant over RHSPT types
+            //   LHSPT: lhs (pointer) type, which is shared_ptr<LHSWT>
+            //   LHSWT: lhs (base_wrapper<...>) type
+            //   RHSPT: rhs (pointer) type, which is shared_ptr<RHSWT>
+            //   RHSWT: rhs (base_wrapper<...>) type
             #define ALPS_ACCUMULATOR_OPERATOR_PROXY(OPNAME, AUGOPNAME, AUGOP, FUN)                                  \
                 private:                                                                                            \
-                    template<typename T> struct FUN ## _arg_visitor: public boost::static_visitor<> {               \
-                        FUN ## _arg_visitor(T & v): value(v) {}                                                     \
-                        template<typename X> void apply(X const &) const {                                          \
+                    template<typename LHSWT> struct FUN ## _arg_visitor: public boost::static_visitor<> {           \
+                        FUN ## _arg_visitor(LHSWT & v): lhs_value(v) {}                                             \
+                        template<typename RHSWT> void apply(RHSWT const &) const {                                  \
                             throw std::logic_error("only results with equal value types are allowed in operators"   \
                                 + ALPS_STACKTRACE);                                                                 \
                         }                                                                                           \
-                        void apply(T const & arg) const {                                                           \
-                            const_cast<T &>(value) AUGOP arg;                                                       \
+                        void apply(LHSWT const & rhs_value) const {                                                 \
+                            const_cast<LHSWT &>(lhs_value) AUGOP rhs_value;                                         \
                         }                                                                                           \
-                        template<typename X> void operator()(X const & arg) const {                                 \
-                            apply(*arg);                                                                            \
+                        template<typename RHSPT> void operator()(RHSPT const & rhs_ptr) const {                     \
+                            apply(*rhs_ptr);                                                                        \
                         }                                                                                           \
-                        T & value;                                                                                  \
+                        LHSWT & lhs_value;                                                                          \
                     };                                                                                              \
                     struct FUN ## _self_visitor: public boost::static_visitor<> {                                   \
                         FUN ## _self_visitor(result_wrapper const & v): value(v) {}                                 \
-                        template<typename X> void operator()(X & self) const {                                      \
-                            FUN ## _arg_visitor<typename X::element_type> visitor(*self);                           \
+                        template<typename LHSPT> void operator()(LHSPT & self) const {                              \
+                            FUN ## _arg_visitor<typename LHSPT::element_type> visitor(*self);                       \
                             boost::apply_visitor(visitor, value.m_variant);                                         \
                         }                                                                                           \
                         result_wrapper const & value;                                                               \
