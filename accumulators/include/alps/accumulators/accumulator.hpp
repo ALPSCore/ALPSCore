@@ -292,21 +292,21 @@ namespace alps {
                             throw std::logic_error("only results with equal value types are allowed in operators"   \
                                 + ALPS_STACKTRACE);                                                                 \
                         }                                                                                           \
-                        void apply(LHSWT const & rhs_value) const {                                                 \
-                            const_cast<LHSWT &>(lhs_value) AUGOP rhs_value;                                         \
+                        void apply(LHSWT const & rhs_value) {                                                       \
+                            lhs_value AUGOP rhs_value;                                                              \
                         }                                                                                           \
-                        template<typename RHSPT> void operator()(RHSPT const & rhs_ptr) const {                     \
+                        template<typename RHSPT> void operator()(RHSPT const & rhs_ptr) {                           \
                             apply(*rhs_ptr);                                                                        \
                         }                                                                                           \
                         LHSWT & lhs_value;                                                                          \
                     };                                                                                              \
                     struct FUN ## _self_visitor: public boost::static_visitor<> {                                   \
-                        FUN ## _self_visitor(result_wrapper const & v): value(v) {}                                 \
+                        FUN ## _self_visitor(result_wrapper const & v): rhs_value(v) {}                             \
                         template<typename LHSPT> void operator()(LHSPT & self) const {                              \
                             FUN ## _arg_visitor<typename LHSPT::element_type> visitor(*self);                       \
-                            boost::apply_visitor(visitor, value.m_variant);                                         \
+                            boost::apply_visitor(visitor, rhs_value.m_variant);                                     \
                         }                                                                                           \
-                        result_wrapper const & value;                                                               \
+                        result_wrapper const & rhs_value;                                                           \
                     };                                                                                              \
                     /** @brief Visitor to do AUGOP with a constant value */                                         \
                     /* @note `long double` is chosen as the widest scalar numeric type */                           \
@@ -319,8 +319,9 @@ namespace alps {
                         long double value;                                                                          \
                     };                                                                                              \
                 public:                                                                                             \
-                    result_wrapper & AUGOPNAME (result_wrapper const & arg) {                                       \
-                        FUN ## _self_visitor visitor(arg);                                                          \
+                    /** @brief Do AUGOP with another result   */                                                    \
+                    result_wrapper & AUGOPNAME (result_wrapper const & rhs) {                                       \
+                        FUN ## _self_visitor visitor(rhs);                                                          \
                         boost::apply_visitor(visitor, m_variant);                                                   \
                         return *this;                                                                               \
                     }                                                                                               \
