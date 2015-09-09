@@ -39,11 +39,12 @@ namespace alps {
         template<class value_type, class MESH1, class MESH2> class two_index_gf
         :boost::additive<two_index_gf<value_type,MESH1,MESH2> >
         {
+            public:
             typedef boost::multi_array<value_type,2> container_type;
-        
+            private: 
             MESH1 mesh1_;
             MESH2 mesh2_;
-        
+
             container_type data_;
             public:
             two_index_gf(const MESH1& mesh1,
@@ -53,6 +54,18 @@ namespace alps {
             {
             }
 
+            two_index_gf(const MESH1& mesh1,
+                         const MESH2& mesh2,
+                         const container_type& data)
+                : mesh1_(mesh1), mesh2_(mesh2),
+                  data_(data)
+            {
+                if (mesh1_.extent()!=data_.shape()[0] || mesh2_.extent()!=data_.shape()[1])
+                    throw std::invalid_argument("Initialization of GF with the data of incorrect size");
+            }
+
+            const container_type& data() const { return data_; }
+            
             const MESH1& mesh1() const { return mesh1_; } 
             const MESH2& mesh2() const { return mesh2_; } 
 

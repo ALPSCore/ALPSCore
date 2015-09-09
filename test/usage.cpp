@@ -396,6 +396,52 @@ TEST_F(ThreeIndexTestGF, tail)
     */
 }
 
+TEST_F(ThreeIndexTestGF, TailSaveLoad)
+{
+    namespace g=alps::gf;
+    typedef g::two_index_gf<double, g::momentum_index_mesh, g::index_mesh> density_matrix_type;
+    density_matrix_type denmat=density_matrix_type(g::momentum_index_mesh(get_data_for_mesh()),
+                                      g::index_mesh(nspins));
+
+    // prepare diagonal matrix
+    double U=3.0;
+    denmat.initialize();
+    for (g::momentum_index i=g::momentum_index(0); i<denmat.mesh1().extent(); ++i) {
+        denmat(i,g::index(0))=0.5*U;
+        denmat(i,g::index(1))=0.5*U;
+    }
+
+    // Attach a tail to the GF
+    int order=0;
+    
+    // FIXME: TODO: gf.set_tail(min_order, max_order, denmat, ...);
+    g::omega_k_sigma_gf_with_tail gft(gf), gft2(gft);
+    EXPECT_EQ((g::omega_k_sigma_gf_with_tail::TAIL_NOT_SET+0),gft.min_tail_order());
+    EXPECT_EQ((g::omega_k_sigma_gf_with_tail::TAIL_NOT_SET+0),gft.max_tail_order());
+
+    gft.set_tail(order, denmat);
+
+    EXPECT_EQ(0,gft.min_tail_order());
+    EXPECT_EQ(0,gft.max_tail_order());
+    EXPECT_EQ(0,(denmat-gft.tail(0)).norm());
+    {
+        alps::hdf5::archive oar("gft.h5","w");
+        gft(g::matsubara_index(4),g::momentum_index(3), g::index(1))=std::complex<double>(7., 3.);
+        gft.save(oar,"/gft");
+    }
+    {
+        alps::hdf5::archive iar("gft.h5");
+        
+        gft2.load(iar,"/gft");
+    }
+    EXPECT_EQ(gft2.tail().size(), gft.tail().size()) << "Tail size mismatch";
+    EXPECT_NEAR(0, (gft.tail(0)-gft2.tail(0)).norm(), 1E-8)<<"Tail loaded differs from tail stored"; 
+
+    EXPECT_EQ(7, gft2(g::matsubara_index(4),g::momentum_index(3), g::index(1)).real()) << "GF real part mismatch";
+    EXPECT_EQ(3, gft2(g::matsubara_index(4),g::momentum_index(3), g::index(1)).imag()) << "GF imag part mismatch";
+    
+}
+
 TEST_F(ThreeIndexTestGF,EqOperators)
 {
     namespace g=alps::gf;
