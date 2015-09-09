@@ -280,7 +280,9 @@ namespace alps {
         std::ostream& operator<<(std::ostream& str, params const& x) 
         {
             for (params::const_iterator it = x.begin(); it != x.end(); ++it) { 
-                str << it->first << " : " << it->second << std::endl;
+                if (!it->second->isNone()) {
+                    str << it->first << " : " << it->second << std::endl;
+                }
             } 
             return str;
         }
