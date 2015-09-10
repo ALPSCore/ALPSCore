@@ -41,6 +41,9 @@ namespace alps {
         {
             public:
             typedef boost::multi_array<value_type,2> container_type;
+            typedef MESH1 mesh1_type;
+            typedef MESH2 mesh2_type;
+
             private: 
             MESH1 mesh1_;
             MESH2 mesh2_;
@@ -106,7 +109,7 @@ namespace alps {
                 if (mesh1_!=rhs.mesh1_ ||
                     mesh2_!=rhs.mesh2_ ) {
                     
-                    throw std::runtime_error("Incompatible meshes in three_index_gf::operator+=");
+                    throw std::runtime_error("Incompatible meshes in two_index_gf::operator+=");
                 }
 
                 std::transform(data_.origin(), data_.origin()+data_.num_elements(), rhs.data_.origin(), // inputs
@@ -182,9 +185,22 @@ namespace alps {
             {
             }
 
+            three_index_gf(const MESH1& mesh1,
+                           const MESH2& mesh2,
+                           const MESH3& mesh3,
+                           const container_type& data)
+                : mesh1_(mesh1), mesh2_(mesh2), mesh3_(mesh3),
+                  data_(data)
+            {
+                if (mesh1_.extent()!=data_.shape()[0] || mesh2_.extent()!=data_.shape()[1] || mesh3_.extent()!=data_.shape()[2])
+                    throw std::invalid_argument("Initialization of GF with the data of incorrect size");
+            }
+
+
             const MESH1& mesh1() const { return mesh1_; } 
             const MESH2& mesh2() const { return mesh2_; } 
             const MESH3& mesh3() const { return mesh3_; } 
+            const container_type& data() const { return data_; }
             
             const value_type& operator()(typename MESH1::index_type i1, typename MESH2::index_type i2, typename MESH3::index_type i3) const
             {
@@ -213,7 +229,7 @@ namespace alps {
             {
                 using std::abs;
                 double v=0;
-                for (value_type* ptr=data_.origin(); ptr!=data_.origin()+data_.num_elements(); ++ptr) {
+                for (const value_type* ptr=data_.origin(); ptr!=data_.origin()+data_.num_elements(); ++ptr) {
                     v=std::max(abs(*ptr), v);
                 }
                 return v;
@@ -281,7 +297,15 @@ namespace alps {
         };
 
         template<class value_type, class MESH1, class MESH2, class MESH3, class MESH4> class four_index_gf {
+            public:
             typedef boost::multi_array<value_type,4> container_type;
+            typedef MESH1 mesh1_type;
+            typedef MESH2 mesh2_type;
+            typedef MESH3 mesh3_type;
+            typedef MESH4 mesh4_type;
+
+
+            private:
 
             MESH1 mesh1_;
             MESH2 mesh2_;
@@ -289,7 +313,9 @@ namespace alps {
             MESH4 mesh4_;
 
             container_type data_;
+
             public:
+
             four_index_gf(const MESH1& mesh1,
                           const MESH2& mesh2,
                           const MESH3& mesh3,
@@ -299,10 +325,24 @@ namespace alps {
             {
             }
 
+            four_index_gf(const MESH1& mesh1,
+                          const MESH2& mesh2,
+                          const MESH3& mesh3,
+                          const MESH3& mesh4,
+                          const container_type& data)
+                : mesh1_(mesh1), mesh2_(mesh2), mesh3_(mesh3), mesh4_(mesh4),
+                  data_(data)
+            {
+                if (mesh1_.extent()!=data_.shape()[0] || mesh2_.extent()!=data_.shape()[1] ||
+                    mesh3_.extent()!=data_.shape()[2] || mesh4_.extent()!=data_.shape()[3])
+                    throw std::invalid_argument("Initialization of GF with the data of incorrect size");
+            }
+
             const MESH1& mesh1() const { return mesh1_; } 
             const MESH2& mesh2() const { return mesh2_; } 
             const MESH3& mesh3() const { return mesh3_; } 
             const MESH4& mesh4() const { return mesh4_; } 
+            const container_type& data() const { return data_; }
             
             const value_type& operator()(typename MESH1::index_type i1, typename MESH2::index_type i2, typename MESH3::index_type i3, typename MESH4::index_type i4) const
             {
