@@ -160,6 +160,21 @@ TEST_F(FourIndexGFTest, TailSaveLoad)
     EXPECT_EQ(7, gft2(g::matsubara_index(4),g::momentum_index(3), g::momentum_index(2), g::index(1)).real()) << "GF real part mismatch";
     EXPECT_EQ(3, gft2(g::matsubara_index(4),g::momentum_index(3), g::momentum_index(2), g::index(1)).imag()) << "GF imag part mismatch";
 }
+TEST_F(FourIndexGFTest,print)
+{
+  std::stringstream gf_stream;
+  gf_stream<<gf;
+
+  std::stringstream gf_stream_by_hand;
+  gf_stream_by_hand<<alps::gf::matsubara_positive_mesh(beta,nfreq)
+  <<alps::gf::momentum_index_mesh(get_data_for_momentum_mesh())
+  <<alps::gf::momentum_index_mesh(get_data_for_momentum_mesh())
+      <<alps::gf::index_mesh(nspins);
+  for(int i=0;i<nfreq;++i){
+    gf_stream_by_hand<<(2*i+1)*M_PI/beta<<" 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 "<<std::endl;
+  }
+  EXPECT_EQ(gf_stream_by_hand.str(), gf_stream.str());
+}
 
 
 

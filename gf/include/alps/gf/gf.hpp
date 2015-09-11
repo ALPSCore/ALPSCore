@@ -299,6 +299,19 @@ namespace alps {
             }
         
         };
+        template<class value_type, class MESH1, class MESH2, class MESH3> std::ostream &operator<<(std::ostream &os, three_index_gf<value_type,MESH1,MESH2,MESH3> G){
+          os<<G.mesh1()<<G.mesh2()<<G.mesh3();
+          for(int i=0;i<G.mesh1().extent();++i){
+            os<<G.mesh1().points()[i]<<" ";
+            for(int j=0;j<G.mesh2().extent();++j){
+              for(int k=0;k<G.mesh3().extent();++k){
+                detail::print_no_complex<value_type>(os, G(typename MESH1::index_type(i),typename MESH2::index_type(j),typename MESH3::index_type(k))); os<<" ";
+              }
+            }
+            os<<std::endl;
+          }
+          return os;
+        }
 
         template<class value_type, class MESH1, class MESH2, class MESH3, class MESH4> class four_index_gf {
             public:
@@ -404,6 +417,21 @@ namespace alps {
                 ar[path+"/data"] >> data_;
             }
         };
+        template<class value_type, class MESH1, class MESH2, class MESH3, class MESH4> std::ostream &operator<<(std::ostream &os, four_index_gf<value_type,MESH1,MESH2,MESH3,MESH4> G){
+          os<<G.mesh1()<<G.mesh2()<<G.mesh3()<<G.mesh4();
+          for(int i=0;i<G.mesh1().extent();++i){
+            os<<G.mesh1().points()[i]<<" ";
+            for(int j=0;j<G.mesh2().extent();++j){
+              for(int k=0;k<G.mesh3().extent();++k){
+                for(int l=0;l<G.mesh4().extent();++l){
+                  detail::print_no_complex<value_type>(os, G(typename MESH1::index_type(i),typename MESH2::index_type(j),typename MESH3::index_type(k),typename MESH4::index_type(l))); os<<" ";
+                }
+              }
+            }
+            os<<std::endl;
+          }
+          return os;
+        }
 
         typedef four_index_gf<std::complex<double>, matsubara_mesh<mesh::POSITIVE_ONLY>, momentum_index_mesh, momentum_index_mesh, index_mesh> omega_k1_k2_sigma_gf;
         typedef four_index_gf<             double , itime_mesh    , momentum_index_mesh, momentum_index_mesh, index_mesh> itime_k1_k2_sigma_gf;

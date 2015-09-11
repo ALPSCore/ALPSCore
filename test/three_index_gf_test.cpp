@@ -251,3 +251,17 @@ TEST_F(ThreeIndexTestGF,Operators)
     }
 }
 
+TEST_F(ThreeIndexTestGF,print)
+{
+  std::stringstream gf_stream;
+  gf_stream<<gf;
+
+  std::stringstream gf_stream_by_hand;
+  gf_stream_by_hand<<alps::gf::matsubara_positive_mesh(beta,nfreq)
+      <<alps::gf::momentum_index_mesh(get_data_for_momentum_mesh())
+      <<alps::gf::index_mesh(nspins);
+  for(int i=0;i<nfreq;++i){
+    gf_stream_by_hand<<(2*i+1)*M_PI/beta<<" 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 "<<std::endl;
+  }
+  EXPECT_EQ(gf_stream_by_hand.str(), gf_stream.str());
+}
