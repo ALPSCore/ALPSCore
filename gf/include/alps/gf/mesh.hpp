@@ -2,6 +2,7 @@
 #include <complex>
 #include <boost/multi_array.hpp>
 #include <boost/operators.hpp>
+#include <boost/type_traits/integral_constant.hpp>
 
 #include <alps/hdf5/archive.hpp>
 #include <alps/hdf5/complex.hpp>
@@ -23,8 +24,8 @@ namespace alps {
         template <typename X>
         class generic_index :
             boost::additive2<generic_index<X>, int,
-                             boost::unit_steppable< generic_index<X>,
-                                                    boost::totally_ordered2< generic_index<X>, int> > >
+            boost::unit_steppable< generic_index<X>,
+            boost::totally_ordered2< generic_index<X>, int> > >
         {
             private:
             int index_;
@@ -80,7 +81,17 @@ namespace alps {
             int operator()(index_type idx) const {
                 return offset_+idx(); // FIXME: can be improved by specialization?
             }
-            
+
+            /// Comparison operators
+            bool operator==(const matsubara_mesh &mesh) const {
+                return beta_==mesh.beta_ && nfreq_==mesh.nfreq_ && statistics_==mesh.statistics_;
+            }
+          
+            /// Comparison operators
+            bool operator!=(const matsubara_mesh &mesh) const {
+                return !(*this==mesh);
+            }
+          
             void save(alps::hdf5::archive& ar, const std::string& path) const
             {
                 ar[path+"/kind"] << "MATSUBARA";
@@ -142,6 +153,17 @@ namespace alps {
                 int operator()(index_type idx) const { return idx(); }
             int extent() const{return ntau_;}
       
+            /// Comparison operators
+            bool operator==(const itime_mesh &mesh) const {
+                return beta_==mesh.beta_ && ntau_==mesh.ntau_ && last_point_included_==mesh.last_point_included_ &&
+                    half_point_mesh_ == mesh.half_point_mesh_ && statistics_==mesh.statistics_;
+            }
+          
+            /// Comparison operators
+            bool operator!=(const itime_mesh &mesh) const {
+                return !(*this==mesh);
+            }
+
             void save(alps::hdf5::archive& ar, const std::string& path) const
             {
                 ar[path+"/kind"] << "IMAGINARY_TIME";
@@ -182,7 +204,7 @@ namespace alps {
             protected:
             container_type points_;
             private:
-            const std::string kind_;
+            std::string kind_;
 
             protected:
             momentum_realspace_index_mesh(const std::string& kind, int ns,int ndim): points_(boost::extents[ns][ndim]), kind_(kind)
@@ -198,6 +220,17 @@ namespace alps {
             int extent() const { return points_.shape()[0];}
             ///returns the spatial dimension
             int dimension() const { return points_.shape()[1];}
+
+            /// Comparison operators
+            bool operator==(const momentum_realspace_index_mesh &mesh) const {
+                return kind_ == mesh.kind_ &&
+                    points_ == mesh.points_;
+            }
+          
+            /// Comparison operators
+            bool operator!=(const momentum_realspace_index_mesh &mesh) const {
+                return !(*this==mesh);
+            }
             
             const container_type &points() const{return points_;}
 
@@ -263,6 +296,16 @@ namespace alps {
             int extent() const{return npoints_;}
             int operator()(index_type idx) const { return idx(); }
       
+            /// Comparison operators
+            bool operator==(const index_mesh &mesh) const {
+                return npoints_==mesh.npoints_;
+            }
+          
+            /// Comparison operators
+            bool operator!=(const index_mesh &mesh) const {
+                return !(*this==mesh);
+            }
+
             void save(alps::hdf5::archive& ar, const std::string& path) const
             {
                 ar[path+"/kind"] << "INDEX";
@@ -289,5 +332,31 @@ namespace alps {
         typedef momentum_index_mesh::index_type momentum_index;
         typedef real_space_index_mesh::index_type real_space_index;
         typedef index_mesh::index_type index;
+
+        namespace detail {
+            /* The following is an in-house implementation of a static_assert
+               with the intent to generate a compile-time error message
+               that has some relevance to the asserted condition
+               (unlike BOOST_STATIC_ASSERT).
+            */
+            
+            /// A helper class: indicator that a mesh can have a tail
+            struct can_have_tail_yes { typedef bool mesh_can_have_tail; };
+            /// A helper class: indicator that a mesh can NOT have a tail
+            struct can_have_tail_no  { typedef bool mesh_cannot_have_tail; };
+                
+            /// Trait: whether a mesh can have a tail (general meshes cannot have tails)
+            template <typename> struct can_have_tail: public can_have_tail_no {};
+
+            /// Trait: Matsubara meshes can have tails
+            template <> struct can_have_tail<matsubara_positive_mesh>: public can_have_tail_yes {};
+            /// Trait: Matsubara meshes can have tails
+            template <> struct can_have_tail<matsubara_pn_mesh>: public can_have_tail_yes {};
+            /// Trait: Imaginary time meshes can have tails
+            template <> struct can_have_tail<itime_mesh>: public can_have_tail_yes {};
+
+            /* ^^^^ End of static_assert code */
+            
+        } // ::detail
     }
 }
