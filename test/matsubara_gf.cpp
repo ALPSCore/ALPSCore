@@ -2,7 +2,7 @@
 #include "alps/gf/gf.hpp"
 
 /// This generates some "outside" data to fill the mesh: 4 2-d points
-alps::gf::momentum_index_mesh::container_type get_data_for_mesh()
+inline alps::gf::momentum_index_mesh::container_type get_data_for_mesh()
 {
     alps::gf::momentum_index_mesh::container_type points(boost::extents[4][2]);
     points[0][0]=0; points[0][1]=0; 
@@ -13,7 +13,7 @@ alps::gf::momentum_index_mesh::container_type get_data_for_mesh()
     return points;
 }
 
-class TestGF : public ::testing::Test
+class TestGFM : public ::testing::Test
 {
   public:
     const double beta;
@@ -42,7 +42,7 @@ class TestGF : public ::testing::Test
     gfp_type gf1;
     gfn_type gf2;
 
-    TestGF():beta(10), nsites(4), nfreq(10), nspins(2),
+    TestGFM():beta(10), nsites(4), nfreq(10), nspins(2),
              gf1(matsubara_meshp_type(beta,nfreq),
                 alps::gf::momentum_index_mesh(get_data_for_mesh()),
                 alps::gf::momentum_index_mesh(get_data_for_mesh()),
@@ -55,7 +55,7 @@ class TestGF : public ::testing::Test
         
 };
 
-TEST_F(TestGF,PositiveNegative)
+TEST_F(TestGFM,PositiveNegative)
 {
     alps::gf::momentum_index i; i=2;
     alps::gf::momentum_index j=alps::gf::momentum_index(3);
