@@ -149,7 +149,7 @@ namespace alps {
             public:
             typedef generic_index<itime_mesh> index_type;
 
-            itime_mesh(double beta, int ntau): beta_(beta), ntau_(ntau), statistics_(statistics::FERMIONIC), last_point_included_(true), half_point_mesh_(false){}
+            itime_mesh(double beta, int ntau): beta_(beta), ntau_(ntau), last_point_included_(true), half_point_mesh_(false), statistics_(statistics::FERMIONIC){}
                 int operator()(index_type idx) const { return idx(); }
             int extent() const{return ntau_;}
       
