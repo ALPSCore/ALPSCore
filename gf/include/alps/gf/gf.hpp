@@ -18,24 +18,16 @@ namespace alps {
         const int minor_version=1;
         const int major_version=0;
        
-        //FIXME: problem here when we have multiple includes 
-        inline void save_version(alps::hdf5::archive& ar, const std::string& path)
-        {
-            std::string vp=path+"/version/";
-            ar[vp+"minor"]<< int(minor_version);
-            ar[vp+"major"]<< int(major_version);
-            ar[vp+"reference"]<<"https://github.com/ALPSCore/H5GF/blob/master/H5GF.rst";
-            ar[vp+"originator"]<<"ALPSCore GF library, see http://www.alpscore.org";
-        }
+        void save_version(alps::hdf5::archive& ar, const std::string& path);
         
-        inline bool check_version(alps::hdf5::archive& ar, const std::string& path)
-        {
-            std::string vp=path+"/version/";
-            int ver;
-            ar[vp+"major"]>>ver;
-            return (major_version==ver);
-        }
+        bool check_version(alps::hdf5::archive& ar, const std::string& path);
         
+        namespace detail{
+          template<typename T> void print_no_complex(std::ostream &os, const T &z){
+            os<<z;
+          }
+
+        }
         template<class value_type, class MESH1, class MESH2> class two_index_gf
         :boost::additive<two_index_gf<value_type,MESH1,MESH2> >
         {
@@ -159,6 +151,18 @@ namespace alps {
             }
         
         };
+        template<class value_type, class MESH1, class MESH2> std::ostream &operator<<(std::ostream &os, two_index_gf<value_type,MESH1,MESH2> G){
+          os<<G.mesh1()<<G.mesh2();
+          for(int i=0;i<G.mesh1().extent();++i){
+            os<<G.mesh1().points()[i]<<" ";
+            for(int k=0;k<G.mesh2().extent();++k){
+              detail::print_no_complex<value_type>(os, G(typename MESH1::index_type(i),typename MESH2::index_type(k))); os<<" ";
+            }
+            os<<std::endl;
+          }
+          return os;
+        }
+
 
         template<class value_type, class MESH1, class MESH2, class MESH3> class three_index_gf
         :boost::additive<three_index_gf<value_type,MESH1,MESH2,MESH3> >
@@ -409,6 +413,9 @@ namespace alps {
         typedef three_index_gf<std::complex<double>, matsubara_mesh<mesh::POSITIVE_ONLY>, momentum_index_mesh, index_mesh> omega_k_sigma_gf;
         typedef three_index_gf<             double , itime_mesh    , momentum_index_mesh, index_mesh> itime_k_sigma_gf;
         
+        typedef two_index_gf<std::complex<double>, matsubara_mesh<mesh::POSITIVE_ONLY>, index_mesh> omega_sigma_gf;
+        typedef two_index_gf<             double , itime_mesh, index_mesh> itime_sigma_gf;
+
         typedef omega_k1_k2_sigma_gf matsubara_gf;
         typedef itime_k1_k2_sigma_gf itime_gf;
 

@@ -3,7 +3,7 @@
 #include "alps/gf/tail.hpp"
 
 /// This generates some "outside" data to fill the mesh: 4 2-d points
-inline alps::gf::momentum_index_mesh::container_type get_data_for_mesh()
+inline alps::gf::momentum_index_mesh::container_type get_data_for_momentum_mesh()
 {
     alps::gf::momentum_index_mesh::container_type points(boost::extents[4][2]);
     points[0][0]=0; points[0][1]=0; 
@@ -28,8 +28,8 @@ class FourIndexGFTest : public ::testing::Test
 
     FourIndexGFTest():beta(10), nsites(4), nfreq(10), nspins(2),
              gf(matsubara_mesh(beta,nfreq),
-                alps::gf::momentum_index_mesh(get_data_for_mesh()),
-                alps::gf::momentum_index_mesh(get_data_for_mesh()),
+                alps::gf::momentum_index_mesh(get_data_for_momentum_mesh()),
+                alps::gf::momentum_index_mesh(get_data_for_momentum_mesh()),
                 alps::gf::index_mesh(nspins)),
              gf2(gf) {}
 };
@@ -92,7 +92,7 @@ TEST_F(FourIndexGFTest, tail)
 {
     namespace g=alps::gf;
     typedef g::three_index_gf<double, g::momentum_index_mesh, g::momentum_index_mesh, g::index_mesh> density_matrix_type;
-    density_matrix_type denmat=density_matrix_type(g::momentum_index_mesh(get_data_for_mesh()),g::momentum_index_mesh(get_data_for_mesh()),
+    density_matrix_type denmat=density_matrix_type(g::momentum_index_mesh(get_data_for_momentum_mesh()),g::momentum_index_mesh(get_data_for_momentum_mesh()),
                                                    g::index_mesh(nspins));
 
     // prepare diagonal matrix
@@ -119,7 +119,7 @@ TEST_F(FourIndexGFTest, TailSaveLoad)
 {
     namespace g=alps::gf;
     typedef g::three_index_gf<double, g::momentum_index_mesh, g::momentum_index_mesh, g::index_mesh> density_matrix_type;
-    density_matrix_type denmat=density_matrix_type(g::momentum_index_mesh(get_data_for_mesh()), g::momentum_index_mesh(get_data_for_mesh()),
+    density_matrix_type denmat=density_matrix_type(g::momentum_index_mesh(get_data_for_momentum_mesh()), g::momentum_index_mesh(get_data_for_momentum_mesh()),
                                                    g::index_mesh(nspins));
 
     // prepare diagonal matrix

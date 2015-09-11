@@ -1,6 +1,7 @@
 #pragma once
 #include <complex>
 #include <boost/multi_array.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/operators.hpp>
 #include <boost/type_traits/integral_constant.hpp>
 
@@ -70,6 +71,7 @@ namespace alps {
             public:
             typedef generic_index<matsubara_mesh> index_type;
 
+            //FIXME: we should allow for bosonic meshes!
             matsubara_mesh(double b, int nfr): beta_(b), nfreq_(nfr), statistics_(statistics::FERMIONIC), offset_((PTYPE==mesh::POSITIVE_ONLY)?0:nfr) {
                 check_range();
                 compute_points();
@@ -91,6 +93,11 @@ namespace alps {
             bool operator!=(const matsubara_mesh &mesh) const {
                 return !(*this==mesh);
             }
+
+            ///getter functions for member variables
+            double beta() const{ return beta_;}
+            statistics::statistics_type statistics() const{ return statistics_;}
+            mesh::frequency_positivity_type positivity() const{ return positivity_;}
           
             void save(alps::hdf5::archive& ar, const std::string& path) const
             {
@@ -138,7 +145,15 @@ namespace alps {
                 }
             }
         };
-    
+        ///Stream output operator, e.g. for printing to file
+        template<mesh::frequency_positivity_type PTYPE> std::ostream &operator<<(std::ostream &os, const matsubara_mesh<PTYPE> &M){
+          os<<"# "<<"MATSUBARA"<<" mesh: N: "<<M.extent()<<" beta: "<<M.beta()<<" statistics: ";
+          os<<(M.statistics()==statistics::FERMIONIC?"FERMIONIC":"BOSONIC")<<" ";
+          os<<(M.positivity()==mesh::POSITIVE_ONLY?"POSITIVE_ONLY":"POSITIVE_NEGATIVE");
+          os<<std::endl;
+          return os;
+        }
+
         class itime_mesh {
             double beta_;
             int ntau_;
@@ -159,6 +174,10 @@ namespace alps {
                     half_point_mesh_ == mesh.half_point_mesh_ && statistics_==mesh.statistics_;
             }
           
+            ///Getter variables for members
+            double beta() const{ return beta_;}
+            statistics::statistics_type statistics() const{ return statistics_;}
+
             /// Comparison operators
             bool operator!=(const itime_mesh &mesh) const {
                 return !(*this==mesh);
@@ -196,6 +215,8 @@ namespace alps {
                 ntau_=ntau;
             }
         };
+        ///Stream output operator, e.g. for printing to file
+        std::ostream &operator<<(std::ostream &os, const itime_mesh &M);
 
 
         class momentum_realspace_index_mesh {
@@ -220,6 +241,8 @@ namespace alps {
             int extent() const { return points_.shape()[0];}
             ///returns the spatial dimension
             int dimension() const { return points_.shape()[1];}
+            ///returns the mesh kind
+            const std::string &kind() const{return kind_;}
 
             /// Comparison operators
             bool operator==(const momentum_realspace_index_mesh &mesh) const {
@@ -248,6 +271,9 @@ namespace alps {
                 ar[path+"/points"] >> points_;
             }
         };
+        ///Stream output operator, e.g. for printing to file
+        std::ostream &operator<<(std::ostream &os, const momentum_realspace_index_mesh &M);
+
     
         class momentum_index_mesh: public momentum_realspace_index_mesh {
             typedef momentum_realspace_index_mesh base_type;
@@ -323,6 +349,8 @@ namespace alps {
                 npoints_=np;
             }
         };
+        ///Stream output operator, e.g. for printing to file
+        std::ostream &operator<<(std::ostream &os, const index_mesh &M);
     
         typedef matsubara_mesh<mesh::POSITIVE_ONLY> matsubara_positive_mesh;
         typedef matsubara_mesh<mesh::POSITIVE_NEGATIVE> matsubara_pn_mesh;

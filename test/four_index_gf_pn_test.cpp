@@ -2,7 +2,7 @@
 #include "alps/gf/gf.hpp"
 
 /// This generates some "outside" data to fill the mesh: 4 2-d points
-inline alps::gf::momentum_index_mesh::container_type get_data_for_mesh()
+inline alps::gf::momentum_index_mesh::container_type get_data_for_momentum_mesh()
 {
     alps::gf::momentum_index_mesh::container_type points(boost::extents[4][2]);
     points[0][0]=0; points[0][1]=0; 
@@ -44,12 +44,12 @@ class TestGFM : public ::testing::Test
 
     TestGFM():beta(10), nsites(4), nfreq(10), nspins(2),
              gf1(matsubara_meshp_type(beta,nfreq),
-                alps::gf::momentum_index_mesh(get_data_for_mesh()),
-                alps::gf::momentum_index_mesh(get_data_for_mesh()),
+                alps::gf::momentum_index_mesh(get_data_for_momentum_mesh()),
+                alps::gf::momentum_index_mesh(get_data_for_momentum_mesh()),
                  alps::gf::index_mesh(nspins)),
              gf2(matsubara_meshn_type(beta,nfreq),
-                alps::gf::momentum_index_mesh(get_data_for_mesh()),
-                alps::gf::momentum_index_mesh(get_data_for_mesh()),
+                alps::gf::momentum_index_mesh(get_data_for_momentum_mesh()),
+                alps::gf::momentum_index_mesh(get_data_for_momentum_mesh()),
                  alps::gf::index_mesh(nspins))
               {}
         

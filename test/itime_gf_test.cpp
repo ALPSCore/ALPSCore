@@ -3,7 +3,7 @@
 #include "alps/gf/tail.hpp"
 
 /// This generates some "outside" data to fill the mesh: 4 2-d points
-inline alps::gf::momentum_index_mesh::container_type get_data_for_mesh()
+inline alps::gf::momentum_index_mesh::container_type get_data_for_momentum_mesh()
 {
     alps::gf::momentum_index_mesh::container_type points(boost::extents[4][2]);
     points[0][0]=0; points[0][1]=0; 
@@ -26,8 +26,8 @@ class ItimeTestGF : public ::testing::Test
 
     ItimeTestGF():beta(10), nsites(4), ntau(10), nspins(2),
              gf(alps::gf::itime_mesh(beta,ntau),
-                alps::gf::momentum_index_mesh(get_data_for_mesh()),
-                alps::gf::momentum_index_mesh(get_data_for_mesh()),
+                alps::gf::momentum_index_mesh(get_data_for_momentum_mesh()),
+                alps::gf::momentum_index_mesh(get_data_for_momentum_mesh()),
                 alps::gf::index_mesh(nspins)),
              gf2(gf) {}
 };

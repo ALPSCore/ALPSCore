@@ -1,6 +1,9 @@
 set (test_src
-     usage
-     matsubara_gf
+  four_index_gf_pn_test 
+  four_index_gf_test 
+  index_test 
+  itime_gf_test mesh_test
+  three_index_gf_test
     )
 
 
