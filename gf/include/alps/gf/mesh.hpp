@@ -196,6 +196,8 @@ namespace alps {
             public:
             // Returns the number of points
             int extent() const { return points_.shape()[0];}
+            ///returns the spatial dimension
+            int dimension() const { return points_.shape()[1];}
             
             const container_type &points() const{return points_;}
 
