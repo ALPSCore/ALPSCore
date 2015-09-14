@@ -9,4 +9,5 @@ set (test_src
 
 foreach(test ${test_src})
     add_gtest(${test})
+    target_link_libraries(${test} gf)
 endforeach(test)

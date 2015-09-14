@@ -18,6 +18,10 @@ include_directories("gf/include")
 
 unset(LINK_ALL)
 list(APPEND LINK_ALL ${ALPSCore_LIBRARIES})
+    
+
+add_library(gf gf/lib/mesh.cpp gf/lib/gf.cpp)
+target_link_libraries(gf ${ALPSCore_LIBRARIES})
 
 # Build and enable tests
 option(Testing "Enable testing" ON)
