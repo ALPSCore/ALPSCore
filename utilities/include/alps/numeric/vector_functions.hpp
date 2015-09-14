@@ -187,22 +187,6 @@ namespace alps {
             if (rhs.empty()) return lhs;
             return lhs + rhs;
         }
-        /* FIXME: the following appears to be unused, and was incorrect anyway
-           vvvvvvvvvvvvvvvvvvvvvvv */
-        // //------------------- operator + with scalar -------------------
-        // /// Sum of a vector and a scalar
-        // template<typename T, std::size_t N>
-        // std::vector<T> operator + (std::vector<T> arg, T const & scalar) {
-        //     std::transform(arg.begin(), arg.end(), arg.begin(), boost::lambda::_1 + scalar);
-        //     return arg;
-        // }
-        // /// Sum of a scalar and a vector
-        // template<typename T, std::size_t N>
-        // std::vector<T> operator + (T const & scalar, std::vector<T> arg) {
-        //     std::transform(arg.begin(), arg.end(), arg.begin(), scalar + boost::lambda::_1);
-        //     return arg;
-        // }
-        /* ^^^^^^^^^^^^^^^^^^^^^^^ */
 
         //------------------- operator - -------------------
         /// Difference of two vectors. Note: Treats a default-initialized vector (size 0) as 0-vector.
@@ -213,22 +197,6 @@ namespace alps {
             if (lhs.empty()) return -rhs;
             return lhs - rhs;
         }
-        /* FIXME: the following appears to be unused, and was incorrect anyway
-           vvvvvvvvvvvvvvvvvvvvvvv */
-        //------------------- operator - with scalar -------------------
-        // /// Difference of a vector and a scalar.
-        // template<typename T, std::size_t N>
-        // std::vector<T> operator - (std::vector<T> arg, T const & scalar) {
-        //     std::transform(arg.begin(), arg.end(), arg.begin(), boost::lambda::_1 - scalar);
-        //     return arg;
-        // }
-        // /// Difference of a scalar and a vector
-        // template<typename T, std::size_t N>
-        // std::vector<T> operator - (T const & scalar, std::vector<T> arg) {
-        //     std::transform(arg.begin(), arg.end(), arg.begin(), scalar - boost::lambda::_1);
-        //     return arg;
-        // }
-        /* ^^^^^^^^^^^^^^^^^^^^^^^ */
 
         //------------------- operator * vector-vector-------------------
         /// By-element product of two vectors. Note: Treats a default-initialized vector (size 0) as 0-vector.
@@ -252,9 +220,9 @@ namespace alps {
         //------------------- operator + with scalar -------------------
         /// Sum of a scalar and a vector
         template<typename T>
-        std::vector<T> operator + (T const & scalar, std::vector<T> lhs) {
-            std::transform(lhs.begin(), lhs.end(), lhs.begin(), bind1st(std::plus<T>(), scalar));
-            return lhs;
+        std::vector<T> operator + (T const & scalar, std::vector<T> rhs) {
+            std::transform(rhs.begin(), rhs.end(), rhs.begin(), bind1st(std::plus<T>(), scalar));
+            return rhs;
         }
         /// Sum of a vector and a scalar
         template<typename T>
@@ -266,9 +234,8 @@ namespace alps {
         //------------------- operator - with scalar -------------------
         /// Difference of a scalar and a vector
         template<typename T>
-        std::vector<T> operator - (T const & scalar, std::vector<T> const & lhs) {
-            // return -scalar + lhs; // FIXME??? BUG? This must be wrong?
-            return scalar + -lhs;
+        std::vector<T> operator - (T const & scalar, std::vector<T> const & rhs) {
+            return scalar + -rhs;
         }
         /// Difference of a vector and a scalar
         template<typename T>

@@ -360,6 +360,11 @@ namespace alps {
 
                 public:
                     typedef typename alps::accumulators::max_num_binning_type<B>::type max_num_binning_type;
+                    template <typename U> struct make_scalar_result_type { typedef void type; };
+                    template <typename U> struct make_scalar_result_type< std::vector<U> > { typedef Result<U, max_num_binning_tag, typename B::scalar_result_type> type; };
+                    typedef typename make_scalar_result_type<T>::type scalar_result_type;
+                    typedef Result<std::vector<T>, max_num_binning_tag, typename B::vector_result_type> vector_result_type;
+                    friend vector_result_type;
 
                     Result()
                         : B()
@@ -704,6 +709,7 @@ namespace alps {
                         m_mn_jackknife_valid = true;
                     }
 
+                private:
                     void analyze() const {
                         using alps::numeric::sq;
                         using std::sqrt;
@@ -736,7 +742,7 @@ namespace alps {
                         template<typename U> void aug ## OP_TOKEN (U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {                             \
                             typedef typename value_type<B>::type self_value_type;                                                                                               \
                             typedef typename value_type<U>::type arg_value_type;                                                                                                \
-                            transform(boost::function<self_value_type(self_value_type, arg_value_type)>( OP_STD <self_value_type, self_value_type, arg_value_type>()), arg);    \
+                            transform(boost::function<self_value_type(self_value_type, arg_value_type)>( OP_STD <self_value_type, arg_value_type, self_value_type>()), arg);    \
                             B:: OPEQ_NAME (arg);                                                                                                                                \
                         }                                                                                                                                                       \
                         template<typename U> void aug ## OP_TOKEN (U const & arg, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {                              \

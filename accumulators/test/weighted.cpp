@@ -35,8 +35,44 @@ TEST(accumulators, WeightedObservable){
 	EXPECT_EQ(results["sign"].mean<double>(), 1. / 3.);
 	EXPECT_EQ(results["x*sign"].mean<double>(), 166.);
 	std::cout << (results["x*sign"] / results["sign"]) << std::endl;
-        //we really need to fix this so we can divide vectors by scalars
-	EXPECT_ANY_THROW(std::cout << (results["x*sign vec"] / results["sign"]) << std::endl);
+        std::cout << (results["x*sign vec"] / results["sign"]) << std::endl;
 	std::cout << (results["x*sign vec"] / results["sign vec"]) << std::endl;
 }
 
+// FIXME: this should go to a different test file
+TEST(accumulators, BinaryWithScalar)
+{
+  alps::accumulators::accumulator_set measurements;
+  typedef std::vector<double> double_vec;
+  typedef std::vector<float> float_vec;
+  measurements << alps::accumulators::FullBinningAccumulator<double>("double_scalar1")
+               << alps::accumulators::FullBinningAccumulator<double>("double_scalar2")
+               << alps::accumulators::FullBinningAccumulator<double_vec>("double_vector1")
+               << alps::accumulators::FullBinningAccumulator<double_vec>("double_vector2")
+               << alps::accumulators::FullBinningAccumulator<float>("float_scalar1")
+               << alps::accumulators::FullBinningAccumulator<float>("float_scalar2")
+               << alps::accumulators::FullBinningAccumulator<float_vec>("float_vector1")
+               << alps::accumulators::FullBinningAccumulator<float_vec>("float_vector2");
+
+  measurements["double_scalar1"] << 1.;
+  measurements["double_scalar2"] << 2.;
+  measurements["float_scalar1"] << 1.;
+  measurements["float_scalar2"] << 2.;
+
+  measurements["double_vector1"] << double_vec(3,1.);
+  measurements["double_vector2"] << double_vec(3,2.);
+  measurements["float_vector1"] << float_vec(3,1.);
+  measurements["float_vector1"] << float_vec(3,2.);
+
+  alps::accumulators::result_set results(measurements);
+
+  results["double_scalar1"]/results["double_scalar2"]; // FIXME: duplicate of other tests
+  EXPECT_THROW(results["double_scalar1"]/results["float_scalar2"],std::logic_error);
+  EXPECT_THROW(results["double_vector1"]/results["float_vector2"],std::logic_error);
+  
+  results["double_vector1"]/results["double_vector2"]; // FIXME: duplicate of other tests
+  EXPECT_THROW(results["double_scalar1"]/results["double_vector2"],std::logic_error);
+
+  results["double_vector1"]/results["double_scalar2"]; 
+  EXPECT_THROW(results["double_vector1"]/results["float_scalar2"],std::logic_error);
+}

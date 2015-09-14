@@ -24,7 +24,8 @@ namespace alps {
 
         template <typename T, typename U, typename R> struct plus : public std::binary_function<T, U, R> {
             R operator()(T const & x, U const & y) const {
-                using boost::numeric::operators::operator+;
+                // using boost::numeric::operators::operator+;
+                using alps::numeric::operator+;
                 return x + y; 
             }
         };
@@ -37,7 +38,8 @@ namespace alps {
 
         template <typename T, typename U, typename R> struct minus : public std::binary_function<T, U, R> {
             R operator()(T const & x, U const & y) const {
-                using boost::numeric::operators::operator-;
+                // using boost::numeric::operators::operator-;
+                using alps::numeric::operator-;
                 return x - y; 
             }
         };
@@ -50,7 +52,8 @@ namespace alps {
 
         template <typename T, typename U, typename R> struct multiplies : public std::binary_function<T, U, R> {
             R operator()(T const & x, U const & y) const {
-                using boost::numeric::operators::operator*;
+                // using boost::numeric::operators::operator*;
+                using alps::numeric::operator*;
                 return x * y; 
             }
         };
@@ -63,7 +66,8 @@ namespace alps {
 
         template <typename T, typename U, typename R> struct divides : public std::binary_function<T, U, R> {
             R operator()(T const & x, U const & y) const {
-                using boost::numeric::operators::operator/;
+                // using boost::numeric::operators::operator/;
+                using alps::numeric::operator/;
                 return x / y; 
             }
         };
