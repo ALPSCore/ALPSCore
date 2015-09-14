@@ -52,3 +52,6 @@ CTestTestfile.cmake
 Makefile
 Testing/
 cmake_install.cmake
+
+#Backup files
+*~
