@@ -20,15 +20,15 @@ unset(LINK_ALL)
 list(APPEND LINK_ALL ${ALPSCore_LIBRARIES})
     
 
-add_library(gf gf/lib/mesh.cpp gf/lib/gf.cpp)
+add_library(gf gf/src/mesh.cpp gf/src/gf.cpp)
 target_link_libraries(gf ${ALPSCore_LIBRARIES})
+list(APPEND LINK_ALL gf)
 
 # Build and enable tests
 option(Testing "Enable testing" ON)
 if (Testing)
-    message(STATUS "Building tests")
     include(EnableGtests)
-    add_subdirectory(test)
     enable_testing()
+    add_subdirectory(test)
 endif (Testing)
 

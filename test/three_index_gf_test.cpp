@@ -1,18 +1,7 @@
 #include "gtest/gtest.h"
 #include "alps/gf/gf.hpp"
 #include "alps/gf/tail.hpp"
-
-/// This generates some "outside" data to fill the mesh: 4 2-d points
-inline alps::gf::momentum_index_mesh::container_type get_data_for_momentum_mesh()
-{
-    alps::gf::momentum_index_mesh::container_type points(boost::extents[4][2]);
-    points[0][0]=0; points[0][1]=0; 
-    points[1][0]=M_PI; points[1][1]=M_PI;
-    points[2][0]=M_PI; points[2][1]=0; 
-    points[3][0]=0; points[3][1]=M_PI;
-
-    return points;
-}
+#include "gf_test.hpp"
 
 class ThreeIndexTestGF : public ::testing::Test
 {
@@ -265,3 +254,7 @@ TEST_F(ThreeIndexTestGF,print)
   }
   EXPECT_EQ(gf_stream_by_hand.str(), gf_stream.str());
 }
+#include "gf_test.hpp"
+
+
+
