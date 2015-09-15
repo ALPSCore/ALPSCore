@@ -5,14 +5,14 @@
  */
 
 /** @file vec_scalar_binop_simple.cpp
-    Simple test to demonstrate inconsistent behavior of vector-scalar binary operations.
+    Simple test to demonstrate inconsistent behavior of vector-scalar_const binary operations.
 */
 
 
 #include "gtest/gtest.h"
 #include "alps/accumulators.hpp"
 
-// Sum scalar of type T2 and accumulator containing vector of T1
+// Sum scalar constant of type T2 and accumulator containing vector of T1
 template <typename T1, typename T2>
 void do_sum()
 {

@@ -15,7 +15,7 @@ set (test_src
     acc_count_test
     save_load
     binop_with_constant
-    vec_scalar_binop_simple
+    vec_const_binop_simple
     single_accumulator
     autocorrelation
     )
