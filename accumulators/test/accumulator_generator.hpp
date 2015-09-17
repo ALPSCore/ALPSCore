@@ -37,13 +37,13 @@ namespace alps {
 
             /// Get scalar data point 
             template <typename T>
-            inline T get_data(T val) { return val; }
+            inline T get_data(T val, unsigned int =0) { return val; }
 
             /// Get vector data point
             template <typename T>
-            inline T get_data(typename T::value_type val)
+            inline T get_data(typename T::value_type val, unsigned int vsz=10)
             {
-                return T(10, val);
+                return T(vsz, val);
             }
 
 
@@ -98,6 +98,62 @@ namespace alps {
                 double expected_mean() const { return 0.5; }
                 /// Returns the expected error
                 double expected_err() const { return 1/(12*std::sqrt(NPOINTS-1.)); }
+            };
+
+            /// Class to generate a pair of accumulators with identical data: A<T> and A<vector<T>>
+            template <template <typename> class A, typename T, unsigned long NPOINTS_P=1000, unsigned int VSZ_P=10>
+            class acc_vs_pair_gen {
+                private:
+                alps::accumulators::result_set* results_ptr_;
+                alps::accumulators::accumulator_set* measurements_ptr_;
+
+                public:
+                typedef T scalar_data_type;
+                typedef std::vector<T> vector_data_type;
+                typedef A<scalar_data_type> scalar_acc_type;
+                typedef A<vector_data_type> vector_acc_type;
+
+                static const unsigned long int NPOINTS=NPOINTS_P; /// < Number of data points
+                static const unsigned int VSIZE=VSZ_P; /// size of the vector
+
+                const std::string scal_name;
+                const std::string vec_name;
+
+                /// Free the memory allocated in the constructor
+                virtual ~acc_vs_pair_gen()
+                {
+                    delete results_ptr_;
+                    delete measurements_ptr_;
+                }
+
+                /// Generate the data points for the accumulator
+                acc_vs_pair_gen(const std::string& sname, const std::string& vname) : scal_name(sname), vec_name(vname)
+                {
+                    srand48(43);
+                    measurements_ptr_=new alps::accumulators::accumulator_set();
+                    alps::accumulators::accumulator_set& m=*measurements_ptr_;
+                    m << vector_acc_type(vec_name)
+                      << scalar_acc_type(scal_name);
+
+                    for (int i=0; i<NPOINTS; ++i) {
+                        double d=drand48();
+                        m[vec_name]  << get_data<vector_data_type>(d, VSIZE);
+                        m[scal_name] << get_data<scalar_data_type>(d);
+                    }
+                    results_ptr_=new alps::accumulators::result_set(m);
+                }
+
+                /// Returns extracted result set
+                const alps::accumulators::result_set& results() const
+                {
+                    return *results_ptr_;
+                }
+
+                /// Returns the accumulator set
+                const alps::accumulators::accumulator_set& accumulators() const
+                {
+                    return *measurements_ptr_;
+                }
             };
 
         } // tesing::
