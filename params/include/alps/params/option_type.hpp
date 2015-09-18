@@ -340,20 +340,42 @@ namespace alps {
         };
 
         /// Equality operator for option_type
-        template <typename T>
-        bool operator==(const option_type& lhs, T rhs)
-        {
-            const T& lhs_t=lhs;
-            return (rhs == lhs_t);
-        }
+        template <typename T> inline bool operator==(const option_type& lhs, const T& rhs) { return (lhs.as<T>() == rhs); }
 
+        /// Less-then operator for option_type
+        template <typename T> inline bool operator<(const option_type& lhs, const T& rhs) { return (lhs.as<T>() < rhs); }
+
+        /// Less-then operator for option_type
+        template <typename T> inline bool operator<(const T& lhs, const option_type& rhs) { return (lhs < rhs.as<T>()); }
+
+        /// Greater-then operator for option_type
+        template <typename T> inline bool operator>(const T& lhs, const option_type& rhs) { return (lhs > rhs.as<T>()); }
+
+        /// Greater-then operator for option_type
+        template <typename T> inline bool operator>(const option_type& lhs, const T& rhs) { return (lhs.as<T>() > rhs); }
+            
         /// Equality operator for option_type
-        template <typename T>
-        bool operator==(T lhs, const option_type& rhs)
-        {
-            return (rhs == lhs);
-        }
+        template <typename T> inline bool operator==(const T& lhs, const option_type& rhs) { return (rhs == lhs); }
 
+        /// Greater-equal operator for option_type
+        template <typename T> inline bool operator>=(const option_type& lhs, const T& rhs) { return !(lhs < rhs); }
+        
+        /// Greater-equal operator for option_type
+        template <typename T> inline bool operator>=(const T& lhs, const option_type& rhs) { return !(lhs < rhs); }
+        
+        /// Less-equal operator for option_type
+        template <typename T> inline bool operator<=(const option_type& lhs, const T& rhs) { return !(lhs > rhs); }
+        
+        /// Less-equal operator for option_type
+        template <typename T> inline bool operator<=(const T& lhs, const option_type& rhs) { return !(lhs > rhs); }
+        
+        /// Not-equal operator for option_type
+        template <typename T> inline bool operator!=(const T& lhs, const option_type& rhs) { return !(lhs == rhs); }
+
+        /// Not-equal operator for option_type
+        template <typename T> inline bool operator!=(const option_type& lhs, const T& rhs) { return !(lhs == rhs); }
+
+        
         /// Class "map of options" (needed to ensure that option is always initialized by the name)
         class options_map_type : public std::map<std::string, option_type> {
         public:
