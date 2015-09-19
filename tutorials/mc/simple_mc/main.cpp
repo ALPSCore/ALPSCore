@@ -43,7 +43,7 @@ class my_sim_type : public alps::mcbase {
         // This performs the actual calculation at each MC step.
         // In this example we simply take a value from a uniform distribution.
         void update() {
-            value = drand48();
+            value = random();
         };
 
         // This collects the measurements at each MC step.

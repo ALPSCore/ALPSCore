@@ -75,6 +75,10 @@ namespace alps {
             // Generate a pretty-name specialization for scalar and vector types
 #define     ALPS_PARAMS_DETAIL_GEN_TYPID(s, data, elem) ALPS_PARAMS_DETAIL_TYPID_NAME(elem)
             BOOST_PP_SEQ_FOR_EACH(ALPS_PARAMS_DETAIL_GEN_TYPID,~,ALPS_PARAMS_DETAIL_ALLTYPES_SEQ);
+            // Generate a few more pretty-names, for frequently-needed types
+            ALPS_PARAMS_DETAIL_TYPID_NAME(char *);
+            ALPS_PARAMS_DETAIL_TYPID_NAME(const char *);
+            
           
             /// A variant of all types, including None (as the first one -- important!)
 	    typedef boost::variant< None, BOOST_PP_SEQ_ENUM(ALPS_PARAMS_DETAIL_ALLTYPES_SEQ) > variant_all_type;

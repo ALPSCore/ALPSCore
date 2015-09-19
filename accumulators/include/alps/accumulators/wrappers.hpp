@@ -38,6 +38,7 @@ namespace alps {
             // typedef boost::make_variant_over<
             //     boost::mpl::vector<ALPS_ACCUMULATOR_VALUE_TYPES>
             // >::type weight_variant_type;
+
         }
 
         template<typename T> class base_wrapper : public 
@@ -81,11 +82,31 @@ namespace alps {
                     return dynamic_cast<derived_wrapper<A> const &>(*this).extract();
                 }
 
+            private:
+                /* This machinery is to have `wrapped_value_type=T::value_type&` if T is a vector,
+                   and `wrapped_value_type=void*` if T is not a vector.
+                */
+                /// Wrap value_type from a vector (otherwise have it void*): general case
+                template <typename X> struct wrap_value_type { typedef void* type; };
+                /// Wrap value_type from a vector (otherwise have it void*): vector type
+                template <typename X> struct wrap_value_type< std::vector<X> >  { typedef const base_wrapper<X>& type; };
+            protected:
+                /// Either wrapped T::value_type or void*, depending on T
+                typedef typename wrap_value_type<T>::type wrapped_scalar_value_type;
+                
+            public:
+
                 virtual void operator+=(base_wrapper const &) = 0;
                 virtual void operator-=(base_wrapper const &) = 0;
                 virtual void operator*=(base_wrapper const &) = 0;
                 virtual void operator/=(base_wrapper const &) = 0;
 
+                virtual void operator+=(wrapped_scalar_value_type) = 0;
+                virtual void operator-=(wrapped_scalar_value_type) = 0;
+                virtual void operator*=(wrapped_scalar_value_type) = 0;
+                virtual void operator/=(wrapped_scalar_value_type) = 0;
+            
+          
                 // These virtual functions accept `long double`: it's the "widest" RHS scalar type.
                 virtual void operator+=(long double) = 0;
                 virtual void operator-=(long double) = 0;
@@ -114,7 +135,6 @@ namespace alps {
 
         namespace detail {
             template<typename A> class foundation_wrapper : public base_wrapper<typename value_type<A>::type> {
-
                 public:
                     foundation_wrapper(A const & arg): m_data(arg) {}
 
@@ -174,21 +194,7 @@ namespace alps {
                     this->m_data(value);
                 }
 
-            private:
-                template<typename Q>
-                struct call_2_visitor: public boost::static_visitor<> {
-                    call_2_visitor(A & d, value_type const & v) : data(d), value(v) {}
-                    template<typename X> void operator()(X const & arg) const {
-                        data(value, arg);
-                    }
-                    A & data;
-                    value_type const & value;
-                };
             public:
-                // void operator()(value_type const & value, detail::weight_variant_type const & weight) {
-                //     boost::apply_visitor(call_2_visitor<A>(this->m_data, value), weight);
-                // }
-
                 void save(hdf5::archive & ar) const { 
                     ar[""] = this->m_data; 
                    }
@@ -228,6 +234,8 @@ namespace alps {
         };
 
         template<typename A> class derived_result_wrapper : public derived_wrapper<A> {
+            private:
+                typedef typename base_wrapper<typename value_type<A>::type>::wrapped_scalar_value_type wrapped_scalar_value_type;
             public:
                 derived_result_wrapper(): derived_wrapper<A>() {}
 
@@ -241,18 +249,29 @@ namespace alps {
                     return NULL;
                 }
 
-                #define OPERATOR_PROXY(AUGOPNAME, AUGOP)                                            \
+                #define OPERATOR_PROXY(AUGOPNAME, AUGOP, AUGOPFN)                                            \
                     void AUGOPNAME(base_wrapper<typename value_type<A>::type> const & arg) {        \
                         this->m_data AUGOP arg.template extract<A>();                               \
+                    }                                                   \
+                    /** @brief A plug that has to be generated, but is never called */                                                    \
+                    void do_##AUGOPFN(void*) {                           \
+                        throw std::logic_error("This virtual method plug should never be called"); \
+                    }                                                               \
+                    template <typename W>                               \
+                    void do_##AUGOPFN(W& arg) {                           \
+                        this->m_data AUGOP arg.template extract<typename A::scalar_result_type>();          \
+                    }                                                               \
+                    void AUGOPNAME(wrapped_scalar_value_type arg) {        \
+                        do_##AUGOPFN(arg);                               \
                     }                                                                               \
                     /* takes `long double`: it's the widest scalar numeric type */                  \
                     void AUGOPNAME(long double arg) {                                               \
                         this->m_data AUGOP arg;                                                     \
                     }
-                OPERATOR_PROXY(operator+=, +=)
-                OPERATOR_PROXY(operator-=, -=)
-                OPERATOR_PROXY(operator*=, *=)
-                OPERATOR_PROXY(operator/=, /=)
+                OPERATOR_PROXY(operator+=, +=, add)
+                OPERATOR_PROXY(operator-=, -=, sub)
+                OPERATOR_PROXY(operator*=, *=, mul)
+                OPERATOR_PROXY(operator/=, /=, div)
                 #undef OPERATOR_PROXY
 
                 void negate() {
@@ -285,11 +304,14 @@ namespace alps {
 
                 #undef FUNCTION_PROXY
         };
+        
         template<typename T, typename A> derived_result_wrapper<A> operator/(T arg, derived_result_wrapper<A> res) {
             return arg * res.inverse();
         }
 
         template<typename A> class derived_accumulator_wrapper : public derived_wrapper<A> {
+            private:
+                typedef typename base_wrapper<typename value_type<A>::type>::wrapped_scalar_value_type wrapped_scalar_value_type;
             public:
                 derived_accumulator_wrapper(): derived_wrapper<A>() {}
 
@@ -326,6 +348,19 @@ namespace alps {
                 }
                 void operator/=(long double) {
                     throw std::runtime_error("The operator /= is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
+                }
+            
+                void operator+=(const wrapped_scalar_value_type arg) {
+                    throw std::runtime_error("The Operator += is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
+                }
+                void operator-=(const wrapped_scalar_value_type arg) {
+                    throw std::runtime_error("The Operator -= is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
+                }
+                void operator*=(const wrapped_scalar_value_type arg) {
+                    throw std::runtime_error("The Operator *= is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
+                }
+                void operator/=(const wrapped_scalar_value_type arg) {
+                    throw std::runtime_error("The Operator /= is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
                 }
 
                 void negate() {

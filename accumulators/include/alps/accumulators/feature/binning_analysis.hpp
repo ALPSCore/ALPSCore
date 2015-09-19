@@ -32,6 +32,7 @@
 #include <boost/utility.hpp>
 #include <boost/type_traits/is_scalar.hpp>
 #include <boost/type_traits/is_integral.hpp>
+#include <boost/type_traits/is_base_of.hpp>
 
 #include <limits>
 #include <stdexcept>
@@ -261,7 +262,10 @@ namespace alps {
                     }
 
                     template<typename S> void print(S & os) const {
+                        os << "DEBUG PRINTING of the accumulator object state. **DO NOT USE AS PRODUCTION OUTPUT!**\n"
+                           << "(use mean(), error() and autocorrelation() methods)\n";
                         B::print(os);
+                        os << " Error bar: " << short_print(error());
                         os << " Autocorrelation: " << short_print(autocorrelation());
                         if (m_ac_sum2.size() > 0) {
                             for (std::size_t i = 0; i < binning_depth(); ++i)
@@ -391,6 +395,10 @@ namespace alps {
                 typedef typename std::vector<error_type>::iterator error_iterator;
 
                 public:
+                    template <typename U> struct make_scalar_result_type { typedef void type; };
+                    template <typename U> struct make_scalar_result_type< std::vector<U> > { typedef Result<U, binning_analysis_tag, typename B::scalar_result_type> type; };
+                    typedef typename make_scalar_result_type<T>::type scalar_result_type;
+                    typedef Result<std::vector<T>, binning_analysis_tag, typename B::vector_result_type> vector_result_type;
                     typedef typename alps::accumulators::autocorrelation_type<B>::type autocorrelation_type;
 
                     Result()
@@ -419,8 +427,11 @@ namespace alps {
                     }
 
                     template<typename S> void print(S & os) const {
+                        os << "DEBUG PRINTING of the result object state. **DO NOT USE AS PRODUCTION OUTPUT!**\n"
+                           << "(use mean(), error() and autocorrelation() methods)\n";
                         B::print(os);
-                        os << " Tau: " << short_print(autocorrelation());
+                        os << " Error bar: " << short_print(error());
+                        os << " Autocorrelation: " << short_print(autocorrelation());
                         if (m_ac_errors.size() > 0) {
                             for (std::size_t i = 0; i < m_ac_errors.size(); ++i)
                                 os << std::endl
@@ -617,18 +628,39 @@ namespace alps {
                     typename mean_type<B>::type m_ac_autocorrelation;
                     std::vector<typename alps::accumulators::error_type<B>::type> m_ac_errors;
 
-                    template<typename U> void augaddsub (U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {
+                    /// Predicate metafunction: is U is related to self_type?
+                    template <typename U> struct is_rel_type
+                        : public boost::mpl::or_< boost::is_same<U,self_type>, boost::is_base_of<U,self_type>, boost::is_base_of<self_type,U> > {};
+
+                    /// Predicate metafunction: is U is related to self_type or is a scalar?
+                    template <typename U> struct is_rel_or_scalar_type
+                        : public boost::mpl::or_< boost::is_scalar<U>, is_rel_type<U> > {};
+
+
+                    template<typename U> void augaddsub (U const & arg, typename boost::enable_if<is_rel_type<U>, int>::type = 0) {
                         using alps::numeric::operator+;
                         for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
                             *it = *it + dynamic_cast<self_type const &>(arg).error(it - m_ac_errors.begin());
                     }
+                    template<typename U> void augaddsub (U const & arg, typename boost::disable_if<is_rel_or_scalar_type<U>, int>::type = 0) {
+                        using alps::numeric::operator+;
+                        for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
+                            *it = *it + dynamic_cast<scalar_result_type const &>(arg).error(it - m_ac_errors.begin());
+                    }
                     template<typename U> void augaddsub (U const & arg, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {}
 
-                    template<typename U> void augmul (U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {
+                    template<typename U> void augmul (U const & arg, typename boost::enable_if<is_rel_type<U>, int>::type = 0) {
                         using alps::numeric::operator*;
                         using alps::numeric::operator+;
                         for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
                             *it = arg.mean() * *it + this->mean() * dynamic_cast<self_type const &>(arg).error(it - m_ac_errors.begin());
+                        B::operator*=(arg);
+                    }
+                    template<typename U> void augmul (U const & arg, typename boost::disable_if<is_rel_or_scalar_type<U>, int>::type = 0) {
+                        using alps::numeric::operator*;
+                        using alps::numeric::operator+;
+                        for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
+                            *it = arg.mean() * *it + this->mean() * dynamic_cast<scalar_result_type const &>(arg).error(it - m_ac_errors.begin());
                         B::operator*=(arg);
                     }
                     template<typename U> void augmul (U const & arg, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {
@@ -638,12 +670,20 @@ namespace alps {
                         B::operator*=(arg);
                     }
 
-                    template<typename U> void augdiv (U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {
+                    template<typename U> void augdiv (U const & arg, typename boost::enable_if<is_rel_type<U>, int>::type = 0) {
                         using alps::numeric::operator*;
                         using alps::numeric::operator/;
                         using alps::numeric::operator+;
                         for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
                             *it = *it / arg.mean() + this->mean() * dynamic_cast<self_type const &>(arg).error(it - m_ac_errors.begin()) / (arg.mean() * arg.mean());
+                        B::operator/=(arg);
+                    }
+                    template<typename U> void augdiv (U const & arg, typename boost::disable_if<is_rel_or_scalar_type<U>, int>::type = 0) {
+                        using alps::numeric::operator*;
+                        using alps::numeric::operator/;
+                        using alps::numeric::operator+;
+                        for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
+                            *it = *it / arg.mean() + this->mean() * dynamic_cast<scalar_result_type const &>(arg).error(it - m_ac_errors.begin()) / (arg.mean() * arg.mean());
                         B::operator/=(arg);
                     }
                     template<typename U> void augdiv (U const & arg, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {

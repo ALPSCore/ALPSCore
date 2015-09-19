@@ -98,8 +98,12 @@ namespace alps {
                     }
 
                     void save(hdf5::archive & ar) const {
-                        for(const_iterator it = begin(); it != end(); ++it)
-                            ar[it->first] = *(it->second);
+                        ar.create_group("");
+                        for(const_iterator it = begin(); it != end(); ++it) {
+                            if (it->second->count()!=0) {
+                                ar[it->first] = *(it->second);
+                            }
+                        }
                     }
 
                     void load(hdf5::archive & ar) {

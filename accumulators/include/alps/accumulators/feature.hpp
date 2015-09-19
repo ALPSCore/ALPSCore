@@ -58,13 +58,17 @@ namespace alps {
 
             template<typename T> struct ResultBase {
                 typedef T value_type;
+                template <typename U> struct make_scalar_result_type { typedef void type; };
+                template <typename U> struct make_scalar_result_type< std::vector<U> > { typedef ResultBase<U> type; };
+                typedef typename make_scalar_result_type<T>::type scalar_result_type;
+                typedef ResultBase< std::vector<T> > vector_result_type;
 
 
-            /// Dummy function for merging results (always throws an exception)
-            template <typename A>
-            void merge(const A& rhs) {
-              throw std::runtime_error("A result cannot be merged " + ALPS_STACKTRACE);
-            }
+                /// Dummy function for merging results (always throws an exception)
+                template <typename A>
+                void merge(const A& rhs) {
+                     throw std::runtime_error("A result cannot be merged " + ALPS_STACKTRACE);
+                }
               
 #ifdef ALPS_HAVE_MPI
                 inline void collective_merge(
