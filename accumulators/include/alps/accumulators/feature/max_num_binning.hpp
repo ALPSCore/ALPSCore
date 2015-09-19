@@ -218,6 +218,10 @@ namespace alps {
 
                     template<typename S> void print(S & os) const {
                         B::print(os);
+                        os << "Mean +/-error (tau): "
+                           << short_print(this->mean())
+                           << " +/-" << short_print(this->error())
+                           << "(" << short_print(this->autocorrelation()) << ")\n";
                         os << " Bins: " << max_num_binning();
                     }
 
@@ -521,6 +525,10 @@ namespace alps {
                     template<typename S> void print(S & os) const {
                         // TODO: use m_mn_variables!
                         B::print(os);
+                        os << "Mean +/-error (tau): "
+                           << short_print(mean())
+                           << " +/-" << short_print(error())
+                           << "(" << short_print(this->autocorrelation()) << ")\n";
                         os << " Bins: " << max_num_binning();
                     }
 

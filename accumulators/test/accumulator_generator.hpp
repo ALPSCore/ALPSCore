@@ -156,6 +156,82 @@ namespace alps {
                 }
             };
 
+            /// Class to generate accumulators with identical, correlated data: Mean,NoBinning,LogBinning,FullBinning
+            template <typename T, unsigned long NPOINTS_P=1000, unsigned long CORRL_P=10, unsigned int VSZ_P=10>
+            class acc_correlated_gen {
+                private:
+                alps::accumulators::result_set* results_ptr_;
+                alps::accumulators::accumulator_set* measurements_ptr_;
+
+                public:
+                typedef T data_type;
+                typedef alps::accumulators::MeanAccumulator<T> mean_acc_type;
+                typedef alps::accumulators::NoBinningAccumulator<T> nobin_acc_type;
+                typedef alps::accumulators::LogBinningAccumulator<T> logbin_acc_type;
+                typedef alps::accumulators::FullBinningAccumulator<T> fullbin_acc_type;
+
+                static const unsigned long int NPOINTS=NPOINTS_P; /// < Number of data points
+                static const unsigned int VSIZE=VSZ_P; /// size of the vector
+                static const unsigned long int CORRL=CORRL_P; /// correlation length (samples)
+
+                const std::string mean_name;
+                const std::string nobin_name;
+                const std::string logbin_name;
+                const std::string fullbin_name;
+
+                /// Free the memory allocated in the constructor
+                virtual ~acc_correlated_gen()
+                {
+                    delete results_ptr_;
+                    delete measurements_ptr_;
+                }
+
+                /// Generate the data points for the accumulator
+                acc_correlated_gen(const std::string& mean="mean", const std::string& nobin="nobin",
+                                const std::string& logbin="logbin", const std::string& fullbin="fullbin")
+                    : mean_name(mean), nobin_name(nobin), logbin_name(logbin), fullbin_name(fullbin)
+                {
+                    srand48(43);
+                    measurements_ptr_=new alps::accumulators::accumulator_set();
+                    alps::accumulators::accumulator_set& m=*measurements_ptr_;
+                    m <<    mean_acc_type(   mean_name)
+                      <<   nobin_acc_type(  nobin_name)
+                      <<  logbin_acc_type( logbin_name)
+                      << fullbin_acc_type(fullbin_name);                        
+
+                    double d[CORRL_P];
+                    for (int j=0; j<CORRL_P; ++j) d[j]=0;
+                    for (int i=0; i<NPOINTS; ++i) {
+                        d[0]=drand48()/CORRL_P;
+                        for (int j=1; j<CORRL_P; ++j) d[0]+=d[j]/CORRL_P; // auto-correlated sample
+                        // d[0]=0.6*d[1]+0.2*d[2]+0.15*d[3]+0.05*drand48(); // auto-correlated sample; 100% of [0,1]-random var
+                        data_type sample=get_data<data_type>(d[0], VSIZE);
+                        m[   mean_name]  << sample;
+                        m[  nobin_name]  << sample;
+                        m[ logbin_name]  << sample;
+                        m[fullbin_name]  << sample;
+                        for (int j=CORRL_P-1; j>=1; --j) d[j]=d[j-1];
+                    }
+                    results_ptr_=new alps::accumulators::result_set(m);
+                }
+
+                /// Returns extracted result set
+                const alps::accumulators::result_set& results() const
+                {
+                    return *results_ptr_;
+                }
+
+                /// Returns the accumulator set
+                const alps::accumulators::accumulator_set& accumulators() const
+                {
+                    return *measurements_ptr_;
+                }
+                /// Returns the expected mean
+                double expected_mean() const { return 0.5; }
+                /// Returns the expected error if uncorrelated
+                double expected_uncorr_err() const { return 1/(12*std::sqrt(NPOINTS-1.)); }
+            };
+
         } // tesing::
     } // accumulators::
 } // alps::

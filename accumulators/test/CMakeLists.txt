@@ -14,11 +14,12 @@ set (test_src
     nonexistent
     acc_count_test
     save_load
-    binop_with_constant
     vec_const_binop_simple
+    binop_with_constant
+    binop_with_scalar
     single_accumulator
     autocorrelation
-    binop_with_scalar
+    print
     )
 
 #add tests for MPI

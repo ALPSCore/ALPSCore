@@ -262,7 +262,10 @@ namespace alps {
                     }
 
                     template<typename S> void print(S & os) const {
+                        os << "DEBUG PRINTING of the accumulator object state. **DO NOT USE AS PRODUCTION OUTPUT!**\n"
+                           << "(use mean(), error() and autocorrelation() methods)\n";
                         B::print(os);
+                        os << " Error bar: " << short_print(error());
                         os << " Autocorrelation: " << short_print(autocorrelation());
                         if (m_ac_sum2.size() > 0) {
                             for (std::size_t i = 0; i < binning_depth(); ++i)
@@ -424,8 +427,11 @@ namespace alps {
                     }
 
                     template<typename S> void print(S & os) const {
+                        os << "DEBUG PRINTING of the result object state. **DO NOT USE AS PRODUCTION OUTPUT!**\n"
+                           << "(use mean(), error() and autocorrelation() methods)\n";
                         B::print(os);
-                        os << " Tau: " << short_print(autocorrelation());
+                        os << " Error bar: " << short_print(error());
+                        os << " Autocorrelation: " << short_print(autocorrelation());
                         if (m_ac_errors.size() > 0) {
                             for (std::size_t i = 0; i < m_ac_errors.size(); ++i)
                                 os << std::endl
