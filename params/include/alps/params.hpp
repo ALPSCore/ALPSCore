@@ -210,7 +210,7 @@ namespace alps {
           {
               possibly_parse();
               options_map_type::const_iterator it=optmap_.find(name);
-              return (it!=optmap_.end()) && !(it->second).isNone();
+              return (it!=optmap_.end()) && !(it->second).isNone() && !(it->second).isEmpty();
           }
 
           /// Check if a parameter exists and is convertible to type T (that is: attempt to read T from it will not throw)

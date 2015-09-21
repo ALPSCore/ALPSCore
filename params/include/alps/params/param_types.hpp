@@ -67,9 +67,17 @@ namespace alps {
 
             // Sequence of std::vector<T> types (aka "vector types")
 #define     ALPS_PARAMS_DETAIL_VTYPES_SEQ BOOST_PP_SEQ_TRANSFORM(ALPS_PARAMS_DETAIL_MAKE_TYPE, std::vector, ALPS_PARAMS_DETAIL_STYPES_SEQ)
-	  
-	    // Make a sequence of all parameter types (for boost::variant)
-#define     ALPS_PARAMS_DETAIL_ALLTYPES_SEQ ALPS_PARAMS_DETAIL_STYPES_SEQ/**/ALPS_PARAMS_DETAIL_VTYPES_SEQ
+
+            /// Tag type to indicate "trigger" option type (FIXME: must be reacher)
+            struct trigger_tag {};
+
+            inline std::ostream& operator<<(std::ostream&, const trigger_tag&)
+            {
+                throw std::logic_error("Attempt to use undefined operator<< for trigger_tag");
+            }
+          
+             // Sequence of trigger type, scalar and vector types
+#define     ALPS_PARAMS_DETAIL_ALLTYPES_SEQ ALPS_PARAMS_DETAIL_STYPES_SEQ(trigger_tag)ALPS_PARAMS_DETAIL_VTYPES_SEQ
 
             // FIXME: will go away with acceptance of boost::TypeIndex
             // Generate a pretty-name specialization for scalar and vector types
@@ -78,31 +86,22 @@ namespace alps {
             // Generate a few more pretty-names, for frequently-needed types
             ALPS_PARAMS_DETAIL_TYPID_NAME(char *);
             ALPS_PARAMS_DETAIL_TYPID_NAME(const char *);
-            
           
-            /// A variant of all types, including None (as the first one -- important!)
-	    typedef boost::variant< None, BOOST_PP_SEQ_ENUM(ALPS_PARAMS_DETAIL_ALLTYPES_SEQ) > variant_all_type;
-
-            // Sequence of `boost::optional<T>` types for scalar and vector all types (except None)
+            // Sequence of `boost::optional<T>` types for all supported types
 #define     ALPS_PARAMS_DETAIL_OTYPES_SEQ BOOST_PP_SEQ_TRANSFORM(ALPS_PARAMS_DETAIL_MAKE_TYPE, boost::optional, ALPS_PARAMS_DETAIL_ALLTYPES_SEQ)
 
-            /// An output operator for optionals of any type (throws unconditionally)
+            /// A variant of all types and None as the 1st type
+	    typedef boost::variant< None, BOOST_PP_SEQ_ENUM(ALPS_PARAMS_DETAIL_OTYPES_SEQ) > variant_all_type;
+
+            /// An output operator for optionals of any type (FIXME! throws unconditionally)
             template <typename T>
             inline std::ostream& operator<<(std::ostream& , const boost::optional<T>&)
             {
                 throw std::logic_error("Attempt to use undefined operator<< for boost::optional<T>");
             }
 
-            /// Tag type to indicate "trigger" option type (FIXME: it's a hack and must be redone)
-            struct trigger_tag {};
-
-            inline std::ostream& operator<<(std::ostream&, const trigger_tag&)
-            {
-                throw std::logic_error("Attempt to use undefined operator<< for trigger_tag");
-            }
-
-            /// A variant of the trigger_tag and optionals of all types
-            typedef boost::variant<BOOST_PP_SEQ_ENUM(ALPS_PARAMS_DETAIL_OTYPES_SEQ), trigger_tag> variant_all_optional_type;
+            // /// A variant of the trigger_tag and optionals of all types
+            // typedef boost::variant<BOOST_PP_SEQ_ENUM(ALPS_PARAMS_DETAIL_OTYPES_SEQ), trigger_tag> variant_all_optional_type;
         }
 
         // Elevate choosen generated types:

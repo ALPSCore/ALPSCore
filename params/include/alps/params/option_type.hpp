@@ -8,14 +8,14 @@
 
 /*  Requirements for the `option_type`:
 
-    1. Can hold `None`, a value of a scalar type, a value of a vector type.
+    1. It can hold a value of a scalar type or a value of a vector type, each can be in the "undefined" state.
 
-    2. If holds `None`, it cannot be assigned to anything.
+    2. If "undefined", it cannot be assigned to anything.
 
     3. If holds a value of some type, it can be assigned to the same or a "larger" type
        (as defined by `detail::is_convertible<FROM,TO>`).
 
-    4. If holds `None`, any value can be assigned to it, and it will acquire the new type.
+    4. If holds "undefined", any value can be assigned to it, and it will acquire the new type.
 
     5. If holds a value of some type, only the same or a smaller typed value can be assigned to it
        (as defined by `detail::is_convertible<FROM,TO>`), and the assignment will not change the type.
@@ -49,7 +49,7 @@ namespace alps {
         
         class option_type {
 
-            friend class option_description_type;  // to interface with boost::program_options
+            // friend class option_description_type;  // to interface with boost::program_options
 
             public: // FIXME: not everything is public
 
@@ -68,7 +68,7 @@ namespace alps {
                     : std::runtime_error(a_what) {}
             };
             
-            /// Exception to be thrown by visitor class: None value used
+            /// Exception to be thrown by visitor class: empty value used
             struct visitor_none_used: public std::runtime_error {
                 visitor_none_used(const std::string& a_what)
                     : std::runtime_error(a_what) {}
@@ -98,32 +98,32 @@ namespace alps {
                     : exception_base(a_name, a_reason) {};
             };
             
-            /// Visitor to assign a value of type RHS_T to a variant containing type LHS_T
+            /// Visitor to assign a value of type RHS_T to a variant containing type optional<LHS_T>
             template <typename RHS_T>
             struct setter_visitor: public boost::static_visitor<>
             {
                 const RHS_T& rhs; ///< The rhs value to be assigned
 
-                /// Constructor save the value to be assigned
+                /// Constructor saves the value to be assigned
                 setter_visitor(const RHS_T& a_rhs): rhs(a_rhs) {}
 
-                /// Called when the bound type LHS_T is the same as RHS_T
-                void apply(RHS_T& lhs) const
+                /// Called when the bound type optional<LHS_T> holds RHS_T
+                void apply(boost::optional<RHS_T>& lhs) const
                 {
                     lhs=rhs;
                 }
 
-                /// Called when the bound type LHS_T and rhs type RHS_T are distinct, convertible types
+                /// Called when the contained type LHS_T and rhs type RHS_T are distinct, convertible types
                 template <typename LHS_T>
-                void apply(LHS_T& lhs,
+                void apply(boost::optional<LHS_T>& lhs,
                            typename boost::enable_if< detail::is_convertible<RHS_T,LHS_T> >::type* =0) const
                 {
                     lhs=rhs;
                 }
 
-                /// Called when the bound type LHS_T and rhs type RHS_T are distinct, non-convertible types
+                /// Called when the contained type LHS_T and rhs type RHS_T are distinct, non-convertible types
                 template <typename LHS_T>
-                void apply(LHS_T& lhs,
+                void apply(boost::optional<LHS_T>& lhs,
                            typename boost::disable_if< detail::is_convertible<RHS_T,LHS_T> >::type* =0) const
                 {
                     throw visitor_type_mismatch(
@@ -133,15 +133,21 @@ namespace alps {
                         + detail::type_id<LHS_T>().pretty_name()+"\"");
                 }
 
-                /// Called when the bound type RHS_T is None (should never happen, option_type::operator=() must take care of this)
-                void apply(None& lhs) const
+                // /// Called when the bound type RHS_T is None (should never happen, option_type::operator=() must take care of this)
+                // void apply(None& lhs) const
+                // {
+                //     throw std::logic_error("Should not happen: setting an option_type object containing None");
+                // }
+
+                /// Called when the bound type in the variant is None (should never happen, option_type::operator=() must take care of this)
+                void operator()(const None& ) const
                 {
                     throw std::logic_error("Should not happen: setting an option_type object containing None");
                 }
 
                 /// Called by apply_visitor()
                 template <typename LHS_T>
-                void operator()(LHS_T& lhs) const
+                void operator()(boost::optional<LHS_T>& lhs) const
                 {
                     apply(lhs);
                 }
@@ -152,13 +158,35 @@ namespace alps {
             {
                 return val_.which()==0;  // NOTE:Caution -- relies on None being the first type!
             }
+
+            /// Visitor to check if the contained value is empty (unassigned)
+            struct isempty_visitor: public boost::static_visitor<bool>
+            {
+                /// Called by apply_visitor()
+                template <typename T>
+                bool operator()(const boost::optional<T>& val) const
+                {
+                    return !val;
+                }
+                /// Called by apply_visitor()
+                bool operator()(const None&) const
+                {
+                    return true;
+                }
+            };
+            
+            /// Checks if the option is empty (does not have an assigned value)
+            bool isEmpty() const
+            {
+                return boost::apply_visitor(isempty_visitor(),val_);
+            }
           
             /// Assignment operator: assigns a value of type T
             template <typename T>
             void operator=(const T& rhs)
             {
                 if (isNone()) { 
-                    val_=rhs;
+                    val_=boost::optional<T>(rhs);
                     return;
                 }
 
@@ -175,7 +203,21 @@ namespace alps {
                 *this=std::string(rhs);
             }
 
-            /// Visitor to get a value (with conversion): returns type LHS_T, converts from the bound type RHS_T
+            /// Set the contained value to "empty" of the given type
+            template <typename T>
+            void reset()
+            {
+                val_=boost::optional<T>();
+            }
+
+            /// Set the constained value to the given value and type
+            template <typename T>
+            void reset(const T& v)
+            {
+                val_=boost::optional<T>(v);
+            }
+
+            /// Visitor to get a value (with conversion): returns type LHS_T, converts from the bound type optional<RHS_T>
             template <typename LHS_T>
             struct getter_visitor: public boost::static_visitor<LHS_T> {
 
@@ -183,7 +225,6 @@ namespace alps {
                 LHS_T apply(const LHS_T& val) const {
                     return val; // no conversion 
                 }
-
     
                 /// Types are convertible (Both are scalar types)
                 template <typename RHS_T>
@@ -204,14 +245,15 @@ namespace alps {
                 }
 
                 /// Extracting None type --- always fails
-                LHS_T apply(const None& val) const {
+                LHS_T operator ()(const None&) const {
                     throw visitor_none_used("Attempt to use uninitialized option value");
                 }
 
                 /// Called by apply_visitor()
                 template <typename RHS_T>
-                LHS_T operator()(const RHS_T& val) const {
-                    return apply(val);
+                LHS_T operator()(const boost::optional<RHS_T>& val) const {
+                    if (!val) throw visitor_none_used("Attempt to use uninitialized option value");
+                    return apply(*val);
                 }
             };
 
@@ -242,9 +284,16 @@ namespace alps {
               public: // FIXME: not everything has to be public!
                 /// Called by apply_visitor() for a bound type U
                 template <typename U>
-                bool operator()(const U& val) const
+                bool operator()(const boost::optional<U>& val) const
                 {
-                    return apply(val);
+                    if (!val) return false; // empty value is not convertible (FIXME?)
+                    return apply(*val);
+                }
+
+                /// Called by apply_visitor() for a bound type None
+                bool operator()(const None& val) const
+                {
+                    throw std::logic_error("Checking convertibility of type None --- should not be needed?"); // FIXME???
                 }
 
                 /// The bound type U is the same as requested type T:
@@ -271,8 +320,18 @@ namespace alps {
             struct ostream_visitor : public boost::static_visitor<> {
             public:
                 ostream_visitor(std::ostream & arg) : os(arg) {}
-                template <typename U> void operator()(U const & v) const {
-                    os << short_print(v);
+
+                void operator()(const None&) const {
+                        os << "[undefined]"; // FIXME: should it ever appear?
+                }
+                    
+                template <typename U>
+                void operator()(const boost::optional<U>& v) const {
+                    if (!v) {
+                        os << "[empty]"; // FIXME: should it ever appear?
+                    } else {
+                        os << short_print(*v);
+                    }
                 }
             private:
                 std::ostream & os;
@@ -286,7 +345,6 @@ namespace alps {
                 return out;
             } 
                 
-
             /// Visitor to archive an option with a proper type
             struct archive_visitor : public boost::static_visitor<> {
                 hdf5::archive& ar_;
@@ -298,12 +356,18 @@ namespace alps {
                 template <typename U>
                 void operator()(const U& val) const
                 {
-                    ar_[name_] << val;
+                    if (!!val) ar_[name_] << *val;
                 }
 
                 /// specialization for U==None: skips the value
                 void operator()(const None&) const
                 { }
+
+                /// specialization for trigger_tag: throws (FIXME???)
+                void operator()(const boost::optional<detail::trigger_tag>&) const
+                {
+                    throw std::logic_error("Attempt to archive trigger_tag type --- should not be needed??");
+                }
             };
 
             /// Outputs the option to an archive
@@ -379,7 +443,7 @@ namespace alps {
             const mapped_type& operator[](const key_type& k) const
             {
                 const_iterator it=find(k);
-                if (it == end() || it->second.isNone() ) {
+                if (it == end() || it->second.isEmpty() || it->second.isNone() ) {
                     throw option_type::uninitialized_value(k, "Attempt to access non-existing key '"+k+"'");
                 }
                 return it->second;
@@ -512,7 +576,7 @@ namespace alps {
                 typedef boost::program_options::options_description po_descr;
                 
                 std::string descr_; ///< Parameter description
-                variant_all_optional_type deflt_; ///< To keep type and defaults(if any)
+                variant_all_type deflt_; ///< To keep type and defaults(if any)
 
                 /// Visitor class to add the stored description to boost::program_options
                 struct add_option_visitor: public boost::static_visitor<> {
@@ -523,6 +587,11 @@ namespace alps {
                     add_option_visitor(po_descr& a_po_descr, const std::string& a_name, const std::string& a_strdesc):
                         odesc_(a_po_descr), name_(a_name), strdesc_(a_strdesc) {}
 
+                    void operator()(const None&) const
+                    {
+                        throw std::logic_error("add_option_visitor is called for an object containing None: should not happen!");
+                    }
+                    
                     /// Called by apply_visitor(), for a optional<T> bound type
                     template <typename T>
                     void operator()(const boost::optional<T>& a_val) const
@@ -537,7 +606,7 @@ namespace alps {
                     }
 
                     /// Called by apply_visitor(), for a trigger_tag type
-                    void operator()(const trigger_tag& a_val) const
+                    void operator()(const boost::optional<trigger_tag>& a_val) const
                     {
                         do_define<trigger_tag>::add_option(odesc_, name_, strdesc_);
                     }
@@ -552,14 +621,20 @@ namespace alps {
                     set_option_visitor(option_type& a_opt, const boost::any& a_anyval):
                         opt_(a_opt), anyval_(a_anyval) {}
 
+                    /// Called by apply_visitor(), for None bound type
+                    void operator()(const None&) const
+                    {
+                        throw std::logic_error("set_option_visitor is called for an objec containing None: should not happen!");
+                    }
+                    
                     /// Called by apply_visitor(), for a optional<T> bound type
                     template <typename T>
                     void operator()(const boost::optional<T>& a_val) const
                     {
                         if (anyval_.empty()) {
-                            opt_.val_=None();
+                            opt_.reset<T>();
                         } else {
-                            opt_.val_=boost::any_cast<T>(anyval_);
+                            opt_.reset<T>(boost::any_cast<T>(anyval_));
                         }
                     }
 
@@ -567,23 +642,23 @@ namespace alps {
                     void operator()(const boost::optional<std::string>& a_val) const
                     {
                         if (anyval_.empty()) {
-                            opt_.val_=None();
+                            opt_.reset<std::string>();
                         } else {
                             // The value may contain a string or a default value, which is hidden inside string_container
                             // (FIXME: this mess of a design must be fixed).
                             const std::string* ptr=boost::any_cast<std::string>(&anyval_);
                             if (ptr) {
-                                opt_.val_=*ptr;
+                                opt_.reset<std::string>(*ptr);
                             } else {
-                                opt_.val_=boost::any_cast<string_container>(anyval_);
+                                opt_.reset<std::string>(boost::any_cast<string_container>(anyval_));
                             }
                         }
                     }
 
                     /// Called by apply_visitor(), for a trigger_tag type
-                    void operator()(const trigger_tag& ) const
+                    void operator()(const boost::optional<trigger_tag>& ) const
                     {
-                        opt_.val_=!anyval_.empty(); // non-empty value means the option is present
+                        opt_.reset<bool>(!anyval_.empty()); // non-empty value means the option is present
                     }
                 };
                     
@@ -599,7 +674,7 @@ namespace alps {
                 { }
 
                 /// Constructor for a trigger option
-                option_description_type(const std::string& a_descr): descr_(a_descr), deflt_(trigger_tag()) 
+                option_description_type(const std::string& a_descr): descr_(a_descr), deflt_(boost::optional<trigger_tag>(trigger_tag())) 
                 { }
 
                 /// Adds to program_options options_description
