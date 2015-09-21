@@ -45,9 +45,17 @@ namespace alps {
             template <>
             struct type_rank<int> : public boost::mpl::integral_c<int,3> {};
 
+            // `unsigned int` is convertible to and from `int` (FIXME?)
+            template <>
+            struct type_rank<unsigned int> : public boost::mpl::integral_c<int,3> {};
+
             // We declare `long` not convertible to `int` even if sizeof(int)==sizeof(long) (FIXME?)
             template <>
             struct type_rank<long> : public boost::mpl::integral_c<int,4> {};
+
+            // `unsigned long` is convertible to and from `long` (FIXME?)
+            template <>
+            struct type_rank<unsigned long> : public boost::mpl::integral_c<int,4> {};
 
             template <>
             struct type_rank<double> : public boost::mpl::integral_c<int,5> {};

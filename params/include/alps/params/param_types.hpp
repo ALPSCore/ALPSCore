@@ -86,6 +86,8 @@ namespace alps {
             // Generate a few more pretty-names, for frequently-needed types
             ALPS_PARAMS_DETAIL_TYPID_NAME(char *);
             ALPS_PARAMS_DETAIL_TYPID_NAME(const char *);
+            ALPS_PARAMS_DETAIL_TYPID_NAME(unsigned int);
+            ALPS_PARAMS_DETAIL_TYPID_NAME(unsigned long);
           
             // Sequence of `boost::optional<T>` types for all supported types
 #define     ALPS_PARAMS_DETAIL_OTYPES_SEQ BOOST_PP_SEQ_TRANSFORM(ALPS_PARAMS_DETAIL_MAKE_TYPE, boost::optional, ALPS_PARAMS_DETAIL_ALLTYPES_SEQ)
