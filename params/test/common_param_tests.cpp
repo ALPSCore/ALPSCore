@@ -105,6 +105,7 @@ class AnyParamTest : public ::testing::Test {
     // Explicit cast to the same type: should return value
     void explicit_cast()
     {
+#define as   template as  /* work around a bug (?) in clang, see https://llvm.org/bugs/show_bug.cgi?id=22247 */
         EXPECT_EQ(val1, param["present_def"].as<value_type>());
         EXPECT_EQ(val1, param["missing_def"].as<value_type>());
         EXPECT_EQ(val1, param["present_nodef"].as<value_type>());
@@ -112,6 +113,7 @@ class AnyParamTest : public ::testing::Test {
 
         EXPECT_THROW(param["missing_nodef"].as<value_type>(), alps::params::uninitialized_value);
         EXPECT_THROW(param["nosuchname"].as<value_type>(), alps::params::uninitialized_value);
+#undef as        
     }
 
     // Untyped existence check
@@ -207,6 +209,7 @@ class AnyParamTest : public ::testing::Test {
     // Explicit cast to a larger type: should return value
     void explicit_cast_to_larger()
     {
+#define as   template as  /* work around a bug (?) in clang, see https://llvm.org/bugs/show_bug.cgi?id=22247 */
         if (!has_larger_type) return;
         EXPECT_EQ(val1, param["present_def"].as<larger_type>());
         EXPECT_EQ(val1, param["missing_def"].as<larger_type>());
@@ -215,6 +218,7 @@ class AnyParamTest : public ::testing::Test {
 
         EXPECT_THROW(param["missing_nodef"].as<larger_type>(), alps::params::uninitialized_value);
         EXPECT_THROW(param["nosuchname"].as<larger_type>(), alps::params::uninitialized_value);
+#undef as        
     }
 
     // Implicit cast to a larger type: should return value
@@ -267,6 +271,7 @@ class AnyParamTest : public ::testing::Test {
     // Explicit cast to a smaller type: ?? throw
     void explicit_cast_to_smaller()
     {
+#define as   template as  /* work around a bug (?) in clang, see https://llvm.org/bugs/show_bug.cgi?id=22247 */
         if (!has_smaller_type) return;
 
         EXPECT_THROW(param["present_def"].as<smaller_type>(),alps::params::type_mismatch);
@@ -276,6 +281,7 @@ class AnyParamTest : public ::testing::Test {
 
         EXPECT_THROW(param["missing_nodef"].as<smaller_type>(),alps::params::uninitialized_value);
         EXPECT_THROW(param["nosuchname"].as<smaller_type>(),alps::params::uninitialized_value);
+#undef as        
     }
 
     // Implicit cast to a smaller type: ?? throw
@@ -308,6 +314,8 @@ class AnyParamTest : public ::testing::Test {
     // Explicit cast to an incompatible type: throw
     void explicit_cast_to_incompatible()
     {
+#define as   template as  /* work around a bug (?) in clang, see https://llvm.org/bugs/show_bug.cgi?id=22247 */
+
         EXPECT_THROW(param["present_def"].as<incompatible_type>(), alps::params::type_mismatch);
         EXPECT_THROW(param["missing_def"].as<incompatible_type>(), alps::params::type_mismatch);
         EXPECT_THROW(param["present_nodef"].as<incompatible_type>(), alps::params::type_mismatch);
@@ -315,6 +323,7 @@ class AnyParamTest : public ::testing::Test {
         
         EXPECT_THROW(param["missing_nodef"].as<incompatible_type>(), alps::params::uninitialized_value);
         EXPECT_THROW(param["nosuchname"].as<incompatible_type>(), alps::params::uninitialized_value);
+#undef as
     }
 
     // Implicit cast to an incompatible type: throw
@@ -369,6 +378,8 @@ class AnyParamTest : public ::testing::Test {
     // Assignment from a smaller type: should preserve type if any, acquire value
     void assign_smaller_type()
     {
+#define as   template as  /* work around a bug (?) in clang, see https://llvm.org/bugs/show_bug.cgi?id=22247 */
+
         if (!has_smaller_type) return;
         const value_type v1=data_trait<value_type>::get(true);
         const smaller_type v2=data_trait<smaller_type>::get(false);
@@ -401,11 +412,14 @@ class AnyParamTest : public ::testing::Test {
         // acquires value and the type
         param["nosuchname"]=v2;
         EXPECT_EQ(v2,param["nosuchname"].as<smaller_type>());
+#undef as
     }
 
     // Assignment from larger type: should preserve type if any, reject value
     void assign_larger_type()
     {
+#define as   template as  /* work around a bug (?) in clang, see https://llvm.org/bugs/show_bug.cgi?id=22247 */
+
         if (!has_larger_type) return;
         const value_type  v1=data_trait<value_type>::get(true);
         const larger_type v2=data_trait<larger_type>::get(false);
@@ -433,11 +447,15 @@ class AnyParamTest : public ::testing::Test {
         // Acquires type and value
         param["nosuchname"]=v2;
         EXPECT_EQ(v2,param["nosuchname"].as<larger_type>());
+
+#undef as        
     }
 
     // Assignment from an incompatible type: should preserve type, reject value
     void assign_incompatible_type()
     {
+#define as   template as  /* work around a bug (?) in clang, see https://llvm.org/bugs/show_bug.cgi?id=22247 */
+
         const incompatible_type v2=data_trait<incompatible_type>::get(false);
 
         EXPECT_EQ(val1,param["present_def"].as<value_type>());
@@ -463,6 +481,7 @@ class AnyParamTest : public ::testing::Test {
         // Acquires type and value
         param["nosuchname"]=v2;
         EXPECT_EQ(v2,param["nosuchname"].as<incompatible_type>());
+#undef as        
     }
 
     // define() for the same type: throw
