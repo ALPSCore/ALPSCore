@@ -370,7 +370,7 @@ class AnyParamTest : public ::testing::Test {
     void assign_smaller_type()
     {
         if (!has_smaller_type) return;
-        const smaller_type v1=data_trait<smaller_type>::get(true);
+        const value_type v1=data_trait<value_type>::get(true);
         const smaller_type v2=data_trait<smaller_type>::get(false);
 
         EXPECT_EQ(v1, param["present_def"].as<value_type>());
@@ -407,7 +407,7 @@ class AnyParamTest : public ::testing::Test {
     void assign_larger_type()
     {
         if (!has_larger_type) return;
-        const larger_type v1=data_trait<larger_type>::get(true);
+        const value_type  v1=data_trait<value_type>::get(true);
         const larger_type v2=data_trait<larger_type>::get(false);
 
         EXPECT_EQ(v1,param["present_def"].as<value_type>());
@@ -564,11 +564,11 @@ REGISTER_TYPED_TEST_CASE_P(AnyParamTest,
 
 
 typedef ::testing::Types<
-    // CmdlineParamGenerator<bool>
-    // CmdlineParamGenerator<char>
-    CmdlineParamGenerator<int> //,
-    // CmdlineParamGenerator<long>,
-    // CmdlineParamGenerator<double>
+    CmdlineParamGenerator<bool>,
+    CmdlineParamGenerator<char>,
+    CmdlineParamGenerator<int>,
+    CmdlineParamGenerator<long>,
+    CmdlineParamGenerator<double>
     > CmdlineScalarGenerators;
 
 INSTANTIATE_TYPED_TEST_CASE_P(CmdlineScalarParamTest, AnyParamTest, CmdlineScalarGenerators);
