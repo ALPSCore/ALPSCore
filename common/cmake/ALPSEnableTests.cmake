@@ -7,7 +7,7 @@ option(TestXMLOutput "Output tests to xml" OFF)
 
 # Find gtest or otherwise fetch it into the build_dir/gtest
 function(UseGtest)  
-    set (gtest_root ${CMAKE_SOURCE_DIR}/common/deps/gtest-1.7.0)
+    set (gtest_root ${PROJECT_SOURCE_DIR}/../common/deps/gtest-1.7.0)
     message(STATUS "gtest source specified at ${gtest_root}")
     find_path(gtest_root NAMES "include/gtest/gtest.h" HINTS ${gtest_root})
 
