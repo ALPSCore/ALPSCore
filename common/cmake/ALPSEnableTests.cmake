@@ -6,8 +6,8 @@
 option(TestXMLOutput "Output tests to xml" OFF)
 
 # Find gtest or otherwise fetch it into the build_dir/gtest
-function(UseGtest)  
-    set (gtest_root ${PROJECT_SOURCE_DIR}/../common/deps/gtest-1.7.0)
+function(UseGtest gtest_root)  
+    #set (gtest_root ${ALPS_ROOT_DIR}/../common/deps/gtest-1.7.0)
     message(STATUS "gtest source specified at ${gtest_root}")
     find_path(gtest_root NAMES "include/gtest/gtest.h" HINTS ${gtest_root})
 
@@ -26,13 +26,15 @@ endfunction()
 
 # enable testing with gtest - fetch it if needed
 if (NOT tests_are_already_enabled) 
-    find_package(GTest QUIET)
+    if (ALPS_GLOBAL_BUILD)
+        set(gtest_root "${CMAKE_SOURCE_DIR}/common/deps/gtest-1.7.0")
+    else(ALPS_GLOBAL_BUILD)
+        set(gtest_root "${PROJECT_SOURCE_DIR}/../common/deps/gtest-1.7.0")
+    endif(ALPS_GLOBAL_BUILD)
 
-    if (NOT GTEST_FOUND) 
-        UseGtest()#${GTEST_ROOT})
-        find_package(GTest)
-    endif (NOT GTEST_FOUND) 
-
+    UseGtest(${gtest_root})
+    unset(gtest_root)
+    find_package(GTest)
     # set (LINK_TEST  ${GTEST_MAIN_LIBRARIES}) 
     include_directories(${GTEST_INCLUDE_DIRS})
     set(tests_are_already_enabled TRUE)
