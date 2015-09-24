@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
 #include "alps/gf/gf.hpp"
 #include "alps/gf/tail.hpp"
-//#include "alps/gf/fourier.hpp"
+#include "alps/gf/fourier.hpp"
 
 class AtomicFourierTestGF : public ::testing::Test
 {
@@ -13,6 +13,7 @@ public:
   const int ntau;
   typedef alps::gf::omega_sigma_gf_with_tail matsubara_gf_type;
   typedef alps::gf::itime_sigma_gf_with_tail itime_gf_type;
+  typedef alps::gf::one_index_gf<double, alps::gf::index_mesh> density_matrix_type;
   matsubara_gf_type g_omega;
   itime_gf_type g_tau;
   matsubara_gf_type gf2;
@@ -67,11 +68,20 @@ TEST_F(AtomicFourierTestGF,ZeroIsDensity){
 }
 TEST_F(AtomicFourierTestGF,MatsubaraToTimeFourier){
   initialize_as_atomic_matsubara(g_omega);
+  density_matrix_type unity=density_matrix_type(alps::gf::index_mesh(2));
+  unity.initialize();
+  unity(alps::gf::index(0))=1;
+  unity(alps::gf::index(1))=1;
+  g_omega.set_tail(1,unity);
 
-//  fourier_frequency_to_time(g_omega, g_tau);
+  fourier_frequency_to_time(g_omega, g_tau);
 
   initialize_as_atomic_itime(g_tau_2);
 
-//  EXPECT_NEAR((g_tau-g_tau_2).norm(), 0, 1.e-8);
+//  std::cout<<"fourier transform: "<<std::endl;
+//  std::cout<<g_tau<<std::endl;
+//  std::cout<<"analytics: "<<std::endl;
+//  std::cout<<g_tau_2<<std::endl;
+  EXPECT_NEAR((g_tau-g_tau_2).norm(), 0, 1.e-5);
 
 }
