@@ -45,6 +45,13 @@ TEST_F(ItimeTestGF,init)
     double x=gf(tau,i,j,sigma);
     EXPECT_EQ(0, x);
 }
+TEST_F(ItimeTestGF,points)
+{
+
+  EXPECT_EQ(gf.mesh1().points()[0], 0.);
+  EXPECT_EQ(gf.mesh1().points().back(), beta);
+  EXPECT_NEAR(gf.mesh1().points()[1], beta/(ntau-1), 1.e-8);
+}
 
 TEST_F(ItimeTestGF,saveload)
 {
