@@ -66,7 +66,7 @@ TEST_F(AtomicFourierTestGF,ZeroIsDensity){
   EXPECT_NEAR(g_tau(alps::gf::itime_mesh::index_type(0     ),alps::gf::index(0)), -(1-density()), 1.e-8);
   EXPECT_NEAR(g_tau(alps::gf::itime_mesh::index_type(ntau-1),alps::gf::index(0)),    -density() , 1.e-8);
 }
-TEST_F(AtomicFourierTestGF,MatsubaraToTimeFourier){
+TEST_F(AtomicFourierTestGF,MatsubaraToTimeFourierHalfFilling){
   initialize_as_atomic_matsubara(g_omega);
   density_matrix_type unity=density_matrix_type(alps::gf::index_mesh(2));
   unity.initialize();
@@ -78,10 +78,31 @@ TEST_F(AtomicFourierTestGF,MatsubaraToTimeFourier){
 
   initialize_as_atomic_itime(g_tau_2);
 
-//  std::cout<<"fourier transform: "<<std::endl;
-//  std::cout<<g_tau<<std::endl;
-//  std::cout<<"analytics: "<<std::endl;
-//  std::cout<<g_tau_2<<std::endl;
   EXPECT_NEAR((g_tau-g_tau_2).norm(), 0, 1.e-5);
+  //that's the missing c2 term
+  EXPECT_NEAR(U*density()-mu, 0, 1.e-5);
+}
+TEST_F(AtomicFourierTestGF,MatsubaraToTimeFourierAwayHalfFilling){
+  mu=0; //this makes it away from half filling
+  U=0.2;
+  initialize_as_atomic_matsubara(g_omega);
+  density_matrix_type unity=density_matrix_type(alps::gf::index_mesh(2));
+  unity.initialize();
+  unity(alps::gf::index(0))=1;
+  unity(alps::gf::index(1))=1;
+  g_omega.set_tail(1,unity);
+
+  density_matrix_type c2=density_matrix_type(alps::gf::index_mesh(2));
+  c2.initialize();
+  c2(alps::gf::index(0))=U*density()-mu;
+  c2(alps::gf::index(1))=U*density()-mu;
+  g_omega.set_tail(2,c2);
+
+
+  fourier_frequency_to_time(g_omega, g_tau);
+
+  initialize_as_atomic_itime(g_tau_2);
+
+  EXPECT_NEAR((g_tau-g_tau_2).norm(), 0, 1.e-7);
 
 }
