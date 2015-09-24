@@ -10,8 +10,8 @@ class ItimeTestGF : public ::testing::Test
     const int nsites;
     const int ntau;
     const int nspins;
-    alps::gf::itime_gf gf;
-    alps::gf::itime_gf gf2;
+    alps::gf::itime_k1_k2_sigma_gf gf;
+    alps::gf::itime_k1_k2_sigma_gf gf2;
 
     ItimeTestGF():beta(10), nsites(4), ntau(10), nspins(2),
              gf(alps::gf::itime_mesh(beta,ntau),
