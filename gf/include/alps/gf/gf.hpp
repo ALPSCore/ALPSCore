@@ -28,6 +28,130 @@ namespace alps {
           }
 
         }
+
+        template<class value_type, class MESH1> class one_index_gf
+        :boost::additive<one_index_gf<value_type,MESH1> >
+        {
+            public:
+            typedef boost::multi_array<value_type,1> container_type;
+            typedef MESH1 mesh1_type;
+
+            private:
+            MESH1 mesh1_;
+
+            container_type data_;
+            public:
+            one_index_gf(const MESH1& mesh1)
+                : mesh1_(mesh1),
+                  data_(boost::extents[mesh1_.extent()])
+            {
+            }
+
+            one_index_gf(const MESH1& mesh1,
+                         const container_type& data)
+                : mesh1_(mesh1),
+                  data_(data)
+            {
+                if (mesh1_.extent()!=data_.shape()[0])
+                    throw std::invalid_argument("Initialization of GF with the data of incorrect size");
+            }
+
+            const container_type& data() const { return data_; }
+
+            const MESH1& mesh1() const { return mesh1_; }
+
+            const value_type& operator()(typename MESH1::index_type i1) const
+            {
+                return data_[i1()];
+            }
+
+            value_type& operator()(typename MESH1::index_type i1)
+            {
+                return data_[i1()];
+            }
+
+            /// Initialize the GF data to value_type(0.)
+            void initialize()
+            {
+                for (int i=0; i<mesh1_.extent(); ++i) {
+                        data_[i]=value_type(0.0);
+                }
+            }
+            /// Norm operation (FIXME: is it always double??)
+            double norm() const
+            {
+                using std::abs;
+                double v=0;
+                for (const value_type* ptr=data_.origin(); ptr!=data_.origin()+data_.num_elements(); ++ptr) {
+                    v=std::max(abs(*ptr), v);
+                }
+                return v;
+            }
+
+            /// Assignment-op
+            template <typename op>
+            one_index_gf& do_op(const one_index_gf& rhs)
+            {
+                if (mesh1_!=rhs.mesh1_) {
+
+                    throw std::runtime_error("Incompatible meshes in one_index_gf::do_op");
+                }
+
+                std::transform(data_.origin(), data_.origin()+data_.num_elements(), rhs.data_.origin(), // inputs
+                               data_.origin(), // output
+                               op());
+
+                return *this;
+            }
+
+            /// Element-wise addition
+            one_index_gf& operator+=(const one_index_gf& rhs)
+            {
+                return do_op< std::plus<value_type> >(rhs);
+            }
+
+            /// Element-wise subtraction
+            one_index_gf& operator-=(const one_index_gf& rhs)
+            {
+                return do_op< std::minus<value_type> >(rhs);
+            }
+
+            /// Save the GF to HDF5
+            void save(alps::hdf5::archive& ar, const std::string& path) const
+            {
+                save_version(ar,path);
+                ar[path+"/data"] << data_;
+                ar[path+"/mesh/N"] << int(container_type::dimensionality);
+                mesh1_.save(ar,path+"/mesh/1");
+            }
+
+            /// Load the GF from HDF5
+            void load(alps::hdf5::archive& ar, const std::string& path)
+            {
+                if (!check_version(ar,path)) throw std::runtime_error("Incompatible archive version");
+
+                int ndim;
+                ar[path+"/mesh/N"] >> ndim;
+                if (ndim != container_type::dimensionality) throw std::runtime_error("Wrong number of dimension reading Matsubara GF, ndim="+boost::lexical_cast<std::string>(ndim) );
+
+                mesh1_.load(ar,path+"/mesh/1");
+
+                data_.resize(boost::extents[mesh1_.extent()]);
+
+                ar[path+"/data"] >> data_;
+            }
+
+        };
+        template<class value_type, class MESH1> std::ostream &operator<<(std::ostream &os, one_index_gf<value_type,MESH1> G){
+          os<<G.mesh1();
+          for(int i=0;i<G.mesh1().extent();++i){
+            os<<G.mesh1().points()[i]<<" ";
+            detail::print_no_complex<value_type>(os, G(typename MESH1::index_type(i)));
+            os<<std::endl;
+          }
+          return os;
+        }
+
         template<class value_type, class MESH1, class MESH2> class two_index_gf
         :boost::additive<two_index_gf<value_type,MESH1,MESH2> >
         {
@@ -444,8 +568,11 @@ namespace alps {
         typedef two_index_gf<std::complex<double>, matsubara_mesh<mesh::POSITIVE_ONLY>, index_mesh> omega_sigma_gf;
         typedef two_index_gf<             double , itime_mesh, index_mesh> itime_sigma_gf;
 
+        typedef one_index_gf<std::complex<double>, matsubara_mesh<mesh::POSITIVE_ONLY> >omega_gf;
+        typedef one_index_gf<             double , itime_mesh> itime_gf;
+        typedef one_index_gf<std::complex<double>, index_mesh> sigma_gf;
+
         typedef omega_k1_k2_sigma_gf matsubara_gf;
-        typedef itime_k1_k2_sigma_gf itime_gf;
 
     }
 }

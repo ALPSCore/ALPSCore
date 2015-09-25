@@ -98,6 +98,7 @@ namespace alps {
             double beta() const{ return beta_;}
             statistics::statistics_type statistics() const{ return statistics_;}
             mesh::frequency_positivity_type positivity() const{ return positivity_;}
+
           
             void save(alps::hdf5::archive& ar, const std::string& path) const
             {
@@ -160,11 +161,15 @@ namespace alps {
             bool last_point_included_;
             bool half_point_mesh_;
             statistics::statistics_type statistics_;
+            std::vector<double> points_;
       
             public:
             typedef generic_index<itime_mesh> index_type;
 
-            itime_mesh(double beta, int ntau): beta_(beta), ntau_(ntau), last_point_included_(true), half_point_mesh_(false), statistics_(statistics::FERMIONIC){}
+            itime_mesh(double beta, int ntau): beta_(beta), ntau_(ntau), last_point_included_(true), half_point_mesh_(false), statistics_(statistics::FERMIONIC){
+              compute_points();
+
+            }
                 int operator()(index_type idx) const { return idx(); }
             int extent() const{return ntau_;}
       
@@ -177,6 +182,7 @@ namespace alps {
             ///Getter variables for members
             double beta() const{ return beta_;}
             statistics::statistics_type statistics() const{ return statistics_;}
+            const std::vector<double> &points() const{return points_;}
 
             /// Comparison operators
             bool operator!=(const itime_mesh &mesh) const {
@@ -191,7 +197,7 @@ namespace alps {
                 ar[path+"/beta"] << beta_;
                 ar[path+"/half_point_mesh"] << int(half_point_mesh_);
                 ar[path+"/last_point_included"] << int(last_point_included_);
-                // ...and optional ["points"]
+                ar[path+"/points"] << points_;
             }
       
             void load(alps::hdf5::archive& ar, const std::string& path)
@@ -213,7 +219,24 @@ namespace alps {
                 last_point_included_=last_point_included;
                 beta_=beta;
                 ntau_=ntau;
+                compute_points();
+           }
+            void compute_points(){
+                points_.resize(extent());
+                if(half_point_mesh_){
+                  double dtau=beta_/ntau_;
+                  for(int i=0;i<ntau_;++i){
+                      points_[i]=(i+0.5)*dtau;
+                  }
+                }
+                for(int i=0;i<ntau_;++i){
+                  double dtau=last_point_included_?beta_/(ntau_-1):beta_/ntau_;
+                  for(int i=0;i<ntau_;++i){
+                      points_[i]=i*dtau;
+                  }
+                }
             }
+
         };
         ///Stream output operator, e.g. for printing to file
         std::ostream &operator<<(std::ostream &os, const itime_mesh &M);
