@@ -32,7 +32,7 @@ namespace alps {
         namespace detail {
             
 	    // Allowed basic numerical types.
-	    // NOTE 1: do not forget to change "6" to the correct number if editing!
+	    // NOTE 1: do not forget to change "8" to the correct number if editing!
 	    // NOTE 2: currently, not more than (20-1)/2 = 9 types are supported
 	    //         (20 is boost::variant limit; we have std::vector<T> for each of
 	    //         these basic types, plus None.)
@@ -42,8 +42,10 @@ namespace alps {
             //         it is deemed to be an unnecessary complication.
             // NOTE 4: If new types are introduced, add them to type ranking in `param_types_ranking.hpp` also,
             //         to define what type is "convertible" to what.
-#define	    ALPS_PARAMS_DETAIL_STYPES_VEC (6,(int,            \
+#define	    ALPS_PARAMS_DETAIL_STYPES_VEC (8,(int,            \
+                                              unsigned int,   \
                                               long,           \
+                                              unsigned long,  \
 					      double,         \
                                               char,           \
                                               bool,           \
@@ -86,8 +88,8 @@ namespace alps {
             // Generate a few more pretty-names, for frequently-needed types
             ALPS_PARAMS_DETAIL_TYPID_NAME(char *);
             ALPS_PARAMS_DETAIL_TYPID_NAME(const char *);
-            ALPS_PARAMS_DETAIL_TYPID_NAME(unsigned int);
-            ALPS_PARAMS_DETAIL_TYPID_NAME(unsigned long);
+            // ALPS_PARAMS_DETAIL_TYPID_NAME(unsigned int);
+            // ALPS_PARAMS_DETAIL_TYPID_NAME(unsigned long);
           
             // Sequence of `boost::optional<T>` types for all supported types
 #define     ALPS_PARAMS_DETAIL_OTYPES_SEQ BOOST_PP_SEQ_TRANSFORM(ALPS_PARAMS_DETAIL_MAKE_TYPE, boost::optional, ALPS_PARAMS_DETAIL_ALLTYPES_SEQ)

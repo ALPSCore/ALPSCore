@@ -586,7 +586,9 @@ typedef ::testing::Types<
     CmdlineParamGenerator<bool>,
     CmdlineParamGenerator<char>,
     CmdlineParamGenerator<int>,
+    CmdlineParamGenerator<unsigned int>,
     CmdlineParamGenerator<long>,
+    CmdlineParamGenerator<unsigned long>,
     CmdlineParamGenerator<double>
     > CmdlineScalarGenerators;
 

@@ -24,9 +24,9 @@ TEST(param,assignments)
     // ALPS_ASSIGN_PARAM(short);
     // ALPS_ASSIGN_PARAM(unsigned short);
     ALPS_ASSIGN_PARAM(int);
-    // ALPS_ASSIGN_PARAM(unsigned);
+    ALPS_ASSIGN_PARAM(unsigned);
     ALPS_ASSIGN_PARAM(long);
-    // ALPS_ASSIGN_PARAM(unsigned long);
+    ALPS_ASSIGN_PARAM(unsigned long);
     // ALPS_ASSIGN_PARAM(long long);
     // ALPS_ASSIGN_PARAM(unsigned long long);
     // ALPS_ASSIGN_PARAM(float);

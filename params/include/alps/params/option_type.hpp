@@ -203,6 +203,18 @@ namespace alps {
                 *this=std::string(rhs);
             }
 
+            // /// Assignment operator specialization: assigns a value of type `unsigned int`
+            // void operator=(unsigned int rhs)
+            // {
+            //     *this=int(rhs); // FIXME?? Is it good --- to abandon signedness?
+            // }
+
+            //  /// Assignment operator specialization: assigns a value of type `unsigned long`
+            // void operator=(unsigned long rhs)
+            // {
+            //     *this=long(rhs); // FIXME?? Is it good --- to abandon signedness?
+            // }
+
             /// Set the contained value to "empty" of the given type
             template <typename T>
             void reset()
