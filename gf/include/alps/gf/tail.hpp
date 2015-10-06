@@ -66,11 +66,12 @@ namespace alps {
         void save(alps::hdf5::archive& ar, const std::string& path) const
         {
             gf_type::save(ar,path);
-            ar["tail/descriptor"]="INFINITY_TAIL";
-            ar["tail/min_tail_order"]=min_tail_order_;
-            ar["tail/max_tail_order"]=max_tail_order_;
+            ar[path+"/tail/descriptor"]="INFINITY_TAIL";
+            ar[path+"/tail/min_tail_order"]=min_tail_order_;
+            ar[path+"/tail/max_tail_order"]=max_tail_order_;
+            if(min_tail_order_==TAIL_NOT_SET) return;
             for (int i=min_tail_order_; i<=max_tail_order_; ++i) {
-                ar["tail/"+boost::lexical_cast<std::string>(i)] << tails_[i].data();
+                ar[path+"/tail/"+boost::lexical_cast<std::string>(i)] << tails_[i].data();
             }
         }
 
@@ -78,20 +79,22 @@ namespace alps {
         void load(alps::hdf5::archive& ar, const std::string& path)
         {
             gf_type::load(ar,path);
-            std::string descr; ar["tail/descriptor"] >> descr;
+            std::string descr; ar[path+"/tail/descriptor"] >> descr;
             if (descr!="INFINITY_TAIL") throw std::runtime_error("Wrong tail format '"+descr+"', expected INFINITY_TAIL");
 
             // FIXME!FIXME! Rewrite using clone-swap for exception safety.
-            ar["tail/min_tail_order"] >> min_tail_order_;
-            ar["tail/max_tail_order"] >> max_tail_order_;
+            ar[path+"/tail/min_tail_order"] >> min_tail_order_;
+            ar[path+"/tail/max_tail_order"] >> max_tail_order_;
 
             tails_.clear();
-            if(min_tail_order_>0) tails_.resize(min_tail_order_-1,tail_type(this->mesh2()));
+            if(min_tail_order_!=TAIL_NOT_SET){
+              tails_.resize(min_tail_order_-1,tail_type(this->mesh2()));
 
             typename tail_type::container_type buffer;
             for (int i=min_tail_order_; i<=max_tail_order_; ++i) {
-                ar["tail/"+boost::lexical_cast<std::string>(i)] >> buffer;
+                ar[path+"/tail/"+boost::lexical_cast<std::string>(i)] >> buffer;
                 tails_.push_back(tail_type(this->mesh2(), buffer));
+            }
             }
         }
     };
@@ -161,11 +164,12 @@ namespace alps {
             void save(alps::hdf5::archive& ar, const std::string& path) const
             {
                 gf_type::save(ar,path);
-                ar["tail/descriptor"]="INFINITY_TAIL";
-                ar["tail/min_tail_order"]=min_tail_order_;
-                ar["tail/max_tail_order"]=max_tail_order_;
+                ar[path+"/tail/descriptor"]="INFINITY_TAIL";
+                ar[path+"/tail/min_tail_order"]=min_tail_order_;
+                ar[path+"/tail/max_tail_order"]=max_tail_order_;
+                if(min_tail_order_==TAIL_NOT_SET) return;
                 for (int i=min_tail_order_; i<=max_tail_order_; ++i) {
-                    ar["tail/"+boost::lexical_cast<std::string>(i)] << tails_[i].data();
+                    ar[path+"/tail/"+boost::lexical_cast<std::string>(i)] << tails_[i].data();
                 }
             }
    
@@ -173,19 +177,21 @@ namespace alps {
             void load(alps::hdf5::archive& ar, const std::string& path)
             {
                 gf_type::load(ar,path);
-                std::string descr; ar["tail/descriptor"] >> descr;
+                std::string descr; ar[path+"/tail/descriptor"] >> descr;
                 if (descr!="INFINITY_TAIL") throw std::runtime_error("Wrong tail format '"+descr+"', expected INFINITY_TAIL");
 
                 // FIXME!FIXME! Rewrite using clone-swap for exception safety.
-                ar["tail/min_tail_order"] >> min_tail_order_;
-                ar["tail/max_tail_order"] >> max_tail_order_;
+                ar[path+"/tail/min_tail_order"] >> min_tail_order_;
+                ar[path+"/tail/max_tail_order"] >> max_tail_order_;
 
                 tails_.clear();
+                if(min_tail_order_==TAIL_NOT_SET) return;
+
                 if(min_tail_order_>0) tails_.resize(min_tail_order_-1,tail_type(this->mesh2(), this->mesh3()));
 
                 typename tail_type::container_type buffer;
                 for (int i=min_tail_order_; i<=max_tail_order_; ++i) {
-                    ar["tail/"+boost::lexical_cast<std::string>(i)] >> buffer;
+                    ar[path+"/tail/"+boost::lexical_cast<std::string>(i)] >> buffer;
                     tails_.push_back(tail_type(this->mesh2(), this->mesh3(), buffer));
                 }
             }
@@ -258,11 +264,12 @@ namespace alps {
             void save(alps::hdf5::archive& ar, const std::string& path) const
             {
                 gf_type::save(ar,path);
-                ar["tail/descriptor"]="INFINITY_TAIL";
-                ar["tail/min_tail_order"]=min_tail_order_;
-                ar["tail/max_tail_order"]=max_tail_order_;
-                for (int i=min_tail_order_; i<=max_tail_order_; ++i) {
-                    ar["tail/"+boost::lexical_cast<std::string>(i)] << tails_[i].data();
+                ar[path+"/tail/descriptor"]="INFINITY_TAIL";
+                ar[path+"/tail/min_tail_order"]=min_tail_order_;
+                ar[path+"/tail/max_tail_order"]=max_tail_order_;
+                if(min_tail_order_==TAIL_NOT_SET) return;
+               for (int i=min_tail_order_; i<=max_tail_order_; ++i) {
+                    ar[path+"/tail/"+boost::lexical_cast<std::string>(i)] << tails_[i].data();
                 }
             }
    
@@ -270,19 +277,20 @@ namespace alps {
             void load(alps::hdf5::archive& ar, const std::string& path)
             {
                 gf_type::load(ar,path);
-                std::string descr; ar["tail/descriptor"] >> descr;
+                std::string descr; ar[path+"/tail/descriptor"] >> descr;
                 if (descr!="INFINITY_TAIL") throw std::runtime_error("Wrong tail format '"+descr+"', expected INFINITY_TAIL");
 
                 // FIXME!FIXME! Rewrite using clone-swap for exception safety.
-                ar["tail/min_tail_order"] >> min_tail_order_;
-                ar["tail/max_tail_order"] >> max_tail_order_;
+                ar[path+"/tail/min_tail_order"] >> min_tail_order_;
+                ar[path+"/tail/max_tail_order"] >> max_tail_order_;
 
                 tails_.clear();
+                if(min_tail_order_==TAIL_NOT_SET) return;
                 if(min_tail_order_>0) tails_.resize(min_tail_order_-1,tail_type(this->mesh2(), this->mesh3(), this->mesh4()));
 
                 typename tail_type::container_type buffer;
                 for (int i=min_tail_order_; i<=max_tail_order_; ++i) {
-                    ar["tail/"+boost::lexical_cast<std::string>(i)] >> buffer;
+                    ar[path+"/tail/"+boost::lexical_cast<std::string>(i)] >> buffer;
                     tails_.push_back(tail_type(this->mesh2(), this->mesh3(), this->mesh4(), buffer));
                 }
             }
@@ -297,6 +305,9 @@ namespace alps {
 
         typedef four_index_gf_with_tail<omega_k1_k2_sigma_gf, three_index_gf<double, momentum_index_mesh, momentum_index_mesh, index_mesh> > omega_k1_k2_sigma_gf_with_tail;
         typedef four_index_gf_with_tail<itime_k1_k2_sigma_gf, three_index_gf<double, momentum_index_mesh, momentum_index_mesh, index_mesh> > itime_k1_k2_sigma_gf_with_tail;
+
+        typedef four_index_gf_with_tail<omega_k_sigma1_sigma2_gf, three_index_gf<double, momentum_index_mesh, index_mesh, index_mesh> > omega_k_sigma1_sigma2_gf_with_tail;
+        typedef four_index_gf_with_tail<itime_k_sigma1_sigma2_gf, three_index_gf<double, momentum_index_mesh, index_mesh, index_mesh> > itime_k_sigma1_sigma2_gf_with_tail;
 
         typedef four_index_gf_with_tail<omega_r1_r2_sigma_gf, three_index_gf<double, real_space_index_mesh, real_space_index_mesh, index_mesh> > omega_r1_r2_sigma_gf_with_tail;
         typedef four_index_gf_with_tail<itime_r1_r2_sigma_gf, three_index_gf<double, real_space_index_mesh, real_space_index_mesh, index_mesh> > itime_r1_r2_sigma_gf_with_tail;

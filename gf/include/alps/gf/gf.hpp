@@ -29,12 +29,13 @@ namespace alps {
 
         }
 
-        template<class value_type, class MESH1> class one_index_gf
-        :boost::additive<one_index_gf<value_type,MESH1> >
+        template<class VTYPE, class MESH1> class one_index_gf
+        :boost::additive<one_index_gf<VTYPE,MESH1> >
         {
             public:
-            typedef boost::multi_array<value_type,1> container_type;
+            typedef boost::multi_array<VTYPE,1> container_type;
             typedef MESH1 mesh1_type;
+            typedef VTYPE value_type;
 
             private:
             MESH1 mesh1_;
@@ -152,13 +153,14 @@ namespace alps {
           return os;
         }
 
-        template<class value_type, class MESH1, class MESH2> class two_index_gf
-        :boost::additive<two_index_gf<value_type,MESH1,MESH2> >
+        template<class VTYPE, class MESH1, class MESH2> class two_index_gf
+        :boost::additive<two_index_gf<VTYPE,MESH1,MESH2> >
         {
             public:
-            typedef boost::multi_array<value_type,2> container_type;
+            typedef boost::multi_array<VTYPE,2> container_type;
             typedef MESH1 mesh1_type;
             typedef MESH2 mesh2_type;
+            typedef VTYPE value_type;
 
             private: 
             MESH1 mesh1_;
@@ -288,10 +290,11 @@ namespace alps {
         }
 
 
-        template<class value_type, class MESH1, class MESH2, class MESH3> class three_index_gf
-        :boost::additive<three_index_gf<value_type,MESH1,MESH2,MESH3> >
+        template<class VTYPE, class MESH1, class MESH2, class MESH3> class three_index_gf
+        :boost::additive<three_index_gf<VTYPE,MESH1,MESH2,MESH3> >
         {
             public:
+            typedef VTYPE value_type;
             typedef boost::multi_array<value_type,3> container_type;
             typedef MESH1 mesh1_type;
             typedef MESH2 mesh2_type;
@@ -437,8 +440,9 @@ namespace alps {
           return os;
         }
 
-        template<class value_type, class MESH1, class MESH2, class MESH3, class MESH4> class four_index_gf {
+        template<class VTYPE, class MESH1, class MESH2, class MESH3, class MESH4> class four_index_gf {
             public:
+            typedef VTYPE value_type;
             typedef boost::multi_array<value_type,4> container_type;
             typedef MESH1 mesh1_type;
             typedef MESH2 mesh2_type;
@@ -561,6 +565,8 @@ namespace alps {
         typedef four_index_gf<             double , itime_mesh    , momentum_index_mesh, momentum_index_mesh, index_mesh> itime_k1_k2_sigma_gf;
         typedef four_index_gf<std::complex<double>, matsubara_mesh<mesh::POSITIVE_ONLY>, real_space_index_mesh, real_space_index_mesh, index_mesh> omega_r1_r2_sigma_gf;
         typedef four_index_gf<             double , itime_mesh    , real_space_index_mesh, real_space_index_mesh, index_mesh> itime_r1_r2_sigma_gf;
+        typedef four_index_gf<std::complex<double>, matsubara_mesh<mesh::POSITIVE_ONLY>, momentum_index_mesh, index_mesh, index_mesh> omega_k_sigma1_sigma2_gf;
+        typedef four_index_gf<             double , itime_mesh    , momentum_index_mesh, index_mesh, index_mesh> itime_k_sigma1_sigma2_gf;
 
         typedef three_index_gf<std::complex<double>, matsubara_mesh<mesh::POSITIVE_ONLY>, momentum_index_mesh, index_mesh> omega_k_sigma_gf;
         typedef three_index_gf<             double , itime_mesh    , momentum_index_mesh, index_mesh> itime_k_sigma_gf;

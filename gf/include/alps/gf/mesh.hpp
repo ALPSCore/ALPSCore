@@ -66,7 +66,8 @@ namespace alps {
             statistics::statistics_type statistics_;
             static const mesh::frequency_positivity_type positivity_=PTYPE;
       
-            const int offset_;
+            //FIXME: we had this const, but that prevents copying.
+            int offset_;
 
             public:
             typedef generic_index<matsubara_mesh> index_type;
