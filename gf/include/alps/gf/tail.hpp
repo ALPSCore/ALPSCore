@@ -306,6 +306,9 @@ namespace alps {
         typedef four_index_gf_with_tail<omega_k1_k2_sigma_gf, three_index_gf<double, momentum_index_mesh, momentum_index_mesh, index_mesh> > omega_k1_k2_sigma_gf_with_tail;
         typedef four_index_gf_with_tail<itime_k1_k2_sigma_gf, three_index_gf<double, momentum_index_mesh, momentum_index_mesh, index_mesh> > itime_k1_k2_sigma_gf_with_tail;
 
+        typedef four_index_gf_with_tail<omega_k_sigma1_sigma2_gf, three_index_gf<double, momentum_index_mesh, index_mesh, index_mesh> > omega_k_sigma1_sigma2_gf_with_tail;
+        typedef four_index_gf_with_tail<itime_k_sigma1_sigma2_gf, three_index_gf<double, momentum_index_mesh, index_mesh, index_mesh> > itime_k_sigma1_sigma2_gf_with_tail;
+
         typedef four_index_gf_with_tail<omega_r1_r2_sigma_gf, three_index_gf<double, real_space_index_mesh, real_space_index_mesh, index_mesh> > omega_r1_r2_sigma_gf_with_tail;
         typedef four_index_gf_with_tail<itime_r1_r2_sigma_gf, three_index_gf<double, real_space_index_mesh, real_space_index_mesh, index_mesh> > itime_r1_r2_sigma_gf_with_tail;
     } // end namespace gf
