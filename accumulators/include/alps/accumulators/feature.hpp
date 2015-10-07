@@ -13,6 +13,9 @@
 #include <alps/numeric/vector_functions.hpp>
 #include <alps/numeric/boost_array_functions.hpp>
 
+#include "alps/numeric/type_traits.hpp"
+#include "alps/type_traits/is_scalar.hpp"
+
 #include <boost/utility.hpp>
 
 #ifdef ALPS_HAVE_MPI
@@ -54,13 +57,30 @@ namespace alps {
             typedef typename T::value_type type;
         };
 
-        namespace impl {
+        namespace detail {
 
+            /// make R<SCALAR<T>,F,B::scalar_result_type> from T if T is non-scalar, otherwise `void`
+            template <template<typename,typename,typename> class R,
+                      typename T, typename F, typename B>
+            class make_scalar_result_type {
+                typedef typename alps::numeric::scalar<T>::type scalar_type_;
+                typedef typename B::scalar_result_type parent_scalar_result_type_;
+                typedef R<scalar_type_, F, parent_scalar_result_type_> this_scalar_result_type_;
+                public:
+                typedef typename boost::mpl::if_<alps::is_scalar<T>,
+                                                 void,
+                                                 this_scalar_result_type_>::type type;
+            };
+        }
+      
+        namespace impl {
+        
             template<typename T> struct ResultBase {
                 typedef T value_type;
-                template <typename U> struct make_scalar_result_type { typedef void type; };
-                template <typename U> struct make_scalar_result_type< std::vector<U> > { typedef ResultBase<U> type; };
-                typedef typename make_scalar_result_type<T>::type scalar_result_type;
+                typedef typename boost::mpl::if_<alps::is_scalar<T>,
+                                                 void,
+                                                 ResultBase<typename alps::numeric::scalar<T>::type>
+                                                >::type scalar_result_type;
                 typedef ResultBase< std::vector<T> > vector_result_type;
 
 

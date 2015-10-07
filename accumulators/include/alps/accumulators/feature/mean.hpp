@@ -188,9 +188,7 @@ namespace alps {
 
                 public:
                     typedef typename alps::accumulators::mean_type<B>::type mean_type;
-                    template <typename U> struct make_scalar_result_type { typedef void type; };
-                    template <typename U> struct make_scalar_result_type< std::vector<U> > { typedef Result<U, mean_tag, typename B::scalar_result_type> type; };
-                    typedef typename make_scalar_result_type<T>::type scalar_result_type;
+                    typedef typename detail::make_scalar_result_type<impl::Result,T,mean_tag,B>::type scalar_result_type;
                     typedef Result<std::vector<T>, mean_tag, typename B::vector_result_type> vector_result_type;
 
                     Result()

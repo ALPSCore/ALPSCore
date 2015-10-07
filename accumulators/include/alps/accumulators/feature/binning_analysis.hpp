@@ -396,9 +396,7 @@ namespace alps {
                 typedef typename std::vector<error_type>::iterator error_iterator;
 
                 public:
-                    template <typename U> struct make_scalar_result_type { typedef void type; };
-                    template <typename U> struct make_scalar_result_type< std::vector<U> > { typedef Result<U, binning_analysis_tag, typename B::scalar_result_type> type; };
-                    typedef typename make_scalar_result_type<T>::type scalar_result_type;
+                    typedef typename detail::make_scalar_result_type<impl::Result,T,binning_analysis_tag,B>::type scalar_result_type;
                     typedef Result<std::vector<T>, binning_analysis_tag, typename B::vector_result_type> vector_result_type;
                     typedef typename alps::accumulators::autocorrelation_type<B>::type autocorrelation_type;
 

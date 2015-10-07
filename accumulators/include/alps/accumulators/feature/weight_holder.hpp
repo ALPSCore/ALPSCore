@@ -144,9 +144,7 @@ namespace alps {
 
                 public:
                     typedef W weight_type;
-                    template <typename U> struct make_scalar_result_type { typedef void type; };
-                    template <typename U> struct make_scalar_result_type< std::vector<U> > { typedef Result<U, weight_holder_tag<W>, typename B::scalar_result_type> type; };
-                    typedef typename make_scalar_result_type<T>::type scalar_result_type;
+                    typedef typename detail::make_scalar_result_type<impl::Result,T,weight_holder_tag<W>,B>::type scalar_result_type;
                     typedef Result<std::vector<T>, weight_holder_tag<W>, typename B::vector_result_type> vector_result_type;
 
                     Result()
