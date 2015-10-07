@@ -22,6 +22,8 @@
 #include <boost/variant/variant.hpp>
 #include <boost/variant/apply_visitor.hpp>
 
+#include <boost/mpl/if.hpp>
+
 #include <typeinfo>
 #include <stdexcept>
 
@@ -83,15 +85,17 @@ namespace alps {
                 }
 
             private:
-                /* This machinery is to have `wrapped_value_type=T::value_type&` if T is a vector,
-                   and `wrapped_value_type=void*` if T is not a vector.
+                /* This machinery is to have `wrapped_value_type=base_wrapper<T::value_type> const &`
+                   if T is a non-scalar type, and `wrapped_value_type=void*` if T is a scalar type.
                 */
-                /// Wrap value_type from a vector (otherwise have it void*): general case
-                template <typename X> struct wrap_value_type { typedef void* type; };
-                /// Wrap value_type from a vector (otherwise have it void*): vector type
-                template <typename X> struct wrap_value_type< std::vector<X> >  { typedef const base_wrapper<X>& type; };
+                template <typename X> struct wrap_value_type:
+                    public boost::mpl::if_<
+                        alps::is_scalar<X>,
+                        void*,
+                        base_wrapper<typename alps::numeric::scalar<X>::type> const & > {};
+                
             protected:
-                /// Either wrapped T::value_type or void*, depending on T
+                /// Either wrapped T::value_type or unwrapped void*, depending on T
                 typedef typename wrap_value_type<T>::type wrapped_scalar_value_type;
                 
             public:

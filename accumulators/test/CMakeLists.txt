@@ -23,6 +23,7 @@ set (test_src
     autocorrelation
     print
     scalar_result_type
+    custom_type
     )
 
 #add tests for MPI

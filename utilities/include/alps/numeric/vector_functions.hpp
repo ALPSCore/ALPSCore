@@ -86,6 +86,8 @@ namespace alps {
       //   } 
 
 
+        // FIXME??? Why there are a few functions implemented here, and the rest below (ALPS_NUMERIC_IMPLEMENT_FUNCTION)??
+
         // fix for old xlc compilers
         #define IMPLEMENT_ALPS_VECTOR_FUNCTION(LIB_HEADER, FUNCTION_NAME)                                        \
             namespace detail {                                                                                    \
