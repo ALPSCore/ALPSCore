@@ -92,6 +92,18 @@ struct my_custom_type: math_functions_plug< my_custom_type<T> > {
     my_custom_type operator-(const my_value_type&) const { throw std::runtime_error("operator- is not implemented for this type"); }
 };
 
+namespace alps {
+    namespace numeric {
+        /// Setting "negative" values to zero (needed for autocorrelation). Already implemented by ALPSCore for sequences.
+        /** FIXME: Has to be done before including "accumulators.hpp" */
+        template <typename T>
+        void set_negative_0(my_custom_type<T>& x)
+        {
+            throw std::logic_error("set_negative_0() value is not yet implemented for this type");
+        }
+    }
+}
+
 
 #include "alps/accumulators.hpp"
 #include "gtest/gtest.h"
@@ -109,6 +121,11 @@ namespace alps {
         template <typename T>
         struct is_content_continuous< my_custom_type<T> >
             : public is_continuous<T> {};
+
+        /// Specialization of alps::hdf5::is_continuous<T> for the custom_type<...>
+        template <typename T>
+        struct is_continuous< my_custom_type<T> >
+            : public is_content_continuous< my_custom_type<T> > {}; // the type is continuous if its content is continuous
 
         /// Overload of load() for the custom_type<...>
         template <typename T>
@@ -152,6 +169,23 @@ namespace alps {
         }
         
     } // hdf5::
+
+    namespace numeric {
+        /// This must be specialized to give the notion of "infinity" (for autocorrelation)
+        /** The type should be default-constructible and convertible to custom_type */
+        template <typename T>
+        struct inf< my_custom_type<T> > {
+            operator my_custom_type<T>() const {
+                throw std::logic_error("The infinite value is not yet implemented for this type");
+            }
+        };
+    
+    } // numeric::
+
+    /// Declare that the type is not a sequence, despite the presence of value_type
+    template <typename T>
+    struct is_sequence< my_custom_type<T> > : public boost::false_type {};
+    
 } // alps::
 
 
@@ -177,6 +211,7 @@ TEST(accumulators, CustomType) {
     accumulator_set m;
     m << MeanAccumulator<dbl_custom_type>("mean");
     m << NoBinningAccumulator<dbl_custom_type>("nobin");
+    m << LogBinningAccumulator<dbl_custom_type>("logbin");
 }
 
 // template <typename T>

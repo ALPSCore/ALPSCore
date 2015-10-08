@@ -562,21 +562,21 @@ namespace alps {
                         B::sin();
                         NUMERIC_FUNCTION_USING
                         for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
-                            *it = abs(error_scalar_type(1) / sqrt(error_scalar_type(1) - this->mean() * this->mean()) * *it);
+                            *it = abs(error_scalar_type(1) / sqrt( -this->mean() * this->mean() + error_scalar_type(1) ) * *it);
                     }
 
                     void acos() {
                         B::sin();
                         NUMERIC_FUNCTION_USING
                         for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
-                            *it = abs(error_scalar_type(-1) / sqrt(error_scalar_type(1) - this->mean() * this->mean()) * *it);
+                            *it = abs(error_scalar_type(-1) / sqrt( -this->mean() * this->mean() + error_scalar_type(1) ) * *it);
                     }
 
                     void atan() {
                         B::sin();
                         NUMERIC_FUNCTION_USING
                         for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
-                            *it = abs(error_scalar_type(1) / (error_scalar_type(1) + this->mean() * this->mean()) * *it);
+                            *it = abs(error_scalar_type(1) / (this->mean() * this->mean() + error_scalar_type(1)) * *it);
                     }
 
                     // abs does not change the error, so nothing has to be done ...
@@ -585,28 +585,28 @@ namespace alps {
                         B::sin();
                         NUMERIC_FUNCTION_USING
                         for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
-                            *it = abs(error_scalar_type(2) * this->mean() * *it);
+                            *it = abs( this->mean() * (*it) * error_scalar_type(2) );
                     }
 
                     void sqrt() {
                         B::sin();
                         NUMERIC_FUNCTION_USING
                         for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
-                            *it = abs(*it / (error_scalar_type(2) * sqrt(this->mean())));
+                            *it = abs(*it / ( sqrt(this->mean()) * error_scalar_type(2) ));
                     }
 
                     void cb() {
                         B::sin();
                         NUMERIC_FUNCTION_USING
                         for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
-                            *it = abs(error_scalar_type(3) * sq(this->mean()) * *it);
+                            *it = abs( sq(this->mean()) * (*it) * error_scalar_type(3) );
                     }
 
                     void cbrt() {
                         B::sin();
                         NUMERIC_FUNCTION_USING
                         for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
-                            *it = abs(*it / (error_scalar_type(3) * sq(pow(this->mean(), error_scalar_type(1./3.)))));
+                            *it = abs(*it / ( sq(cbrt(this->mean())) * error_scalar_type(3) ));
                     }
 
                     void exp() {
@@ -659,7 +659,7 @@ namespace alps {
                         using alps::numeric::operator*;
                         using alps::numeric::operator+;
                         for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
-                            *it = arg.mean() * *it + this->mean() * dynamic_cast<scalar_result_type const &>(arg).error(it - m_ac_errors.begin());
+                            *it =  (*it)*arg.mean() + this->mean() * dynamic_cast<scalar_result_type const &>(arg).error(it - m_ac_errors.begin());
                         B::operator*=(arg);
                     }
                     template<typename U> void augmul (U const & arg, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {
