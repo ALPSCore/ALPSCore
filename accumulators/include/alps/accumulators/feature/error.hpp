@@ -188,7 +188,7 @@ namespace alps {
 
                 public:
                     typedef typename alps::accumulators::error_type<B>::type error_type;
-                    typedef typename alps::hdf5::scalar_type<error_type>::type error_scalar_type;
+                    typedef typename alps::hdf5::scalar_type<error_type>::type error_scalar_type; // FIXME: should be numeric::scalar<>
                     typedef typename detail::make_scalar_result_type<impl::Result,T,error_tag,B>::type scalar_result_type;
                     typedef Result<std::vector<T>, error_tag, typename B::vector_result_type> vector_result_type;
 
@@ -301,14 +301,14 @@ namespace alps {
                     NUMERIC_FUNCTION_IMPLEMENTATION(sinh, abs(cosh(this->mean()) * m_error))
                     NUMERIC_FUNCTION_IMPLEMENTATION(cosh, abs(sinh(this->mean()) * m_error))
                     NUMERIC_FUNCTION_IMPLEMENTATION(tanh, abs(error_scalar_type(1) / (cosh(this->mean()) * cosh(this->mean())) * m_error))
-                    NUMERIC_FUNCTION_IMPLEMENTATION(asin, abs(error_scalar_type(1) / sqrt(error_scalar_type(1) - this->mean() * this->mean()) * m_error))
-                    NUMERIC_FUNCTION_IMPLEMENTATION(acos, abs(error_scalar_type(-1) / sqrt(error_scalar_type(1) - this->mean() * this->mean()) * m_error))
-                    NUMERIC_FUNCTION_IMPLEMENTATION(atan, abs(error_scalar_type(1) / (error_scalar_type(1) + this->mean() * this->mean()) * m_error))
+                    NUMERIC_FUNCTION_IMPLEMENTATION(asin, abs(error_scalar_type(1) / sqrt(- this->mean() * this->mean() + error_scalar_type(1)) * m_error))
+                    NUMERIC_FUNCTION_IMPLEMENTATION(acos, abs(error_scalar_type(-1) / sqrt(-this->mean() * this->mean() + error_scalar_type(1) ) * m_error))
+                    NUMERIC_FUNCTION_IMPLEMENTATION(atan, abs(error_scalar_type(1) / (this->mean() * this->mean() +error_scalar_type(1) ) * m_error))
                     // abs does not change the error, so nothing has to be done ...
-                    NUMERIC_FUNCTION_IMPLEMENTATION(sq, abs(error_scalar_type(2) * this->mean() * m_error))
-                    NUMERIC_FUNCTION_IMPLEMENTATION(sqrt, abs(m_error / (error_scalar_type(2) * sqrt(this->mean()))))
-                    NUMERIC_FUNCTION_IMPLEMENTATION(cb, abs(error_scalar_type(3) * sq(this->mean()) * m_error))
-                    NUMERIC_FUNCTION_IMPLEMENTATION(cbrt, abs(m_error / (error_scalar_type(3) * sq(pow(this->mean(), error_scalar_type(1./3.))))))
+                    NUMERIC_FUNCTION_IMPLEMENTATION(sq, abs(this->mean() * m_error * error_scalar_type(2)))
+                    NUMERIC_FUNCTION_IMPLEMENTATION(sqrt, abs(m_error / (sqrt(this->mean()) * error_scalar_type(2) )))
+                    NUMERIC_FUNCTION_IMPLEMENTATION(cb, abs( sq(this->mean()) * m_error * error_scalar_type(3) ))
+                    NUMERIC_FUNCTION_IMPLEMENTATION(cbrt, abs(m_error / ( sq( cbrt(this->mean()) )*error_scalar_type(3) )))
                     NUMERIC_FUNCTION_IMPLEMENTATION(exp, exp(this->mean()) * m_error)
                     NUMERIC_FUNCTION_IMPLEMENTATION(log, abs(m_error / this->mean()))
 
@@ -327,7 +327,9 @@ namespace alps {
                     template<typename U> void augmul (U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {
                         using alps::numeric::operator*;
                         using alps::numeric::operator+;
-                        m_error = arg.mean() * m_error + this->mean() * arg.error();
+                        // FIXME? Originally: m_error = arg.mean() * m_error + this->mean() * arg.error();
+                        // FIXME? Changed to:
+                        m_error = m_error * arg.mean() + this->mean() * arg.error();
                         B::operator*=(arg);
                     }
                     template<typename U> void augmul (U const & arg, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {

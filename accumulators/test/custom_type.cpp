@@ -70,7 +70,7 @@ struct my_custom_type: math_functions_plug< my_custom_type<T> > {
 
     /// Divide operator with scalar_type<my_custom_type> at RHS (needed for mean calculation)
     /** WARNING: T is assumed to be scalar! */
-    my_custom_type operator/(const my_value_type&) { throw std::logic_error("operator/(scalar_type): Not implemented"); }
+    my_custom_type operator/(const my_value_type&) const { throw std::logic_error("operator/(scalar_type): Not implemented"); }
 
     /// Multiply operator with scalar_type<my_custom_type> at RHS (needed for mean calculation)
     /** WARNING: T is assumed to be scalar!
@@ -80,17 +80,16 @@ struct my_custom_type: math_functions_plug< my_custom_type<T> > {
             custom_type mean=val/count;
             assert(mean*count == val);
     */
-    my_custom_type operator*(const my_value_type&) { throw std::logic_error("operator*(scalar_type): Not implemented"); }
+    my_custom_type operator*(const my_value_type&) const { throw std::logic_error("operator*(scalar_type): Not implemented"); }
 
     /// Add-Assign operator with scalar
     my_custom_type& operator+=(const my_value_type&) { throw std::runtime_error("operator+= is not implemented for this type"); }
     
     /// Add operator with scalar
-    my_custom_type operator+(const my_value_type&) { throw std::runtime_error("operator+ is not implemented for this type"); }
+    my_custom_type operator+(const my_value_type&) const { throw std::runtime_error("operator+ is not implemented for this type"); }
     
     /// Subtract operator with scalar
-    my_custom_type operator-(const my_value_type&) { throw std::runtime_error("operator- is not implemented for this type"); }
-    
+    my_custom_type operator-(const my_value_type&) const { throw std::runtime_error("operator- is not implemented for this type"); }
 };
 
 
@@ -171,15 +170,13 @@ my_custom_type<T> operator/(const T& lhs, const my_custom_type<T>& rhs)
     throw std::logic_error("operator/ (right div): Not implemented");
 }
 
-
-
 TEST(accumulators, CustomType) {
     using namespace alps::accumulators;
     typedef my_custom_type<double> dbl_custom_type;
 
     accumulator_set m;
     m << MeanAccumulator<dbl_custom_type>("mean");
-    // m << NoBinningAccumulator<dbl_custom_type>("nobin");
+    m << NoBinningAccumulator<dbl_custom_type>("nobin");
 }
 
 // template <typename T>
