@@ -145,7 +145,6 @@ namespace alps {
                 public:
                     typedef W weight_type;
                     typedef typename detail::make_scalar_result_type<impl::Result,T,weight_holder_tag<W>,B>::type scalar_result_type;
-                    typedef Result<std::vector<T>, weight_holder_tag<W>, typename B::vector_result_type> vector_result_type;
 
                     Result()
                         : B()

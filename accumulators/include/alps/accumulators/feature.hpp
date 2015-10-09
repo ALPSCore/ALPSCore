@@ -81,8 +81,6 @@ namespace alps {
                                                  void,
                                                  ResultBase<typename alps::numeric::scalar<T>::type>
                                                 >::type scalar_result_type;
-                typedef ResultBase< std::vector<T> > vector_result_type;
-
 
                 /// Dummy function for merging results (always throws an exception)
                 template <typename A>

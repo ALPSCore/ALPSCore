@@ -66,7 +66,6 @@ namespace alps {
                 public:
                     typedef typename count_type<T>::type count_type;
                     typedef typename detail::make_scalar_result_type<impl::Result,T,count_tag,B>::type scalar_result_type;
-                    typedef Result<std::vector<T>, count_tag, typename B::vector_result_type> vector_result_type;
 
                     Result()
                         : m_count(count_type())

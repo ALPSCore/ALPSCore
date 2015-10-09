@@ -190,7 +190,6 @@ namespace alps {
                     typedef typename alps::accumulators::error_type<B>::type error_type;
                     typedef typename alps::hdf5::scalar_type<error_type>::type error_scalar_type; // FIXME: should be numeric::scalar<>
                     typedef typename detail::make_scalar_result_type<impl::Result,T,error_tag,B>::type scalar_result_type;
-                    typedef Result<std::vector<T>, error_tag, typename B::vector_result_type> vector_result_type;
 
                     Result() 
                         : B()

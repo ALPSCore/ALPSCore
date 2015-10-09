@@ -189,7 +189,6 @@ namespace alps {
                 public:
                     typedef typename alps::accumulators::mean_type<B>::type mean_type;
                     typedef typename detail::make_scalar_result_type<impl::Result,T,mean_tag,B>::type scalar_result_type;
-                    typedef Result<std::vector<T>, mean_tag, typename B::vector_result_type> vector_result_type;
 
                     Result()
                         : B()

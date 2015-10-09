@@ -369,8 +369,6 @@ namespace alps {
               public:
                 typedef typename alps::accumulators::max_num_binning_type<B>::type max_num_binning_type;
                 typedef typename detail::make_scalar_result_type<impl::Result,T,max_num_binning_tag,B>::type scalar_result_type;
-                typedef Result<std::vector<T>, max_num_binning_tag, typename B::vector_result_type> vector_result_type;
-                friend vector_result_type;
 
                 Result()
                     : B()
@@ -594,15 +592,15 @@ namespace alps {
                 template <typename OP, typename U> void transform(OP op, U const & arg) {
                     generate_jackknife();
                     arg.generate_jackknife(); /* TODO: make this more generic */
-                    if (arg.m_mn_jackknife_bins.size() != m_mn_jackknife_bins.size()) /* TODO: make this more generic */
+                    if (arg.get_jackknife_bins().size() != m_mn_jackknife_bins.size()) /* TODO: make this more generic */
                         throw std::runtime_error("Unable to transform: unequal number of bins" + ALPS_STACKTRACE);
                     m_mn_data_is_analyzed = false;
                     m_mn_cannot_rebin = true;
                     typename std::vector<typename mean_type<B>::type>::iterator it;
                     typename std::vector<typename mean_type<U>::type>::const_iterator jt;
-                    for (it = m_mn_bins.begin(), jt = arg.m_mn_bins.begin(); it != m_mn_bins.end(); ++it, ++jt)
+                    for (it = m_mn_bins.begin(), jt = arg.get_bins().begin(); it != m_mn_bins.end(); ++it, ++jt)
                         *it = op(*it, *jt);
-                    for (it = m_mn_jackknife_bins.begin(), jt = arg.m_mn_jackknife_bins.begin(); it != m_mn_jackknife_bins.end(); ++it, ++jt)
+                    for (it = m_mn_jackknife_bins.begin(), jt = arg.get_jackknife_bins().begin(); it != m_mn_jackknife_bins.end(); ++it, ++jt)
                         *it = op(*it, *jt);
                 }
                 
@@ -642,10 +640,12 @@ namespace alps {
                     using alps::numeric::acos;                          \
                     using std::atan;                                    \
                     using alps::numeric::atan;                          \
-                    transform((typename value_type<B>::type(*)(typename value_type<B>::type))& FUNCTION_NAME ); \
+                    typedef typename value_type<B>::type (*fptr_type)(typename value_type<B>::type); \
+                    fptr_type fptr=& FUNCTION_NAME;                     \
+                    transform(fptr);                                    \
                     B:: FUNCTION_NAME ();                               \
                 }
-                
+
                 NUMERIC_FUNCTION_IMPLEMENTATION(sin)
                 NUMERIC_FUNCTION_IMPLEMENTATION(cos)
                 NUMERIC_FUNCTION_IMPLEMENTATION(tan)
@@ -697,6 +697,13 @@ namespace alps {
                 mutable bool m_mn_data_is_analyzed;
                 mutable std::vector<typename mean_type<B>::type> m_mn_jackknife_bins;
 
+              public:
+                const std::vector<typename mean_type<B>::type>& get_bins() const {
+                    return m_mn_bins;
+                }
+                const std::vector<typename mean_type<B>::type>& get_jackknife_bins() const {
+                    return m_mn_jackknife_bins;
+                }
                 void generate_jackknife() const {
                     using alps::numeric::operator-;
                     using alps::numeric::operator+;

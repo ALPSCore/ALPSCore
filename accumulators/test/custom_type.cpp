@@ -28,25 +28,6 @@ struct math_functions_plug {
     friend X operator*(const X&, const X&) { throw std::runtime_error("operator* is not implemented for this type"); }
     /// Division operator
     friend X operator/(const X&, const X&) { throw std::runtime_error("operator/ is not implemented for this type"); }
-
-
-    
-    friend X sin(const X&) { throw std::runtime_error("Function sin() is not implemented for this type."); }
-    friend X cos(const X&) { throw std::runtime_error("Function cos() is not implemented for this type."); }
-    friend X tan(const X&) { throw std::runtime_error("Function tan() is not implemented for this type."); }
-    friend X sinh(const X&) { throw std::runtime_error("Function sinh() is not implemented for this type."); }
-    friend X cosh(const X&) { throw std::runtime_error("Function cosh() is not implemented for this type."); }
-    friend X tanh(const X&) { throw std::runtime_error("Function tanh() is not implemented for this type."); }
-    friend X asin(const X&) { throw std::runtime_error("Function asin() is not implemented for this type."); }
-    friend X acos(const X&) { throw std::runtime_error("Function acos() is not implemented for this type."); }
-    friend X atan(const X&) { throw std::runtime_error("Function atan() is not implemented for this type."); }
-    friend X abs(const X&) { throw std::runtime_error("Function abs() is not implemented for this type."); }
-    friend X sqrt(const X&) { throw std::runtime_error("Function sqrt() is not implemented for this type."); }
-    friend X log(const X&) { throw std::runtime_error("Function log() is not implemented for this type."); }
-
-    friend X cbrt(const X&) { throw std::runtime_error("Function cbrt() is not implemented for this type."); }
-
-  
 };    
 
 
@@ -101,8 +82,27 @@ namespace alps {
         {
             throw std::logic_error("set_negative_0() value is not yet implemented for this type");
         }
-    }
+
+        // a set of standard math functions for the custom type.
+        /** FIXME: Has to be done before including "accumulators.hpp" */
+        template <typename T> my_custom_type<T>  sin(my_custom_type<T>) { throw std::runtime_error("Function sin() is not implemented for this type."); }
+        template <typename T> my_custom_type<T>  cos(my_custom_type<T>) { throw std::runtime_error("Function cos() is not implemented for this type."); }
+        template <typename T> my_custom_type<T>  tan(my_custom_type<T>) { throw std::runtime_error("Function tan() is not implemented for this type."); }
+        template <typename T> my_custom_type<T> sinh(my_custom_type<T>) { throw std::runtime_error("Function sinh() is not implemented for this type."); }
+        template <typename T> my_custom_type<T> cosh(my_custom_type<T>) { throw std::runtime_error("Function cosh() is not implemented for this type."); }
+        template <typename T> my_custom_type<T> tanh(my_custom_type<T>) { throw std::runtime_error("Function tanh() is not implemented for this type."); }
+        template <typename T> my_custom_type<T> asin(my_custom_type<T>) { throw std::runtime_error("Function asin() is not implemented for this type."); }
+        template <typename T> my_custom_type<T> acos(my_custom_type<T>) { throw std::runtime_error("Function acos() is not implemented for this type."); }
+        template <typename T> my_custom_type<T> atan(my_custom_type<T>) { throw std::runtime_error("Function atan() is not implemented for this type."); }
+        template <typename T> my_custom_type<T>  abs(my_custom_type<T>) { throw std::runtime_error("Function abs() is not implemented for this type."); }
+        template <typename T> my_custom_type<T> sqrt(my_custom_type<T>) { throw std::runtime_error("Function sqrt() is not implemented for this type."); }
+        template <typename T> my_custom_type<T>  log(my_custom_type<T>) { throw std::runtime_error("Function log() is not implemented for this type."); }
+        template <typename T> my_custom_type<T> cbrt(my_custom_type<T>) { throw std::runtime_error("Function cbrt() is not implemented for this type."); }
+        
+    } // numeric::
 }
+
+
 
 
 #include "alps/accumulators.hpp"
@@ -212,6 +212,7 @@ TEST(accumulators, CustomType) {
     m << MeanAccumulator<dbl_custom_type>("mean");
     m << NoBinningAccumulator<dbl_custom_type>("nobin");
     m << LogBinningAccumulator<dbl_custom_type>("logbin");
+    m << FullBinningAccumulator<dbl_custom_type>("fullbin");
 }
 
 // template <typename T>

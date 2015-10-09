@@ -325,7 +325,7 @@ namespace alps {
         /// A service functor class for numerical inversion, to be used in transform()
         template <typename T>
         struct invert {
-            T operator()(T x) { return T(1.0)/x; }
+            T operator()(T x) { return 1.0/x; }
         };
 
         /// Inversion for vectors, to be used in transform()
