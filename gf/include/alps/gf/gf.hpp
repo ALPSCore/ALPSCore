@@ -5,9 +5,13 @@
 #include <boost/multi_array.hpp>
 #include <boost/lexical_cast.hpp>
 
+// #include <alps/type_traits/is_complex.hpp>
 #include <alps/hdf5/archive.hpp>
 #include <alps/hdf5/complex.hpp>
 #include <alps/hdf5/multi_array.hpp>
+
+// FIXME: make conditional
+#include <mpi.h>
 
 #include "mesh.hpp"
 
@@ -23,9 +27,9 @@ namespace alps {
         bool check_version(alps::hdf5::archive& ar, const std::string& path);
         
         namespace detail{
-          template<typename T> void print_no_complex(std::ostream &os, const T &z){
-            os<<z;
-          }
+            template<typename T> void print_no_complex(std::ostream &os, const T &z){
+                os<<z;
+            }
 
         }
 
@@ -165,6 +169,13 @@ namespace alps {
                 data_.resize(boost::extents[mesh1_.extent()]);
 
                 ar[path+"/data"] >> data_;
+            }
+
+            /// Broadcast the data portion of GF (assuming identical meshes)
+            void broadcast_data(int root, MPI_Comm comm)
+            {
+                size_t nelem=data_.num_elements()*sizeof(value_type);
+                MPI_Bcast(data_.origin(), nelem, MPI_BYTE, root, comm);
             }
 
         };

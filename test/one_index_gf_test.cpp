@@ -2,6 +2,8 @@
 #include "alps/gf/gf.hpp"
 #include "alps/gf/tail.hpp"
 
+#include <mpi.h>
+
 
 class OneIndexGFTest : public ::testing::Test
 {
@@ -92,3 +94,38 @@ TEST_F(OneIndexGFTest,scaling)
     EXPECT_NEAR(4, x1.imag(),1.e-10);
 }
 
+TEST_F(OneIndexGFTest,broadcast)
+{
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    const int master=0;
+    
+    alps::gf::matsubara_index omega; omega=4;
+    gf.initialize();
+
+    if (rank==master) {
+        gf(omega)=std::complex<double>(3,4);
+    }
+
+    if (rank!=master) {
+        std::complex<double> x=gf(omega);
+        EXPECT_EQ(0.0, x.real());
+        EXPECT_EQ(0.0, x.imag());
+    }
+
+    gf.broadcast_data(master,MPI_COMM_WORLD);
+
+    std::complex<double> x=gf(omega);
+    EXPECT_NEAR(3, x.real(),1.e-10);
+    EXPECT_NEAR(4, x.imag(),1.e-10);
+}
+
+// if testing MPI, we need main()
+int main(int argc, char**argv)
+{
+    MPI_Init(&argc, &argv);
+    ::testing::InitGoogleTest(&argc, argv);
+    int rc=RUN_ALL_TESTS();
+    MPI_Finalize();
+    return rc;
+}
