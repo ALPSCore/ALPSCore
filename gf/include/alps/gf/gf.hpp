@@ -15,9 +15,29 @@
 
 #include "mesh.hpp"
 
-
 namespace alps {
     namespace gf {
+
+        namespace detail {
+            // FIXME: make condidional
+            /// Broadcast a multi-array
+            template <typename T, size_t N>
+            void broadcast_multiarray(boost::multi_array<T,N>& data, int root, MPI_Comm comm)
+            {
+                size_t nbytes=data.num_elements()*sizeof(T);
+                // This is an additional broadcast, but we need to ensure MPI broadcast correctness
+                unsigned long nbytes_root=nbytes;
+                MPI_Bcast(&nbytes_root, 1, MPI_UNSIGNED_LONG, root, comm);
+                if (nbytes_root!=nbytes) {
+                    int rank;
+                    MPI_Comm_rank(comm,&rank);
+                    throw std::runtime_error("Broadcast of incompatible GF data detected on rank "+boost::lexical_cast<std::string>(rank)+
+                                             ".\nRoot sends "+boost::lexical_cast<std::string>(nbytes_root)+" bytes,"+
+                                             " this process expects "+boost::lexical_cast<std::string>(nbytes)+" bytes.");
+                }
+                MPI_Bcast(data.origin(), nbytes, MPI_BYTE, root, comm);
+            }
+        }
 
         const int minor_version=1;
         const int major_version=0;
@@ -174,18 +194,7 @@ namespace alps {
             /// Broadcast the data portion of GF (assuming identical meshes)
             void broadcast_data(int root, MPI_Comm comm)
             {
-                size_t nbytes=data_.num_elements()*sizeof(value_type);
-                // This is an additional broadcast, but we need to ensure MPI broadcast correctness
-                unsigned long nbytes_root=nbytes;
-                MPI_Bcast(&nbytes_root, 1, MPI_UNSIGNED_LONG, root, comm);
-                if (nbytes_root!=nbytes) {
-                    int rank;
-                    MPI_Comm_rank(comm,&rank);
-                    throw std::runtime_error("Broadcast of incompatible GF data detected on rank "+boost::lexical_cast<std::string>(rank)+
-                                             ".\nRoot sends "+boost::lexical_cast<std::string>(nbytes_root)+" bytes,"+
-                                             " this process expects "+boost::lexical_cast<std::string>(nbytes)+" bytes.");
-                }
-                MPI_Bcast(data_.origin(), nbytes, MPI_BYTE, root, comm);
+                detail::broadcast_multiarray(data_, root, comm);
             }
 
         };
@@ -347,7 +356,14 @@ namespace alps {
                 ar[path+"/data"] >> data_;
             }
         
+            /// Broadcast the data portion of GF (assuming identical meshes)
+            void broadcast_data(int root, MPI_Comm comm)
+            {
+                detail::broadcast_multiarray(data_, root, comm);
+            }
+
         };
+
         template<class value_type, class MESH1, class MESH2> std::ostream &operator<<(std::ostream &os, two_index_gf<value_type,MESH1,MESH2> G){
           os<<G.mesh1()<<G.mesh2();
           for(int i=0;i<G.mesh1().extent();++i){
@@ -521,7 +537,13 @@ namespace alps {
                 ar[path+"/data"] >> data_;
             }
         
+            /// Broadcast the data portion of GF (assuming identical meshes)
+            void broadcast_data(int root, MPI_Comm comm)
+            {
+                detail::broadcast_multiarray(data_, root, comm);
+            }
         };
+
         template<class value_type, class MESH1, class MESH2, class MESH3> std::ostream &operator<<(std::ostream &os, three_index_gf<value_type,MESH1,MESH2,MESH3> G){
           os<<G.mesh1()<<G.mesh2()<<G.mesh3();
           for(int i=0;i<G.mesh1().extent();++i){
@@ -707,6 +729,12 @@ namespace alps {
                 data_.resize(boost::extents[mesh1_.extent()][mesh2_.extent()][mesh3_.extent()][mesh4_.extent()]);
                 
                 ar[path+"/data"] >> data_;
+            }
+
+            /// Broadcast the data portion of GF (assuming identical meshes)
+            void broadcast_data(int root, MPI_Comm comm)
+            {
+                detail::broadcast_multiarray(data_, root, comm);
             }
         };
 

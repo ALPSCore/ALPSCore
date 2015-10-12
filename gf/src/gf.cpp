@@ -25,6 +25,7 @@ namespace alps{
             template<> void print_no_complex(std::ostream &os, const std::complex<double> &z){
                 os<<z.real()<<" "<<z.imag();
             }
+
         }
     }
 }
