@@ -642,48 +642,6 @@ namespace alps {
                 return do_op< std::minus<value_type> >(rhs);
             }
 
-            /// Norm operation (FIXME: is it always double??)
-            double norm() const
-            {
-                using std::abs;
-                double v=0;
-                for (const value_type* ptr=data_.origin(); ptr!=data_.origin()+data_.num_elements(); ++ptr) {
-                    v=std::max(abs(*ptr), v);
-                }
-                return v;
-            }
-
-            /// Assignment-op with another GF
-            template <typename op>
-            four_index_gf& do_op(const four_index_gf& rhs)
-            {
-                if (mesh1_!=rhs.mesh1_ ||
-                    mesh2_!=rhs.mesh2_ ||
-                    mesh3_!=rhs.mesh3_ ||
-                    mesh4_!=rhs.mesh4_ ) {
-                    
-                    throw std::runtime_error("Incompatible meshes in three_index_gf::operator+=");
-                }
-
-                std::transform(data_.origin(), data_.origin()+data_.num_elements(), rhs.data_.origin(), // inputs
-                               data_.origin(), // output
-                               op());
-
-                return *this;
-            }
-
-            /// Element-wise addition
-            four_index_gf& operator+=(const four_index_gf& rhs)
-            {
-                return do_op< std::plus<value_type> >(rhs);
-            }
-
-            /// Element-wise subtraction
-            four_index_gf& operator-=(const four_index_gf& rhs)
-            {
-                return do_op< std::minus<value_type> >(rhs);
-            }
-
             /// Assignment-op with scalar
             template <typename op>
             four_index_gf& do_op(const value_type& scalar)

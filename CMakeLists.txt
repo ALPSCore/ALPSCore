@@ -14,14 +14,16 @@ message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
 ### Dependencies
 find_package(ALPSCore REQUIRED hdf5)
+find_package(MPI REQUIRED)
 include_directories("gf/include")
+include_directories(${MPI_CXX_INCLUDE_PATH})
 
 unset(LINK_ALL)
 list(APPEND LINK_ALL ${ALPSCore_LIBRARIES})
     
 
 add_library(gf gf/src/mesh.cpp gf/src/gf.cpp)
-target_link_libraries(gf ${ALPSCore_LIBRARIES})
+target_link_libraries(gf ${ALPSCore_LIBRARIES} ${MPI_CXX_LIBRARIES})
 list(APPEND LINK_ALL gf)
 
 # Build and enable tests
