@@ -126,8 +126,8 @@ TEST_F(FourIndexGFTest,MpiBroadcast)
     }
 }
 
-// Check incompatible mesh broadcast
-TEST_F(FourIndexGFTest,MpiWrongBroadcast)
+// Check incompatible mesh broadcast (FIXME: disabled: messes up subsequent MPI calls. Change to death test??)
+TEST_F(FourIndexGFTest,DISABLED_MpiWrongBroadcast)
 {
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -237,6 +237,50 @@ TEST_F(FourIndexGFTest, TailSaveLoad)
     EXPECT_EQ(7, gft2(g::matsubara_index(4),g::momentum_index(3), g::momentum_index(2), g::index(1)).real()) << "GF real part mismatch";
     EXPECT_EQ(3, gft2(g::matsubara_index(4),g::momentum_index(3), g::momentum_index(2), g::index(1)).imag()) << "GF imag part mismatch";
 }
+
+TEST_F(FourIndexGFTest, MpiTailBroadcast)
+{
+    namespace g=alps::gf;
+    typedef g::three_index_gf<double, g::momentum_index_mesh, g::momentum_index_mesh, g::index_mesh> density_matrix_type;
+    density_matrix_type denmat=density_matrix_type(g::momentum_index_mesh(get_data_for_momentum_mesh()), g::momentum_index_mesh(get_data_for_momentum_mesh()),
+                                                   g::index_mesh(nspins));
+
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    const int master=0;
+    
+    // prepare diagonal matrix
+    double U=3.0;
+    denmat.initialize();
+    for (g::momentum_index i=g::momentum_index(0); i<denmat.mesh1().extent(); ++i) {
+      denmat(i,i,g::index(0))=0.5*U;
+      denmat(i,i,g::index(1))=0.5*U;
+    }
+
+    g::omega_k1_k2_sigma_gf_with_tail gft(gf);
+    int order=0;
+    if (rank==master) { // on master only
+      // attach a tail to the GF:
+      gft.set_tail(order, denmat);
+      // change the GF
+      gft(g::matsubara_index(4),g::momentum_index(3), g::momentum_index(2), g::index(1))=std::complex<double>(7., 3.);
+    } else { // on receiving ranks, make sure that the tail is there, with empty data
+      gft.set_tail(order, density_matrix_type(g::momentum_index_mesh(denmat.mesh1().points()),
+                                              g::momentum_index_mesh(denmat.mesh2().points()),
+                                              g::index_mesh(nspins)));
+    }
+
+    // broadcast the GF with tail
+    gft.broadcast_data(master,MPI_COMM_WORLD);
+
+    EXPECT_EQ(7, gft(g::matsubara_index(4),g::momentum_index(3), g::momentum_index(2), g::index(1)).real()) << "GF real part mismatch on rank " << rank;
+    EXPECT_EQ(3, gft(g::matsubara_index(4),g::momentum_index(3), g::momentum_index(2), g::index(1)).imag()) << "GF imag part mismatch on rank " << rank;
+
+    ASSERT_EQ(1, gft.tail().size()) << "Tail size mismatch on rank " << rank;
+    EXPECT_NEAR(0, (gft.tail(0)-denmat).norm(), 1E-8) << "Tail broadcast differs from the received on rank " << rank; 
+}
+
+
 TEST_F(FourIndexGFTest,print)
 {
   std::stringstream gf_stream;
