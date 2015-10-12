@@ -30,7 +30,8 @@ namespace alps {
         }
 
         template<class VTYPE, class MESH1> class one_index_gf
-        :boost::additive<one_index_gf<VTYPE,MESH1> >
+        :boost::additive<one_index_gf<VTYPE,MESH1>,
+         boost::multiplicative2<one_index_gf<VTYPE,MESH1>,VTYPE> >
         {
             public:
             typedef boost::multi_array<VTYPE,1> container_type;
@@ -89,7 +90,19 @@ namespace alps {
                 return v;
             }
 
-            /// Assignment-op
+            /// Assignment-op with scalar
+            template <typename op>
+            one_index_gf& do_op(const value_type& scalar)
+            {
+
+                std::transform(data_.origin(), data_.origin()+data_.num_elements(), // inputs
+                               data_.origin(), // output
+                               std::bind2nd(op(), scalar)); // bound binary(?,scalar)
+
+                return *this;
+            }
+
+            /// Assignment-op with another GF
             template <typename op>
             one_index_gf& do_op(const one_index_gf& rhs)
             {
@@ -115,6 +128,18 @@ namespace alps {
             one_index_gf& operator-=(const one_index_gf& rhs)
             {
                 return do_op< std::minus<value_type> >(rhs);
+            }
+
+            /// Element-wise scaling 
+            one_index_gf& operator*=(const value_type& scalar)
+            {
+                return do_op< std::multiplies<value_type> >(scalar);
+            }
+
+            /// Element-wise scaling 
+            one_index_gf& operator/=(const value_type& scalar)
+            {
+                return do_op< std::divides<value_type> >(scalar);
             }
 
             /// Save the GF to HDF5
@@ -154,7 +179,8 @@ namespace alps {
         }
 
         template<class VTYPE, class MESH1, class MESH2> class two_index_gf
-        :boost::additive<two_index_gf<VTYPE,MESH1,MESH2> >
+        :boost::additive<two_index_gf<VTYPE,MESH1,MESH2>,
+         boost::multiplicative2<two_index_gf<VTYPE,MESH1,MESH2>,VTYPE> >
         {
             public:
             typedef boost::multi_array<VTYPE,2> container_type;
@@ -220,7 +246,7 @@ namespace alps {
                 return v;
             }
 
-            /// Assignment-op
+            /// Assignment-op with another GF
             template <typename op>
             two_index_gf& do_op(const two_index_gf& rhs)
             {
@@ -249,6 +275,30 @@ namespace alps {
                 return do_op< std::minus<value_type> >(rhs);
             }
         
+            /// Assignment-op with scalar
+            template <typename op>
+            two_index_gf& do_op(const value_type& scalar)
+            {
+
+                std::transform(data_.origin(), data_.origin()+data_.num_elements(), // inputs
+                               data_.origin(), // output
+                               std::bind2nd(op(), scalar)); // bound binary(?,scalar)
+
+                return *this;
+            }
+
+            /// Element-wise scaling 
+            two_index_gf& operator*=(const value_type& scalar)
+            {
+                return do_op< std::multiplies<value_type> >(scalar);
+            }
+
+            /// Element-wise scaling 
+            two_index_gf& operator/=(const value_type& scalar)
+            {
+                return do_op< std::divides<value_type> >(scalar);
+            }
+
             /// Save the GF to HDF5
             void save(alps::hdf5::archive& ar, const std::string& path) const
             {
@@ -291,7 +341,8 @@ namespace alps {
 
 
         template<class VTYPE, class MESH1, class MESH2, class MESH3> class three_index_gf
-        :boost::additive<three_index_gf<VTYPE,MESH1,MESH2,MESH3> >
+        :boost::additive<three_index_gf<VTYPE,MESH1,MESH2,MESH3>,
+         boost::multiplicative2<three_index_gf<VTYPE,MESH1,MESH2,MESH3>,VTYPE> >
         {
             public:
             typedef VTYPE value_type;
@@ -366,7 +417,7 @@ namespace alps {
                 return v;
             }
 
-            /// Assignment-op
+            /// Assignment-op with another GF
             template <typename op>
             three_index_gf& do_op(const three_index_gf& rhs)
             {
@@ -394,6 +445,30 @@ namespace alps {
             three_index_gf& operator-=(const three_index_gf& rhs)
             {
                 return do_op< std::minus<value_type> >(rhs);
+            }
+
+            /// Assignment-op with scalar
+            template <typename op>
+            three_index_gf& do_op(const value_type& scalar)
+            {
+
+                std::transform(data_.origin(), data_.origin()+data_.num_elements(), // inputs
+                               data_.origin(), // output
+                               std::bind2nd(op(), scalar)); // bound binary(?,scalar)
+
+                return *this;
+            }
+
+            /// Element-wise scaling 
+            three_index_gf& operator*=(const value_type& scalar)
+            {
+                return do_op< std::multiplies<value_type> >(scalar);
+            }
+
+            /// Element-wise scaling 
+            three_index_gf& operator/=(const value_type& scalar)
+            {
+                return do_op< std::divides<value_type> >(scalar);
             }
 
             /// Save the GF to HDF5
@@ -440,7 +515,9 @@ namespace alps {
           return os;
         }
 
-        template<class VTYPE, class MESH1, class MESH2, class MESH3, class MESH4> class four_index_gf {
+        template<class VTYPE, class MESH1, class MESH2, class MESH3, class MESH4> class four_index_gf 
+        :boost::additive<four_index_gf<VTYPE,MESH1,MESH2,MESH3,MESH4>,
+         boost::multiplicative2<four_index_gf<VTYPE,MESH1,MESH2,MESH3,MESH4>,VTYPE> > {
             public:
             typedef VTYPE value_type;
             typedef boost::multi_array<value_type,4> container_type;
@@ -514,6 +591,72 @@ namespace alps {
                 }
             }
 
+            /// Norm operation (FIXME: is it always double??)
+            double norm() const
+            {
+                using std::abs;
+                double v=0;
+                for (const value_type* ptr=data_.origin(); ptr!=data_.origin()+data_.num_elements(); ++ptr) {
+                    v=std::max(abs(*ptr), v);
+                }
+                return v;
+            }
+
+            /// Assignment-op with another GF
+            template <typename op>
+            four_index_gf& do_op(const four_index_gf& rhs)
+            {
+                if (mesh1_!=rhs.mesh1_ ||
+                    mesh2_!=rhs.mesh2_ ||
+                    mesh3_!=rhs.mesh3_ ||
+                    mesh4_!=rhs.mesh4_ ) {
+                    
+                    throw std::runtime_error("Incompatible meshes in three_index_gf::operator+=");
+                }
+
+                std::transform(data_.origin(), data_.origin()+data_.num_elements(), rhs.data_.origin(), // inputs
+                               data_.origin(), // output
+                               op());
+
+                return *this;
+            }
+
+            /// Element-wise addition
+            four_index_gf& operator+=(const four_index_gf& rhs)
+            {
+                return do_op< std::plus<value_type> >(rhs);
+            }
+
+            /// Element-wise subtraction
+            four_index_gf& operator-=(const four_index_gf& rhs)
+            {
+                return do_op< std::minus<value_type> >(rhs);
+            }
+
+            /// Assignment-op with scalar
+            template <typename op>
+            four_index_gf& do_op(const value_type& scalar)
+            {
+
+                std::transform(data_.origin(), data_.origin()+data_.num_elements(), // inputs
+                               data_.origin(), // output
+                               std::bind2nd(op(), scalar)); // bound binary(?,scalar)
+
+                return *this;
+            }
+
+            /// Element-wise scaling 
+            four_index_gf& operator*=(const value_type& scalar)
+            {
+                return do_op< std::multiplies<value_type> >(scalar);
+            }
+
+            /// Element-wise scaling 
+            four_index_gf& operator/=(const value_type& scalar)
+            {
+                return do_op< std::divides<value_type> >(scalar);
+            }
+
             /// Save the GF to HDF5
             void save(alps::hdf5::archive& ar, const std::string& path) const
             {
@@ -545,6 +688,8 @@ namespace alps {
                 ar[path+"/data"] >> data_;
             }
         };
+
+
         template<class value_type, class MESH1, class MESH2, class MESH3, class MESH4> std::ostream &operator<<(std::ostream &os, four_index_gf<value_type,MESH1,MESH2,MESH3,MESH4> G){
           os<<G.mesh1()<<G.mesh2()<<G.mesh3()<<G.mesh4();
           for(int i=0;i<G.mesh1().extent();++i){

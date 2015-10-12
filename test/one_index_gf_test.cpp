@@ -75,3 +75,20 @@ TEST_F(OneIndexGFTest,print)
   }
   EXPECT_EQ(gf_stream_by_hand.str(), gf_stream.str());
 }
+
+TEST_F(OneIndexGFTest,scaling)
+{
+    alps::gf::matsubara_index omega; omega=4;
+
+    gf(omega)=std::complex<double>(3,4);
+    gf *= 2.;
+    std::complex<double> x=gf(omega);
+    EXPECT_NEAR(6, x.real(),1.e-10);
+    EXPECT_NEAR(8, x.imag(),1.e-10);
+
+    alps::gf::omega_gf gf1=gf/2;
+    std::complex<double> x1=gf1(omega);
+    EXPECT_NEAR(3, x1.real(),1.e-10);
+    EXPECT_NEAR(4, x1.imag(),1.e-10);
+}
+

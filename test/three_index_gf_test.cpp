@@ -240,6 +240,24 @@ TEST_F(ThreeIndexTestGF,Operators)
     }
 }
 
+TEST_F(ThreeIndexTestGF,scaling)
+{
+    alps::gf::momentum_index i; i=2;
+    alps::gf::index sigma(1);
+    alps::gf::matsubara_index omega; omega=4;
+
+    gf(omega,i,sigma)=std::complex<double>(3,4);
+    gf *= 2.;
+    std::complex<double> x=gf(omega,i,sigma);
+    EXPECT_NEAR(6, x.real(),1.e-10);
+    EXPECT_NEAR(8, x.imag(),1.e-10);
+
+    gf_type gf1=gf/2;
+    std::complex<double> x1=gf1(omega,i,sigma);
+    EXPECT_NEAR(3, x1.real(),1.e-10);
+    EXPECT_NEAR(4, x1.imag(),1.e-10);
+}
+
 TEST_F(ThreeIndexTestGF,print)
 {
   std::stringstream gf_stream;
