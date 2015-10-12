@@ -94,7 +94,7 @@ TEST_F(OneIndexGFTest,scaling)
     EXPECT_NEAR(4, x1.imag(),1.e-10);
 }
 
-TEST_F(OneIndexGFTest,broadcast)
+TEST_F(OneIndexGFTest,MpiBroadcast)
 {
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -115,17 +115,71 @@ TEST_F(OneIndexGFTest,broadcast)
 
     gf.broadcast_data(master,MPI_COMM_WORLD);
 
-    std::complex<double> x=gf(omega);
-    EXPECT_NEAR(3, x.real(),1.e-10);
-    EXPECT_NEAR(4, x.imag(),1.e-10);
+    {
+        std::complex<double> x=gf(omega);
+        EXPECT_NEAR(3, x.real(),1.e-10);
+        EXPECT_NEAR(4, x.imag(),1.e-10);
+    }
 }
+
+// Check incompatible mesh broadcast
+TEST_F(OneIndexGFTest,MpiWrongBroadcast)
+{
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    const int master=0;
+    
+    alps::gf::matsubara_index omega; omega=4;
+
+    const int f=(rank==master)?1:2;
+    alps::gf::omega_gf gf_wrong(matsubara_mesh(f*beta,f*nfreq));
+    gf_wrong.initialize();
+    if (rank==master) {
+        gf_wrong(omega)=std::complex<double>(3,4);
+    }
+
+    bool thrown=false;
+    try {
+        gf_wrong.broadcast_data(master,MPI_COMM_WORLD);
+    } catch (...) {
+        thrown=true;
+    }
+    EXPECT_TRUE( (rank==master && !thrown) || (rank!=master && thrown) );
+
+    if (thrown) return;
+    
+    {
+        std::complex<double> x=gf_wrong(omega);
+        EXPECT_NEAR(3, x.real(),1.e-10);
+        EXPECT_NEAR(4, x.imag(),1.e-10);
+    }
+}
+
+// Service function to run tests
+int run_tests()
+{
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+    // Run all non-MPI tests by master
+    ::testing::GTEST_FLAG(filter) = "-*.Mpi*";
+    if (rank==0) {
+        int rc=RUN_ALL_TESTS();
+        if (rc!=0) return rc;
+    }
+    // Run all MPI tests now
+    ::testing::GTEST_FLAG(filter) = "*.Mpi*";
+    int rc=RUN_ALL_TESTS();
+    return rc;
+}
+
 
 // if testing MPI, we need main()
 int main(int argc, char**argv)
 {
     MPI_Init(&argc, &argv);
     ::testing::InitGoogleTest(&argc, argv);
-    int rc=RUN_ALL_TESTS();
+    int rc=run_tests();
     MPI_Finalize();
     return rc;
 }
