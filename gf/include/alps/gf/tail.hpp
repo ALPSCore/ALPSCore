@@ -87,14 +87,13 @@ namespace alps {
             ar[path+"/tail/max_tail_order"] >> max_tail_order_;
 
             tails_.clear();
-            if(min_tail_order_!=TAIL_NOT_SET){
-              tails_.resize(min_tail_order_-1,tail_type(this->mesh2()));
+            if (min_tail_order_==TAIL_NOT_SET) return;
+            if (min_tail_order_>0) tails_.resize(min_tail_order_-1,tail_type(this->mesh2()));
 
             typename tail_type::container_type buffer;
             for (int i=min_tail_order_; i<=max_tail_order_; ++i) {
                 ar[path+"/tail/"+boost::lexical_cast<std::string>(i)] >> buffer;
                 tails_.push_back(tail_type(this->mesh2(), buffer));
-            }
             }
         }
     };

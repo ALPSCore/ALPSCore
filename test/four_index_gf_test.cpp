@@ -49,6 +49,25 @@ TEST_F(FourIndexGFTest,init)
     EXPECT_EQ(0, x.imag());
 }
 
+TEST_F(FourIndexGFTest,scaling)
+{
+    alps::gf::matsubara_index omega; omega=4;
+    alps::gf::momentum_index i; i=2;
+    alps::gf::momentum_index j=alps::gf::momentum_index(3);
+    alps::gf::index sigma(1);
+
+    gf(omega,i,j,sigma)=std::complex<double>(3,4);
+    gf *= 2.;
+    std::complex<double> x=gf(omega,i,j,sigma);
+    EXPECT_NEAR(6, x.real(),1.e-10);
+    EXPECT_NEAR(8, x.imag(),1.e-10);
+
+    alps::gf::matsubara_gf gf1=gf/2;
+    std::complex<double> x1=gf1(omega,i,j,sigma);
+    EXPECT_NEAR(3, x1.real(),1.e-10);
+    EXPECT_NEAR(4, x1.imag(),1.e-10);
+}
+
 TEST_F(FourIndexGFTest,saveload)
 {
     namespace g=alps::gf;

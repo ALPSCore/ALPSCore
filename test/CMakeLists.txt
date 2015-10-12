@@ -5,11 +5,14 @@ target_link_libraries(gf_test ${LINK_ALL})
 list(APPEND LINK_ALL gf_test)
 
 set (test_src
-  four_index_gf_pn_test 
-  four_index_gf_test 
   index_test 
-  itime_gf_test mesh_test
+  mesh_test
+  one_index_gf_test
+  two_index_gf_test
   three_index_gf_test
+  four_index_gf_test 
+  four_index_gf_pn_test 
+  itime_gf_test
     )
 
 
