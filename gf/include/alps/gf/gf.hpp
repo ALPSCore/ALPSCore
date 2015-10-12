@@ -174,8 +174,18 @@ namespace alps {
             /// Broadcast the data portion of GF (assuming identical meshes)
             void broadcast_data(int root, MPI_Comm comm)
             {
-                size_t nelem=data_.num_elements()*sizeof(value_type);
-                MPI_Bcast(data_.origin(), nelem, MPI_BYTE, root, comm);
+                size_t nbytes=data_.num_elements()*sizeof(value_type);
+                // This is an additional broadcast, but we need to ensure MPI broadcast correctness
+                unsigned long nbytes_root=nbytes;
+                MPI_Bcast(&nbytes_root, 1, MPI_UNSIGNED_LONG, root, comm);
+                if (nbytes_root!=nbytes) {
+                    int rank;
+                    MPI_Comm_rank(comm,&rank);
+                    throw std::runtime_error("Broadcast of incompatible GF data detected on rank "+boost::lexical_cast<std::string>(rank)+
+                                             ".\nRoot sends "+boost::lexical_cast<std::string>(nbytes_root)+" bytes,"+
+                                             " this process expects "+boost::lexical_cast<std::string>(nbytes)+" bytes.");
+                }
+                MPI_Bcast(data_.origin(), nbytes, MPI_BYTE, root, comm);
             }
 
         };
