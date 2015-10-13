@@ -294,6 +294,16 @@ namespace alps {
                 }
             }
 
+            /// Broadcast the tail and the GF
+            void broadcast_data(int root, MPI_Comm comm)
+            {
+                gf_type::broadcast_data(root,comm);
+                // FIXME: use clone-swap?
+                for (int i=min_tail_order_; i<=max_tail_order_; ++i) {
+                    tails_[i].broadcast_data(root,comm);
+                }
+            }
+
         };
 
         /// 5-index Green's function (of type GFT) with a tail (which is a Green's function of type TAILT)

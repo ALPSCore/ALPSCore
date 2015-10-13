@@ -25,12 +25,22 @@ namespace alps {
             void broadcast_multiarray(boost::multi_array<T,N>& data, int root, MPI_Comm comm)
             {
                 size_t nbytes=data.num_elements()*sizeof(T);
+                // { // DEBUG:
+                //     int rank;
+                //     MPI_Comm_rank(comm,&rank);
+                //     std::cout << "DEBUG: root=" << root << " rank=" << rank << " broadcast of nbytes=" << nbytes << std::endl;
+                // }
                 // This is an additional broadcast, but we need to ensure MPI broadcast correctness
                 unsigned long nbytes_root=nbytes;
                 MPI_Bcast(&nbytes_root, 1, MPI_UNSIGNED_LONG, root, comm);
                 if (nbytes_root!=nbytes) {
                     int rank;
                     MPI_Comm_rank(comm,&rank);
+                    // FIXME!!
+                    // Here we have a mismatched broadcast, and the following options:
+                    // 1) Call MPI_Abort() here as we cannot recover from a mismatched broadcast.
+                    // 2) Communicate with root rank to NOT to attempt broadcast (e.g., use MPI_Alltoall?)
+                    // 3) Temporary establish MPI error handler, do broadcast, get an error from MPI, continue.
                     throw std::runtime_error("Broadcast of incompatible GF data detected on rank "+boost::lexical_cast<std::string>(rank)+
                                              ".\nRoot sends "+boost::lexical_cast<std::string>(nbytes_root)+" bytes,"+
                                              " this process expects "+boost::lexical_cast<std::string>(nbytes)+" bytes.");
