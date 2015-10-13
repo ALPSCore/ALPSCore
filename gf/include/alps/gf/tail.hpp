@@ -88,7 +88,7 @@ namespace alps {
 
             tails_.clear();
             if (min_tail_order_==TAIL_NOT_SET) return;
-            if (min_tail_order_>0) tails_.resize(min_tail_order_-1,tail_type(this->mesh2()));
+            if (min_tail_order_>0) tails_.resize(min_tail_order_,tail_type(this->mesh2()));
 
             typename tail_type::container_type buffer;
             for (int i=min_tail_order_; i<=max_tail_order_; ++i) {
@@ -186,7 +186,7 @@ namespace alps {
                 tails_.clear();
                 if(min_tail_order_==TAIL_NOT_SET) return;
 
-                if(min_tail_order_>0) tails_.resize(min_tail_order_-1,tail_type(this->mesh2(), this->mesh3()));
+                if(min_tail_order_>0) tails_.resize(min_tail_order_,tail_type(this->mesh2(), this->mesh3()));
 
                 typename tail_type::container_type buffer;
                 for (int i=min_tail_order_; i<=max_tail_order_; ++i) {
@@ -285,7 +285,7 @@ namespace alps {
 
                 tails_.clear();
                 if(min_tail_order_==TAIL_NOT_SET) return;
-                if(min_tail_order_>0) tails_.resize(min_tail_order_-1,tail_type(this->mesh2(), this->mesh3(), this->mesh4()));
+                if(min_tail_order_>0) tails_.resize(min_tail_order_,tail_type(this->mesh2(), this->mesh3(), this->mesh4()));
 
                 typename tail_type::container_type buffer;
                 for (int i=min_tail_order_; i<=max_tail_order_; ++i) {
@@ -396,7 +396,7 @@ namespace alps {
 
                 tails_.clear();
                 if(min_tail_order_==TAIL_NOT_SET) return;
-                if(min_tail_order_>0) tails_.resize(min_tail_order_-1,tail_type(this->mesh2(), this->mesh3(), this->mesh4()));
+                if(min_tail_order_>0) tails_.resize(min_tail_order_,tail_type(this->mesh2(), this->mesh3(), this->mesh4()));
 
                 typename tail_type::container_type buffer;
                 for (int i=min_tail_order_; i<=max_tail_order_; ++i) {
