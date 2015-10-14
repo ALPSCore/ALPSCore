@@ -15,22 +15,6 @@ template <typename T> struct my_custom_type;
 #define ALPS_ACCUMULATOR_VALUE_TYPES float, double, long double, std::vector<float>, std::vector<double>, std::vector<long double>, my_custom_type<double>
 #define ALPS_ACCUMULATOR_VALUE_TYPES_SIZE 7
 
-/// A set of standard operations (all throwing "unimplemented") (FIXME: come up with a better name)
-template <typename X>
-struct math_functions_plug {
-    /// Unary minus (negation) operator.
-    friend X operator-(const X&) { throw std::runtime_error("unary operator- is not implemented for this type"); }
-    /// Addition operator
-    friend X operator+(const X&, const X&) { throw std::runtime_error("operator+ is not implemented for this type"); }
-    /// Subtraction operator
-    friend X operator-(const X&, const X&) { throw std::runtime_error("operator- is not implemented for this type"); }
-    /// Multiplication operator
-    friend X operator*(const X&, const X&) { throw std::runtime_error("operator* is not implemented for this type"); }
-    /// Division operator
-    friend X operator/(const X&, const X&) { throw std::runtime_error("operator/ is not implemented for this type"); }
-};    
-
-
 /// A custom type.
 /** @FIXME: Has to be declared before the first inclusion of config.h
     
@@ -38,7 +22,7 @@ struct math_functions_plug {
             otherwise alps::has_value_type< my_custom_type<T> > returns wrong result!
 */
 template <typename T>
-struct my_custom_type: math_functions_plug< my_custom_type<T> > {
+struct my_custom_type {
     T my_value;
     typedef T my_value_type;
 
@@ -46,6 +30,17 @@ struct my_custom_type: math_functions_plug< my_custom_type<T> > {
     /** @detail Returned by `alps::element_type<...>` metafunction. */
     typedef my_value_type value_type;
     
+    /// Unary minus (negation) operator.
+    my_custom_type operator-() const { throw std::runtime_error("unary operator- is not implemented for this type"); }
+    /// Addition operator
+    my_custom_type operator+(my_custom_type) const { throw std::runtime_error("operator+ is not implemented for this type"); }
+    /// Subtraction operator
+    my_custom_type operator-(my_custom_type) const { throw std::runtime_error("operator- is not implemented for this type"); }
+    /// Multiplication operator
+    my_custom_type operator*(my_custom_type) const { throw std::runtime_error("operator* is not implemented for this type"); }
+    /// Division operator
+    my_custom_type operator/(my_custom_type) const { throw std::runtime_error("operator/ is not implemented for this type"); }
+
     /// Add-assign operator with the same type at RHS (needed for mean calculation)
     void operator+=(const my_custom_type&) { throw std::logic_error("operator+=: Not implemented"); }
 
