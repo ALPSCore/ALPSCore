@@ -96,6 +96,16 @@ namespace alps {
                 tails_.push_back(tail_type(this->mesh2(), buffer));
             }
         }
+            /// Broadcast the tail and the GF
+            void broadcast_data(int root, MPI_Comm comm)
+            {
+                gf_type::broadcast_data(root,comm);
+                // FIXME: use clone-swap?
+                if (min_tail_order_==TAIL_NOT_SET) return;
+                for (int i=min_tail_order_; i<=max_tail_order_; ++i) {
+                    tails_[i].broadcast_data(root,comm);
+                }
+            }
     };
 
 
@@ -192,6 +202,16 @@ namespace alps {
                 for (int i=min_tail_order_; i<=max_tail_order_; ++i) {
                     ar[path+"/tail/"+boost::lexical_cast<std::string>(i)] >> buffer;
                     tails_.push_back(tail_type(this->mesh2(), this->mesh3(), buffer));
+                }
+            }
+            /// Broadcast the tail and the GF
+            void broadcast_data(int root, MPI_Comm comm)
+            {
+                gf_type::broadcast_data(root,comm);
+                // FIXME: use clone-swap?
+                if (min_tail_order_==TAIL_NOT_SET) return;
+                for (int i=min_tail_order_; i<=max_tail_order_; ++i) {
+                    tails_[i].broadcast_data(root,comm);
                 }
             }
 
@@ -299,6 +319,7 @@ namespace alps {
             {
                 gf_type::broadcast_data(root,comm);
                 // FIXME: use clone-swap?
+                if (min_tail_order_==TAIL_NOT_SET) return;
                 for (int i=min_tail_order_; i<=max_tail_order_; ++i) {
                     tails_[i].broadcast_data(root,comm);
                 }
