@@ -85,7 +85,7 @@ namespace alps {
                 }
 
             private:
-                /* This machinery is to have `wrapped_value_type=base_wrapper<T::value_type> const &`
+                /* This machinery is to have `wrapped_value_type=base_wrapper< scalar_of_T > const &`
                    if T is a non-scalar type, and `wrapped_value_type=void*` if T is a scalar type.
                 */
                 template <typename X> struct wrap_value_type:
@@ -95,7 +95,7 @@ namespace alps {
                         base_wrapper<typename alps::numeric::scalar<X>::type> const & > {};
                 
             protected:
-                /// Either wrapped T::value_type or unwrapped void*, depending on T
+                /// Either wrapped scalar<T>::type or unwrapped void*, depending on T
                 typedef typename wrap_value_type<T>::type wrapped_scalar_value_type;
                 
             public:

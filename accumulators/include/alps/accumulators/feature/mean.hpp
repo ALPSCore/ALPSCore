@@ -21,7 +21,7 @@
 #include <alps/utilities/stacktrace.hpp>
 #include <alps/utilities/short_print.hpp>
 
-#include <alps/type_traits/element_type.hpp>
+#include <alps/numeric/type_traits.hpp>
 
 #include <boost/mpl/if.hpp>
 #include <boost/utility.hpp>
@@ -88,7 +88,7 @@ namespace alps {
                         using alps::numeric::operator/;
 
                         // TODO: make library for scalar type
-                        typename alps::hdf5::scalar_type<mean_type>::type cnt = B::count();
+                        typename alps::numeric::scalar<mean_type>::type cnt = B::count();
                         
                         return mean_type(m_sum) / cnt;
                     }
@@ -298,7 +298,7 @@ namespace alps {
                        template<typename U> void aug ## OP_TOKEN (U const & arg,                                                                                                \
                                                                   typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {                                              \
                             using alps::numeric:: OP_NAME ;                                                                                                                     \
-                            m_mean = m_mean OP static_cast<typename alps::element_type<mean_type>::type>(arg);                                                                  \
+                            m_mean = m_mean OP static_cast<typename alps::numeric::scalar<mean_type>::type>(arg); \
                             B:: OPEQ_NAME (arg);                                                                                                                                \
                         }
 

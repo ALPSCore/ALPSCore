@@ -773,9 +773,9 @@ namespace alps {
                     m_mn_cannot_rebin = true;                           \
                     typename std::vector<mean_type>::iterator it;       \
                     for (it = m_mn_bins.begin(); it != m_mn_bins.end(); ++it) \
-                        *it = *it OP static_cast<typename alps::element_type<mean_type>::type>(arg); \
+                        *it = *it OP static_cast<typename alps::numeric::scalar<mean_type>::type>(arg); \
                     for (it = m_mn_jackknife_bins.begin(); it != m_mn_jackknife_bins.end(); ++it) \
-                        *it = *it OP static_cast<typename alps::element_type<mean_type>::type>(arg); \
+                        *it = *it OP static_cast<typename alps::numeric::scalar<mean_type>::type>(arg); \
                     analyze();                                          \
                     B:: OPEQ_NAME (arg);                                \
                 }                                                       \

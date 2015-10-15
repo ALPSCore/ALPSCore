@@ -62,7 +62,8 @@ namespace alps {
             */
             template <typename LHSWT, typename RHSWT>
             struct is_compatible_op
-                : boost::is_same<typename element_type<typename LHSWT::value_type>::type, typename RHSWT::value_type>
+                : boost::is_same<typename alps::numeric::scalar<typename LHSWT::value_type>::type,
+                                 typename RHSWT::value_type>
             { };
         }
 

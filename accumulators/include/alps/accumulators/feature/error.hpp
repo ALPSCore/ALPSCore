@@ -188,7 +188,7 @@ namespace alps {
 
                 public:
                     typedef typename alps::accumulators::error_type<B>::type error_type;
-                    typedef typename alps::hdf5::scalar_type<error_type>::type error_scalar_type; // FIXME: should be numeric::scalar<>
+                    typedef typename alps::numeric::scalar<error_type>::type error_scalar_type; // FIXME: should be numeric::scalar<>
                     typedef typename detail::make_scalar_result_type<impl::Result,T,error_tag,B>::type scalar_result_type;
 
                     Result() 
@@ -333,7 +333,7 @@ namespace alps {
                     }
                     template<typename U> void augmul (U const & arg, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {
                         using alps::numeric::operator*;
-                        m_error = m_error * static_cast<typename alps::element_type<error_type>::type>(arg);
+                        m_error = m_error * static_cast<error_scalar_type>(arg);
                         B::operator*=(arg);
                     }
 
@@ -346,7 +346,7 @@ namespace alps {
                     }
                     template<typename U> void augdiv (U const & arg, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {
                         using alps::numeric::operator/;
-                        m_error = m_error / static_cast<typename alps::element_type<error_type>::type>(arg);
+                        m_error = m_error / static_cast<error_scalar_type>(arg);
                         B::operator/=(arg);
                     }
             };

@@ -392,7 +392,7 @@ namespace alps {
 
                 typedef Result<T, binning_analysis_tag, B> self_type;
                 typedef typename alps::accumulators::error_type<B>::type error_type;
-                typedef typename alps::hdf5::scalar_type<error_type>::type error_scalar_type;
+                typedef typename alps::numeric::scalar<error_type>::type error_scalar_type;
                 typedef typename std::vector<error_type>::iterator error_iterator;
 
                 public:
@@ -664,7 +664,7 @@ namespace alps {
                     template<typename U> void augmul (U const & arg, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {
                         using alps::numeric::operator*;
                         for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
-                            *it = *it * static_cast<typename alps::element_type<error_type>::type>(arg);
+                            *it = *it * static_cast<error_scalar_type>(arg);
                         B::operator*=(arg);
                     }
 
@@ -687,7 +687,7 @@ namespace alps {
                     template<typename U> void augdiv (U const & arg, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {
                         using alps::numeric::operator/;
                         for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
-                            *it = *it / static_cast<typename alps::element_type<error_type>::type>(arg);
+                            *it = *it / static_cast<error_scalar_type>(arg);
                         B::operator/=(arg);
                     }
             };
