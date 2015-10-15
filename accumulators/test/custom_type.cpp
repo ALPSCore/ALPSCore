@@ -5,6 +5,7 @@
  */
 
 #include <stdexcept>
+#include <boost/type_traits/is_same.hpp>
 
 /** @file custom_type.cpp: Test for using a custom type */
 
@@ -28,7 +29,9 @@ struct my_custom_type {
 
     /// This type is needed (among other things?) for mean accumulator to work: treated as math-scalar type
     /** @detail Returned by `alps::element_type<...>` metafunction. */
-    typedef my_value_type value_type;
+    // typedef my_value_type value_type;
+    struct dummy_type {};
+    typedef dummy_type value_type;
     
     /// Unary minus (negation) operator.
     my_custom_type operator-() const { throw std::runtime_error("unary operator- is not implemented for this type"); }
@@ -37,12 +40,14 @@ struct my_custom_type {
     /// Subtraction operator
     my_custom_type operator-(my_custom_type) const { throw std::runtime_error("operator- is not implemented for this type"); }
     /// Multiplication operator
-    my_custom_type operator*(my_custom_type) const { throw std::runtime_error("operator* is not implemented for this type"); }
+    my_custom_type operator*(my_custom_type) const { throw std::runtime_error("operator* is not implemented for this type");}
     /// Division operator
     my_custom_type operator/(my_custom_type) const { throw std::runtime_error("operator/ is not implemented for this type"); }
 
     /// Add-assign operator with the same type at RHS (needed for mean calculation)
-    void operator+=(const my_custom_type&) { throw std::logic_error("operator+=: Not implemented"); }
+    void operator+=(const my_custom_type&) {
+        // throw std::logic_error("operator+=: Not implemented");
+    }
 
     /// Divide operator with scalar_type<my_custom_type> at RHS (needed for mean calculation)
     /** WARNING: T is assumed to be scalar! */
@@ -67,6 +72,10 @@ struct my_custom_type {
     /// Subtract operator with scalar
     my_custom_type operator-(const my_value_type&) const { throw std::runtime_error("operator- is not implemented for this type"); }
 };
+
+
+#include "alps/numeric/type_traits.hpp" // needed for the traits redefined below
+
 
 namespace alps {
     namespace numeric {
@@ -93,11 +102,17 @@ namespace alps {
         template <typename T> my_custom_type<T> sqrt(my_custom_type<T>) { throw std::runtime_error("Function sqrt() is not implemented for this type."); }
         template <typename T> my_custom_type<T>  log(my_custom_type<T>) { throw std::runtime_error("Function log() is not implemented for this type."); }
         template <typename T> my_custom_type<T> cbrt(my_custom_type<T>) { throw std::runtime_error("Function cbrt() is not implemented for this type."); }
-        
+
+        // /// This has to be declared here, to be able to specialize scalar<T>
+        // template <typename T> struct scalar;
+
+        /// if the class value_type is not its scalar type, define scalar here, before "accumulators.hpp" (it gets instantiated inside)
+        template <typename T>
+        struct scalar< my_custom_type<T> > {
+            typedef T type;
+        };
     } // numeric::
 }
-
-
 
 
 #include "alps/accumulators.hpp"
@@ -175,6 +190,7 @@ namespace alps {
             }
         };
     
+        
     } // numeric::
 
     /// Declare that the type is not a sequence, despite the presence of value_type
@@ -199,16 +215,88 @@ my_custom_type<T> operator/(const T& lhs, const my_custom_type<T>& rhs)
     throw std::logic_error("operator/ (right div): Not implemented");
 }
 
-TEST(accumulators, CustomType) {
-    using namespace alps::accumulators;
-    typedef my_custom_type<double> dbl_custom_type;
+template <typename A>
+struct CustomTypeAccumulatorTest : public testing::Test {
+    typedef A acc_type;
+    typedef typename A::accumulator_type raw_acc_type;
+    typedef typename alps::accumulators::value_type<raw_acc_type>::type value_type;
+    
+    alps::accumulators::accumulator_set aset;
+    alps::accumulators::result_set* rset_p;
 
-    accumulator_set m;
-    m << MeanAccumulator<dbl_custom_type>("mean");
-    m << NoBinningAccumulator<dbl_custom_type>("nobin");
-    m << LogBinningAccumulator<dbl_custom_type>("logbin");
-    m << FullBinningAccumulator<dbl_custom_type>("fullbin");
-}
+    // Ugly, but should work
+    static const bool is_mean_acc=boost::is_same<alps::accumulators::MeanAccumulator<value_type>,
+                                                 acc_type>::value;
+    static const bool is_nobin_acc=boost::is_same<alps::accumulators::NoBinningAccumulator<value_type>,
+                                                  acc_type>::value;
+    
+    CustomTypeAccumulatorTest() {
+        aset << acc_type("data");
+        aset["data"] << value_type();
+        aset["scalar"] << 2.0;
+        rset_p=new alps::accumulators::result_set(aset);
+    }
+
+    ~CustomTypeAccumulatorTest() {
+        delete rset_p;
+    }
+
+    void TestMean() {
+        (*rset_p)["data"].mean<value_type>();
+    }
+
+    void TestError() {
+        if (is_mean_acc) return;
+        (*rset_p)["data"].error<value_type>();
+    }
+
+    // void TestTau() {
+    //     if (is_mean_acc || is_nobin_acc) return;
+    //     aset["data"].extract<raw_acc_type>().autocorrelation();
+    // }
+
+    void TestScaleConst() {
+        (*rset_p)["data"]*2;
+    }
+
+    void TestScale() {
+        (*rset_p)["data"]*(*rset_p)["scalar"];
+    }
+
+    void TestAddConst() {
+        (*rset_p)["data"]+2;
+    }
+
+    void TestAdd() {
+        (*rset_p)["data"]+(*rset_p)["data"];
+    }
+
+    void TestAddScalar() {
+        (*rset_p)["data"]+(*rset_p)["scalar"];
+    }
+
+};
+
+typedef my_custom_type<double> dbl_custom_type;
+typedef ::testing::Types<
+    alps::accumulators::MeanAccumulator<dbl_custom_type>,
+    alps::accumulators::NoBinningAccumulator<dbl_custom_type>,
+    alps::accumulators::LogBinningAccumulator<dbl_custom_type>,
+    alps::accumulators::FullBinningAccumulator<dbl_custom_type>
+    > MyTypes;
+
+TYPED_TEST_CASE(CustomTypeAccumulatorTest, MyTypes);
+
+#define MAKE_TEST(_name_) TYPED_TEST(CustomTypeAccumulatorTest, _name_)  { this->TestFixture::_name_(); }
+
+MAKE_TEST(TestMean)
+MAKE_TEST(TestError)
+// MAKE_TEST(TestTau)
+MAKE_TEST(TestScaleConst)
+MAKE_TEST(TestScale)
+MAKE_TEST(TestAddConst)
+MAKE_TEST(TestAdd)
+MAKE_TEST(TestAddScalar)
 
 // template <typename T>
 // std::ostream& operator<<(std::ostream& s, const std::vector<T>& v)
