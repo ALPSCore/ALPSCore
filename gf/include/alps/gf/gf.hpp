@@ -60,6 +60,8 @@ namespace alps {
             template<typename T> void print_no_complex(std::ostream &os, const T &z){
                 os<<z;
             }
+            template<> void print_no_complex(std::ostream &os, const std::complex<double> &z); //specialization for printing complex as ... real imag ...
+
 
         }
 
