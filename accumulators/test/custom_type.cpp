@@ -5,7 +5,9 @@
  */
 
 #include <stdexcept>
+#include <complex>
 #include <boost/type_traits/is_same.hpp>
+#include "gtest/gtest.h"
 
 /** @file custom_type.cpp: Test for using a custom type */
 
@@ -23,35 +25,75 @@ template <typename T> struct my_custom_type;
             otherwise alps::has_value_type< my_custom_type<T> > returns wrong result!
 */
 template <typename T>
-struct my_custom_type {
-    T my_value;
-    typedef T my_value_type;
+class my_custom_type {
+    private:
+    // T my_value;
 
+    public:
+    // typedef T my_value_type;
+
+    /// "Constituent" type (for archiving and MPI)
+    struct my_constituent_type {
+    };
+
+    /// The "content" of the object should be of the "constituent" type!
+    my_constituent_type my_value; 
+    
+    // "Math" Scalar type: should behave as a scalar type, with arithmetics and conversion from scalar types.
+    // (FIXME: it seems to have to be a C++ scalar, from the point of view of boost::is_scalar!)
+    typedef long double my_scalar_type;
+
+    // "Element type" (as a sequence, which it is not)
+    typedef my_custom_type my_element_type;
+    
     /// This type is needed (among other things?) for mean accumulator to work: treated as math-scalar type
     /** @detail Returned by `alps::element_type<...>` metafunction. */
     // typedef my_value_type value_type;
-    struct dummy_type {};
-    typedef dummy_type value_type;
+    struct dummy_type {}; // DEBUG!!
+    typedef dummy_type value_type; // DEBUG!!
+
+    // const my_value_type* data() const { return &my_value; }
+    // my_value_type* data() { return &my_value; }
+
+
+
     
     /// Unary minus (negation) operator.
-    my_custom_type operator-() const { throw std::runtime_error("unary operator- is not implemented for this type"); }
+    my_custom_type operator-() const {
+        throw std::runtime_error("unary operator- is not implemented for this type");
+    }
     /// Addition operator
-    my_custom_type operator+(my_custom_type) const { throw std::runtime_error("operator+ is not implemented for this type"); }
+    my_custom_type operator+(my_custom_type) const {
+        throw std::runtime_error("operator+ is not implemented for this type");
+    }
     /// Subtraction operator
-    my_custom_type operator-(my_custom_type) const { throw std::runtime_error("operator- is not implemented for this type"); }
+    my_custom_type operator-(my_custom_type) const {
+        throw std::runtime_error("operator- is not implemented for this type");
+    }
     /// Multiplication operator
-    my_custom_type operator*(my_custom_type) const { throw std::runtime_error("operator* is not implemented for this type");}
+    my_custom_type operator*(my_custom_type) const {
+        throw std::runtime_error("operator* is not implemented for this type");
+    }
     /// Division operator
-    my_custom_type operator/(my_custom_type) const { throw std::runtime_error("operator/ is not implemented for this type"); }
+    my_custom_type operator/(my_custom_type) const {
+        throw std::runtime_error("operator/ is not implemented for this type");
+    }
 
     /// Add-assign operator with the same type at RHS (needed for mean calculation)
-    void operator+=(const my_custom_type&) {
-        // throw std::logic_error("operator+=: Not implemented");
+    my_custom_type& operator+=(const my_custom_type& rhs) {
+        throw std::logic_error("operator+=: Not implemented");
+        // my_value += rhs.my_value;
+        return *this;
     }
 
     /// Divide operator with scalar_type<my_custom_type> at RHS (needed for mean calculation)
     /** WARNING: T is assumed to be scalar! */
-    my_custom_type operator/(const my_value_type&) const { throw std::logic_error("operator/(scalar_type): Not implemented"); }
+    my_custom_type operator/(const my_scalar_type& c) const {
+        throw std::logic_error("operator/(scalar_type): Not implemented");
+        my_custom_type r=*this;
+        // r.my_value /= c.real();
+        return r;
+    }
 
     /// Multiply operator with scalar_type<my_custom_type> at RHS (needed for mean calculation)
     /** WARNING: T is assumed to be scalar!
@@ -61,23 +103,50 @@ struct my_custom_type {
             custom_type mean=val/count;
             assert(mean*count == val);
     */
-    my_custom_type operator*(const my_value_type&) const { throw std::logic_error("operator*(scalar_type): Not implemented"); }
+    my_custom_type operator*(const my_scalar_type& c) const {
+        throw std::logic_error("operator*(scalar_type): Not implemented");
+        my_custom_type r=*this;
+        // r.my_value *= c.real();
+        return r;
+    }
 
+
+    // private: // DEBUG!
     /// Add-Assign operator with scalar
-    my_custom_type& operator+=(const my_value_type&) { throw std::runtime_error("operator+= is not implemented for this type"); }
+    my_custom_type& operator+=(const my_scalar_type&) {
+        throw std::runtime_error("operator+= is not implemented for this type");
+    }
     
     /// Add operator with scalar
-    my_custom_type operator+(const my_value_type&) const { throw std::runtime_error("operator+ is not implemented for this type"); }
+    my_custom_type operator+(const my_scalar_type&) const {
+        throw std::runtime_error("operator+ is not implemented for this type");
+    }
     
     /// Subtract operator with scalar
-    my_custom_type operator-(const my_value_type&) const { throw std::runtime_error("operator- is not implemented for this type"); }
+    my_custom_type operator-(const my_scalar_type&) const {
+        throw std::runtime_error("operator- is not implemented for this type");
+    }
 };
 
 
-#include "alps/numeric/type_traits.hpp" // needed for the traits redefined below
-
+// needed for the traits specialized below
+#include "alps/type_traits/is_sequence.hpp"
+#include "alps/type_traits/element_type.hpp"
+#include "alps/numeric/scalar.hpp"
+#include "alps/numeric/inf.hpp"
 
 namespace alps {
+    /// Declare that the type is not a sequence, despite the presence of value_type
+    template <typename T>
+    struct is_sequence< my_custom_type<T> > : public boost::false_type {};
+
+    /// Declare the element type (must be the same as the enclosing type, because the latter is not a sequence)
+    template <typename T>
+    struct element_type< my_custom_type<T> > {
+        typedef typename my_custom_type<T>::my_element_type type;
+    };
+    
+    
     namespace numeric {
         /// Setting "negative" values to zero (needed for autocorrelation). Already implemented by ALPSCore for sequences.
         /** FIXME: Has to be done before including "accumulators.hpp" */
@@ -103,20 +172,17 @@ namespace alps {
         template <typename T> my_custom_type<T>  log(my_custom_type<T>) { throw std::runtime_error("Function log() is not implemented for this type."); }
         template <typename T> my_custom_type<T> cbrt(my_custom_type<T>) { throw std::runtime_error("Function cbrt() is not implemented for this type."); }
 
-        // /// This has to be declared here, to be able to specialize scalar<T>
-        // template <typename T> struct scalar;
-
         /// if the class value_type is not its scalar type, define scalar here, before "accumulators.hpp" (it gets instantiated inside)
         template <typename T>
         struct scalar< my_custom_type<T> > {
-            typedef T type;
+            typedef typename my_custom_type<T>::my_scalar_type type;
         };
     } // numeric::
 }
 
 
-#include "alps/accumulators.hpp"
-#include "gtest/gtest.h"
+// Contains definitions of traits specialized below
+#include "alps/hdf5/archive.hpp"
 
 namespace alps {
     namespace hdf5 {
@@ -124,7 +190,7 @@ namespace alps {
         /** FIXME: should better be called `numeric::scalar_type` */
         template <typename T>
         struct scalar_type< my_custom_type<T> > {
-            typedef typename my_custom_type<T>::my_value_type type;
+            typedef typename my_custom_type<T>::my_constituent_type type;
         };
 
         /// Specialization of alps::hdf5::is_content_continuous<T> for the custom_type<...>
@@ -151,9 +217,10 @@ namespace alps {
         namespace detail {
             /// Overload of get_pointer<custom_type>
             template<typename T> struct get_pointer< my_custom_type<T> > {
-                static T* apply(my_custom_type<T>& value) {
+                static typename my_custom_type<T>::my_constituent_type* apply(my_custom_type<T>& value) {
                     using alps::hdf5::get_pointer;
-                    return get_pointer(value.my_value);
+                    // return get_pointer(*value.data());
+                    return get_pointer(value.my_value); // FIXME: requres friend-like access!!
                 }
             };
         } // detail::
@@ -193,10 +260,6 @@ namespace alps {
         
     } // numeric::
 
-    /// Declare that the type is not a sequence, despite the presence of value_type
-    template <typename T>
-    struct is_sequence< my_custom_type<T> > : public boost::false_type {};
-    
 } // alps::
 
 
@@ -204,22 +267,38 @@ namespace alps {
 template <typename T>
 std::ostream& operator<<(std::ostream& s, const my_custom_type<T>& obj)
 {
-    s << "[Custom type: value=" << obj.my_value << "]";
+    // s << "[Custom type: value=" << *obj.data() << "]";
+    s << "[Custom type: value=???]";
     return s;
 }
 
 /// Right division operator.
 template <typename T>
-my_custom_type<T> operator/(const T& lhs, const my_custom_type<T>& rhs)
+my_custom_type<T> operator/(const typename my_custom_type<T>::my_scalar_type& lhs, const my_custom_type<T>& rhs)
 {
     throw std::logic_error("operator/ (right div): Not implemented");
 }
 
-template <typename A>
+
+// Defines the notion of accumulator, instantiates templates defined above.
+#include "alps/accumulators.hpp"
+
+
+/****************** TEST SECTION ***********************/
+
+
+template <template<typename> class A, typename T>
+struct AccumulatorTypeGenerator {
+    typedef A<double> dbl_accumulator_type;
+    typedef A<T> accumulator_type;
+};
+
+template <typename G>
 struct CustomTypeAccumulatorTest : public testing::Test {
-    typedef A acc_type;
-    typedef typename A::accumulator_type raw_acc_type;
+    typedef typename G::accumulator_type acc_type;
+    typedef typename acc_type::accumulator_type raw_acc_type;
     typedef typename alps::accumulators::value_type<raw_acc_type>::type value_type;
+    typedef typename G::dbl_accumulator_type dbl_acc_type;
     
     alps::accumulators::accumulator_set aset;
     alps::accumulators::result_set* rset_p;
@@ -231,14 +310,31 @@ struct CustomTypeAccumulatorTest : public testing::Test {
                                                   acc_type>::value;
     
     CustomTypeAccumulatorTest() {
-        aset << acc_type("data");
-        aset["data"] << value_type();
-        aset["scalar"] << 2.0;
+        // aset << acc_type("data");
+        // aset << dbl_acc_type("scalar");
+        // aset["data"] << value_type();
+        // aset["scalar"] << 2.0;
         rset_p=new alps::accumulators::result_set(aset);
     }
 
     ~CustomTypeAccumulatorTest() {
         delete rset_p;
+    }
+
+    void TestH5ScalarType() {
+        typedef typename alps::hdf5::scalar_type<value_type>::type stype;
+        EXPECT_EQ(typeid(typename value_type::my_constituent_type), typeid(stype)) << "type is: " << typeid(stype).name();
+    }
+
+    void TestNumScalarType() {
+        typedef typename alps::numeric::scalar<value_type>::type stype;
+        EXPECT_EQ(typeid(typename value_type::my_scalar_type), typeid(stype)) << "type is: " << typeid(stype).name();
+    }
+
+    void TestElementType() {
+        typedef typename alps::element_type<value_type>::type stype;
+        EXPECT_FALSE(alps::is_sequence<value_type>::value);
+        EXPECT_EQ(typeid(typename value_type::my_element_type), typeid(stype)) << "type is: " << typeid(stype).name();
     }
 
     void TestMean() {
@@ -279,24 +375,29 @@ struct CustomTypeAccumulatorTest : public testing::Test {
 
 typedef my_custom_type<double> dbl_custom_type;
 typedef ::testing::Types<
-    alps::accumulators::MeanAccumulator<dbl_custom_type>,
-    alps::accumulators::NoBinningAccumulator<dbl_custom_type>,
-    alps::accumulators::LogBinningAccumulator<dbl_custom_type>,
-    alps::accumulators::FullBinningAccumulator<dbl_custom_type>
+    AccumulatorTypeGenerator<alps::accumulators::MeanAccumulator, dbl_custom_type>,
+    AccumulatorTypeGenerator<alps::accumulators::NoBinningAccumulator,dbl_custom_type>,
+    AccumulatorTypeGenerator<alps::accumulators::LogBinningAccumulator,dbl_custom_type>,
+    AccumulatorTypeGenerator<alps::accumulators::FullBinningAccumulator,dbl_custom_type>
     > MyTypes;
 
 TYPED_TEST_CASE(CustomTypeAccumulatorTest, MyTypes);
 
 #define MAKE_TEST(_name_) TYPED_TEST(CustomTypeAccumulatorTest, _name_)  { this->TestFixture::_name_(); }
 
-MAKE_TEST(TestMean)
-MAKE_TEST(TestError)
-// MAKE_TEST(TestTau)
-MAKE_TEST(TestScaleConst)
-MAKE_TEST(TestScale)
-MAKE_TEST(TestAddConst)
-MAKE_TEST(TestAdd)
-MAKE_TEST(TestAddScalar)
+MAKE_TEST(TestH5ScalarType)
+MAKE_TEST(TestNumScalarType)
+MAKE_TEST(TestElementType)
+
+// MAKE_TEST(TestMean)
+// MAKE_TEST(TestError)
+// // MAKE_TEST(TestTau)
+
+// MAKE_TEST(TestScaleConst)
+// MAKE_TEST(TestScale)
+// MAKE_TEST(TestAddConst)
+// MAKE_TEST(TestAdd)
+// MAKE_TEST(TestAddScalar)
 
 // template <typename T>
 // std::ostream& operator<<(std::ostream& s, const std::vector<T>& v)
