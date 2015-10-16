@@ -11,7 +11,7 @@
 #include <complex>
 #include <iostream>
 
-#include "alps/numeric/type_traits.hpp"
+#include "alps/numeric/scalar.hpp"
 #include "alps/type_traits/is_scalar.hpp"
 
 // FIXME: add eigen matrices here

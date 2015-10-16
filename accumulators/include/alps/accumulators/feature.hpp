@@ -13,7 +13,7 @@
 #include <alps/numeric/vector_functions.hpp>
 #include <alps/numeric/boost_array_functions.hpp>
 
-#include "alps/numeric/type_traits.hpp"
+#include "alps/numeric/scalar.hpp"
 #include "alps/type_traits/is_scalar.hpp"
 
 #include <boost/utility.hpp>

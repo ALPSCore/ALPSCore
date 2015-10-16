@@ -8,7 +8,7 @@
 #define ALPS_TYPE_TRAITS_IS_SCALAR_H
 
 #include <boost/type_traits/is_same.hpp>
-#include "alps/numeric/type_traits.hpp"
+#include "alps/numeric/scalar.hpp"
 
 namespace alps {
     /// Metafunction-predicate: returns true_type if type T is scalar

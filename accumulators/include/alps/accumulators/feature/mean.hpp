@@ -21,8 +21,6 @@
 #include <alps/utilities/stacktrace.hpp>
 #include <alps/utilities/short_print.hpp>
 
-#include <alps/numeric/type_traits.hpp>
-
 #include <boost/mpl/if.hpp>
 #include <boost/utility.hpp>
 #include <boost/type_traits/is_scalar.hpp>
