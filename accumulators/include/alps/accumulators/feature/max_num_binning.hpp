@@ -196,8 +196,8 @@ namespace alps {
                     }
 
                     // TODO: make library for scalar type
-                    typename alps::hdf5::scalar_type<T>::type elements_in_bin = m_mn_elements_in_bin;
-                    typename alps::hdf5::scalar_type<typename mean_type<B>::type>::type two = 2;
+                    typename alps::numeric::scalar<T>::type elements_in_bin = m_mn_elements_in_bin;
+                    typename alps::numeric::scalar<typename mean_type<B>::type>::type two = 2;
 
                     if (m_mn_elements_in_partial == m_mn_elements_in_bin && m_mn_bins.size() >= m_mn_max_number) {
                         if (m_mn_max_number % 2 == 1) {
@@ -325,7 +325,7 @@ namespace alps {
                     typename B::count_type howmany = (elements_in_local_bins - 1) / m_mn_elements_in_bin + 1;
                     if (howmany > 1) {
                         typename B::count_type newbins = local_bins.size() / howmany;
-                        typename alps::hdf5::scalar_type<typename mean_type<B>::type>::type howmany_vt = howmany;
+                        typename alps::numeric::scalar<typename mean_type<B>::type>::type howmany_vt = howmany;
                         for (typename B::count_type i = 0; i < newbins; ++i) {
                             local_bins[i] = local_bins[howmany * i];
                             for (typename B::count_type j = 1; j < howmany; ++j)
@@ -339,7 +339,7 @@ namespace alps {
                     boost::mpi::all_gather(comm, local_bins.size(), index);
                     std::size_t total_bins = std::accumulate(index.begin(), index.end(), 0);
                     std::size_t perbin = total_bins < m_mn_max_number ? 1 : total_bins / m_mn_max_number;
-                    typename alps::hdf5::scalar_type<typename mean_type<B>::type>::type perbin_vt = perbin;
+                    typename alps::numeric::scalar<typename mean_type<B>::type>::type perbin_vt = perbin;
 
                     merged_bins.resize(perbin == 1 ? total_bins : m_mn_max_number);
                     for (typename std::vector<typename mean_type<B>::type>::iterator it = merged_bins.begin(); it != merged_bins.end(); ++it)
@@ -452,7 +452,7 @@ namespace alps {
                     if (!m_mn_jackknife_bins.size() || !obs.m_mn_jackknife_bins.size())
                         throw std::runtime_error("No binning information available for calculation of covariances" + ALPS_STACKTRACE);
 
-                    typename alps::hdf5::scalar_type<typename mean_type<B>::type>::type bin_number = m_mn_bins.size();
+                    typename alps::numeric::scalar<typename mean_type<B>::type>::type bin_number = m_mn_bins.size();
                     
                     typename mean_type<B>::type unbiased_mean_1;
                     for (typename std::vector<typename mean_type<B>::type>::const_iterator it = m_mn_jackknife_bins.begin() + 1; it != m_mn_jackknife_bins.end(); ++it)
@@ -490,7 +490,7 @@ namespace alps {
                     if (!m_mn_jackknife_bins.size() || !obs.m_mn_jackknife_bins.size())
                         throw std::runtime_error("No binning information available for calculation of covariances" + ALPS_STACKTRACE);
                     
-                    typedef typename alps::hdf5::scalar_type<typename mean_type<B>::type>::type scalar_type;
+                    typedef typename alps::numeric::scalar<typename mean_type<B>::type>::type scalar_type;
                     scalar_type bin_number = m_mn_bins.size();
                     
                     typename mean_type<B>::type unbiased_mean_1;
@@ -709,6 +709,7 @@ namespace alps {
                     using alps::numeric::operator+;
                     using alps::numeric::operator*;
                     using alps::numeric::operator/;
+                    typedef typename alps::numeric::scalar<typename mean_type<B>::type>::type scalar_type;
                     // build jackknife data structure
                     if (!m_mn_bins.empty() && !m_mn_jackknife_valid) {
                         if (m_mn_cannot_rebin)
@@ -718,11 +719,11 @@ namespace alps {
                         // Order-N initialization of jackknife data structure
                         //    m_mn_jackknife_bins[0]   =  <x>
                         //    m_mn_jackknife_bins[i+1] =  <x_i>_{jacknife}
-                        typename alps::hdf5::scalar_type<typename mean_type<B>::type>::type bin_number = m_mn_bins.size();
+                        scalar_type bin_number = m_mn_bins.size();
                         for(std::size_t j = 0; j < m_mn_bins.size(); ++j) // m_mn_jackknife_bins[0] = \sum_{j} m_mn_bins[j]
                             m_mn_jackknife_bins[0] = m_mn_jackknife_bins[0] + m_mn_bins[j];
                         for(std::size_t i = 0; i < m_mn_bins.size(); ++i) // m_mn_jackknife_bins[i+1] = \sum_{j != i} m_mn_bins[j] / #m_mn_bins
-                            m_mn_jackknife_bins[i + 1] = (m_mn_jackknife_bins[0] - m_mn_bins[i]) / (bin_number - 1);
+                          m_mn_jackknife_bins[i + 1] = (m_mn_jackknife_bins[0] - m_mn_bins[i]) / (bin_number - static_cast<scalar_type>(1));
                         m_mn_jackknife_bins[0] = m_mn_jackknife_bins[0] / bin_number; // m_mn_jackknife_bins[0] is the jacknife mean...
                     }
                     m_mn_jackknife_valid = true;
@@ -737,6 +738,8 @@ namespace alps {
                     using alps::numeric::operator+;
                     using alps::numeric::operator*;
                     using alps::numeric::operator/;
+                    typedef typename alps::numeric::scalar<typename mean_type<B>::type>::type scalar_type;
+
                     if (m_mn_bins.empty())
                         throw std::runtime_error("No Measurement" + ALPS_STACKTRACE);
                     if (!m_mn_data_is_analyzed) {
@@ -744,15 +747,15 @@ namespace alps {
                         generate_jackknife();
                         if (m_mn_jackknife_bins.size()) {
                             typename mean_type<B>::type unbiased_mean = typename mean_type<B>::type();
-                            typename alps::hdf5::scalar_type<typename mean_type<B>::type>::type bin_number = m_mn_bins.size();
+                            scalar_type bin_number = m_mn_bins.size();
                             for (typename std::vector<typename mean_type<B>::type>::const_iterator it = m_mn_jackknife_bins.begin() + 1;
                                  it != m_mn_jackknife_bins.end(); ++it)
                                 unbiased_mean = unbiased_mean + *it / bin_number;
-                            m_mn_mean = m_mn_jackknife_bins[0] - (unbiased_mean - m_mn_jackknife_bins[0]) * (bin_number - 1);
+                            m_mn_mean = m_mn_jackknife_bins[0] - (unbiased_mean - m_mn_jackknife_bins[0]) * (bin_number - static_cast<scalar_type>(1));
                             m_mn_error = typename error_type<B>::type();
                             for (std::size_t i = 0; i < m_mn_bins.size(); ++i)
                                 m_mn_error = m_mn_error + sq(m_mn_jackknife_bins[i + 1] - unbiased_mean);
-                            m_mn_error = sqrt(m_mn_error / bin_number * (bin_number - 1));
+                            m_mn_error = sqrt(m_mn_error / bin_number * (bin_number - static_cast<scalar_type>(1)));
                         }
                     }
                     m_mn_data_is_analyzed = true;

@@ -118,7 +118,7 @@ namespace alps {
                         mean_type mean;
                         ar["mean/value"] >> mean;
                         // TODO: make library for scalar type
-                        typename alps::hdf5::scalar_type<mean_type>::type cnt = B::count();
+                        typename alps::numeric::scalar<mean_type>::type cnt = B::count();
                         m_sum = mean * cnt;
                     }
 
@@ -241,7 +241,7 @@ namespace alps {
                     void inverse() {
                         using alps::numeric::operator/;
                         // TODO: make library for scalar type
-                        typename alps::hdf5::scalar_type<mean_type>::type one = 1;
+                        typename alps::numeric::scalar<mean_type>::type one = 1;
                         m_mean = one / m_mean;
                         B::inverse();
                     }                    

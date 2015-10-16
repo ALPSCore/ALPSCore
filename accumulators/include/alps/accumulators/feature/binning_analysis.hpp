@@ -137,7 +137,7 @@ namespace alps {
                     {}                    
 
                     typename alps::accumulators::convergence_type<B>::type converged_errors() const {
-                        typedef typename alps::hdf5::scalar_type<typename convergence_type<T>::type>::type convergence_scalar_type;
+                        typedef typename alps::numeric::scalar<typename convergence_type<T>::type>::type convergence_scalar_type;
 
                         typename alps::accumulators::convergence_type<B>::type conv;
                         typename alps::accumulators::error_type<B>::type err = error();
@@ -179,7 +179,7 @@ namespace alps {
                         }
 
                         typedef typename alps::accumulators::error_type<B>::type error_type;
-                        typedef typename alps::hdf5::scalar_type<error_type>::type error_scalar_type;
+                        typedef typename alps::numeric::scalar<error_type>::type error_scalar_type;
 
                         // if not enough bins are available, return infinity
                         if (m_ac_sum2.size() < 2)
@@ -207,7 +207,7 @@ namespace alps {
                         typedef typename mean_type<B>::type mean_type;
 
                         // TODO: make library for scalar type
-                        typedef typename alps::hdf5::scalar_type<mean_type>::type mean_scalar_type;
+                        typedef typename alps::numeric::scalar<mean_type>::type mean_scalar_type;
 
                         mean_type err = error();
                         
