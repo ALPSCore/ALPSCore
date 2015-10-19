@@ -28,6 +28,13 @@ namespace alps {
         // this is used later (FIXME: this should be avoided by defining my T::inf() outside the class)
         template <typename T> class inf;
     }
+
+    namespace hdf5 {
+        namespace detail {
+            // to allow friend declaration in the class
+            template<typename T> class get_pointer;
+        }
+    }
 }
 
 /// A custom type.
@@ -42,19 +49,16 @@ class my_custom_type {
     // this implementation of sqrt() needs friend access
     template <typename X> friend my_custom_type<X> alps::numeric::sqrt(my_custom_type<X>);
 
+    // allow HDF5 serialization access the internals
+    friend class alps::hdf5::detail::get_pointer<my_custom_type>;
+
     private:
     T my_value;
 
     public:
-    // typedef T my_value_type;
-
     /// "Constituent" type (for archiving and MPI). The "content" of the object should be of the "constituent" type!
     typedef T my_constituent_type;
 
-    /// Accessors to the "content" of the object.
-    my_constituent_type* data() { return &my_value; }
-    const my_constituent_type* data() const { return &my_value; }
-    
     // "Math" Scalar type: should behave as a scalar type, with arithmetics and conversion from scalar types.
     // (FIXME: it seems to have to be a C++ scalar, from the point of view of boost::is_scalar!)
     typedef T my_scalar_type; // happens to be the same as T in this implementation
@@ -305,7 +309,7 @@ namespace alps {
             template<typename T> struct get_pointer< my_custom_type<T> > {
                 static typename my_custom_type<T>::my_constituent_type* apply(my_custom_type<T>& value) {
                     using alps::hdf5::get_pointer;
-                    return get_pointer(*value.data());
+                    return get_pointer(value.my_value); // get_pointer(*value.data());
                 }
             };
         } // detail::
