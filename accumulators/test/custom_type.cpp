@@ -9,7 +9,7 @@
 #include <iostream>
 #include <cmath>
 #include <boost/type_traits/is_same.hpp>
-#include "gtest/gtest.h"
+#include <boost/optional.hpp>
 
 /** @file custom_type.cpp: Test for using a custom type */
 
@@ -53,9 +53,27 @@ class my_custom_type {
     friend class alps::hdf5::detail::get_pointer<my_custom_type>;
 
     private:
-    T my_value;
+    boost::optional<T> my_value_;  // `optional` to catch uninitialized use
+
+    explicit my_custom_type(T v): my_value_(v) {} // `private` to catch conversions from T
+
+    /// Accessor to catch uninitialized value access
+    T& value() {
+        if (!my_value_) throw std::runtime_error("Use of uninitialized my_custom_type");
+        return *my_value_;
+    }
+
+    /// Const-Accessor to catch uninitialized value access
+    const T& value() const {
+        if (!my_value_) throw std::runtime_error("Use of uninitialized my_custom_type");
+        return *my_value_;
+    }
 
     public:
+
+    /// Accessor to inspect the stored value
+    T get_my_value() const { return this->value(); }
+    
     /// "Constituent" type (for archiving and MPI). The "content" of the object should be of the "constituent" type!
     typedef T my_constituent_type;
 
@@ -68,22 +86,43 @@ class my_custom_type {
 
     // "Element type" (as a sequence)
     typedef T my_element_type;
+
+    /// Default constructor, leaving the object in an **initialized** state @REQUIRED
+    my_custom_type() : my_value_(T()) { }
     
-    /// Add-assign operator with the same type at RHS (needed for mean calculation)
+    
+    // If it is a sequence and the default template specializations are used, the following 2 needs to be implemented:
+    
+    /// Size of the sequence @REQUIRED_SEQUENCE
+    std::size_t size() const { return 1; }
+
+    /// Access to sequence elements @REQUIRED_SEQUENCE
+    my_element_type& operator[](std::size_t i) {
+        if (i!=0) throw std::runtime_error("Out-of-bound access to my_custom_type<T>");
+        return this->value();
+    }
+
+    /// const-Access to sequence elements @REQUIRED_SEQUENCE
+    const my_element_type& operator[](std::size_t i) const {
+        if (i!=0) throw std::runtime_error("Out-of-bound access to my_custom_type<T>");
+        return this->value();
+    }
+
+    /// Add-assign operator with the same type at RHS. @REQUIRED (for mean calculation)
     my_custom_type& operator+=(const my_custom_type& rhs) {
-        my_value += rhs.my_value;
+        this->value() += rhs.value();
         return *this;
     }
     
-    /// Divide operator with scalar_type<my_custom_type> at RHS (needed for many calculations)
+    /// Divide operator with scalar_type<my_custom_type> at RHS. @REQUIRED (for many calculations)
     my_custom_type operator/(const my_scalar_type& c) const {
         // throw std::logic_error("operator/(scalar_type): Not implemented");
         my_custom_type r=*this;
-        r.my_value /= c;
+        r.value() /= c;
         return r;
     }
 
-  /// Multiply operator with scalar_type<my_custom_type> at RHS (needed for many calculations)
+    /// Multiply operator with scalar_type<my_custom_type> at RHS. @REQUIRED (for many calculations)
     /** WARNING: It is assumed that multiplication is an inverse of division, that is:
                 custom_type val=...;
                 T count=...;
@@ -93,47 +132,46 @@ class my_custom_type {
     my_custom_type operator*(const my_scalar_type& c) const {
         // throw std::logic_error("operator*(scalar_type): Not implemented");
         my_custom_type r=*this;
-        r.my_value *= c;
+        r.value() *= c;
         return r;
     }
 
-    /// Addition operator (needed for many calculations, must be consistent with +=)
+    /// Addition operator. @REQUIRED (for many calculations, must be consistent with +=)
     // FIXME: use boost operators, define via +=
     my_custom_type operator+(const my_custom_type& rhs) const {
         // throw std::runtime_error("operator+ is not implemented for this type");
         my_custom_type r=*this;
-        r.my_value += rhs.my_value;
+        r.value() += rhs.value();
         return r;
     }
 
-    /// Subtraction operator (needed for many calculations, must be consistent with +)
+    /// Subtraction operator @REQUIRED (for many calculations, must be consistent with +)
     my_custom_type operator-(const my_custom_type& rhs) const {
         // throw std::runtime_error("operator- is not implemented for this type");
         my_custom_type r=*this;
-        r.my_value -= rhs.my_value;
+        r.value() -= rhs.value();
         return r;
     }
 
-    /// Multiplication operator (must be element-wise to make sense)
+    /// Multiplication operator @REQUIRED (must be element-wise to make sense)
     my_custom_type operator*(const my_custom_type& rhs) const {
         // throw std::runtime_error("operator* is not implemented for this type");
         my_custom_type r=*this;
-        r.my_value *= rhs.my_value;
+        r.value() *= rhs.value();
         return r;
     }
-    /// Division operator (must be element-wise to make sense)
+    /// Division operator @REQUIRED (must be element-wise to make sense)
     my_custom_type operator/(const my_custom_type& rhs) const {
         // throw std::runtime_error("operator/ is not implemented for this type");
         my_custom_type r=*this;
-        r.my_value /= rhs.my_value;
+        r.value() /= rhs.value();
         return r;
     }
 
-    /// Unary minus (negation) operator.
+    /// Unary minus (negation) operator. @REQUIRED
     my_custom_type operator-() const {
         // throw std::runtime_error("unary operator- is not implemented for this type");
-        my_custom_type r;
-        r.my_value=-my_value;
+        my_custom_type r(-this->value());
         return r;
     }
 
@@ -142,53 +180,61 @@ class my_custom_type {
     //     throw std::runtime_error("operator+= is not implemented for this type");
     // }
     
-    /// Add operator with scalar (semantics: adds scaled identity custom_type)
+    /// Add operator with scalar @REQUIRED (semantics: adds scaled identity custom_type)
     my_custom_type operator+(const my_scalar_type& s) const {
         // throw std::runtime_error("operator+ is not implemented for this type");
         my_custom_type r=*this;
-        r.my_value += s;
+        r.value() += s;
         return r;
     }
     
-    /// Subtract operator with scalar (semantics: subtracts scaled identity custom_type)
+    /// Subtract operator with scalar @REQUIRED (semantics: subtracts scaled identity custom_type)
     my_custom_type operator-(const my_scalar_type& s) const {
         // throw std::runtime_error("operator- is not implemented for this type");
         my_custom_type r=*this;
-        r.my_value -= s;
+        r.value() -= s;
         return r;
     }
 
     /// Right-division (divide scalar by *this)
     /** Used in operator/; member method to avoid quirks with friend templates */
     my_custom_type right_div(const my_scalar_type& lhs) const {
-        my_custom_type r;
-        r.my_value = lhs/my_value;
+        my_custom_type r(lhs/this->value());
         return r;
     }
 
     /// Print to a stream
     /** Used in operator<<; member method to avoid quirks with friend templates */
     std::ostream& print(std::ostream& s) const {
-        s << "[Custom type: value=" << my_value << "]";
+        s << "[Custom type: value=" << this->value() << "]";
         return s;
     }
 
     /// Generate infinite value
     static my_custom_type inf() {
-        my_custom_type r;
-        r.my_value = alps::numeric::inf<T>();
+        my_custom_type r=my_custom_type(alps::numeric::inf<T>());
+        return r;
+    }
+
+    /// Generate a value with given content
+    /** This is just a fancy way to construct the object:
+        it's done this way to verify we never need a constructor from scalar type
+        anywhere inside Accumulators
+    */
+    static my_custom_type generate(T data) {
+        return my_custom_type(data);
     }
 };
 
 
-/// Stream-output operator
+/// Stream-output operator @REQUIRED
 template <typename T>
 std::ostream& operator<<(std::ostream& s, const my_custom_type<T>& obj)
 {
     return obj.print(s);
 }
 
-/// Right division operator. (Needed for error bars in trigonometric functions)
+/// Right division operator. @REQUIRED (Needed for error bars in trigonometric functions)
 template <typename T>
 my_custom_type<T> operator/(const typename my_custom_type<T>::my_scalar_type& lhs, const my_custom_type<T>& rhs)
 {
@@ -207,17 +253,11 @@ namespace alps {
     // template <typename T>
     // struct is_sequence< my_custom_type<T> > : public boost::false_type {};
 
-    /// Declare that the type is a sequence, despite a possible absence of value_type
+    /// Declare that the type is a sequence, despite a possible absence of value_type @REQUIRED
     template <typename T>
     struct is_sequence< my_custom_type<T> > : public boost::true_type {};
 
-    // /// Declare the element type (must be the same as the enclosing type, because the latter is not a sequence)
-    // template <typename T>
-    // struct element_type< my_custom_type<T> > {
-    //     typedef typename my_custom_type<T>::my_element_type type;
-    // };
-    
-    /// Declare the element type
+    /// Declare the element type @REQUIRED
     template <typename T>
     struct element_type< my_custom_type<T> > {
         typedef typename my_custom_type<T>::my_element_type type;
@@ -225,13 +265,13 @@ namespace alps {
     
     
     namespace numeric {
-        /// Setting "negative" values to zero (needed for autocorrelation). Already implemented by ALPSCore for sequences.
-        /** FIXME: Has to be done before including "accumulators.hpp" */
-        template <typename T>
-        void set_negative_0(my_custom_type<T>& x)
-        {
-            throw std::logic_error("set_negative_0() value is not yet implemented for this type");
-        }
+        // /// Setting "negative" values to zero @REQUIRED (for autocorrelation). Already implemented by ALPSCore for sequences.
+        // /** FIXME: Has to be done before including "accumulators.hpp" */
+        // template <typename T>
+        // void set_negative_0(my_custom_type<T>& x)
+        // {
+        //     throw std::logic_error("set_negative_0() value is not yet implemented for this type");
+        // }
 
         namespace {
             inline void not_implemented(const std::string& fname) {
@@ -239,16 +279,16 @@ namespace alps {
             }
         }
 
-        /// Square root (needed for error bar calculations). Must be element-wise to make sense.
+        /// Square root @REQUIRED (for error bar calculations). Must be element-wise to make sense.
         template <typename T>
         my_custom_type<T> sqrt(my_custom_type<T> x) {
             using std::sqrt;
-            x.my_value = sqrt(x.my_value);
+            x.value() = sqrt(x.value());
             return x;
         }
 
-        // a set of standard math functions for the custom type.
-        /** FIXME: Has to be done before including "accumulators.hpp" */
+        // a set of standard math functions for the custom type. @REQUIRED (for the corresponding math)
+        /* FIXME: Has to be done before including "accumulators.hpp" */
         template <typename T> inline my_custom_type<T>  sin(my_custom_type<T>) { not_implemented("sin"); }
         template <typename T> inline my_custom_type<T>  cos(my_custom_type<T>) { not_implemented("cos"); }
         template <typename T> inline my_custom_type<T>  tan(my_custom_type<T>) { not_implemented("tan"); }
@@ -307,9 +347,9 @@ namespace alps {
         namespace detail {
             /// Overload of get_pointer<custom_type>
             template<typename T> struct get_pointer< my_custom_type<T> > {
-                static typename my_custom_type<T>::my_constituent_type* apply(my_custom_type<T>& value) {
+                static typename my_custom_type<T>::my_constituent_type* apply(my_custom_type<T>& x) {
                     using alps::hdf5::get_pointer;
-                    return get_pointer(value.my_value); // get_pointer(*value.data());
+                    return get_pointer(x.value());
                 }
             };
         } // detail::
@@ -359,22 +399,64 @@ namespace alps {
 
 /****************** TEST SECTION ***********************/
 
+#include "gtest/gtest.h"
+#include "accumulator_generator.hpp"
 
+
+// Data generation functions
+
+namespace alps {
+    namespace accumulators {
+        namespace testing {
+
+            /// Generate a value of `my_custom_type<T>`
+            template <typename T>
+            struct gen_data< my_custom_type<T> > {
+                typedef my_custom_type<T> value_type;
+                T val_;
+                gen_data(T val, unsigned int =0) : val_(val) {}
+                operator value_type() { return value_type::generate(val_); }
+            };
+        
+    
+            // Data inquiry functions
+            template <typename T>
+            double get_value(const T& x) {
+                return x;
+            }
+            
+            template <typename T>
+            double get_value(const my_custom_type<T>& x) {
+                return x.get_my_value();
+            }
+        } // testing::
+    } // accumulators::
+} // alps::
+
+using namespace alps::accumulators::testing;
+
+
+// to pass accumulator types
 template <template<typename> class A, typename T>
 struct AccumulatorTypeGenerator {
-    typedef A<double> dbl_accumulator_type;
-    typedef A<T> accumulator_type;
+    typedef acc_one_correlated_gen<A,T,     /*NPOINTS*/50000,/*CORRL*/10,/*VLEN*/0,RandomData>   accumulator_gen_type;     // generator for A<T>
+    typedef acc_one_correlated_gen<A,double,/*NPOINTS*/50000,/*CORRL*/1 ,/*VLEN*/0,ConstantData> dbl_accumulator_gen_type; // generator for A<double>
 };
 
 template <typename G>
 struct CustomTypeAccumulatorTest : public testing::Test {
-    typedef typename G::accumulator_type acc_type;
+    typedef typename G::accumulator_gen_type acc_gen_type;
+    typedef typename acc_gen_type::acc_type acc_type;
     typedef typename acc_type::accumulator_type raw_acc_type;
     typedef typename alps::accumulators::value_type<raw_acc_type>::type value_type;
-    typedef typename G::dbl_accumulator_type dbl_acc_type;
     
-    alps::accumulators::accumulator_set aset;
-    alps::accumulators::result_set* rset_p;
+    typedef typename G::dbl_accumulator_gen_type dbl_acc_gen_type;
+    typedef typename dbl_acc_gen_type::acc_type dbl_acc_type;
+
+    static const int NPOINTS=acc_gen_type::NPOINTS; 
+    
+    acc_gen_type acc_gen;
+    dbl_acc_gen_type dbl_acc_gen;
 
     // Ugly, but should work
     static const bool is_mean_acc=boost::is_same<alps::accumulators::MeanAccumulator<value_type>,
@@ -382,17 +464,9 @@ struct CustomTypeAccumulatorTest : public testing::Test {
     static const bool is_nobin_acc=boost::is_same<alps::accumulators::NoBinningAccumulator<value_type>,
                                                   acc_type>::value;
     
-    CustomTypeAccumulatorTest() {
-        aset << acc_type("data");
-        aset << dbl_acc_type("scalar");
-        aset["data"] << value_type();
-        aset["scalar"] << 2.0;
-        rset_p=new alps::accumulators::result_set(aset);
-    }
+    static double tol() { return 5.E-3; }
 
-    ~CustomTypeAccumulatorTest() {
-        delete rset_p;
-    }
+    CustomTypeAccumulatorTest() {}
 
     void TestH5ScalarType() {
         typedef typename alps::hdf5::scalar_type<value_type>::type stype;
@@ -410,13 +484,17 @@ struct CustomTypeAccumulatorTest : public testing::Test {
         EXPECT_EQ(typeid(typename value_type::my_element_type), typeid(stype)) << "type is: " << typeid(stype).name();
     }
 
+    void TestCount() {
+        EXPECT_EQ(NPOINTS, acc_gen.result().count());
+    }
+
     void TestMean() {
-        (*rset_p)["data"].mean<value_type>();
+        EXPECT_NEAR(acc_gen.expected_mean(), get_value(acc_gen.result().template mean<value_type>()), tol());
     }
 
     void TestError() {
         if (is_mean_acc) return;
-        (*rset_p)["data"].error<value_type>();
+        acc_gen.result().template error<value_type>();
     }
 
     // void TestTau() {
@@ -425,35 +503,48 @@ struct CustomTypeAccumulatorTest : public testing::Test {
     // }
 
     void TestScaleConst() {
-        (*rset_p)["data"]*2;
+        const alps::accumulators::result_wrapper& r=acc_gen.result()*2;
+        EXPECT_NEAR(acc_gen.expected_mean()*2, get_value(r.mean<value_type>()), tol());
     }
 
     void TestScale() {
-        (*rset_p)["data"]*(*rset_p)["scalar"];
+        const alps::accumulators::result_wrapper& r=acc_gen.result()*dbl_acc_gen.result();
+        EXPECT_NEAR(acc_gen.expected_mean()*dbl_acc_gen.expected_mean(), get_value(r.mean<value_type>()), tol());
     }
 
     void TestAddConst() {
-        (*rset_p)["data"]+2;
+        const alps::accumulators::result_wrapper& r=acc_gen.result()+2;
+        EXPECT_NEAR(acc_gen.expected_mean()+2, get_value(r.mean<value_type>()), tol());
     }
 
     void TestAddEqConst() {
-        (*rset_p)["data"]+=2;
+        alps::accumulators::result_wrapper& r=acc_gen.results()["data"];
+        r+=2;
+        EXPECT_NEAR(acc_gen.expected_mean()+2, get_value(r.mean<value_type>()), tol());
     }
 
     void TestAdd() {
-        (*rset_p)["data"]+(*rset_p)["data"];
+        const alps::accumulators::result_wrapper& r=acc_gen.result()+acc_gen.result();
+        EXPECT_NEAR(acc_gen.expected_mean()*2, get_value(r.mean<value_type>()), tol());
     }
 
     void TestAddEq() {
-        (*rset_p)["data"]+=(*rset_p)["data"];
+        alps::accumulators::result_wrapper& r=acc_gen.results()["data"];
+        r+=acc_gen.results()["data"];
+        EXPECT_NEAR(acc_gen.expected_mean()*2, get_value(r.mean<value_type>()), tol());
     }
 
     void TestAddScalar() {
-        (*rset_p)["data"]+(*rset_p)["scalar"];
+        const alps::accumulators::result_wrapper& r=acc_gen.result()+dbl_acc_gen.result();
+        double expected_mean=acc_gen.expected_mean()+dbl_acc_gen.expected_mean();
+        EXPECT_NEAR(expected_mean, get_value(r.mean<value_type>()), tol());
     }
 
     void TestAddEqScalar() {
-        (*rset_p)["data"]+=(*rset_p)["scalar"];
+        alps::accumulators::result_wrapper& r=acc_gen.results()["data"];
+        r+=dbl_acc_gen.result();
+        double expected_mean=acc_gen.expected_mean()+dbl_acc_gen.expected_mean();
+        EXPECT_NEAR(expected_mean, get_value(r.mean<value_type>()), tol());
     }
 
 };
