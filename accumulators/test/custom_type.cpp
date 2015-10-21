@@ -497,10 +497,12 @@ struct CustomTypeAccumulatorTest : public testing::Test {
         acc_gen.result().template error<value_type>();
     }
 
-    // void TestTau() {
-    //     if (is_mean_acc || is_nobin_acc) return;
-    //     aset["data"].extract<raw_acc_type>().autocorrelation();
-    // }
+    void TestTau() {
+        if (is_mean_acc || is_nobin_acc) return;
+        value_type tau=acc_gen.result().template autocorrelation<value_type>();
+        std::cout << "Autocorrelation is " << tau << std::endl;
+        // EXPECT_NEAR(24, get_value(acc_gen.result().template autocorrelation<value_type>()),1.0); // << FIXME: what should be the correct value?
+    }
 
     void TestScaleConst() {
         const alps::accumulators::result_wrapper& r=acc_gen.result()*2;
@@ -567,7 +569,7 @@ MAKE_TEST(TestElementType)
 
 MAKE_TEST(TestMean)
 MAKE_TEST(TestError)
-// MAKE_TEST(TestTau)
+MAKE_TEST(TestTau)
 
 MAKE_TEST(TestScaleConst)
 MAKE_TEST(TestScale)
