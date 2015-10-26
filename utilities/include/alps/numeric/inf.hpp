@@ -13,21 +13,21 @@
 
 namespace alps {
     namespace numeric {
-
-		template<typename T> struct inf {};
-
-    	#define ALPS_NUMERIC_INF_OVERLOADS(T)						\
-			template<> struct inf< T > {							\
-	    		operator T () const {								\
-	    			return std::numeric_limits< T >::infinity();	\
-	    		}													\
-	    	};
-	    ALPS_NUMERIC_INF_OVERLOADS(float)
-	    ALPS_NUMERIC_INF_OVERLOADS(double)
-	    ALPS_NUMERIC_INF_OVERLOADS(detail::type_wrapper<long double>::type)
-	    #undef ALPS_NUMERIC_INF_OVERLOADS
-
-	}
+        
+        template<typename T> struct inf {};
+        
+#define ALPS_NUMERIC_INF_OVERLOADS(T)                                   \
+        template<> struct inf< T > {                                    \
+            operator T () const {                                       \
+                return std::numeric_limits< T >::infinity();            \
+            }                                                           \
+        };
+        ALPS_NUMERIC_INF_OVERLOADS(float)
+        ALPS_NUMERIC_INF_OVERLOADS(double)
+        ALPS_NUMERIC_INF_OVERLOADS(detail::type_wrapper<long double>::type)
+#undef ALPS_NUMERIC_INF_OVERLOADS
+        
+    }
 }
 
 #endif
