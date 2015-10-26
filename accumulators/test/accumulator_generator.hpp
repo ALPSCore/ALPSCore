@@ -12,6 +12,8 @@
 #define ALPS_ACCUMULATORS_TESTS_ACCUMULATOR_GENERATOR_HPP_INCLUDED
 
 #include <cmath>
+#include <boost/lexical_cast.hpp>
+#include "alps/accumulators.hpp"
 
 namespace alps {
     namespace accumulators {
@@ -74,7 +76,8 @@ namespace alps {
                 typedef T value_type;
                 T val_;
                 gen_data(T val, unsigned int =0) : val_(val) {}
-                operator value_type() { return val_; }
+                operator value_type() const { return val_; }
+                value_type value() const { return val_; }
             };
 
             /// Class generating data points of vector<T>
@@ -84,22 +87,10 @@ namespace alps {
                 typedef std::vector<T> value_type;
                 T val_;
                 unsigned int vsz_;
-                gen_data(T val, unsigned int vsz /*=10*/) : val_(val), vsz_(vsz) {} // FIXME: uncomment if/when needed
-                operator value_type() { return value_type(val_,vsz_); }
+                gen_data(T val, unsigned int vsz =10) : val_(val), vsz_(vsz) {} // FIXME: uncomment if/when needed
+                operator value_type() const { return value(); }
+                value_type value() const { return value_type(vsz_,val_); }
             };
-
-
-            // /// Get scalar data point 
-            // template <typename T>
-            // inline T get_data(T val, unsigned int =0) { return val; }
-
-            // /// Get vector data point
-            // template <typename T>
-            // inline T get_data(typename T::value_type val, unsigned int vsz=10)
-            // {
-            //     return T(vsz, val);
-            // }
-
 
             /// Class to generate accumulators and results of a given type
             template <typename A, unsigned long int NPOINTS_PARAM=10000, typename NG=RandomData>
@@ -132,7 +123,7 @@ namespace alps {
                     m << named_acc_type(name_);
                     for (int i=0; i<NPOINTS; ++i) {
                         double d=number_generator();
-                        m[name_] << gen_data<value_type>(d);
+                        m[name_] << gen_data<value_type>(d).value();
                     }
                     results_ptr_=new alps::accumulators::result_set(m);
                 }
@@ -193,8 +184,8 @@ namespace alps {
 
                     for (int i=0; i<NPOINTS; ++i) {
                         double d=number_generator();
-                        m[vec_name]  << gen_data<vector_data_type>(d, VSIZE);
-                        m[scal_name] << gen_data<scalar_data_type>(d);
+                        m[vec_name]  << gen_data<vector_data_type>(d, VSIZE).value();
+                        m[scal_name] << gen_data<scalar_data_type>(d).value();
                     }
                     results_ptr_=new alps::accumulators::result_set(m);
                 }
