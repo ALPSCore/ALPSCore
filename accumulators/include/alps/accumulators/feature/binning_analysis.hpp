@@ -183,7 +183,7 @@ namespace alps {
 
                         // if not enough bins are available, return infinity
                         if (m_ac_sum2.size() < 2)
-                            return alps::numeric::inf<error_type>();
+                            return alps::numeric::inf<error_type>(B::error()); // FIXME: we call error() only to know the data size
 
                         // TODO: make library for scalar type
                         error_scalar_type one = 1;
@@ -209,9 +209,11 @@ namespace alps {
                         // TODO: make library for scalar type
                         typedef typename alps::hdf5::scalar_type<mean_type>::type mean_scalar_type;
 
+                        mean_type err = error();
+                        
                         // if not enoght bins are available, return infinity
                         if (m_ac_sum2.size() < 2)
-                            return alps::numeric::inf<mean_type>();
+                            return alps::numeric::inf<mean_type>(err);
 
                         mean_scalar_type one = 1;
                         mean_scalar_type two = 2;
@@ -222,7 +224,6 @@ namespace alps {
                         mean_type var_0 = (sum2_0 - sum_0 * sum_0 / N_0) / N_0;
                         alps::numeric::set_negative_0(var_0);
                         mean_scalar_type fac = B::count() - 1;
-                        mean_type err = error();
                         return (err * err * fac / var_0 - one) / two;
                     }
 
@@ -418,7 +419,7 @@ namespace alps {
 
                     error_type const error(std::size_t bin_level = std::numeric_limits<std::size_t>::max()) const {
                         if (m_ac_errors.size() < 2)
-                            return alps::numeric::inf<error_type>();
+                            return alps::numeric::inf<error_type>(B::error()); // FIXME: we call error() only to know the data size
                         return m_ac_errors[bin_level >= m_ac_errors.size() ? 0 : bin_level];
                     }
 
