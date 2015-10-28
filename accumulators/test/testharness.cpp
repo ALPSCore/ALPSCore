@@ -51,25 +51,6 @@ TYPED_TEST(HarnessTest,CompareNearVector) {
     EXPECT_NONFATAL_FAILURE(aat::compare_near(wrong_sized, this->vdata_, 0., "vector_test2"), "Sizes of vector_test2 differ");
 }
 
-TYPED_TEST(HarnessTest,RandomData) {
-    srand48(33);
-    double expected=drand48();
-    aat::RandomData rd(33);
-    EXPECT_EQ(expected, rd());
-}
-
-TYPED_TEST(HarnessTest,ConstantData) {
-    double expected=0.25;
-    aat::ConstantData cd(0.25);
-    EXPECT_EQ(expected, cd());
-}
-
-TYPED_TEST(HarnessTest,AlternatingData) {
-    aat::AlternatingData ad(0.3);
-    EXPECT_NEAR(0.5-0.3, ad(), 1E-8);
-    EXPECT_NEAR(0.5+0.3, ad(), 1E-8);
-}
-
 TYPED_TEST(HarnessTest,GenScalarDataImplicit) {
     typedef typename TestFixture::scalar_type scalar_type;
     scalar_type d=aat::gen_data<scalar_type>(this->sdata_); // implicit conversion
@@ -94,4 +75,70 @@ TYPED_TEST(HarnessTest,GenVectorDataExplicit) {
     EXPECT_EQ(this->vdata_, g.value());
 }
 
-    
+TEST(HarnessTest,RandomData) {
+    srand48(33);
+    double expected=drand48();
+    aat::RandomData rd(33);
+    EXPECT_EQ(expected, rd());
+    double mean, err;
+}
+
+TEST(HarnessTest,ConstantData) {
+    double expected=0.25;
+    aat::ConstantData cd(0.25);
+    EXPECT_EQ(expected, cd());
+}
+
+TEST(HarnessTest,AlternatingData) {
+    aat::AlternatingData ad(0.3);
+    EXPECT_NEAR(0.5-0.3, ad(), 1E-8);
+    EXPECT_NEAR(0.5+0.3, ad(), 1E-8);
+}
+
+
+// proxy template to pass data generator G, number of points to generate N, and expected tolerance (as integer!) E
+template <typename G, std::size_t N=10000, int E=8>
+struct generator {
+    typedef G generator_type;
+    static const std::size_t NPOINTS=N;
+    static const int TOLEXP=E;
+};
+
+// GoogleTest fixture parametrized over data generator, via the proxy template above
+template <typename G>
+struct HarnessDatagenTest : public testing::Test {
+    typedef typename G::generator_type generator_type;
+    generator_type gen;
+    static double tol() { return std::pow(10.,-G::TOLEXP); }
+    static const std::size_t NPOINTS=G::NPOINTS;
+
+    static void stats(const generator_type& gen, std::size_t n, double* mean, double* err) {
+        double sum=0;
+        double sum2=0;
+        for (std::size_t i=0; i<n; ++i) {
+            double x=gen();
+            sum += x;
+            sum2 += x*x;
+        }
+        *mean = sum/n;
+        double dev=(sum2 - sum*sum/n)/n;
+        *err = std::sqrt(dev/(n-1));
+    }
+};
+
+typedef ::testing::Types<
+    generator<aat::RandomData, 20000000, 4>,
+    generator<aat::ConstantData>,
+    generator<aat::AlternatingData>,
+    generator<aat::LinearData>
+    > generator_types;
+
+TYPED_TEST_CASE(HarnessDatagenTest,generator_types);
+
+TYPED_TEST(HarnessDatagenTest, statTest) {
+    double mean,err;
+    const std::size_t n=TestFixture::NPOINTS;
+    this->stats(this->gen,n,&mean,&err);
+    EXPECT_NEAR(mean, this->gen.mean(n), this->tol()) << "mean is incorrect";
+    EXPECT_NEAR(err,  this->gen.error(n), this->tol()) << "error bar is incorrect";
+}
