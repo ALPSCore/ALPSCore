@@ -17,7 +17,12 @@ namespace alps {
         template<typename T> struct inf {};
         
 #define ALPS_NUMERIC_INF_OVERLOADS(T)                                   \
+        /** @brief Class convertible to infinity of type T */           \
         template<> struct inf< T > {                                    \
+            /** @brief Unused argument, to adhere to the concept specifications */ \
+            inf<T>(const T&) {}                                         \
+                                                                        \
+            /** @brief Returns infinity value */                        \
             operator T () const {                                       \
                 return std::numeric_limits< T >::infinity();            \
             }                                                           \

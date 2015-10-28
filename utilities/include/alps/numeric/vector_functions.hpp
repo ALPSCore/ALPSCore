@@ -158,16 +158,22 @@ namespace alps {
         ALPS_NUMERIC_OPERATOR_EQ(operator/=, divides)
 
         #undef ALPS_NUMERIC_OPERATOR_EQ
-
+        
         //------------------- infinity -------------------
-        template<typename T> struct inf<std::vector<T> > {
-            operator std::vector<T> const() {
-                std::vector<T> retval;
-                BOOST_FOREACH(T & arg, retval) {
-                    arg = (T)inf<T>();
-                }
-                return retval;
+        /// Class convertible to std::vector<T> infinity.
+        template<typename T>
+        class inf< std::vector<T> > {
+            typedef std::vector<T> value_type;
+            value_type inf_;
+          public:
+            /// Construct infinity object of the same size as its argument, recursively
+            inf(const value_type& vec) {
+                if (vec.empty()) return;
+                inf_.resize(vec.size(), inf<T>(vec.front()));
             }
+
+            /// Returns infinity vector
+            operator value_type const() { return inf_; }
         };
 
         //------------------- unary operator - -------------------
