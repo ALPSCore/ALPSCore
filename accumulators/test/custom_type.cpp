@@ -12,6 +12,7 @@
 // Defines the notion of accumulator, instantiates templates defined above.
 #include "alps/accumulators.hpp"
 
+
 #include "gtest/gtest.h"
 #include "accumulator_generator.hpp"
 
@@ -28,7 +29,8 @@ namespace alps {
                 typedef my_custom_type<T> value_type;
                 T val_;
                 gen_data(T val, unsigned int =0) : val_(val) {}
-                operator value_type() { return value_type::generate(val_); }
+                operator value_type() const { return value(); }
+                value_type value() const { return value_type::generate(val_); }
             };
         
     
@@ -46,8 +48,8 @@ namespace alps {
     } // accumulators::
 } // alps::
 
-using namespace alps::accumulators::testing;
 
+using namespace alps::accumulators::testing;
 
 // to pass accumulator types
 template <template<typename> class A, typename T>
@@ -79,7 +81,9 @@ struct CustomTypeAccumulatorTest : public testing::Test {
     
     static double tol() { return 5.E-3; }
 
-    CustomTypeAccumulatorTest() {}
+    CustomTypeAccumulatorTest() {
+        alps::accumulators::accumulator_set::register_serializable_type<raw_acc_type>();
+    }
 
     void TestH5ScalarType() {
         typedef typename alps::hdf5::scalar_type<value_type>::type stype;
@@ -162,6 +166,41 @@ struct CustomTypeAccumulatorTest : public testing::Test {
         EXPECT_NEAR(expected_mean, get_value(r.mean<value_type>()), tol());
     }
 
+    void TestSaveAccumulator() {
+        const std::string fname="save_acc.h5";
+        const alps::accumulators::accumulator_set& m=acc_gen.accumulators();
+        alps::hdf5::archive ar(fname,"w");
+        ar["dataset"] << m;
+    }
+
+    void TestSaveResult() {
+        const std::string fname="save_res.h5";
+        const alps::accumulators::result_set& res=acc_gen.results();
+        alps::hdf5::archive ar(fname,"w");
+        ar["dataset"] << res;
+    }
+
+    void TestSaveLoadAccumulator() {
+        const std::string fname="saveload_acc.h5";
+        const alps::accumulators::accumulator_set& m=acc_gen.accumulators();
+        {
+            alps::hdf5::archive ar(fname,"w");
+            ar["dataset"] << m;
+        }
+        alps::accumulators::accumulator_set m1;
+        {
+            alps::hdf5::archive ar("saveload_acc.h5","r");
+            ar["dataset"] >> m1;
+        }
+        alps::accumulators::result_set r(m);
+        alps::accumulators::result_set r1(m1);
+        EXPECT_NEAR(get_value(r["data"].mean<value_type>()),get_value(r1["data"].mean<value_type>()),1E-8);
+        // if (is_mean_acc) return;
+        // EXPECT_NEAR(get_value(r["data"].error<value_type>()),get_value(r1["data"].error<value_type>()),1E-8);
+        // if (is_nobin_acc) return;
+        // EXPECT_NEAR(get_value(r["data"].autocorrelation<value_type>()),get_value(r1["data"].autocorrelation<value_type>()),1E-8);
+    }
+
 };
 
 typedef my_custom_type<double> dbl_custom_type;
@@ -192,4 +231,9 @@ MAKE_TEST(TestAddScalar)
 MAKE_TEST(TestAddEqConst)
 MAKE_TEST(TestAddEq)
 MAKE_TEST(TestAddEqScalar)
+
+MAKE_TEST(TestSaveAccumulator)
+MAKE_TEST(TestSaveLoadAccumulator)
+MAKE_TEST(TestSaveResult)
+// MAKE_TEST(TestSaveLoadResult)
 
