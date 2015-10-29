@@ -20,6 +20,18 @@ namespace alps {
     namespace accumulators {
         namespace testing {
 
+            /// Meta-predicate to check if accumulator A is a named accumulator AA.
+            /** Usage:
+                  typedef is_same_accumulator<MeanAccumulator<double>,MeanAccumulator> is_true_type;
+                  typedef is_same_accumulator<NoBinningAccumulator<double>,LogBinningAccumulator> is_false_type;
+            */
+            template <typename A, template<typename> class AA>
+            struct is_same_accumulator:
+                public boost::is_same<A,
+                                      AA<typename value_type<typename A::accumulator_type>::type>
+                                     >
+            {};
+
             // Functions to compare vector or scalar values
             /// Compare vector values
             template <typename T>
@@ -128,8 +140,8 @@ namespace alps {
                 typedef std::vector<T> value_type;
                 T val_;
                 unsigned int vsz_;
-                /// Generate a vector of size 10 by default.
-                gen_data(T val, unsigned int vsz =10) : val_(val), vsz_(vsz) {} 
+                /// Generate a vector of size 3 by default.
+                gen_data(T val, unsigned int vsz =3) : val_(val), vsz_(vsz) {} 
                 operator value_type() const { return value(); }
                 value_type value() const { return value_type(vsz_,val_); }
             };
@@ -189,7 +201,7 @@ namespace alps {
             };
 
             /// Class to generate a pair of accumulators with identical data: A<T> and A<vector<T>>
-        template <template <typename> class A, typename T, std::size_t NPOINTS_P=1000, unsigned int VSZ_P=10, typename NG=RandomData>
+        template <template <typename> class A, typename T, std::size_t NPOINTS_P=1000, unsigned int VSZ_P=3, typename NG=RandomData>
             class acc_vs_pair_gen {
                 private:
                 alps::accumulators::result_set* results_ptr_;
@@ -246,7 +258,7 @@ namespace alps {
             };
 
             /// Class to generate accumulators with identical, correlated data: Mean,NoBinning,LogBinning,FullBinning
-            template <typename T, std::size_t NPOINTS_P=1000, std::size_t CORRL_P=10, unsigned int VSZ_P=10, typename NG=RandomData>
+            template <typename T, std::size_t NPOINTS_P=1000, std::size_t CORRL_P=10, unsigned int VSZ_P=3, typename NG=RandomData>
             class acc_correlated_gen {
                 private:
                 alps::accumulators::result_set* results_ptr_;
@@ -323,7 +335,7 @@ namespace alps {
             };
 
             /// Class to generate a single accumulator A with correlated data of type T
-            template <template<typename> class A, typename T, std::size_t NPOINTS_P=1000, std::size_t CORRL_P=10, unsigned int VSZ_P=10, typename NG=RandomData>
+            template <template<typename> class A, typename T, std::size_t NPOINTS_P=1000, std::size_t CORRL_P=10, unsigned int VSZ_P=3, typename NG=RandomData>
             class acc_one_correlated_gen {
                 private:
                 alps::accumulators::result_set* results_ptr_;

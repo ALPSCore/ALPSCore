@@ -14,6 +14,7 @@ set (test_src
     weighted
     nonexistent
     acc_count_test
+    mean_err_count
     save_load
     vec_const_binop_simple
     binop_with_constant
