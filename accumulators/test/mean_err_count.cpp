@@ -96,24 +96,24 @@ REGISTER_TYPED_TEST_CASE_P(AccumulatorStatTest, testCount, testMean, testError);
 typedef ::testing::Types<
     generator<aa::MeanAccumulator<double>, aat::ConstantData, 2>,
     generator<aa::MeanAccumulator<double>, aat::ConstantData, 100>,
-    generator<aa::MeanAccumulator<double>, aat::ConstantData, 100000>,
+    generator<aa::MeanAccumulator<double>, aat::ConstantData, 20000>,
     generator<aa::MeanAccumulator<double>, aat::AlternatingData, 2>,
     generator<aa::MeanAccumulator<double>, aat::AlternatingData, 100>,
-    generator<aa::MeanAccumulator<double>, aat::AlternatingData, 100000>,
+    generator<aa::MeanAccumulator<double>, aat::AlternatingData, 20000>,
     generator<aa::MeanAccumulator<double>, aat::LinearData, 2>,
     generator<aa::MeanAccumulator<double>, aat::LinearData, 100>,
-    generator<aa::MeanAccumulator<double>, aat::LinearData, 100000>,
+    generator<aa::MeanAccumulator<double>, aat::LinearData, 20000>,
     generator<aa::MeanAccumulator<double>, aat::RandomData, 100000, 3>,
 
     generator<aa::MeanAccumulator<v_double>, aat::ConstantData, 2>,
     generator<aa::MeanAccumulator<v_double>, aat::ConstantData, 100>,
-    generator<aa::MeanAccumulator<v_double>, aat::ConstantData, 100000>,
+    generator<aa::MeanAccumulator<v_double>, aat::ConstantData, 20000>,
     generator<aa::MeanAccumulator<v_double>, aat::AlternatingData, 2>,
     generator<aa::MeanAccumulator<v_double>, aat::AlternatingData, 100>,
-    generator<aa::MeanAccumulator<v_double>, aat::AlternatingData, 100000>,
+    generator<aa::MeanAccumulator<v_double>, aat::AlternatingData, 20000>,
     generator<aa::MeanAccumulator<v_double>, aat::LinearData, 2>,
     generator<aa::MeanAccumulator<v_double>, aat::LinearData, 100>,
-    generator<aa::MeanAccumulator<v_double>, aat::LinearData, 100000>,
+    generator<aa::MeanAccumulator<v_double>, aat::LinearData, 20000>,
     generator<aa::MeanAccumulator<v_double>, aat::RandomData, 100000, 3>
     > double_mean_types;
 INSTANTIATE_TYPED_TEST_CASE_P(DoubleMean, AccumulatorStatTest, double_mean_types);
@@ -121,24 +121,24 @@ INSTANTIATE_TYPED_TEST_CASE_P(DoubleMean, AccumulatorStatTest, double_mean_types
 typedef ::testing::Types<
     generator<aa::NoBinningAccumulator<double>, aat::ConstantData, 2>,
     generator<aa::NoBinningAccumulator<double>, aat::ConstantData, 100>,
-    generator<aa::NoBinningAccumulator<double>, aat::ConstantData, 100000>,
+    generator<aa::NoBinningAccumulator<double>, aat::ConstantData, 20000>,
     generator<aa::NoBinningAccumulator<double>, aat::AlternatingData, 2>,
     generator<aa::NoBinningAccumulator<double>, aat::AlternatingData, 100>,
-    generator<aa::NoBinningAccumulator<double>, aat::AlternatingData, 100000>,
+    generator<aa::NoBinningAccumulator<double>, aat::AlternatingData, 20000>,
     generator<aa::NoBinningAccumulator<double>, aat::LinearData, 2>,
     generator<aa::NoBinningAccumulator<double>, aat::LinearData, 100>,
-    generator<aa::NoBinningAccumulator<double>, aat::LinearData, 100000>,
+    generator<aa::NoBinningAccumulator<double>, aat::LinearData, 20000>,
     generator<aa::NoBinningAccumulator<double>, aat::RandomData, 100000, 3>,
 
     generator<aa::NoBinningAccumulator<v_double>, aat::ConstantData, 2>,
     generator<aa::NoBinningAccumulator<v_double>, aat::ConstantData, 100>,
-    generator<aa::NoBinningAccumulator<v_double>, aat::ConstantData, 100000>,
+    generator<aa::NoBinningAccumulator<v_double>, aat::ConstantData, 20000>,
     generator<aa::NoBinningAccumulator<v_double>, aat::AlternatingData, 2>,
     generator<aa::NoBinningAccumulator<v_double>, aat::AlternatingData, 100>,
-    generator<aa::NoBinningAccumulator<v_double>, aat::AlternatingData, 100000>,
+    generator<aa::NoBinningAccumulator<v_double>, aat::AlternatingData, 20000>,
     generator<aa::NoBinningAccumulator<v_double>, aat::LinearData, 2>,
     generator<aa::NoBinningAccumulator<v_double>, aat::LinearData, 100>,
-    generator<aa::NoBinningAccumulator<v_double>, aat::LinearData, 100000>,
+    generator<aa::NoBinningAccumulator<v_double>, aat::LinearData, 20000>,
     generator<aa::NoBinningAccumulator<v_double>, aat::RandomData, 100000, 3>
     > double_nobin_types;
 INSTANTIATE_TYPED_TEST_CASE_P(DoubleNobin, AccumulatorStatTest, double_nobin_types);
