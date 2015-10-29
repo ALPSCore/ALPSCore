@@ -94,6 +94,7 @@ namespace alps {
 
                         // TODO: make library for scalar type
                         error_scalar_type cnt = B::count();
+                        if (cnt<=1) return alps::numeric::inf<error_type>(m_sum2);
                         return sqrt((m_sum2 / cnt - B::mean() * B::mean()) / (cnt - 1));
                     }
 
