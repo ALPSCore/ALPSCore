@@ -58,15 +58,15 @@ struct AccumulatorMergeTest : public ::testing::Test {
     }
 
     void testMean() {
-        EXPECT_NEAR(ms_full["data"].mean<value_type>(),
-                    ms_half2["data"].mean<value_type>(),
+        EXPECT_NEAR(ms_full["data"].template mean<value_type>(),
+                    ms_half2["data"].template mean<value_type>(),
                     1E-8);
     }
 
     void testErrorBar() {
         if (is_mean_acc) return;
-        EXPECT_NEAR(ms_full["data"].error<value_type>(),
-                    ms_half2["data"].error<value_type>(),
+        EXPECT_NEAR(ms_full["data"].template error<value_type>(),
+                    ms_half2["data"].template error<value_type>(),
                     1E-8);
     }
 };
