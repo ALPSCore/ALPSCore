@@ -44,7 +44,7 @@ struct AccumulatorMergeTest : public ::testing::Test {
             ms_full["data"] << v;
         }
             
-        for (std::size_t i=0; i<NPOINTS; ++i) {
+        for (std::size_t i=0; i<2*NPOINTS; ++i) {
             value_type v=aat::gen_data<value_type>(gen());
             ms_half2["data"] << v;
             ms_full["data"] << v;
@@ -58,14 +58,16 @@ struct AccumulatorMergeTest : public ::testing::Test {
     }
 
     void testMean() {
-        EXPECT_EQ(ms_full["data"].mean<value_type>(),
-                  ms_half2["data"].mean<value_type>());
+        EXPECT_NEAR(ms_full["data"].mean<value_type>(),
+                    ms_half2["data"].mean<value_type>(),
+                    1E-8);
     }
 
     void testErrorBar() {
         if (is_mean_acc) return;
-        EXPECT_EQ(ms_full["data"].error<value_type>(),
-                  ms_half2["data"].error<value_type>());
+        EXPECT_NEAR(ms_full["data"].error<value_type>(),
+                    ms_half2["data"].error<value_type>(),
+                    1E-8);
     }
 };
 
@@ -80,8 +82,10 @@ REGISTER_TYPED_TEST_CASE_P(AccumulatorMergeTest,
 
 typedef ::testing::Types<
     generator<aa::MeanAccumulator<double>      , aat::LinearData>,
+    generator<aa::MeanAccumulator<double>      , aat::RandomData>,
     generator<aa::NoBinningAccumulator<double> , aat::LinearData>,
-    generator<aa::LogBinningAccumulator<double>, aat::LinearData>
+    generator<aa::NoBinningAccumulator<double> , aat::RandomData>
+    // generator<aa::LogBinningAccumulator<double>, aat::LinearData>
     > MyTypes;
 
 INSTANTIATE_TYPED_TEST_CASE_P(test1, AccumulatorMergeTest, MyTypes);
