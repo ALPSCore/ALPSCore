@@ -8,114 +8,80 @@
 #include <alps/accumulators.hpp>
 #include "gtest/gtest.h"
 
-template<typename A, typename T>
-static void test_merge_scalar(bool is_implemented)
-{
-  namespace acc=alps::accumulators;
+#include "accumulator_generator.hpp"
 
-  const int COUNT1=1000, COUNT2=500;
-  acc::accumulator_set measurements1,measurements2;
-  measurements1 << A("scalar1")
-                << A("scalar2");
-  measurements2 << A("scalar1")
-                << A("scalar2");
+/// Proxy template to pass accumulator A, data generator G, number of point N
+template <typename A, typename G, std::size_t N=1000>
+struct generator {
+    typedef A acc_type;
+    typedef G gen_type;
+    static const std::size_t NPOINTS=N;
+};
 
-  for (int i = 1; i <= COUNT1; ++i) {
-    measurements1["scalar1"] << T(i);
-    measurements1["scalar2"] << T(i);
-  }
-  
-  for (int i = 1; i <= COUNT2; ++i) {
-    measurements2["scalar1"] << T(i);
-    measurements2["scalar2"] << T(i);
-  }
-  
-  acc::accumulator_wrapper& a1=measurements1["scalar1"];
-  const acc::accumulator_wrapper& a2=measurements2["scalar1"];
+namespace aa=alps::accumulators;
+namespace aat=alps::accumulators::testing;
 
-  bool ok=true;
-  try {
-    a1.merge(a2);
-  } catch (std::exception&) {
-    ok=false;
-  }
-  EXPECT_EQ(ok,is_implemented);
-  if (!ok) return;
+/// GTest fixture: parametrized over accumulators and data generators
+template <typename G>
+struct AccumulatorMergeTest : public ::testing::Test {
+    typedef typename G::acc_type acc_type;
+    typedef typename G::gen_type gen_type;
+    typedef typename aa::value_type<typename acc_type::accumulator_type>::type value_type;
+    static const std::size_t NPOINTS=G::NPOINTS;
+    static const bool is_mean_acc = aat::is_same_accumulator<acc_type, aa::MeanAccumulator>::value;
 
-  EXPECT_EQ(count(a1) , COUNT1+COUNT2);
-  const T combined_mean=0.5*T(COUNT1*(COUNT1+1)+COUNT2*(COUNT2+1))/(COUNT1+COUNT2);
-  EXPECT_EQ(a1.mean<T>() , combined_mean);
+    gen_type gen;
+    aa::accumulator_set ms_half1, ms_half2, ms_full;
 
-  ok=true;
-  try {
-    measurements1.merge(measurements2);
-  } catch (std::exception&) {
-    ok=false;
-  }
-  EXPECT_EQ(ok,is_implemented);
-  if (!ok) return;
+    AccumulatorMergeTest() : gen() {
+        ms_half1 << acc_type("data");
+        ms_half2 << acc_type("data");
+        ms_full  << acc_type("data");
+        
+        for (std::size_t i=0; i<NPOINTS; ++i) {
+            value_type v=aat::gen_data<value_type>(gen());
+            ms_half1["data"] << v;
+            ms_full["data"] << v;
+        }
+            
+        for (std::size_t i=0; i<NPOINTS; ++i) {
+            value_type v=aat::gen_data<value_type>(gen());
+            ms_half2["data"] << v;
+            ms_full["data"] << v;
+        }
 
-  EXPECT_EQ(measurements1["scalar1"].count(), COUNT1+COUNT2*2);
-  EXPECT_EQ(measurements1["scalar2"].count(), COUNT1+COUNT2);
-  const T combined_mean2=0.5*T(COUNT1*(COUNT1+1)+2*COUNT2*(COUNT2+1))/(COUNT1+COUNT2*2);
-  EXPECT_EQ(measurements1["scalar1"].mean<T>() , combined_mean2);
-  EXPECT_EQ(measurements1["scalar2"].mean<T>() , combined_mean);
-}  
+        ms_half2.merge(ms_half1);
+    };
 
+    void testCount() {
+        EXPECT_EQ(ms_full["data"].count(), ms_half2["data"].count());
+    }
 
-template<typename A, typename T>
-static void test_merge_vector(bool is_implemented)
-{
-  typedef std::vector<T> t_vector;
-  namespace acc=alps::accumulators;
-  
-  const int COUNT1=1000, COUNT2=500, LEN=10;
-  acc::accumulator_set measurements;
-  measurements << A("vector1")
-               << A("vector2");
+    void testMean() {
+        EXPECT_EQ(ms_full["data"].mean<value_type>(),
+                  ms_half2["data"].mean<value_type>());
+    }
 
-  for (int i = 1; i <= COUNT1; ++i) {
-    measurements["vector1"] << t_vector(LEN, T(i));
-  }
-  
-  for (int i = 1; i <= COUNT2; ++i) {
-    measurements["vector2"] << t_vector(LEN, T(i));
-  }
-  
-  acc::accumulator_wrapper& a1=measurements["vector1"];
-  const acc::accumulator_wrapper& a2=measurements["vector2"];
+    void testErrorBar() {
+        if (is_mean_acc) return;
+        EXPECT_EQ(ms_full["data"].error<value_type>(),
+                  ms_half2["data"].error<value_type>());
+    }
+};
 
-  bool ok=true;
-  try {
-    a1.merge(a2);
-  } catch (std::exception&) {
-    ok=false;
-  }
-  EXPECT_EQ(ok,is_implemented);
-  if (!ok) return;
+TYPED_TEST_CASE_P(AccumulatorMergeTest);
 
-  EXPECT_EQ(count(a1) , COUNT1+COUNT2);
-  const T combined_mean=0.5*T(COUNT1*(COUNT1+1)+COUNT2*(COUNT2+1))/(COUNT1+COUNT2);
-  t_vector mean_vec=a1.mean<t_vector>();
-  for (int i=0; i<mean_vec.size(); ++i) {
-    EXPECT_EQ(mean_vec[i], combined_mean);
-  }
-}  
+TYPED_TEST_P(AccumulatorMergeTest, Count)    { this->TestFixture::testCount(); }
+TYPED_TEST_P(AccumulatorMergeTest, Mean)     { this->TestFixture::testMean(); }
+TYPED_TEST_P(AccumulatorMergeTest, ErrorBar) { this->TestFixture::testErrorBar(); }
 
+REGISTER_TYPED_TEST_CASE_P(AccumulatorMergeTest,
+                           Count, Mean, ErrorBar);
 
+typedef ::testing::Types<
+    generator<aa::MeanAccumulator<double>      , aat::LinearData>,
+    generator<aa::NoBinningAccumulator<double> , aat::LinearData>,
+    generator<aa::LogBinningAccumulator<double>, aat::LinearData>
+    > MyTypes;
 
-
-#define ALPS_TEST_RUN_MERGE_TEST(A,T,N,is_impl)                       \
-  TEST(accumulator, merge_feature_scalar_ ## A ## _ ## N) {           \
-    test_merge_scalar<alps::accumulators::A<T>,T>(is_impl);           \
-  }                                                                   \
-                                                                      \
-  TEST(accumulator, merge_feature_vector_ ## A ## _ ## N) {                     \
-    test_merge_vector<alps::accumulators::A< std::vector<T> >,T>(is_impl); \
-  }                                                              
-
-
-ALPS_TEST_RUN_MERGE_TEST(MeanAccumulator,double,double,true)
-ALPS_TEST_RUN_MERGE_TEST(NoBinningAccumulator,double,double,false)
-
-
+INSTANTIATE_TYPED_TEST_CASE_P(test1, AccumulatorMergeTest, MyTypes);

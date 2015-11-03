@@ -148,12 +148,15 @@ namespace alps {
                         m_sum2 = T();
                     }
 
-                   /// Merge placeholder \remark FIXME: always throws
+                    /// Merge the mean & error of given accumulator of type A into this accumulator  @param rhs Accumulator to merge 
                     template <typename A>
                     void merge(const A& rhs)
                     {
-                      throw std::logic_error("Merging error accumulators is not yet implemented"
-                                             +ALPS_STACKTRACE);
+                      using alps::numeric::operator+=;
+                      using alps::numeric::check_size;
+                      B::merge(rhs);
+                      check_size(m_sum2, rhs.m_sum2);
+                      m_sum2 += rhs.m_sum2;
                     }
 
 #ifdef ALPS_HAVE_MPI
