@@ -29,13 +29,13 @@ struct InfinityTest : public ::testing::Test {
     }
 
     void ScalarTest() {
-        // Fails with Intel: using std::isinf;
+        using std::isinf;
         scalar_type inf=alps::numeric::inf<scalar_type>(scalar_);
         EXPECT_TRUE(isinf(inf));
     }
         
     void VectorTest() {
-        // Fails with Intel: using std::isinf;
+        using std::isinf;
         vector_type inf=alps::numeric::inf<vector_type>(vector_);
         ASSERT_EQ(vector_.size(), inf.size());
         for (int i=0; i<inf.size(); ++i) {
@@ -44,7 +44,7 @@ struct InfinityTest : public ::testing::Test {
     }
     
     void VectorVectorTest() {
-        // Fails with Intel: using std::isinf;
+        using std::isinf;
         vector_vector_type inf=alps::numeric::inf<vector_vector_type>(vector_vector_);
         ASSERT_EQ(vector_vector_.size(), inf.size());
         for (int i=0; i<inf.size(); ++i) {
