@@ -263,6 +263,14 @@ namespace alps {
                     }
 
                     template<typename S> void print(S & os) const {
+                        os << short_print(this->mean())
+                           << " #" << this->count()
+                           << " +/-" << short_print(this->error())
+                           << " Tau:" << short_print(autocorrelation())
+                           << " (warning: print result rather than accumulator)";
+                    }
+
+                    template<typename S> void fullprint(S & os) const {
                         os << "DEBUG PRINTING of the accumulator object state. **DO NOT USE AS PRODUCTION OUTPUT!**\n"
                            << "(use mean(), error() and autocorrelation() methods)\n";
                         B::print(os);
@@ -428,6 +436,13 @@ namespace alps {
                     }
 
                     template<typename S> void print(S & os) const {
+                        os << short_print(this->mean())
+                           << " #" << this->count()
+                           << " +/-" << short_print(this->error())
+                           << " Tau:" << short_print(autocorrelation());
+                    }
+
+                    template<typename S> void fullprint(S & os) const {
                         os << "DEBUG PRINTING of the result object state. **DO NOT USE AS PRODUCTION OUTPUT!**\n"
                            << "(use mean(), error() and autocorrelation() methods)\n";
                         B::print(os);

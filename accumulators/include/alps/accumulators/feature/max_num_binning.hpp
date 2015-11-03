@@ -217,6 +217,13 @@ namespace alps {
                     }
 
                     template<typename S> void print(S & os) const {
+                        os << short_print(this->mean())
+                           << " #" << this->count()
+                           << " +/-" << short_print(this->error())
+                           << " Tau:" << short_print(this->autocorrelation());
+                    }
+
+                    template<typename S> void fullprint(S & os) const {
                         B::print(os);
                         os << "Mean +/-error (tau): "
                            << short_print(this->mean())
@@ -521,8 +528,15 @@ namespace alps {
                         return cov;
                     }
 
-                    // TODO: use mean error from here ...
                     template<typename S> void print(S & os) const {
+                        os << short_print(this->mean())
+                           << " #" << this->count()
+                           << " +/-" << short_print(this->error())
+                           << " Tau:" << short_print(this->autocorrelation());
+                    }
+
+                    // TODO: use mean error from here ...
+                    template<typename S> void fullprint(S & os) const {
                         // TODO: use m_mn_variables!
                         B::print(os);
                         os << "Mean +/-error (tau): "
