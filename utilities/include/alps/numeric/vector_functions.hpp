@@ -32,60 +32,6 @@
 namespace alps { 
     namespace numeric {
 
-      //   // include ( + (add) , - (subtract, negation) , * (multiply) , / (divide) ) operators for vectors from boost accumulator library (developed by Eric Niebier)
-      //   using namespace boost::numeric::operators;
-
-      //   // include ( + (positivity) )
-      //   template<class T>
-      //   inline std::vector<T>& operator+(std::vector<T>& vec)  {  return vec;  }
-
-
-      //   // include ( + , - , * , / vector-scalar operations)
-      //   #define IMPLEMENT_ALPS_VECTOR_SCALAR_OPERATION(OPERATOR_NAME,OPERATOR) \
-      //   template<class T> \
-      //   inline std::vector<T> OPERATOR_NAME(std::vector<T> vector, T const & scalar) \
-      //   { \
-      //     std::vector<T> res; \
-      //     res.reserve(vector.size()); \
-      //     for (typename std::vector<T>::iterator it=vector.begin(); it != vector.end(); ++it) \
-      //     { \
-      //       res.push_back(((*it) OPERATOR scalar)); \
-      //     } \
-      //     return res; \
-      //   } \
-      //   \
-      //   template<class T> \
-      //   inline std::vector<T> OPERATOR_NAME(T const & scalar, std::vector<T> vector) \
-      //   { \
-      //     std::vector<T> res; \
-      //     res.reserve(vector.size()); \
-      //     for (typename std::vector<T>::iterator it=vector.begin(); it != vector.end(); ++it) \
-      //     { \
-      //       res.push_back((scalar OPERATOR (*it))); \
-      //     } \
-      //     return res; \
-      //   } 
-
-      //   IMPLEMENT_ALPS_VECTOR_SCALAR_OPERATION(operator+,+)
-      //   IMPLEMENT_ALPS_VECTOR_SCALAR_OPERATION(operator-,-)
-        
-      // // the following two may not be defined as they are already defined by Boost
-      // //    IMPLEMENT_ALPS_VECTOR_SCALAR_OPERATION(operator*,*)
-      // //    IMPLEMENT_ALPS_VECTOR_SCALAR_OPERATION(operator/,/)
-
-      //   template<class T> 
-      //   inline std::vector<T> operator/(T const & scalar, std::vector<T> const& vector) 
-      //   { 
-      //     std::vector<T> res; 
-      //     res.reserve(vector.size()); 
-      //     for (typename std::vector<T>::const_iterator it=vector.begin(); it != vector.end(); ++it) 
-      //     { 
-      //       res.push_back(scalar / (*it)); 
-      //     } 
-      //     return res; 
-      //   } 
-
-
         // fix for old xlc compilers
         #define IMPLEMENT_ALPS_VECTOR_FUNCTION(LIB_HEADER, FUNCTION_NAME)                                        \
             namespace detail {                                                                                    \
@@ -122,24 +68,6 @@ namespace alps {
         IMPLEMENT_ALPS_VECTOR_FUNCTION(boost::math,atanh)
 
         #undef IMPLEMENT_ALPS_VECTOR_FUNCTION
-
-      //   #define IMPLEMENT_ALPS_VECTOR_FUNCTION2(LIB_HEADER,FUNCTION_NAME) \
-      //   template<class T, class U> \
-      //   static std::vector<T> FUNCTION_NAME(std::vector<T> vec, U index) \
-      //   { \
-      //     using LIB_HEADER::FUNCTION_NAME; \
-      //     std::transform(vec.begin(), vec.end(), vec.begin(), boost::lambda::bind<T>(static_cast<T (*)(T, U)>(&FUNCTION_NAME), boost::lambda::_1, index)); \
-      //     return vec; \
-      //   }
-
-      //   IMPLEMENT_ALPS_VECTOR_FUNCTION2(std,pow)
-
-      //   template <class T>
-      //   std::ostream& operator<< (std::ostream &out, std::vector<T> const & vec)
-      //   {
-      //     std::copy(vec.begin(),vec.end(),std::ostream_iterator<T>(out,"\t"));
-      //     return out;
-      //   }
 
         //------------------- operator equal -------------------
         #define ALPS_NUMERIC_OPERATOR_EQ(OP_NAME, OPERATOR)                                                                 \
@@ -341,7 +269,3 @@ namespace alps {
 }
 
 #endif // ALPS_NUMERIC_VECTOR_FUNCTIONS_HEADER
-
-
-
-
