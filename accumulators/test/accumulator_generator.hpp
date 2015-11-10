@@ -13,6 +13,7 @@
 
 #include <cmath>
 #include <cstddef>
+#include <numeric>
 #include <boost/lexical_cast.hpp>
 #include "alps/accumulators.hpp"
 
@@ -118,6 +119,39 @@ namespace alps {
 
                 /// Expected error bar of first n members
                 double error(std::size_t n) const { return ini_*std::sqrt((1.+n)/12.); }
+            };
+
+            /// Functor class generating correlated data with correlation length L, using generator G (likely, RandomData)
+            template <std::size_t L, typename G=RandomData>
+            class CorrelatedData {
+              public:
+                typedef G generator_type;
+                static const std::size_t CORRL=L;
+              private:
+                // FIXME: is mutable appropriate? is mutable necessary?
+                mutable generator_type gen_;
+                /// Series "memory", and the to-be-returned sample at buf_[0]
+                mutable double buf_[L+1]; // L would be enough, but we don't want problems when L==0
+
+                void init_() {
+                    std::fill_n(buf_,CORRL+1,0);
+                }
+              public:
+                explicit CorrelatedData(double ini) : gen_(ini) { init_(); }
+                explicit CorrelatedData() : gen_() { init_(); }
+                
+                double operator()() const {
+                    buf_[0]=std::accumulate(buf_+1,buf_+CORRL+1,gen_())/(CORRL+1);
+                    double ret=buf_[0];
+                    for (std::size_t j=CORRL; j>=1; --j) buf_[j]=buf_[j-1];
+                    return ret;
+                }
+
+                /// Expected mean of first n members
+                double mean(std::size_t n) const { return gen_.mean(n); }
+
+                /// Expected (uncorrelated!) error bar of first n members
+                double error(std::size_t n) const { return gen_.error(n); }
             };
 
 
@@ -263,7 +297,7 @@ namespace alps {
                 private:
                 alps::accumulators::result_set* results_ptr_;
                 alps::accumulators::accumulator_set* measurements_ptr_;
-                NG number_generator;
+                CorrelatedData<CORRL_P,NG> number_generator;
 
                 public:
                 typedef T data_type;
@@ -293,7 +327,6 @@ namespace alps {
                                 const std::string& logbin="logbin", const std::string& fullbin="fullbin")
                     : mean_name(mean), nobin_name(nobin), logbin_name(logbin), fullbin_name(fullbin)
                 {
-                    // srand48(43);
                     measurements_ptr_=new alps::accumulators::accumulator_set();
                     alps::accumulators::accumulator_set& m=*measurements_ptr_;
                     m <<    mean_acc_type(   mean_name)
@@ -301,18 +334,12 @@ namespace alps {
                       <<  logbin_acc_type( logbin_name)
                       << fullbin_acc_type(fullbin_name);                        
 
-                    double d[CORRL_P];
-                    for (std::size_t j=0; j<CORRL_P; ++j) d[j]=0;
                     for (std::size_t i=0; i<NPOINTS; ++i) {
-                        d[0]=number_generator()/CORRL_P;
-                        for (std::size_t j=1; j<CORRL_P; ++j) d[0]+=d[j]/CORRL_P; // auto-correlated sample
-                        // d[0]=0.6*d[1]+0.2*d[2]+0.15*d[3]+0.05*drand48(); // auto-correlated sample; 100% of [0,1]-random var
-                        data_type sample=gen_data<data_type>(d[0], VSIZE);
+                        data_type sample=gen_data<data_type>(number_generator(), VSIZE);
                         m[   mean_name]  << sample;
                         m[  nobin_name]  << sample;
                         m[ logbin_name]  << sample;
                         m[fullbin_name]  << sample;
-                        for (std::size_t j=CORRL_P-1; j>=1; --j) d[j]=d[j-1];
                     }
                     results_ptr_=new alps::accumulators::result_set(m);
                 }
@@ -340,7 +367,7 @@ namespace alps {
                 private:
                 alps::accumulators::result_set* results_ptr_;
                 alps::accumulators::accumulator_set* measurements_ptr_;
-                NG number_generator;
+                CorrelatedData<CORRL_P,NG> number_generator;
 
                 public:
                 typedef T data_type;
@@ -363,20 +390,13 @@ namespace alps {
                 acc_one_correlated_gen(const std::string& name="data")
                     : acc_name(name)
                 {
-                    // srand48(43);
                     measurements_ptr_=new alps::accumulators::accumulator_set();
                     alps::accumulators::accumulator_set& m=*measurements_ptr_;
                     m << acc_type(acc_name);
 
-                    double d[CORRL_P];
-                    for (int j=0; j<CORRL_P; ++j) d[j]=0;
                     for (int i=0; i<NPOINTS; ++i) {
-                        d[0]=number_generator()/CORRL_P;
-                        for (int j=1; j<CORRL_P; ++j) d[0]+=d[j]/CORRL_P; // auto-correlated sample
-                        // d[0]=0.6*d[1]+0.2*d[2]+0.15*d[3]+0.05*drand48(); // auto-correlated sample; 100% of [0,1]-random var
-                        data_type sample=gen_data<data_type>(d[0], VSIZE);
+                        data_type sample=gen_data<data_type>(number_generator(), VSIZE);
                         m[acc_name]  << sample;
-                        for (int j=CORRL_P-1; j>=1; --j) d[j]=d[j-1];
                     }
                     results_ptr_=new alps::accumulators::result_set(m);
                 }
