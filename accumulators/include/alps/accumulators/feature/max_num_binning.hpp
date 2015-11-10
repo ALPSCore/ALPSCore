@@ -23,7 +23,6 @@
 #include <alps/utilities/stacktrace.hpp>
 #include <alps/utilities/short_print.hpp>
 
-#include <alps/numeric/functional.hpp>
 #include <alps/numeric/outer_product.hpp>
 #include <alps/type_traits/covariance_type.hpp>
 

@@ -69,24 +69,6 @@ namespace alps {
 
         #undef IMPLEMENT_ALPS_VECTOR_FUNCTION
 
-        //------------------- operator equal -------------------
-        #define ALPS_NUMERIC_OPERATOR_EQ(OP_NAME, OPERATOR)                                                                 \
-            template<typename T>                                                                                            \
-            std::vector<T> & OP_NAME (std::vector<T> & lhs, std::vector<T> const & rhs) {                                   \
-                if(lhs.size() != rhs.size())                                                                                \
-                    boost::throw_exception(std::runtime_error("std::vectors must have the same size!" + ALPS_STACKTRACE));  \
-                else                                                                                                        \
-                    std::transform(lhs.begin(), lhs.end(), rhs.begin(), lhs.begin(), std:: OPERATOR <T>() );                \
-                return lhs;                                                                                                 \
-            }
-
-        ALPS_NUMERIC_OPERATOR_EQ(operator+=, plus)
-        ALPS_NUMERIC_OPERATOR_EQ(operator-=, minus)
-        ALPS_NUMERIC_OPERATOR_EQ(operator*=, multiplies)
-        ALPS_NUMERIC_OPERATOR_EQ(operator/=, divides)
-
-        #undef ALPS_NUMERIC_OPERATOR_EQ
-        
         //------------------- infinity -------------------
         /// Class convertible to std::vector<T> infinity.
         template<typename T>
@@ -264,6 +246,96 @@ namespace alps {
                 return v;
             }
         };
+
+
+        /* Functors */
+
+        template <typename T> struct unary_minus : public std::unary_function<T, T> {
+            T operator()(T const & x) const {
+                // using boost::numeric::operators::operator-;
+                using alps::numeric::operator-;
+                return -x; 
+            }
+        };
+
+        template <typename T, typename U, typename R> struct plus : public std::binary_function<T, U, R> {
+            R operator()(T const & x, U const & y) const {
+                // using boost::numeric::operators::operator+;
+                using alps::numeric::operator+;
+                return x + y; 
+            }
+        };
+        template <typename T> struct plus<T, T, T> : public std::binary_function<T, T, T> {
+            T operator()(T const & x, T const & y) const {
+                // using boost::numeric::operators::operator+;
+                using alps::numeric::operator+;
+                return x + y; 
+            }
+        };
+
+        template <typename T, typename U, typename R> struct minus : public std::binary_function<T, U, R> {
+            R operator()(T const & x, U const & y) const {
+                // using boost::numeric::operators::operator-;
+                using alps::numeric::operator-;
+                return x - y; 
+            }
+        };
+        template <typename T> struct minus<T, T, T> : public std::binary_function<T, T, T> {
+            T operator()(T const & x, T const & y) const {
+                // using boost::numeric::operators::operator-;
+                using alps::numeric::operator-;
+                return x - y; 
+            }
+        };
+
+        template <typename T, typename U, typename R> struct multiplies : public std::binary_function<T, U, R> {
+            R operator()(T const & x, U const & y) const {
+                // using boost::numeric::operators::operator*;
+                using alps::numeric::operator*;
+                return x * y; 
+            }
+        };
+        template <typename T> struct multiplies<T, T, T> : public std::binary_function<T, T, T> {
+            T operator()(T const & x, T const & y) const {
+                // using boost::numeric::operators::operator*;
+                using alps::numeric::operator*;
+                return x * y; 
+            }
+        };
+
+        template <typename T, typename U, typename R> struct divides : public std::binary_function<T, U, R> {
+            R operator()(T const & x, U const & y) const {
+                // using boost::numeric::operators::operator/;
+                using alps::numeric::operator/;
+                return x / y; 
+            }
+        };
+        template <typename T> struct divides<T, T, T> : public std::binary_function<T, T, T> {
+            T operator()(T const & x, T const & y) const {
+                // using boost::numeric::operators::operator/;
+                using alps::numeric::operator/;
+                return x / y; 
+            }
+        };
+
+        
+        //------------------- operator equal -------------------
+        #define ALPS_NUMERIC_OPERATOR_EQ(OP_NAME, OPERATOR)                                                                 \
+            template<typename T>                                                                                            \
+            std::vector<T> & OP_NAME (std::vector<T> & lhs, std::vector<T> const & rhs) {                                   \
+                if(lhs.size() != rhs.size())                                                                                \
+                    boost::throw_exception(std::runtime_error("std::vectors must have the same size!" + ALPS_STACKTRACE));  \
+                else                                                                                                        \
+                    std::transform(lhs.begin(), lhs.end(), rhs.begin(), lhs.begin(), OPERATOR <T,T,T>() );                  \
+                return lhs;                                                                                                 \
+            }
+
+        ALPS_NUMERIC_OPERATOR_EQ(operator+=, plus)
+        ALPS_NUMERIC_OPERATOR_EQ(operator-=, minus)
+        ALPS_NUMERIC_OPERATOR_EQ(operator*=, multiplies)
+        ALPS_NUMERIC_OPERATOR_EQ(operator/=, divides)
+
+        #undef ALPS_NUMERIC_OPERATOR_EQ
         
     }
 }
