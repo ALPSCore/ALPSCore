@@ -327,26 +327,15 @@ namespace alps {
                     }
 
                     /// Merge the bins of the given accumulator of type A into this accumulator @param rhs Accumulator to merge
-                    /** @FIXME: Not implemented yet (always throws) */
                     template <typename A>
                     void merge(const A& rhs)
                     {
-                        throw std::logic_error("Merging binning accumulators is not yet implemented"
-                                             + ALPS_STACKTRACE);
+                        using alps::numeric::merge;
+                        B::merge(rhs);
 
-                        // using alps::numeric::operator+=;
-                        // B::merge(rhs);
-
-                        // std::size_t size=std::max(m_ac_count.size(), rhs.m_ac_count.size());
-
-                        // m_ac_count.resize(size);
-                        // m_ac_count += rhs.m_ac_count;
-                        
-                        // m_ac_sum.resize(size);
-                        // m_ac_sum += rhs.m_ac_sum;
-
-                        // m_ac_sum2.resize(size);
-                        // m_ac_sum2 += rhs.m_ac_sum2;
+                        merge(m_ac_count,rhs.m_ac_count);
+                        merge(m_ac_sum,rhs.m_ac_sum);
+                        merge(m_ac_sum2,rhs.m_ac_sum2);
                     }
 
 #ifdef ALPS_HAVE_MPI
