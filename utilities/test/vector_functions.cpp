@@ -70,6 +70,7 @@ TYPED_TEST(VectorFunctionsTest, testPlus) {
     value_type vec2=gen_data<value_type>(1.50);
     value_type res=gen_data<value_type>(2.25+1.50);
     vec1 += vec2;
+    ASSERT_EQ(res.size(),vec1.size());
     EXPECT_EQ(res, vec1);
 }
 
@@ -80,6 +81,7 @@ TYPED_TEST(VectorFunctionsTest, testMinus) {
     value_type vec2=gen_data<value_type>(1.50);
     value_type res=gen_data<value_type>(2.25-1.50);
     vec1 -= vec2;
+    ASSERT_EQ(res.size(),vec1.size());
     EXPECT_EQ(res, vec1);
 }
 
@@ -90,6 +92,7 @@ TYPED_TEST(VectorFunctionsTest, testMultiplies) {
     value_type vec2=gen_data<value_type>(1.50);
     value_type res=gen_data<value_type>(2.25*1.50);
     vec1 *= vec2;
+    ASSERT_EQ(res.size(),vec1.size());
     EXPECT_EQ(res, vec1);
 }
 
@@ -100,6 +103,62 @@ TYPED_TEST(VectorFunctionsTest, testDivides) {
     value_type vec2=gen_data<value_type>(1.50);
     value_type res=gen_data<value_type>(2.25/1.50);
     vec1 /= vec2;
+    ASSERT_EQ(res.size(),vec1.size());
     EXPECT_EQ(res, vec1);
 }
 
+TYPED_TEST(VectorFunctionsTest, testMergeToSameSize) {
+    typedef typename TestFixture::value_type value_type;
+    using alps::numeric::merge;
+    value_type vec1=gen_data<value_type>(2.25,5);
+    const value_type vec2=gen_data<value_type>(1.50,5);
+    value_type res=gen_data<value_type>(2.25+1.50,5);
+    value_type& merged=merge(vec1,vec2);
+    EXPECT_EQ(&merged, &vec1);
+
+    ASSERT_EQ(5,vec1.size());
+    EXPECT_EQ(res, vec1);
+}
+
+TYPED_TEST(VectorFunctionsTest, testMergeToSmaller) {
+    typedef typename TestFixture::value_type value_type;
+    using alps::numeric::merge;
+
+    value_type vec1=gen_data<value_type>(2.25,5);
+    vec1.resize(3);
+
+    const value_type vec2=gen_data<value_type>(1.50,5);
+
+    value_type res= gen_data<value_type>(2.25+1.50, 5);
+    value_type res2=gen_data<value_type>(0.00+1.50, 5);
+    res[3]=res2[3];
+    res[4]=res2[4];
+
+    value_type& merged=merge(vec1,vec2);
+    EXPECT_EQ(&merged, &vec1);
+
+    ASSERT_EQ(5,vec1.size());
+    EXPECT_EQ(res, vec1);
+}
+
+TYPED_TEST(VectorFunctionsTest, testMergeToLarger) {
+    typedef typename TestFixture::value_type value_type;
+    using alps::numeric::merge;
+
+    value_type vec1=gen_data<value_type>(2.25,5);
+
+    value_type vec2_tmp=gen_data<value_type>(1.50,5);
+    vec2_tmp.resize(3);
+    const value_type& vec2=vec2_tmp;
+
+    value_type res= gen_data<value_type>(2.25+1.50, 5);
+    value_type res2=gen_data<value_type>(2.25+0.00, 5);
+    res[3]=res2[3];
+    res[4]=res2[4];
+
+    value_type& merged=merge(vec1,vec2);
+    EXPECT_EQ(&merged, &vec1);
+
+    ASSERT_EQ(5,vec1.size());
+    EXPECT_EQ(res, vec1);
+}

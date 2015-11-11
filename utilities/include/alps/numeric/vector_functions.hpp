@@ -345,6 +345,25 @@ namespace alps {
 
         #undef ALPS_NUMERIC_OPERATOR_EQ
         
+        
+        /// Vector merge.
+        /** Adds two vectors, possibly of different length, extending longer one with zeros to the right.
+            Addition uses ``operator+``, therefore element lengths must match.
+            @param left : the vector to be added to
+            @param right: the vector to add
+            @returns the reference to the (modified) left vector
+        */
+        template <typename T>
+        std::vector<T>& merge(std::vector<T>& left, const std::vector<T>& right) {
+            std::size_t lsz=left.size();
+            std::size_t rsz=right.size();
+            if (lsz<rsz) left.resize(rsz); // now left is at least as big as right
+            std::transform(right.begin(), right.end(), 
+                           left.begin(),
+                           left.begin(),
+                           plus<T,T,T>());
+            return left;
+        }
     }
 }
 
