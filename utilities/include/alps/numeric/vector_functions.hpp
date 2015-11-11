@@ -24,6 +24,8 @@
 #include <boost/lambda/lambda.hpp>
 #include <boost/throw_exception.hpp>
 
+#include <boost/lexical_cast.hpp>
+
 #include <vector>
 #include <algorithm>
 #include <cmath>
@@ -320,14 +322,20 @@ namespace alps {
 
         
         //------------------- operator equal -------------------
-        #define ALPS_NUMERIC_OPERATOR_EQ(OP_NAME, OPERATOR)                                                                 \
-            template<typename T>                                                                                            \
-            std::vector<T> & OP_NAME (std::vector<T> & lhs, std::vector<T> const & rhs) {                                   \
-                if(lhs.size() != rhs.size())                                                                                \
-                    boost::throw_exception(std::runtime_error("std::vectors must have the same size!" + ALPS_STACKTRACE));  \
-                else                                                                                                        \
-                    std::transform(lhs.begin(), lhs.end(), rhs.begin(), lhs.begin(), OPERATOR <T,T,T>() );                  \
-                return lhs;                                                                                                 \
+        #define ALPS_NUMERIC_OPERATOR_EQ(OP_NAME, OPERATOR)                                                \
+            template<typename T>                                                                           \
+            std::vector<T> & OP_NAME (std::vector<T> & lhs, std::vector<T> const & rhs) {                  \
+                if(lhs.size() != rhs.size()) {                                                             \
+                    std::string lsz=boost::lexical_cast<std::string>(lhs.size());                          \
+                    std::string rsz=boost::lexical_cast<std::string>(rhs.size());                          \
+                    boost::throw_exception(std::runtime_error("std::vectors have different sizes:"         \
+                                                              " left="+lsz+                                \
+                                                              " right="+rsz + "\n" +                       \
+                                                              ALPS_STACKTRACE));                           \
+                }                                                                                          \
+                else                                                                                       \
+                    std::transform(lhs.begin(), lhs.end(), rhs.begin(), lhs.begin(), OPERATOR <T,T,T>() ); \
+                return lhs;                                                                                \
             }
 
         ALPS_NUMERIC_OPERATOR_EQ(operator+=, plus)
