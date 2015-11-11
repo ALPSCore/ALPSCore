@@ -33,7 +33,7 @@ struct AccumulatorMergeTest : public ::testing::Test {
     static const std::size_t NPOINTS2=G::NPOINTS2;
     static const bool is_mean_acc = aat::is_same_accumulator<acc_type, aa::MeanAccumulator>::value;
 
-    static double tol() { return std::pow(10,-G::TOL); }
+    static double tol() { return std::pow(10.,-G::TOL); }
     
     gen_type gen;
     aa::accumulator_set ms_half1, ms_half2, ms_full;
