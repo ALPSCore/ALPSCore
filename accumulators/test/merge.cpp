@@ -86,21 +86,21 @@ REGISTER_TYPED_TEST_CASE_P(AccumulatorMergeTest,
                            Count, Mean, ErrorBar);
 
 typedef ::testing::Types<
-    generator<aa::FullBinningAccumulator<double>, aat::ConstantData, 1000, 1000>,
-    generator<aa::FullBinningAccumulator<double>, aat::ConstantData, 1000, 2000>,
-    generator<aa::FullBinningAccumulator<double>, aat::ConstantData, 2000, 1000>,
+    // generator<aa::FullBinningAccumulator<double>, aat::ConstantData, 1000, 1000>,
+    // generator<aa::FullBinningAccumulator<double>, aat::ConstantData, 1000, 2000>,
+    // generator<aa::FullBinningAccumulator<double>, aat::ConstantData, 2000, 1000>,
 
-    generator<aa::FullBinningAccumulator<double>, aat::AlternatingData, 1000, 1000>,
-    generator<aa::FullBinningAccumulator<double>, aat::AlternatingData, 2000, 1000>,
-    generator<aa::FullBinningAccumulator<double>, aat::AlternatingData, 1000, 2000>,
+    // generator<aa::FullBinningAccumulator<double>, aat::AlternatingData, 1000, 1000>,
+    // generator<aa::FullBinningAccumulator<double>, aat::AlternatingData, 2000, 1000>,
+    // generator<aa::FullBinningAccumulator<double>, aat::AlternatingData, 1000, 2000>,
 
-    generator<aa::FullBinningAccumulator<double>, aat::RandomData, 1000, 1000, 4>,
-    generator<aa::FullBinningAccumulator<double>, aat::RandomData, 1000, 3000, 4>,
-    generator<aa::FullBinningAccumulator<double>, aat::RandomData, 3000, 1000, 4>,
+    // generator<aa::FullBinningAccumulator<double>, aat::RandomData, 1000, 1000, 4>,
+    // generator<aa::FullBinningAccumulator<double>, aat::RandomData, 1000, 3000, 4>,
+    // generator<aa::FullBinningAccumulator<double>, aat::RandomData, 3000, 1000, 4>,
     
-    generator<aa::FullBinningAccumulator<double>, aat::CorrelatedData<5>, 1000, 1000, 3>,
-    generator<aa::FullBinningAccumulator<double>, aat::CorrelatedData<5>, 2000, 1000, 3>,
-    generator<aa::FullBinningAccumulator<double>, aat::CorrelatedData<5>, 1000, 2000, 3>,
+    // generator<aa::FullBinningAccumulator<double>, aat::CorrelatedData<5>, 1000, 1000, 3>,
+    // generator<aa::FullBinningAccumulator<double>, aat::CorrelatedData<5>, 2000, 1000, 3>,
+    // generator<aa::FullBinningAccumulator<double>, aat::CorrelatedData<5>, 1000, 2000, 3>,
 
     generator<aa::LogBinningAccumulator<double>, aat::ConstantData, 1000, 1000>,
     generator<aa::LogBinningAccumulator<double>, aat::ConstantData, 1000, 2000>,
