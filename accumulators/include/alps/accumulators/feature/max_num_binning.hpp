@@ -277,10 +277,13 @@ namespace alps {
                     }
 
                     /// Merge the bins of the given accumulator of type A into this accumulator @param rhs Accumulator to merge
-                    /** @BUG: FIXME: Performs only the merge of the parent `binning_analysis` accumulator. */
+                    /** @BUG: FIXME: Incomplete, therefore always throws. */
                     template <typename A>
                     void merge(const A& rhs)
                     {
+                        throw std::logic_error("Merging of FullBinningAccumulators is not yet implemented.\n"
+                                               "Please contact ALPSCore developers and provide the code\n"
+                                               "where you are using the merge() method.");
                         B::merge(rhs);
                         // FIXME!!! Needs a test to proceed with the coding!
                     }
