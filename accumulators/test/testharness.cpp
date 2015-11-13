@@ -127,6 +127,9 @@ struct HarnessDatagenTest : public testing::Test {
 };
 
 typedef ::testing::Types<
+    generator<aat::CorrelatedData<0>, 20000000, 4>,
+    generator<aat::CorrelatedData<1>, 20000000, 4>,
+    generator<aat::CorrelatedData<5>, 20000000, 4>,
     generator<aat::RandomData, 20000000, 4>,
     generator<aat::ConstantData>,
     generator<aat::AlternatingData>,

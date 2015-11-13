@@ -24,6 +24,8 @@
 #include <boost/lambda/lambda.hpp>
 #include <boost/throw_exception.hpp>
 
+#include <boost/lexical_cast.hpp>
+
 #include <vector>
 #include <algorithm>
 #include <cmath>
@@ -31,62 +33,6 @@
 
 namespace alps { 
     namespace numeric {
-
-      //   // include ( + (add) , - (subtract, negation) , * (multiply) , / (divide) ) operators for vectors from boost accumulator library (developed by Eric Niebier)
-      //   using namespace boost::numeric::operators;
-
-      //   // include ( + (positivity) )
-      //   template<class T>
-      //   inline std::vector<T>& operator+(std::vector<T>& vec)  {  return vec;  }
-
-
-      //   // include ( + , - , * , / vector-scalar operations)
-      //   #define IMPLEMENT_ALPS_VECTOR_SCALAR_OPERATION(OPERATOR_NAME,OPERATOR) \
-      //   template<class T> \
-      //   inline std::vector<T> OPERATOR_NAME(std::vector<T> vector, T const & scalar) \
-      //   { \
-      //     std::vector<T> res; \
-      //     res.reserve(vector.size()); \
-      //     for (typename std::vector<T>::iterator it=vector.begin(); it != vector.end(); ++it) \
-      //     { \
-      //       res.push_back(((*it) OPERATOR scalar)); \
-      //     } \
-      //     return res; \
-      //   } \
-      //   \
-      //   template<class T> \
-      //   inline std::vector<T> OPERATOR_NAME(T const & scalar, std::vector<T> vector) \
-      //   { \
-      //     std::vector<T> res; \
-      //     res.reserve(vector.size()); \
-      //     for (typename std::vector<T>::iterator it=vector.begin(); it != vector.end(); ++it) \
-      //     { \
-      //       res.push_back((scalar OPERATOR (*it))); \
-      //     } \
-      //     return res; \
-      //   } 
-
-      //   IMPLEMENT_ALPS_VECTOR_SCALAR_OPERATION(operator+,+)
-      //   IMPLEMENT_ALPS_VECTOR_SCALAR_OPERATION(operator-,-)
-        
-      // // the following two may not be defined as they are already defined by Boost
-      // //    IMPLEMENT_ALPS_VECTOR_SCALAR_OPERATION(operator*,*)
-      // //    IMPLEMENT_ALPS_VECTOR_SCALAR_OPERATION(operator/,/)
-
-      //   template<class T> 
-      //   inline std::vector<T> operator/(T const & scalar, std::vector<T> const& vector) 
-      //   { 
-      //     std::vector<T> res; 
-      //     res.reserve(vector.size()); 
-      //     for (typename std::vector<T>::const_iterator it=vector.begin(); it != vector.end(); ++it) 
-      //     { 
-      //       res.push_back(scalar / (*it)); 
-      //     } 
-      //     return res; 
-      //   } 
-
-
-        // FIXME??? Why there are a few functions implemented here, and the rest below (ALPS_NUMERIC_IMPLEMENT_FUNCTION)??
 
         // fix for old xlc compilers
         #define IMPLEMENT_ALPS_VECTOR_FUNCTION(LIB_HEADER, FUNCTION_NAME)                                        \
@@ -125,42 +71,6 @@ namespace alps {
 
         #undef IMPLEMENT_ALPS_VECTOR_FUNCTION
 
-      //   #define IMPLEMENT_ALPS_VECTOR_FUNCTION2(LIB_HEADER,FUNCTION_NAME) \
-      //   template<class T, class U> \
-      //   static std::vector<T> FUNCTION_NAME(std::vector<T> vec, U index) \
-      //   { \
-      //     using LIB_HEADER::FUNCTION_NAME; \
-      //     std::transform(vec.begin(), vec.end(), vec.begin(), boost::lambda::bind<T>(static_cast<T (*)(T, U)>(&FUNCTION_NAME), boost::lambda::_1, index)); \
-      //     return vec; \
-      //   }
-
-      //   IMPLEMENT_ALPS_VECTOR_FUNCTION2(std,pow)
-
-      //   template <class T>
-      //   std::ostream& operator<< (std::ostream &out, std::vector<T> const & vec)
-      //   {
-      //     std::copy(vec.begin(),vec.end(),std::ostream_iterator<T>(out,"\t"));
-      //     return out;
-      //   }
-
-        //------------------- operator equal -------------------
-        #define ALPS_NUMERIC_OPERATOR_EQ(OP_NAME, OPERATOR)                                                                 \
-            template<typename T>                                                                                            \
-            std::vector<T> & OP_NAME (std::vector<T> & lhs, std::vector<T> const & rhs) {                                   \
-                if(lhs.size() != rhs.size())                                                                                \
-                    boost::throw_exception(std::runtime_error("std::vectors must have the same size!" + ALPS_STACKTRACE));  \
-                else                                                                                                        \
-                    std::transform(lhs.begin(), lhs.end(), rhs.begin(), lhs.begin(), std:: OPERATOR <T>() );                \
-                return lhs;                                                                                                 \
-            }
-
-        ALPS_NUMERIC_OPERATOR_EQ(operator+=, plus)
-        ALPS_NUMERIC_OPERATOR_EQ(operator-=, minus)
-        ALPS_NUMERIC_OPERATOR_EQ(operator*=, multiplies)
-        ALPS_NUMERIC_OPERATOR_EQ(operator/=, divides)
-
-        #undef ALPS_NUMERIC_OPERATOR_EQ
-        
         //------------------- infinity -------------------
         /// Class convertible to std::vector<T> infinity.
         template<typename T>
@@ -338,12 +248,123 @@ namespace alps {
                 return v;
             }
         };
+
+
+        /* Functors */
+
+        template <typename T> struct unary_minus : public std::unary_function<T, T> {
+            T operator()(T const & x) const {
+                // using boost::numeric::operators::operator-;
+                using alps::numeric::operator-;
+                return -x; 
+            }
+        };
+
+        template <typename T, typename U, typename R> struct plus : public std::binary_function<T, U, R> {
+            R operator()(T const & x, U const & y) const {
+                // using boost::numeric::operators::operator+;
+                using alps::numeric::operator+;
+                return x + y; 
+            }
+        };
+        template <typename T> struct plus<T, T, T> : public std::binary_function<T, T, T> {
+            T operator()(T const & x, T const & y) const {
+                // using boost::numeric::operators::operator+;
+                using alps::numeric::operator+;
+                return x + y; 
+            }
+        };
+
+        template <typename T, typename U, typename R> struct minus : public std::binary_function<T, U, R> {
+            R operator()(T const & x, U const & y) const {
+                // using boost::numeric::operators::operator-;
+                using alps::numeric::operator-;
+                return x - y; 
+            }
+        };
+        template <typename T> struct minus<T, T, T> : public std::binary_function<T, T, T> {
+            T operator()(T const & x, T const & y) const {
+                // using boost::numeric::operators::operator-;
+                using alps::numeric::operator-;
+                return x - y; 
+            }
+        };
+
+        template <typename T, typename U, typename R> struct multiplies : public std::binary_function<T, U, R> {
+            R operator()(T const & x, U const & y) const {
+                // using boost::numeric::operators::operator*;
+                using alps::numeric::operator*;
+                return x * y; 
+            }
+        };
+        template <typename T> struct multiplies<T, T, T> : public std::binary_function<T, T, T> {
+            T operator()(T const & x, T const & y) const {
+                // using boost::numeric::operators::operator*;
+                using alps::numeric::operator*;
+                return x * y; 
+            }
+        };
+
+        template <typename T, typename U, typename R> struct divides : public std::binary_function<T, U, R> {
+            R operator()(T const & x, U const & y) const {
+                // using boost::numeric::operators::operator/;
+                using alps::numeric::operator/;
+                return x / y; 
+            }
+        };
+        template <typename T> struct divides<T, T, T> : public std::binary_function<T, T, T> {
+            T operator()(T const & x, T const & y) const {
+                // using boost::numeric::operators::operator/;
+                using alps::numeric::operator/;
+                return x / y; 
+            }
+        };
+
         
+        //------------------- operator equal -------------------
+        #define ALPS_NUMERIC_OPERATOR_EQ(OP_NAME, OPERATOR)                                                \
+            template<typename T>                                                                           \
+            std::vector<T> & OP_NAME (std::vector<T> & lhs, std::vector<T> const & rhs) {                  \
+                if(lhs.size() != rhs.size()) {                                                             \
+                    std::string lsz=boost::lexical_cast<std::string>(lhs.size());                          \
+                    std::string rsz=boost::lexical_cast<std::string>(rhs.size());                          \
+                    boost::throw_exception(std::runtime_error("std::vectors have different sizes:"         \
+                                                              " left="+lsz+                                \
+                                                              " right="+rsz + "\n" +                       \
+                                                              ALPS_STACKTRACE));                           \
+                }                                                                                          \
+                else                                                                                       \
+                    std::transform(lhs.begin(), lhs.end(), rhs.begin(), lhs.begin(), OPERATOR <T,T,T>() ); \
+                return lhs;                                                                                \
+            }
+
+        ALPS_NUMERIC_OPERATOR_EQ(operator+=, plus)
+        ALPS_NUMERIC_OPERATOR_EQ(operator-=, minus)
+        ALPS_NUMERIC_OPERATOR_EQ(operator*=, multiplies)
+        ALPS_NUMERIC_OPERATOR_EQ(operator/=, divides)
+
+        #undef ALPS_NUMERIC_OPERATOR_EQ
+        
+        
+        /// Vector merge.
+        /** Adds two vectors, possibly of different length, extending longer one with zeros to the right.
+            Addition uses ``operator+``, therefore element lengths must match.
+            @param left : the vector to be added to
+            @param right: the vector to add
+            @returns the reference to the (modified) left vector
+        */
+        template <typename T>
+        std::vector<T>& merge(std::vector<T>& left, const std::vector<T>& right) {
+            std::size_t lsz=left.size();
+            std::size_t rsz=right.size();
+            if (lsz<rsz) left.resize(rsz); // now left is at least as big as right
+            std::transform(right.begin(), right.end(), 
+                           left.begin(),
+                           left.begin(),
+                           plus<T,T,T>());
+            return left;
+        }
     }
 }
 
 #endif // ALPS_NUMERIC_VECTOR_FUNCTIONS_HEADER
-
-
-
-

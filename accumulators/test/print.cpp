@@ -22,30 +22,36 @@ class AccumulatorPrintTest : public ::testing::Test {
 
 using namespace alps::accumulators;
 
+typedef std::vector<double> v_double;
+
 /*
   for acc in Mean NoBinning LogBinning FullBinning; do
-  for type in float double 'long double'; do
+  for type in float double 'long double' v_double; do
   echo "${acc}Accumulator<$type>,"
   done; echo; done
 */
+
 
 typedef ::testing::Types<
     MeanAccumulator<float>,
     MeanAccumulator<double>,
     MeanAccumulator<long double>,
+    MeanAccumulator<v_double>,
 
     NoBinningAccumulator<float>,
     NoBinningAccumulator<double>,
     NoBinningAccumulator<long double>,
+    NoBinningAccumulator<v_double>,
 
     LogBinningAccumulator<float>,
     LogBinningAccumulator<double>,
     LogBinningAccumulator<long double>,
+    LogBinningAccumulator<v_double>,
 
     FullBinningAccumulator<float>,
     FullBinningAccumulator<double>,
-    FullBinningAccumulator<long double>
-    
+    FullBinningAccumulator<long double>,
+    FullBinningAccumulator<v_double>
     > test_types;
 
 TYPED_TEST_CASE(AccumulatorPrintTest,test_types);
@@ -56,8 +62,12 @@ TYPED_TEST(AccumulatorPrintTest, print)
     const result_wrapper& r=this->acc_gen.result();
 
     std::cout << "Expected: " << this->acc_gen.expected_mean() << "+/-" << this->acc_gen.expected_err()
-              << "\nAccumulator:\n" << a
-              << "\nResult:\n" << r << "\n";
+              << "\nAccumulator: " << a
+              << "\nResult: " << r
+              << std::endl;
+    // std::cout << "\nFull print accumulator:\n" << a.fullprint
+    //           << "\nFull print result:\n" << r.fullprint
+    //           << std::endl;
 }
 
 /// Google Test Fixture: argument is data Type
@@ -69,7 +79,7 @@ class AccumulatorCorrelatedPrintTest : public ::testing::Test {
     acc_gen_type acc_gen;
 };
 
-typedef ::testing::Types< float, double, long double > test_types2;
+typedef ::testing::Types< float, double, long double> test_types2;
 TYPED_TEST_CASE(AccumulatorCorrelatedPrintTest,test_types2);
 
 TYPED_TEST(AccumulatorCorrelatedPrintTest, print)

@@ -5,6 +5,7 @@ set (test_src
     gtest_par_xml_output
     inf
     type_traits
+    vector_functions
     )
 
 foreach(test ${test_src})
