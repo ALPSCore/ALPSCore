@@ -12,6 +12,7 @@
 #include <alps/accumulators/feature.hpp>
 #include <alps/accumulators/parameter.hpp>
 #include <alps/accumulators/feature/count.hpp>
+#include <alps/accumulators/archive_traits.hpp>
 
 #include <alps/hdf5/archive.hpp>
 #include <alps/numeric/inf.hpp>
@@ -126,12 +127,9 @@ namespace alps {
                     static bool can_load(hdf5::archive & ar) { // TODO: make archive const
                         using alps::hdf5::get_extent;
                         const char name[]="mean/value";
-                        return B::can_load(ar)
-                            && ar.is_data(name)
-                            && ar.is_datatype<typename alps::hdf5::scalar_type<mean_type>::type>(name)
-                            && boost::is_scalar<T>::value == ar.is_scalar(name)
-                            && (boost::is_scalar<T>::value || get_extent(T()).size() == ar.dimensions(name))
-                        ;
+                        const std::size_t ndim=boost::is_scalar<T>::value? 0 : get_extent(T()).size();
+                        return B::can_load(ar) &&
+                               detail::archive_trait<mean_type>::can_load(ar, name, ndim);
                     }
 
                     void reset() {
@@ -221,12 +219,9 @@ namespace alps {
                     static bool can_load(hdf5::archive & ar) { // TODO: make archive const
                         using alps::hdf5::get_extent;
                         const char name[]="mean/value";
-                        return B::can_load(ar) 
-                            && ar.is_data(name) 
-                            && ar.is_datatype<typename alps::hdf5::scalar_type<mean_type>::type>(name)
-                            && boost::is_scalar<T>::value == ar.is_scalar(name)
-                            && (boost::is_scalar<T>::value || get_extent(T()).size() == ar.dimensions(name))
-                        ;
+                        const std::size_t ndim=boost::is_scalar<T>::value? 0 : get_extent(T()).size();
+                        return B::can_load(ar) &&
+                               detail::archive_trait<mean_type>::can_load(ar, name, ndim);
                     }
 
                     template<typename U> void operator+=(U const & arg) { augadd(arg); }

@@ -260,13 +260,18 @@ namespace alps {
                 static bool can_load(hdf5::archive & ar) { // TODO: make archive const
                     using alps::hdf5::get_extent;
                     const char name[]="timeseries/data";
-                    return B::can_load(ar)
-                        && ar.is_data(name)
-                        && ar.is_datatype<typename alps::hdf5::scalar_type<T>::type>(name)
-                        && ar.is_attribute("timeseries/data/@binsize")
-                        && ar.is_attribute("timeseries/data/@maxbinnum")
-                        && get_extent(T()).size() + 1 == ar.dimensions(name)
-                        ;
+                    const std::size_t ndim=get_extent(T()).size()+1;
+                    return B::can_load(ar) &&
+                           detail::archive_trait<T>::can_load(ar, name, ndim) && // FIXME: `T` should rather be `error_type`, defined at class level
+                           ar.is_attribute("timeseries/data/@binsize") &&
+                           ar.is_attribute("timeseries/data/@maxbinnum");
+
+                        // && ar.is_data(name)
+                        // && ar.is_datatype<typename alps::hdf5::scalar_type<T>::type>(name)
+                        // && ar.is_attribute("timeseries/data/@binsize")
+                        // && ar.is_attribute("timeseries/data/@maxbinnum")
+                        // && get_extent(T()).size() + 1 == ar.dimensions(name)
+                        // ;
                 }
 
                 void reset() {
@@ -572,14 +577,12 @@ namespace alps {
                 static bool can_load(hdf5::archive & ar) { // TODO: make archive const
                     using alps::hdf5::get_extent;
                     const char name[]="timeseries/data";
+                    const std::size_t ndim=get_extent(T()).size()+1;
                     
-                    return B::can_load(ar)
-                        && ar.is_data(name)
-                        && ar.is_datatype<typename alps::hdf5::scalar_type<T>::type>(name)
-                        && ar.is_attribute("timeseries/data/@binsize")
-                        && ar.is_attribute("timeseries/data/@maxbinnum")
-                        && get_extent(T()).size() + 1 == ar.dimensions(name)
-                        ;
+                    return B::can_load(ar) &&
+                           detail::archive_trait<T>::can_load(ar, name, ndim) && // FIXME: `T` should rather be `error_type`, defined at class level
+                           ar.is_attribute("timeseries/data/@binsize") &&
+                           ar.is_attribute("timeseries/data/@maxbinnum");
                 }
 
                 template<typename U> void operator+=(U const & arg) { augadd(arg); }
