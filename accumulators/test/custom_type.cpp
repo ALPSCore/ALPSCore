@@ -205,10 +205,10 @@ struct CustomTypeAccumulatorTest : public testing::Test {
 
 typedef my_custom_type<double> dbl_custom_type;
 typedef ::testing::Types<
-    AccumulatorTypeGenerator<alps::accumulators::MeanAccumulator, dbl_custom_type>,
-    AccumulatorTypeGenerator<alps::accumulators::NoBinningAccumulator,dbl_custom_type>,
-    AccumulatorTypeGenerator<alps::accumulators::LogBinningAccumulator,dbl_custom_type>,
     AccumulatorTypeGenerator<alps::accumulators::FullBinningAccumulator,dbl_custom_type>
+    // ,AccumulatorTypeGenerator<alps::accumulators::LogBinningAccumulator,dbl_custom_type>
+    // ,AccumulatorTypeGenerator<alps::accumulators::NoBinningAccumulator,dbl_custom_type>
+    // ,AccumulatorTypeGenerator<alps::accumulators::MeanAccumulator, dbl_custom_type>
     > MyTypes;
 
 TYPED_TEST_CASE(CustomTypeAccumulatorTest, MyTypes);
@@ -233,7 +233,54 @@ MAKE_TEST(TestAddEq)
 MAKE_TEST(TestAddEqScalar)
 
 MAKE_TEST(TestSaveAccumulator)
-MAKE_TEST(TestSaveLoadAccumulator)
+// MAKE_TEST(TestSaveLoadAccumulator)
 MAKE_TEST(TestSaveResult)
 // MAKE_TEST(TestSaveLoadResult)
 
+TEST(CustomTypeAccumulatorTest,saveArray) {
+    dbl_custom_type x=gen_data<dbl_custom_type>(1.25);
+    std::vector<dbl_custom_type> vx;
+    for (int i=0; i<10; ++i) {
+        vx.push_back(gen_data<dbl_custom_type>(i+0.5));
+    }
+    std::cout << "x=" << x << "\nvx=" << vx << std::endl;
+    {
+      alps::hdf5::archive ar("saveload_custom.h5","w");
+      std::cout << "Saving scalar..." << std::endl;
+      ar["single_custom"] << x;
+      std::cout << "Saving vector..." << std::endl;
+      ar["vector_custom"] << vx;
+    }
+    dbl_custom_type y;
+    std::vector<dbl_custom_type> vy;
+    {
+      alps::hdf5::archive ar("saveload_custom.h5","r");
+      std::cout << "Loading scalar..." << std::endl;
+      ar["single_custom"] >> y;
+      std::cout << "Loading vector..." << std::endl;
+      ar["vector_custom"] >> vy;
+    }
+    std::cout << "y=" << y << "\nvy=" << vy << std::endl;
+}
+
+TEST(CustomTypeAccumulatorTest,saveArray2) {
+    typedef std::vector<double> my_type;
+    my_type x(1, 1.25);
+    std::vector<my_type> vx(10, my_type(1, 7.5));
+    {
+      alps::hdf5::archive ar("saveload_vector.h5","w");
+      std::cout << "Saving scalar..." << std::endl;
+      ar["single_custom"] << x;
+      std::cout << "Saving vector..." << std::endl;
+      ar["vector_custom"] << vx;
+    }
+    my_type y;
+    std::vector<my_type> vy;
+    {
+      alps::hdf5::archive ar("saveload_vector.h5","r");
+      std::cout << "Loading scalar..." << std::endl;
+      ar["single_custom"] >> y;
+      std::cout << "Loading vector..." << std::endl;
+      ar["vector_custom"] >> vy;
+    }
+}

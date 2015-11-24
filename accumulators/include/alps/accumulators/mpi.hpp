@@ -60,6 +60,7 @@
                     @returns the new offset pointing right after the last used position in the buffer.
                  */
                 template<typename T, typename S> std::size_t copy_to_buffer(T const & values, std::vector<S> & buffer, std::size_t offset, boost::false_type) {
+                    /// FIXME!! BUG: if `T` is not vectorizable it may not have `begin()` and `end()` methods nor `const_iterator` type. This function won't be called --- but it gives compilation error! 
                     for(typename T::const_iterator it = values.begin(); it != values.end(); ++it)
                         offset = copy_to_buffer(*it, buffer, offset, typename hdf5::is_continuous<typename T::value_type>::type());
                     return offset;
