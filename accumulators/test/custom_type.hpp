@@ -18,6 +18,8 @@
 /* DEBUG!!! */
 #include <vector>
 #include <boost/foreach.hpp>
+#include <boost/lexical_cast.hpp>
+
 
 namespace alps { namespace accumulators { namespace testing {
 
@@ -269,6 +271,15 @@ class my_custom_type {
     //     ar["custom_type"] >> this->value();
     // }
 
+    /// Verify if the value can be loaded
+    static bool can_load(alps::hdf5::archive& ar, const std::string& path) {
+        std::string attr_path=path+"/@c++_type";
+        if (!ar.is_attribute(attr_path)) return false;
+        std::string attr_val;
+        ar[attr_path] >> attr_val;
+        return (attr_val == "my_custom_type" && ar.is_datatype<T>(path));
+    }
+
     /// Generate infinite value
     static my_custom_type inf() {
         my_custom_type r=my_custom_type(alps::numeric::inf<T>(T()));
@@ -428,8 +439,8 @@ namespace alps {
                     using alps::accumulators::testing::operator<<; // DEBUG!
                     using alps::hdf5::get_extent;
                     // throw std::logic_error("DEBUG: get_extent::apply() is called!");
-                    // std::vector<std::size_t> ext(1,1); // 1D object of size 1
-                    std::vector<std::size_t> ext(2,1); // 2D object, sizes 1 nd1
+                    std::vector<std::size_t> ext(1,1); // 1D object of size 1
+                    // std::vector<std::size_t> ext(2,1); // 2D object, sizes 1 and 1
                     std::cout << "Get_extent returns: " << ext << std::endl;
                     return ext;
                 }
@@ -476,6 +487,11 @@ namespace alps {
             if (!is_continuous<T>::value) {
                 throw std::invalid_argument("Can load only my_custom_type<continuous_type>");
             }
+
+            if (!my_custom_type<T>::can_load(ar,path)) {
+                throw std::runtime_error("Attempt to load a value of a wrong type");
+            }
+
             std::vector<std::size_t> extent=get_extent(obj);
             std::copy(extent.begin(), extent.end(), std::back_inserter(chunk));
             std::fill_n(std::back_inserter(offset), extent.size(), 0);
@@ -519,6 +535,7 @@ namespace alps {
                       << " offset=" << offset << std::endl;
             // ar.write(path+suffix, debug, size, chunk, offset);
             save(ar, path+suffix, *debug, size, chunk, offset);
+            ar[path+"/@c++_type"]="my_custom_type";
         }
     } // hdf5::
     
@@ -536,6 +553,29 @@ namespace alps {
     
     } // numeric::
 
+} // alps::
+
+// To declare traits specialized below:
+#include "alps/accumulators/archive_traits.hpp"
+
+namespace alps {
+    namespace accumulators {
+        namespace detail {
+            template <typename T>
+            struct archive_trait< my_custom_type<T> > {
+                static bool can_load(hdf5::archive& ar,
+                                     const std::string& name,
+                                     std::size_t dim)
+                {
+                    // throw std::logic_error(std::string("can_load() called, with params: name='")
+                    //                        + name + "' dim=" + boost::lexical_cast<std::string>(dim));
+                    return ar.is_data(name)
+                           && my_custom_type<T>::can_load(ar,name)
+                           && ar.dimensions(name)==dim;
+                }
+            };
+        } // detail::
+    } // accumulators::
 } // alps::
 
 

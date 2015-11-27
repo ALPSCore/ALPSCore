@@ -27,9 +27,10 @@ namespace alps {
                                  otherwise a scalar value expected.
                 */
                 static bool can_load(hdf5::archive& ar,
-                              const std::string& name,
-                              std::size_t dim) {
+                                     const std::string& name,
+                                     std::size_t dim) {
                     bool ok=ar.is_data(name) &&
+                        !ar.is_attribute(name+"/@c++_type") && // plain types should not have the attribute
                         ar.is_datatype<scalar_type>(name) &&
                         ((dim==0 && ar.is_scalar(name)) || 
                          (dim>0  && ar.dimensions(name)==dim));
