@@ -203,7 +203,7 @@ namespace alps {
                 }
     
                 /// Generate the data points for the accumulator
-                AccResultGenerator() : name_("acc")
+                AccResultGenerator() : name_("data")
                 {
                     // srand48(43);
                     measurements_ptr_=new alps::accumulators::accumulator_set();
@@ -227,6 +227,21 @@ namespace alps {
                 {
                     return (*measurements_ptr_)[name_];
                 }
+
+                /// Returns result set
+                const alps::accumulators::result_set& results() const
+                {
+                    return *results_ptr_;
+                }
+
+                /// Returns the accumulator set
+                const alps::accumulators::accumulator_set& accumulators() const
+                {
+                    return *measurements_ptr_;
+                }
+
+                /// Returns the accumulator/result name in the set
+                std::string name() const { return name_; }
 
                 /// Returns the expected mean
                 double expected_mean() const { return number_generator.mean(NPOINTS); } 

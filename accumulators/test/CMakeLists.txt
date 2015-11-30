@@ -16,6 +16,7 @@ set (test_src
     acc_count_test
     mean_err_count
     save_load
+    save_load2
     vec_const_binop_simple
     binop_with_constant
     binop_with_scalar
