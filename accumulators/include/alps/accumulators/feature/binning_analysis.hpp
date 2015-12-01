@@ -464,11 +464,13 @@ namespace alps {
 
                     void save(hdf5::archive & ar) const {
                         B::save(ar);
+                        ar["error_bins"]=m_ac_errors;
                         ar["tau"] = m_ac_autocorrelation;
                     }
 
                     void load(hdf5::archive & ar) {
                         B::load(ar);
+                        ar["error_bins"] >> m_ac_errors;
                         ar["tau"] >> m_ac_autocorrelation;
                     }
 
@@ -479,7 +481,7 @@ namespace alps {
                         return B::can_load(ar)
                             && ar.is_data(name)
                             && ar.is_datatype<typename alps::hdf5::scalar_type<T>::type>(name)
-                            && get_extent(T()).size() + 1 == ar.dimensions(name)
+                            && get_extent(T()).size() == ar.dimensions(name)
                         ;
                     }
 

@@ -28,6 +28,8 @@ template <typename G>
 struct AccumulatorTest : public testing::Test {
     typedef typename G::accumulator_gen_type acc_gen_type;
     typedef typename acc_gen_type::named_acc_type acc_type;
+    typedef typename acc_type::accumulator_type raw_accumulator_type;
+    typedef typename acc_type::result_type raw_result_type;
     typedef typename acc_gen_type::value_type value_type;
     
     static const int NPOINTS=acc_gen_type::NPOINTS; 
@@ -71,6 +73,10 @@ struct AccumulatorTest : public testing::Test {
             alps::hdf5::archive ar(fname,"r");
             ar["dataset"] >> m1;
         }
+
+        // Check that the underlying accumulator holds the expected raw accumulator type
+        m1["data"].extract<raw_accumulator_type>();
+        
         const alps::accumulators::result_set r(m);
         const alps::accumulators::result_set r1(m1);
         EXPECT_NEAR(r["data"].mean<value_type>(), r1["data"].mean<value_type>(), 1E-8);
@@ -94,6 +100,10 @@ struct AccumulatorTest : public testing::Test {
             alps::hdf5::archive ar(fname,"r");
             ar["dataset"] >> r1;
         }
+
+        // Check that the underlying result holds the expected raw result type
+        r1["data"].extract<raw_result_type>();
+
         EXPECT_NEAR(r["data"].mean<value_type>(), r1["data"].mean<value_type>(), 1E-8);
         if (is_mean_acc) return;
         EXPECT_NEAR(r["data"].error<value_type>() ,r1["data"].error<value_type>(), 1E-8);
