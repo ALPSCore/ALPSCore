@@ -53,7 +53,7 @@ int main(int argc, const char* argv[])
 
     // Run the simulation
     std::cout << "Running simulation..." << std::endl;
-    sim.run(alps::stop_callback(int(parameters["timelimit"])));
+    sim.run(alps::stop_callback(size_t(parameters["timelimit"])));
 
     // Checkpoint the simulation
     std::cout << "Checkpointing simulation..." << std::endl;
@@ -66,7 +66,8 @@ int main(int argc, const char* argv[])
     std::cout << results << std::endl;
 
     // Saving to the output file
-    alps::hdf5::archive ar(parameters["outputfile"], "w");
+    std::string output_file = parameters["outputfile"];
+    alps::hdf5::archive ar(boost::filesystem::path(output_file), "w");
     ar["/parameters"] << parameters;
     ar["/simulation/results"] << results;
 
