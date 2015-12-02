@@ -86,25 +86,25 @@ struct CustomTypeAccumulatorTest : public testing::Test {
     static double tol() { return 5.E-3; }
 
     CustomTypeAccumulatorTest() {
-        // alps::accumulators::accumulator_set::register_serializable_type<raw_acc_type>();
-        // alps::accumulators::result_set::register_serializable_type<raw_result_type>();
+        alps::accumulators::accumulator_set::register_serializable_type<raw_acc_type>();
+        alps::accumulators::result_set::register_serializable_type<raw_result_type>();
     }
 
-    // void TestH5ScalarType() {
-    //     typedef typename alps::hdf5::scalar_type<value_type>::type stype;
-    //     EXPECT_EQ(typeid(typename value_type::my_constituent_type), typeid(stype)) << "type is: " << typeid(stype).name();
-    // }
+    void TestH5ScalarType() {
+        typedef typename alps::hdf5::scalar_type<value_type>::type stype;
+        EXPECT_EQ(typeid(typename value_type::my_constituent_type), typeid(stype)) << "type is: " << typeid(stype).name();
+    }
 
-    // void TestNumScalarType() {
-    //     typedef typename alps::numeric::scalar<value_type>::type stype;
-    //     EXPECT_EQ(typeid(typename value_type::my_scalar_type), typeid(stype)) << "type is: " << typeid(stype).name();
-    // }
+    void TestNumScalarType() {
+        typedef typename alps::numeric::scalar<value_type>::type stype;
+        EXPECT_EQ(typeid(typename value_type::my_scalar_type), typeid(stype)) << "type is: " << typeid(stype).name();
+    }
 
-    // void TestElementType() {
-    //     typedef typename alps::element_type<value_type>::type stype;
-    //     EXPECT_TRUE(alps::is_sequence<value_type>::value);
-    //     EXPECT_EQ(typeid(typename value_type::my_element_type), typeid(stype)) << "type is: " << typeid(stype).name();
-    // }
+    void TestElementType() {
+        typedef typename alps::element_type<value_type>::type stype;
+        EXPECT_TRUE(alps::is_sequence<value_type>::value);
+        EXPECT_EQ(typeid(typename value_type::my_element_type), typeid(stype)) << "type is: " << typeid(stype).name();
+    }
 
     void TestCount() {
         EXPECT_EQ(NPOINTS, acc_gen.result().count());
@@ -232,23 +232,21 @@ struct CustomTypeAccumulatorTest : public testing::Test {
 };
 
 typedef my_custom_type<double> dbl_custom_type;
+
 typedef ::testing::Types<
-    // AccumulatorTypeGenerator<alps::accumulators::FullBinningAccumulator,double>
-    AccumulatorTypeGenerator<alps::accumulators::LogBinningAccumulator,double>
-    // AccumulatorTypeGenerator<alps::accumulators::FullBinningAccumulator,dbl_custom_type>
-    // ,AccumulatorTypeGenerator<alps::accumulators::LogBinningAccumulator,dbl_custom_type>
-    // ,AccumulatorTypeGenerator<alps::accumulators::NoBinningAccumulator,double>
-    // ,AccumulatorTypeGenerator<alps::accumulators::NoBinningAccumulator,dbl_custom_type>
-    // ,AccumulatorTypeGenerator<alps::accumulators::MeanAccumulator, dbl_custom_type>
+    AccumulatorTypeGenerator<alps::accumulators::FullBinningAccumulator,dbl_custom_type>
+    ,AccumulatorTypeGenerator<alps::accumulators::LogBinningAccumulator,dbl_custom_type>
+    ,AccumulatorTypeGenerator<alps::accumulators::NoBinningAccumulator, dbl_custom_type>
+    ,AccumulatorTypeGenerator<alps::accumulators::MeanAccumulator,      dbl_custom_type>
     > MyTypes;
 
 TYPED_TEST_CASE(CustomTypeAccumulatorTest, MyTypes);
 
 #define MAKE_TEST(_name_) TYPED_TEST(CustomTypeAccumulatorTest, _name_)  { this->TestFixture::_name_(); }
 
-// MAKE_TEST(TestH5ScalarType)
-// MAKE_TEST(TestNumScalarType)
-// MAKE_TEST(TestElementType)
+MAKE_TEST(TestH5ScalarType)
+MAKE_TEST(TestNumScalarType)
+MAKE_TEST(TestElementType)
 
 MAKE_TEST(TestMean)
 MAKE_TEST(TestError)
