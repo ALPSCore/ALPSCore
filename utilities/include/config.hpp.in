@@ -16,104 +16,104 @@
 //
 
 // Define to 1 if you have rpc/rpc.h and rpc/xdr.h
-#cmakedefine ALPS_HAVE_RPC_XDR_H
+#cmakedefine ALPS_HAVE_RPC_XDR_H 1
 
 // Define to 1 if you have the <stdarg.h> header file.
-#cmakedefine ALPS_HAVE_STDARG_H
+#cmakedefine ALPS_HAVE_STDARG_H 1
 
 // Define to 1 if you have the <sys/stat.h> header file.
-#cmakedefine ALPS_HAVE_SYS_STAT_H
+#cmakedefine ALPS_HAVE_SYS_STAT_H 1
 
 // Define to 1 if you have the <sys/systeminfo.h> header file.
-#cmakedefine ALPS_HAVE_SYS_SYSTEMINFO_H
+#cmakedefine ALPS_HAVE_SYS_SYSTEMINFO_H 1
 
 // Define to 1 if you have the <sys/types.h> header file.
-#cmakedefine ALPS_HAVE_SYS_TYPES_H
+#cmakedefine ALPS_HAVE_SYS_TYPES_H 1
 
 // Define to 1 if you have the <unistd.h> header file.
-#cmakedefine ALPS_HAVE_UNISTD_H
+#cmakedefine ALPS_HAVE_UNISTD_H 1
 
 // Define to 1 if you have the <windows.h> header file.
-#cmakedefine ALPS_HAVE_WINDOWS_H
+#cmakedefine ALPS_HAVE_WINDOWS_H 1
 
 // If defined, the openmpi specific ulfm is used.
-#cmakedefine ALPS_OPENMPI_ULFM
+#cmakedefine ALPS_OPENMPI_ULFM 1
 
 //
 // Libraries
 //
 
 // Define to 1 if you have the PTHREAD library
-#cmakedefine ALPS_HAVE_PTHREAD
+#cmakedefine ALPS_HAVE_PTHREAD 1
 
 // Define to 1 if you have the MPI library
-#cmakedefine ALPS_HAVE_MPI
+#cmakedefine ALPS_HAVE_MPI 1
 
 // Define to 1 if you have the HDF5 library
-#cmakedefine ALPS_HAVE_HDF5
+#cmakedefine ALPS_HAVE_HDF5 1
 
 // Define to 1 if you have the HDF5 library with parallel(MPI) support
-#cmakedefine ALPS_HAVE_HDF5_PARALLEL
+#cmakedefine ALPS_HAVE_HDF5_PARALLEL 1
 
 // Define to 1 if you have the Boost.MPI library
-#cmakedefine ALPS_HAVE_BOOST_MPI
+#cmakedefine ALPS_HAVE_BOOST_MPI 1
 
 // Define to 1 if you have the Boost.Signals library
-#cmakedefine ALPS_HAVE_BOOST_SIGNALS
+#cmakedefine ALPS_HAVE_BOOST_SIGNALS 1
 
 // Define to 1 if you have the Boost.ThreadMPI library
-#cmakedefine ALPS_HAVE_BOOST_THREAD
+#cmakedefine ALPS_HAVE_BOOST_THREAD 1
 
 // Define to 1 if you have wchar support in Boost.Regex and Boost.Serialization
-#cmakedefine ALPS_HAVE_BOOST_WCHAR
+#cmakedefine ALPS_HAVE_BOOST_WCHAR 1
 
 //
 // BLAS and LAPACK
 //
 
 // Define if you have BLAS library
-#cmakedefine ALPS_HAVE_BLAS
+#cmakedefine ALPS_HAVE_BLAS 1
 
 // Define if you have LAPACK library
-#cmakedefine ALPS_HAVE_LAPACK
+#cmakedefine ALPS_HAVE_LAPACK 1
 
 // Define if you have Intel Math Kernel Library
-#cmakedefine ALPS_HAVE_MKL
+#cmakedefine ALPS_HAVE_MKL 1
 
 // Define if you have the Digital Extended Math Library
-#cmakedefine ALPS_HAVE_DXML
+#cmakedefine ALPS_HAVE_DXML 1
 
 // Define if you have SGI SCSL Library
-#cmakedefine ALPS_HAVE_SCSL
+#cmakedefine ALPS_HAVE_SCSL 1
 
 // Define if you have Mac OS X vecLib framework
-#cmakedefine ALPS_HAVE_VECLIB
+#cmakedefine ALPS_HAVE_VECLIB 1
 
 // Define if you have IBM ESSL Library
-#cmakedefine ALPS_HAVE_ESSL
+#cmakedefine ALPS_HAVE_ESSL 1
 
 // Define if you have ATLAS library
-#cmakedefine ALPS_HAVE_ATLAS
+#cmakedefine ALPS_HAVE_ATLAS 1
 
 // Set 8-byte integers for Boost bindings if needed
-#cmakedefine BIND_FORTRAN_INTEGER_8
+#cmakedefine BIND_FORTRAN_INTEGER_8 1
 
 //
 // XML parser
 //
 
 // Define to 1 if you use Expat XML parser by James Clark.
-#cmakedefine ALPS_HAVE_EXPAT_PARSER
+#cmakedefine ALPS_HAVE_EXPAT_PARSER 1
 
 // Define to 1 if you use Xerces C++ XML parser by Apache Software Foundation.
-#cmakedefine ALPS_HAVE_XERCES_PARSER
+#cmakedefine ALPS_HAVE_XERCES_PARSER 1
 
 //
 // OpenMP
 //
 
 // Define to 1 if OpenMP Worker is supported in ALPS/parpack scheduler
-#cmakedefine ALPS_ENABLE_OPENMP_WORKER
+#cmakedefine ALPS_ENABLE_OPENMP_WORKER 1
 
 //
 // Introduce [int,uint]*_t into alps namespace
