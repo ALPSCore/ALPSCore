@@ -15,105 +15,15 @@
 // C headers
 //
 
-// Define to 1 if you have rpc/rpc.h and rpc/xdr.h
-#cmakedefine ALPS_HAVE_RPC_XDR_H
-
-// Define to 1 if you have the <stdarg.h> header file.
-#cmakedefine ALPS_HAVE_STDARG_H
-
-// Define to 1 if you have the <sys/stat.h> header file.
-#cmakedefine ALPS_HAVE_SYS_STAT_H
-
-// Define to 1 if you have the <sys/systeminfo.h> header file.
-#cmakedefine ALPS_HAVE_SYS_SYSTEMINFO_H
-
-// Define to 1 if you have the <sys/types.h> header file.
-#cmakedefine ALPS_HAVE_SYS_TYPES_H
-
 // Define to 1 if you have the <unistd.h> header file.
-#cmakedefine ALPS_HAVE_UNISTD_H
-
-// Define to 1 if you have the <windows.h> header file.
-#cmakedefine ALPS_HAVE_WINDOWS_H
-
-// If defined, the openmpi specific ulfm is used.
-#cmakedefine ALPS_OPENMPI_ULFM
+#cmakedefine ALPS_HAVE_UNISTD_H 1
 
 //
 // Libraries
 //
 
-// Define to 1 if you have the PTHREAD library
-#cmakedefine ALPS_HAVE_PTHREAD
-
 // Define to 1 if you have the MPI library
-#cmakedefine ALPS_HAVE_MPI
-
-// Define to 1 if you have the HDF5 library
-#cmakedefine ALPS_HAVE_HDF5
-
-// Define to 1 if you have the HDF5 library with parallel(MPI) support
-#cmakedefine ALPS_HAVE_HDF5_PARALLEL
-
-// Define to 1 if you have the Boost.MPI library
-#cmakedefine ALPS_HAVE_BOOST_MPI
-
-// Define to 1 if you have the Boost.Signals library
-#cmakedefine ALPS_HAVE_BOOST_SIGNALS
-
-// Define to 1 if you have the Boost.ThreadMPI library
-#cmakedefine ALPS_HAVE_BOOST_THREAD
-
-// Define to 1 if you have wchar support in Boost.Regex and Boost.Serialization
-#cmakedefine ALPS_HAVE_BOOST_WCHAR
-
-//
-// BLAS and LAPACK
-//
-
-// Define if you have BLAS library
-#cmakedefine ALPS_HAVE_BLAS
-
-// Define if you have LAPACK library
-#cmakedefine ALPS_HAVE_LAPACK
-
-// Define if you have Intel Math Kernel Library
-#cmakedefine ALPS_HAVE_MKL
-
-// Define if you have the Digital Extended Math Library
-#cmakedefine ALPS_HAVE_DXML
-
-// Define if you have SGI SCSL Library
-#cmakedefine ALPS_HAVE_SCSL
-
-// Define if you have Mac OS X vecLib framework
-#cmakedefine ALPS_HAVE_VECLIB
-
-// Define if you have IBM ESSL Library
-#cmakedefine ALPS_HAVE_ESSL
-
-// Define if you have ATLAS library
-#cmakedefine ALPS_HAVE_ATLAS
-
-// Set 8-byte integers for Boost bindings if needed
-#cmakedefine BIND_FORTRAN_INTEGER_8
-
-//
-// XML parser
-//
-
-// Define to 1 if you use Expat XML parser by James Clark.
-#cmakedefine ALPS_HAVE_EXPAT_PARSER
-
-// Define to 1 if you use Xerces C++ XML parser by Apache Software Foundation.
-#cmakedefine ALPS_HAVE_XERCES_PARSER
-
-//
-// OpenMP
-//
-
-// Define to 1 if OpenMP Worker is supported in ALPS/parpack scheduler
-#cmakedefine ALPS_ENABLE_OPENMP_WORKER
+#cmakedefine ALPS_HAVE_MPI 1
 
 //
 // Introduce [int,uint]*_t into alps namespace
@@ -162,23 +72,6 @@ using boost::uint_fast64_t;
 } // end namespace alps
 
 #include <boost/config.hpp>
-
-#ifndef BOOST_NO_VOID_RETURNS
-# define ALPS_DUMMY_VOID void
-# define ALPS_RETURN_VOID
-#else
-# define ALPS_DUMMY_VOID bool
-# define ALPS_RETURN_VOID return true;
-#endif
-
-//
-// Enable HDF5 checkpoints: no ALPS checkpoint data is written into XDR files 
-// anymore, but they can still be read
-//
-#ifdef ALPS_HAVE_HDF5
-#  define ALPS_ONLY_HDF5
-#endif
-
 
 #ifdef BOOST_MSVC
 #define BOOST_NUMERIC_BINDINGS_USE_COMPLEX_STRUCT
