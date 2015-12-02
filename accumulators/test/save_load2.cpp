@@ -79,11 +79,11 @@ struct AccumulatorTest : public testing::Test {
         
         const alps::accumulators::result_set r(m);
         const alps::accumulators::result_set r1(m1);
-        EXPECT_NEAR(r["data"].mean<value_type>(), r1["data"].mean<value_type>(), 1E-8);
+        EXPECT_EQ(r["data"].mean<value_type>(), r1["data"].mean<value_type>());
         if (is_mean_acc) return;
-        EXPECT_NEAR(r["data"].error<value_type>(), r1["data"].error<value_type>(), 1E-8);
+        EXPECT_EQ(r["data"].error<value_type>(), r1["data"].error<value_type>());
         if (is_nobin_acc) return;
-        EXPECT_NEAR(r["data"].autocorrelation<value_type>(), r1["data"].autocorrelation<value_type>(), 1E-8);
+        EXPECT_EQ(r["data"].autocorrelation<value_type>(), r1["data"].autocorrelation<value_type>());
     }
 
     /// Save and load result set, check results
@@ -104,20 +104,50 @@ struct AccumulatorTest : public testing::Test {
         // Check that the underlying result holds the expected raw result type
         r1["data"].extract<raw_result_type>();
 
-        EXPECT_NEAR(r["data"].mean<value_type>(), r1["data"].mean<value_type>(), 1E-8);
+        EXPECT_EQ(r["data"].mean<value_type>(), r1["data"].mean<value_type>());
         if (is_mean_acc) return;
-        EXPECT_NEAR(r["data"].error<value_type>() ,r1["data"].error<value_type>(), 1E-8);
+        EXPECT_EQ(r["data"].error<value_type>() ,r1["data"].error<value_type>());
         if (is_nobin_acc) return;
-        EXPECT_NEAR(r["data"].autocorrelation<value_type>(), r1["data"].autocorrelation<value_type>(), 1E-8);
+        EXPECT_EQ(r["data"].autocorrelation<value_type>(), r1["data"].autocorrelation<value_type>());
     }
 
 };
 
+typedef std::vector<double> vdouble;
+typedef std::vector<long double> vldouble;
+typedef std::vector<float> vfloat;
+
 typedef ::testing::Types<
-    AccumulatorTypeGenerator<alps::accumulators::FullBinningAccumulator,double>
-    ,AccumulatorTypeGenerator<alps::accumulators::LogBinningAccumulator,double>
-    ,AccumulatorTypeGenerator<alps::accumulators::NoBinningAccumulator,double>
-    ,AccumulatorTypeGenerator<alps::accumulators::MeanAccumulator, double>
+    AccumulatorTypeGenerator<alps::accumulators::FullBinningAccumulator,float>
+    ,AccumulatorTypeGenerator<alps::accumulators::LogBinningAccumulator,float>
+    ,AccumulatorTypeGenerator<alps::accumulators::NoBinningAccumulator, float>
+    ,AccumulatorTypeGenerator<alps::accumulators::MeanAccumulator,      float>
+
+    ,AccumulatorTypeGenerator<alps::accumulators::FullBinningAccumulator,double>
+    ,AccumulatorTypeGenerator<alps::accumulators::LogBinningAccumulator, double>
+    ,AccumulatorTypeGenerator<alps::accumulators::NoBinningAccumulator,  double>
+    ,AccumulatorTypeGenerator<alps::accumulators::MeanAccumulator,       double>
+
+    ,AccumulatorTypeGenerator<alps::accumulators::FullBinningAccumulator,long double>
+    ,AccumulatorTypeGenerator<alps::accumulators::LogBinningAccumulator, long double>
+    ,AccumulatorTypeGenerator<alps::accumulators::NoBinningAccumulator,  long double>
+    ,AccumulatorTypeGenerator<alps::accumulators::MeanAccumulator,       long double>
+
+    ,AccumulatorTypeGenerator<alps::accumulators::FullBinningAccumulator,vfloat>
+    ,AccumulatorTypeGenerator<alps::accumulators::LogBinningAccumulator, vfloat>
+    ,AccumulatorTypeGenerator<alps::accumulators::NoBinningAccumulator,  vfloat>
+    ,AccumulatorTypeGenerator<alps::accumulators::MeanAccumulator,       vfloat>
+
+    ,AccumulatorTypeGenerator<alps::accumulators::FullBinningAccumulator,vdouble>
+    ,AccumulatorTypeGenerator<alps::accumulators::LogBinningAccumulator, vdouble>
+    ,AccumulatorTypeGenerator<alps::accumulators::NoBinningAccumulator,  vdouble>
+    ,AccumulatorTypeGenerator<alps::accumulators::MeanAccumulator,       vdouble>
+
+    ,AccumulatorTypeGenerator<alps::accumulators::FullBinningAccumulator,vldouble>
+    ,AccumulatorTypeGenerator<alps::accumulators::LogBinningAccumulator, vldouble>
+    ,AccumulatorTypeGenerator<alps::accumulators::NoBinningAccumulator,  vldouble>
+    ,AccumulatorTypeGenerator<alps::accumulators::MeanAccumulator,       vldouble>
+
     > MyTypes;
 
 TYPED_TEST_CASE(AccumulatorTest, MyTypes);
