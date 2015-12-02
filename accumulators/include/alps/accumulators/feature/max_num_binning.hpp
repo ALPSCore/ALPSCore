@@ -550,6 +550,7 @@ namespace alps {
                 }
 
                 void save(hdf5::archive & ar) const {
+                    B::save(ar);
                     analyze();
                     ar["count"] = m_mn_count;
                     ar["@cannotrebin"] = m_mn_cannot_rebin;
@@ -559,6 +560,7 @@ namespace alps {
                     ar["timeseries/data/@binsize"] = m_mn_elements_in_bin;
                     ar["timeseries/data/@maxbinnum"] = m_mn_max_number;
                     ar["timeseries/data/@binningtype"] = "linear";
+                    ar["timeseries/data/@jacknife_valid"] = m_mn_jackknife_valid;
                     if (m_mn_jackknife_valid) {
                         ar["jacknife/data"] = m_mn_jackknife_bins;
                         ar["jacknife/data/@binningtype"] = "linear";
@@ -566,14 +568,23 @@ namespace alps {
                 }
                 
                 void load(hdf5::archive & ar) {
-                    // TODO: implement imformations above
                     B::load(ar);
                     ar["timeseries/data"] >> m_mn_bins;
                     ar["timeseries/data/@binsize"] >> m_mn_elements_in_bin;
                     ar["timeseries/data/@maxbinnum"] >> m_mn_max_number;
+                    ar["timeseries/data/@jacknife_valid"] >> m_mn_jackknife_valid;
+
+                    ar["count"] >> m_mn_count;
+                    ar["@cannotrebin"] >> m_mn_cannot_rebin;
+                    ar["mean/value"] >> m_mn_mean;
+                    ar["mean/error"] >> m_mn_error;
+                    if (m_mn_jackknife_valid) {
+                        ar["jacknife/data"] >> m_mn_jackknife_bins;
+                    }
                 }
 
                 static std::size_t rank() { return B::rank() + 1; }
+
                 static bool can_load(hdf5::archive & ar) { // TODO: make archive const
                     using alps::hdf5::get_extent;
                     const char name[]="timeseries/data";

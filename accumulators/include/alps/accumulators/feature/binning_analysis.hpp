@@ -459,11 +459,13 @@ namespace alps {
 
                     void save(hdf5::archive & ar) const {
                         B::save(ar);
+                        ar["error_bins"]=m_ac_errors;
                         ar["tau"] = m_ac_autocorrelation;
                     }
 
                     void load(hdf5::archive & ar) {
                         B::load(ar);
+                        ar["error_bins"] >> m_ac_errors;
                         ar["tau"] >> m_ac_autocorrelation;
                     }
 
@@ -471,7 +473,7 @@ namespace alps {
                     static bool can_load(hdf5::archive & ar) { // TODO: make archive const
                         using alps::hdf5::get_extent;
                         const char name[]="tau";
-                        const std::size_t ndim=get_extent(T()).size()+1;
+                        const std::size_t ndim=get_extent(T()).size();
                         return B::can_load(ar) &&
                                detail::archive_trait<T>::can_load(ar, name, ndim); // FIXME: `T` should rather be `error_type`, defined at class level
                     }
