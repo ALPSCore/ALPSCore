@@ -139,7 +139,7 @@ class my_custom_type {
         return this->value();
     }
 
-    // If the type is not continous, it is supposed to have vector-like interface (even if it's not actually vectorizable)
+    // If the type is not continuous, it is supposed to have vector-like interface (even if it's not actually vectorizable)
 
     /// const-iterator type @REQUIRED_NONCONTINUOUS
     typedef const my_element_type* const_iterator;
@@ -149,13 +149,13 @@ class my_custom_type {
 
     /// iterator to the beginning of the contents @REQUIRED_NONCONTINUOUS
     const_iterator begin() const {
-        throw std::logic_error("custom_type::begin() Not implemented");
+        // throw std::logic_error("custom_type::begin() Not implemented");
         return &(*this)[0];
     }
 
     /// iterator to beyond the end of the contents @REQUIRED_NONCONTINUOUS
     const_iterator end() const {
-        throw std::logic_error("custom_type::end() Not implemented");
+        // throw std::logic_error("custom_type::end() Not implemented");
         return &(*this)[0]+size();
     }
 

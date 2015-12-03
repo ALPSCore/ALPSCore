@@ -24,7 +24,6 @@ set (test_src
     autocorrelation
     print
     scalar_result_type
-    custom_type
     )
 
 #add tests for MPI
@@ -41,3 +40,5 @@ endforeach(test)
 foreach(test ${test_src_mpi})
     alps_add_gtest(${test} NOMAIN PARTEST)
 endforeach(test)
+
+alps_add_gtest(custom_type NOMAIN PARTEST)

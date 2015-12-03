@@ -17,6 +17,7 @@
 
 
 #include "gtest/gtest.h"
+#include "alps/utilities/gtest_par_xml_output.hpp"
 #include "accumulator_generator.hpp"
 
 
@@ -57,8 +58,8 @@ using namespace alps::accumulators::testing;
 // to pass accumulator types
 template <template<typename> class A, typename T>
 struct AccumulatorTypeGenerator {
-    typedef acc_one_correlated_gen<A,T,     /*NPOINTS*/50000,/*CORRL*/10,/*VLEN*/0,RandomData>   accumulator_gen_type;     // generator for A<T>
-    typedef acc_one_correlated_gen<A,double,/*NPOINTS*/50000,/*CORRL*/1 ,/*VLEN*/0,ConstantData> dbl_accumulator_gen_type; // generator for A<double>
+    typedef acc_one_correlated_gen<A,T,     /*NPOINTS*/50000,/*CORRL*/5,/*VLEN*/0,RandomData>   accumulator_gen_type;     // generator for A<T>
+    typedef acc_one_correlated_gen<A,double,/*NPOINTS*/50000,/*CORRL*/0 ,/*VLEN*/0,ConstantData> dbl_accumulator_gen_type; // generator for A<double>
 };
 
 template <typename G>
@@ -72,7 +73,7 @@ struct CustomTypeAccumulatorTest : public testing::Test {
     typedef typename G::dbl_accumulator_gen_type dbl_acc_gen_type;
     typedef typename dbl_acc_gen_type::acc_type dbl_acc_type;
 
-    static const int NPOINTS=acc_gen_type::NPOINTS; 
+    static const std::size_t NPOINTS=acc_gen_type::NPOINTS; 
     
     acc_gen_type acc_gen;
     dbl_acc_gen_type dbl_acc_gen;
@@ -229,6 +230,64 @@ struct CustomTypeAccumulatorTest : public testing::Test {
         EXPECT_NEAR(get_value(r["data"].autocorrelation<value_type>()),get_value(r1["data"].autocorrelation<value_type>()),1E-8);
     }
 
+#ifdef ALPS_HAVE_MPI                   
+    void TestMpiMerge() {
+        /* The idea is to verify that M processes running N points each
+           accumulated together approximately the same data as a single process
+           running M*N points, restarting every N points.
+        */
+        namespace aa=alps::accumulators;
+        boost::mpi::communicator comm;
+
+        aa::accumulator_set total_mset;
+        total_mset << acc_type("data");
+        aa::accumulator_wrapper& total_acc=total_mset["data"];
+
+        for (int p=0; p<comm.size(); ++p) {
+            typename acc_gen_type::number_generator_type number_generator;
+            
+            for (std::size_t i=0; i<NPOINTS; ++i) {
+                total_acc << gen_data<value_type>(number_generator()).value();
+            }
+        }
+        aa::result_set total_rset(total_mset);
+        const aa::result_wrapper& rtot=total_rset["data"];
+
+        aa::accumulator_wrapper& aw=acc_gen.accumulator();
+        aw.collective_merge(comm,0);
+        boost::shared_ptr<aa::result_wrapper> rwptr=aw.result();
+        const aa::result_wrapper& rw=*rwptr;
+
+        // FIXME: These tolerances are found by comparison with FullBinningAccumulator<double>,
+        //        and are valid for the requested correlation length 5, 50000 points, 2 processes.
+        const double mean_tol=1E-8;
+        const double err_tol=5E-5;
+        const double tau_tol=2.;
+
+        for (int i=0; i<comm.size(); ++i) {
+            if (comm.rank() == i
+                && i==0 /* FIXME!! See issue #178 */) {
+                
+                EXPECT_EQ(rtot.count(), rw.count()) << "reported by rank " << i;
+                
+                EXPECT_NEAR(get_value(rtot.mean<value_type>()),
+                            get_value(rw.mean<value_type>()),
+                            mean_tol) << "reported by rank " << i;
+
+                if (!is_mean_acc)
+                    EXPECT_NEAR(get_value(rtot.error<value_type>()),
+                                get_value(rw.error<value_type>()),
+                                err_tol) << "reported by rank " << i;
+                
+                if (!(is_nobin_acc||is_mean_acc)) 
+                    EXPECT_NEAR(get_value(rtot.autocorrelation<value_type>()),
+                                get_value(rw.autocorrelation<value_type>()),
+                                tau_tol) << "reported by rank " << i;
+            }
+            comm.barrier();
+        }
+    }
+#endif
 };
 
 typedef my_custom_type<double> dbl_custom_type;
@@ -238,11 +297,29 @@ typedef ::testing::Types<
     ,AccumulatorTypeGenerator<alps::accumulators::LogBinningAccumulator,dbl_custom_type>
     ,AccumulatorTypeGenerator<alps::accumulators::NoBinningAccumulator, dbl_custom_type>
     ,AccumulatorTypeGenerator<alps::accumulators::MeanAccumulator,      dbl_custom_type>
+    // ,AccumulatorTypeGenerator<alps::accumulators::FullBinningAccumulator, double>
     > MyTypes;
 
 TYPED_TEST_CASE(CustomTypeAccumulatorTest, MyTypes);
 
-#define MAKE_TEST(_name_) TYPED_TEST(CustomTypeAccumulatorTest, _name_)  { this->TestFixture::_name_(); }
+#ifdef ALPS_HAVE_MPI
+
+#define RETURN_UNLESS_MASTER if (boost::mpi::communicator().rank()!=0) return
+#define MAKE_MPI_TEST(_name_) TYPED_TEST(CustomTypeAccumulatorTest, _name_)  { this->TestFixture::_name_(); }
+
+#else
+
+#define RETURN_UNLESS_MASTER
+#define MAKE_MPI_TEST(_name_)
+
+#endif
+
+#define MAKE_TEST(_name_)                                               \
+    TYPED_TEST(CustomTypeAccumulatorTest, _name_)  {                    \
+        RETURN_UNLESS_MASTER;                                           \
+        this->TestFixture::_name_();                                    \
+    }
+
 
 MAKE_TEST(TestH5ScalarType)
 MAKE_TEST(TestNumScalarType)
@@ -266,7 +343,10 @@ MAKE_TEST(TestSaveLoadAccumulator)
 MAKE_TEST(TestSaveResult)
 MAKE_TEST(TestSaveLoadResult)
 
+MAKE_MPI_TEST(TestMpiMerge)
+
 TEST(CustomTypeAccumulatorTest,saveArray) {
+    RETURN_UNLESS_MASTER;
     dbl_custom_type x=gen_data<dbl_custom_type>(1.25);
     std::vector<dbl_custom_type> vx;
     std::vector<double> dx;
@@ -304,24 +384,19 @@ TEST(CustomTypeAccumulatorTest,saveArray) {
     std::cout << "y=" << y << "\nvy=" << vy << std::endl;
 }
 
-// TEST(CustomTypeAccumulatorTest,saveArray2) {
-//     typedef std::vector<double> my_type;
-//     my_type x(1, 1.25);
-//     std::vector<my_type> vx(10, my_type(1, 7.5));
-//     {
-//       alps::hdf5::archive ar("saveload_vector.h5","w");
-//       std::cout << "Saving scalar..." << std::endl;
-//       ar["single_custom"] << x;
-//       std::cout << "Saving vector..." << std::endl;
-//       ar["vector_custom"] << vx;
-//     }
-//     my_type y;
-//     std::vector<my_type> vy;
-//     {
-//       alps::hdf5::archive ar("saveload_vector.h5","r");
-//       std::cout << "Loading scalar..." << std::endl;
-//       ar["single_custom"] >> y;
-//       std::cout << "Loading vector..." << std::endl;
-//       ar["vector_custom"] >> vy;
-//     }
-// }
+#ifdef ALPS_HAVE_MPI
+int main(int argc, char** argv)
+{
+   boost::mpi::environment env(argc, argv, false);
+   alps::gtest_par_xml_output tweak;
+   tweak(boost::mpi::communicator().rank(), argc, argv);
+   ::testing::InitGoogleTest(&argc, argv);
+   return RUN_ALL_TESTS();
+}    
+#else
+int main(int argc, char** argv)
+{
+   ::testing::InitGoogleTest(&argc, argv);
+   return RUN_ALL_TESTS();
+}    
+#endif
