@@ -183,29 +183,22 @@ namespace alps {
             /// Class to generate accumulators and results of a given type
             template <typename A, std::size_t NPOINTS_PARAM=10000, typename NG=RandomData>
             class AccResultGenerator  {
-                private:
+              private:
                 alps::accumulators::result_set* results_ptr_;
                 alps::accumulators::accumulator_set* measurements_ptr_;
                 const std::string name_;
                 NG number_generator;
-    
-                public:
+          
+              public:
                 typedef A named_acc_type;
                 typedef typename alps::accumulators::value_type<typename named_acc_type::accumulator_type>::type value_type;
 
                 static const std::size_t NPOINTS=NPOINTS_PARAM; /// < Number of data points
                 static double tol() { return 5.E-3; }         /// < Recommended tolerance to compare expected and actual results (FIXME: should depend on NPOINTS and NG)
-                /// Free the memory allocated in the constructor
-                virtual ~AccResultGenerator()
-                {
-                    delete results_ptr_;
-                    delete measurements_ptr_;
-                }
-    
+
+              private:
                 /// Generate the data points for the accumulator
-                AccResultGenerator() : name_("data")
-                {
-                    // srand48(43);
+                void init_() {
                     measurements_ptr_=new alps::accumulators::accumulator_set();
                     alps::accumulators::accumulator_set& m=*measurements_ptr_;
                     m << named_acc_type(name_);
@@ -215,6 +208,20 @@ namespace alps {
                     }
                     results_ptr_=new alps::accumulators::result_set(m);
                 }
+
+              public:
+                /// Free the memory allocated in the constructor
+                virtual ~AccResultGenerator()
+                {
+                    delete results_ptr_;
+                    delete measurements_ptr_;
+                }
+
+                /// Construct the accumulator/result generator with default seed value for the number generator
+                AccResultGenerator() : name_("data") { init_(); }
+
+                /// Construct the accumulator/result generator with a specified seed value for the number generator
+                AccResultGenerator(double ini) : name_("data"), number_generator(ini) { init_(); }
 
                 /// Returns extracted results
                 const alps::accumulators::result_wrapper& result() const
@@ -250,9 +257,9 @@ namespace alps {
             };
 
             /// Class to generate a pair of accumulators with identical data: A<T> and A<vector<T>>
-        template <template <typename> class A, typename T, std::size_t NPOINTS_P=1000, unsigned int VSZ_P=3, typename NG=RandomData>
+            template <template <typename> class A, typename T, std::size_t NPOINTS_P=1000, unsigned int VSZ_P=3, typename NG=RandomData>
             class acc_vs_pair_gen {
-                private:
+              private:
                 alps::accumulators::result_set* results_ptr_;
                 alps::accumulators::accumulator_set* measurements_ptr_;
                 NG number_generator;
@@ -269,17 +276,10 @@ namespace alps {
                 const std::string scal_name;
                 const std::string vec_name;
 
-                /// Free the memory allocated in the constructor
-                virtual ~acc_vs_pair_gen()
-                {
-                    delete results_ptr_;
-                    delete measurements_ptr_;
-                }
-
+              private:
                 /// Generate the data points for the accumulator
-                acc_vs_pair_gen(const std::string& sname, const std::string& vname) : scal_name(sname), vec_name(vname)
+                void init_()
                 {
-                    // srand48(43);
                     measurements_ptr_=new alps::accumulators::accumulator_set();
                     alps::accumulators::accumulator_set& m=*measurements_ptr_;
                     m << vector_acc_type(vec_name)
@@ -292,6 +292,26 @@ namespace alps {
                     }
                     results_ptr_=new alps::accumulators::result_set(m);
                 }
+
+              public:
+                /// Free the memory allocated in the constructor
+                virtual ~acc_vs_pair_gen()
+                {
+                    delete results_ptr_;
+                    delete measurements_ptr_;
+                }
+
+                /// Generate the data points for the accumulator, seed number generator with a default value
+                acc_vs_pair_gen(const std::string& sname, const std::string& vname) : scal_name(sname), vec_name(vname)
+                {
+                    init_();
+                }
+
+                /// Generate the data points for the accumulator, seed number generator with a specified value
+                acc_vs_pair_gen(double ini, const std::string& sname, const std::string& vname) : number_generator(ini),
+                                                                                                  scal_name(sname),
+                                                                                                  vec_name(vname)
+                { init_(); }
 
                 /// Returns extracted result set
                 const alps::accumulators::result_set& results() const
@@ -306,15 +326,16 @@ namespace alps {
                 }
             };
 
+
             /// Class to generate accumulators with identical, correlated data: Mean,NoBinning,LogBinning,FullBinning
             template <typename T, std::size_t NPOINTS_P=1000, std::size_t CORRL_P=10, unsigned int VSZ_P=3, typename NG=RandomData>
             class acc_correlated_gen {
-                private:
+              private:
                 alps::accumulators::result_set* results_ptr_;
                 alps::accumulators::accumulator_set* measurements_ptr_;
                 CorrelatedData<CORRL_P,NG> number_generator;
 
-                public:
+              public:
                 typedef T data_type;
                 typedef alps::accumulators::MeanAccumulator<T> mean_acc_type;
                 typedef alps::accumulators::NoBinningAccumulator<T> nobin_acc_type;
@@ -330,17 +351,9 @@ namespace alps {
                 const std::string logbin_name;
                 const std::string fullbin_name;
 
-                /// Free the memory allocated in the constructor
-                virtual ~acc_correlated_gen()
-                {
-                    delete results_ptr_;
-                    delete measurements_ptr_;
-                }
-
+              private:
                 /// Generate the data points for the accumulator
-                acc_correlated_gen(const std::string& mean="mean", const std::string& nobin="nobin",
-                                const std::string& logbin="logbin", const std::string& fullbin="fullbin")
-                    : mean_name(mean), nobin_name(nobin), logbin_name(logbin), fullbin_name(fullbin)
+                void init_()
                 {
                     measurements_ptr_=new alps::accumulators::accumulator_set();
                     alps::accumulators::accumulator_set& m=*measurements_ptr_;
@@ -358,6 +371,34 @@ namespace alps {
                     }
                     results_ptr_=new alps::accumulators::result_set(m);
                 }
+
+              public:
+                /// Free the memory allocated in the constructor
+                virtual ~acc_correlated_gen()
+                {
+                    delete results_ptr_;
+                    delete measurements_ptr_;
+                }
+
+                /// Generate the data points for the accumulator, seed number generator with a default value
+                acc_correlated_gen(const std::string& mean="mean", const std::string& nobin="nobin",
+                                   const std::string& logbin="logbin", const std::string& fullbin="fullbin")
+                    : mean_name(mean),
+                      nobin_name(nobin),
+                      logbin_name(logbin),
+                      fullbin_name(fullbin)
+                { init_(); }
+
+                /// Generate the data points for the accumulator, seed number generator with a specified value
+                acc_correlated_gen(double ini,
+                                   const std::string& mean="mean", const std::string& nobin="nobin",
+                                   const std::string& logbin="logbin", const std::string& fullbin="fullbin")
+                    : number_generator(ini),
+                      mean_name(mean),
+                      nobin_name(nobin),
+                      logbin_name(logbin),
+                      fullbin_name(fullbin)
+                { init_(); }
 
                 /// Returns extracted result set
                 const alps::accumulators::result_set& results() const
@@ -377,14 +418,16 @@ namespace alps {
             };
 
             /// Class to generate a single accumulator A with correlated data of type T
+            // FXIME: is it really needed? Is it not the same as AccResultGenerator<...,CorrelatedData>?
             template <template<typename> class A, typename T, std::size_t NPOINTS_P=1000, std::size_t CORRL_P=10, unsigned int VSZ_P=3, typename NG=RandomData>
             class acc_one_correlated_gen {
-                private:
+              private:
                 alps::accumulators::result_set* results_ptr_;
                 alps::accumulators::accumulator_set* measurements_ptr_;
                 CorrelatedData<CORRL_P,NG> number_generator;
 
-                public:
+              public:
+                typedef CorrelatedData<CORRL_P,NG> number_generator_type;
                 typedef T data_type;
                 typedef A<T> acc_type;
 
@@ -394,17 +437,9 @@ namespace alps {
 
                 const std::string acc_name;
 
-                /// Free the memory allocated in the constructor
-                virtual ~acc_one_correlated_gen()
-                {
-                    delete results_ptr_;
-                    delete measurements_ptr_;
-                }
-
+              private:
                 /// Generate the data points for the accumulator
-                acc_one_correlated_gen(const std::string& name="data")
-                    : acc_name(name)
-                {
+                void init_() {
                     measurements_ptr_=new alps::accumulators::accumulator_set();
                     alps::accumulators::accumulator_set& m=*measurements_ptr_;
                     m << acc_type(acc_name);
@@ -415,6 +450,24 @@ namespace alps {
                     }
                     results_ptr_=new alps::accumulators::result_set(m);
                 }
+
+              public:  
+                /// Free the memory allocated in the constructor
+                virtual ~acc_one_correlated_gen()
+                {
+                    delete results_ptr_;
+                    delete measurements_ptr_;
+                }
+
+                /// Generate the data points for the accumulator, seed number generator with a default value
+                acc_one_correlated_gen(const std::string& name="data")
+                    : acc_name(name)
+                { init_(); }
+
+                /// Generate the data points for the accumulator, seed number generator with a given value
+                acc_one_correlated_gen(double ini, const std::string& name="data")
+                    : number_generator(ini), acc_name(name)
+                { init_(); }
 
                 /// Returns extracted result set
                 const alps::accumulators::result_set& results() const
@@ -434,6 +487,12 @@ namespace alps {
                     return *measurements_ptr_;
                 }
 
+                /// Returns the accumulator set as non-const
+                alps::accumulators::accumulator_set& accumulators()
+                {
+                    return *measurements_ptr_;
+                }
+
                 /// Returns extracted result
                 const alps::accumulators::result_wrapper& result() const
                 {
@@ -442,6 +501,18 @@ namespace alps {
 
                 /// Returns the accumulator set
                 const alps::accumulators::accumulator_wrapper& accumulator() const
+                {
+                    return accumulators()[acc_name];
+                }
+                
+                /// Returns extracted result as non-const
+                alps::accumulators::result_wrapper& result()
+                {
+                    return results()[acc_name];
+                }
+
+                /// Returns the accumulator set as non-const
+                alps::accumulators::accumulator_wrapper& accumulator()
                 {
                     return accumulators()[acc_name];
                 }
