@@ -15,28 +15,6 @@
 #include <boost/type_traits/is_same.hpp>
 #include <boost/optional.hpp>
 
-/* DEBUG!!! */
-#include <vector>
-#include <boost/foreach.hpp>
-#include <boost/lexical_cast.hpp>
-
-
-namespace alps { namespace accumulators { namespace testing {
-
-template <typename X> struct DummyType { typedef void type; };
-
-template <typename T>
-std::ostream& operator<<(std::ostream& s, const std::vector<T>& vec) {
-    s << "[ ";
-    BOOST_FOREACH(const T& x, vec) {
-        s << x << ",";
-    }
-    s << "]";
-    return s;
-}
-}}}
-/* ^^^^ DEBUG !!! */
-
 
 /// A custom type. FIXME: Has to be declared before the first inclusion of config.h
 template <typename T> struct my_custom_type;
@@ -383,8 +361,6 @@ namespace alps {
 
 // Contains definitions of traits specialized below
 #include "alps/hdf5/archive.hpp"
-// DEBUG:
-#include "alps/hdf5/complex.hpp"
 
 namespace alps {
     namespace hdf5 {
@@ -414,11 +390,7 @@ namespace alps {
             template<typename T> struct get_pointer< my_custom_type<T> > {
                 static typename my_custom_type<T>::my_constituent_type* apply(my_custom_type<T>& x) {
                     using alps::hdf5::get_pointer;
-                    // throw std::logic_error("DEBUG: get_pointer::apply() is called!");
-                    // return get_pointer(x.value());
-                    typename my_custom_type<T>::my_constituent_type* debug=get_pointer(x.value());
-                    std::cout << "Get_pointer returns: " << (void*)debug << " value=" << *debug << std::endl;
-                    return debug;                    
+                    return get_pointer(x.value());
                 }
             };
             
@@ -426,22 +398,15 @@ namespace alps {
             template<typename T> struct get_pointer< const my_custom_type<T> > {
                 static const typename my_custom_type<T>::my_constituent_type* apply(const my_custom_type<T>& x) {
                     using alps::hdf5::get_pointer;
-                    // throw std::logic_error("DEBUG: get_pointer::apply(const) is called!");
-                    const typename my_custom_type<T>::my_constituent_type* debug=get_pointer(x.value());
-                    std::cout << "Get_pointer (const) returns: " << (void*)debug << " value=" << *debug << std::endl;
-                    return debug;                    
+                    return get_pointer(x.value());
                 }
             };
             
             /// Specialization of get_extent<custom_type>
             template<typename T> struct get_extent< my_custom_type<T> > {
                 static std::vector<std::size_t> apply(const my_custom_type<T>& x) {
-                    using alps::accumulators::testing::operator<<; // DEBUG!
                     using alps::hdf5::get_extent;
-                    // throw std::logic_error("DEBUG: get_extent::apply() is called!");
                     std::vector<std::size_t> ext(1,1); // 1D object of size 1
-                    // std::vector<std::size_t> ext(2,1); // 2D object, sizes 1 and 1
-                    std::cout << "Get_extent returns: " << ext << std::endl;
                     return ext;
                 }
             };
@@ -449,15 +414,12 @@ namespace alps {
             /// Specialization of set_extent<custom_type>
             template<typename T> struct set_extent< my_custom_type<T> > {
                 static void apply(const my_custom_type<T>& x, const std::vector<std::size_t>& ext) {
-                    using alps::accumulators::testing::operator<<; // DEBUG!
                     using alps::hdf5::set_extent;
-                    std::cout << "Set_extent got: " << ext << std::endl;
                     if (ext.size()!=1 || ext[0]!=1) { // expecting 1D object of size 1
                         throw std::runtime_error("Unexpected extent values");
                     }
                 }
             };
-            
 
             /// Specialization of is_vectorizable<custom_type>
             template<typename T> struct is_vectorizable< my_custom_type<T> > {
@@ -476,14 +438,6 @@ namespace alps {
                   std::vector<std::size_t> chunk  =std::vector<std::size_t>(),
                   std::vector<std::size_t> offset =std::vector<std::size_t>())
         {
-            // throw std::logic_error("load(custom_type) is not yet implemented");
-            using alps::accumulators::testing::operator<<; // DEBUG!!!
-            std::cout << "DEBUG: load() is called for: name=" << path
-                      << " obj=" << obj
-                      << " chunk=" << chunk
-                      << " offset=" << offset << std::endl;
-            // const std::string suffix="/custom_type";
-            const std::string suffix="";
             if (!is_continuous<T>::value) {
                 throw std::invalid_argument("Can load only my_custom_type<continuous_type>");
             }
@@ -495,14 +449,8 @@ namespace alps {
             std::vector<std::size_t> extent=get_extent(obj);
             std::copy(extent.begin(), extent.end(), std::back_inserter(chunk));
             std::fill_n(std::back_inserter(offset), extent.size(), 0);
-            typename my_custom_type<T>::my_constituent_type* debug=get_pointer(obj);
-            std::cout << "DEBUG: about to read read into ptr=" << debug
-                      << " chunk=" << chunk
-                      << " offset=" << offset << std::endl;
-            // ar.read(path+suffix, debug, chunk, offset);
-            load(ar, path+suffix, *debug, chunk, offset);
-            std::cout << "DEBUG: just read into ptr=" << debug
-                      << " (value=" << *debug << ")" << std::endl;
+            typename my_custom_type<T>::my_constituent_type* ptr=get_pointer(obj);
+            load(ar, path, *ptr, chunk, offset);
         }
 
         /// Overload of save() for the custom_type<...>
@@ -513,14 +461,6 @@ namespace alps {
                   std::vector<std::size_t> chunk  =std::vector<std::size_t>(),
                   std::vector<std::size_t> offset =std::vector<std::size_t>())
         {
-            using alps::accumulators::testing::operator<<; // DEBUG!!!
-            std::cout << "DEBUG: save() is called for: name=" << path
-                      << " obj=" << obj
-                      << " size=" << size
-                      << " chunk=" << chunk
-                      << " offset=" << offset << std::endl;
-            // const std::string suffix="/custom_type";
-            const std::string suffix="";
             if (!is_continuous<T>::value) {
                 throw std::invalid_argument("Can save only my_custom_type<continuous_type>");
             }
@@ -528,13 +468,8 @@ namespace alps {
             std::copy(extent.begin(), extent.end(), std::back_inserter(size));
             std::copy(extent.begin(), extent.end(), std::back_inserter(chunk));
             std::fill_n(std::back_inserter(offset), extent.size(), 0);
-            const typename my_custom_type<T>::my_constituent_type* debug=get_pointer(obj);
-            std::cout << "DEBUG: about to write: ptr=" << debug
-                      << " size=" << size
-                      << " chunk=" << chunk
-                      << " offset=" << offset << std::endl;
-            // ar.write(path+suffix, debug, size, chunk, offset);
-            save(ar, path+suffix, *debug, size, chunk, offset);
+            const typename my_custom_type<T>::my_constituent_type* ptr=get_pointer(obj);
+            save(ar, path, *ptr, size, chunk, offset);
             ar[path+"/@c++_type"]="my_custom_type";
         }
     } // hdf5::

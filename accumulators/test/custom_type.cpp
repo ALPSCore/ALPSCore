@@ -355,7 +355,6 @@ TEST(CustomTypeAccumulatorTest,saveArray) {
         vx.push_back(gen_data<dbl_custom_type>(i+0.5));
         dx.push_back(i+0.75);
     }
-    std::cout << "x=" << x << "\nvx=" << vx << std::endl;
     {
       alps::hdf5::archive ar("saveload_custom.h5","w");
       std::cout << "Saving custom scalar..." << std::endl;
@@ -381,7 +380,6 @@ TEST(CustomTypeAccumulatorTest,saveArray) {
       dbl_custom_type y1;
       EXPECT_THROW(ar["vector_regular"] >> y1, std::runtime_error);
     }
-    std::cout << "y=" << y << "\nvy=" << vy << std::endl;
 }
 
 #ifdef ALPS_HAVE_MPI

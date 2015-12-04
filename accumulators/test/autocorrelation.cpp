@@ -7,8 +7,7 @@
 #include "alps/accumulators.hpp"
 #include "gtest/gtest.h"
 
-// DEBUG:
-#include <iostream>
+#include <iostream> /* FIXME: will go away whith proper Tau testing replacing printouts */
 
 // Google Test fixture: type T is the data type
 // FIXME: make it over accumulator types rather than data types
