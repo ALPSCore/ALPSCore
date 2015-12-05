@@ -9,6 +9,7 @@
 #include "gtest/gtest.h"
 
 typedef long double longdouble;
+double prec=1e-12;
 
 template<typename A, typename T> void mean_test_body_scalar() {
 
@@ -17,14 +18,14 @@ template<typename A, typename T> void mean_test_body_scalar() {
 
 	for (int i = 1; i < 1000; ++i) {
 		measurements["obs1"] << T(1);
-		EXPECT_EQ(measurements["obs1"].mean<double>() , T(1));
+		EXPECT_NEAR(measurements["obs1"].mean<double>() , T(1) , prec);
 		measurements["obs2"] << T(i);
-		EXPECT_EQ(measurements["obs2"].mean<double>() , T(i + 1) / 2);
+		EXPECT_NEAR(measurements["obs2"].mean<double>() , T(i + 1) / 2 , prec);
 	}
 
 	alps::result_set results(measurements);
-	EXPECT_EQ(results["obs1"].mean<double>() , T(1));
-	EXPECT_EQ(results["obs2"].mean<double>() , T(500));
+	EXPECT_NEAR(results["obs1"].mean<double>() , T(1) , prec);
+	EXPECT_NEAR(results["obs2"].mean<double>() , T(500) , prec);
 }
 
 template<typename A, typename T> void mean_test_body_vector() {
@@ -40,8 +41,8 @@ template<typename A, typename T> void mean_test_body_vector() {
 		std::vector<T> mean_vec_1=measurements["obs1"].mean<std::vector<T> >();
 		std::vector<T> mean_vec_2=measurements["obs2"].mean<std::vector<T> >();
 		for(int j=0;j<mean_vec_1.size();++j){
-			EXPECT_EQ(mean_vec_1[j] , T(1.));
-			EXPECT_EQ(mean_vec_2[j] , T(i + 1) / 2);
+			EXPECT_NEAR(mean_vec_1[j] , T(1.) , prec);
+			EXPECT_NEAR(mean_vec_2[j] , T(i + 1) / 2 , prec);
 		}
 	}
 
@@ -51,8 +52,8 @@ template<typename A, typename T> void mean_test_body_vector() {
                 EXPECT_EQ(mean_vec_1.size(), L);
                 EXPECT_EQ(mean_vec_2.size(), L);
 		for(int i=0;i<mean_vec_1.size();++i){
-	  		EXPECT_EQ(mean_vec_1[i] , T(1.));
-			EXPECT_EQ(mean_vec_2[i] , T(500.));
+	  		EXPECT_NEAR(mean_vec_1[i] , T(1.) , prec);
+			EXPECT_NEAR(mean_vec_2[i] , T(500.) , prec);
 	}
 }
 

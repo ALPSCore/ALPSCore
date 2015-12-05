@@ -12,6 +12,26 @@
 #include "alps/hdf5.hpp"
 #include "gtest/gtest.h"
 // Test for saving/restoring accumulators and results to/from archives.
+double prec=1e-12;
+
+template <typename T>
+::testing::AssertionResult AreAllElementsNear(T a, T b, float delta) {
+    if (std::abs(a - b) < delta)
+        return ::testing::AssertionSuccess();
+    else 
+        return ::testing::AssertionFailure() << "doubles differ by more than " << delta;
+}
+
+
+template <typename T>
+::testing::AssertionResult AreAllElementsNear(const std::vector<T>& a, const std::vector<T>& b, float delta) {
+  double res=0.0;
+  for (int i=0; i<a.size(); ++i) res+=std::sqrt((a[i] - b[i]) * (a[i] - b[i])) / double(a.size());
+  if (res < prec)
+    return ::testing::AssertionSuccess();
+  else
+    return ::testing::AssertionFailure() << "Vectors differ by more than " << delta;
+}
 
 // Service functions to generate scalar or vector data points
 template <typename T, typename U>
@@ -65,7 +85,8 @@ class AccumulatorTest : public ::testing::Test {
         value_type xmean=res.mean<value_type>();
         
         EXPECT_EQ(nsamples, res.count());
-        EXPECT_EQ(get_datum(v, (value_type*)0), xmean);
+//        EXPECT_EQ(get_datum(v, (value_type*)0), xmean);
+        EXPECT_TRUE(AreAllElementsNear(get_datum(v, (value_type*)0), xmean, prec));
     }
 
     // Compare the expected and actual accumulator data
