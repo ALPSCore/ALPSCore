@@ -17,8 +17,8 @@ void count_test_scalar(alps::accumulators::accumulator_set & measurements, std::
 	std::cout << measurements << std::endl;
 	alps::accumulators::result_set results(measurements);
 
-    EXPECT_EQ(results[name1].count() > 0, true);
-    EXPECT_EQ(results[name2].count() == 0, true);
+    EXPECT_TRUE(results[name1].count() > 0);
+    EXPECT_TRUE(results[name2].count() == 0);
 }
 
 void count_test_vector(alps::accumulators::accumulator_set & measurements, std::string name) {
@@ -31,8 +31,8 @@ void count_test_vector(alps::accumulators::accumulator_set & measurements, std::
 	std::cout << measurements << std::endl;
 	alps::accumulators::result_set results(measurements);
 
-    EXPECT_EQ(results[name1].count() > 0, true);
-    EXPECT_EQ(results[name2].count() == 0, true);
+    EXPECT_TRUE(results[name1].count() > 0);
+    EXPECT_TRUE(results[name2].count() == 0);
 }
 
 #define ALPS_TEST_RUN_MUL_CONST_TEST(type, name)												\

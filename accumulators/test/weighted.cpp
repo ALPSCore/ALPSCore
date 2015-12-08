@@ -32,8 +32,9 @@ TEST(accumulators, WeightedObservable){
         }
 
 	alps::accumulators::result_set results(measurements);
-	EXPECT_EQ(results["sign"].mean<double>(), 1. / 3.);
-	EXPECT_EQ(results["x*sign"].mean<double>(), 166.);
+	EXPECT_NEAR(results["sign"].mean<double>(), 1. / 3., 1.E-12);
+	EXPECT_NEAR(results["x*sign"].mean<double>(), 166., 1E-12);
+        // FIXME: test rather than print
 	std::cout << (results["x*sign"] / results["sign"]) << std::endl;
         std::cout << (results["x*sign vec"] / results["sign"]) << std::endl;
 	std::cout << (results["x*sign vec"] / results["sign vec"]) << std::endl;

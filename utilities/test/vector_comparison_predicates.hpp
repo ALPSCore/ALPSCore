@@ -10,29 +10,34 @@
 #include <vector>
 #include "gtest/gtest.h"
 
-template <typename T>
-::testing::AssertionResult is_near(T v1, T v2) {
-    if (std::fabs(v1-v2)<1E-8) {
-        return ::testing::AssertionSuccess() << v1 << " almost equals " << v2;
-    } else {
-        return ::testing::AssertionFailure() << v1 << " not equal " << v2;
-    }
-}
+namespace alps {
+    namespace testing {
 
-template <typename T>
-::testing::AssertionResult is_near(const std::vector<T>& v1, const std::vector<T>& v2) {
-    std::size_t sz1=v1.size(), sz2=v2.size();
-    if (sz2!=sz1) {
-        return ::testing::AssertionFailure() << "sizes differ: left=" << sz1 << " right=" << sz2;
-    }
-    for (std::size_t i=0; i<sz1; ++i) {
-        ::testing::AssertionResult res=is_near(v1[i], v2[i]);
-        if (!res) {
-            res << "; content differs at #" << i;
-            return res;
+        template <typename T>
+        ::testing::AssertionResult is_near(T v1, T v2, double tol=1E-10) {
+            if (std::fabs(v1-v2)<tol) {
+                return ::testing::AssertionSuccess() << v1 << " almost equals " << v2;
+            } else {
+                return ::testing::AssertionFailure() << v1 << " not equal " << v2;
+            }
         }
-    }
-    return ::testing::AssertionSuccess() << "vectors are (almost) equal";
-}
+
+        template <typename T>
+        ::testing::AssertionResult is_near(const std::vector<T>& v1, const std::vector<T>& v2, double tol=1E-10) {
+            std::size_t sz1=v1.size(), sz2=v2.size();
+            if (sz2!=sz1) {
+                return ::testing::AssertionFailure() << "sizes differ: left=" << sz1 << " right=" << sz2;
+            }
+            for (std::size_t i=0; i<sz1; ++i) {
+                ::testing::AssertionResult res=is_near(v1[i], v2[i], tol);
+                if (!res) {
+                    res << "; content differs at #" << i;
+                    return res;
+                }
+            }
+            return ::testing::AssertionSuccess() << "vectors are (almost) equal";
+        }
+    } // testing::
+} // alps::
 
 #endif /* ALPS_UTILITIES_TEST_VECTOR_COMPARISON_PREDICATES_HPP */

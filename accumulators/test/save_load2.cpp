@@ -79,6 +79,8 @@ struct AccumulatorTest : public testing::Test {
         
         const alps::accumulators::result_set r(m);
         const alps::accumulators::result_set r1(m1);
+        EXPECT_EQ(r["data"].count(), r1["data"].count());
+        // NOTE: we use EXPECT_EQ(), not EXPECT_NEAR(), as we expect binary identical values.
         EXPECT_EQ(r["data"].mean<value_type>(), r1["data"].mean<value_type>());
         if (is_mean_acc) return;
         EXPECT_EQ(r["data"].error<value_type>(), r1["data"].error<value_type>());
@@ -104,6 +106,8 @@ struct AccumulatorTest : public testing::Test {
         // Check that the underlying result holds the expected raw result type
         r1["data"].extract<raw_result_type>();
 
+        EXPECT_EQ(r["data"].count(), r1["data"].count());
+        // NOTE: we use EXPECT_EQ(), not EXPECT_NEAR(), as we expect binary identical values.
         EXPECT_EQ(r["data"].mean<value_type>(), r1["data"].mean<value_type>());
         if (is_mean_acc) return;
         EXPECT_EQ(r["data"].error<value_type>() ,r1["data"].error<value_type>());

@@ -25,7 +25,7 @@ class AccumulatorTest : public ::testing::Test {
         boost::shared_ptr<alps::accumulators::result_wrapper> res=measurements["one_half"].result();
         value_type xmean=res->mean<value_type>();
 
-        EXPECT_EQ(value_type(0.5), xmean);
+        EXPECT_NEAR(value_type(0.5), xmean, 1E-8);
         EXPECT_EQ(nsamples, res->count());
     }
 };

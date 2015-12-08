@@ -15,6 +15,7 @@ void test_divide_accumulators_scalar(alps::accumulators::accumulator_set & measu
 		measurements[name1] << (i % 2) + 1;
 		measurements[name2] << 2. * (i % 2);
 	}
+        // FIXME: test rather than print!
 	std::cout << measurements << std::endl;
 	alps::accumulators::result_set results(measurements);
 	std::cout << results[name1] * results[name2] << std::endl;
@@ -34,14 +35,12 @@ void test_divide_accumulators_vector(alps::accumulators::accumulator_set & measu
 	std::cout << results[name1] * results[name2] << std::endl;
 	std::cout << results[name1] / results[name2] << std::endl;
         std::vector<double> mean_vec=(results[name1] / results[name2]).mean<std::vector<double> >();
-        EXPECT_EQ(mean_vec.size(), L);
-        /*for(int i=0;i<L;++i){
+        ASSERT_EQ(mean_vec.size(), L);
+        for(int i=0;i<L;++i) {
           EXPECT_EQ(mean_vec[i], mean_vec[0]);
-        }*/
-        std::cout<<"the next test will pass: "<<std::endl;
+        }
         alps::accumulators::result_wrapper r=results[name1];
         EXPECT_EQ(r.mean<std::vector<double> >().size(), L);
-        std::cout<<"but this one will fail: "<<std::endl;
         r/=results[name2];
         EXPECT_EQ(r.mean<std::vector<double> >().size(), L);
 }

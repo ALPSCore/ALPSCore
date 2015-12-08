@@ -11,36 +11,25 @@
 #include "alps/utilities/temporary_filename.hpp"
 #include "alps/hdf5.hpp"
 #include "gtest/gtest.h"
+
+//FIXME!! This (relative path to a different module) is fragile (and also looks bad).
+#include "../../utilities/test/vector_comparison_predicates.hpp"
+
+
 // Test for saving/restoring accumulators and results to/from archives.
-double prec=1e-12;
-/* // This somehow fails on jenkins
-template <typename T>
-::testing::AssertionResult AreAllElementsNear(T a, T b, float delta) {
-    if (std::abs(a - b) < delta)
-        return ::testing::AssertionSuccess();
-    else 
-        return ::testing::AssertionFailure() << "doubles differ by more than " << delta;
-}
 
+// FIXME: Must be combined with test_load2.cpp and changed accordingly:
+//        compare the saved/loaded and original values,
+//        rather than "analytically predicted" values.
 
-template <typename T>
-::testing::AssertionResult AreAllElementsNear(const std::vector<T>& a, const std::vector<T>& b, float delta) {
-  double res=0.0;
-  for (int i=0; i<a.size(); ++i) res+=std::sqrt((a[i] - b[i]) * (a[i] - b[i])) / double(a.size());
-  if (res < prec)
-    return ::testing::AssertionSuccess();
-  else
-    return ::testing::AssertionFailure() << "Vectors differ by more than " << delta;
-}
-*/
-
-// Service functions to generate scalar or vector data points
+// Service functions to generate scalar or vector data points (FIXME: use generators from accumulator_generator.hpp)
 template <typename T, typename U>
 inline T get_datum(U val, T*)
 {
   return val;
 }
 
+// (FIXME: use generators from accumulator_generator.hpp)
 template <typename T, typename U>
 inline std::vector<T> get_datum(U val, std::vector<T>*)
 {
@@ -73,7 +62,7 @@ class AccumulatorTest : public ::testing::Test {
 
     // Compare the results only
     void test_results(const alps::accumulators::result_set& results,
-                      const double v)
+                      const double v, const double tol)
     {
         if (!results.has("my_acc")) {
             // No results implies there were no data saved
@@ -86,16 +75,16 @@ class AccumulatorTest : public ::testing::Test {
         value_type xmean=res.mean<value_type>();
         
         EXPECT_EQ(nsamples, res.count());
-        EXPECT_EQ(get_datum(v, (value_type*)0), xmean);
-//        EXPECT_TRUE(AreAllElementsNear(get_datum(v, (value_type*)0), xmean, prec));
+        // EXPECT_EQ(get_datum(v, (value_type*)0), xmean);
+        EXPECT_TRUE(alps::testing::is_near(get_datum(v, (value_type*)0), xmean, tol));
     }
 
     // Compare the expected and actual accumulator data
     void test_samples(alps::accumulators::accumulator_set& measurements,
-                      const double v)
+                      const double v, const double tol)
     {
         alps::accumulators::result_set results(measurements);
-        test_results(results,v);
+        test_results(results, v, tol);
     }
 
     // Save measurements/results/whatever
@@ -157,7 +146,7 @@ TYPED_TEST(AccumulatorTest,SaveLoad)
     alps::accumulators::accumulator_set new_measurements;
     this->load(new_measurements);
 
-    this->test_samples(new_measurements, 0.5);
+    this->test_samples(new_measurements, 0.5, 1E-10);
 }
 
 // Saving and loading results
@@ -175,7 +164,7 @@ TYPED_TEST(AccumulatorTest,SaveLoadResults)
     alps::accumulators::result_set new_results;
     this->load(new_results);
 
-    this->test_results(new_results, 0.5);
+    this->test_results(new_results, 0.5, 1E-10);
 }
 
 // Saving and loading a single sample, which is different in float and double representation,
@@ -192,7 +181,7 @@ TYPED_TEST(AccumulatorTest,SaveLoadTypecheck)
     alps::accumulators::accumulator_set new_measurements;
     this->load(new_measurements);
 
-    this->test_samples(new_measurements, 0.3);
+    this->test_samples(new_measurements, 0.3, 1E-10); // 1E-10 is less than (double)0.3-(float)0.3
 }
 
 // Saving and loading results, checking that the type is restored correctly
@@ -210,7 +199,7 @@ TYPED_TEST(AccumulatorTest,SaveLoadResultsTypecheck)
     alps::accumulators::result_set new_results;
     this->load(new_results);
 
-    this->test_results(new_results, 0.3);
+    this->test_results(new_results, 0.3, 1E-10); // 1E-10 is less than (double)0.3-(float)0.3
 }
 
 // Saving and loading an empty accumulator
@@ -226,7 +215,7 @@ TYPED_TEST(AccumulatorTest,SaveLoadEmpty)
     alps::accumulators::accumulator_set new_measurements;
     this->load(new_measurements);
 
-    this->test_samples(new_measurements, 0.3);
+    this->test_samples(new_measurements, 0.3, 0);
 }
 
 // Saving and loading an empty result
@@ -244,7 +233,7 @@ TYPED_TEST(AccumulatorTest,SaveLoadEmptyResults)
     alps::accumulators::result_set new_results;
     this->load(new_results);
 
-    this->test_results(new_results, 0.5);
+    this->test_results(new_results, 0.5, 0);
 }
 
 // Saving empty accumulator
@@ -285,5 +274,5 @@ TYPED_TEST(AccumulatorTest,SaveLoadAdd)
     this->load(new_measurements);
     this->add_samples(new_measurements, 500, 0.5);
     
-    this->test_samples(new_measurements, 0.5);
+    this->test_samples(new_measurements, 0.5, 1E-10);
 }
