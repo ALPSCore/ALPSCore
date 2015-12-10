@@ -322,8 +322,8 @@ namespace alps {
         // }
         
         namespace {
-            inline void not_implemented(const std::string& fname) {
-                throw std::runtime_error("Function "+fname+"() is not implemented for this type.");
+            inline std::runtime_error not_implemented(const std::string& fname) {
+                return std::runtime_error("Function "+fname+"() is not implemented for this type.");
             }
         }
 
@@ -337,18 +337,18 @@ namespace alps {
 
         // a set of standard math functions for the custom type. @REQUIRED (for the corresponding math)
         /* FIXME: Has to be done before including "accumulators.hpp" */
-        template <typename T> inline my_custom_type<T>  sin(my_custom_type<T>) { not_implemented("sin"); }
-        template <typename T> inline my_custom_type<T>  cos(my_custom_type<T>) { not_implemented("cos"); }
-        template <typename T> inline my_custom_type<T>  tan(my_custom_type<T>) { not_implemented("tan"); }
-        template <typename T> inline my_custom_type<T> sinh(my_custom_type<T>) { not_implemented("sinh"); }
-        template <typename T> inline my_custom_type<T> cosh(my_custom_type<T>) { not_implemented("cosh"); }
-        template <typename T> inline my_custom_type<T> tanh(my_custom_type<T>) { not_implemented("tanh"); }
-        template <typename T> inline my_custom_type<T> asin(my_custom_type<T>) { not_implemented("asin"); }
-        template <typename T> inline my_custom_type<T> acos(my_custom_type<T>) { not_implemented("acos"); }
-        template <typename T> inline my_custom_type<T> atan(my_custom_type<T>) { not_implemented("atan"); }
-        template <typename T> inline my_custom_type<T>  abs(my_custom_type<T>) { not_implemented("abs"); }
-        template <typename T> inline my_custom_type<T>  log(my_custom_type<T>) { not_implemented("log"); }
-        template <typename T> inline my_custom_type<T> cbrt(my_custom_type<T>) { not_implemented("cbrt"); }
+        template <typename T> inline my_custom_type<T>  sin(my_custom_type<T>) { throw not_implemented("sin"); }
+        template <typename T> inline my_custom_type<T>  cos(my_custom_type<T>) { throw not_implemented("cos"); }
+        template <typename T> inline my_custom_type<T>  tan(my_custom_type<T>) { throw not_implemented("tan"); }
+        template <typename T> inline my_custom_type<T> sinh(my_custom_type<T>) { throw not_implemented("sinh"); }
+        template <typename T> inline my_custom_type<T> cosh(my_custom_type<T>) { throw not_implemented("cosh"); }
+        template <typename T> inline my_custom_type<T> tanh(my_custom_type<T>) { throw not_implemented("tanh"); }
+        template <typename T> inline my_custom_type<T> asin(my_custom_type<T>) { throw not_implemented("asin"); }
+        template <typename T> inline my_custom_type<T> acos(my_custom_type<T>) { throw not_implemented("acos"); }
+        template <typename T> inline my_custom_type<T> atan(my_custom_type<T>) { throw not_implemented("atan"); }
+        template <typename T> inline my_custom_type<T>  abs(my_custom_type<T>) { throw not_implemented("abs"); }
+        template <typename T> inline my_custom_type<T>  log(my_custom_type<T>) { throw not_implemented("log"); }
+        template <typename T> inline my_custom_type<T> cbrt(my_custom_type<T>) { throw not_implemented("cbrt"); }
 
         /// if element_type<T> is not its scalar type, define scalar here, before "accumulators.hpp" (it gets instantiated inside)
         template <typename T>

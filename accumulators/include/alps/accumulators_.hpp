@@ -180,6 +180,7 @@ namespace alps {
                     // print
                     void print(std::ostream & os) const;
 
+/* *******
 
             //     // transform(T F(T))
             //     private:
@@ -331,12 +332,14 @@ namespace alps {
             //     ALPS_ACCUMULATOR_FUNCTION_PROXY(cb)
             //     ALPS_ACCUMULATOR_FUNCTION_PROXY(cbrt)
             //     #undef ALPS_ACCUMULATOR_FUNCTION_PROXY
-
+******* */
                 private:
 
                     std::ptrdiff_t * m_cnt;
                     result_wrapper * m_ptr;
             };
+
+/* *******
             // inline result_wrapper operator+(double arg1, result_wrapper const & arg2) {
             //     return arg2 + arg1;
             // }
@@ -379,7 +382,7 @@ namespace alps {
             //     EXTERNAL_FUNCTION(cbrt)
 
             // #undef EXTERNAL_FUNCTION
-
+********* */
 
             class virtual_accumulator_wrapper {
                 public:

@@ -172,6 +172,7 @@ namespace alps {
                 m_ptr->print(os);
             }
 
+/* ********
             //     // transform(T F(T))
             //     private:
             //         template<typename T> struct transform_1_visitor: public boost::static_visitor<> {
@@ -365,7 +366,7 @@ namespace alps {
             //     EXTERNAL_FUNCTION(cbrt)
 
             // #undef EXTERNAL_FUNCTION
-
+******** */
 
 
 

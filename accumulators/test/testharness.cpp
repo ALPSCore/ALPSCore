@@ -80,7 +80,6 @@ TEST(HarnessTest,RandomData) {
     double expected=drand48();
     aat::RandomData rd(33);
     EXPECT_EQ(expected, rd());
-    double mean, err;
 }
 
 TEST(HarnessTest,ConstantData) {

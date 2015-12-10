@@ -14,6 +14,9 @@
 
 #define ALPS_TEST_PARAM(a_type) do { a_type x=parms[ #a_type ]; EXPECT_EQ(x,0x41); } while(0)
 
+// Used to suppress "unused variable" warning.
+static inline void dummy_use(const void*) {};
+
 TEST(param,assignments)
 {
     alps::params parms;
@@ -71,9 +74,9 @@ TEST(param, StringAssignments)
     p["cstring"]="C-string";
 
   {
-      EXPECT_THROW(char* s1=p["cstring"], alps::params::type_mismatch);
-      EXPECT_THROW(const char* s1=p["cstring"], alps::params::type_mismatch);
-      EXPECT_THROW(const char* s2=p["std::string"], alps::params::type_mismatch);
+      EXPECT_THROW({char* s=p["cstring"]; dummy_use(&s);}, alps::params::type_mismatch);
+      EXPECT_THROW({const char* cs=p["cstring"]; dummy_use(&cs);}, alps::params::type_mismatch);
+      EXPECT_THROW({const char* cs=p["std::string"]; dummy_use(&cs);}, alps::params::type_mismatch);
   }
 
   {
@@ -129,10 +132,10 @@ TEST(param,ImplicitDefine)
 
     {
         // It is not a string, whatever command line is
-        EXPECT_THROW(const std::string& s=p["param1"], alps::params::type_mismatch);
+        EXPECT_THROW({const std::string& s=p["param1"]; dummy_use(&s);}, alps::params::type_mismatch);
 
         // It is not an int either
-        EXPECT_THROW(int n=p["param1"], alps::params::type_mismatch);
+        EXPECT_THROW({int n=p["param1"]; dummy_use(&n);}, alps::params::type_mismatch);
     }
 
     // String cannot be assigned to it
@@ -142,7 +145,7 @@ TEST(param,ImplicitDefine)
     p["param1"]=3;
     // ...but it is still not an integer:
     {
-        EXPECT_THROW(int n=p["param1"], alps::params::type_mismatch);
+        EXPECT_THROW({int n=p["param1"]; dummy_use(&n);}, alps::params::type_mismatch);
     }
 
     // It cannot be defined now, once it was assigned
@@ -167,7 +170,7 @@ TEST(param,ImplicitDefine)
     // Assign int --- should work, but remain double
     p["param2"]=5;
     {
-        EXPECT_THROW(int n=p["param2"], alps::params::type_mismatch);
+        EXPECT_THROW({int n=p["param2"]; dummy_use(&n);}, alps::params::type_mismatch);
     }
     
     EXPECT_THROW(p["param2"]="abc", alps::params::type_mismatch);

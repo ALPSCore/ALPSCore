@@ -22,7 +22,6 @@ namespace alps {
         const std::string option_prefix="--gtest_output=xml";
         const size_t prefix_len=option_prefix.size();
         const std::string srank=boost::lexical_cast<std::string>(irank);
-        const size_t npos=std::string::npos;
 
         for (int i=1; i<argc; ++i) {
             std::string arg(argv[i]);

@@ -297,8 +297,6 @@ namespace alps {
                 namespace po=boost::program_options;
                 namespace pov=po::validators;
                 namespace alg=boost::algorithm;
-                typedef std::vector<std::string> strvec;
-                typedef boost::char_separator<char> charsep;
         
                 pov::check_first_occurrence(outval); // check that this option has not yet been assigned
                 std::string in_str=pov::get_single_string(strvalues); // check that this option is passed a single value
