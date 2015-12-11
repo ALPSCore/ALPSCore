@@ -21,8 +21,8 @@ class my_sim_type : public alps::mcbase {
 
         my_sim_type(parameters_type const & params, std::size_t seed_offset = 42)
             : alps::mcbase(params, seed_offset)
-            , total_count(params["COUNT"])
             , count(0)
+            , total_count(params["COUNT"])
 
         {
             measurements << alps::accumulators::FullBinningAccumulator<double>("SValue")
