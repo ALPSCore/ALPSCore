@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Script used by the build server the build
 # all modules of ALPSCore
 
@@ -5,9 +6,31 @@
 # BOOST_ROOT - location for boost distribution
 # GTEST_ROOT - location for gtest sources/binaries
 # HDF5_ROOT - location for the HDF5 distribution
-# EXTRA_CMAKE_FLAGS - extra options for CMake invocation (can be empty)
-# EXTRA_MAKE_FLAGS - extra options for the first `make` invocation (can be empty)
 # FAST_BUILD - don't remove old build files if set and true
+
+# This script accepts optional arguments:
+# --make-flags [extra_flags_for_make...]
+# --cmake-flags [extra_flags_for_cmake...]
+
+declare -a cmake_flags make_flags
+dst=''
+
+while [ "$1" != "" ]; do
+    case "$1" in
+        --cmake-flags) dst='cmake' ;;
+        --make-flags) dst='make' ;;
+        *) 
+            case "$dst" in
+                cmake) cmake_flags+=("$1") ;;
+                make)  make_flags+=("$1") ;;
+                *)
+                    echo "Usage: $0 [--cmake-flags cmake_flag [cmake_flag...]] [--make_flags [make_flag make_flag...]]" >&2
+                    exit 1;;
+            esac;;
+    esac
+    shift
+done
+
 
 # Make sure we are in top directory for the repository
 SCRIPTDIR=$(dirname $0)
@@ -49,10 +72,10 @@ cmake \
   -DENABLE_MPI=TRUE \
   -DTestXMLOutput=TRUE \
   -DDocumentation=OFF \
-  $EXTRA_CMAKE_FLAGS \
+  "${cmake_flags[@]}" \
   ${ROOTDIR}
 
-make $EXTRA_MAKE_FLAGS || exit 1 
+make "${make_flags[@]}" || exit 1 
 make test
 make install || exit 1
 
