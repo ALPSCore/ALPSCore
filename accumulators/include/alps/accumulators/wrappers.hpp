@@ -354,16 +354,16 @@ namespace alps {
                     throw std::runtime_error("The operator /= is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
                 }
             
-                void operator+=(const wrapped_scalar_value_type arg) {
+                void operator+=(wrapped_scalar_value_type arg) {
                     throw std::runtime_error("The Operator += is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
                 }
-                void operator-=(const wrapped_scalar_value_type arg) {
+                void operator-=(wrapped_scalar_value_type arg) {
                     throw std::runtime_error("The Operator -= is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
                 }
-                void operator*=(const wrapped_scalar_value_type arg) {
+                void operator*=(wrapped_scalar_value_type arg) {
                     throw std::runtime_error("The Operator *= is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
                 }
-                void operator/=(const wrapped_scalar_value_type arg) {
+                void operator/=(wrapped_scalar_value_type arg) {
                     throw std::runtime_error("The Operator /= is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
                 }
 
