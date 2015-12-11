@@ -9,6 +9,7 @@
 */
 
 #include <boost/foreach.hpp>
+#include <boost/math/special_functions/fpclassify.hpp> /* for portable isinf() */
 
 #include "alps/accumulators.hpp"
 
@@ -160,7 +161,7 @@ struct AccumulatorStatInfErrTest : public AccumulatorStatTest<G> {
     typedef typename base_type::value_type value_type;
     
     template <typename T>
-    static bool is_inf(const T& val) { return std::isinf(val); }
+    static bool is_inf(const T& val) { return (boost::math::isinf)(val); }
     
     template <typename T>
     static bool is_inf(const std::vector<T>& val) {
