@@ -66,9 +66,9 @@ template<typename A, typename T> void mean_test_body_vector() {
 	}
 
 #define ALPS_TEST_RUN_MEAN_TEST_EACH_TYPE(A)													\
-	ALPS_TEST_RUN_MEAN_TEST(A, float, float)													\
 	ALPS_TEST_RUN_MEAN_TEST(A, double, double)													\
 	ALPS_TEST_RUN_MEAN_TEST(A, longdouble, long_double)
+//	ALPS_TEST_RUN_MEAN_TEST(A, float, float)
 
 ALPS_TEST_RUN_MEAN_TEST_EACH_TYPE(MeanAccumulator)
 ALPS_TEST_RUN_MEAN_TEST_EACH_TYPE(NoBinningAccumulator)

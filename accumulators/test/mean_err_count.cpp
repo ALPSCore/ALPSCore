@@ -15,10 +15,13 @@
 
 #include "gtest/gtest.h"
 
+#include "../../utilities/test/vector_comparison_predicates.hpp" /* FIXME: relative path is fragile!! */
+
 #include "accumulator_generator.hpp"
 
 namespace aa=alps::accumulators;
 namespace aat=aa::testing;
+namespace at=alps::testing;
 
 // enum test_errbar_flag_type { TEST_ERRBAR, DONT_TEST_ERRBAR };
 
@@ -60,10 +63,12 @@ struct AccumulatorStatTest : public testing::Test {
 
     void testMean() {
         value_type amean=gen.accumulator().template mean<value_type>();
-        aat::compare_near(expected_mean(), amean, tol(), "Accumulator mean");
+        // aat::compare_near(expected_mean(), amean, tol(), "Accumulator mean");
+	EXPECT_TRUE(at::is_near(expected_mean(), amean, tol())) << "Accumulator mean";
 
         value_type rmean=gen.result().template mean<value_type>();
-        aat::compare_near(expected_mean(), rmean, tol(), "Result mean");
+        // aat::compare_near(expected_mean(), rmean, tol(), "Result mean");
+	EXPECT_TRUE(at::is_near(expected_mean(), rmean, tol())) << "Result mean";
     }
 
     // This "naive" test is correct only for non-binning accumulators or for a large random data stream
@@ -74,10 +79,12 @@ struct AccumulatorStatTest : public testing::Test {
             return;
         }
         value_type aerr=gen.accumulator().template error<value_type>();
-        aat::compare_near(expected_err(), aerr, tol(), "Accumulator error bar");
+        // aat::compare_near(expected_err(), aerr, tol(), "Accumulator error bar");
+	EXPECT_TRUE(at::is_near(expected_err(), aerr, tol())) << "Accumulator error bar";
 
         value_type rerr=gen.result().template error<value_type>();
-        aat::compare_near(expected_err(), rerr, tol(), "Result error bar");
+        // aat::compare_near(expected_err(), rerr, tol(), "Result error bar");
+	EXPECT_TRUE(at::is_near(expected_err(), rerr, tol())) << "Result error bar";
     }
 };
 
@@ -120,6 +127,31 @@ typedef ::testing::Types<
 INSTANTIATE_TYPED_TEST_CASE_P(DoubleMean, AccumulatorStatTest, double_mean_types);
 
 typedef ::testing::Types<
+    generator<aa::MeanAccumulator<float>, aat::ConstantData, 2>,
+    generator<aa::MeanAccumulator<float>, aat::ConstantData, 100>,
+    generator<aa::MeanAccumulator<float>, aat::ConstantData, 20000>,
+    generator<aa::MeanAccumulator<float>, aat::AlternatingData, 2>,
+    generator<aa::MeanAccumulator<float>, aat::AlternatingData, 100>,
+    generator<aa::MeanAccumulator<float>, aat::AlternatingData, 20000>,
+    generator<aa::MeanAccumulator<float>, aat::LinearData, 2>,
+    generator<aa::MeanAccumulator<float>, aat::LinearData, 100>,
+    // generator<aa::MeanAccumulator<float>, aat::LinearData, 10000>, 
+    generator<aa::MeanAccumulator<float>, aat::RandomData, 100000, 3>,
+
+    generator<aa::MeanAccumulator<v_float>, aat::ConstantData, 2>,
+    generator<aa::MeanAccumulator<v_float>, aat::ConstantData, 100>,
+    generator<aa::MeanAccumulator<v_float>, aat::ConstantData, 20000>,
+    generator<aa::MeanAccumulator<v_float>, aat::AlternatingData, 2>,
+    generator<aa::MeanAccumulator<v_float>, aat::AlternatingData, 100>,
+    generator<aa::MeanAccumulator<v_float>, aat::AlternatingData, 20000>,
+    generator<aa::MeanAccumulator<v_float>, aat::LinearData, 2>,
+    generator<aa::MeanAccumulator<v_float>, aat::LinearData, 100>,
+    // generator<aa::MeanAccumulator<v_float>, aat::LinearData, 10000>,
+    generator<aa::MeanAccumulator<v_float>, aat::RandomData, 100000, 3>
+    > float_mean_types;
+INSTANTIATE_TYPED_TEST_CASE_P(FloatMean, AccumulatorStatTest, float_mean_types);
+
+typedef ::testing::Types<
     generator<aa::NoBinningAccumulator<double>, aat::ConstantData, 2>,
     generator<aa::NoBinningAccumulator<double>, aat::ConstantData, 100>,
     generator<aa::NoBinningAccumulator<double>, aat::ConstantData, 20000>,
@@ -143,6 +175,31 @@ typedef ::testing::Types<
     generator<aa::NoBinningAccumulator<v_double>, aat::RandomData, 100000, 3>
     > double_nobin_types;
 INSTANTIATE_TYPED_TEST_CASE_P(DoubleNobin, AccumulatorStatTest, double_nobin_types);
+
+typedef ::testing::Types<
+    generator<aa::NoBinningAccumulator<float>, aat::ConstantData, 2>,
+    generator<aa::NoBinningAccumulator<float>, aat::ConstantData, 100>,
+    generator<aa::NoBinningAccumulator<float>, aat::ConstantData, 20000>,
+    generator<aa::NoBinningAccumulator<float>, aat::AlternatingData, 2>,
+    generator<aa::NoBinningAccumulator<float>, aat::AlternatingData, 100>,
+    generator<aa::NoBinningAccumulator<float>, aat::AlternatingData, 20000>,
+    generator<aa::NoBinningAccumulator<float>, aat::LinearData, 2>,
+    generator<aa::NoBinningAccumulator<float>, aat::LinearData, 100>,
+    // generator<aa::NoBinningAccumulator<float>, aat::LinearData, 10000>, 
+    generator<aa::NoBinningAccumulator<float>, aat::RandomData, 100000, 3>,
+
+    generator<aa::NoBinningAccumulator<v_float>, aat::ConstantData, 2>,
+    generator<aa::NoBinningAccumulator<v_float>, aat::ConstantData, 100>,
+    generator<aa::NoBinningAccumulator<v_float>, aat::ConstantData, 20000>,
+    generator<aa::NoBinningAccumulator<v_float>, aat::AlternatingData, 2>,
+    generator<aa::NoBinningAccumulator<v_float>, aat::AlternatingData, 100>,
+    generator<aa::NoBinningAccumulator<v_float>, aat::AlternatingData, 20000>,
+    generator<aa::NoBinningAccumulator<v_float>, aat::LinearData, 2>,
+    generator<aa::NoBinningAccumulator<v_float>, aat::LinearData, 100>,
+    // generator<aa::NoBinningAccumulator<v_float>, aat::LinearData, 10000>,
+    generator<aa::NoBinningAccumulator<v_float>, aat::RandomData, 100000, 3>
+    > float_nobin_types;
+INSTANTIATE_TYPED_TEST_CASE_P(FloatNobin, AccumulatorStatTest, float_nobin_types);
 
 typedef ::testing::Types<
     generator<aa::LogBinningAccumulator<double>, aat::RandomData, 100000, 3>,

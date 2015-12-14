@@ -164,7 +164,7 @@ TYPED_TEST(AccumulatorTest,SaveLoadResults)
     alps::accumulators::result_set new_results;
     this->load(new_results);
 
-    this->test_results(new_results, 0.5, 1E-10);
+    this->test_results(new_results, 0.5, 1E-7);
 }
 
 // Saving and loading a single sample, which is different in float and double representation,
@@ -181,7 +181,7 @@ TYPED_TEST(AccumulatorTest,SaveLoadTypecheck)
     alps::accumulators::accumulator_set new_measurements;
     this->load(new_measurements);
 
-    this->test_samples(new_measurements, 0.3, 1E-10); // 1E-10 is less than (double)0.3-(float)0.3
+    this->test_samples(new_measurements, 0.3, 1E-6); // 1E-6 is less than (double)0.3-(float)0.3
 }
 
 // Saving and loading results, checking that the type is restored correctly
@@ -199,7 +199,7 @@ TYPED_TEST(AccumulatorTest,SaveLoadResultsTypecheck)
     alps::accumulators::result_set new_results;
     this->load(new_results);
 
-    this->test_results(new_results, 0.3, 1E-10); // 1E-10 is less than (double)0.3-(float)0.3
+    this->test_results(new_results, 0.3, 1E-6); // 1E-6 is less than (double)0.3-(float)0.3
 }
 
 // Saving and loading an empty accumulator
@@ -274,5 +274,5 @@ TYPED_TEST(AccumulatorTest,SaveLoadAdd)
     this->load(new_measurements);
     this->add_samples(new_measurements, 500, 0.5);
     
-    this->test_samples(new_measurements, 0.5, 1E-10);
+    this->test_samples(new_measurements, 0.5, 1E-7);
 }
