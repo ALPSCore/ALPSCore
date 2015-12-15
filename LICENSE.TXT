@@ -1,4 +1,4 @@
-The GNU General Public License (GPL)
+uThe GNU General Public License (GPL)
 
 Version 2, June 1991
 
