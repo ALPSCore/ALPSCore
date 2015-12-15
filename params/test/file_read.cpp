@@ -12,6 +12,9 @@
 
 #include <fstream>
 
+//Dummy function to imitate use of a variable to supress spurious compiler warnings
+static inline void dummy_use(const void*) {}
+
 // Scalar param read (except bool which is tested separately)
 TEST(param, ScalarParamRead) {
    //create a file name
@@ -336,9 +339,9 @@ TEST(param, GarbageInFile) {
    
    // read the parameters
    try {
-       int param_int1_rd=p["int1"];
+       int param_int1_rd=p["int1"]; dummy_use(&param_int1_rd);
        FAIL();
-       int param_int2_rd=p["int2"];
+       int param_int2_rd=p["int2"]; dummy_use(&param_int2_rd);
    } catch (boost::program_options::invalid_config_file_syntax& ex) {
        SUCCEED();
        EXPECT_TRUE(std::string(ex.what()).find(garbage) != std::string::npos);
@@ -373,7 +376,7 @@ void WrongTypeTest(const std::string& strval)
    
    // read the parameter
    try {
-       T param_rd=p["param"];
+       T param_rd=p["param"]; dummy_use(&param_rd);
        FAIL();
    } catch (E& ex) {
        SUCCEED();
@@ -503,8 +506,9 @@ TEST(param,Repeating) {
    p.description("This is a test program").
        define<int>("parname","repeating parameter");
 
-   int n=0;
+   int n;
    EXPECT_THROW((n=p["parname"]),boost::program_options::multiple_occurrences);
+   dummy_use(&n);
 }
 
 // Unknown parameters in the INI file

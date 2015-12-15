@@ -7,8 +7,6 @@
 #include <alps/hdf5/archive.hpp>
 #include <alps/hdf5/vector.hpp>
 #include <alps/hdf5/complex.hpp>
-// TODO: do we have a matrix class test?
-// #include <alps/numeric/matrix.hpp>
 #include <alps/utilities/short_print.hpp>
 
 #include <boost/filesystem.hpp>
@@ -25,24 +23,20 @@ TEST(hdf5, TestingOfRealComplex){
         boost::filesystem::remove("real_complex.h5");
 
     try {
-        const int vsize = 6, msize=4;
+        const int vsize = 6;
 
         std::vector<double> v(vsize, 3.2);
-        // alps::numeric::matrix<double> A(msize,msize, 1.5);
 
         std::cout << "v: " << alps::short_print(v) << std::endl;
 
         {
             alps::hdf5::archive ar("real_complex.h5", "w");
-            // ar["/matrix"] << A;
             ar["/vec"] << v;
         }
 
         std::vector<std::complex<double> > w;
-        // alps::numeric::matrix<std::complex<double> > B;
         {
             alps::hdf5::archive ar("real_complex.h5", "r");
-            // ar["/matrix"] >> B;
             ar["/vec"] >> w;
         }
 

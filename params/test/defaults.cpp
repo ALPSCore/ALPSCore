@@ -12,6 +12,9 @@
 
 #include <fstream>
 
+// To imitatate using a variable to supress spurious warnings
+static inline void dummy_use(const void*) {}
+
 // Service function to construct a parameters object from a commandline:
 // contains option @param @name1 with value @param val1 and
 // option @param @name2 with value @param val2 .
@@ -77,7 +80,7 @@ void TestDefaults(bool from_file, T defval1, T defval2, T val1, T val2)
     EXPECT_FALSE(p.defaulted("no_default"));
     EXPECT_TRUE(p.defaulted("undefined"));
     
-    EXPECT_THROW(const T& x=p["undefined2"], alps::params::uninitialized_value);
+    EXPECT_THROW({const T& x=p["undefined2"]; dummy_use(&x);}, alps::params::uninitialized_value);
 }
 
 TEST(param,DefaultsCmdline)

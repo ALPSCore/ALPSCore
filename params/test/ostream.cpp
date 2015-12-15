@@ -54,7 +54,6 @@ class ParamTest : public ::testing::Test {
 
     void PrintTest() const
     {
-        typedef typename T::value_type value_type;
         T gen("myparam"); // prepare to generate a parameter with the name "myparam"
         alps::params p=gen.params(); // get the parameter
 

@@ -39,7 +39,7 @@ TEST(gtest_par_xml_output, main)
     {
         // These arguments should stay intact
         int idx[]={0, 1, 2, 3, 9};
-        for (int i=0; i<sizeof(idx)/sizeof(*idx); ++i) {
+        for (unsigned int i=0; i<sizeof(idx)/sizeof(*idx); ++i) {
             int ii=idx[i];
             EXPECT_EQ(argv_init[ii], argv[ii]) << "Unexpected change in argv[" << ii << "]";
         }

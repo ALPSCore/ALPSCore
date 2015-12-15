@@ -13,6 +13,9 @@
 #include "alps/params.hpp"
 #include "gtest/gtest.h"
 
+//Dummy function to imitate use of a variable to supress spurious compiler warnings
+static inline void dummy_use(const void*) {}
+
 class ParamsTest :public ::testing::Test {
   public:
     alps::params par;
@@ -124,6 +127,8 @@ TEST_F(ParamsTest,ReadAttempt)
 
     EXPECT_THROW(x=this->par["missing_no_default"], alps::params::uninitialized_value);
     x=this->par["missing_has_default"];
+
+    dummy_use(&x);
 }
 
 // (FIXME: also tested elsewhere)

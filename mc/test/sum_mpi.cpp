@@ -74,8 +74,8 @@ class my_sim_type : public alps::mcbase {
         }
 
     private:
-        int count;
         int total_count;
+        int count;
         double value;
 };
 

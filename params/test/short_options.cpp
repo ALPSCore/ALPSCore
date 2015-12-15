@@ -9,6 +9,9 @@
 #include "alps/utilities/temporary_filename.hpp"
 #include "gtest/gtest.h"
 
+//Dummy function to imitate use of a variable to supress spurious compiler warnings
+static inline void dummy_use(const void*) {}
+
 // Test interaction with boost::program_options --- short options are prohibited
 TEST(param, ProgramOptions)
 {
@@ -20,8 +23,8 @@ TEST(param, ProgramOptions)
     EXPECT_THROW((p.define<int>("param,p", "Int parameter")), alps::params::invalid_name);
 
     // if allowed boost::po style of option names as "long,short", these 2 below would crash on assertion failure.
-    { EXPECT_THROW(int i=p["param"], alps::params::uninitialized_value); }
-    { EXPECT_THROW(int i=p["p"], alps::params::uninitialized_value); } 
+    { EXPECT_THROW({int i=p["param"]; dummy_use(&i);}, alps::params::uninitialized_value); }
+    { EXPECT_THROW({int i=p["p"]; dummy_use(&i);}, alps::params::uninitialized_value); } 
 }
 
 // Shortened versions of options in the command line.
@@ -34,7 +37,7 @@ TEST(param, ShortenedInCmdline)
     p.define<int>("param", "Int parameter");
 
     EXPECT_EQ(123,int(p["param"]));
-    EXPECT_THROW(int i=p["par"], alps::params::uninitialized_value);
+    EXPECT_THROW({int i=p["par"]; dummy_use(&i);}, alps::params::uninitialized_value);
 }
 
 // Shortened versions of options in the INI file -- not allowed
@@ -53,8 +56,8 @@ TEST(param, ShortenedInFile)
     alps::params p(argc, argv);
     p.define<int>("param", "Int parameter");
 
-    EXPECT_THROW(int i=p["param"], alps::params::uninitialized_value);
-    EXPECT_THROW(int i=p["par"], alps::params::uninitialized_value);
+    EXPECT_THROW({int i=p["param"]; dummy_use(&i);}, alps::params::uninitialized_value);
+    EXPECT_THROW({int i=p["par"]; dummy_use(&i);}, alps::params::uninitialized_value);
 }
 
 // Shorter and longer options in the command line.
@@ -67,9 +70,9 @@ TEST(param, ShortAndLongCmdline)
     p.define<int>("param", "Int parameter");
 
     // Parsing occurs here, and program_options throwns an exception:
-    EXPECT_THROW(int i=p["par"], boost::program_options::multiple_occurrences);
+    EXPECT_THROW({int i=p["par"]; dummy_use(&i);}, boost::program_options::multiple_occurrences);
     // Parsing occurs here again, and program_options throwns an exception again:
-    EXPECT_THROW(int i=p["param"], boost::program_options::multiple_occurrences);
+    EXPECT_THROW({int i=p["param"]; dummy_use(&i);}, boost::program_options::multiple_occurrences);
 }
 
 // Shorter and longer options defined
@@ -103,7 +106,7 @@ TEST(param, ShortAndLongFile)
     alps::params p(argc, argv);
     p.define<int>("param", "Int parameter");
 
-    EXPECT_THROW(int i=p["par"], alps::params::uninitialized_value);
+    EXPECT_THROW({int i=p["par"]; dummy_use(&i);}, alps::params::uninitialized_value);
     EXPECT_EQ(456, int(p["param"]));
 }
 
