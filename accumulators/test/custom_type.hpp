@@ -15,12 +15,13 @@
 #include <boost/type_traits/is_same.hpp>
 #include <boost/optional.hpp>
 
+/// Custom value types for accumulators: must be defined before inclusion of "config.hpp"
+#define ALPS_ACCUMULATOR_USER_TYPES my_custom_type<double>
 
-/// A custom type. FIXME: Has to be declared before the first inclusion of config.h
+#include "alps/config.hpp"
+
+/// A custom type forward declaration.
 template <typename T> struct my_custom_type;
-
-#define ALPS_ACCUMULATOR_VALUE_TYPES float, double, long double, std::vector<float>, std::vector<double>, std::vector<long double>, my_custom_type<double>
-#define ALPS_ACCUMULATOR_VALUE_TYPES_SIZE 7
 
 namespace alps {
     namespace numeric {
@@ -45,10 +46,8 @@ namespace alps {
 
 
 /// A custom type.
-/** @FIXME: Has to be declared before the first inclusion of config.h
-    
-    Has to be fully defined before the first inclusion of alps/accumulators.hpp,
-    where it gets instantiated.
+/** Has to be fully defined before the first inclusion of
+    alps/accumulators.hpp, where it gets instantiated.
 */
 
 template <typename T>
@@ -87,11 +86,8 @@ class my_custom_type {
     typedef T my_constituent_type;
 
     // "Math" Scalar type: should behave as a scalar type, with arithmetics and conversion from scalar types.
-    // (FIXME: it seems to have to be a C++ scalar, from the point of view of boost::is_scalar!)
+    // (NOTE: it also has to be a C++ scalar, from the point of view of boost::is_scalar!)
     typedef T my_scalar_type; // happens to be the same as T in this implementation
-
-    // // "Element type" (as a sequence, which it is not)
-    // typedef my_custom_type my_element_type;
 
     // "Element type" (as a sequence)
     typedef T my_element_type;
@@ -145,7 +141,6 @@ class my_custom_type {
     
     /// Divide operator with scalar_type<my_custom_type> at RHS. @REQUIRED (for many calculations)
     my_custom_type operator/(const my_scalar_type& c) const {
-        // throw std::logic_error("operator/(scalar_type): Not implemented");
         my_custom_type r=*this;
         r.value() /= c;
         return r;
@@ -159,7 +154,6 @@ class my_custom_type {
                 assert(mean*count == val);
     */
     my_custom_type operator*(const my_scalar_type& c) const {
-        // throw std::logic_error("operator*(scalar_type): Not implemented");
         my_custom_type r=*this;
         r.value() *= c;
         return r;
@@ -168,7 +162,6 @@ class my_custom_type {
     /// Addition operator. @REQUIRED (for many calculations, must be consistent with +=)
     // FIXME: use boost operators, define via +=
     my_custom_type operator+(const my_custom_type& rhs) const {
-        // throw std::runtime_error("operator+ is not implemented for this type");
         my_custom_type r=*this;
         r.value() += rhs.value();
         return r;
@@ -176,7 +169,6 @@ class my_custom_type {
 
     /// Subtraction operator @REQUIRED (for many calculations, must be consistent with +)
     my_custom_type operator-(const my_custom_type& rhs) const {
-        // throw std::runtime_error("operator- is not implemented for this type");
         my_custom_type r=*this;
         r.value() -= rhs.value();
         return r;
@@ -184,14 +176,12 @@ class my_custom_type {
 
     /// Multiplication operator @REQUIRED (must be element-wise to make sense)
     my_custom_type operator*(const my_custom_type& rhs) const {
-        // throw std::runtime_error("operator* is not implemented for this type");
         my_custom_type r=*this;
         r.value() *= rhs.value();
         return r;
     }
     /// Division operator @REQUIRED (must be element-wise to make sense)
     my_custom_type operator/(const my_custom_type& rhs) const {
-        // throw std::runtime_error("operator/ is not implemented for this type");
         my_custom_type r=*this;
         r.value() /= rhs.value();
         return r;
@@ -199,19 +189,12 @@ class my_custom_type {
 
     /// Unary minus (negation) operator. @REQUIRED
     my_custom_type operator-() const {
-        // throw std::runtime_error("unary operator- is not implemented for this type");
         my_custom_type r(-this->value());
         return r;
     }
 
-    // /// Add-Assign operator with scalar
-    // my_custom_type& operator+=(const my_scalar_type&) {
-    //     throw std::runtime_error("operator+= is not implemented for this type");
-    // }
-    
     /// Add operator with scalar @REQUIRED (semantics: adds scaled identity custom_type)
     my_custom_type operator+(const my_scalar_type& s) const {
-        // throw std::runtime_error("operator+ is not implemented for this type");
         my_custom_type r=*this;
         r.value() += s;
         return r;
@@ -219,7 +202,6 @@ class my_custom_type {
     
     /// Subtract operator with scalar @REQUIRED (semantics: subtracts scaled identity custom_type)
     my_custom_type operator-(const my_scalar_type& s) const {
-        // throw std::runtime_error("operator- is not implemented for this type");
         my_custom_type r=*this;
         r.value() -= s;
         return r;
@@ -238,16 +220,6 @@ class my_custom_type {
         s << "[Custom type: value=" << this->value() << "]";
         return s;
     }
-
-    // /// Save to an archive @REQUIRED
-    // void save(alps::hdf5::archive& ar) const {
-    //     ar["custom_type"] << this->value();
-    // }
-
-    // /// Load from an archive @REQUIRED
-    // void load(alps::hdf5::archive& ar) {
-    //     ar["custom_type"] >> this->value();
-    // }
 
     /// Verify if the value can be loaded
     static bool can_load(alps::hdf5::archive& ar, const std::string& path) {
@@ -297,10 +269,6 @@ my_custom_type<T> operator/(const typename my_custom_type<T>::my_scalar_type& lh
 #include "alps/numeric/inf.hpp"
 
 namespace alps {
-    // /// Declare that the type is not a sequence, despite a possible presence of value_type
-    // template <typename T>
-    // struct is_sequence< my_custom_type<T> > : public boost::false_type {};
-
     /// Declare that the type is a sequence, despite a possible absence of value_type @REQUIRED
     template <typename T>
     struct is_sequence< my_custom_type<T> > : public boost::true_type {};
@@ -314,7 +282,7 @@ namespace alps {
     
     namespace numeric {
         // /// Setting "negative" values to zero @REQUIRED (for autocorrelation). Already implemented by ALPSCore for sequences.
-        // /** FIXME: Has to be done before including "accumulators.hpp" */
+        // /** NOTE: Has to be done before including "accumulators.hpp" */
         // template <typename T>
         // void set_negative_0(my_custom_type<T>& x)
         // {
@@ -336,7 +304,7 @@ namespace alps {
         }
 
         // a set of standard math functions for the custom type. @REQUIRED (for the corresponding math)
-        /* FIXME: Has to be done before including "accumulators.hpp" */
+        /* NOTE: Has to be done before including "accumulators.hpp" */
         template <typename T> inline my_custom_type<T>  sin(my_custom_type<T>) { throw not_implemented("sin"); }
         template <typename T> inline my_custom_type<T>  cos(my_custom_type<T>) { throw not_implemented("cos"); }
         template <typename T> inline my_custom_type<T>  tan(my_custom_type<T>) { throw not_implemented("tan"); }
@@ -374,11 +342,6 @@ namespace alps {
         template <typename T>
         struct is_content_continuous< my_custom_type<T> >
             : public is_continuous<typename my_custom_type<T>::my_constituent_type> {};
-
-        // /// Specialization of alps::hdf5::is_continuous<T> for the custom_type<...>
-        // template <typename T>
-        // struct is_continuous< my_custom_type<T> >
-        //     : public is_content_continuous< my_custom_type<T> > {}; // the type is continuous if its content is continuous
 
         /// Specialization of alps::hdf5::is_continuous<T> for the custom_type<...>
         template <typename T>
@@ -502,8 +465,6 @@ namespace alps {
                                      const std::string& name,
                                      std::size_t dim)
                 {
-                    // throw std::logic_error(std::string("can_load() called, with params: name='")
-                    //                        + name + "' dim=" + boost::lexical_cast<std::string>(dim));
                     return ar.is_data(name)
                            && my_custom_type<T>::can_load(ar,name)
                            && ar.dimensions(name)==dim;

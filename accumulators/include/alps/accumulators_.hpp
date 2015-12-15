@@ -7,6 +7,11 @@
 #ifndef ALPS_WRAPED_ACCUMULATORS_HPP
 #define ALPS_WRAPED_ACCUMULATORS_HPP
 
+// FIXME: custom accumulator value types are not supported
+#if defined(ALPS_ACCUMULATOR_USER_TYPES)
+#error "User accumulator value types (ALPS_ACCUMULATOR_USER_TYPES) are not yet supported"
+#endif
+
 #include <alps/config.hpp>
 
 #include <alps/hdf5/vector.hpp>
