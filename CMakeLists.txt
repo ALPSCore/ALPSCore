@@ -44,4 +44,4 @@ install(TARGETS gf
         LIBRARY DESTINATION "lib/"
         ARCHIVE DESTINATION "lib/")
 install(DIRECTORY "gf/include" DESTINATION "." FILES_MATCHING PATTERN "*.hpp")
-install(FILES "${CMAKE_BINARY_DIR}/GFToolsConfig.cmake" DESTINATION "./share")
+install(FILES "${CMAKE_BINARY_DIR}/GFToolsConfig.cmake" DESTINATION "./share/GFTools/")
