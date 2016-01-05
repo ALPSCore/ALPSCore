@@ -11,6 +11,8 @@ set (test_src
   two_index_gf_test
   three_index_gf_test
   four_index_gf_test 
+  four_index_gf_test_mismatched-mpi
+  four_index_gf_test_mismatched-tail-mpi
   four_index_gf_pn_test 
   itime_gf_test
     )

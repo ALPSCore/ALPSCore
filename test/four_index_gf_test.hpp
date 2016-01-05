@@ -1,3 +1,8 @@
+#include "gtest/gtest.h"
+#include "alps/gf/gf.hpp"
+#include "alps/gf/tail.hpp"
+#include "gf_test.hpp"
+
 class FourIndexGFTest : public ::testing::Test
 {
   public:
