@@ -29,6 +29,94 @@ int MPI_Bcast(void* buffer, int count, MPI_Datatype datatype, int root, MPI_Comm
     return PMPI_Bcast(buffer, count, datatype, root, comm);
 }
 
+/* ^^^ End of the MPI-correctnes checker code  ^^^ */
+
+
+/* The following is a simple DIY file-based, MPI-independent communication code.
+   The intent is to check the number of bcast operations.
+   As MPI may be in an incorrect state in the case of the mismatch,
+   we rely exclusively on file I/O
+   (inefficient, but simple, and uses only basic C/C++ file operations).
+ */
+class Mpi_guard {
+    int master_, rank_, nprocs_;
+    std::string sig_fname_base_, sig_fname_master_, sig_fname_;
+  public:
+
+    // Construct the object and create necessary files. MPI is assumed to be working.
+    Mpi_guard(int master) : master_(master) {
+
+        MPI_Comm_rank(MPI_COMM_WORLD, &rank_);
+        MPI_Comm_size(MPI_COMM_WORLD, &nprocs_);
+        
+        sig_fname_base_="four_index_gf_test_mismatched-tail-mpi.dat."; // FIXME? use unique name?
+        sig_fname_=sig_fname_base_+boost::lexical_cast<std::string>(rank_);
+        sig_fname_master_=sig_fname_base_+boost::lexical_cast<std::string>(master_);
+        
+        std::remove(sig_fname_.c_str());
+        if (rank_==master_) {
+            std::ofstream sig_fs(sig_fname_.c_str()); // master creates file to signal slaves to wait
+            if (!sig_fs) {
+                std::cerr << "Cannot open communication file " << sig_fname_ << std::endl;
+                MPI_Abort(MPI_COMM_WORLD,1);
+                return;
+            }
+            sig_fs << "?";
+            sig_fs.close();
+        }
+        MPI_Barrier(MPI_COMM_WORLD); // MPI is still ok here, we can synchronize
+    }
+
+    // Check the number of broadcasts across processes. Do not rely on MPI. Return `true` if OK.
+    bool check_sig_files_ok(int number_of_bcasts) {
+        bool result=true;
+    
+        if (rank_!=master_) {
+            // slave process: write the data...
+            std::ofstream sig_fs(sig_fname_.c_str());
+            sig_fs << number_of_bcasts;
+            sig_fs.close();
+            // ... then wait till the master's file disappears
+            for (;;) {
+                std::ifstream sig_fs(sig_fname_master_.c_str());
+                if (!sig_fs) break;
+                sig_fs.close();
+                sleep(3);
+            }
+        } else {
+            // master process: wait till all slaves report
+            for (int i=0; i<nprocs_; ++i) {
+                if (i==master_) continue; // don't wait on myself
+                const std::string sig_fname_slave=sig_fname_base_+boost::lexical_cast<std::string>(i);
+                int nbc=-1;
+                int itry;
+                for (itry=1; itry<=100; ++itry) {
+                    sleep(1);
+                    std::ifstream sig_in_fs(sig_fname_slave.c_str());
+                    if (!sig_in_fs) continue;
+                    if (!(sig_in_fs >> nbc)) continue;
+                    break;
+                }
+                // std::cout << "DEBUG: after " << itry << " tries, got info from rank #" << i << ": " << nbc << std::endl;
+                if (number_of_bcasts!=nbc) {
+                    std::cout << " mismatch in number of broadcasts!"
+                              << " master expects: " << number_of_bcasts
+                              << " ; rank #" << i << " reports: " << nbc
+                              << std::endl;
+                    result=false;
+                }
+            }
+            // All ranks info collected, remove the master's communication file
+            std::remove(sig_fname_.c_str());
+        }
+        return result;
+    }
+};
+/* ^^^ End of MPI-independent communication code ^^^ */
+
+
+static const int MASTER=0;
+
 // Check incompatible broadcast of tails
 TEST_F(FourIndexGFTest,MpiWrongTailBroadcast)
 {
@@ -42,30 +130,10 @@ TEST_F(FourIndexGFTest,MpiWrongTailBroadcast)
                                                    g::momentum_index_mesh(get_data_for_momentum_mesh()),
                                                    g::index_mesh(this->nspins));
 
-    // MPI stuff.
     // Get the rank
-    int rank,nprocs;
+    int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
-    const int master=0;
-    // As MPI will be likely messed up, we communicate via a file.
-    const std::string sig_fname_base="four_index_gf_test_mismatched-tail-mpi.dat."; // FIXME? use unique name?
-    const std::string sig_fname=sig_fname_base+boost::lexical_cast<std::string>(rank);
-    std::remove(sig_fname.c_str());
-    std::fstream sig_fs;
-    if (rank==master) {
-        sig_fs.open(sig_fname.c_str(), std::ios::out); // master creates file to signal slaves to wait
-        if (!sig_fs) {
-            std::cerr << "Cannot open communication file " << sig_fname << std::endl;
-            MPI_Abort(MPI_COMM_WORLD,1);
-            return;
-        }
-        sig_fs << "?";
-        sig_fs.close();
-    }
-    MPI_Barrier(MPI_COMM_WORLD); // MPI is still ok here, we can synchronize
-    
-
+  
     // prepare diagonal matrix
     double U=3.0;
     denmat.initialize();
@@ -77,97 +145,29 @@ TEST_F(FourIndexGFTest,MpiWrongTailBroadcast)
     g::omega_k1_k2_sigma_gf_with_tail gft(gf);
     
     int order=0;
-    if (rank==master) { // on master only
+    if (rank==MASTER) { // on master only
       // attach a tail to the GF:
       gft.set_tail(order, denmat);
       // change the GF
       gft(g::matsubara_index(4),g::momentum_index(3), g::momentum_index(2), g::index(1))=std::complex<double>(7., 3.);
-    } else { // on receiving ranks, make sure that the tail is there, with empty data
-        // DEBUG!!! Temporarily disable the check
-      // gft.set_tail(order, density_matrix_type(g::momentum_index_mesh(denmat.mesh1().points()),
-      //                                         g::momentum_index_mesh(denmat.mesh2().points()),
-      //                                         g::index_mesh(this->nspins)));
     }
+    // slaves do not have the tail attached to their GF.
 
     // broadcast the GF with tail
-    gft.broadcast_data(master,MPI_COMM_WORLD);
+    bool thrown=false;
+    try {
+        gft.broadcast_data(MASTER,MPI_COMM_WORLD);
+    } catch (std::runtime_error exc) {
+        // FIXME: verify exception message
+        thrown=true;
+    }
+    EXPECT_TRUE( thrown ^ (rank==MASTER) );
 
     EXPECT_EQ(7, gft(g::matsubara_index(4),g::momentum_index(3), g::momentum_index(2), g::index(1)).real()) << "GF real part mismatch on rank " << rank;
     EXPECT_EQ(3, gft(g::matsubara_index(4),g::momentum_index(3), g::momentum_index(2), g::index(1)).imag()) << "GF imag part mismatch on rank " << rank;
 
-    // DEBUG!!! Temporarily disable the check
-    // ASSERT_EQ(1, gft.tail().size()) << "Tail size mismatch on rank " << rank;
-    // EXPECT_NEAR(0, (gft.tail(0)-denmat).norm(), 1E-8) << "Tail broadcast differs from the received on rank " << rank; 
-
-
-    // MPI stuff again.
-    // Now we have to check the number of bcast operations.
-    // As MPI may be already in an incorrect state, we rely exclusively on file I/O
-    // (inefficient, but simple, and uses only basic C/C++ file operations).
-    if (rank!=master) {
-        // slave process: write the data...
-        sig_fs.open(sig_fname.c_str(), std::ios::out);
-        sig_fs << Number_of_bcasts;
-        sig_fs.close();
-        // ... then wait till the master's file disappears
-        const std::string sig_fname_master=sig_fname_base+boost::lexical_cast<std::string>(master);
-        for (;;) {
-            sig_fs.open(sig_fname_master.c_str(), std::ios::in);
-            if (!sig_fs) break;
-            sig_fs.close();
-            sleep(3);
-        }
-    } else {
-        // master process: wait till all slaves report
-        for (int i=0; i<nprocs; ++i) {
-            if (i==master) continue; // don't wait on myself
-            const std::string sig_fname_slave=sig_fname_base+boost::lexical_cast<std::string>(i);
-            int nbc=-1;
-            int itry;
-            for (itry=1; itry<=100; ++itry) {
-                sleep(1);
-                std::ifstream sig_in_fs(sig_fname_slave.c_str());
-                if (!sig_in_fs) continue;
-                if (!(sig_in_fs >> nbc)) continue;
-                break;
-            }
-            std::cout << "DEBUG: after " << itry << " tries, got info from rank #" << i << ": " << nbc << std::endl;
-            EXPECT_EQ(Number_of_bcasts, nbc) << " mismatch in number of broadcasts for rank #" << i;
-        }
-        // All ranks info collected, remove the master's communication file
-        std::remove(sig_fname.c_str());
-    }
-    
-    // alps::gf::matsubara_index omega; omega=4;
-    // alps::gf::momentum_index i; i=2;
-    // alps::gf::momentum_index j=alps::gf::momentum_index(3);
-    // alps::gf::index sigma(1);
-
-    // const int f=(rank==master)?1:2;
-    // alps::gf::matsubara_gf gf_wrong(matsubara_mesh(f*beta,f*nfreq),
-    //                                 alps::gf::momentum_index_mesh(5,1),
-    //                                 alps::gf::momentum_index_mesh(5,1),
-    //                                 alps::gf::index_mesh(nspins));
-    // gf_wrong.initialize();
-    // if (rank==master) {
-    //   gf_wrong(omega,i,j,sigma)=std::complex<double>(3,4);
-    // }
-
-    // bool thrown=false;
-    // try {
-    //     gf_wrong.broadcast_data(master,MPI_COMM_WORLD);
-    // } catch (...) {
-    //     thrown=true;
-    // }
-    // EXPECT_TRUE( (rank==master && !thrown) || (rank!=master && thrown) );
-
-    // if (thrown) return;
-    
-    // {
-    //   std::complex<double> x=gf_wrong(omega,i,j,sigma);
-    //     EXPECT_NEAR(3, x.real(),1.e-10);
-    //     EXPECT_NEAR(4, x.imag(),1.e-10);
-    // }
+    ASSERT_EQ(1, gft.tail().size()) << "Tail size mismatch on rank " << rank;
+    EXPECT_NEAR(0, (gft.tail(0)-denmat).norm(), 1E-8) << "Tail broadcast differs from the received on rank " << rank;
 }
 
 // for testing MPI, we need main()
@@ -175,7 +175,16 @@ int main(int argc, char**argv)
 {
     MPI_Init(&argc, &argv);
     ::testing::InitGoogleTest(&argc, argv);
+
+    Mpi_guard guard(MASTER);
+    
     int rc=RUN_ALL_TESTS();
+
+    if (!guard.check_sig_files_ok(Number_of_bcasts)) {
+        MPI_Abort(MPI_COMM_WORLD, 1); // otherwise it may get stuck in MPI_Finalize().
+        // downside is the test aborts, rather than reports failure!
+    }
+
     MPI_Finalize();
     return rc;
 }
