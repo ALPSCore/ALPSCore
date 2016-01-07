@@ -136,8 +136,8 @@ TEST_F(TwoIndexGFTest, TailSaveLoad)
 
     g::omega_sigma_gf_with_tail gft(gf);
     g::omega_sigma_gf_with_tail gft2(gft);
-    EXPECT_EQ((g::omega_sigma_gf_with_tail::TAIL_NOT_SET+0),gft.min_tail_order());
-    EXPECT_EQ((g::omega_sigma_gf_with_tail::TAIL_NOT_SET+0),gft.max_tail_order());
+    EXPECT_EQ(g::TAIL_NOT_SET,gft.min_tail_order());
+    EXPECT_EQ(g::TAIL_NOT_SET,gft.max_tail_order());
 
     gft.set_tail(order, denmat);
 
