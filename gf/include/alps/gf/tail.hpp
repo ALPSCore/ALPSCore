@@ -232,6 +232,27 @@ namespace alps {
             {
                 gf_type::broadcast_data(root,comm);
                 // FIXME: use clone-swap?
+                int min_order_root=min_tail_order_;
+                int max_order_root=max_tail_order_;
+                MPI_Bcast(&min_order_root, 1, MPI_INT, root, comm);
+                MPI_Bcast(&max_order_root, 1, MPI_INT, root, comm);
+                if (min_order_root!=min_tail_order_ || max_order_root!=max_tail_order_) {
+                    int rank;
+                    MPI_Comm_rank(comm,&rank);
+                    // FIXME!!
+                    // Here we have a mismatched broadcast, and the following options:
+                    // 1) Call MPI_Abort() here as we cannot recover from a mismatched broadcast.
+                    // 2) Communicate with root rank to NOT to attempt broadcast (e.g., use MPI_Alltoall?)
+                    throw std::runtime_error("Broadcast of incompatible GF tails detected on rank "
+                                             +boost::lexical_cast<std::string>(rank)+
+                                             ".\nRoot tail order range: ["+
+                                             boost::lexical_cast<std::string>(min_order_root)+","+
+                                             boost::lexical_cast<std::string>(max_order_root)+"],"+
+                                             " this process expects: ["+
+                                             boost::lexical_cast<std::string>(min_tail_order_)+","+
+                                             boost::lexical_cast<std::string>(max_tail_order_)+"]");
+                }
+                
                 if (min_tail_order_==TAIL_NOT_SET) return;
                 for (int i=min_tail_order_; i<=max_tail_order_; ++i) {
                     tails_[i].broadcast_data(root,comm);
