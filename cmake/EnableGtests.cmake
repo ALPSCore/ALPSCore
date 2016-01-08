@@ -46,19 +46,15 @@ function(UseGtest)
 endfunction()
 
 # custom function to add gtest with xml output
-# arg0 - test (assume the source is ${test}.cpp
+# arg0 - test (assume the source is ${test}.cpp)
+# arg1... [optional] additional sources
 function(add_gtest test)
     if (TestXMLOutput)
         set (test_xml_output --gtest_output=xml:${test}.xml)
     endif(TestXMLOutput)
 
-    if(${ARGC} EQUAL 2)
-        set(source "${ARGV1}/${test}.cpp")
-    else(${ARGC} EQUAL 2)
-        set(source "${test}.cpp")
-    endif(${ARGC} EQUAL 2)
-
-    add_executable(${test} ${source})
+    set(source "${test}.cpp")
+    add_executable(${test} ${source} ${ARGN})
     target_link_libraries(${test} ${LINK_ALL} ${LINK_TEST})
     add_test(NAME ${test} COMMAND ${test} ${test_xml_output})
 endfunction(add_gtest)

@@ -1,9 +1,6 @@
 #include "four_index_gf_test.hpp"
 
-#include <fstream>
-#include <cstdio>
-#include <cstdlib>
-#include <boost/lexical_cast.hpp>
+#include "mpi_guard.hpp"
 
 /* NOTE: This program should be compiled as a separate executable
          and run as a separate MPI process set, because it potentially
@@ -12,107 +9,6 @@
    NOTE: This program relies on file I/O to exchange info between processes
          --- do NOT run on too many cores!
 */
-
-#include <mpi.h>
-
-/* The following piece of code is a primitive DIY MPI-correctness checker. */
-
-static int Number_of_bcasts=0; //< Number of broadcasts performed.
-
-// We intercept MPI_Bcast using PMPI interface.
-extern "C" int MPI_Bcast(void* buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm);
-extern "C" int PMPI_Bcast(void* buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm);
-
-int MPI_Bcast(void* buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm)
-{
-    ++Number_of_bcasts;
-    return PMPI_Bcast(buffer, count, datatype, root, comm);
-}
-
-/* ^^^ End of the MPI-correctnes checker code  ^^^ */
-
-
-/* The following is a simple DIY file-based, MPI-independent communication code.
-   The intent is to check the number of bcast operations.
-   As MPI may be in an incorrect state in the case of the mismatch,
-   we rely exclusively on file I/O
-   (inefficient, but simple, and uses only basic C/C++ file operations).
- */
-class Mpi_guard {
-    int master_, rank_, nprocs_;
-    std::string sig_fname_base_, sig_fname_master_, sig_fname_;
-  public:
-
-    // Construct the object and create necessary files. MPI is assumed to be working.
-    Mpi_guard(int master) : master_(master) {
-
-        MPI_Comm_rank(MPI_COMM_WORLD, &rank_);
-        MPI_Comm_size(MPI_COMM_WORLD, &nprocs_);
-        
-        sig_fname_base_="four_index_gf_test_mismatched-tail-mpi.dat."; // FIXME? use unique name?
-        sig_fname_=sig_fname_base_+boost::lexical_cast<std::string>(rank_);
-        sig_fname_master_=sig_fname_base_+boost::lexical_cast<std::string>(master_);
-        
-        std::remove(sig_fname_.c_str());
-        if (rank_==master_) {
-            std::ofstream sig_fs(sig_fname_.c_str()); // master creates file to signal slaves to wait
-            if (!sig_fs) {
-                std::cerr << "Cannot open communication file " << sig_fname_ << std::endl;
-                MPI_Abort(MPI_COMM_WORLD,1);
-                return;
-            }
-            sig_fs << "?";
-            sig_fs.close();
-        }
-        MPI_Barrier(MPI_COMM_WORLD); // MPI is still ok here, we can synchronize
-    }
-
-    // Check the number of broadcasts across processes. Do not rely on MPI. Return `true` if OK.
-    bool check_sig_files_ok(int number_of_bcasts) {
-        bool result=true;
-    
-        if (rank_!=master_) {
-            // slave process: write the data...
-            std::ofstream sig_fs(sig_fname_.c_str());
-            sig_fs << number_of_bcasts;
-            sig_fs.close();
-            // ... then wait till the master's file disappears
-            for (;;) {
-                std::ifstream sig_fs(sig_fname_master_.c_str());
-                if (!sig_fs) break;
-                sig_fs.close();
-                sleep(3);
-            }
-        } else {
-            // master process: wait till all slaves report
-            for (int i=0; i<nprocs_; ++i) {
-                if (i==master_) continue; // don't wait on myself
-                const std::string sig_fname_slave=sig_fname_base_+boost::lexical_cast<std::string>(i);
-                int nbc=-1;
-                int itry;
-                for (itry=1; itry<=100; ++itry) {
-                    sleep(1);
-                    std::ifstream sig_in_fs(sig_fname_slave.c_str());
-                    if (!sig_in_fs) continue;
-                    if (!(sig_in_fs >> nbc)) continue;
-                    break;
-                }
-                // std::cout << "DEBUG: after " << itry << " tries, got info from rank #" << i << ": " << nbc << std::endl;
-                if (number_of_bcasts!=nbc) {
-                    std::cout << " mismatch in number of broadcasts!"
-                              << " master expects: " << number_of_bcasts
-                              << " ; rank #" << i << " reports: " << nbc
-                              << std::endl;
-                    result=false;
-                }
-            }
-            // All ranks info collected, remove the master's communication file
-            std::remove(sig_fname_.c_str());
-        }
-        return result;
-    }
-};
-/* ^^^ End of MPI-independent communication code ^^^ */
 
 
 static const int MASTER=0;
@@ -176,11 +72,11 @@ int main(int argc, char**argv)
     MPI_Init(&argc, &argv);
     ::testing::InitGoogleTest(&argc, argv);
 
-    Mpi_guard guard(MASTER);
+    Mpi_guard guard(MASTER,"four_index_gf_test_mismatched-tail-mpi.dat.");
     
     int rc=RUN_ALL_TESTS();
 
-    if (!guard.check_sig_files_ok(Number_of_bcasts)) {
+    if (!guard.check_sig_files_ok(get_number_of_bcasts())) {
         MPI_Abort(MPI_COMM_WORLD, 1); // otherwise it may get stuck in MPI_Finalize().
         // downside is the test aborts, rather than reports failure!
     }

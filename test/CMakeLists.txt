@@ -12,7 +12,6 @@ set (test_src
   three_index_gf_test
   four_index_gf_test 
   four_index_gf_test_mismatched-mpi
-  four_index_gf_test_mismatched-tail-mpi
   four_index_gf_pn_test 
   itime_gf_test
     )
@@ -21,3 +20,5 @@ set (test_src
 foreach(test ${test_src})
     add_gtest(${test})
 endforeach(test)
+# Tests that need additional source files
+add_gtest(four_index_gf_test_mismatched-tail-mpi mpi_guard.cpp)
