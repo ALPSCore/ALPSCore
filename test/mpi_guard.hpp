@@ -27,6 +27,9 @@ class Mpi_guard {
     
     // Check the number of broadcasts across processes. Do not rely on MPI. Return `true` if OK.
     bool check_sig_files_ok(int number_of_bcasts);
+
+    // Return rank (convenience method)
+    int rank() { return rank_; }
 };
 
 #endif /* ALPS_TESTS_MPI_GUARD_HPP_d1f0c4691e714f40be03d55dcfdffcd3 */

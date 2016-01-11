@@ -22,3 +22,4 @@ endforeach(test)
 # Tests that need additional source files
 add_gtest(four_index_gf_test_mismatched-mpi mpi_guard.cpp)
 add_gtest(four_index_gf_test_mismatched-tail-mpi mpi_guard.cpp)
+add_gtest(multiarray_bcast_mpi mpi_guard.cpp)
