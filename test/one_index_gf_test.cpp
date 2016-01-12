@@ -113,7 +113,7 @@ TEST_F(OneIndexGFTest,MpiBroadcast)
         EXPECT_EQ(0.0, x.imag());
     }
 
-    gf.broadcast_data(master,MPI_COMM_WORLD);
+    gf.broadcast(master,MPI_COMM_WORLD);
 
     {
         std::complex<double> x=gf(omega);
@@ -138,15 +138,7 @@ TEST_F(OneIndexGFTest,MpiWrongBroadcast)
         gf_wrong(omega)=std::complex<double>(3,4);
     }
 
-    bool thrown=false;
-    try {
-        gf_wrong.broadcast_data(master,MPI_COMM_WORLD);
-    } catch (...) {
-        thrown=true;
-    }
-    EXPECT_TRUE( (rank==master && !thrown) || (rank!=master && thrown) );
-
-    if (thrown) return;
+    gf_wrong.broadcast(master,MPI_COMM_WORLD);
     
     {
         std::complex<double> x=gf_wrong(omega);

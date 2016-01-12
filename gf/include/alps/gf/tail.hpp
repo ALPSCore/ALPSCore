@@ -8,33 +8,21 @@ namespace alps {
         
         namespace detail {
             template <typename TAILT>
-            void broadcast_tail_data(int min_order, int max_order, std::vector<TAILT>& tails,
-                                     int root, MPI_Comm comm)
+            void broadcast_tail(int& min_order, int& max_order,
+                                std::vector<TAILT>& tails,
+                                const TAILT& tail_init,
+                                int root, MPI_Comm comm)
             {
-                int min_order_root=min_order;
-                int max_order_root=max_order;
-                MPI_Bcast(&min_order_root, 1, MPI_INT, root, comm);
-                MPI_Bcast(&max_order_root, 1, MPI_INT, root, comm);
-                if (min_order_root!=min_order || max_order_root!=max_order) {
-                    int rank;
-                    MPI_Comm_rank(comm,&rank);
-                    // FIXME!!
-                    // Here we have a mismatched broadcast, and the following options:
-                    // 1) Call MPI_Abort() here as we cannot recover from a mismatched broadcast.
-                    // 2) Communicate with root rank to NOT to attempt broadcast (e.g., use MPI_Alltoall?)
-                    throw std::runtime_error("Broadcast of incompatible GF tails detected on rank "
-                                             +boost::lexical_cast<std::string>(rank)+
-                                             ".\nRoot tail order range: ["+
-                                             boost::lexical_cast<std::string>(min_order_root)+","+
-                                             boost::lexical_cast<std::string>(max_order_root)+"],"+
-                                             " this process expects: ["+
-                                             boost::lexical_cast<std::string>(min_order)+","+
-                                             boost::lexical_cast<std::string>(max_order)+"]");
-                }
+                using alps::mpi::bcast;
+                bcast(min_order, root, comm);
+                bcast(max_order, root, comm);
                 
                 if (min_order==TAIL_NOT_SET) return;
+                if (alps::mpi::rank(comm)!=root) {
+                    tails.resize(max_order+1, tail_init);
+                }
                 for (int i=min_order; i<=max_order; ++i) {
-                    tails[i].broadcast_data(root,comm);
+                    tails[i].broadcast(root,comm);
                 }
             }
         
@@ -133,12 +121,13 @@ namespace alps {
             }
 
             /// Broadcast the tail and the GF
-            void broadcast_data(int root, MPI_Comm comm)
+            void broadcast(int root, MPI_Comm comm)
             {
                 // FIXME: use clone-swap?
-                gf_type::broadcast_data(root,comm);
-                detail::broadcast_tail_data(min_tail_order_, max_tail_order_, tails_,
-                                            root, comm);
+                gf_type::broadcast(root,comm);
+                detail::broadcast_tail(min_tail_order_, max_tail_order_,
+                                       tails_, tail_type(this->mesh2()),
+                                       root, comm);
             }
         };
 
@@ -239,12 +228,13 @@ namespace alps {
             }
 
             /// Broadcast the tail and the GF
-            void broadcast_data(int root, MPI_Comm comm)
+            void broadcast(int root, MPI_Comm comm)
             {
                 // FIXME: use clone-swap?
-                gf_type::broadcast_data(root,comm);
-                detail::broadcast_tail_data(min_tail_order_, max_tail_order_, tails_,
-                                            root, comm);
+                gf_type::broadcast(root,comm);
+                detail::broadcast_tail(min_tail_order_, max_tail_order_,
+                                       tails_, tail_type(this->mesh2(), this->mesh3()),
+                                       root, comm);
             }
 
         };
@@ -346,12 +336,13 @@ namespace alps {
             }
 
             /// Broadcast the tail and the GF
-            void broadcast_data(int root, MPI_Comm comm)
+            void broadcast(int root, MPI_Comm comm)
             {
                 // FIXME: use clone-swap?
-                gf_type::broadcast_data(root,comm);
-                detail::broadcast_tail_data(min_tail_order_, max_tail_order_, tails_,
-                                            root, comm);
+                gf_type::broadcast(root,comm);
+                detail::broadcast_tail(min_tail_order_, max_tail_order_,
+                                       tails_, tail_type(this->mesh2(),this->mesh3(),this->mesh4()),
+                                       root, comm);
             }
 
         };

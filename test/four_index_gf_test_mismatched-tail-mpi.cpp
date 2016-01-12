@@ -2,10 +2,7 @@
 
 #include "mpi_guard.hpp"
 
-/* NOTE: This program should be compiled as a separate executable
-         and run as a separate MPI process set, because it potentially
-         messes up MPI library state.
-
+/* 
    NOTE: This program relies on file I/O to exchange info between processes
          --- do NOT run on too many cores!
 */
@@ -49,15 +46,7 @@ TEST_F(FourIndexGFTest,MpiWrongTailBroadcast)
     }
     // slaves do not have the tail attached to their GF.
 
-    // broadcast the GF with tail
-    bool thrown=false;
-    try {
-        gft.broadcast_data(MASTER,MPI_COMM_WORLD);
-    } catch (std::runtime_error exc) {
-        // FIXME: verify exception message
-        thrown=true;
-    }
-    EXPECT_TRUE( thrown ^ (rank==MASTER) );
+    gft.broadcast(MASTER,MPI_COMM_WORLD);
 
     EXPECT_EQ(7, gft(g::matsubara_index(4),g::momentum_index(3), g::momentum_index(2), g::index(1)).real()) << "GF real part mismatch on rank " << rank;
     EXPECT_EQ(3, gft(g::matsubara_index(4),g::momentum_index(3), g::momentum_index(2), g::index(1)).imag()) << "GF imag part mismatch on rank " << rank;

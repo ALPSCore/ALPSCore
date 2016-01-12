@@ -4,7 +4,7 @@
 static const int MASTER=0;
 
 
-// Check incompatible mesh broadcast (NOTE: must be in a separate file/process because it messes up MPI)
+// Check incompatible mesh broadcast
 TEST_F(FourIndexGFTest,MpiWrongBroadcast)
 {
     int rank;
@@ -25,15 +25,7 @@ TEST_F(FourIndexGFTest,MpiWrongBroadcast)
       gf_wrong(omega,i,j,sigma)=std::complex<double>(3,4);
     }
 
-    bool thrown=false;
-    try {
-        gf_wrong.broadcast_data(MASTER,MPI_COMM_WORLD);
-    } catch (...) {
-        thrown=true;
-    }
-    EXPECT_TRUE( (rank==MASTER && !thrown) || (rank!=MASTER && thrown) );
-
-    if (thrown) return;
+    gf_wrong.broadcast(MASTER,MPI_COMM_WORLD);
     
     {
       std::complex<double> x=gf_wrong(omega,i,j,sigma);

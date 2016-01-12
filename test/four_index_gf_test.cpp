@@ -94,7 +94,7 @@ TEST_F(FourIndexGFTest,MpiBroadcast)
         EXPECT_EQ(0.0, x.imag());
     }
 
-    gf.broadcast_data(master,MPI_COMM_WORLD);
+    gf.broadcast(master,MPI_COMM_WORLD);
 
     {
       std::complex<double> x=gf(omega,i,j,sigma);
@@ -209,7 +209,7 @@ TEST_F(FourIndexGFTest, MpiTailBroadcast)
     }
 
     // broadcast the GF with tail
-    gft.broadcast_data(master,MPI_COMM_WORLD);
+    gft.broadcast(master,MPI_COMM_WORLD);
 
     EXPECT_EQ(7, gft(g::matsubara_index(4),g::momentum_index(3), g::momentum_index(2), g::index(1)).real()) << "GF real part mismatch on rank " << rank;
     EXPECT_EQ(3, gft(g::matsubara_index(4),g::momentum_index(3), g::momentum_index(2), g::index(1)).imag()) << "GF imag part mismatch on rank " << rank;

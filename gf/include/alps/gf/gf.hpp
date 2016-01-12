@@ -176,9 +176,10 @@ namespace alps {
                 ar[path+"/data"] >> data_;
             }
 
-            /// Broadcast the data portion of GF (assuming identical meshes)
-            void broadcast_data(int root, MPI_Comm comm)
+            /// Broadcast the GF (together with meshes)
+            void broadcast(int root, MPI_Comm comm)
             {
+                mesh1_.broadcast(root,comm);
                 detail::bcast(data_, root, comm);
             }
 
@@ -341,9 +342,11 @@ namespace alps {
                 ar[path+"/data"] >> data_;
             }
         
-            /// Broadcast the data portion of GF (assuming identical meshes)
-            void broadcast_data(int root, MPI_Comm comm)
+            /// Broadcast the GF (with meshes)
+            void broadcast(int root, MPI_Comm comm)
             {
+                mesh1_.broadcast(root, comm);
+                mesh2_.broadcast(root, comm);
                 detail::bcast(data_, root, comm);
             }
 
@@ -522,9 +525,12 @@ namespace alps {
                 ar[path+"/data"] >> data_;
             }
         
-            /// Broadcast the data portion of GF (assuming identical meshes)
-            void broadcast_data(int root, MPI_Comm comm)
+            /// Broadcast the GF (with meshes)
+            void broadcast(int root, MPI_Comm comm)
             {
+                mesh1_.broadcast(root, comm);
+                mesh2_.broadcast(root, comm);
+                mesh3_.broadcast(root, comm);
                 detail::bcast(data_, root, comm);
             }
         };
@@ -714,9 +720,19 @@ namespace alps {
                 ar[path+"/data"] >> data_;
             }
 
-            /// Broadcast the data portion of GF (assuming identical meshes)
-            void broadcast_data(int root, MPI_Comm comm)
+            // /// Broadcast the data portion of GF (assuming identical meshes)
+            // void broadcast_data(int root, MPI_Comm comm)
+            // {
+            //     detail::bcast(data_, root, comm);
+            // }
+
+            /// Broadcast the GF (with meshes)
+            void broadcast(int root, MPI_Comm comm)
             {
+                mesh1_.broadcast(root,comm);
+                mesh2_.broadcast(root,comm);
+                mesh3_.broadcast(root,comm);
+                mesh4_.broadcast(root,comm);
                 detail::bcast(data_, root, comm);
             }
         };
@@ -891,6 +907,18 @@ namespace alps {
 
                 ar[path+"/data"] >> data_;
             }
+
+            /// Broadcast the GF (with meshes)
+            void broadcast(int root, MPI_Comm comm)
+            {
+                mesh1_.broadcast(root,comm);
+                mesh2_.broadcast(root,comm);
+                mesh3_.broadcast(root,comm);
+                mesh4_.broadcast(root,comm);
+                mesh5_.broadcast(root,comm);
+                detail::bcast(data_, root, comm);
+            }
+            
         };
         template<class value_type, class MESH1, class MESH2, class MESH3, class MESH4, class MESH5> std::ostream &operator<<(std::ostream &os, five_index_gf<value_type,MESH1,MESH2,MESH3,MESH4,MESH5> G){
           os<<G.mesh1()<<G.mesh2()<<G.mesh3()<<G.mesh4();
