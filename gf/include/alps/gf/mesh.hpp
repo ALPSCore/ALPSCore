@@ -10,6 +10,7 @@
 #include <alps/hdf5/vector.hpp>
 #include <alps/hdf5/multi_array.hpp>
 
+#include "mpi_bcast.hpp"
 
 namespace alps {
     namespace gf {
@@ -20,7 +21,7 @@ namespace alps {
                 FERMIONIC=1
             };
         }
-    
+
         /// A generic index
         template <typename X>
         class generic_index :
@@ -47,6 +48,10 @@ namespace alps {
             bool operator==(int x) const { return index_==x; }
       
             int operator()() const { return index_; }
+
+            void broadcast(int root, MPI_Comm comm) {
+                alps::mpi::bcast(index_, root, comm);
+            }
         };
     
         //    template <typename T> bool operator==(int q, const generic_index<T> &p){ return p.operator==(q);}
@@ -100,6 +105,14 @@ namespace alps {
             statistics::statistics_type statistics() const{ return statistics_;}
             mesh::frequency_positivity_type positivity() const{ return positivity_;}
 
+            /// Swaps this and another mesh
+            // It's a member function to avoid dealing with templated friend decalration.
+            void swap(matsubara_mesh& other) {
+                using std::swap;
+                swap(this.beta_, other.beta_);
+                swap(this.nfreq_, other.nfreq_);
+                swap(this.points_, other.points_);
+            }
           
             void save(alps::hdf5::archive& ar, const std::string& path) const
             {
@@ -133,6 +146,27 @@ namespace alps {
                 check_range();
                 compute_points();
             }
+
+            void broadcast(int root, MPI_Comm comm)
+            {
+                using alps::mpi::bcast;
+                // FIXME: introduce (debug-only?) consistency check, like type checking? akin to load()?
+                bcast(beta_, root, comm);
+                bcast(nfreq_, root, comm);
+                try {
+                    check_range(); 
+                } catch (const std::exception& exc) {
+                    // FIXME? Try to communiucate the error with all ranks, at least in debug mode?
+                    int wrank;
+                    MPI_Comm_rank(MPI_COMM_WORLD, &wrank);
+                    std::cerr << "matsubara_mesh<>::broadcast() exception at WORLD rank=" << wrank << std::endl
+                              << exc.what()
+                              << "\nAborting." << std::endl;
+                    MPI_Abort(MPI_COMM_WORLD,1);
+                }
+                compute_points(); // recompute points rather than sending them over MPI
+            }
+            
             void check_range(){
                 if(statistics_!=statistics::FERMIONIC) throw std::invalid_argument("statistics should be bosonic or fermionic");
                 if(positivity_!=mesh::POSITIVE_ONLY &&
@@ -154,6 +188,12 @@ namespace alps {
           os<<(M.positivity()==mesh::POSITIVE_ONLY?"POSITIVE_ONLY":"POSITIVE_NEGATIVE");
           os<<std::endl;
           return os;
+        }
+
+        /// Swaps two Matsubara meshes
+        template <mesh::frequency_positivity_type PTYPE>
+        void swap(matsubara_mesh<PTYPE>& a, matsubara_mesh<PTYPE>& b) {
+            a.swap(b);
         }
 
         class itime_mesh {
@@ -221,7 +261,22 @@ namespace alps {
                 beta_=beta;
                 ntau_=ntau;
                 compute_points();
-           }
+            }
+
+            void broadcast(int root, MPI_Comm comm)
+            {
+                using alps::mpi::bcast;
+                // FIXME: introduce (debug-only?) consistency check, like type checking? akin to load()?
+                bcast(beta_, root, comm);
+                bcast(ntau_, root, comm);
+                bcast(last_point_included_, root, comm);
+                bcast(half_point_mesh_, root, comm);
+                int stat=statistics_;
+                bcast(stat, root, comm);
+                statistics_=static_cast<statistics::statistics_type>(stat);
+                compute_points(); // recompute points rather than sending them over MPI
+            }
+
             void compute_points(){
                 points_.resize(extent());
                 if(half_point_mesh_){
@@ -294,6 +349,15 @@ namespace alps {
                 if (kind!=kind_) throw std::runtime_error("Attempt to load momentum/realspace index mesh from incorrect mesh kind="+kind+ " (expected: "+kind_+")");
                 ar[path+"/points"] >> points_;
             }
+
+            void broadcast(int root, MPI_Comm comm)
+            {
+                using alps::mpi::bcast;
+                // FIXME: introduce (debug-only?) consistency check, like type checking? akin to load()?
+                detail::bcast(points_, root, comm);
+                bcast(kind_, root, comm);
+            }
+
         };
         ///Stream output operator, e.g. for printing to file
         std::ostream &operator<<(std::ostream &os, const momentum_realspace_index_mesh &M);
@@ -371,6 +435,12 @@ namespace alps {
                 int np;
                 ar[path+"/N"] >> np;
                 npoints_=np;
+            }
+
+            void broadcast(int root, MPI_Comm comm)
+            {
+                using alps::mpi::bcast;
+                bcast(npoints_, root, comm);
             }
         };
         ///Stream output operator, e.g. for printing to file

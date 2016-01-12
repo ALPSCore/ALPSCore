@@ -6,6 +6,8 @@
 #define ALPS_MPI_MPI_WRAPPERS_85342464d9af4d07ad532b78166841cf
 
 #include <mpi.h>
+#include <string>
+#include <boost/scoped_array.hpp> /* for broadcasting strings */
 
 namespace alps {
     namespace mpi {
@@ -51,6 +53,54 @@ namespace alps {
         // ALPS_MPI_DETAIL_MAKETYPE(MPI_C_LONG_DOUBLE_COMPLEX,long double _Complex);
 #undef ALPS_MPI_DETAIL_MAKETYPE
 
+        /// Convenience function to get rank from the given communicator
+        inline int rank(MPI_Comm comm) {
+            int myrank;
+            MPI_Comm_rank(comm, &myrank);
+            return myrank;
+        }
+
+        /// Generic MPI_BCast of an array (guesses type)
+        template <typename T>
+        int bcast(T* pval, int count, int root, MPI_Comm comm) {
+            return MPI_Bcast(pval, count, mpi_type<T>(), root, comm);
+        }
+
+        /// MPI_BCast of an array: overload for bool
+        inline int bcast(bool* val, int count, int root, MPI_Comm comm) {
+            // sizeof() returns size in chars (FIXME? should it be bytes?)
+            return MPI_Bcast(val, count*sizeof(bool), MPI_CHAR, root, comm); 
+        }
+
+        /// Generic MPI_BCast of a single value (guesses type)
+        template <typename T>
+        int bcast(T& val, int root, MPI_Comm comm) {
+            return bcast(&val, 1, root, comm);
+        }
+
+        /// MPI_BCast of a single value: overload for std::string
+        // FIXME: what is exception safety status?
+        // FIXME: inline to have it header-only. A tad too complex to be inlined?
+        inline int bcast(std::string& val, int root, MPI_Comm comm) {
+            std::size_t root_sz=val.size();
+            int rc=bcast(root_sz, root, comm);
+            if (rc!=0) return rc;
+            int myrank=rank(comm);
+            if (myrank==root) {
+                // NOTE: at root rank the value being broadcast does not change, so const cast is safe
+                rc=bcast(const_cast<char*>(val.data()), root_sz, root, comm);
+            } else {
+                // FIXME: not very efficient --- any better way without heap alloc?
+                //        Note, there is no guarantee in C++03 that modifying *(&val[0]+i) is safe!
+                boost::scoped_array<char> buf(new char[root_sz]);
+                rc=bcast(buf.get(), root_sz, root, comm);
+                if (rc==0) val.assign(buf.get(), root_sz);
+            }
+            return rc;
+        }
+
+        
+        
     } // mpi::
 } // alps::
 #endif /* ALPS_MPI_MPI_WRAPPERS_85342464d9af4d07ad532b78166841cf */
