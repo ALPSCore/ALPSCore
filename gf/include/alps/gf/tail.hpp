@@ -461,6 +461,7 @@ namespace alps {
 
         typedef four_index_gf_with_tail<omega_r1_r2_sigma_gf, three_index_gf<double, real_space_index_mesh, real_space_index_mesh, index_mesh> > omega_r1_r2_sigma_gf_with_tail;
         typedef four_index_gf_with_tail<itime_r1_r2_sigma_gf, three_index_gf<double, real_space_index_mesh, real_space_index_mesh, index_mesh> > itime_r1_r2_sigma_gf_with_tail;
+        typedef four_index_gf_with_tail<itime_r1_r2_sigma_complex_gf, three_index_gf<double, real_space_index_mesh, real_space_index_mesh, index_mesh> > itime_r1_r2_sigma_complex_gf_with_tail;
 
         typedef five_index_gf_with_tail<omega_r1_r2_sigma1_sigma2_gf, four_index_gf<double, real_space_index_mesh, real_space_index_mesh, index_mesh,index_mesh> > omega_r1_r2_sigma1_sigma2_gf_with_tail;
         typedef five_index_gf_with_tail<itime_r1_r2_sigma1_sigma2_gf, four_index_gf<double, real_space_index_mesh, real_space_index_mesh, index_mesh,index_mesh> > itime_r1_r2_sigma1_sigma2_gf_with_tail;
