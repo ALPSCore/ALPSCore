@@ -73,10 +73,10 @@ namespace alps {
                         throw std::runtime_error("Invalid type for binary call operator" + ALPS_STACKTRACE);
                     }
 
-                    template<typename S> void print(S & os) const {
-                        B::print(os);
+                    template<typename S> void print(S & os, bool terse=false) const {
+                        B::print(os, terse);
                         os << ", weight: ";
-                        m_weight->print(os);
+                        m_weight->print(os, terse);
                     }
 
                     void save(hdf5::archive & ar) const {
@@ -163,10 +163,10 @@ namespace alps {
                         return m_weight.get();
                     }
 
-                    template<typename S> void print(S & os) const {
-                        B::print(os);
+                    template<typename S> void print(S & os, bool terse=false) const {
+                        B::print(os, terse);
                         os << ", weight: ";
-                        m_weight->print(os);
+                        m_weight->print(os, terse);
                     }
 
                     void save(hdf5::archive & ar) const {

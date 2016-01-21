@@ -65,7 +65,7 @@ namespace alps {
                 virtual void save(hdf5::archive & ar) const = 0;
                 virtual void load(hdf5::archive & ar) = 0;
 
-                virtual void print(std::ostream & os) const = 0;
+                virtual void print(std::ostream & os, bool terse) const = 0;
                 virtual void reset() = 0;
 
                 /// merge accumulators (defined in the derived classes)
@@ -206,8 +206,8 @@ namespace alps {
                     ar[""] >> this->m_data; 
                 }
 
-                void print(std::ostream & os) const {
-                    this->m_data.print(os);
+                void print(std::ostream & os, bool terse) const {
+                    this->m_data.print(os, terse);
                 }
 
                 void reset() {

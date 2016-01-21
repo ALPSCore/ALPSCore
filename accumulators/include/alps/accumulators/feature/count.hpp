@@ -87,7 +87,7 @@ namespace alps {
                         throw std::runtime_error("No values can be added to a result" + ALPS_STACKTRACE);
                     }
 
-                    template<typename S> void print(S & os) const {
+                    template<typename S> void print(S & os, bool terse=false) const {
                         os << " #" << alps::short_print(count());
                     }
 
@@ -201,7 +201,7 @@ namespace alps {
                         throw std::runtime_error("Observable has no binary call operator" + ALPS_STACKTRACE);
                     }
 
-                    template<typename S> void print(S & os) const {
+                    template<typename S> void print(S & os, bool terse=false) const {
                         os << " #" << alps::short_print(count());
                     }
 

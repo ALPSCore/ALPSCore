@@ -63,6 +63,23 @@ namespace alps {
                     return m_max_number;
                 }
 
+                std::ostream& print(std::ostream& os, bool terse) const
+                {
+                    if (m_bins.empty()) {
+                        os << "No Bins";
+                        return os;
+                    }
+                    if (terse) {
+                        os << short_print(m_bins, 4) << "#" << m_num_elements;
+                        return os;
+                    }
+                    os << m_num_elements << " elements per bin, bins are:\n";
+                    for (int i=0; i<m_bins.size(); ++i) {
+                        os << "#" << (i+1) << ": " << short_print(m_bins[i],4) << "\n";
+                    }
+                    return os;
+                }
+
                 private:
 
                 size_type m_max_number;
@@ -71,11 +88,7 @@ namespace alps {
             };
 
             template<typename C, typename M> inline std::ostream & operator<<(std::ostream & os, max_num_binning_proxy<C, M> const & arg) {
-                if (arg.bins().empty())
-                    os << "No Bins";
-                else
-                    os << short_print(arg.bins(), 4) << "#" << arg.num_elements();
-                return os;
+                return arg.print(os,true);
             };
         }
 
@@ -215,20 +228,22 @@ namespace alps {
                     }
                 }
 
-                template<typename S> void print(S & os) const {
-                    os << short_print(this->mean())
-                       << " #" << this->count()
-                       << " +/-" << short_print(this->error())
-                       << " Tau:" << short_print(this->autocorrelation());
-                }
-
-                template<typename S> void fullprint(S & os) const {
-                    B::print(os);
-                    os << "Mean +/-error (tau): "
-                       << short_print(this->mean())
-                       << " +/-" << short_print(this->error())
-                       << "(" << short_print(this->autocorrelation()) << ")\n";
-                    os << " Bins: " << max_num_binning();
+                template<typename S> void print(S & os, bool terse=false) const {
+                    if (terse) {
+                        os << short_print(this->mean())
+                           << " #" << this->count()
+                           << " +/-" << short_print(this->error())
+                           << " Tau:" << short_print(this->autocorrelation());
+                    } else {
+                        B::print(os, terse);
+                        os << "Full-binning accumulator state:\n"
+                           << "Mean +/-error (tau): "
+                           << short_print(this->mean())
+                           << " +/-" << short_print(this->error())
+                           << "(" << short_print(this->autocorrelation()) << ")\n";
+                        os << " Bins: ";
+                        max_num_binning().print(os,false);
+                    }
                 }
 
                 void save(hdf5::archive & ar) const {
@@ -539,14 +554,15 @@ namespace alps {
                 }
 
                 // TODO: use mean error from here ...
-                template<typename S> void print(S & os) const {
+                template<typename S> void print(S & os, bool terse=false) const {
                     // TODO: use m_mn_variables!
-                    B::print(os);
                     os << "Mean +/-error (tau): "
                        << short_print(mean())
                        << " +/-" << short_print(error())
-                       << "(" << short_print(this->autocorrelation()) << ")\n";
-                    os << " Bins: " << max_num_binning();
+                       << "(" << short_print(this->autocorrelation()) << ")";
+                    if (!terse) {
+                        os << "\n Bins: " << max_num_binning();
+                    }
                 }
 
                 void save(hdf5::archive & ar) const {

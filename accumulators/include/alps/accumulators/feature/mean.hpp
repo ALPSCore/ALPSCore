@@ -102,9 +102,9 @@ namespace alps {
                         m_sum += val;
                     }
 
-                    template<typename S> void print(S & os) const {
+                    template<typename S> void print(S & os, bool terse=false) const {
                         os << alps::short_print(mean());
-                        B::print(os);
+                        B::print(os, terse);
                     }
 
                     void save(hdf5::archive & ar) const {
@@ -200,9 +200,9 @@ namespace alps {
                         return m_mean; 
                     }
 
-                    template<typename S> void print(S & os) const {
+                    template<typename S> void print(S & os, bool terse=false) const {
                         os << alps::short_print(mean());
-                        B::print(os);
+                        B::print(os, terse);
                     }
 
                     void save(hdf5::archive & ar) const {

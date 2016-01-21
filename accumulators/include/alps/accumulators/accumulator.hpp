@@ -231,13 +231,14 @@ namespace alps {
             // print
             private:
                 struct print_visitor: public boost::static_visitor<> {
-                    print_visitor(std::ostream & o): os(o) {}
-                    template<typename T> void operator()(T const & arg) const { arg->print(os); }
+                    print_visitor(std::ostream & o, bool t): os(o), terse(t) {}
+                    template<typename T> void operator()(T const & arg) const { arg->print(os, terse); }
                     std::ostream & os;
+                    bool terse;
                 };
             public:
-                void print(std::ostream & os) const {
-                    boost::apply_visitor(print_visitor(os), m_variant);
+                void print(std::ostream & os, bool terse=false) const {
+                    boost::apply_visitor(print_visitor(os, terse), m_variant);
                 }
 
             // transform(T F(T))
@@ -433,7 +434,7 @@ namespace alps {
         }
 
         inline std::ostream & operator<<(std::ostream & os, const result_wrapper & arg) {
-            arg.print(os);
+            arg.print(os, false); // verbose(non-terse) printing by default
             return os;
         }
 
@@ -755,13 +756,14 @@ namespace alps {
             // print
             private:
                 struct print_visitor: public boost::static_visitor<> {
-                    print_visitor(std::ostream & o): os(o) {}
-                    template<typename T> void operator()(T const & arg) const { check_ptr(arg); arg->print(os); }
+                    print_visitor(std::ostream & o, bool t): os(o), terse(t) {}
+                    template<typename T> void operator()(T const & arg) const { check_ptr(arg); arg->print(os, terse); }
                     std::ostream & os;
+                    bool terse;
                 };
             public:
-                void print(std::ostream & os) const {
-                    boost::apply_visitor(print_visitor(os), m_variant);
+                void print(std::ostream & os, bool terse=false) const {
+                    boost::apply_visitor(print_visitor(os, terse), m_variant);
                 }
 
 #ifdef ALPS_HAVE_MPI
@@ -789,7 +791,7 @@ namespace alps {
         };
 
         inline std::ostream & operator<<(std::ostream & os, const accumulator_wrapper & arg) {
-            arg.print(os);
+            arg.print(os, false); // verbose (non-terse) printing by default
             return os;
         }
 

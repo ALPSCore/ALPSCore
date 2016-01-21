@@ -110,8 +110,8 @@ namespace alps {
                         m_sum2 += val * val;
                     }
 
-                    template<typename S> void print(S & os) const {
-                        B::print(os);
+                    template<typename S> void print(S & os, bool terse=false) const {
+                        B::print(os, terse);
                         os << " +/-" << alps::short_print(error());
                     }
 
@@ -206,8 +206,8 @@ namespace alps {
                         return m_error; 
                     }
 
-                    template<typename S> void print(S & os) const {
-                        B::print(os);
+                    template<typename S> void print(S & os, bool terse=false) const {
+                        B::print(os, terse);
                         os << " +/-" << alps::short_print(error());
                     }
 

@@ -262,29 +262,31 @@ namespace alps {
                         }
                     }
 
-                    template<typename S> void print(S & os) const {
-                        os << short_print(this->mean())
-                           << " #" << this->count()
-                           << " +/-" << short_print(this->error())
-                           << " Tau:" << short_print(autocorrelation())
-                           << " (warning: print result rather than accumulator)";
-                    }
-
-                    template<typename S> void fullprint(S & os) const {
-                        os << "DEBUG PRINTING of the accumulator object state. **DO NOT USE AS PRODUCTION OUTPUT!**\n"
-                           << "(use mean(), error() and autocorrelation() methods)\n";
-                        B::print(os);
-                        os << " Error bar: " << short_print(error());
-                        os << " Autocorrelation: " << short_print(autocorrelation());
-                        if (m_ac_sum2.size() > 0) {
-                            for (std::size_t i = 0; i < binning_depth(); ++i)
-                                os << std::endl
-                                    << "    bin #" << std::setw(3) <<  i + 1
-                                    << " : " << std::setw(8) << m_ac_count[i]
-                                    << " entries: error = " << short_print(error(i));
-                            os << std::endl;
-                        } else
-                            os << "No mesurements" << std::endl;
+                    template<typename S> void print(S & os, bool terse=false) const {
+                        if (terse) {
+                            os << short_print(this->mean())
+                               << " #" << this->count()
+                               << " +/-" << short_print(this->error())
+                               << " Tau:" << short_print(autocorrelation())
+                               << " (warning: print result rather than accumulator)";
+                        } else {
+                            os << "DEBUG PRINTING of the accumulator object state. **DO NOT USE AS PRODUCTION OUTPUT!**\n"
+                               << "(use mean(), error() and autocorrelation() methods)\n"
+                               << "No-binning parent accumulator state:\n";
+                            B::print(os, terse);
+                            os << "\nLog-binning accumulator state:\n"
+                               << " Error bar: " << short_print(error())
+                               << " Autocorrelation: " << short_print(autocorrelation());
+                            if (m_ac_sum2.size() > 0) {
+                                for (std::size_t i = 0; i < binning_depth(); ++i)
+                                    os << std::endl
+                                       << "    bin #" << std::setw(3) <<  i + 1
+                                       << " : " << std::setw(8) << m_ac_count[i]
+                                       << " entries: error = " << short_print(error(i));
+                                os << std::endl;
+                            } else
+                                os << "No measurements" << std::endl;
+                        }
                     }
 
                     void save(hdf5::archive & ar) const {
@@ -435,24 +437,23 @@ namespace alps {
                         return m_ac_autocorrelation;
                     }
 
-                    template<typename S> void print(S & os) const {
-                        os << short_print(this->mean())
-                           << " #" << this->count()
-                           << " +/-" << short_print(this->error())
-                           << " Tau:" << short_print(autocorrelation());
-                    }
-
-                    template<typename S> void fullprint(S & os) const {
-                        os << "DEBUG PRINTING of the result object state. **DO NOT USE AS PRODUCTION OUTPUT!**\n"
-                           << "(use mean(), error() and autocorrelation() methods)\n";
-                        B::print(os);
-                        os << " Error bar: " << short_print(error());
-                        os << " Autocorrelation: " << short_print(autocorrelation());
-                        if (m_ac_errors.size() > 0) {
-                            for (std::size_t i = 0; i < m_ac_errors.size(); ++i)
-                                os << std::endl
-                                    << "    bin #" << std::setw(3) <<  i + 1
-                                    << " entries: error = " << short_print(m_ac_errors[i]);
+                    template<typename S> void print(S & os, bool terse=false) const {
+                        if (terse) {
+                            os << short_print(this->mean())
+                               << " #" << this->count()
+                               << " +/-" << short_print(this->error())
+                               << " Tau:" << short_print(autocorrelation());
+                        } else {
+                            os << " Error bar: " << short_print(error());
+                            os << " Autocorrelation: " << short_print(autocorrelation());
+                            if (m_ac_errors.size() > 0) {
+                                for (std::size_t i = 0; i < m_ac_errors.size(); ++i)
+                                    os << std::endl
+                                       << "    bin #" << std::setw(3) <<  i + 1
+                                       << " entries: error = " << short_print(m_ac_errors[i]);
+                            } else {
+                                os << "No bins";
+                            }
                             os << std::endl;
                         }
                     }
