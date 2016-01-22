@@ -36,6 +36,7 @@
 
 #include <limits>
 #include <stdexcept>
+#include <algorithm> // for std::min
 
 // DEBUG: to force boost assertion to be an exception, to work nicely with google test
 #define BOOST_ENABLE_ASSERT_HANDLER
@@ -430,7 +431,9 @@ namespace alps {
                     error_type const error(std::size_t bin_level = std::numeric_limits<std::size_t>::max()) const {
                         if (m_ac_errors.size() < 2)
                             return alps::numeric::inf<error_type>(B::error()); // FIXME: we call error() only to know the data size
-                        return m_ac_errors[bin_level >= m_ac_errors.size() ? 0 : bin_level];
+                        // AG: Seems to be wrong? (see [https://github.com/ALPSCore/ALPSCore/issues/184])
+                        // return m_ac_errors[bin_level >= m_ac_errors.size() ? 0 : bin_level];
+                        return m_ac_errors[std::min(m_ac_errors.size()-1, bin_level)];
                     }
 
                     autocorrelation_type const autocorrelation() const {
