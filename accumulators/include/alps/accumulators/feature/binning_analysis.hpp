@@ -271,8 +271,7 @@ namespace alps {
                                << " Tau:" << short_print(autocorrelation())
                                << " (warning: print result rather than accumulator)";
                         } else {
-                            os << "DEBUG PRINTING of the accumulator object state. **DO NOT USE AS PRODUCTION OUTPUT!**\n"
-                               << "(use mean(), error() and autocorrelation() methods)\n"
+                            os << "DEBUG PRINTING of the accumulator object state (use mean(), error() and autocorrelation() methods instead)\n"
                                << "No-binning parent accumulator state:\n";
                             B::print(os, terse);
                             os << "\nLog-binning accumulator state:\n"
