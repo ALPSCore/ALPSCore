@@ -5,6 +5,7 @@
  */
 
 #include <alps/accumulators.hpp>
+#include <sstream>
 
 namespace alps {
     namespace accumulators {
@@ -31,5 +32,19 @@ namespace alps {
 
 #undef EXTERNAL_FUNCTION
 
+        detail::printable_type short_print(const accumulator_wrapper& arg)
+        {
+            std::ostringstream ostr;
+            arg.print(ostr,true);
+            return ostr.str();
+        }
+
+        detail::printable_type short_print(const result_wrapper& arg)
+        {
+            std::ostringstream ostr;
+            arg.print(ostr,true);
+            return ostr.str();
+        }
+        
     }
 }

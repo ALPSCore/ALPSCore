@@ -41,6 +41,8 @@ namespace alps {
     namespace accumulators {
 
         namespace detail {
+            typedef std::string printable_type; ///<Implementation-defined printable type for results/accumulators
+          
             template<typename T> struct add_base_wrapper_pointer {
                 typedef boost::shared_ptr<base_wrapper<T> > type;
             };
@@ -65,7 +67,7 @@ namespace alps {
                 : boost::is_same<typename alps::numeric::scalar<typename LHSWT::value_type>::type,
                                  typename RHSWT::value_type>
             { };
-        }
+        } // detail::
 
         // TODO: merge with accumulator_wrapper, at least make common base ...
         class result_wrapper {
@@ -438,6 +440,9 @@ namespace alps {
             return os;
         }
 
+        /// Return an "ostream-able" object to print result in a terse format
+        detail::printable_type short_print(const result_wrapper& arg);
+
         template <typename A> A & extract(result_wrapper & m) {
             return m.extract<A>();
         }
@@ -794,6 +799,9 @@ namespace alps {
             arg.print(os, false); // verbose (non-terse) printing by default
             return os;
         }
+
+        /// Return an "ostream-able" object to print accumulator in a terse format
+        detail::printable_type short_print(const accumulator_wrapper& arg);
 
         template <typename A> A & extract(accumulator_wrapper & m) {
             return m.extract<A>();
