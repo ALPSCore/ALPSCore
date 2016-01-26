@@ -39,13 +39,6 @@ else()
     message(FATAL_ERROR "Please choose EITHER BuildStatic OR BuildShared type of building libraries, NOT both")
 endif()
 
-# Python is moved out of the main ALPSCore build
-# option(BuildPython "Build Python interface" OFF)
-# mark_as_advanced(BuildPython)
-# if (BuildPython AND NOT BuildShared)
-#     message(FATAL_ERROR "Python interface requires a shared (BuildShared=ON) build")
-# endif()
-
 # Set ALPS_ROOT as a hint for standalone component builds
 if (DEFINED ENV{ALPS_ROOT})
   set(ALPS_ROOT "$ENV{ALPS_ROOT}" CACHE PATH "Path to ALPSCore installation (for standalone component builds)")
