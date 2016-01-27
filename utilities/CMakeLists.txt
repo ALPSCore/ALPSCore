@@ -27,7 +27,6 @@ add_this_package(
     remove_extensions
     stacktrace
     signal
-    parseargs
     gtest_par_xml_output
 )
 

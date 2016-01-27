@@ -18,7 +18,7 @@ if (DocumentationOnly)
   return()
 endif ()
 
-add_this_package(mcbase api parseargs stop_callback)
+add_this_package(mcbase api stop_callback)
 
 include(ALPSEnableMPI)
 

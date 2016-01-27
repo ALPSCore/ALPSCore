@@ -6,7 +6,6 @@
 
 #include <alps/mc/api.hpp>
 #include <alps/mc/mcbase.hpp>
-#include <alps/mc/parseargs.hpp>
 #include <alps/mc/stop_callback.hpp>
 
 #include <alps/utilities/temporary_filename.hpp>

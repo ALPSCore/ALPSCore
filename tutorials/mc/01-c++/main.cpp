@@ -7,13 +7,10 @@
 #include "ising.hpp"
 
 #include <alps/mc/api.hpp>
-#include <alps/mc/parseargs.hpp>
 #include <alps/mc/stop_callback.hpp>
 #include "alps/utilities/remove_extensions.hpp"
-// #include <alps/ngs/make_parameters_from_xml.hpp>
 
 #include <boost/chrono.hpp>
-// #include <boost/filesystem/path.hpp>
 
 #include <string>
 #include <iostream>
