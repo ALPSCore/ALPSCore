@@ -6,3 +6,4 @@ set     root        "@CMAKE_INSTALL_PREFIX@"
 setenv      ALPSCore_DIR    $root
 
 prepend-path      LD_LIBRARY_PATH   $root/lib
+prepend-path      CMAKE_MODULE_PATH   $root/share/ALPSCore
