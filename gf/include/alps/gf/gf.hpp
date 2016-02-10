@@ -4,6 +4,7 @@
 #include <functional>
 #include <boost/multi_array.hpp>
 #include <boost/lexical_cast.hpp>
+#include <iostream>
 
 // #include <alps/type_traits/is_complex.hpp>
 #include <alps/hdf5/archive.hpp>

@@ -7,7 +7,7 @@
 
 // FIXME: will eventually go to ALPSCore
 #include "mpi_wrappers.hpp"
-
+#include <iostream>
 namespace alps {
     namespace gf {
         namespace detail {
