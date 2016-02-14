@@ -113,7 +113,7 @@ void ising_sim::save(alps::hdf5::archive & ar) const {
     // The rest of the internal state is saved as part of the parameters
 }
 
-// Loaeds the state from the hdf5 file
+// Loads the state from the hdf5 file
 void ising_sim::load(alps::hdf5::archive & ar) {
     // Most of the load logic is already implemented in the base class
     alps::mcbase::load(ar);
