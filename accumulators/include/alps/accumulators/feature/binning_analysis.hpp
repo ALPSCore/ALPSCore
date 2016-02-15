@@ -347,7 +347,7 @@ namespace alps {
                         if (comm.rank() == root) {
                             B::collective_merge(comm, root);
                             typedef typename alps::hdf5::scalar_type<typename mean_type<B>::type>::type mean_scalar_type;
-                            std::size_t size = alps::mpi::all_reduce(comm, m_ac_count.size(), alps::mpi::maximum<std::size_t>());
+                            std::size_t size = alps::alps_mpi::all_reduce(comm, m_ac_count.size(), alps::mpi::maximum<std::size_t>());
 
                             m_ac_count.resize(size);
                             B::reduce_if(comm, std::vector<typename count_type<B>::type>(m_ac_count), m_ac_count, std::plus<typename count_type<B>::type>(), root);
@@ -372,7 +372,7 @@ namespace alps {
                         else {
                             typedef typename alps::hdf5::scalar_type<typename mean_type<B>::type>::type mean_scalar_type;
 
-                            std::size_t size = alps::mpi::all_reduce(comm, m_ac_count.size(), alps::mpi::maximum<std::size_t>());
+                            std::size_t size = alps::alps_mpi::all_reduce(comm, m_ac_count.size(), alps::mpi::maximum<std::size_t>());
                             {
                                 std::vector<typename count_type<B>::type> count(m_ac_count);
                                 count.resize(size);

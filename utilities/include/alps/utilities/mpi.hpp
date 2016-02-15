@@ -125,33 +125,32 @@ namespace alps {
         };
 
         
-        /// Broadcasts value `val` on communicator `comm` with root `root`
+        /// Broadcasts value `val` of a primitive type `T` on communicator `comm` with root `root`
         template <typename T>
         void broadcast(const communicator& comm, T& val, int root) {
-            throw std::logic_error(std::string("broadcast() is not implemented, called for type T=")
-                                   +typeid(T).name());
+            MPI_Bcast(&val, 1, detail::mpi_type<T>(), root, comm);
+            // throw std::logic_error(std::string("broadcast() is not implemented, called for type T=")
+            //                        +typeid(T).name());
         }
 
         /// Returns MPI datatype for the value of type `T`
         template <typename T>
         MPI_Datatype get_mpi_datatype(const T& val) {
-            return alps::mpi::detail::mpi_type<T>();
+            return detail::mpi_type<T>();
             // throw std::logic_error(std::string("get_mpi_datatype() is not implemented, called for type T=")
             //                        +typeid(T).name());
         }
 
-        /// performs MPI_Allreduce() for type T using operation of type OP
-        template <typename T, typename OP>
-        T all_reduce(const communicator& comm, const T& val, const OP& op) {
-            throw std::logic_error(std::string("T all_reduce(const T&, OP) is not implemented, called for type T=")
-                                   +typeid(T).name() + "and OP="+typeid(OP).name() );
-        }
-
-        /// performs MPI_Allgather() for type T
+        /// performs MPI_Allgather() for primitive type T
+        /** @NOTE Vector `out_vals` is resized */
         template <typename T>
         void all_gather(const communicator& comm, const T& in_val, std::vector<T>& out_vals) {
-            throw std::logic_error(std::string("all_gather() is not implemented, called for type T=")
-                                   +typeid(T).name());
+            out_vals.resize(comm.size());
+            MPI_Allgather((void*)&in_val, 1, detail::mpi_type<T>(),
+                          &out_vals.front(), 1, detail::mpi_type<T>(),
+                          comm);
+            // throw std::logic_error(std::string("all_gather() is not implemented, called for type T=")
+            //                        +typeid(T).name());
         }
 
         /// Trait for MPI reduction operations
@@ -172,6 +171,16 @@ namespace alps {
             public:
             static MPI_Op op() {
                 return MPI_SUM;
+            }
+        };
+        
+        /// Trait for MPI reduction operations: specialization for maximum
+        // FIXME: remove T? restrict T?
+        template <typename T>
+        class is_mpi_op<maximum<T>, T> {
+            public:
+            static MPI_Op op() {
+                return MPI_MAX;
             }
         };
         

@@ -150,9 +150,9 @@
                     // reduce(comm, (T)in_values, out_values, op, root); // TODO: WTF? - why does boost not define unsigned long long as native datatype
                     using alps::mpi::get_mpi_datatype;
                     if (comm.rank()!=root) {
-                        // usleep((comm.rank()+1)*1000000); // DEBUG!
-                        std::cerr << "DEBUG:WARNING: rank=" << comm.rank() << " is not root=" << root
-                                  << " but called 5-argument reduce_impl()." + ALPS_STACKTRACE << std::endl;
+                        // // usleep((comm.rank()+1)*1000000); // DEBUG!
+                        // std::cerr << "DEBUG:WARNING: rank=" << comm.rank() << " is not root=" << root
+                        //           << " but called 5-argument reduce_impl()." + ALPS_STACKTRACE << std::endl;
                     }
                     void* sendbuf=const_cast<T*>(&in_values);
                     if (sendbuf == &out_values) {
@@ -231,6 +231,21 @@
             template<typename T, typename Op> void reduce(const alps::mpi::communicator & comm, T const & in_values, T & out_values, Op op, int root) {
                 using detail::reduce_impl;
                 reduce_impl(comm, in_values, out_values, op, root, typename boost::is_scalar<T>::type(), typename hdf5::is_content_continuous<T>::type());
+            }
+
+            /// performs MPI_Allreduce() for type T using operation of type OP
+            /** @NOTE Currently implemented as Reduce followed by Broadcast */
+            template <typename T, typename OP>
+            T all_reduce(const alps::mpi::communicator& comm, const T& val, const OP& op) {
+                using alps::mpi::broadcast;
+                // FIXME!!! (BUG) Temporarily implemented as reduce + broadcast
+                const int root=0;
+                T outval;
+                reduce(comm, val, outval, op, root);
+                broadcast(comm, outval, root);
+                return outval;
+                // throw std::logic_error(std::string("T all_reduce(const T&, OP) is not implemented, called for type T=")
+                //                        +typeid(T).name() + "and OP="+typeid(OP).name() );
             }
 
         }
