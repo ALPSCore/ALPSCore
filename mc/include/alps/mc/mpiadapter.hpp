@@ -68,7 +68,7 @@ namespace alps {
                     if (stopped || schedule_checker.pending()) {
                         stopped = stop_callback(); 
                         double local_fraction = stopped ? 1. : Base::fraction_completed();
-                        schedule_checker.update(fraction = alps::mpi::all_reduce(communicator, local_fraction, std::plus<double>()));
+                        schedule_checker.update(fraction = alps::alps_mpi::all_reduce(communicator, local_fraction, std::plus<double>()));
                         done = fraction >= 1.;
                     }
                 } while(!done);

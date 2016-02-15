@@ -15,6 +15,8 @@
 
 #include <vector>
 
+#include <boost/scoped_array.hpp> /* for std::string broadcast */
+
 // DEBUG:
 #include <stdexcept>
 // DEBUG:
@@ -125,14 +127,43 @@ namespace alps {
         };
 
         
+        /// Broadcasts array `vals` of a primitive type `T`, length `count` on communicator `comm` with root `root`
+        template <typename T>
+        void broadcast(const communicator& comm, T* vals, std::size_t count, int root) {
+            MPI_Bcast(vals, count, detail::mpi_type<T>(), root, comm);
+        }
+
+        /// MPI_BCast of an array: overload for bool
+        inline void broadcast(const communicator& comm, bool* vals, std::size_t count, int root) {
+            // sizeof() returns size in chars (FIXME? should it be bytes?)
+            MPI_Bcast(vals, count*sizeof(bool), MPI_CHAR, root, comm); 
+        }
+
         /// Broadcasts value `val` of a primitive type `T` on communicator `comm` with root `root`
         template <typename T>
         void broadcast(const communicator& comm, T& val, int root) {
-            MPI_Bcast(&val, 1, detail::mpi_type<T>(), root, comm);
-            // throw std::logic_error(std::string("broadcast() is not implemented, called for type T=")
-            //                        +typeid(T).name());
+            broadcast(comm, &val, 1, root);
         }
 
+        /// MPI_BCast of a single value: overload for std::string
+        // FIXME: what is exception safety status?
+        // FIXME: inline to have it header-only. A tad too complex to be inlined?
+        inline void broadcast(const communicator& comm, std::string& val, int root) {
+            std::size_t root_sz=val.size();
+            broadcast(comm, root_sz, root);
+            if (comm.rank()==root) {
+                // NOTE: at root rank the value being broadcast does not change, so const cast is safe
+                broadcast(comm, const_cast<char*>(val.data()), root_sz, root);
+            } else {
+                // FIXME: not very efficient --- any better way without heap alloc?
+                //        Note, there is no guarantee in C++03 that modifying *(&val[0]+i) is safe!
+                boost::scoped_array<char> buf(new char[root_sz]);
+                broadcast(comm, buf.get(), root_sz, root);
+                val.assign(buf.get(), root_sz);
+            }
+        }
+
+        
         /// Returns MPI datatype for the value of type `T`
         template <typename T>
         MPI_Datatype get_mpi_datatype(const T& val) {

@@ -271,10 +271,23 @@ namespace alps {
         }        
 
 #ifdef ALPS_HAVE_MPI
+        /** @NOTE  Implemented as serialization followed by string broadcast (FIXME!) */
         void params::broadcast(alps::mpi::communicator const & comm, int root)
         {
-            if (comm.rank()==root) possibly_parse();
-            alps::mpi::broadcast(comm, *this, root);
+            std::string buf;
+            if (comm.rank()==root) {
+                std::ostringstream outs; 
+                possibly_parse();
+                boost::archive::text_oarchive boost_ar(outs);
+                boost_ar << *this;
+                buf=outs.str();
+            }
+            alps::mpi::broadcast(comm, buf, root);
+            if (comm.rank()!=root) {
+                std::istringstream ins(buf);
+                boost::archive::text_iarchive boost_ar(ins);
+                boost_ar >> *this;
+            }
         }
 #endif
 

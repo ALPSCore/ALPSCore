@@ -86,7 +86,7 @@ TEST(mc, sum_mpi){
         params["COUNT"]=maxcount;
         my_sim_type::define_parameters(params); // do parameters definitions
 
-        broadcast(c, params, 0);
+        params.broadcast(c, 0);
         
         int t_min_check=1, t_max_check=1, timelimit=300;
 
