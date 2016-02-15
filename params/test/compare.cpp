@@ -14,7 +14,7 @@ TEST(param,CompareConst)
   p["1.25"]=1.25;
   p["str"]="1.25";
 
-  EXPECT_ANY_THROW(p["str"]!=1.25);
+  EXPECT_ANY_THROW( if (p["str"]!=1.25) {} );
   
   EXPECT_TRUE(p["1"]==1);
   EXPECT_TRUE(p["1"]<=1);
