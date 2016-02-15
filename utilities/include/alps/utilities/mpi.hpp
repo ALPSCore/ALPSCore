@@ -24,6 +24,52 @@
 namespace alps {
     namespace mpi {
 
+        namespace detail {
+        /// Translate C++ primitive type into corresponding MPI type
+        template <typename T> class mpi_type {};
+
+#define ALPS_MPI_DETAIL_MAKETYPE(_mpitype_, _cxxtype_)          \
+        template <>                                             \
+        class mpi_type<_cxxtype_> {                             \
+          public:                                               \
+            operator MPI_Datatype() { return _mpitype_; }       \
+        }
+
+        ALPS_MPI_DETAIL_MAKETYPE(MPI_CHAR,char);
+        ALPS_MPI_DETAIL_MAKETYPE(MPI_SHORT,signed short int);
+        ALPS_MPI_DETAIL_MAKETYPE(MPI_INT,signed int);
+        ALPS_MPI_DETAIL_MAKETYPE(MPI_LONG,signed long int);
+        // ALPS_MPI_DETAIL_MAKETYPE(MPI_LONG_LONG_INT,signed long long int);
+        ALPS_MPI_DETAIL_MAKETYPE(MPI_LONG_LONG,signed long long int);
+        ALPS_MPI_DETAIL_MAKETYPE(MPI_SIGNED_CHAR,signed char);
+        ALPS_MPI_DETAIL_MAKETYPE(MPI_UNSIGNED_CHAR,unsigned char);
+        ALPS_MPI_DETAIL_MAKETYPE(MPI_UNSIGNED_SHORT,unsigned short int);
+        ALPS_MPI_DETAIL_MAKETYPE(MPI_UNSIGNED,unsigned int);
+        ALPS_MPI_DETAIL_MAKETYPE(MPI_UNSIGNED_LONG,unsigned long int);
+        ALPS_MPI_DETAIL_MAKETYPE(MPI_UNSIGNED_LONG_LONG,unsigned long long int);
+        ALPS_MPI_DETAIL_MAKETYPE(MPI_FLOAT,float);
+        ALPS_MPI_DETAIL_MAKETYPE(MPI_DOUBLE,double);
+        ALPS_MPI_DETAIL_MAKETYPE(MPI_LONG_DOUBLE,long double);
+        // ALPS_MPI_DETAIL_MAKETYPE(MPI_WCHAR,wchar_t);
+        // ALPS_MPI_DETAIL_MAKETYPE(MPI_C_BOOL,_Bool);
+        // ALPS_MPI_DETAIL_MAKETYPE(MPI_INT8_T,int8_t);
+        // ALPS_MPI_DETAIL_MAKETYPE(MPI_INT16_T,int16_t);
+        // ALPS_MPI_DETAIL_MAKETYPE(MPI_INT32_T,int32_t);
+        // ALPS_MPI_DETAIL_MAKETYPE(MPI_INT64_T,int64_t);
+        // ALPS_MPI_DETAIL_MAKETYPE(MPI_UINT8_T,uint8_t);
+        // ALPS_MPI_DETAIL_MAKETYPE(MPI_UINT16_T,uint16_t);
+        // ALPS_MPI_DETAIL_MAKETYPE(MPI_UINT32_T,uint32_t);
+        // ALPS_MPI_DETAIL_MAKETYPE(MPI_UINT64_T,uint64_t);
+        // ALPS_MPI_DETAIL_MAKETYPE(MPI_C_COMPLEX,float _Complex);
+        // ALPS_MPI_DETAIL_MAKETYPE(MPI_C_FLOAT_COMPLEX,float _Complex);
+        // ALPS_MPI_DETAIL_MAKETYPE(MPI_C_DOUBLE_COMPLEX,double _Complex);
+        // ALPS_MPI_DETAIL_MAKETYPE(MPI_C_LONG_DOUBLE_COMPLEX,long double _Complex);
+#undef ALPS_MPI_DETAIL_MAKETYPE
+        } // detail::
+
+
+
+
         class communicator {
             MPI_Comm comm_;
             
@@ -33,12 +79,16 @@ namespace alps {
 
             /// Returns process rank in this communicator
             int rank() const {
-                throw std::logic_error("rank() not implemented");
+                int myrank;
+                MPI_Comm_rank(comm_,&myrank);
+                return myrank;
             }
 
             /// Returns the number of processes in this communicator
             int size() const {
-                throw std::logic_error("size() not implemented");
+                int sz;
+                MPI_Comm_size(comm_,&sz);
+                return sz;
             }
 
             /// Barrier on this communicator
@@ -85,8 +135,9 @@ namespace alps {
         /// Returns MPI datatype for the value of type `T`
         template <typename T>
         MPI_Datatype get_mpi_datatype(const T& val) {
-            throw std::logic_error(std::string("get_mpi_datatype() is not implemented, called for type T=")
-                                   +typeid(T).name());
+            return alps::mpi::detail::mpi_type<T>();
+            // throw std::logic_error(std::string("get_mpi_datatype() is not implemented, called for type T=")
+            //                        +typeid(T).name());
         }
 
         /// performs MPI_Allreduce() for type T using operation of type OP
@@ -104,12 +155,23 @@ namespace alps {
         }
 
         /// Trait for MPI reduction operations
+        // FIXME: remove T? or just ensure it's a basic MPI type?
         template <typename OP, typename T>
         class is_mpi_op {
             public:
             static MPI_Op op() {
                 throw std::logic_error(std::string("is_mpi_op() is not implemented, called for types OP=")
                                        +typeid(OP).name() + " and T="+typeid(T).name());
+            }
+        };
+
+        /// Trait for MPI reduction operations: specialization for addition
+        // FIXME: remove T? restrict T?
+        template <typename T>
+        class is_mpi_op<std::plus<T>, T> {
+            public:
+            static MPI_Op op() {
+                return MPI_SUM;
             }
         };
         

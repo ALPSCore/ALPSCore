@@ -154,7 +154,11 @@
                         std::cerr << "DEBUG:WARNING: rank=" << comm.rank() << " is not root=" << root
                                   << " but called 5-argument reduce_impl()." + ALPS_STACKTRACE << std::endl;
                     }
-                    MPI_Reduce((void*)&in_values, &out_values, 1, get_mpi_datatype(T()),
+                    void* sendbuf=const_cast<T*>(&in_values);
+                    if (sendbuf == &out_values) {
+                        sendbuf=MPI_IN_PLACE;
+                    }
+                    MPI_Reduce(sendbuf, &out_values, 1, get_mpi_datatype(T()),
                                alps::mpi::is_mpi_op<Op, T>::op(), root, comm);
                 }
 
