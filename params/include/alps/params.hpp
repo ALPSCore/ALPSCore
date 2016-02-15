@@ -9,7 +9,10 @@
 
 #include "alps/config.hpp"
 #include "alps/hdf5/archive.hpp"
+
+#ifdef ALPS_HAVE_MPI
 #include "alps/utilities/mpi.hpp"
+#endif
 
 #include "boost/filesystem.hpp"
 
@@ -23,10 +26,6 @@
 #include "boost/program_options.hpp"
 #include "boost/any.hpp"
 #include "boost/tokenizer.hpp"
-
-#ifdef ALPS_HAVE_MPI
-    namespace boost{ namespace mpi{ class communicator; } }
-#endif
 
 #include <map>
 #include <vector>
