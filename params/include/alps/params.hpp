@@ -18,6 +18,7 @@
 #include "boost/serialization/vector.hpp"
 #include "boost/serialization/string.hpp"
 #include "boost/serialization/variant.hpp"
+#include "boost/serialization/set.hpp"
 
 #include "boost/program_options.hpp"
 #include "boost/any.hpp"
@@ -302,6 +303,7 @@ namespace alps {
                   & optmap_
                   & descr_map_
                   & helpmsg_
+                  & defaulted_options_
                   & argvec_
                   & infile_
                   & argv0_;
