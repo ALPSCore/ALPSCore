@@ -18,3 +18,7 @@ set (test_src
 foreach(test ${test_src})
     alps_add_gtest(${test})
 endforeach(test)
+
+if(ALPS_HAVE_MPI)
+  alps_add_gtest(mpi_bcast NOMAIN PARTEST)
+endif()
