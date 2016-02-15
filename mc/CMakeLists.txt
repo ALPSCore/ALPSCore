@@ -23,9 +23,9 @@ add_this_package(mcbase api stop_callback)
 include(ALPSEnableMPI)
 
 set(boost_libs_ chrono program_options filesystem system serialization)
-if(ENABLE_MPI)
-  list(APPEND boost_libs_ mpi)
-endif(ENABLE_MPI)
+# if(ENABLE_MPI)
+#   list(APPEND boost_libs_ mpi)
+# endif(ENABLE_MPI)
 add_boost(${boost_libs_})
 
 add_hdf5()

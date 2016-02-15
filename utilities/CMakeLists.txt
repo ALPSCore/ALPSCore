@@ -32,11 +32,11 @@ add_this_package(
 
 include(ALPSEnableMPI)
 
-if(ALPS_HAVE_MPI)
-  add_boost(filesystem system chrono program_options mpi)
-else()
-  add_boost(filesystem system chrono program_options)
-endif()
+#if(ALPS_HAVE_MPI)
+#  add_boost(filesystem system chrono program_options mpi)
+#else()
+add_boost(filesystem system chrono program_options)
+#endif()
 
 add_testing()
 CHECK_INCLUDE_FILE(unistd.h ALPS_HAVE_UNISTD_H)
