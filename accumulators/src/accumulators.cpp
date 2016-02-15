@@ -486,10 +486,10 @@ namespace alps {
 
 #ifdef ALPS_HAVE_MPI
             // collective_merge
-            void virtual_accumulator_wrapper::collective_merge(boost::mpi::communicator const & comm, int root) {
+            void virtual_accumulator_wrapper::collective_merge(alps::mpi::communicator const & comm, int root) {
             	m_ptr->collective_merge(comm, root);
             }
-            void virtual_accumulator_wrapper::collective_merge(boost::mpi::communicator const & comm, int root) const {
+            void virtual_accumulator_wrapper::collective_merge(alps::mpi::communicator const & comm, int root) const {
             	m_ptr->collective_merge(comm, root);
             }
 #endif

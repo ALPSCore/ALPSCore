@@ -10,10 +10,10 @@
 
 #ifdef ALPS_HAVE_MPI
 
-    #include <boost/mpi.hpp>
+    #include "alps/utilities/mpi.hpp"
     #include <vector>
 
-    namespace boost {
+    namespace alps {
         namespace mpi {
 
             ///reduce a std::vector<T,A> (T is the type, A the allocator) with operation (type OP) op, using a communicator comm to the root root, and overwrite the vector in_values

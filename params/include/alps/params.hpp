@@ -9,6 +9,7 @@
 
 #include "alps/config.hpp"
 #include "alps/hdf5/archive.hpp"
+#include "alps/utilities/mpi.hpp"
 
 #include "boost/filesystem.hpp"
 
@@ -253,7 +254,7 @@ namespace alps {
 
 #ifdef ALPS_HAVE_MPI
           /// Broadcast the parameters to all processes (FIXME: does not have a test yet)
-          void broadcast(boost::mpi::communicator const &, int = 0);
+          void broadcast(alps::mpi::communicator const &, int = 0);
 #endif
 
           // -- now for the defining the options ---

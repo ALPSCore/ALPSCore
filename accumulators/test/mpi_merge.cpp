@@ -8,7 +8,7 @@
 
 #include <algorithm>
 
-#include "boost/mpi.hpp"
+#include "alps/utilities/mpi.hpp"
 
 #include "alps/config.hpp"
 #include "alps/accumulators.hpp"
@@ -68,7 +68,7 @@ class AccumulatorTest : public ::testing::Test {
     }
 
     // the actual test: merging as a part of a set
-    void TestInSet(const std::vector<unsigned>& nsamples, const boost::mpi::communicator& comm)
+    void TestInSet(const std::vector<unsigned>& nsamples, const alps::mpi::communicator& comm)
     {
         // Prepare data for each rank (note: value_type may be a vector<T>!)
         alps::accumulators::accumulator_set measurements;
@@ -104,7 +104,7 @@ class AccumulatorTest : public ::testing::Test {
     }
   
     // the same test for an individual accumulator
-    void TestIndividual(const std::vector<unsigned>& nsamples, const boost::mpi::communicator& comm)
+    void TestIndividual(const std::vector<unsigned>& nsamples, const alps::mpi::communicator& comm)
     {
         // Prepare data for each rank (note: value_type may be a vector<T>!)
         A acc(OBSNAME);
@@ -163,14 +163,14 @@ TYPED_TEST_CASE(AccumulatorTest, MyTypes);
 
 TYPED_TEST(AccumulatorTest, SetCollectResults)
 {
-    boost::mpi::communicator comm;
+    alps::mpi::communicator comm;
     std::vector<unsigned> nsamples(comm.size(), 100000); // 100000 samples for each rank
     this->TestInSet(nsamples, comm);
 }
 
 TYPED_TEST(AccumulatorTest, SingleCollectResults)
 {
-    boost::mpi::communicator comm;
+    alps::mpi::communicator comm;
     std::vector<unsigned> nsamples(comm.size(), 100000); // 100000 samples for each rank
     this->TestIndividual(nsamples,comm);
 }
@@ -178,9 +178,9 @@ TYPED_TEST(AccumulatorTest, SingleCollectResults)
 
 int main(int argc, char** argv)
 {
-   boost::mpi::environment env(argc, argv, false);
+   alps::mpi::environment env(argc, argv, false);
    alps::gtest_par_xml_output tweak;
-   tweak(boost::mpi::communicator().rank(), argc, argv);
+   tweak(alps::mpi::communicator().rank(), argc, argv);
    ::testing::InitGoogleTest(&argc, argv);
    return RUN_ALL_TESTS();
 }    

@@ -310,7 +310,7 @@ namespace alps {
                 }
 
 #ifdef ALPS_HAVE_MPI
-                void collective_merge(boost::mpi::communicator const & comm,
+                void collective_merge(alps::mpi::communicator const & comm,
                                       int root)
                 {
                     if (comm.rank() == root) {
@@ -328,7 +328,7 @@ namespace alps {
                         const_cast<Accumulator<T, max_num_binning_tag, B> const *>(this)->collective_merge(comm, root);
                 }
                 
-                void collective_merge(boost::mpi::communicator const & comm,
+                void collective_merge(alps::mpi::communicator const & comm,
                                       int root) const
                 {
                     B::collective_merge(comm, root);
@@ -342,7 +342,7 @@ namespace alps {
                 }
 
               private:
-                void partition_bins(boost::mpi::communicator const & comm,
+                void partition_bins(alps::mpi::communicator const & comm,
                                     std::vector<typename mean_type<B>::type> & local_bins,
                                     std::vector<typename mean_type<B>::type> & merged_bins,
                                     int root) const
@@ -351,7 +351,7 @@ namespace alps {
                     using alps::numeric::operator/;
                     using alps::numeric::check_size;
 
-                    typename B::count_type elements_in_local_bins = boost::mpi::all_reduce(comm, m_mn_elements_in_bin, boost::mpi::maximum<typename B::count_type>());
+                    typename B::count_type elements_in_local_bins = alps::mpi::all_reduce(comm, m_mn_elements_in_bin, alps::mpi::maximum<typename B::count_type>());
                     typename B::count_type howmany = (elements_in_local_bins - 1) / m_mn_elements_in_bin + 1;
                     if (howmany > 1) {
                         typename B::count_type newbins = local_bins.size() / howmany;
@@ -366,7 +366,7 @@ namespace alps {
                     }
 
                     std::vector<std::size_t> index(comm.size());
-                    boost::mpi::all_gather(comm, local_bins.size(), index);
+                    alps::mpi::all_gather(comm, local_bins.size(), index);
                     std::size_t total_bins = std::accumulate(index.begin(), index.end(), 0);
                     std::size_t perbin = total_bins < m_mn_max_number ? 1 : total_bins / m_mn_max_number;
                     typename alps::numeric::scalar<typename mean_type<B>::type>::type perbin_vt = perbin;

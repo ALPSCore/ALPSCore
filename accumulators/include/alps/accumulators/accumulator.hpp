@@ -775,17 +775,17 @@ namespace alps {
             // collective_merge
             private:
                 struct collective_merge_visitor: public boost::static_visitor<> {
-                    collective_merge_visitor(boost::mpi::communicator const & c, int r): comm(c), root(r) {}
+                    collective_merge_visitor(alps::mpi::communicator const & c, int r): comm(c), root(r) {}
                     template<typename T> void operator()(T & arg) const { arg->collective_merge(comm, root); }
                     template<typename T> void operator()(T const & arg) const { arg->collective_merge(comm, root); }
-                    boost::mpi::communicator const & comm;
+                    alps::mpi::communicator const & comm;
                     int root;
                 };
             public:
-                inline void collective_merge(boost::mpi::communicator const & comm, int root) {
+                inline void collective_merge(alps::mpi::communicator const & comm, int root) {
                     boost::apply_visitor(collective_merge_visitor(comm, root), m_variant);
                 }
-                inline void collective_merge(boost::mpi::communicator const & comm, int root) const {
+                inline void collective_merge(alps::mpi::communicator const & comm, int root) const {
                     boost::apply_visitor(collective_merge_visitor(comm, root), m_variant);
                 }
 #endif

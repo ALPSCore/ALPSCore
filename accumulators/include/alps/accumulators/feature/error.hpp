@@ -159,7 +159,7 @@ namespace alps {
 
 #ifdef ALPS_HAVE_MPI
                     void collective_merge(
-                          boost::mpi::communicator const & comm
+                          alps::mpi::communicator const & comm
                         , int root
                     ) {
                         if (comm.rank() == root) {
@@ -170,7 +170,7 @@ namespace alps {
                     }
 
                     void collective_merge(
-                          boost::mpi::communicator const & comm
+                          alps::mpi::communicator const & comm
                         , int root
                     ) const {
                         B::collective_merge(comm, root);

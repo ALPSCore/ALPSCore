@@ -17,7 +17,7 @@ namespace alps {
     {}
 
 #ifdef ALPS_HAVE_MPI
-    stop_callback::stop_callback(boost::mpi::communicator const & cm, std::size_t timelimit)
+    stop_callback::stop_callback(alps::mpi::communicator const & cm, std::size_t timelimit)
         : limit(timelimit), start(boost::chrono::high_resolution_clock::now()), comm(cm)
     {}
 #endif

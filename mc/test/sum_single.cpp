@@ -28,7 +28,7 @@ class my_sim_type : public alps::mcbase {
                          << alps::accumulators::FullBinningAccumulator<std::vector<double> >("VValue");
         }
 
-        // if not compiled with mpi boost::mpi::communicator does not exists, 
+        // if not compiled with mpi alps::mpi::communicator does not exists, 
         // so template the function
         template <typename Arg> my_sim_type(parameters_type const & params, Arg comm)
             : alps::mcbase(params, comm)

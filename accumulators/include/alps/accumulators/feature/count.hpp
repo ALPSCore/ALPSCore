@@ -240,22 +240,22 @@ namespace alps {
 
 #ifdef ALPS_HAVE_MPI
                     void collective_merge(
-                          boost::mpi::communicator const & comm
+                          alps::mpi::communicator const & comm
                         , int root
                     ) {
                         if (comm.rank() == root)
-                            alps::mpi::reduce(comm, m_count, m_count, std::plus<count_type>(), root);
+                            alps::alps_mpi::reduce(comm, m_count, m_count, std::plus<count_type>(), root);
                         else
                             const_cast<Accumulator<T, count_tag, B> const *>(this)->collective_merge(comm, root);
                     }
                     void collective_merge(
-                          boost::mpi::communicator const & comm
+                          alps::mpi::communicator const & comm
                         , int root
                     ) const {
                         if (comm.rank() == root)
                             throw std::runtime_error("A const object cannot be root" + ALPS_STACKTRACE);
                         else
-                            alps::mpi::reduce(comm, m_count, std::plus<count_type>(), root);
+                            alps::alps_mpi::reduce(comm, m_count, std::plus<count_type>(), root);
                     }
 #endif
 

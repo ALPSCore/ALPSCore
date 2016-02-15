@@ -90,7 +90,7 @@ namespace alps {
               
 #ifdef ALPS_HAVE_MPI
                 inline void collective_merge(
-                      boost::mpi::communicator const & comm
+                      alps::mpi::communicator const & comm
                     , int root
                 ) const {
                     throw std::logic_error("A result cannot be merged " + ALPS_STACKTRACE);
@@ -166,39 +166,39 @@ namespace alps {
 #ifdef ALPS_HAVE_MPI
                 protected:
                     template <typename U, typename Op> void static reduce_if(
-                          boost::mpi::communicator const & comm
+                          alps::mpi::communicator const & comm
                         , U const & arg
                         , U & res
                         , Op op
                         , typename boost::enable_if<typename boost::is_scalar<typename alps::hdf5::scalar_type<U>::type>::type, int>::type root
                     ) {
-                        alps::mpi::reduce(comm, arg, res, op, root);
+                        alps::alps_mpi::reduce(comm, arg, res, op, root);
                     }
                     template <typename U, typename Op> void static reduce_if(
-                          boost::mpi::communicator const &
+                          alps::mpi::communicator const &
                         , U const &
                         , U &
                         , Op
                         , typename boost::disable_if<typename boost::is_scalar<typename alps::hdf5::scalar_type<U>::type>::type, int>::type
                     ) {
-                        throw std::logic_error("No boost::mpi::reduce available for this type " + std::string(typeid(U).name()) + ALPS_STACKTRACE);
+                        throw std::logic_error("No alps::mpi::reduce available for this type " + std::string(typeid(U).name()) + ALPS_STACKTRACE);
                     }
 
                     template <typename U, typename Op> void static reduce_if(
-                          boost::mpi::communicator const & comm
+                          alps::mpi::communicator const & comm
                         , U const & arg
                         , Op op
                         , typename boost::enable_if<typename boost::is_scalar<typename alps::hdf5::scalar_type<U>::type>::type, int>::type root
                     ) {
-                        alps::mpi::reduce(comm, arg, op, root);
+                        alps::alps_mpi::reduce(comm, arg, op, root);
                     }
                     template <typename U, typename Op> void static reduce_if(
-                          boost::mpi::communicator const &
+                          alps::mpi::communicator const &
                         , U const &
                         , Op
                         , typename boost::disable_if<typename boost::is_scalar<typename alps::hdf5::scalar_type<U>::type>::type, int>::type
                     ) {
-                        throw std::logic_error("No boost::mpi::reduce available for this type " + std::string(typeid(U).name()) + ALPS_STACKTRACE);
+                        throw std::logic_error("No alps::mpi::reduce available for this type " + std::string(typeid(U).name()) + ALPS_STACKTRACE);
                     }
 #endif
             };

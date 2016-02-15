@@ -64,7 +64,7 @@ namespace alps {
 #ifdef ALPS_HAVE_MPI
                 /// Collective MPI merge.
                 // FIXME! TODO: Introduce a proper "interface"-like superclass? with all relevant accumulator methods?
-                void collective_merge(boost::mpi::communicator const & comm, int root)
+                void collective_merge(alps::mpi::communicator const & comm, int root)
                 {
                     this->wrapper->collective_merge(comm,root);
                 }

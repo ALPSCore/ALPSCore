@@ -39,8 +39,8 @@ class sim1 : public alps::mcbase {
  
 int main(int argc, char* argv[]) {
 // TEST(mc, signed_obs) {
-    boost::mpi::environment env(argc, argv);
-    boost::mpi::communicator comm;
+    alps::mpi::environment env(argc, argv);
+    alps::mpi::communicator comm;
     alps::params p; 
     p["nsweeps"] = 100;
     sim1::define_parameters(p); // do parameters definitions

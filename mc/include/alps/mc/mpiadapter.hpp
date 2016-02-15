@@ -26,7 +26,7 @@ namespace alps {
             /// Construct mcmpiadapter with a custom scheduler
             mcmpiadapter(
                   parameters_type const & parameters
-                , boost::mpi::communicator const & comm
+                , alps::mpi::communicator const & comm
                 , ScheduleChecker const & check
             )
                 : Base(parameters, comm.rank())
@@ -38,7 +38,7 @@ namespace alps {
             /// Construct mcmpiadapter with alps::check_schedule with the relevant parameters Tmin and Tmax taken from the provided parameters
             mcmpiadapter(
                   parameters_type const & parameters
-                , boost::mpi::communicator const & comm
+                , alps::mpi::communicator const & comm
                 , typename boost::enable_if<boost::is_same<ScheduleChecker,  alps::check_schedule>, bool>::type* dummy = 0
             )
                 : Base(parameters, comm.rank())
@@ -68,7 +68,7 @@ namespace alps {
                     if (stopped || schedule_checker.pending()) {
                         stopped = stop_callback(); 
                         double local_fraction = stopped ? 1. : Base::fraction_completed();
-                        schedule_checker.update(fraction = boost::mpi::all_reduce(communicator, local_fraction, std::plus<double>()));
+                        schedule_checker.update(fraction = alps::mpi::all_reduce(communicator, local_fraction, std::plus<double>()));
                         done = fraction >= 1.;
                     }
                 } while(!done);
@@ -98,7 +98,7 @@ namespace alps {
 
         protected:
 
-            boost::mpi::communicator communicator;
+            alps::mpi::communicator communicator;
 
             ScheduleChecker schedule_checker;
             double fraction;

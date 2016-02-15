@@ -71,7 +71,7 @@ namespace alps {
                 /// merge accumulators (defined in the derived classes)
                 virtual void merge(const base_wrapper<T>&) = 0;
 #ifdef ALPS_HAVE_MPI
-                virtual void collective_merge(boost::mpi::communicator const & comm, int root) = 0;
+                virtual void collective_merge(alps::mpi::communicator const & comm, int root) = 0;
 #endif
 
                 virtual base_wrapper * clone() const = 0;
@@ -222,14 +222,14 @@ namespace alps {
 
 #ifdef ALPS_HAVE_MPI
                 void collective_merge(
-                      boost::mpi::communicator const & comm
+                      alps::mpi::communicator const & comm
                     , int root = 0
                 ) {
                     this->m_data.collective_merge(comm, root);
                 }
 
                 void collective_merge(
-                      boost::mpi::communicator const & comm
+                      alps::mpi::communicator const & comm
                     , int root = 0
                 ) const {
                     this->m_data.collective_merge(comm, root);

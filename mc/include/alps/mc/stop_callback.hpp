@@ -12,7 +12,8 @@
 
 #include <boost/chrono.hpp>
 #ifdef ALPS_HAVE_MPI
-# include <boost/mpi/communicator.hpp>
+#include <boost/optional.hpp>
+# include "alps/utilities/mpi.hpp"
 #endif
 
 namespace alps {
@@ -21,7 +22,7 @@ namespace alps {
 		public:
 		    stop_callback(std::size_t timelimit);
 #ifdef ALPS_HAVE_MPI
-			stop_callback(boost::mpi::communicator const & cm, std::size_t timelimit);
+			stop_callback(alps::mpi::communicator const & cm, std::size_t timelimit);
 #endif
 		    bool operator()();
 		private:
@@ -29,7 +30,7 @@ namespace alps {
 		    alps::signal signals;
 		    boost::chrono::high_resolution_clock::time_point start;
 #ifdef ALPS_HAVE_MPI
-	        boost::optional<boost::mpi::communicator> comm;
+	        boost::optional<alps::mpi::communicator> comm;
 #endif
 	};
 }

@@ -43,7 +43,7 @@ class my_sim_type : public alps::mcbase {
             init();
         }
 
-        // if not compiled with mpi boost::mpi::communicator does not exists, 
+        // if not compiled with mpi alps::mpi::communicator does not exists, 
         // so template the function
         template <typename Arg> my_sim_type(parameters_type const & params, Arg comm)
             : alps::mcbase(params, comm)
@@ -79,7 +79,7 @@ class my_sim_type : public alps::mcbase {
 };
 
 TEST(mc, sum_mpi){
-        boost::mpi::communicator c;
+        alps::mpi::communicator c;
 
         alps::mcbase::parameters_type params;
         const int maxcount=1000;
@@ -136,7 +136,7 @@ TEST(mc, sum_mpi){
 
 int main(int argc, char** argv)
 {
-   boost::mpi::environment env(argc, argv, false);
+   alps::mpi::environment env(argc, argv, false);
    ::testing::InitGoogleTest(&argc, argv);
    return RUN_ALL_TESTS();
 }    

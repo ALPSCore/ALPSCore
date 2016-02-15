@@ -237,7 +237,7 @@ struct CustomTypeAccumulatorTest : public testing::Test {
            running M*N points, restarting every N points.
         */
         namespace aa=alps::accumulators;
-        boost::mpi::communicator comm;
+        alps::mpi::communicator comm;
 
         aa::accumulator_set total_mset;
         total_mset << acc_type("data");
@@ -304,7 +304,7 @@ TYPED_TEST_CASE(CustomTypeAccumulatorTest, MyTypes);
 
 #ifdef ALPS_HAVE_MPI
 
-#define RETURN_UNLESS_MASTER if (boost::mpi::communicator().rank()!=0) return
+#define RETURN_UNLESS_MASTER if (alps::mpi::communicator().rank()!=0) return
 #define MAKE_MPI_TEST(_name_) TYPED_TEST(CustomTypeAccumulatorTest, _name_)  { this->TestFixture::_name_(); }
 
 #else
@@ -385,9 +385,9 @@ TEST(CustomTypeAccumulatorTest,saveArray) {
 #ifdef ALPS_HAVE_MPI
 int main(int argc, char** argv)
 {
-   boost::mpi::environment env(argc, argv, false);
+   alps::mpi::environment env(argc, argv, false);
    alps::gtest_par_xml_output tweak;
-   tweak(boost::mpi::communicator().rank(), argc, argv);
+   tweak(alps::mpi::communicator().rank(), argc, argv);
    ::testing::InitGoogleTest(&argc, argv);
    return RUN_ALL_TESTS();
 }    

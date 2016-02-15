@@ -9,7 +9,7 @@
 #include <alps/mc/api.hpp>
 #include <alps/mc/stop_callback.hpp>
 
-#include <boost/mpi.hpp>
+#include "alps/utilities/mpi.hpp"
 
 #include <alps/utilities/boost_mpi.hpp>
 #include <alps/accumulators.hpp>
@@ -45,8 +45,8 @@ class sim1 : public alps::mcbase {
 
 int main(int argc, char **argv) {
 // TEST(mc, reduce){
-    boost::mpi::environment env(argc, argv);
-    boost::mpi::communicator comm;
+    alps::mpi::environment env(argc, argv);
+    alps::mpi::communicator comm;
     alps::params p;
     p["nsweeps"] = 10000;
     sim1::define_parameters(p); // do parameters definitions

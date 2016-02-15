@@ -19,9 +19,9 @@ namespace alps {
         are run in parallel via MPI. Suggested use:
 
             int main(int argc, char**argv) {
-              boost::mpi::environment env(argc, argv);
+              alps::mpi::environment env(argc, argv);
               gtest_par_xml_output tweak; // holds the memory
-              tweak(argc, argv, boost::mpi::communicator().rank() ); // does tweaking
+              tweak(argc, argv, alps::mpi::communicator().rank() ); // does tweaking
               ::testing::InitGoogleTest(&argc, argv);
               // .....
               // destructor releases the memory

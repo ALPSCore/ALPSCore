@@ -32,7 +32,7 @@
 #include "alps/params.hpp"
 
 #ifdef ALPS_HAVE_MPI
-#include "boost/mpi/collectives.hpp"
+#include "alps/utilities/mpi.hpp"
 #endif
 
 
@@ -271,10 +271,10 @@ namespace alps {
         }        
 
 #ifdef ALPS_HAVE_MPI
-        void params::broadcast(boost::mpi::communicator const & comm, int root)
+        void params::broadcast(alps::mpi::communicator const & comm, int root)
         {
             if (comm.rank()==root) possibly_parse();
-            boost::mpi::broadcast(comm, *this, root);
+            alps::mpi::broadcast(comm, *this, root);
         }
 #endif
 
