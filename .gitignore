@@ -55,3 +55,12 @@ cmake_install.cmake
 
 #Backup files
 *~
+
+install_manifest.txt
+test/four_index_gf_test_mismatched-mpi
+test/four_index_gf_test_mismatched-tail-mpi
+test/fourier_test
+test/mesh_test_mpi
+test/multiarray_bcast_mpi
+test/one_index_gf_test
+test/two_index_gf_test

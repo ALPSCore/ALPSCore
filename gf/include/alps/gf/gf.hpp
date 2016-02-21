@@ -756,7 +756,8 @@ namespace alps {
         }
 
         template<class VTYPE, class MESH1, class MESH2, class MESH3, class MESH4, class MESH5> class five_index_gf
-            :boost::additive<five_index_gf<VTYPE,MESH1,MESH2,MESH3,MESH4,MESH5> >{
+            :boost::additive<five_index_gf<VTYPE,MESH1,MESH2,MESH3,MESH4,MESH5>,
+             boost::multiplicative2<five_index_gf<VTYPE,MESH1,MESH2,MESH3,MESH4,MESH5>,VTYPE> > {
             public:
             typedef VTYPE value_type;
             typedef boost::multi_array<value_type,5> container_type;
@@ -876,6 +877,29 @@ namespace alps {
             {
                 return do_op< std::minus<value_type> >(rhs);
             }
+            /// Assignment-op with scalar
+            template <typename op>
+            five_index_gf& do_op(const value_type& scalar)
+            {
+
+                std::transform(data_.origin(), data_.origin()+data_.num_elements(), // inputs
+                               data_.origin(), // output
+                               std::bind2nd(op(), scalar)); // bound binary(?,scalar)
+
+                return *this;
+            }
+            /// Element-wise scaling
+            five_index_gf& operator*=(const value_type& scalar)
+            {
+                return do_op< std::multiplies<value_type> >(scalar);
+            }
+
+            /// Element-wise scaling
+            five_index_gf& operator/=(const value_type& scalar)
+            {
+                return do_op< std::divides<value_type> >(scalar);
+            }
+
             /// Save the GF to HDF5
             void save(alps::hdf5::archive& ar, const std::string& path) const
             {
