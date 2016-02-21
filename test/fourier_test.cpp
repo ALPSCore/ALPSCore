@@ -7,8 +7,8 @@ class AtomicFourierTestGF : public ::testing::Test
 {
 public:
   const double beta;
-  const double U;
-  const double mu;
+  double U;
+  double mu;
   const int nfreq;
   const int ntau;
   typedef alps::gf::omega_sigma_gf_with_tail matsubara_gf_type;
@@ -104,5 +104,4 @@ TEST_F(AtomicFourierTestGF,MatsubaraToTimeFourierAwayHalfFilling){
   initialize_as_atomic_itime(g_tau_2);
 
   EXPECT_NEAR((g_tau-g_tau_2).norm(), 0, 1.e-7);
-
 }

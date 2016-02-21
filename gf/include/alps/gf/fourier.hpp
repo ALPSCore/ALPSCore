@@ -72,10 +72,10 @@ template<class MESH1, class MESH2> void fourier_frequency_to_time(const three_in
     }
   }
 }
-///Fourier transform a three-index matsubara gf to an imag time gf
+///Fourier transform a four-index matsubara gf to an imag time gf
 template<class MESH1, class MESH2, class MESH3> void fourier_frequency_to_time(const four_index_gf_with_tail<
     four_index_gf<std::complex<double>, matsubara_positive_mesh, MESH1,MESH2,MESH3>, three_index_gf<double, MESH1,MESH2,MESH3> > &g_omega,
-    three_index_gf_with_tail<four_index_gf<double, itime_mesh, MESH1,MESH2,MESH3>, three_index_gf<double, MESH1,MESH2,MESH3> > &g_tau){
+    four_index_gf_with_tail<four_index_gf<double, itime_mesh, MESH1,MESH2,MESH3>, three_index_gf<double, MESH1,MESH2,MESH3> > &g_tau){
 
   std::vector<std::complex<double> > input_data(g_omega.mesh1().extent(), 0.);
   std::vector<double >               output_data(g_tau.mesh1().extent(), 0.);
@@ -89,11 +89,40 @@ template<class MESH1, class MESH2, class MESH3> void fourier_frequency_to_time(c
         double c3=(g_omega.min_tail_order()<=3 && g_omega.max_tail_order()>=3 )? g_omega.tail(3)(typename MESH1::index_type(i),typename MESH2::index_type(j),typename MESH3::index_type(k)):0;
         if(c0 != 0) throw std::runtime_error("attempt to Fourier transform an object which goes to a constant. FT is ill defined");
         for(int n=0;n<g_omega.mesh1().extent();++n){
-          input_data[n]=g_omega(matsubara_index(n),typename MESH1::index_type(i),typename MESH2::index_type(j),typename MESH2::index_type(k))-f_omega(g_omega.mesh1().points()[n],c1,c2,c3);
+          input_data[n]=g_omega(matsubara_index(n),typename MESH1::index_type(i),typename MESH2::index_type(j),typename MESH3::index_type(k))-f_omega(g_omega.mesh1().points()[n],c1,c2,c3);
         }
         transform_vector_no_tail(input_data,g_omega.mesh1().points(), output_data, g_tau.mesh1().points(), g_tau.mesh1().beta());
         for(int t=0;t<g_tau.mesh1().extent();++t){
           g_tau(itime_index(t),typename MESH1::index_type(i),typename MESH2::index_type(j),typename MESH3::index_type(k))=output_data[t]+f_tau(g_tau.mesh1().points()[t],g_tau.mesh1().beta(),c1,c2,c3);
+        }
+      }
+    }
+  }
+}
+///Fourier transform a five-index matsubara gf to an imag time gf
+template<class MESH1, class MESH2, class MESH3,class MESH4> void fourier_frequency_to_time(const five_index_gf_with_tail<
+    five_index_gf<std::complex<double>, matsubara_positive_mesh, MESH1,MESH2,MESH3,MESH4>, four_index_gf<double, MESH1,MESH2,MESH3,MESH4> > &g_omega,
+    five_index_gf_with_tail<five_index_gf<double, itime_mesh, MESH1,MESH2,MESH3,MESH4>, four_index_gf<double, MESH1,MESH2,MESH3,MESH4> > &g_tau){
+
+  std::vector<std::complex<double> > input_data(g_omega.mesh1().extent(), 0.);
+  std::vector<double >               output_data(g_tau.mesh1().extent(), 0.);
+
+  for(int i=0;i<g_omega.mesh2().extent();++i){
+    for(int j=0;j<g_omega.mesh3().extent();++j){
+      for(int k=0;k<g_omega.mesh4().extent();++k){
+        for(int l=0;l<g_omega.mesh5().extent();++l){
+        double c0=(g_omega.min_tail_order()==0 && g_omega.max_tail_order()>=0 )? g_omega.tail(0)(typename MESH1::index_type(i),typename MESH2::index_type(j),typename MESH3::index_type(k),typename MESH4::index_type(l)):0;
+        double c1=(g_omega.min_tail_order()<=1 && g_omega.max_tail_order()>=1 )? g_omega.tail(1)(typename MESH1::index_type(i),typename MESH2::index_type(j),typename MESH3::index_type(k),typename MESH4::index_type(l)):0;
+        double c2=(g_omega.min_tail_order()<=2 && g_omega.max_tail_order()>=2 )? g_omega.tail(2)(typename MESH1::index_type(i),typename MESH2::index_type(j),typename MESH3::index_type(k),typename MESH4::index_type(l)):0;
+        double c3=(g_omega.min_tail_order()<=3 && g_omega.max_tail_order()>=3 )? g_omega.tail(3)(typename MESH1::index_type(i),typename MESH2::index_type(j),typename MESH3::index_type(k),typename MESH4::index_type(l)):0;
+        if(c0 != 0) throw std::runtime_error("attempt to Fourier transform an object which goes to a constant. FT is ill defined");
+        for(int n=0;n<g_omega.mesh1().extent();++n){
+          input_data[n]=g_omega(matsubara_index(n),typename MESH1::index_type(i),typename MESH2::index_type(j),typename MESH3::index_type(k),typename MESH4::index_type(l))-f_omega(g_omega.mesh1().points()[n],c1,c2,c3);
+        }
+        transform_vector_no_tail(input_data,g_omega.mesh1().points(), output_data, g_tau.mesh1().points(), g_tau.mesh1().beta());
+        for(int t=0;t<g_tau.mesh1().extent();++t){
+          g_tau(itime_index(t),typename MESH1::index_type(i),typename MESH2::index_type(j),typename MESH3::index_type(k),typename MESH4::index_type(l))=output_data[t]+f_tau(g_tau.mesh1().points()[t],g_tau.mesh1().beta(),c1,c2,c3);
+        }
         }
       }
     }
