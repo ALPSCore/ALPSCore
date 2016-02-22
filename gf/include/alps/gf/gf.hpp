@@ -976,6 +976,7 @@ namespace alps {
 
         typedef three_index_gf<std::complex<double>, matsubara_mesh<mesh::POSITIVE_ONLY>, momentum_index_mesh, index_mesh> omega_k_sigma_gf;
         typedef three_index_gf<             double , itime_mesh    , momentum_index_mesh, index_mesh> itime_k_sigma_gf;
+        typedef three_index_gf<             double , momentum_index_mesh, index_mesh, index_mesh> k_sigma1_sigma2_gf;
         
         typedef two_index_gf<std::complex<double>, matsubara_mesh<mesh::POSITIVE_ONLY>, index_mesh> omega_sigma_gf;
         typedef two_index_gf<             double , itime_mesh, index_mesh> itime_sigma_gf;
