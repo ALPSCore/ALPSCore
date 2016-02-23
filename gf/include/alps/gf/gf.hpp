@@ -796,7 +796,7 @@ namespace alps {
                           const MESH4& mesh4,
                           const MESH5& mesh5,
                           const container_type& data)
-                : mesh1_(mesh1), mesh2_(mesh2), mesh3_(mesh3), mesh4_(mesh4), mesh4_(mesh5),
+                : mesh1_(mesh1), mesh2_(mesh2), mesh3_(mesh3), mesh4_(mesh4), mesh5_(mesh5),
                   data_(data)
             {
                 if (mesh1_.extent()!=data_.shape()[0] || mesh2_.extent()!=data_.shape()[1] ||
