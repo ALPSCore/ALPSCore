@@ -829,7 +829,7 @@ namespace alps {
                     for (int j=0; j<mesh2_.extent(); ++j) {
                         for (int k=0; k<mesh3_.extent(); ++k) {
                           for (int l=0; l<mesh4_.extent(); ++l) {
-                            for (int m=0; m<mesh5_.extent(); ++l) {
+                            for (int m=0; m<mesh5_.extent(); ++m) {
                                 data_[i][j][k][l][m]=value_type(0.0);
                             }
                           }
