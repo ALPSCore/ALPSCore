@@ -26,9 +26,9 @@ namespace alps {
 #endif
 		    bool operator()() const;
 		private:
-		    boost::chrono::duration<std::size_t> limit;
+		    const boost::chrono::duration<std::size_t> limit;
 		    alps::signal signals;
-		    boost::chrono::high_resolution_clock::time_point start;
+		    const boost::chrono::high_resolution_clock::time_point start;
 #ifdef ALPS_HAVE_MPI
 	        boost::optional<alps::mpi::communicator> comm;
 #endif
