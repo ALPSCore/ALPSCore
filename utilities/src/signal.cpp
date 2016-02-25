@@ -41,11 +41,11 @@ namespace alps {
         listen();
     }
 
-    bool signal::empty() {
+    bool signal::empty() const {
         return end_  == begin_;
     }
 
-    int signal::top() {
+    int signal::top() const {
         return signals_[(end_ - 1) & 0x1F];
     }
 

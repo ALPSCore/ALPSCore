@@ -22,7 +22,7 @@ namespace alps {
     {}
 #endif
 
-    bool stop_callback::operator()() {
+    bool stop_callback::operator()() const {
 #ifdef ALPS_HAVE_MPI
         if (comm) {
             bool to_stop;

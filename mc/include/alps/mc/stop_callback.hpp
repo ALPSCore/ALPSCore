@@ -24,7 +24,7 @@ namespace alps {
 #ifdef ALPS_HAVE_MPI
 			stop_callback(alps::mpi::communicator const & cm, std::size_t timelimit);
 #endif
-		    bool operator()();
+		    bool operator()() const;
 		private:
 		    boost::chrono::duration<std::size_t> limit;
 		    alps::signal signals;

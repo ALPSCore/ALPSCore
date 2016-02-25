@@ -33,12 +33,12 @@ Listen to the following posix signals SIGINT, SIGTERM, SIGXCPU, SIGQUIT, SIGUSR1
       /*!
 Returns if a signal has been captured.
       */
-      bool empty();
+      bool empty() const;
 
       /*!
 Returns the last signal that has been captured .
       */
-      int top();
+      int top() const;
 
 
       /*!
