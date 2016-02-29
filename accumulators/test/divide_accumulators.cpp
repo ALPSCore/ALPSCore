@@ -20,6 +20,14 @@ void test_divide_accumulators_scalar(alps::accumulators::accumulator_set & measu
 	alps::accumulators::result_set results(measurements);
 	std::cout << results[name1] * results[name2] << std::endl;
 	std::cout << results[name1] / results[name2] << std::endl;
+
+    double div_mean = (results[name1] / results[name2]).mean<double>();
+    double div_mean2 = results[name1].mean<double>() / results[name2].mean<double>();
+    std::cout << div_mean << " == " << div_mean2 << std::endl;
+    
+    ASSERT_EQ(boost::math::isnan(div_mean), false);
+    ASSERT_EQ(boost::math::isinf(div_mean), false);
+    ASSERT_NEAR(div_mean, div_mean2, 5e-4);
 }
 
 void test_divide_accumulators_vector(alps::accumulators::accumulator_set & measurements, std::string name) {
