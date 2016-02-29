@@ -34,4 +34,14 @@ namespace alps {
 #endif
             return !signals.empty() || (limit.count() > 0 && boost::chrono::high_resolution_clock::now() > start + limit);
     }
+
+
+    simple_time_callback::simple_time_callback(std::size_t timelimit)
+        : limit(timelimit)
+        , start(boost::chrono::steady_clock::now())
+    {}
+
+    bool simple_time_callback::operator()() const {
+            return (limit.count() > 0 && boost::chrono::steady_clock::now() > start + limit);
+    }
 }

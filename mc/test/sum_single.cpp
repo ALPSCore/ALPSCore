@@ -68,7 +68,7 @@ TEST(mc, sum_single){
 
     my_sim_type::define_parameters(params); // do parameters definitions
     my_sim_type my_sim(params); // create a simulation
-    my_sim.run(alps::stop_callback(5)); // run the simulation for 1 second
+    my_sim.run(alps::simple_time_callback(5)); // run the simulation for 1 second
 
     alps::results_type<my_sim_type>::type results = collect_results(my_sim); // collect the results
 

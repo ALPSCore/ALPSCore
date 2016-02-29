@@ -33,6 +33,17 @@ namespace alps {
 	        boost::optional<alps::mpi::communicator> comm;
 #endif
 	};
+
+	class simple_time_callback {
+		public:
+		    simple_time_callback(std::size_t timelimit);
+		    bool operator()() const;
+		private:
+		    const boost::chrono::duration<std::size_t> limit;
+		    const boost::chrono::steady_clock::time_point start;
+	};
 }
+
+
 
 #endif
