@@ -6,7 +6,6 @@ set (test_src
     add_accumulators
     count
     divide_accumulators
-    divide_accumulators2
     unary_ops
     mean
     mean_wrapped
