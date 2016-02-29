@@ -14,7 +14,7 @@ void test_divide_accumulators_scalar(alps::accumulators::accumulator_set & measu
 	std::string name2 = name + "_2_scalar";
 	for (int i = 0; i < 1000; ++i) {
 		measurements[name1] << (i % 2) + 1;
-		measurements[name2] << (i%25  < 24?0:1);
+		measurements[name2] << (i%5  < 4?0:1);
 	}
         // FIXME: test rather than print!
 	std::cout << measurements << std::endl;
