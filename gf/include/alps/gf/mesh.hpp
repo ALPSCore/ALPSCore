@@ -109,9 +109,9 @@ namespace alps {
             // It's a member function to avoid dealing with templated friend decalration.
             void swap(matsubara_mesh& other) {
                 using std::swap;
-                swap(this.beta_, other.beta_);
-                swap(this.nfreq_, other.nfreq_);
-                swap(this.points_, other.points_);
+                swap(this->beta_, other.beta_);
+                swap(this->nfreq_, other.nfreq_);
+                swap(this->points_, other.points_);
             }
           
             void save(alps::hdf5::archive& ar, const std::string& path) const
