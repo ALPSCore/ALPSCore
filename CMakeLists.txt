@@ -4,14 +4,10 @@
 
 cmake_minimum_required (VERSION 2.8.12)
 
-# add includes and libs for each module
-macro(alps_add_module module module_path)
-    set(${module}_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/${module_path}/include ${CMAKE_BINARY_DIR}/${module_path}/include)
-    set(${module}_LIBRARIES ${module})
-endmacro(alps_add_module)
-
 # include cmake scripts from common/cmake directory
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/./common/cmake)
+
+include(ALPSCommonModuleDefinitions)
 
 # check that compiler version is OK.
 include(ALPSCompilerVersionCheck)
@@ -21,11 +17,6 @@ include(ALPSCompilerTweaks)
 
 # ALPS_GLOBAL_BUILD means building project all at once
 set(ALPS_GLOBAL_BUILD true)
-
-# disable in-source builds
-if (${CMAKE_BINARY_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
-    message(FATAL_ERROR "In source builds are disabled. Please use a separate build directory")
-endif()
 
 # Documentation
 option(DocumentationOnly "Build only documentation, no code or tests" OFF)
