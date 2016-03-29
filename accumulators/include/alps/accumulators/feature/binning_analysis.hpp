@@ -24,6 +24,7 @@
 #include <alps/numeric/vector_functions.hpp>
 #include <alps/numeric/boost_array_functions.hpp>
 #include <alps/numeric/set_negative_0.hpp>
+#include <alps/numeric/rectangularize.hpp>
 // TODO: make nicer way to use this
 #include <alps/type_traits/slice.hpp>
 #include <alps/type_traits/change_value_type.hpp>
@@ -353,9 +354,11 @@ namespace alps {
                             B::reduce_if(comm, std::vector<typename count_type<B>::type>(m_ac_count), m_ac_count, std::plus<typename count_type<B>::type>(), root);
 
                             m_ac_sum.resize(size);
+                            alps::numeric::rectangularize(m_ac_sum);
                             B::reduce_if(comm, std::vector<T>(m_ac_sum), m_ac_sum, std::plus<mean_scalar_type>(), root);
 
                             m_ac_sum2.resize(size);
+                            alps::numeric::rectangularize(m_ac_sum2);
                             B::reduce_if(comm, std::vector<T>(m_ac_sum2), m_ac_sum2, std::plus<mean_scalar_type>(), root);
 
                         } else
@@ -381,11 +384,13 @@ namespace alps {
                             {
                                 std::vector<T> sum(m_ac_sum);
                                 sum.resize(size);
+                                alps::numeric::rectangularize(sum);
                                 B::reduce_if(comm, sum, std::plus<mean_scalar_type>(), root);
                             }
                             {
                                 std::vector<T> sum2(m_ac_sum2);
                                 sum2.resize(size);
+                                alps::numeric::rectangularize(sum2);
                                 B::reduce_if(comm, sum2, std::plus<mean_scalar_type>(), root);
                             }
                         }
