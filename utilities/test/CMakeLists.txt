@@ -6,6 +6,7 @@ set (test_src
     inf
     type_traits
     vector_functions
+    rectangularize
     )
 
 foreach(test ${test_src})
