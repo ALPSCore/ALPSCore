@@ -15,7 +15,6 @@ set (test_src_mpi
     sum_mpi
     reduce
     signed_obs
-    issue_198
     )
 foreach(test ${test_src_mpi})
     alps_add_gtest(${test} NOMAIN PARTEST)
