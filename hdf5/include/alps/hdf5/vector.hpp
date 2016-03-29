@@ -16,6 +16,21 @@
 #include <iterator>
 #include <algorithm>
 
+
+
+namespace debug {
+    template <typename T>
+    inline std::ostream& operator<<(std::ostream& s, const std::vector<T>& vec) {
+        s << "[";
+        for (typename std::vector<T>::const_iterator it=vec.begin();
+             it!=vec.end(); ++it) {
+            s << " " << *it << ",";
+        }
+        s << "]";
+        return s;
+    }
+}
+
 namespace alps {
     namespace hdf5 {
 
@@ -84,24 +99,39 @@ namespace alps {
                 static bool apply(std::vector<T, A> const & value) {
                     using alps::hdf5::get_extent;
                     using alps::hdf5::is_vectorizable;
+                    using debug::operator<<;
+
+                    const std::string debug_type=std::string(" with T=")+typeid(T).name();
+                    std::cerr << "DEBUG: entering is_vectorizable() for vector<T>" << debug_type << std::endl;
+                    std::cerr << "DEBUG: value=" << value << std::endl;
+                    
                     if (value.size()) {
-                        if (!is_vectorizable(value[0]))
+                        if (!is_vectorizable(value[0])) {
+                            std::cerr << "DEBUG: leaving with false 1"  << debug_type << std::endl;
                             return false;
+                        }
                         std::vector<std::size_t> first(get_extent(value[0]));
                         if (!boost::is_scalar<typename std::vector<T, A>::value_type>::value) {
                             for(typename std::vector<T, A>::const_iterator it = value.begin(); it != value.end(); ++it)
-                                if (!is_vectorizable(*it))
+                                if (!is_vectorizable(*it)) {
+                                    std::cerr << "DEBUG: leaving with false 2" << debug_type << std::endl;
                                     return false;
-                                else {
+                                } else {
                                     std::vector<std::size_t> size(get_extent(*it));
                                     if (
                                            first.size() != size.size() 
                                         || !std::equal(first.begin(), first.end(), size.begin())
-                                    )
+                                    ) {
+                                        using debug::operator<<;
+                                        std::cerr << "DEBUG: vector first=" << first << std::endl;
+                                        std::cerr << "DEBUG: vector size=" << size << std::endl;
+                                        std::cerr << "DEBUG: leaving with false 3" << debug_type << std::endl;
                                         return false;
+                                    }
                                 }
                         }
                     }
+                    std::cerr << "DEBUG: leaving with true 4" << debug_type << std::endl;
                     return true;
                 }
             };
