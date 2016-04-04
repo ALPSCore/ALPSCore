@@ -55,7 +55,7 @@ namespace alps {
 
             parameters_type parameters;
             // parameters_type & params; // TODO: deprecated, remove!
-            alps::random01 mutable random;
+            alps::random01 random;
             observable_collection_type measurements;
     };
 
