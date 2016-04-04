@@ -10,7 +10,7 @@ set (test_src
      short_options
      subclass
      serialize
-     ostream
+     param_ostream
      common_param_tests
     )
 
