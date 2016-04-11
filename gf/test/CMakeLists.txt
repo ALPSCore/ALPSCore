@@ -1,10 +1,6 @@
-message(STATUS "Building tests")
+include(ALPSEnableTests)
 
-add_library(gf_test gf_test.cpp)
-target_link_libraries(gf_test ${LINK_ALL})
-list(APPEND LINK_ALL gf_test)
-
-set (test_src
+set (test_srcs
   index_test 
   mesh_test
   one_index_gf_test
@@ -17,11 +13,19 @@ set (test_src
     )
 
 
-foreach(test ${test_src})
-    add_gtest(${test})
+foreach(test ${test_srcs})
+    alps_add_gtest(${test} SRCS gf_test)
 endforeach(test)
-# Tests that need additional source files
-add_gtest(four_index_gf_test_mismatched-mpi mpi_guard.cpp)
-add_gtest(four_index_gf_test_mismatched-tail-mpi mpi_guard.cpp)
-add_gtest(multiarray_bcast_mpi mpi_guard.cpp)
-add_gtest(mesh_test_mpi mpi_guard.cpp)
+
+set (mpi_test_srcs
+    four_index_gf_test_mismatched-mpi
+    four_index_gf_test_mismatched-tail-mpi
+    multiarray_bcast_mpi 
+    mesh_test_mpi)
+
+if (ALPS_HAVE_MPI) 
+    foreach(test ${mpi_test_srcs})
+        alps_add_gtest(${test} NOMAIN PARTEST SRCS gf_test mpi_guard)
+    endforeach(test)
+endif()
+

@@ -53,6 +53,8 @@ add_subdirectory(params)
 alps_add_module(alps-params params)
 add_subdirectory(mc)
 alps_add_module(alps-mc mc)
+add_subdirectory(gf)
+alps_add_module(alps-gf gf)
 
 if(_am_building_documentation)
     set(DOXYFILE_SOURCE_DIR "${CMAKE_SOURCE_DIR}/common/doc")
