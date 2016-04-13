@@ -18,8 +18,8 @@ foreach(test ${test_srcs})
 endforeach(test)
 
 set (mpi_test_srcs
-    four_index_gf_test_mismatched-mpi
-    four_index_gf_test_mismatched-tail-mpi
+    four_index_gf_test_mismatched_mpi
+    four_index_gf_test_mismatched-tail_mpi
     multiarray_bcast_mpi 
     mesh_test_mpi)
 
