@@ -69,7 +69,7 @@ TEST_F(GfMultiArrayTest, DISABLED_MpiBroadcastDimMismatch) {
         root_data=ref_data_;
         alps::gf::detail::broadcast(alps::mpi::communicator(), root_data, MASTER);
     } else {
-      alps::gf::detail::broadcast(alps::mpi::communicator(), mydata, MASTER);
+        alps::gf::detail::broadcast(alps::mpi::communicator(), mydata, MASTER);
         FAIL() << "This point should not be reachable.";
     }
 }
