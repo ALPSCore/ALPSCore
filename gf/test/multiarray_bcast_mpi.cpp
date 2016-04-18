@@ -39,7 +39,7 @@ TEST_F(GfMultiArrayTest, MpiBroadcast) {
         mydata.reindex(5); // set a strange base on receiving ranks
     }
 
-    alps::gf::detail::bcast(mydata, MASTER, alps::mpi::communicator());
+    alps::gf::detail::broadcast(alps::mpi::communicator(), mydata, MASTER);
 
     // Compare with ref, element-by-element
     for (int i0=0; i0<ref_shape_[0]; ++i0) {
@@ -67,9 +67,9 @@ TEST_F(GfMultiArrayTest, DISABLED_MpiBroadcastDimMismatch) {
         data_type root_data;
         root_data.resize(ARRAY_EXTENTS);
         root_data=ref_data_;
-        alps::gf::detail::bcast(root_data, MASTER, alps::mpi::communicator());
+        alps::gf::detail::broadcast(alps::mpi::communicator(), root_data, MASTER);
     } else {
-        alps::gf::detail::bcast(mydata, MASTER, alps::mpi::communicator());
+      alps::gf::detail::broadcast(alps::mpi::communicator(), mydata, MASTER);
         FAIL() << "This point should not be reachable.";
     }
 }

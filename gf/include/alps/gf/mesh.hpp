@@ -363,7 +363,7 @@ namespace alps {
             {
                 using alps::mpi::broadcast;
                 // FIXME: introduce (debug-only?) consistency check, like type checking? akin to load()?
-                detail::bcast(points_, root, comm);
+                detail::broadcast(comm, points_, root);
                 broadcast(comm, kind_, root);
             }
 #endif

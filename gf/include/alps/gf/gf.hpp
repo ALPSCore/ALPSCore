@@ -179,7 +179,7 @@ namespace alps {
             void broadcast(int root, const alps::mpi::communicator& comm)
             {
                 mesh1_.broadcast(root,comm);
-                detail::bcast(data_, root, comm);
+                detail::broadcast(comm, data_, root);
             }
 #endif          
 
@@ -348,7 +348,7 @@ namespace alps {
             {
                 mesh1_.broadcast(root, comm);
                 mesh2_.broadcast(root, comm);
-                detail::bcast(data_, root, comm);
+                detail::broadcast(comm, data_, root);
             }
 #endif
 
@@ -534,7 +534,7 @@ namespace alps {
                 mesh1_.broadcast(root, comm);
                 mesh2_.broadcast(root, comm);
                 mesh3_.broadcast(root, comm);
-                detail::bcast(data_, root, comm);
+                detail::broadcast(comm, data_, root);
             }
 #endif
         };
@@ -732,7 +732,7 @@ namespace alps {
                 mesh2_.broadcast(root,comm);
                 mesh3_.broadcast(root,comm);
                 mesh4_.broadcast(root,comm);
-                detail::bcast(data_, root, comm);
+                detail::broadcast(comm, data_, root);
             }
 #endif
         };
@@ -941,7 +941,7 @@ namespace alps {
                 mesh3_.broadcast(root,comm);
                 mesh4_.broadcast(root,comm);
                 mesh5_.broadcast(root,comm);
-                detail::bcast(data_, root, comm);
+                detail::broadcast(comm, data_, root);
             }
 #endif
             

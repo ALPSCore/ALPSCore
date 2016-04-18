@@ -13,7 +13,7 @@ namespace alps {
             /// Broadcast a vector
             /** @note Non-default allocator is silently unsupported. */ 
             template <typename T>
-            void bcast(std::vector<T>& data, int root, MPI_Comm comm) {
+            void broadcast(MPI_Comm comm, std::vector<T>& data, int root) {
                 typedef std::vector<T> data_type;
                 typedef typename data_type::size_type size_type;
                 size_type root_sz=data.size();
@@ -31,7 +31,7 @@ namespace alps {
                @note Any detected mismatch results in MPI_Abort()
              */
             template <typename T, size_t N>
-            void bcast(boost::multi_array<T,N>& data, int root, const alps::mpi::communicator& comm)
+            void broadcast(const alps::mpi::communicator& comm, boost::multi_array<T,N>& data, int root)
             {
                 typedef boost::multi_array<T,N> data_type;
                 typedef typename data_type::index index_type;
