@@ -26,7 +26,7 @@ TEST_F(MeshTest,MpiBcastMatsubara) {
     mesh_type my_mesh(1,1);
     mesh_type* mesh_ptr= is_root_ ? &ref_mesh : &my_mesh;
 
-    mesh_ptr->broadcast(MASTER,MPI_COMM_WORLD);
+    mesh_ptr->broadcast(MASTER,alps::mpi::communicator());
 
     EXPECT_EQ(*mesh_ptr, ref_mesh) << "Failed at rank=" << rank_;
 }
@@ -35,7 +35,7 @@ TEST_F(MeshTest,MpiBcastITime) {
     agf::itime_mesh ref_mesh(5.0, 20);
     agf::itime_mesh my_mesh(1,1);
     agf::itime_mesh* mesh_ptr= is_root_? &ref_mesh:&my_mesh;
-    mesh_ptr->broadcast(MASTER,MPI_COMM_WORLD);
+    mesh_ptr->broadcast(MASTER,alps::mpi::communicator());
 
     EXPECT_EQ(*mesh_ptr, ref_mesh) << "Failed at rank=" << rank_;
 }
@@ -51,7 +51,7 @@ TEST_F(MeshTest,MpiBcastMomentum) {
     mesh_type my_mesh=mesh_type((mesh_type::container_type()));
     mesh_type* mesh_ptr= is_root_ ? &ref_mesh : &my_mesh;
 
-    mesh_ptr->broadcast(MASTER,MPI_COMM_WORLD);
+    mesh_ptr->broadcast(MASTER,alps::mpi::communicator());
 
     EXPECT_EQ(*mesh_ptr, ref_mesh) << "Failed at rank=" << rank_;
 }
@@ -67,7 +67,7 @@ TEST_F(MeshTest,MpiBcastRealspace) {
     mesh_type my_mesh=mesh_type((mesh_type::container_type()));
     mesh_type* mesh_ptr= is_root_ ? &ref_mesh : &my_mesh;
 
-    mesh_ptr->broadcast(MASTER,MPI_COMM_WORLD);
+    mesh_ptr->broadcast(MASTER,alps::mpi::communicator());
 
     EXPECT_EQ(*mesh_ptr, ref_mesh) << "Failed at rank=" << rank_;
 }
@@ -78,7 +78,7 @@ TEST_F(MeshTest,MpiBcastIndex) {
     mesh_type my_mesh(1);
     mesh_type* mesh_ptr= is_root_ ? &ref_mesh : &my_mesh;
 
-    mesh_ptr->broadcast(MASTER,MPI_COMM_WORLD);
+    mesh_ptr->broadcast(MASTER,alps::mpi::communicator());
 
     EXPECT_EQ(*mesh_ptr, ref_mesh) << "Failed at rank=" << rank_;
 }

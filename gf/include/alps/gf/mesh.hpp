@@ -10,7 +10,9 @@
 #include <alps/hdf5/vector.hpp>
 #include <alps/hdf5/multi_array.hpp>
 
+#ifdef ALPS_HAVE_MPI
 #include "mpi_bcast.hpp"
+#endif
 
 namespace alps {
     namespace gf {
@@ -49,9 +51,11 @@ namespace alps {
       
             int operator()() const { return index_; }
 
-            void broadcast(int root, MPI_Comm comm) {
-                alps::mpi::bcast(index_, root, comm);
+#ifdef ALPS_HAVE_MPI
+            void broadcast(int root, const alps::mpi::communicator& comm) {
+                alps::mpi::broadcast(comm, index_, root);
             }
+#endif
         };
     
         //    template <typename T> bool operator==(int q, const generic_index<T> &p){ return p.operator==(q);}
@@ -147,12 +151,13 @@ namespace alps {
                 compute_points();
             }
 
-            void broadcast(int root, MPI_Comm comm)
+#ifdef ALPS_HAVE_MPI
+            void broadcast(int root, const alps::mpi::communicator& comm)
             {
-                using alps::mpi::bcast;
+                using alps::mpi::broadcast;
                 // FIXME: introduce (debug-only?) consistency check, like type checking? akin to load()?
-                bcast(beta_, root, comm);
-                bcast(nfreq_, root, comm);
+                broadcast(comm, beta_, root);
+                broadcast(comm, nfreq_, root);
                 try {
                     check_range(); 
                 } catch (const std::exception& exc) {
@@ -166,6 +171,7 @@ namespace alps {
                 }
                 compute_points(); // recompute points rather than sending them over MPI
             }
+#endif
             
             void check_range(){
                 if(statistics_!=statistics::FERMIONIC) throw std::invalid_argument("statistics should be bosonic or fermionic");
@@ -263,19 +269,21 @@ namespace alps {
                 compute_points();
             }
 
-            void broadcast(int root, MPI_Comm comm)
+#ifdef ALPS_HAVE_MPI
+            void broadcast(int root, const alps::mpi::communicator& comm)
             {
-                using alps::mpi::bcast;
+                using alps::mpi::broadcast;
                 // FIXME: introduce (debug-only?) consistency check, like type checking? akin to load()?
-                bcast(beta_, root, comm);
-                bcast(ntau_, root, comm);
-                bcast(last_point_included_, root, comm);
-                bcast(half_point_mesh_, root, comm);
+                broadcast(comm, beta_, root);
+                broadcast(comm, ntau_, root);
+                broadcast(comm, last_point_included_, root);
+                broadcast(comm, half_point_mesh_, root);
                 int stat=statistics_;
-                bcast(stat, root, comm);
+                broadcast(comm, stat, root);
                 statistics_=static_cast<statistics::statistics_type>(stat);
                 compute_points(); // recompute points rather than sending them over MPI
             }
+#endif
 
             void compute_points(){
                 points_.resize(extent());
@@ -350,13 +358,15 @@ namespace alps {
                 ar[path+"/points"] >> points_;
             }
 
-            void broadcast(int root, MPI_Comm comm)
+#ifdef ALPS_HAVE_MPI
+            void broadcast(int root, const alps::mpi::communicator& comm)
             {
-                using alps::mpi::bcast;
+                using alps::mpi::broadcast;
                 // FIXME: introduce (debug-only?) consistency check, like type checking? akin to load()?
                 detail::bcast(points_, root, comm);
-                bcast(kind_, root, comm);
+                broadcast(comm, kind_, root);
             }
+#endif
 
         };
         ///Stream output operator, e.g. for printing to file
@@ -437,11 +447,13 @@ namespace alps {
                 npoints_=np;
             }
 
-            void broadcast(int root, MPI_Comm comm)
+#ifdef ALPS_HAVE_MPI
+            void broadcast(int root, const alps::mpi::communicator& comm)
             {
-                using alps::mpi::bcast;
-                bcast(npoints_, root, comm);
+                using alps::mpi::broadcast;
+                broadcast(comm, npoints_, root);
             }
+#endif
         };
         ///Stream output operator, e.g. for printing to file
         std::ostream &operator<<(std::ostream &os, const index_mesh &M);

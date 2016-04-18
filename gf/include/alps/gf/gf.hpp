@@ -11,13 +11,10 @@
 #include <alps/hdf5/complex.hpp>
 #include <alps/hdf5/multi_array.hpp>
 
-// FIXME: make conditional
-#include <mpi.h>
-// FIXME: This is, essentially, a partial replacement of boost::mpi.
-// FIXME: Will be moved to ALPSCore eventually.
-#include "mpi_wrappers.hpp" 
-
+#ifdef ALPS_HAVE_MPI
 #include "mpi_bcast.hpp"
+#endif
+
 #include "mesh.hpp"
 
 namespace alps {
@@ -177,12 +174,14 @@ namespace alps {
                 ar[path+"/data"] >> data_;
             }
 
+#ifdef ALPS_HAVE_MPI
             /// Broadcast the GF (together with meshes)
-            void broadcast(int root, MPI_Comm comm)
+            void broadcast(int root, const alps::mpi::communicator& comm)
             {
                 mesh1_.broadcast(root,comm);
                 detail::bcast(data_, root, comm);
             }
+#endif          
 
         };
         template<class value_type, class MESH1> std::ostream &operator<<(std::ostream &os, one_index_gf<value_type,MESH1> G){
@@ -343,6 +342,7 @@ namespace alps {
                 ar[path+"/data"] >> data_;
             }
         
+#ifdef ALPS_HAVE_MPI
             /// Broadcast the GF (with meshes)
             void broadcast(int root, MPI_Comm comm)
             {
@@ -350,6 +350,7 @@ namespace alps {
                 mesh2_.broadcast(root, comm);
                 detail::bcast(data_, root, comm);
             }
+#endif
 
         };
 
@@ -526,14 +527,16 @@ namespace alps {
                 ar[path+"/data"] >> data_;
             }
         
+#ifdef ALPS_HAVE_MPI
             /// Broadcast the GF (with meshes)
-            void broadcast(int root, MPI_Comm comm)
+            void broadcast(int root, const alps::mpi::communicator& comm)
             {
                 mesh1_.broadcast(root, comm);
                 mesh2_.broadcast(root, comm);
                 mesh3_.broadcast(root, comm);
                 detail::bcast(data_, root, comm);
             }
+#endif
         };
 
         template<class value_type, class MESH1, class MESH2, class MESH3> std::ostream &operator<<(std::ostream &os, three_index_gf<value_type,MESH1,MESH2,MESH3> G){
@@ -721,14 +724,9 @@ namespace alps {
                 ar[path+"/data"] >> data_;
             }
 
-            // /// Broadcast the data portion of GF (assuming identical meshes)
-            // void broadcast_data(int root, MPI_Comm comm)
-            // {
-            //     detail::bcast(data_, root, comm);
-            // }
-
+#ifdef ALPS_HAVE_MPI
             /// Broadcast the GF (with meshes)
-            void broadcast(int root, MPI_Comm comm)
+            void broadcast(int root, const alps::mpi::communicator& comm)
             {
                 mesh1_.broadcast(root,comm);
                 mesh2_.broadcast(root,comm);
@@ -736,6 +734,7 @@ namespace alps {
                 mesh4_.broadcast(root,comm);
                 detail::bcast(data_, root, comm);
             }
+#endif
         };
 
 
@@ -933,6 +932,7 @@ namespace alps {
                 ar[path+"/data"] >> data_;
             }
 
+#ifdef ALPS_HAVE_MPI
             /// Broadcast the GF (with meshes)
             void broadcast(int root, MPI_Comm comm)
             {
@@ -943,6 +943,7 @@ namespace alps {
                 mesh5_.broadcast(root,comm);
                 detail::bcast(data_, root, comm);
             }
+#endif
             
         };
         template<class value_type, class MESH1, class MESH2, class MESH3, class MESH4, class MESH5> std::ostream &operator<<(std::ostream &os, five_index_gf<value_type,MESH1,MESH2,MESH3,MESH4,MESH5> G){

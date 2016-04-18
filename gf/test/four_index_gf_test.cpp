@@ -71,37 +71,6 @@ TEST_F(FourIndexGFTest,saveload)
     //boost::filesystem::remove("g5.h5");
 }
 
-TEST_F(FourIndexGFTest,MpiBroadcast)
-{
-    int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    const int master=0;
-    
-    alps::gf::matsubara_index omega; omega=4;
-    alps::gf::momentum_index i; i=2;
-    alps::gf::momentum_index j=alps::gf::momentum_index(3);
-    alps::gf::index sigma(1);
-
-    gf.initialize();
-
-    if (rank==master) {
-      gf(omega,i,j,sigma)=std::complex<double>(3,4);
-    }
-
-    if (rank!=master) {
-      std::complex<double> x=gf(omega,i,j,sigma);
-        EXPECT_EQ(0.0, x.real());
-        EXPECT_EQ(0.0, x.imag());
-    }
-
-    gf.broadcast(master,MPI_COMM_WORLD);
-
-    {
-      std::complex<double> x=gf(omega,i,j,sigma);
-        EXPECT_NEAR(3, x.real(),1.e-10);
-        EXPECT_NEAR(4, x.imag(),1.e-10);
-    }
-}
 
 TEST_F(FourIndexGFTest, tail)
 {
@@ -176,48 +145,6 @@ TEST_F(FourIndexGFTest, TailSaveLoad)
     EXPECT_EQ(3, gft2(g::matsubara_index(4),g::momentum_index(3), g::momentum_index(2), g::index(1)).imag()) << "GF imag part mismatch";
 }
 
-TEST_F(FourIndexGFTest, MpiTailBroadcast)
-{
-    namespace g=alps::gf;
-    typedef g::three_index_gf<double, g::momentum_index_mesh, g::momentum_index_mesh, g::index_mesh> density_matrix_type;
-    density_matrix_type denmat=density_matrix_type(g::momentum_index_mesh(get_data_for_momentum_mesh()), g::momentum_index_mesh(get_data_for_momentum_mesh()),
-                                                   g::index_mesh(nspins));
-
-    int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    const int master=0;
-    
-    // prepare diagonal matrix
-    double U=3.0;
-    denmat.initialize();
-    for (g::momentum_index i=g::momentum_index(0); i<denmat.mesh1().extent(); ++i) {
-      denmat(i,i,g::index(0))=0.5*U;
-      denmat(i,i,g::index(1))=0.5*U;
-    }
-
-    g::omega_k1_k2_sigma_gf_with_tail gft(gf);
-    int order=0;
-    if (rank==master) { // on master only
-      // attach a tail to the GF:
-      gft.set_tail(order, denmat);
-      // change the GF
-      gft(g::matsubara_index(4),g::momentum_index(3), g::momentum_index(2), g::index(1))=std::complex<double>(7., 3.);
-    } else { // on receiving ranks, make sure that the tail is there, with empty data
-      gft.set_tail(order, density_matrix_type(g::momentum_index_mesh(denmat.mesh1().points()),
-                                              g::momentum_index_mesh(denmat.mesh2().points()),
-                                              g::index_mesh(nspins)));
-    }
-
-    // broadcast the GF with tail
-    gft.broadcast(master,MPI_COMM_WORLD);
-
-    EXPECT_EQ(7, gft(g::matsubara_index(4),g::momentum_index(3), g::momentum_index(2), g::index(1)).real()) << "GF real part mismatch on rank " << rank;
-    EXPECT_EQ(3, gft(g::matsubara_index(4),g::momentum_index(3), g::momentum_index(2), g::index(1)).imag()) << "GF imag part mismatch on rank " << rank;
-
-    ASSERT_EQ(1, gft.tail().size()) << "Tail size mismatch on rank " << rank;
-    EXPECT_NEAR(0, (gft.tail(0)-denmat).norm(), 1E-8) << "Tail broadcast differs from the received on rank " << rank; 
-}
-
 
 TEST_F(FourIndexGFTest,print)
 {
@@ -233,35 +160,4 @@ TEST_F(FourIndexGFTest,print)
     gf_stream_by_hand<<(2*i+1)*M_PI/beta<<" 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 "<<std::endl;
   }
   EXPECT_EQ(gf_stream_by_hand.str(), gf_stream.str());
-}
-
-
-
-// Service function to run tests with MPI
-int run_tests()
-{
-    int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
-    // Run all non-MPI tests by master
-    ::testing::GTEST_FLAG(filter) = "-*.Mpi*";
-    if (rank==0) {
-        int rc=RUN_ALL_TESTS();
-        if (rc!=0) return rc;
-    }
-    // Run all MPI tests now
-    ::testing::GTEST_FLAG(filter) = "*.Mpi*";
-    int rc=RUN_ALL_TESTS();
-    return rc;
-}
-
-
-// if testing MPI, we need main()
-int main(int argc, char**argv)
-{
-    MPI_Init(&argc, &argv);
-    ::testing::InitGoogleTest(&argc, argv);
-    int rc=run_tests();
-    MPI_Finalize();
-    return rc;
 }

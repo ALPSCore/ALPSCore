@@ -5,8 +5,7 @@
 #ifndef ALPS_GF_MPI_BCAST_HPP_c030bec39d4b43b9a24a16b5805f542d
 #define ALPS_GF_MPI_BCAST_HPP_c030bec39d4b43b9a24a16b5805f542d
 
-// FIXME: will eventually go to ALPSCore
-#include "mpi_wrappers.hpp"
+#include <alps/utilities/mpi.hpp>
 #include <iostream>
 namespace alps {
     namespace gf {
@@ -18,9 +17,9 @@ namespace alps {
                 typedef std::vector<T> data_type;
                 typedef typename data_type::size_type size_type;
                 size_type root_sz=data.size();
-                alps::mpi::bcast(root_sz, root, comm);
+                alps::mpi::broadcast(comm, root_sz, root);
                 data.resize(root_sz);
-                alps::mpi::bcast(&data[0], root_sz, root, comm);
+                alps::mpi::broadcast(comm, &data[0], root_sz, root);
             }
             
             /// Broadcast a multi-array.
@@ -32,7 +31,7 @@ namespace alps {
                @note Any detected mismatch results in MPI_Abort()
              */
             template <typename T, size_t N>
-            void bcast(boost::multi_array<T,N>& data, int root, MPI_Comm comm)
+            void bcast(boost::multi_array<T,N>& data, int root, const alps::mpi::communicator& comm)
             {
                 typedef boost::multi_array<T,N> data_type;
                 typedef typename data_type::index index_type;
@@ -53,7 +52,7 @@ namespace alps {
 #ifndef         BOOST_DISABLE_ASSERTS
                     {
                         size_type ndim=N;
-                        MPI_Bcast(&ndim, 1, alps::mpi::mpi_type<size_type>(), root, comm);
+                        alps::mpi::broadcast(comm, ndim, root);
                         if (ndim!=N) {
                             throw std::logic_error("Different multi_array dimensions in broadcast:\n"
                                                    "root (rank #"+
@@ -83,7 +82,7 @@ namespace alps {
                 if (is_root) {
                     std::copy(root_bases, root_bases+N, bases.begin()); // FIXME: this copy is not needed if done carefully
                 }
-                MPI_Bcast(bases.data(), N, alps::mpi::mpi_type<index_type>(), root, comm);
+                alps::mpi::broadcast(comm, bases.data(), N, root);
 
                 // Broadcast the array shape
                 boost::array<size_type,N> shape;
@@ -91,7 +90,7 @@ namespace alps {
                     const size_type* root_shape=data.shape();
                     std::copy(root_shape, root_shape+N, shape.begin()); // FIXME: this copy is not needed if done carefully
                 }
-                MPI_Bcast(shape.data(), N, alps::mpi::mpi_type<size_type>(), root, comm);
+                alps::mpi::broadcast(comm, shape.data(), N, root);
 
                 if (! is_root) {
                     data.resize(shape);
