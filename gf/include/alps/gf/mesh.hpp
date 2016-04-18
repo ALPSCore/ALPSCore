@@ -52,7 +52,7 @@ namespace alps {
             int operator()() const { return index_; }
 
 #ifdef ALPS_HAVE_MPI
-            void broadcast(int root, const alps::mpi::communicator& comm) {
+          void broadcast(const alps::mpi::communicator& comm, int root) {
                 alps::mpi::broadcast(comm, index_, root);
             }
 #endif
@@ -152,7 +152,7 @@ namespace alps {
             }
 
 #ifdef ALPS_HAVE_MPI
-            void broadcast(int root, const alps::mpi::communicator& comm)
+          void broadcast(const alps::mpi::communicator& comm, int root)
             {
                 using alps::mpi::broadcast;
                 // FIXME: introduce (debug-only?) consistency check, like type checking? akin to load()?
@@ -270,7 +270,7 @@ namespace alps {
             }
 
 #ifdef ALPS_HAVE_MPI
-            void broadcast(int root, const alps::mpi::communicator& comm)
+          void broadcast(const alps::mpi::communicator& comm, int root)
             {
                 using alps::mpi::broadcast;
                 // FIXME: introduce (debug-only?) consistency check, like type checking? akin to load()?
@@ -359,7 +359,7 @@ namespace alps {
             }
 
 #ifdef ALPS_HAVE_MPI
-            void broadcast(int root, const alps::mpi::communicator& comm)
+          void broadcast(const alps::mpi::communicator& comm, int root)
             {
                 using alps::mpi::broadcast;
                 // FIXME: introduce (debug-only?) consistency check, like type checking? akin to load()?
@@ -448,7 +448,7 @@ namespace alps {
             }
 
 #ifdef ALPS_HAVE_MPI
-            void broadcast(int root, const alps::mpi::communicator& comm)
+          void broadcast(const alps::mpi::communicator& comm, int root)
             {
                 using alps::mpi::broadcast;
                 broadcast(comm, npoints_, root);

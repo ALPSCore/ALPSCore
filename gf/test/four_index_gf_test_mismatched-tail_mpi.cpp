@@ -46,7 +46,7 @@ TEST_F(FourIndexGFTest,MpiWrongTailBroadcast)
     }
     // slaves do not have the tail attached to their GF.
 
-    gft.broadcast(MASTER,alps::mpi::communicator());
+    gft.broadcast(alps::mpi::communicator(), MASTER);
 
     EXPECT_EQ(7, gft(g::matsubara_index(4),g::momentum_index(3), g::momentum_index(2), g::index(1)).real()) << "GF real part mismatch on rank " << rank;
     EXPECT_EQ(3, gft(g::matsubara_index(4),g::momentum_index(3), g::momentum_index(2), g::index(1)).imag()) << "GF imag part mismatch on rank " << rank;

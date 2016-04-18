@@ -9,10 +9,11 @@ namespace alps {
         namespace detail {
 #ifdef ALPS_HAVE_MPI
             template <typename TAILT>
-            void broadcast_tail(int& min_order, int& max_order,
+            void broadcast_tail(const alps::mpi::communicator& comm,
+                                int& min_order, int& max_order,
                                 std::vector<TAILT>& tails,
                                 const TAILT& tail_init,
-                                int root, const alps::mpi::communicator& comm)
+                                int root)
             {
                 using alps::mpi::broadcast;
                 broadcast(comm, min_order, root);
@@ -23,7 +24,7 @@ namespace alps {
                     tails.resize(max_order+1, tail_init);
                 }
                 for (int i=min_order; i<=max_order; ++i) {
-                    tails[i].broadcast(root,comm);
+                    tails[i].broadcast(comm,root);
                 }
             }
 #endif
@@ -124,13 +125,14 @@ namespace alps {
 
 #ifdef ALPS_HAVE_MPI
             /// Broadcast the tail and the GF
-            void broadcast(int root, MPI_Comm comm)
+          void broadcast(MPI_Comm comm, int root)
             {
                 // FIXME: use clone-swap?
-                gf_type::broadcast(root,comm);
-                detail::broadcast_tail(min_tail_order_, max_tail_order_,
+                gf_type::broadcast(comm,root);
+                detail::broadcast_tail(comm,
+                                       min_tail_order_, max_tail_order_,
                                        tails_, tail_type(this->mesh2()),
-                                       root, comm);
+                                       root);
             }
 #endif
         };
@@ -233,13 +235,14 @@ namespace alps {
 
 #ifdef ALPS_HAVE_MPI
             /// Broadcast the tail and the GF
-            void broadcast(int root, MPI_Comm comm)
+          void broadcast(MPI_Comm comm, int root)
             {
                 // FIXME: use clone-swap?
-                gf_type::broadcast(root,comm);
-                detail::broadcast_tail(min_tail_order_, max_tail_order_,
+                gf_type::broadcast(comm,root);
+                detail::broadcast_tail(comm,
+                                       min_tail_order_, max_tail_order_,
                                        tails_, tail_type(this->mesh2(), this->mesh3()),
-                                       root, comm);
+                                       root);
             }
 #endif
 
@@ -343,13 +346,14 @@ namespace alps {
 
 #ifdef ALPS_HAVE_MPI
             /// Broadcast the tail and the GF
-            void broadcast(int root, const alps::mpi::communicator& comm)
+          void broadcast(const alps::mpi::communicator& comm, int root)
             {
                 // FIXME: use clone-swap?
-                gf_type::broadcast(root,comm);
-                detail::broadcast_tail(min_tail_order_, max_tail_order_,
+                gf_type::broadcast(comm,root);
+                detail::broadcast_tail(comm,
+                                       min_tail_order_, max_tail_order_,
                                        tails_, tail_type(this->mesh2(),this->mesh3(),this->mesh4()),
-                                       root, comm);
+                                       root);
             }
 #endif
 

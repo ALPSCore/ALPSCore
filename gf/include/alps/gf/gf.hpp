@@ -176,9 +176,9 @@ namespace alps {
 
 #ifdef ALPS_HAVE_MPI
             /// Broadcast the GF (together with meshes)
-            void broadcast(int root, const alps::mpi::communicator& comm)
+          void broadcast(const alps::mpi::communicator& comm, int root)
             {
-                mesh1_.broadcast(root,comm);
+                mesh1_.broadcast(comm,root);
                 detail::broadcast(comm, data_, root);
             }
 #endif          
@@ -344,10 +344,10 @@ namespace alps {
         
 #ifdef ALPS_HAVE_MPI
             /// Broadcast the GF (with meshes)
-            void broadcast(int root, MPI_Comm comm)
+          void broadcast(MPI_Comm comm, int root)
             {
-                mesh1_.broadcast(root, comm);
-                mesh2_.broadcast(root, comm);
+                mesh1_.broadcast(comm, root);
+                mesh2_.broadcast(comm, root);
                 detail::broadcast(comm, data_, root);
             }
 #endif
@@ -529,11 +529,11 @@ namespace alps {
         
 #ifdef ALPS_HAVE_MPI
             /// Broadcast the GF (with meshes)
-            void broadcast(int root, const alps::mpi::communicator& comm)
+          void broadcast(const alps::mpi::communicator& comm, int root)
             {
-                mesh1_.broadcast(root, comm);
-                mesh2_.broadcast(root, comm);
-                mesh3_.broadcast(root, comm);
+                mesh1_.broadcast(comm, root);
+                mesh2_.broadcast(comm, root);
+                mesh3_.broadcast(comm, root);
                 detail::broadcast(comm, data_, root);
             }
 #endif
@@ -726,12 +726,12 @@ namespace alps {
 
 #ifdef ALPS_HAVE_MPI
             /// Broadcast the GF (with meshes)
-            void broadcast(int root, const alps::mpi::communicator& comm)
+          void broadcast(const alps::mpi::communicator& comm, int root)
             {
-                mesh1_.broadcast(root,comm);
-                mesh2_.broadcast(root,comm);
-                mesh3_.broadcast(root,comm);
-                mesh4_.broadcast(root,comm);
+                mesh1_.broadcast(comm,root);
+                mesh2_.broadcast(comm,root);
+                mesh3_.broadcast(comm,root);
+                mesh4_.broadcast(comm,root);
                 detail::broadcast(comm, data_, root);
             }
 #endif
@@ -934,13 +934,13 @@ namespace alps {
 
 #ifdef ALPS_HAVE_MPI
             /// Broadcast the GF (with meshes)
-            void broadcast(int root, MPI_Comm comm)
+          void broadcast(MPI_Comm comm, int root)
             {
-                mesh1_.broadcast(root,comm);
-                mesh2_.broadcast(root,comm);
-                mesh3_.broadcast(root,comm);
-                mesh4_.broadcast(root,comm);
-                mesh5_.broadcast(root,comm);
+                mesh1_.broadcast(comm,root);
+                mesh2_.broadcast(comm,root);
+                mesh3_.broadcast(comm,root);
+                mesh4_.broadcast(comm,root);
+                mesh5_.broadcast(comm,root);
                 detail::broadcast(comm, data_, root);
             }
 #endif

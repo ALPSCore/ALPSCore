@@ -25,7 +25,7 @@ TEST_F(FourIndexGFTest,MpiWrongBroadcast)
       gf_wrong(omega,i,j,sigma)=std::complex<double>(3,4);
     }
 
-    gf_wrong.broadcast(MASTER,alps::mpi::communicator());
+    gf_wrong.broadcast(alps::mpi::communicator(), MASTER);
     
     {
       std::complex<double> x=gf_wrong(omega,i,j,sigma);

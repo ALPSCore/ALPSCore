@@ -19,7 +19,7 @@ TEST_F(OneIndexGFTest,MpiBroadcast)
         EXPECT_EQ(0.0, x.imag());
     }
 
-    gf.broadcast(master,alps::mpi::communicator());
+    gf.broadcast(alps::mpi::communicator(), master);
 
     {
         std::complex<double> x=gf(omega);
@@ -44,7 +44,7 @@ TEST_F(OneIndexGFTest,MpiWrongBroadcast)
         gf_wrong(omega)=std::complex<double>(3,4);
     }
 
-    gf_wrong.broadcast(master,alps::mpi::communicator());
+    gf_wrong.broadcast(alps::mpi::communicator(), master);
     
     {
         std::complex<double> x=gf_wrong(omega);
