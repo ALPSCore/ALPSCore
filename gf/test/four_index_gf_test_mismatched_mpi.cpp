@@ -1,3 +1,5 @@
+#include <alps/utilities/gtest_par_xml_output.hpp>
+
 #include "four_index_gf_test.hpp"
 #include "mpi_guard.hpp"
 
@@ -7,8 +9,7 @@ static const int MASTER=0;
 // Check incompatible mesh broadcast
 TEST_F(FourIndexGFTest,MpiWrongBroadcast)
 {
-    int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    int rank=alps::mpi::communicator().rank();
     
     alps::gf::matsubara_index omega; omega=4;
     alps::gf::momentum_index i; i=2;
@@ -37,7 +38,9 @@ TEST_F(FourIndexGFTest,MpiWrongBroadcast)
 // for testing MPI, we need main()
 int main(int argc, char**argv)
 {
-    MPI_Init(&argc, &argv);
+    alps::mpi::environment mpi_env(argc, argv);
+    alps::gtest_par_xml_output tweak;
+    tweak(alps::mpi::communicator().rank(), argc, argv);
     ::testing::InitGoogleTest(&argc, argv);
     
     Mpi_guard guard(MASTER,"four_index_gf_test_mismatched-mpi.dat.");
@@ -49,6 +52,5 @@ int main(int argc, char**argv)
         // downside is the test aborts, rather than reports failure!
     }
 
-    MPI_Finalize();
     return rc;
 }

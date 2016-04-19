@@ -1,4 +1,5 @@
 #include "gtest/gtest.h"
+#include <alps/utilities/gtest_par_xml_output.hpp>
 #include "alps/gf/mesh.hpp"
 #include "gf_test.hpp"
 
@@ -12,7 +13,7 @@ class MeshTest : public ::testing::Test {
   public:
     static const int MASTER=0;
     MeshTest() {
-        MPI_Comm_rank(MPI_COMM_WORLD, &rank_);
+        rank_=alps::mpi::communicator().rank();
         is_root_=(rank_==MASTER);
     }
 };
@@ -87,7 +88,10 @@ TEST_F(MeshTest,MpiBcastIndex) {
 // for testing MPI, we need main()
 int main(int argc, char**argv)
 {
-    MPI_Init(&argc, &argv);
+    alps::mpi::environment env(argc, argv, false);
+    alps::gtest_par_xml_output tweak;
+    tweak(alps::mpi::communicator().rank(), argc, argv);
+
     ::testing::InitGoogleTest(&argc, argv);
 
     Mpi_guard guard(0, "mesh_test_mpi.dat.");
@@ -99,6 +103,5 @@ int main(int argc, char**argv)
         // downside is the test aborts, rather than reports failure!
     }
 
-    MPI_Finalize();
     return rc;
 }

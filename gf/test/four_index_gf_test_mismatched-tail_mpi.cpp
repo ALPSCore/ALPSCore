@@ -1,6 +1,7 @@
 #include "four_index_gf_test.hpp"
-
 #include "mpi_guard.hpp"
+
+#include <alps/utilities/gtest_par_xml_output.hpp>
 
 /* 
    NOTE: This program relies on file I/O to exchange info between processes
@@ -24,8 +25,7 @@ TEST_F(FourIndexGFTest,MpiWrongTailBroadcast)
                                                    g::index_mesh(this->nspins));
 
     // Get the rank
-    int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    int rank=alps::mpi::communicator().rank();
   
     // prepare diagonal matrix
     double U=3.0;
@@ -58,7 +58,10 @@ TEST_F(FourIndexGFTest,MpiWrongTailBroadcast)
 // for testing MPI, we need main()
 int main(int argc, char**argv)
 {
-    MPI_Init(&argc, &argv);
+    alps::mpi::environment env(argc, argv, false);
+    alps::gtest_par_xml_output tweak;
+    tweak(alps::mpi::communicator().rank(), argc, argv);
+
     ::testing::InitGoogleTest(&argc, argv);
 
     Mpi_guard guard(MASTER,"four_index_gf_test_mismatched-tail-mpi.dat.");
@@ -70,6 +73,5 @@ int main(int argc, char**argv)
         // downside is the test aborts, rather than reports failure!
     }
 
-    MPI_Finalize();
     return rc;
 }

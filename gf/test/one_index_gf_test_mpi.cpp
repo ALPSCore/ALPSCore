@@ -1,9 +1,9 @@
+#include <alps/utilities/gtest_par_xml_output.hpp>
 #include "one_index_gf_test.hpp"
 
 TEST_F(OneIndexGFTest,MpiBroadcast)
 {
-    int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    int rank=alps::mpi::communicator().rank();
     const int master=0;
     
     alps::gf::matsubara_index omega; omega=4;
@@ -31,8 +31,7 @@ TEST_F(OneIndexGFTest,MpiBroadcast)
 // Check incompatible mesh broadcast
 TEST_F(OneIndexGFTest,MpiWrongBroadcast)
 {
-    int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    int rank=alps::mpi::communicator().rank();
     const int master=0;
     
     alps::gf::matsubara_index omega; omega=4;
@@ -57,9 +56,12 @@ TEST_F(OneIndexGFTest,MpiWrongBroadcast)
 // if testing MPI, we need main()
 int main(int argc, char**argv)
 {
-    MPI_Init(&argc, &argv);
+    alps::mpi::environment env(argc, argv, false);
+    alps::gtest_par_xml_output tweak;
+    tweak(alps::mpi::communicator().rank(), argc, argv);
+
     ::testing::InitGoogleTest(&argc, argv);
     int rc=RUN_ALL_TESTS();;
-    MPI_Finalize();
+
     return rc;
 }

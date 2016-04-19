@@ -2,6 +2,7 @@
 
 #include "gtest/gtest.h"
 #include "mpi_guard.hpp"
+#include <alps/utilities/gtest_par_xml_output.hpp>
 
 #define ARRAY_EXTENTS boost::extents[2][3][5][7]
 
@@ -18,7 +19,7 @@ class GfMultiArrayTest : public ::testing::Test {
     static const int BASE=1;
 
     GfMultiArrayTest() : ref_data_(ARRAY_EXTENTS) {
-        MPI_Comm_rank(MPI_COMM_WORLD,&rank_);
+        rank_=alps::mpi::communicator().rank();
         is_root_=(rank_==MASTER);
         
         for (data_type::index i=0; i<ref_data_.num_elements(); ++i) {
@@ -78,7 +79,10 @@ TEST_F(GfMultiArrayTest, DISABLED_MpiBroadcastDimMismatch) {
 // for testing MPI, we need main()
 int main(int argc, char**argv)
 {
-    MPI_Init(&argc, &argv);
+    alps::mpi::environment env(argc, argv, false);
+    alps::gtest_par_xml_output tweak;
+    tweak(alps::mpi::communicator().rank(), argc, argv);
+
     ::testing::InitGoogleTest(&argc, argv);
 
     Mpi_guard guard(0, "multiarray_bcast_mpi.dat.");
@@ -91,6 +95,5 @@ int main(int argc, char**argv)
         // downside is the test aborts, rather than reports failure!
     }
 
-    MPI_Finalize();
     return rc;
 }
