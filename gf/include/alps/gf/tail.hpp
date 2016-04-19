@@ -125,7 +125,7 @@ namespace alps {
 
 #ifdef ALPS_HAVE_MPI
             /// Broadcast the tail and the GF
-          void broadcast(MPI_Comm comm, int root)
+          void broadcast(const alps::mpi::communicator& comm, int root)
             {
                 // FIXME: use clone-swap?
                 gf_type::broadcast(comm,root);
@@ -235,7 +235,7 @@ namespace alps {
 
 #ifdef ALPS_HAVE_MPI
             /// Broadcast the tail and the GF
-          void broadcast(MPI_Comm comm, int root)
+          void broadcast(const alps::mpi::communicator& comm, int root)
             {
                 // FIXME: use clone-swap?
                 gf_type::broadcast(comm,root);

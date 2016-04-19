@@ -20,6 +20,7 @@
 #include <mpi.h>
 
 #include <vector>
+#include <complex>
 
 #include <boost/scoped_array.hpp> /* for std::string broadcast */
 
@@ -143,6 +144,13 @@ namespace alps {
         inline void broadcast(const communicator& comm, bool* vals, std::size_t count, int root) {
             // sizeof() returns size in chars (FIXME? should it be bytes?)
             MPI_Bcast(vals, count*sizeof(bool), MPI_CHAR, root, comm); 
+        }
+
+        /// MPI_BCast of an array: overload for std::complex
+        template <typename T>
+        inline void broadcast(const communicator& comm, std::complex<T>* vals, std::size_t count, int root) {
+            // sizeof() returns size in chars (FIXME? should it be bytes?)
+            MPI_Bcast(vals, count*sizeof(std::complex<T>), MPI_CHAR, root, comm); 
         }
 
         /// Broadcasts value `val` of a primitive type `T` on communicator `comm` with root `root`

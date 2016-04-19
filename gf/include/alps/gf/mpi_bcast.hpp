@@ -13,7 +13,7 @@ namespace alps {
             /// Broadcast a vector
             /** @note Non-default allocator is silently unsupported. */ 
             template <typename T>
-            void broadcast(MPI_Comm comm, std::vector<T>& data, int root) {
+            void broadcast(const alps::mpi::communicator& comm, std::vector<T>& data, int root) {
                 typedef std::vector<T> data_type;
                 typedef typename data_type::size_type size_type;
                 size_type root_sz=data.size();
@@ -37,8 +37,7 @@ namespace alps {
                 typedef typename data_type::index index_type;
                 typedef typename data_type::size_type size_type;
                 
-                int rank;
-                MPI_Comm_rank(comm,&rank);
+                int rank=comm.rank();
                 const bool is_root=(rank==root);
 
                 try {
@@ -97,23 +96,23 @@ namespace alps {
                     data.reindex(bases);
                 }
                 
-                size_t nbytes=data.num_elements()*sizeof(T);
+                size_t nelements=data.num_elements();
 
                 // This is an additional broadcast, but we need to ensure MPI broadcast correctness,
                 // otherwise it would be a hell to debug down the road figuring out what exactly went wrong.
-                unsigned long nbytes_root=nbytes;
-                MPI_Bcast(&nbytes_root, 1, MPI_UNSIGNED_LONG, root, comm);
-                if (nbytes_root!=nbytes) {
+                unsigned long nelements_root=nelements;
+                alps::mpi::broadcast(comm, nelements_root, root);
+                if (nelements_root!=nelements) {
                     // Should never happen, but if it has, 
                     // our best course is to abort here and now.
                     std::cerr << "Broadcast of incompatible boost::multi_array data detected on rank " << rank
-                              << ".\nRoot sends " << nbytes_root << " bytes,"
-                              << " this process expects " << nbytes << " bytes."
+                              << ".\nRoot sends " << nelements_root << " elements,"
+                              << " this process expects " << nelements << " elements."
                               << "\nAborting..."
                               << std::endl;
                     MPI_Abort(MPI_COMM_WORLD, 1);
                 }
-                MPI_Bcast(&data(bases), nbytes, MPI_BYTE, root, comm);
+                alps::mpi::broadcast(comm, &data(bases), nelements, root);
             }
 
         } // detail::

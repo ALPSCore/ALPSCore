@@ -162,8 +162,7 @@ namespace alps {
                     check_range(); 
                 } catch (const std::exception& exc) {
                     // FIXME? Try to communiucate the error with all ranks, at least in debug mode?
-                    int wrank;
-                    MPI_Comm_rank(MPI_COMM_WORLD, &wrank);
+                    int wrank=alps::mpi::communicator().rank();
                     std::cerr << "matsubara_mesh<>::broadcast() exception at WORLD rank=" << wrank << std::endl
                               << exc.what()
                               << "\nAborting." << std::endl;

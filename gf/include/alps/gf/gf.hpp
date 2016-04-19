@@ -344,7 +344,7 @@ namespace alps {
         
 #ifdef ALPS_HAVE_MPI
             /// Broadcast the GF (with meshes)
-          void broadcast(MPI_Comm comm, int root)
+          void broadcast(const alps::mpi::communicator& comm, int root)
             {
                 mesh1_.broadcast(comm, root);
                 mesh2_.broadcast(comm, root);
@@ -934,7 +934,7 @@ namespace alps {
 
 #ifdef ALPS_HAVE_MPI
             /// Broadcast the GF (with meshes)
-          void broadcast(MPI_Comm comm, int root)
+          void broadcast(const alps::mpi::communicator& comm, int root)
             {
                 mesh1_.broadcast(comm,root);
                 mesh2_.broadcast(comm,root);
