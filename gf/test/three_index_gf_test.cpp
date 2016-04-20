@@ -20,6 +20,7 @@ class ThreeIndexTestGF : public ::testing::Test
                 alps::gf::index_mesh(nspins)),
              gf2(gf) {}
 };
+
 TEST_F(ThreeIndexTestGF,access)
 {
     alps::gf::matsubara_index omega; omega=4;
@@ -198,6 +199,40 @@ TEST_F(ThreeIndexTestGF,EqOperators)
         }
     }
 }
+
+TEST_F(ThreeIndexTestGF,AssignDifferentGF)
+{
+    namespace g=alps::gf;
+
+    gf_type other_gf_beta(g::matsubara_positive_mesh(2*beta,nfreq),
+                          g::momentum_index_mesh(get_data_for_momentum_mesh()),
+                          g::index_mesh(nspins));
+    
+    gf_type other_gf_nfreq(g::matsubara_positive_mesh(beta,nfreq*2),
+                          g::momentum_index_mesh(get_data_for_momentum_mesh()),
+                          g::index_mesh(nspins));
+    
+    gf_type other_gf_nspins(g::matsubara_positive_mesh(beta,nfreq*2),
+                            g::momentum_index_mesh(get_data_for_momentum_mesh()),
+                            g::index_mesh(2*nspins));
+    
+    alps::gf::matsubara_index omega; omega=4;
+    alps::gf::momentum_index i; i=2;
+    alps::gf::index sigma(1);
+
+    const std::complex<double> data(3,4);
+    gf(omega, i,sigma)=data;
+
+    other_gf_beta=gf;
+    EXPECT_EQ(data, other_gf_beta(omega,i,sigma));
+    
+    other_gf_nfreq=gf;
+    EXPECT_EQ(data, other_gf_nfreq(omega,i,sigma));
+
+    other_gf_nspins=gf;
+    EXPECT_EQ(data, other_gf_nspins(omega,i,sigma));
+}
+
 
 TEST_F(ThreeIndexTestGF,Operators)
 {
