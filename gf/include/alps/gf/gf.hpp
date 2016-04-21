@@ -33,7 +33,15 @@ namespace alps {
             }
             template<> void print_no_complex(std::ostream &os, const std::complex<double> &z); //specialization for printing complex as ... real imag ...
 
-
+            /// Binary operation returning its RHS (used for assignment-as-binary-op)
+            template <typename T>
+            class choose_rhs {
+              public:
+                const T& operator()(const T&, const T& rhs) const
+                {
+                    return rhs;
+                }
+            };
         }
 
         template<class VTYPE, class MESH1> class one_index_gf
@@ -49,6 +57,15 @@ namespace alps {
             MESH1 mesh1_;
 
             container_type data_;
+
+            /// Check if meshes are compatible, throw if not
+            void check_meshes(const one_index_gf& rhs)
+            {
+                if (mesh1_!=rhs.mesh1_) {
+                    throw std::invalid_argument("Green Functions have incompatible meshes");
+                }
+            }
+          
             public:
             one_index_gf(const MESH1& mesh1)
                 : mesh1_(mesh1),
@@ -113,11 +130,7 @@ namespace alps {
             template <typename op>
             one_index_gf& do_op(const one_index_gf& rhs)
             {
-                if (mesh1_!=rhs.mesh1_) {
-
-                    throw std::runtime_error("Incompatible meshes in one_index_gf::do_op");
-                }
-
+                check_meshes(rhs);
                 std::transform(data_.origin(), data_.origin()+data_.num_elements(), rhs.data_.origin(), // inputs
                                data_.origin(), // output
                                op());
@@ -149,6 +162,14 @@ namespace alps {
                 return do_op< std::divides<value_type> >(scalar);
             }
 
+            /// Element-wise assignment
+            /** @Note Copies only the data, requires identical grids. */
+            // FIXME: this is a hack, to be replaced by a proper assignment later
+            one_index_gf& operator=(const one_index_gf& rhs)
+            {
+                return do_op< detail::choose_rhs<value_type> >(rhs);
+            }
+            
             /// Save the GF to HDF5
             void save(alps::hdf5::archive& ar, const std::string& path) const
             {
@@ -209,6 +230,17 @@ namespace alps {
             MESH2 mesh2_;
 
             container_type data_;
+
+            /// Check if meshes are compatible, throw if not
+            void check_meshes(const two_index_gf& rhs)
+            {
+                if (mesh1_!=rhs.mesh1_ ||
+                    mesh2_!=rhs.mesh2_) {
+                    throw std::invalid_argument("Green Functions have incompatible meshes");
+                }
+            }
+          
+
             public:
             two_index_gf(const MESH1& mesh1,
                          const MESH2& mesh2)
@@ -266,12 +298,7 @@ namespace alps {
             template <typename op>
             two_index_gf& do_op(const two_index_gf& rhs)
             {
-                if (mesh1_!=rhs.mesh1_ ||
-                    mesh2_!=rhs.mesh2_ ) {
-                    
-                    throw std::runtime_error("Incompatible meshes in two_index_gf::operator+=");
-                }
-
+                check_meshes(rhs);
                 std::transform(data_.origin(), data_.origin()+data_.num_elements(), rhs.data_.origin(), // inputs
                                data_.origin(), // output
                                op());
@@ -315,6 +342,14 @@ namespace alps {
                 return do_op< std::divides<value_type> >(scalar);
             }
 
+            /// Element-wise assignment
+            /** @Note Copies only the data, requires identical grids. */
+            // FIXME: this is a hack, to be replaced by a proper assignment later
+            two_index_gf& operator=(const two_index_gf& rhs)
+            {
+                return do_op< detail::choose_rhs<value_type> >(rhs);
+            }
+            
             /// Save the GF to HDF5
             void save(alps::hdf5::archive& ar, const std::string& path) const
             {
@@ -385,6 +420,16 @@ namespace alps {
         
             container_type data_;
             
+            /// Check if meshes are compatible, throw if not
+            void check_meshes(const three_index_gf& rhs)
+            {
+                if (mesh1_!=rhs.mesh1_ ||
+                    mesh2_!=rhs.mesh2_ ||
+                    mesh3_!=rhs.mesh3_) {
+                    throw std::invalid_argument("Green Functions have incompatible meshes");
+                }
+            }
+            
             public:
             three_index_gf(const MESH1& mesh1,
                            const MESH2& mesh2,
@@ -448,13 +493,7 @@ namespace alps {
             template <typename op>
             three_index_gf& do_op(const three_index_gf& rhs)
             {
-                if (mesh1_!=rhs.mesh1_ ||
-                    mesh2_!=rhs.mesh2_ ||
-                    mesh3_!=rhs.mesh3_ ) {
-                    
-                    throw std::runtime_error("Incompatible meshes in three_index_gf::operator+=");
-                }
-
+                check_meshes(rhs);
                 std::transform(data_.origin(), data_.origin()+data_.num_elements(), rhs.data_.origin(), // inputs
                                data_.origin(), // output
                                op());
@@ -498,6 +537,14 @@ namespace alps {
                 return do_op< std::divides<value_type> >(scalar);
             }
 
+            /// Element-wise assignment
+            /** @Note Copies only the data, requires identical grids. */
+            // FIXME: this is a hack, to be replaced by a proper assignment later
+            three_index_gf& operator=(const three_index_gf& rhs)
+            {
+                return do_op< detail::choose_rhs<value_type> >(rhs);
+            }
+            
             /// Save the GF to HDF5
             void save(alps::hdf5::archive& ar, const std::string& path) const
             {
@@ -574,6 +621,17 @@ namespace alps {
 
             container_type data_;
 
+            /// Check if meshes are compatible, throw if not
+            void check_meshes(const four_index_gf& rhs)
+            {
+                if (mesh1_!=rhs.mesh1_ ||
+                    mesh2_!=rhs.mesh2_ ||
+                    mesh3_!=rhs.mesh3_ ||
+                    mesh4_!=rhs.mesh4_) {
+                    throw std::invalid_argument("Green Functions have incompatible meshes");
+                }
+            }
+
             public:
 
             four_index_gf(const MESH1& mesh1,
@@ -642,14 +700,7 @@ namespace alps {
             template <typename op>
             four_index_gf& do_op(const four_index_gf& rhs)
             {
-                if (mesh1_!=rhs.mesh1_ ||
-                    mesh2_!=rhs.mesh2_ ||
-                    mesh3_!=rhs.mesh3_ ||
-                    mesh4_!=rhs.mesh4_) {
-
-                    throw std::runtime_error("Incompatible meshes in three_index_gf::operator+=");
-                }
-
+                check_meshes(rhs);
                 std::transform(data_.origin(), data_.origin()+data_.num_elements(), rhs.data_.origin(), // inputs
                                data_.origin(), // output
                                op());
@@ -693,6 +744,14 @@ namespace alps {
                 return do_op< std::divides<value_type> >(scalar);
             }
 
+            /// Element-wise assignment
+            /** @Note Copies only the data, requires identical grids. */
+            // FIXME: this is a hack, to be replaced by a proper assignment later
+            four_index_gf& operator=(const four_index_gf& rhs)
+            {
+                return do_op< detail::choose_rhs<value_type> >(rhs);
+            }
+            
             /// Save the GF to HDF5
             void save(alps::hdf5::archive& ar, const std::string& path) const
             {
@@ -777,6 +836,18 @@ namespace alps {
 
             container_type data_;
 
+            /// Check if meshes are compatible, throw if not
+            void check_meshes(const five_index_gf& rhs)
+            {
+                if (mesh1_!=rhs.mesh1_ ||
+                    mesh2_!=rhs.mesh2_ ||
+                    mesh3_!=rhs.mesh3_ ||
+                    mesh4_!=rhs.mesh4_ ||
+                    mesh5_!=rhs.mesh5_) {
+                    throw std::invalid_argument("Green Functions have incompatible meshes");
+                }
+            }
+
             public:
 
             five_index_gf(const MESH1& mesh1,
@@ -849,15 +920,7 @@ namespace alps {
             template <typename op>
             five_index_gf& do_op(const five_index_gf& rhs)
             {
-                if (mesh1_!=rhs.mesh1_ ||
-                    mesh2_!=rhs.mesh2_ ||
-                    mesh3_!=rhs.mesh3_ ||
-                    mesh4_!=rhs.mesh4_ ||
-                    mesh5_!=rhs.mesh5_) {
-
-                    throw std::runtime_error("Incompatible meshes in five_index_gf::operator+=");
-                }
-
+                check_meshes(rhs);
                 std::transform(data_.origin(), data_.origin()+data_.num_elements(), rhs.data_.origin(), // inputs
                                data_.origin(), // output
                                op());
@@ -899,6 +962,14 @@ namespace alps {
                 return do_op< std::divides<value_type> >(scalar);
             }
 
+            /// Element-wise assignment
+            /** @Note Copies only the data, requires identical grids. */
+            // FIXME: this is a hack, to be replaced by a proper assignment later
+            five_index_gf& operator=(const five_index_gf& rhs)
+            {
+                return do_op< detail::choose_rhs<value_type> >(rhs);
+            }
+            
             /// Save the GF to HDF5
             void save(alps::hdf5::archive& ar, const std::string& path) const
             {

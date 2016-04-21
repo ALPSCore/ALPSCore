@@ -200,7 +200,7 @@ TEST_F(ThreeIndexTestGF,EqOperators)
     }
 }
 
-TEST_F(ThreeIndexTestGF,AssignDifferentGF)
+TEST_F(ThreeIndexTestGF,Assign)
 {
     namespace g=alps::gf;
 
@@ -216,21 +216,24 @@ TEST_F(ThreeIndexTestGF,AssignDifferentGF)
                             g::momentum_index_mesh(get_data_for_momentum_mesh()),
                             g::index_mesh(2*nspins));
     
-    alps::gf::matsubara_index omega; omega=4;
-    alps::gf::momentum_index i; i=2;
-    alps::gf::index sigma(1);
+    const alps::gf::matsubara_index omega(4);
+    const alps::gf::momentum_index i(2);
+    const alps::gf::index sigma(1);
 
     const std::complex<double> data(3,4);
-    gf(omega, i,sigma)=data;
+    gf(omega,i,sigma)=data;
 
-    other_gf_beta=gf;
-    EXPECT_EQ(data, other_gf_beta(omega,i,sigma));
+    gf2=gf;
+    EXPECT_EQ(data, gf2(omega,i,sigma));
     
-    other_gf_nfreq=gf;
-    EXPECT_EQ(data, other_gf_nfreq(omega,i,sigma));
+    EXPECT_THROW(other_gf_beta=gf, std::invalid_argument);
+    // EXPECT_EQ(data, other_gf_beta(omega,i,sigma));
+    
+    EXPECT_THROW(other_gf_nfreq=gf, std::invalid_argument);
+    // EXPECT_EQ(data, other_gf_nfreq(omega,i,sigma));
 
-    other_gf_nspins=gf;
-    EXPECT_EQ(data, other_gf_nspins(omega,i,sigma));
+    EXPECT_THROW(other_gf_nspins=gf, std::invalid_argument);
+    // EXPECT_EQ(data, other_gf_nspins(omega,i,sigma));
 }
 
 
@@ -307,7 +310,7 @@ TEST_F(ThreeIndexTestGF,print)
   }
   EXPECT_EQ(gf_stream_by_hand.str(), gf_stream.str());
 }
-#include "gf_test.hpp"
+
 
 
 

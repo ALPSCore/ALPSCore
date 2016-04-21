@@ -73,3 +73,18 @@ TEST_F(OneIndexGFTest,scaling)
     EXPECT_NEAR(3, x1.real(),1.e-10);
     EXPECT_NEAR(4, x1.imag(),1.e-10);
 }
+
+TEST_F(OneIndexGFTest,Assign)
+{
+    namespace g=alps::gf;
+    g::omega_gf other_gf(matsubara_mesh(beta, nfreq*2));
+    const g::matsubara_index omega(4);
+    const std::complex<double> data(3,4);
+    gf(omega)=data;
+    
+    gf2=gf;
+    EXPECT_EQ(data, gf2(omega));
+    
+    EXPECT_THROW(other_gf=gf, std::invalid_argument);
+    // EXPECT_EQ(data, other_gf(omega));
+}

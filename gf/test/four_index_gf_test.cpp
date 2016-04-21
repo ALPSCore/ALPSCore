@@ -45,6 +45,27 @@ TEST_F(FourIndexGFTest,scaling)
     EXPECT_NEAR(4, x1.imag(),1.e-10);
 }
 
+
+TEST_F(FourIndexGFTest,Assign)
+{
+    namespace g=alps::gf;
+    g::matsubara_gf other_gf(matsubara_mesh(beta, nfreq),
+                             g::momentum_index_mesh(get_data_for_momentum_mesh()),
+                             g::momentum_index_mesh(get_data_for_momentum_mesh()),
+                             g::index_mesh(nspins*2));
+    const g::matsubara_index omega(4);
+    const alps::gf::momentum_index i(2), j(3);
+    const g::index sigma(0);
+    const std::complex<double> data(3,4);
+    gf(omega,i,j,sigma)=data;
+    
+    gf2=gf;
+    EXPECT_EQ(data, gf2(omega,i,j,sigma));
+    EXPECT_THROW(other_gf=gf, std::invalid_argument);
+    // EXPECT_EQ(data, other_gf(omega,i,j,sigma));
+}
+
+
 TEST_F(FourIndexGFTest,saveload)
 {
     namespace g=alps::gf;
@@ -79,6 +100,13 @@ TEST_F(FourIndexGFTest, tail)
     density_matrix_type denmat=density_matrix_type(g::momentum_index_mesh(get_data_for_momentum_mesh()),g::momentum_index_mesh(get_data_for_momentum_mesh()),
                                                    g::index_mesh(nspins));
 
+    // Assign something to GF
+    const g::matsubara_index omega(4);
+    const alps::gf::momentum_index i(2), j(3);
+    const g::index sigma(0);
+    const std::complex<double> data(3,4);
+    gf(omega,i,j,sigma)=data;
+
     // prepare diagonal matrix
     double U=3.0;
     denmat.initialize();
@@ -97,6 +125,20 @@ TEST_F(FourIndexGFTest, tail)
         ;
     
     EXPECT_NEAR((denmat-gft.tail(order)).norm(), 0, 1.e-8);
+
+    // Check tail assignment
+    g::omega_k1_k2_sigma_gf_with_tail gft2(gf2);
+    gft2=gft;
+    EXPECT_NEAR((gft2-gf).norm(), 0, 1E-8);
+    EXPECT_NEAR((denmat-gft2.tail(order)).norm(), 0, 1.e-8);
+
+    // Check mismatched-mesh tail assignment
+    g::matsubara_gf other_gf(matsubara_mesh(beta,nfreq),
+                             g::momentum_index_mesh(get_data_for_momentum_mesh()),
+                             g::momentum_index_mesh(get_data_for_momentum_mesh()),
+                             g::index_mesh(nspins*2));
+    g::omega_k1_k2_sigma_gf_with_tail other_gft(other_gf);
+    EXPECT_THROW(other_gft=gft, std::invalid_argument);
 }
 
 TEST_F(FourIndexGFTest, TailSaveLoad)

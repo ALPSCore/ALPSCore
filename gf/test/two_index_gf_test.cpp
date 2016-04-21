@@ -162,3 +162,17 @@ TEST_F(TwoIndexGFTest, TailSaveLoad)
 
 }
 
+TEST_F(TwoIndexGFTest,Assign)
+{
+    namespace g=alps::gf;
+    g::omega_sigma_gf other_gf(matsubara_mesh(beta, nfreq*2), g::index_mesh(nspins));
+    const g::matsubara_index omega(4);
+    const g::index sigma(0);
+    const std::complex<double> data(3,4);
+    gf(omega,sigma)=data;
+    
+    gf2=gf;
+    EXPECT_EQ(data, gf2(omega,sigma));
+    EXPECT_THROW(other_gf=gf, std::invalid_argument);
+    // EXPECT_EQ(data, other_gf(omega,sigma));
+}
