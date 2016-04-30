@@ -11,6 +11,12 @@ std::ostream &operator<<(std::ostream &os, const itime_mesh &M){
   return os;
 }
 
+std::ostream &operator<<(std::ostream &os, const power_mesh &M){
+  os<<"# "<<"POWER"<<" mesh: power: "<<M.power()<<" uniform: "<<M.uniform()<<" N: "<<M.extent()<<" beta: "<<M.beta()<<" statistics: ";
+  os<<(M.statistics()==statistics::FERMIONIC?"FERMIONIC":"BOSONIC");
+  os<<std::endl;
+  return os;
+}
 
 std::ostream &operator<<(std::ostream &os, const momentum_realspace_index_mesh &M){
   os << "# "<<M.kind()<<" mesh: N: "<<M.extent()<<" dimension: "<<M.dimension()<<" points: ";

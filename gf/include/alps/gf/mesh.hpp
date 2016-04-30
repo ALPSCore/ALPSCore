@@ -304,6 +304,121 @@ namespace alps {
         ///Stream output operator, e.g. for printing to file
         std::ostream &operator<<(std::ostream &os, const itime_mesh &M);
 
+        class power_mesh {
+            double beta_;
+            int ntau_;
+            int power_;
+            int uniform_;
+
+            statistics::statistics_type statistics_;
+            std::vector<double> points_;
+
+            public:
+            typedef generic_index<power_mesh> index_type;
+
+            power_mesh(double beta, int power, int uniform): beta_(beta), power_(power), uniform_(uniform), statistics_(statistics::FERMIONIC){
+              compute_points();
+
+            }
+                int operator()(index_type idx) const { return idx(); }
+                int extent() const{return ntau_;}
+                int power() const{return power_;}
+                int uniform() const{return uniform_;}
+
+            /// Comparison operators
+            bool operator==(const power_mesh &mesh) const {
+                return beta_==mesh.beta_ && ntau_==mesh.ntau_ && power_==mesh.power_ &&
+                    uniform_ == mesh.uniform_ && statistics_==mesh.statistics_;
+            }
+
+            ///Getter variables for members
+            double beta() const{ return beta_;}
+            statistics::statistics_type statistics() const{ return statistics_;}
+            const std::vector<double> &points() const{return points_;}
+
+            /// Comparison operators
+            bool operator!=(const power_mesh &mesh) const {
+                return !(*this==mesh);
+            }
+
+            void save(alps::hdf5::archive& ar, const std::string& path) const
+            {
+                ar[path+"/kind"] << "IMAGINARY_TIME_POWER";
+                ar[path+"/N"] << ntau_;
+                ar[path+"/statistics"] << int(statistics_); //
+                ar[path+"/beta"] << beta_;
+                ar[path+"/power"] << power_;
+                ar[path+"/uniform"] << uniform_;
+                ar[path+"/points"] << points_;
+            }
+
+            void load(alps::hdf5::archive& ar, const std::string& path)
+            {
+                std::string kind;
+                ar[path+"/kind"] >> kind;
+                if (kind!="IMAGINARY_TIME_POWER") throw std::runtime_error("Attempt to read Imaginary time power mesh from non-itime power data, kind="+kind); // FIXME: specific exception
+                double ntau, beta;
+                int stat, power, uniform;
+
+                ar[path+"/N"] >> ntau;
+                ar[path+"/statistics"] >> stat;
+                ar[path+"/beta"] >> beta;
+                ar[path+"/power"] >> power;
+                ar[path+"/uniform"] >> uniform;
+
+                statistics_=statistics::statistics_type(stat); // FIXME: check range
+                power_=power;
+                uniform_=uniform;
+                beta_=beta;
+                ntau_=ntau;
+                compute_points();
+            }
+
+#ifdef ALPS_HAVE_MPI
+          void broadcast(const alps::mpi::communicator& comm, int root)
+            {
+                using alps::mpi::broadcast;
+                // FIXME: introduce (debug-only?) consistency check, like type checking? akin to load()?
+                broadcast(comm, beta_, root);
+                broadcast(comm, ntau_, root);
+                broadcast(comm, power_, root);
+                broadcast(comm, uniform_, root);
+                int stat=statistics_;
+                broadcast(comm, stat, root);
+                statistics_=static_cast<statistics::statistics_type>(stat);
+                compute_points(); // recompute points rather than sending them over MPI
+            }
+#endif
+
+            void compute_points(){
+              //create a power grid spacing
+              if(uniform_%2 !=0) throw std::invalid_argument("Simpson weights in power grid only work for even uniform spacing.");
+              std::vector<double> power_points;
+              power_points.push_back(0);
+              for(int i=power_;i>=0;--i){
+                power_points.push_back(beta_*0.5*std::pow(2.,-i));
+              }
+              for(int i=power_;i>0;--i){
+                power_points.push_back(beta_*(1.-0.5*std::pow(2.,-i)));
+              }
+              power_points.push_back(beta_);
+              std::sort(power_points.begin(),power_points.end());
+
+              //create the uniform grid within each power grid
+             points_.resize(0);
+              for(std::size_t i=0;i<power_points.size()-1;++i){
+                for(int j=0;j<uniform_;++j){
+                  double dtau=(power_points[i+1]-power_points[i])/(double)(uniform_);
+                  points_.push_back(power_points[i]+dtau*j);
+                }
+              }
+              points_.push_back(power_points.back());
+              ntau_=points_.size();
+            }
+        };
+        ///Stream output operator, e.g. for printing to file
+        std::ostream &operator<<(std::ostream &os, const power_mesh &M);
+
 
         class momentum_realspace_index_mesh {
             public:

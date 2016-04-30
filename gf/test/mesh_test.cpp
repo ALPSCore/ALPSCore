@@ -27,6 +27,29 @@ TEST(Mesh,CompareITime) {
   EXPECT_FALSE(mesh1!=mesh2);
 }
 
+TEST(Mesh,PowerMeshHasRightSize) {
+  alps::gf::power_mesh mesh1(20, 12, 16);
+  EXPECT_EQ(417, mesh1.points().size());
+  alps::gf::power_mesh mesh2(20, 12, 256);
+  EXPECT_EQ(6657, mesh2.points().size());
+
+}
+TEST(Mesh,ComparePower) {
+  alps::gf::power_mesh mesh1(12, 16, 20);
+  alps::gf::power_mesh mesh2(12, 16, 20);
+  alps::gf::power_mesh mesh3(11, 16, 20);
+  alps::gf::power_mesh mesh4(12, 12, 20);
+  alps::gf::power_mesh mesh5(12, 16, 22);
+
+  EXPECT_TRUE(mesh1==mesh2);
+  EXPECT_TRUE(mesh1!=mesh3);
+  EXPECT_TRUE(mesh1!=mesh4);
+  EXPECT_TRUE(mesh1!=mesh5);
+
+  EXPECT_FALSE(mesh1==mesh3);
+  EXPECT_FALSE(mesh1!=mesh2);
+}
+
 TEST(Mesh,CompareMomentum) {
   alps::gf::momentum_index_mesh::container_type points1(boost::extents[20][3]);
   alps::gf::momentum_index_mesh::container_type points2(boost::extents[20][3]);
@@ -124,6 +147,19 @@ TEST(Mesh,PrintImagTimeMeshHeader) {
   header_line_from_mesh << mesh1;
   EXPECT_EQ(header_line.str(), header_line_from_mesh.str());
 }
+TEST(Mesh,PrintPowerMeshHeader) {
+  double beta=5.;
+  int power=12;
+  int uniform=16;
+  int ntau=417;
+  std::stringstream header_line;
+  header_line << "# POWER mesh: power: "<<power<<" uniform: "<<uniform<<" N: "<<ntau<<" beta: "<<beta<<" statistics: "<<"FERMIONIC"<<std::endl;
+  alps::gf::power_mesh mesh1(beta, power, uniform);
+  std::stringstream header_line_from_mesh;
+  header_line_from_mesh << mesh1;
+  EXPECT_EQ(header_line.str(), header_line_from_mesh.str());
+}
+
 TEST(Mesh,PrintMomentumMeshHeader) {
   alps::gf::momentum_index_mesh::container_type data=get_data_for_momentum_mesh();
   std::stringstream header_line;
