@@ -20,6 +20,7 @@ set (test_src
     vec_const_binop_simple
     binop_with_constant
     binop_with_scalar
+    binop_mixed
     single_accumulator
     autocorrelation
     print
