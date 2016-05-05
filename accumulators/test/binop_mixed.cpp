@@ -95,7 +95,7 @@ GENERATE_TEST(div)
 REGISTER_TYPED_TEST_CASE_P(AccumulatorMixedBinaryTest, add, sub, mul, div);
 
 typedef ::testing::Types<
-    AccPair<aa::MeanAccumulator<double>, aa::MeanAccumulator<double>, aat::ConstantData, 1000>,
+    AccPair<aa::MeanAccumulator<double>, aa::NoBinningAccumulator<double>, aat::ConstantData, 1000>,
     AccPair<aa::NoBinningAccumulator<double>, aa::MeanAccumulator<double>, aat::ConstantData, 1000>
     > test_types;
 
