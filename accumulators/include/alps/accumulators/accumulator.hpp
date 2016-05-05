@@ -161,6 +161,44 @@ namespace alps {
                     return *visitor.value;
                 }
 
+            // cast-to-other-result visitor
+            private:
+                /// Visitor class to use in cast<AFROM,ATO>() member function.
+                /** AFROM, ATO are named accumulator template names (e.g. `NoBinningAccumulator`)
+                    to cast from and to --- see the description of `cast()` member function */
+                template<template<typename> class AFROM,
+                         template<typename> class ATO>
+                struct cast_visitor: public boost::static_visitor<result_wrapper> {
+                    template<typename T> result_wrapper operator()(T const & arg) {
+                        typedef typename value_type<typename T::element_type>::type value_type;
+                        typedef typename AFROM<value_type>::result_type raw_result_from_type;
+                        typedef typename ATO<value_type>::result_type raw_result_to_type;
+
+                        const raw_result_from_type& from=arg->template extract<raw_result_from_type>();
+                        const raw_result_to_type& to=dynamic_cast<const raw_result_to_type&>(from);
+                        return result_wrapper(to);
+                    }
+                };
+            public:
+                /// Cast to the result_wrapper containing another raw result type, or throw.
+                /** AFROM, ATO are named accumulator template names (e.g., `NoBinningAccumulator`)
+                    to convert from and to.
+
+                    Example:
+                    
+                        result_set rset;
+                        // ....
+                        const result_wrapper& r1=rset["no_binning"];
+                        result_wrapper r2=rset["full_binning"].cast<FullBinningAccumulator,NoBinningAccumulator>();
+                        result_wrapper rsum=r1+r2;
+                   
+                */
+                template <template<typename> class AFROM, template<typename> class ATO>
+                result_wrapper cast() const {
+                    cast_visitor<AFROM,ATO> visitor;
+                    return boost::apply_visitor(visitor, m_variant);
+                }
+
             // count
             private:
                 struct count_visitor: public boost::static_visitor<> {
@@ -454,6 +492,18 @@ namespace alps {
         }
 
         /// Cast to the result_wrapper containing another raw result type, or throw.
+        /** AFROM, ATO are raw result types (e.g., `NoBinningAccumulator<double>::result_type`)
+            to convert from and to.
+            Example:
+            
+                result_set rset;
+                // ....
+                const result_wrapper& r1=rset["no_binning"];
+                result_wrapper r2=cast<FullBinningAccumulator<double>::result_type,
+                                       NoBinningAccumulator<double>::result_type>(rset["full_binning"]);
+                result_wrapper rsum=r1+r2;
+                   
+        */
         template <typename AFROM, typename ATO>
         result_wrapper cast(const result_wrapper& res) {
             const AFROM& raw_res_from=extract<AFROM>(res);
@@ -461,6 +511,25 @@ namespace alps {
             return result_wrapper(raw_res_to);
         }
 
+        /// Cast to the result_wrapper containing another raw result type, or throw.
+        /** AFROM, ATO are named accumulator template names (e.g., `NoBinningAccumulator`)
+            to convert from and to.
+            Example:
+            
+                result_set rset;
+                // ....
+                const result_wrapper& r1=rset["no_binning"];
+                result_wrapper r2=cast<FullBinningAccumulator,NoBinningAccumulator>(rset["full_binning"]);
+                result_wrapper rsum=r1+r2;
+                   
+        */
+        template <template<typename> class AFROM,
+                  template<typename> class ATO>
+        result_wrapper cast(const result_wrapper& res) {
+            return res.cast<AFROM,ATO>();
+        }
+
+            
         #define EXTERNAL_FUNCTION(FUN)                          \
             result_wrapper FUN (result_wrapper const & arg);
 
