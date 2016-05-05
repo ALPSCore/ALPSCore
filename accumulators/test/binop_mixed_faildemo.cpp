@@ -35,16 +35,17 @@ TEST(AccumulatorMixedBinaryTest,add)
     result_wrapper& left=rset["left"];
     result_wrapper& right=rset["right"];
 
-    // left_raw_res_type& left_raw_res=left.extract<left_raw_res_type>();
-    // right_raw_res_type& right_raw_res=right.extract<right_raw_res_type>();
+    result_wrapper left1=alps::accumulators::cast<left_raw_res_type,right_raw_res_type>(left);
+    // Does not compile, as expected:
+    // result_wrapper right1=alps::accumulators::cast<right_raw_res_type,left_raw_res_type>(right);
 
-    // right_raw_res_type& left_raw_res1=dynamic_cast<right_raw_res_type&>(left_raw_res);
-    // right_raw_res_type& left_raw_res1=left.extract<right_raw_res_type>();
+    // Alternatively:
+    result_wrapper left2=alps::accumulators::cast<NoBinningAccumulator,MeanAccumulator>(left);
     
-    // result_wrapper left1(left_raw_res1);
-    result_wrapper left1=cast<left_raw_res_type,right_raw_res_type>(left);
-    
-    const result_wrapper r=left1+right;
-    double xmean=r.mean<double>();
-    EXPECT_EQ(2.,xmean);
+    const result_wrapper r1=left1+right;
+    const result_wrapper r2=left2+right;
+    double xmean1=r1.mean<double>();
+    double xmean2=r2.mean<double>();
+    EXPECT_EQ(2.,xmean1);
+    EXPECT_EQ(2.,xmean2);
 }
