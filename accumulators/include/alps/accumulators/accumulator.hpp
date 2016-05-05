@@ -443,8 +443,22 @@ namespace alps {
         /// Return an "ostream-able" object to print result in a terse format
         detail::printable_type short_print(const result_wrapper& arg);
 
+        /// Return the "raw result" of type A held in the result_wrapper m, or throw.
         template <typename A> A & extract(result_wrapper & m) {
             return m.extract<A>();
+        }
+
+        /// Return the "raw result" of type A held in the result_wrapper m, or throw.
+        template <typename A> const A & extract(const result_wrapper & m) {
+            return m.extract<A>();
+        }
+
+        /// Cast to the result_wrapper containing another raw result type, or throw.
+        template <typename AFROM, typename ATO>
+        result_wrapper cast(const result_wrapper& res) {
+            const AFROM& raw_res_from=extract<AFROM>(res);
+            const ATO& raw_res_to=dynamic_cast<const ATO&>(raw_res_from);
+            return result_wrapper(raw_res_to);
         }
 
         #define EXTERNAL_FUNCTION(FUN)                          \
