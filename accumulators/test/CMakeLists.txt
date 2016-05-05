@@ -21,6 +21,7 @@ set (test_src
     binop_with_constant
     binop_with_scalar
     binop_mixed
+    binop_mixed_faildemo
     single_accumulator
     autocorrelation
     print
