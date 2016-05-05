@@ -6,6 +6,14 @@
 
 /** @file binop_mixed.cpp
     Test simple binary operations between results from different accumulators.
+
+    FIXME!!!
+    The test is not complete: it only verifies the mean values.
+    It should instead compare the results with ones from the same-type accumulators.
+
+    FIXME!!!
+    The test is not complete: it only tests `cast<TYPE,TYPE>()` function.
+    It should add `cast<TEMPLATE,TEMPLATE>()` function.
 */
 #include <alps/accumulators.hpp>
 
@@ -39,6 +47,8 @@ class AccumulatorMixedBinaryTest : public ::testing::Test {
 
     double exp_scalar_left_mean_;
     double exp_scalar_right_mean_;
+    // double exp_scalar_left_err_;
+    // double exp_scalar_right_err_;
     
     aa::accumulator_set aset_;
     boost::shared_ptr<aa::result_set> rset_p_;
@@ -65,11 +75,18 @@ class AccumulatorMixedBinaryTest : public ::testing::Test {
 
         exp_scalar_left_mean_=scalar_gen_.mean(NPOINTS);
         exp_scalar_right_mean_=exp_scalar_left_mean_;
+
+        // exp_scalar_left_err_=scalar_gen_.error(NPOINTS);
+        // exp_scalar_right_err_=exp_scalar_left_err_;
     }
 
-#define GENERATE_TEST_MEMBER(_name_, _op_)                                     \
+#define GENERATE_TEST_MEMBER(_name_, _op_)                              \
     void _name_() {                                                     \
-        aa::result_wrapper r=result("left") _op_ result("right");       \
+        typedef typename left_acc_type::result_type left_raw_res_type;  \
+        typedef typename right_acc_type::result_type right_raw_res_type; \
+        aa::result_wrapper r=aa::cast<left_raw_res_type,                \
+                                      right_raw_res_type>(result("left")) _op_ result("right"); \
+                                                                        \
         value_type xmean=r.mean<value_type>();                          \
         value_type expected_mean=aat::gen_data<value_type>(exp_scalar_left_mean_ _op_ exp_scalar_right_mean_); \
         aat::compare_near(expected_mean, xmean, 1E-3, "mean");          \
@@ -95,8 +112,12 @@ GENERATE_TEST(div)
 REGISTER_TYPED_TEST_CASE_P(AccumulatorMixedBinaryTest, add, sub, mul, div);
 
 typedef ::testing::Types<
-    AccPair<aa::MeanAccumulator<double>, aa::NoBinningAccumulator<double>, aat::ConstantData, 1000>,
-    AccPair<aa::NoBinningAccumulator<double>, aa::MeanAccumulator<double>, aat::ConstantData, 1000>
+     AccPair<aa::NoBinningAccumulator<double>, aa::MeanAccumulator<double>, aat::AlternatingData, 1000>
+    ,AccPair<aa::LogBinningAccumulator<double>, aa::MeanAccumulator<double>, aat::AlternatingData, 1000>
+    ,AccPair<aa::FullBinningAccumulator<double>, aa::MeanAccumulator<double>, aat::AlternatingData, 1000>
+    ,AccPair<aa::LogBinningAccumulator<double>, aa::NoBinningAccumulator<double>, aat::AlternatingData, 1000>
+    ,AccPair<aa::FullBinningAccumulator<double>, aa::NoBinningAccumulator<double>, aat::AlternatingData, 1000>
+    ,AccPair<aa::FullBinningAccumulator<double>, aa::LogBinningAccumulator<double>, aat::AlternatingData, 1000>
     > test_types;
 
 INSTANTIATE_TYPED_TEST_CASE_P(MixedBinaryTest, AccumulatorMixedBinaryTest, test_types);
