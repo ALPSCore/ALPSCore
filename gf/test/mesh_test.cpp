@@ -197,3 +197,12 @@ TEST(Mesh,PrintIndexMeshHeader) {
   header_line_from_mesh << mesh1;
   EXPECT_EQ(header_line.str(), header_line_from_mesh.str());
 }
+TEST(Mesh,PowerWeightsAddUpToOne) {
+  alps::gf::power_mesh mesh1(20, 12, 16);
+  //check that the integration weights add up to 1:
+  double sum=0;
+  for(int i=0;i<mesh1.extent();++i) sum+=mesh1.weights()[i];
+  EXPECT_NEAR(1, sum, 1.e-10);
+}
+
+

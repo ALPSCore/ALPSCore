@@ -98,6 +98,28 @@ TEST_F(TwoIndexGFTest,print)
   EXPECT_EQ(gf_stream_by_hand.str(), gf_stream.str());
 }
 
+TEST_F(TwoIndexGFTest,printindexmesh)
+{
+  std::stringstream gf_stream;
+  int nao=6;
+  alps::gf::index_mesh mesh(nao);
+  alps::gf::two_index_gf<double, alps::gf::index_mesh,alps::gf::index_mesh> gf2(mesh,mesh);
+  gf2.initialize();
+  gf_stream<<gf2;
+
+  std::stringstream gf_stream_by_hand;
+  gf_stream_by_hand<<alps::gf::index_mesh(nao)<<alps::gf::index_mesh(nao);
+  for(int i=0;i<nao;++i){
+    gf_stream_by_hand<<i<<" ";
+    for(int j=0;j<nao;++j){
+      gf_stream_by_hand<<"0 ";
+    }
+    gf_stream_by_hand<<std::endl;
+  }
+  EXPECT_EQ(gf_stream_by_hand.str(), gf_stream.str());
+}
+
+
 TEST_F(TwoIndexGFTest, tail)
 {
     namespace g=alps::gf;

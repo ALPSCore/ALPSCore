@@ -312,13 +312,14 @@ namespace alps {
 
             statistics::statistics_type statistics_;
             std::vector<double> points_;
+            std::vector<double> weights_;
 
             public:
             typedef generic_index<power_mesh> index_type;
 
             power_mesh(double beta, int power, int uniform): beta_(beta), power_(power), uniform_(uniform), statistics_(statistics::FERMIONIC){
               compute_points();
-
+              compute_weights();
             }
                 int operator()(index_type idx) const { return idx(); }
                 int extent() const{return ntau_;}
@@ -335,6 +336,7 @@ namespace alps {
             double beta() const{ return beta_;}
             statistics::statistics_type statistics() const{ return statistics_;}
             const std::vector<double> &points() const{return points_;}
+            const std::vector<double> &weights() const{return weights_;}
 
             /// Comparison operators
             bool operator!=(const power_mesh &mesh) const {
@@ -372,6 +374,7 @@ namespace alps {
                 beta_=beta;
                 ntau_=ntau;
                 compute_points();
+                compute_weights();
             }
 
 #ifdef ALPS_HAVE_MPI
@@ -387,6 +390,7 @@ namespace alps {
                 broadcast(comm, stat, root);
                 statistics_=static_cast<statistics::statistics_type>(stat);
                 compute_points(); // recompute points rather than sending them over MPI
+                compute_weights();
             }
 #endif
 
@@ -414,6 +418,16 @@ namespace alps {
               }
               points_.push_back(power_points.back());
               ntau_=points_.size();
+            }
+
+            void compute_weights(){
+              weights_.resize(extent());
+              weights_[0        ]=(points_[1]    -points_[0        ])/(2.*beta_);
+              weights_[extent()-1]=(points_.back()-points_[extent()-2])/(2.*beta_);
+
+              for(int i=1;i<extent()-1;++i){
+                weights_[i]=(points_[i+1]-points_[i-1])/(2.*beta_);
+              }
             }
         };
         ///Stream output operator, e.g. for printing to file
@@ -527,12 +541,14 @@ namespace alps {
     
         class index_mesh {
             int npoints_;
+            std::vector<int> points_;
             public:
             typedef generic_index<index_mesh> index_type;
 
-            index_mesh(int np): npoints_(np) {}
+            index_mesh(int np): npoints_(np) { compute_points();}
             int extent() const{return npoints_;}
             int operator()(index_type idx) const { return idx(); }
+            const std::vector<int> &points() const{return points_;}
       
             /// Comparison operators
             bool operator==(const index_mesh &mesh) const {
@@ -559,7 +575,9 @@ namespace alps {
                 int np;
                 ar[path+"/N"] >> np;
                 npoints_=np;
+                compute_points();
             }
+            void compute_points(){ points_.resize(npoints_); for(int i=0;i<npoints_;++i){points_[i]=i;} }
 
 #ifdef ALPS_HAVE_MPI
           void broadcast(const alps::mpi::communicator& comm, int root)
