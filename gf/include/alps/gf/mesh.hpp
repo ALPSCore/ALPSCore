@@ -14,6 +14,8 @@
 #include "mpi_bcast.hpp"
 #endif
 
+#include"flagcheck.hpp"
+
 namespace alps {
     namespace gf {
     
