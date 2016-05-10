@@ -1,3 +1,9 @@
+/*
+ * Copyright (C) 1998-2016 ALPS Collaboration. See COPYRIGHT.TXT
+ * All rights reserved. Use is subject to license terms. See LICENSE.TXT
+ * For use in publications, see ACKNOWLEDGE.TXT
+ */
+
 /** @file mpi_bcast.hpp
     @brief Functions to MPI-broadcast internal data structures
  */
