@@ -60,6 +60,31 @@ TEST_F(MpiTest, CommConstructAttach) {
     EXPECT_TRUE(is_valid(newcomm_));
 }
 
+TEST_F(MpiTest, CommConstructDuplicate) {
+    MPI_Comm tmpcomm;
+    {
+        am::communicator comm(newcomm_, am::comm_duplicate);
+        EXPECT_NE(newcomm_, comm);
+        EXPECT_EQ(myrank_, comm.rank());
+        EXPECT_EQ(nproc_, comm.size());
+        tmpcomm=comm;
+    }
+    EXPECT_TRUE(is_valid(newcomm_));
+    // This is undefined and will crash:
+    // EXPECT_FALSE(is_valid(tmpcomm));
+}
+
+TEST_F(MpiTest, CommConstructOwn) {
+    {
+        am::communicator comm(newcomm_, am::take_ownership);
+        EXPECT_EQ(newcomm_, comm);
+        EXPECT_EQ(myrank_, comm.rank());
+        EXPECT_EQ(nproc_, comm.size());
+    }
+    // This is undefined and will crash:
+    // EXPECT_FALSE(is_valid(newcomm_));
+}
+
 int main(int argc, char** argv)
 {
     alps::mpi::environment env(argc, argv, false);

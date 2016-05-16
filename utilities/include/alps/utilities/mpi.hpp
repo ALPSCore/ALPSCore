@@ -83,14 +83,45 @@ namespace alps {
 
         class communicator {
             MPI_Comm comm_;
+            bool destroy_;
+
+            /// Assignment: deleted.
+            void operator=(const communicator&) {
+                throw std::logic_error("CAN'T HAPPEN: should never be called!");
+            }
+
+            /// Copy constructor: deleted.
+            communicator(const communicator&)  {
+                throw std::logic_error("CAN'T HAPPEN: should never be called!");
+            }
             
             public:
 
-            communicator() : comm_(MPI_COMM_WORLD) {} // FIXME? Shall we deprecate it?
+            communicator() : comm_(MPI_COMM_WORLD), destroy_(false) {} // FIXME? Shall we deprecate it?
+
+            // FIXME: introduce error checking!!
             
-            communicator(const MPI_Comm& comm, comm_create_kind kind) : comm_(comm) {
-                if (comm_attach!=kind) {
-                    throw std::logic_error("alps::mpi::communicator(): kind!=comm_attach is not supported.");
+            communicator(const MPI_Comm& comm, comm_create_kind kind) : comm_(comm), destroy_(false) {
+                switch (kind) {
+                  default:
+                      throw std::logic_error("alps::mpi::communicator(): unsupported `kind` argument.");
+                      break;
+                  case comm_attach:
+                      break;
+                  case take_ownership:
+                      destroy_=true;
+                      break;
+                  case comm_duplicate:
+                      MPI_Comm_dup(comm, &comm_);
+                      destroy_=true;
+                      break;
+                }
+            }
+
+            /// Destroys communicator if it is "managed"
+            ~communicator() {
+                if (destroy_) {
+                    MPI_Comm_free(&comm_);
                 }
             }
 
