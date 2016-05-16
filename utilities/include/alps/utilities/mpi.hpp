@@ -77,14 +77,22 @@ namespace alps {
         } // detail::
 
 
-
+        enum comm_create_kind {
+            comm_attach, comm_duplicate, take_ownership
+        };
 
         class communicator {
             MPI_Comm comm_;
             
             public:
 
-            communicator() : comm_(MPI_COMM_WORLD) {}
+            communicator() : comm_(MPI_COMM_WORLD) {} // FIXME? Shall we deprecate it?
+            
+            communicator(const MPI_Comm& comm, comm_create_kind kind) : comm_(comm) {
+                if (comm_attach!=kind) {
+                    throw std::logic_error("alps::mpi::communicator(): kind!=comm_attach is not supported.");
+                }
+            }
 
             /// Returns process rank in this communicator
             int rank() const {
