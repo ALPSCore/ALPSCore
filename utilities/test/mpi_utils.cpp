@@ -85,6 +85,63 @@ TEST_F(MpiTest, CommConstructOwn) {
     // EXPECT_FALSE(is_valid(newcomm_));
 }
 
+TEST_F(MpiTest, CommConctructCopy) {
+    am::communicator comm_d1(newcomm_, am::comm_duplicate);
+    am::communicator comm_a1(newcomm_, am::comm_attach);
+    {
+        am::communicator comm_d2(comm_d1);
+        EXPECT_EQ(static_cast<MPI_Comm>(comm_d1), static_cast<MPI_Comm>(comm_d2));
+        am::communicator comm_a2(comm_a1);
+        EXPECT_EQ(static_cast<MPI_Comm>(comm_a1), static_cast<MPI_Comm>(comm_a2));
+    }
+    // after comm_{a,d}2 are destroyed, the corresponding comm1's are valid
+    EXPECT_TRUE(is_valid(comm_d1));
+    EXPECT_TRUE(is_valid(comm_a1));
+}
+
+TEST_F(MpiTest, CommAssignAttached) {
+    am::communicator comm_d1(newcomm_, am::comm_duplicate);
+    am::communicator comm_a1(newcomm_, am::comm_attach);
+    MPI_Comm mpicomm_d1=comm_d1;
+    {
+        am::communicator comm_a2(newcomm_, am::comm_attach);
+        comm_d1=comm_a2;
+        EXPECT_EQ(static_cast<MPI_Comm>(comm_a2), static_cast<MPI_Comm>(comm_d1));
+        comm_a1=comm_a2;
+        EXPECT_EQ(static_cast<MPI_Comm>(comm_a2), static_cast<MPI_Comm>(comm_a1));
+    }
+    // after comm_a2 is destroyed, the comm1's are valid
+    EXPECT_EQ(newcomm_,comm_d1);
+    EXPECT_EQ(newcomm_,comm_a1);
+    EXPECT_TRUE(is_valid(comm_d1));
+    EXPECT_TRUE(is_valid(comm_a1));
+    // and mpicomm_d1 (underlying MPI communicator for comm_d1) is not valid and may crash
+    // EXPECT_FALSE(is_valid(mpicomm_d1));
+}
+
+TEST_F(MpiTest, CommAssignDuplicated) {
+    am::communicator comm_d1(newcomm_, am::comm_duplicate);
+    am::communicator comm_a1(newcomm_, am::comm_attach);
+    MPI_Comm mpicomm_d1=comm_d1;
+    MPI_Comm mpicomm_a2;
+    {
+        am::communicator comm_a2(newcomm_, am::comm_duplicate);
+        mpicomm_a2=comm_a2;
+        comm_d1=comm_a2;
+        EXPECT_EQ(static_cast<MPI_Comm>(comm_a2), static_cast<MPI_Comm>(comm_d1));
+        comm_a1=comm_a2;
+        EXPECT_EQ(static_cast<MPI_Comm>(comm_a2), static_cast<MPI_Comm>(comm_a1));
+    }
+    // after comm_a2 is destroyed, the comm1's (and the underlying MPI comm) are valid
+    EXPECT_EQ(mpicomm_a2,comm_d1);
+    EXPECT_EQ(mpicomm_a2,comm_a1);
+    EXPECT_TRUE(is_valid(comm_d1));
+    EXPECT_TRUE(is_valid(comm_a1));
+    // and mpicomm_d1 (underlying MPI communicator for comm_d1) is not valid and may crash
+    // EXPECT_FALSE(is_valid(mpicomm_d1));
+}
+
+
 int main(int argc, char** argv)
 {
     alps::mpi::environment env(argc, argv, false);

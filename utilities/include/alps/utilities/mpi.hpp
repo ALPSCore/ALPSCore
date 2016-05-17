@@ -23,6 +23,7 @@
 #include <complex>
 
 #include <boost/scoped_array.hpp> /* for std::string broadcast */
+#include <boost/shared_ptr.hpp> /* for proper copy/assign of managed communicators */
 
 // DEBUG:
 #include <stdexcept>
@@ -77,76 +78,74 @@ namespace alps {
         } // detail::
 
 
+        /// Possible ways to make a C++ object from MPI communicator
         enum comm_create_kind {
-            comm_attach, comm_duplicate, take_ownership
+            comm_attach, ///< do not destroy when going out of scope
+            comm_duplicate, ///< duplicate and destroy when going out of scope
+            take_ownership ///< do not duplicate, but *destroy* when going out of scope
         };
 
+        /// Encapsulation of an MPI communicator and some communicator-related operations
         class communicator {
-            MPI_Comm comm_;
-            bool destroy_;
+            boost::shared_ptr<MPI_Comm> comm_ptr_;
 
-            /// Assignment: deleted.
-            void operator=(const communicator&) {
-                throw std::logic_error("CAN'T HAPPEN: should never be called!");
-            }
+            // Internal functor class to destroy communicator when needed
+            struct comm_deleter {
+                void operator()(MPI_Comm* comm_ptr) {
+                    int finalized;
+                    MPI_Finalized(&finalized);
+                    if (!finalized) MPI_Comm_free(comm_ptr);
+                    delete comm_ptr;
+                }
+            };
 
-            /// Copy constructor: deleted.
-            communicator(const communicator&)  {
-                throw std::logic_error("CAN'T HAPPEN: should never be called!");
-            }
-            
             public:
 
-            communicator() : comm_(MPI_COMM_WORLD), destroy_(false) {} // FIXME? Shall we deprecate it?
+            communicator() : comm_ptr_(new MPI_Comm(MPI_COMM_WORLD)) {} // FIXME? Shall we deprecate it?
 
             // FIXME: introduce error checking!!
             
-            communicator(const MPI_Comm& comm, comm_create_kind kind) : comm_(comm), destroy_(false) {
+            communicator(const MPI_Comm& comm, comm_create_kind kind) {
                 switch (kind) {
                   default:
                       throw std::logic_error("alps::mpi::communicator(): unsupported `kind` argument.");
                       break;
                   case comm_attach:
+                      comm_ptr_.reset(new MPI_Comm(comm));
                       break;
                   case take_ownership:
-                      destroy_=true;
+                      comm_ptr_.reset(new MPI_Comm(comm), comm_deleter());
                       break;
                   case comm_duplicate:
-                      MPI_Comm_dup(comm, &comm_);
-                      destroy_=true;
+                      MPI_Comm* newcomm_ptr=new MPI_Comm();
+                      MPI_Comm_dup(comm, newcomm_ptr);
+                      comm_ptr_.reset(newcomm_ptr, comm_deleter());
                       break;
-                }
-            }
-
-            /// Destroys communicator if it is "managed"
-            ~communicator() {
-                if (destroy_) {
-                    MPI_Comm_free(&comm_);
                 }
             }
 
             /// Returns process rank in this communicator
             int rank() const {
                 int myrank;
-                MPI_Comm_rank(comm_,&myrank);
+                MPI_Comm_rank(*comm_ptr_,&myrank);
                 return myrank;
             }
 
             /// Returns the number of processes in this communicator
             int size() const {
                 int sz;
-                MPI_Comm_size(comm_,&sz);
+                MPI_Comm_size(*comm_ptr_,&sz);
                 return sz;
             }
 
             /// Barrier on this communicator
             void barrier() const {
-                MPI_Barrier(comm_);
+                MPI_Barrier(*comm_ptr_);
             }
 
             /// Converts this communicator object to MPI communicator
             operator MPI_Comm() const {
-                return comm_;
+                return *comm_ptr_;
             }
         };
 
