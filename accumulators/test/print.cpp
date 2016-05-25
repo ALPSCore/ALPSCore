@@ -100,6 +100,7 @@ TYPED_TEST(AccumulatorCorrelatedPrintTest, print)
         }
         std::cout <<"\nRaw print:" << a[nm]<<"\n";
         std::cout <<"\nShort print:" << short_print(a[nm]) <<"\n";
+        std::cout <<"\nFull print:" << full_print(a[nm]) <<"\n";
 
         std::cout << nm << " Result: "
                   << r[nm].mean<data_type>();
@@ -108,5 +109,6 @@ TYPED_TEST(AccumulatorCorrelatedPrintTest, print)
         }
         std::cout << "\nRaw print:" << r[nm]<<"\n";
         std::cout << "\nShort print:" << short_print(r[nm])<<"\n";
+        std::cout << "\nFull print:" << full_print(r[nm])<<"\n";
     }
 }
