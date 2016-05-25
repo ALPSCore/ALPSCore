@@ -474,7 +474,7 @@ namespace alps {
         }
 
         inline std::ostream & operator<<(std::ostream & os, const result_wrapper & arg) {
-            arg.print(os, false); // verbose(non-terse) printing by default
+            arg.print(os, true); // terse printing by default
             return os;
         }
 
