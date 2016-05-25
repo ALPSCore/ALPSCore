@@ -45,6 +45,20 @@ namespace alps {
             arg.print(ostr,true);
             return ostr.str();
         }
+
+        detail::printable_type full_print(const accumulator_wrapper& arg)
+        {
+            std::ostringstream ostr;
+            arg.print(ostr,false);
+            return ostr.str();
+        }
+
+        detail::printable_type full_print(const result_wrapper& arg)
+        {
+            std::ostringstream ostr;
+            arg.print(ostr,false);
+            return ostr.str();
+        }
         
     }
 }

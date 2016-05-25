@@ -481,6 +481,9 @@ namespace alps {
         /// Return an "ostream-able" object to print result in a terse format
         detail::printable_type short_print(const result_wrapper& arg);
 
+        /// Return an "ostream-able" object to print result in a verbose format
+        detail::printable_type full_print(const result_wrapper& arg);
+
         /// Return the "raw result" of type A held in the result_wrapper m, or throw.
         template <typename A> A & extract(result_wrapper & m) {
             return m.extract<A>();
@@ -885,6 +888,9 @@ namespace alps {
 
         /// Return an "ostream-able" object to print accumulator in a terse format
         detail::printable_type short_print(const accumulator_wrapper& arg);
+
+        /// Return an "ostream-able" object to print accumulator in a verbose format
+        detail::printable_type full_print(const accumulator_wrapper& arg);
 
         template <typename A> A & extract(accumulator_wrapper & m) {
             return m.extract<A>();
