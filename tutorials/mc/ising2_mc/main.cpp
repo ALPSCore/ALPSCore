@@ -16,7 +16,7 @@
  * This example shows how to setup a simple Monte Carlo simulation and retrieve some results.
  * <p>
  * The actual work is done inside the `ising_sim` class (see file "ising.cpp" and "ising.hpp"
- * in this directory). The simulation sets up a 1-dimensional Ising model and runs a Monte Carlo
+ * in this directory). The simulation sets up a 2-dimensional Ising model and runs a Monte Carlo
  * simulation for the requested number of steps and at the requested temperature. This example
  * also shows how to read simulation parameters and save/restore the state of the simulation.
  * <p>
@@ -61,7 +61,7 @@ int main(int argc, const char* argv[])
     alps::results_type<ising_sim>::type results = alps::collect_results(sim);
 
     // Print results
-    std::cout << "Result:" << std::endl;
+    std::cout << "Results:" << std::endl;
     std::cout << results << std::endl;
 
     // Saving to the output file
