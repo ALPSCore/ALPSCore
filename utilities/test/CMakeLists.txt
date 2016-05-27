@@ -10,7 +10,8 @@ set (test_src
     )
 
 set (test_src_mpi
-    mpi_utils
+    mpi_utils_env
+    mpi_utils_comm
     )
 
 foreach(test ${test_src})
@@ -19,6 +20,8 @@ endforeach(test)
 
 if(ALPS_HAVE_MPI)
   foreach(test ${test_src_mpi})
-    alps_add_gtest(${test} NOMAIN PARTEST)
+    alps_add_gtest(${test} PARTEST NOMAIN)
   endforeach(test)
+  alps_add_gtest(mpi_utils_env_exceptions1 PARTEST SRCS mpi_test_support)
+  alps_add_gtest(mpi_utils_env_exceptions2 PARTEST SRCS mpi_test_support)
 endif()

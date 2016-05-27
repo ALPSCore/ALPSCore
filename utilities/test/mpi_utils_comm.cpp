@@ -8,7 +8,7 @@
 
 #include <gtest/gtest.h>
 
-/* Test MPI wrapper functionality. How?
+/* Test MPI communicator wrapper functionality. How?
 
    1) Create communicator by attaching. Verify that the returned C-communicator is the same.
    2) Create communicator by duplication. Verify that the returned C-communicator is different.
@@ -141,10 +141,9 @@ TEST_F(MpiTest, CommAssignDuplicated) {
     // EXPECT_FALSE(is_valid(mpicomm_d1));
 }
 
-
 int main(int argc, char** argv)
 {
-    alps::mpi::environment env(argc, argv, false);
+    alps::mpi::environment env(argc, argv); // initializes MPI environment
     // alps::gtest_par_xml_output tweak;
     // tweak(alps::mpi::communicator().rank(), argc, argv);
     ::testing::InitGoogleTest(&argc, argv);

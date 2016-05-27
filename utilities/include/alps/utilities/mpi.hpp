@@ -21,6 +21,7 @@
 
 #include <vector>
 #include <complex>
+#include <exception> /* for std::uncaught_exception() */
 
 #include <boost/scoped_array.hpp> /* for std::string broadcast */
 #include <boost/shared_ptr.hpp> /* for proper copy/assign of managed communicators */
@@ -150,15 +151,45 @@ namespace alps {
         };
 
         class environment {
+            bool initialized_;
+            bool abort_on_exception_;
             public:
-            environment(int& argc, char**& argv, bool =false) {
-                // FIXME: verify MPI initializaton
-                MPI_Init(&argc, &argv);
+            
+            static void abort(int rc=0)
+            {
+                MPI_Abort(MPI_COMM_WORLD,rc);
             }
 
-            ~environment(){
-                // FIXME: verify MPI finalization
-                // FIXME: attempt to see if we are inside an exception to call MPI_Abort()?
+            static bool initialized()
+            {
+                int ini;
+                MPI_Initialized(&ini);
+                return ini;
+            }
+
+            static bool finalized()
+            {
+                int fin;
+                MPI_Finalized(&fin);
+                return fin;
+            }
+            
+            environment(int& argc, char**& argv, bool abort_on_exception=true)
+                : initialized_(false), abort_on_exception_(abort_on_exception)
+            {
+                if (!initialized()) {
+                    MPI_Init(&argc, &argv);
+                    initialized_=true;
+                }
+            }
+
+            ~environment()
+            {
+                if (!initialized_) return; // we are not in control, don't mess up other's logic.
+                if (finalized()) return; // MPI is finalized --- don't touch it.
+                if (abort_on_exception_ && std::uncaught_exception()) {
+                    this->abort(255); // FIXME: make the return code configurable?
+                }
                 MPI_Finalize();
             }
                 
