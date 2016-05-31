@@ -7,6 +7,8 @@
 #include "ising.hpp"
 
 #include <iostream>
+#include <fstream>
+
 #include <alps/accumulators.hpp>
 #include <alps/mc/api.hpp>
 #include <alps/mc/mcbase.hpp>
@@ -31,17 +33,20 @@
  */
 int main(int argc, const char* argv[])
 {
+    typedef ising_sim my_sim_type;
+    typedef std::vector<double> double_v;
+    
     // Creates the parameters for the simulation
-    // If an hdf5 file is supplied, reads the parameters there
+    // If an hdf5 file is supplied, reads the parameters from there
     std::cout << "Initializing parameters..." << std::endl;
-    alps::parameters_type<ising_sim>::type parameters(argc, argv, "/parameters");
-    ising_sim::define_parameters(parameters);
+    alps::parameters_type<my_sim_type>::type parameters(argc, argv, "/parameters");
+    my_sim_type::define_parameters(parameters);
     if (parameters.help_requested(std::cout)) {
         exit(0);
     }
-    
+
     std::cout << "Creating simulation..." << std::endl;
-    ising_sim sim(parameters); 
+    my_sim_type sim(parameters); 
 
     // If needed, restore the last checkpoint
     std::string checkpoint_file = parameters["checkpoint"];
@@ -58,15 +63,39 @@ int main(int argc, const char* argv[])
     std::cout << "Checkpointing simulation..." << std::endl;
     sim.save(checkpoint_file);
 
-    alps::results_type<ising_sim>::type results = alps::collect_results(sim);
+    alps::results_type<my_sim_type>::type results = alps::collect_results(sim);
 
-    // Print results
-    std::cout << "Results:" << std::endl;
+    // Print results.
+    std::cout << "All measured results:" << std::endl;
     std::cout << results << std::endl;
+    // Access results individually: print correlation 
+    std::ofstream corrf("correlations.dat");
+    if (corrf) {
+        corrf << "# Site CorrH CorrHErr CorrV CorrVErr CorrD CorrDErr\n";
+        for (int i=0; i<parameters["length"]; ++i) {
+            corrf << i << " "
+                  << results["Correlations1"].mean<double_v>()[i] << " " << results["Correlations1"].error<double_v>()[i] << " "
+                  << results["Correlations2"].mean<double_v>()[i] << " " << results["Correlations2"].error<double_v>()[i] << " "
+                  << results["Correlations3"].mean<double_v>()[i] << " " << results["Correlations3"].error<double_v>()[i] << " "
+                  << std::endl;
+        }
+    }
+    corrf.close();
+    
+    std::cout << "Simulation ran for " << results["Energy"].count() << " steps.\n";
+    const alps::accumulators::result_wrapper& mag4=results["Magnetization^4"];
+    const alps::accumulators::result_wrapper& mag2=results["Magnetization^2"];
+
+    // Derived result:
+    const alps::accumulators::result_wrapper& binder_cumulant=1-mag4/(3*mag2*mag2);
+    std::cout << "Binder cumulant: " << binder_cumulant
+              << " Relative error: " << fabs(binder_cumulant.error<double>()/binder_cumulant.mean<double>())
+              << std::endl;
+    
 
     // Saving to the output file
     std::string output_file = parameters["outputfile"];
-    alps::hdf5::archive ar(boost::filesystem::path(output_file), "w");
+    alps::hdf5::archive ar(output_file, "w");
     ar["/parameters"] << parameters;
     ar["/simulation/results"] << results;
 

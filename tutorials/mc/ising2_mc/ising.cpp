@@ -52,7 +52,8 @@ ising_sim::ising_sim(parameters_type const & parms, std::size_t seed_offset)
     measurements
         << alps::accumulators::FullBinningAccumulator<double>("Energy")
         << alps::accumulators::FullBinningAccumulator<double>("Magnetization")
-        << alps::accumulators::FullBinningAccumulator<double>("Sign")
+        << alps::accumulators::FullBinningAccumulator<double>("Magnetization^2")
+        << alps::accumulators::FullBinningAccumulator<double>("Magnetization^4")
         << alps::accumulators::FullBinningAccumulator<std::vector<double> >("Correlations1")
         << alps::accumulators::FullBinningAccumulator<std::vector<double> >("Correlations2")
         << alps::accumulators::FullBinningAccumulator<std::vector<double> >("Correlations3")
@@ -92,7 +93,6 @@ void ising_sim::measure() {
     
     double tmag = 0; // magnetization
     double ten = 0; // energy
-    double sign = 1; // sign
     // FIXME: all 3 correlations must converge to the same?
     std::vector<double> corr_v(length); // "vertical"
     std::vector<double> corr_h(length); // "horizontal"
@@ -101,7 +101,6 @@ void ising_sim::measure() {
     for (int i=0; i<length; ++i) {
         for (int j=0; j<length; ++j) {
             tmag += spins(i,j);
-            sign *= spins(i,j);
             int i_next=(i+1)%length;
             int j_next=(j+1)%length;
             ten += -(spins(i,j)*spins(i,j_next)+
@@ -128,15 +127,20 @@ void ising_sim::measure() {
     // Accumulate the data
     measurements["Energy"] << ten;
     measurements["Magnetization"] << tmag;
+    measurements["Magnetization^2"] << tmag*tmag;
+    measurements["Magnetization^4"] << tmag*tmag*tmag*tmag;
     measurements["Correlations1"] << corr_h;
     measurements["Correlations2"] << corr_v;
     measurements["Correlations3"] << corr_d;
-    measurements["Sign"] << sign;
 }
 
 // Returns a number between 0.0 and 1.0 with the completion percentage
 double ising_sim::fraction_completed() const {
-    return (sweeps < thermalization_sweeps ? 0. : ( sweeps - thermalization_sweeps ) / double(total_sweeps));
+    double f=0;
+    if (sweeps >= thermalization_sweeps) {
+        f=(sweeps-thermalization_sweeps)/double(total_sweeps);
+    }
+    return f;
 }
 
 // Saves the state to the hdf5 file
