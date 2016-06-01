@@ -211,6 +211,8 @@ namespace alps {
 
         };
         template<class value_type, class MESH1> std::ostream &operator<<(std::ostream &os, one_index_gf<value_type,MESH1> G){
+          std::streamsize precision = os.precision();
+          os.precision(14);
           os<<G.mesh1();
           for(int i=0;i<G.mesh1().extent();++i){
             os<<G.mesh1().points()[i]<<" ";
@@ -395,6 +397,8 @@ namespace alps {
         };
 
         template<class value_type, class MESH1, class MESH2> std::ostream &operator<<(std::ostream &os, two_index_gf<value_type,MESH1,MESH2> G){
+          std::streamsize precision = os.precision();
+          os.precision(14);
           os<<G.mesh1()<<G.mesh2();
           for(int i=0;i<G.mesh1().extent();++i){
             os<<G.mesh1().points()[i]<<" ";
@@ -403,6 +407,7 @@ namespace alps {
             }
             os<<std::endl;
           }
+          os.precision(precision);
           return os;
         }
 
@@ -592,6 +597,8 @@ namespace alps {
         };
 
         template<class value_type, class MESH1, class MESH2, class MESH3> std::ostream &operator<<(std::ostream &os, three_index_gf<value_type,MESH1,MESH2,MESH3> G){
+          std::streamsize precision = os.precision();
+          os.precision(14);
           os<<G.mesh1()<<G.mesh2()<<G.mesh3();
           for(int i=0;i<G.mesh1().extent();++i){
             os<<G.mesh1().points()[i]<<" ";
@@ -803,6 +810,8 @@ namespace alps {
 
 
         template<class value_type, class MESH1, class MESH2, class MESH3, class MESH4> std::ostream &operator<<(std::ostream &os, four_index_gf<value_type,MESH1,MESH2,MESH3,MESH4> G){
+          std::streamsize precision = os.precision();
+          os.precision(14);
           os<<G.mesh1()<<G.mesh2()<<G.mesh3()<<G.mesh4();
           for(int i=0;i<G.mesh1().extent();++i){
             os<<G.mesh1().points()[i]<<" ";
@@ -1023,6 +1032,8 @@ namespace alps {
             
         };
         template<class value_type, class MESH1, class MESH2, class MESH3, class MESH4, class MESH5> std::ostream &operator<<(std::ostream &os, five_index_gf<value_type,MESH1,MESH2,MESH3,MESH4,MESH5> G){
+          std::streamsize precision = os.precision();
+          os.precision(14);
           os<<G.mesh1()<<G.mesh2()<<G.mesh3()<<G.mesh4();
           for(int i=0;i<G.mesh1().extent();++i){
             os<<G.mesh1().points()[i]<<" ";
