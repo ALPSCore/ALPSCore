@@ -8,7 +8,7 @@ set (test_src
      not_found
      predicates_and_actions
      short_options
-     subclass
+     options_help
      serialize
      param_ostream
      common_param_tests
