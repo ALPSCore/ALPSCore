@@ -9,6 +9,7 @@ set (test_src
      predicates_and_actions
      short_options
      options_help
+     missing_iterator
      serialize
      param_ostream
      common_param_tests

@@ -32,7 +32,8 @@
 #include <string>
 #include <algorithm>
 
-#include "alps/params/option_type.hpp"
+#include "./params/option_type.hpp"
+#include "./params/param_iterators.hpp"
 
 namespace alps {
     namespace params_ns {
@@ -89,6 +90,9 @@ namespace alps {
             typedef options_map_type::const_iterator const_iterator;
             typedef options_map_type::value_type value_type;
             typedef options_map_type::mapped_type mapped_type;
+
+            /// Iterator over names of "missing" options
+            typedef detail::iterators::missing_params_iterator missing_params_iterator;
 
             // Some more convenience typedefs (exception types)
             /// Exception type: mismatched parameter types
@@ -162,6 +166,13 @@ namespace alps {
 
             /** Iterator to the beyond-the-end of the option map */
             const_iterator end() const;
+
+            /** Returns iterator over "missing" parameters */
+            missing_params_iterator begin_missing() const;
+
+            /** Returns iterator to beyond-the-end of "missing" parameters */
+            missing_params_iterator end_missing() const;
+            
 
             /// Check if a parameter exists (that is: attempt to read a compatible-typed value from it will not throw)
             bool exists(const std::string& name) const;

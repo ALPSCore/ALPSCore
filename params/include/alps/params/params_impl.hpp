@@ -84,14 +84,25 @@ namespace alps {
 
         inline params::const_iterator params::end() const
         {
-            possibly_parse(); return optmap_.end();
+            possibly_parse();
+            return optmap_.end();
+        }
+
+        inline params::missing_params_iterator params::begin_missing() const
+        {
+            return detail::iterators::make_missing_params_iterator(this->begin(), this->end());
+        }
+
+        inline params::missing_params_iterator params::end_missing() const
+        {
+            return detail::iterators::make_missing_params_iterator(this->end(), this->end());
         }
 
         inline bool params::exists(const std::string& name) const
         {
             possibly_parse();
             options_map_type::const_iterator it=optmap_.find(name);
-            return (it!=optmap_.end()) && !(it->second).isNone() && !(it->second).isEmpty();
+            return (it!=optmap_.end()) && !detail::is_option_missing(it->second);
         }
 
         template <typename T>

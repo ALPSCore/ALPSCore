@@ -488,6 +488,11 @@ namespace alps {
 
         namespace detail {
 
+            /// Checks if an option is "missing"
+            inline bool is_option_missing(const option_type& opt) {
+                return opt.isEmpty() || opt.isNone();
+            }
+
             /// Tag type to indicate vector/list parameter (FIXME: make sure it works for output too)
             template <typename T>
             struct vector_tag {};

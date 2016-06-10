@@ -9,6 +9,8 @@
 #ifndef ALPS_PARAMS_PARAMS_DETAIL_HPP_INCLUDED_c2521f700b98472599377dee5f7772e7
 #define ALPS_PARAMS_PARAMS_DETAIL_HPP_INCLUDED_c2521f700b98472599377dee5f7772e7
 
+#include "./option_type.hpp"
+
 namespace alps {
     namespace params_ns {
 
