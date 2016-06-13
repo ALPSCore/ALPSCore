@@ -270,6 +270,19 @@ namespace alps {
             ostrm << odescr;
         }        
 
+        bool params::has_missing(std::ostream& ostrm) const
+        {
+            missing_params_iterator it=begin_missing();
+            missing_params_iterator end=end_missing();
+            if (it==end) return false;
+            ostrm << "The following mandatory arguments are missing:\n";
+            for (; it!=end; ++it) {
+                ostrm << "\"" << *it << "\"\n";
+            }
+            return true;
+        }
+            
+      
 #ifdef ALPS_HAVE_MPI
         /** @NOTE  Implemented as serialization followed by string broadcast (FIXME!) */
         void params::broadcast(alps::mpi::communicator const & comm, int root)

@@ -4,6 +4,8 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
+#include <sstream>
+
 #include <alps/params.hpp>
 #include <gtest/gtest.h>
 
@@ -49,4 +51,27 @@ TEST_F(ParamsTest, MissingIterator)
     EXPECT_EQ(std::string("missing_no_default3"), *it);
     ++it;
     EXPECT_TRUE(it==end);
+}
+
+TEST_F(ParamsTest, MissingParamsPrint) {
+    std::ostringstream out;
+    ASSERT_TRUE(par.has_missing(out));
+
+    EXPECT_TRUE(out.str().find("missing_no_default1")!=std::string::npos);
+    EXPECT_TRUE(out.str().find("missing_no_default2")!=std::string::npos);
+    EXPECT_TRUE(out.str().find("missing_no_default3")!=std::string::npos);
+    
+    EXPECT_FALSE(out.str().find("present_no_default")!=std::string::npos);
+    EXPECT_FALSE(out.str().find("present_has_default")!=std::string::npos);
+    EXPECT_FALSE(out.str().find("missing_has_default")!=std::string::npos);
+
+    par.has_missing(std::cout);
+
+    par["missing_no_default1"]=0;
+    par["missing_no_default2"]=0;
+    par["missing_no_default3"]=0;
+    out.str("");
+
+    ASSERT_FALSE(par.has_missing(out));
+    EXPECT_TRUE(out.str().empty());
 }

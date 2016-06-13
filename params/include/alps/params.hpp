@@ -232,6 +232,9 @@ namespace alps {
             /// Output the help message. @param ostrm: Output stream
             void print_help(std::ostream& ostrm) const;
 
+            /// Output the list of missing parameters, if any. @param ostrm: Output stream @returns true if there are missing parameters
+            bool has_missing(std::ostream& ostrm) const;
+
             /// Stream parameters
             friend std::ostream& operator<<(std::ostream& str, params const& x);
         };
