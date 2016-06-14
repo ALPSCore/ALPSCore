@@ -111,6 +111,7 @@ namespace alps {
             }
         }
 
+#ifdef ALPS_HAVE_MPI      
         params::params(unsigned int argc, const char* argv[], const alps::mpi::communicator& comm,
                                    int root, const char* hdfpath)
         {
@@ -119,7 +120,7 @@ namespace alps {
             }
             this->broadcast(comm,root);
         }
-
+#endif
             
         /// @brief Convenience function: returns the "origin name"
         /// @Returns (parameter_file_name || restart_file name || program_name || "")
