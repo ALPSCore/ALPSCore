@@ -51,6 +51,7 @@ namespace alps {
 
             static parameters_type& define_parameters(parameters_type & parameters) {
                 Base::define_parameters(parameters);
+                if (parameters.is_restored()) return parameters;
                 parameters.template define<std::size_t>("Tmin", 1, "minimum time to check if simulation has finished");
                 parameters.template define<std::size_t>("Tmax", 600, "maximum time to check if simulation has finished");
                 return parameters;
