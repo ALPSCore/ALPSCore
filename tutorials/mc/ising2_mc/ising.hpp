@@ -13,6 +13,7 @@
 #include <boost/filesystem/path.hpp>
 #include <vector>
 #include <string>
+#include <iostream>
 
 #include "storage_type.hpp"
 
@@ -31,7 +32,6 @@ class ising_sim : public alps::mcbase {
     storage_type spins;
         
   public:
-    
     ising_sim(parameters_type const & parms, std::size_t seed_offset = 0);
 
     static void define_parameters(parameters_type & parameters);
@@ -44,4 +44,6 @@ class ising_sim : public alps::mcbase {
     using alps::mcbase::load;
     virtual void save(alps::hdf5::archive & ar) const;
     virtual void load(alps::hdf5::archive & ar);
+
+    typedef std::vector<double> correlation_type;
 };

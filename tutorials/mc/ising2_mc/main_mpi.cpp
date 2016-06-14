@@ -13,6 +13,7 @@
 #include <alps/mc/api.hpp>
 #include <alps/mc/mcbase.hpp>
 #include <alps/mc/stop_callback.hpp>
+#include <alps/mc/mpiadapter.hpp>
 
 /**
  * This example shows how to setup a simple Monte Carlo simulation and retrieve some results.
@@ -21,6 +22,7 @@
  * in this directory). The simulation sets up a 2-dimensional Ising model and runs a Monte Carlo
  * simulation for the requested number of steps and at the requested temperature. This example
  * also shows how to read simulation parameters, save/restore the state of the simulation,
+ * and parallelize the simulation via MPI.
  * <p>
  * Run the example with `--help` argument to obtain the list of supported parameters.
  * <ul>
@@ -33,16 +35,24 @@
 int main(int argc, char* argv[])
 {
     // Define the type for the simulation
-    typedef ising_sim my_sim_type;
+    typedef alps::mcmpiadapter<ising_sim> my_sim_type;
 
+    // Initialize the MPI environment, and obtain the WORLD communicator
+    alps::mpi::environment env(argc, argv);
+    alps::mpi::communicator comm;
+    const int rank=comm.rank();
+    const bool is_master=(rank==0);
+
+    
 
     try {
     
         // Creates the parameters for the simulation
         // If an hdf5 file is supplied, reads the parameters there
-        std::cout << "Initializing parameters..." << std::endl;
+        // This constructor broadcasts to all processes
+        if (is_master) std::cout << "Initializing parameters..." << std::endl;
 
-        alps::params parameters(argc, (const char**)argv);
+        alps::params parameters(argc, (const char**)argv, comm);
         my_sim_type::define_parameters(parameters);
 
         if (parameters.help_requested(std::cout) ||
@@ -50,31 +60,32 @@ int main(int argc, char* argv[])
             return 1;
         }
     
-        std::cout << "Creating simulation" << std::endl;
-        my_sim_type sim(parameters); 
+        std::cout << "Creating simulation on rank " << rank << std::endl;
+        my_sim_type sim(parameters, comm); 
 
         // If needed, restore the last checkpoint
         std::string checkpoint_file = parameters["checkpoint"].as<std::string>();
+        if (!is_master) checkpoint_file+="."+boost::lexical_cast<std::string>(rank);
         
         if (parameters.is_restored()) {
             std::cout << "Restoring checkpoint from " << checkpoint_file
-                      << std::endl;
+                      << " on rank " << rank << std::endl;
             sim.load(checkpoint_file);
         }
 
         // Run the simulation
-        std::cout << "Running simulation" << std::endl;
+        std::cout << "Running simulation on rank " << rank << std::endl;
         sim.run(alps::stop_callback(size_t(parameters["timelimit"])));
 
         // Checkpoint the simulation
         std::cout << "Checkpointing simulation to " << checkpoint_file
-                  << std::endl;
+                  << " on rank " << rank << std::endl;
         sim.save(checkpoint_file);
 
         alps::results_type<my_sim_type>::type results = alps::collect_results(sim);
 
         // Print results
-        {
+        if (is_master) {
             std::cout << "All measured results:" << std::endl;
             std::cout << results << std::endl;
             
@@ -112,9 +123,11 @@ int main(int argc, char* argv[])
         return 0;
     } catch (const std::runtime_error& exc) {
         std::cout << "Exception caught: " << exc.what() << std::endl;
+        env.abort(2);
         return 2;
     } catch (...) {
         std::cout << "Unknown exception caught." << std::endl;
+        env.abort(2);
         return 2;
     }
 }

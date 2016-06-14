@@ -6,6 +6,7 @@ project(ising2_mc CXX)
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 add_executable(${PROJECT_NAME} main.cpp ising.cpp)
+add_executable(${PROJECT_NAME}_mpi main_mpi.cpp ising.cpp)
 
 # Request the ALPSCore package (with all components)
 # The ALPSCore package must be installed in some standard place (like /usr/local),
@@ -15,3 +16,4 @@ find_package(ALPSCore REQUIRED)
 
 # Use ALPSCore_LIBRARIES variable to link to ALPSCore 
 target_link_libraries(${PROJECT_NAME} ${ALPSCore_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_mpi ${ALPSCore_LIBRARIES})

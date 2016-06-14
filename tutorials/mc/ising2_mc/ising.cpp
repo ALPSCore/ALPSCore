@@ -54,9 +54,7 @@ ising_sim::ising_sim(parameters_type const & parms, std::size_t seed_offset)
         << alps::accumulators::FullBinningAccumulator<double>("Magnetization")
         << alps::accumulators::FullBinningAccumulator<double>("Magnetization^2")
         << alps::accumulators::FullBinningAccumulator<double>("Magnetization^4")
-        << alps::accumulators::FullBinningAccumulator<std::vector<double> >("Correlations1")
-        << alps::accumulators::FullBinningAccumulator<std::vector<double> >("Correlations2")
-        << alps::accumulators::FullBinningAccumulator<std::vector<double> >("Correlations3")
+        << alps::accumulators::FullBinningAccumulator<correlation_type>("Correlations")
         ;
 }
 
@@ -66,8 +64,8 @@ void ising_sim::update() {
     using std::exp;
     typedef unsigned int uint;
     // Choose a spin to flip:
-    uint i = int(length * random());
-    uint j = int(length * random());
+    uint i = uint(length * random());
+    uint j = uint(length * random());
     // Find neighbors indices, with wrap over box boundaries:
     uint i1 = (i+1) % length;            // left
     uint i2 = (i-1+length) % length;     // right
@@ -75,10 +73,10 @@ void ising_sim::update() {
     uint j2 = (j-1+length) % length;     // down
     // Energy difference:
     double delta=2.*spins(i,j)*
-                 (spins(i1,j1)+  // left
-                  spins(i2,j)+  // right
-                  spins(i,j1)+  // up
-                  spins(i,j2)); // down
+                    (spins(i1,j1)+  // left
+                     spins(i2,j)+  // right
+                     spins(i,j1)+  // up
+                     spins(i,j2)); // down
     // Step acceptance:
     if (delta<=0. || random() < exp(-beta*delta)) {
         // flip the spin
@@ -93,10 +91,7 @@ void ising_sim::measure() {
     
     double tmag = 0; // magnetization
     double ten = 0; // energy
-    // FIXME: all 3 correlations must converge to the same?
-    std::vector<double> corr_v(length); // "vertical"
-    std::vector<double> corr_h(length); // "horizontal"
-    std::vector<double> corr_d(length); // "diagonal"
+    correlation_type corr(length); // correlation (a vector)
     
     for (int i=0; i<length; ++i) {
         for (int j=0; j<length; ++j) {
@@ -108,19 +103,17 @@ void ising_sim::measure() {
             
             for (int d = 0; d < length; ++d) {
                 int i_pair=(i+d)%length;
-                int j_pair=(j+d)%length;
-                corr_h[d] += spins(i,j)*spins(i_pair,j);
-                corr_v[d] += spins(i,j)*spins(i,j_pair);
-                corr_d[d] += spins(i,j)*spins(i_pair,j_pair);
+                corr[d] += spins(i,j)*spins(i_pair,j);
+                // // Alternatively, we could use:
+                // int j_pair=(j+d)%length;
+                // corr[d] += spins(i,j)*spins(i_pair,j_pair);
             }
         }
     }
     // pull in operator/ for vectors
     using alps::numeric::operator/;
     const double l2=length*length;
-    corr_h = corr_h / l2;
-    corr_v = corr_v / l2;
-    corr_d = corr_d / l2;
+    corr = corr / l2;
     ten /= l2;
     tmag /= l2;
 
@@ -129,9 +122,7 @@ void ising_sim::measure() {
     measurements["Magnetization"] << tmag;
     measurements["Magnetization^2"] << tmag*tmag;
     measurements["Magnetization^4"] << tmag*tmag*tmag*tmag;
-    measurements["Correlations1"] << corr_h;
-    measurements["Correlations2"] << corr_v;
-    measurements["Correlations3"] << corr_d;
+    measurements["Correlations"] << corr;
 }
 
 // Returns a number between 0.0 and 1.0 with the completion percentage
