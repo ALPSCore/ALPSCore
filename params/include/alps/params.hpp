@@ -77,6 +77,9 @@ namespace alps {
             /// Initialization code common for all constructors
             void init();
 
+            /// Initialization code used in constructors
+            void init(unsigned int argc, const char* argv[], const char* hdfpath);
+
             /// Function to check for validity/redefinition of an option (throws!)
             void check_validity(const std::string& optname) const;
 
@@ -133,11 +136,28 @@ namespace alps {
             /// Constructor from command line and a parameter file. The parsing is deferred.
             /** Tries to see if the file is an HDF5, in which case restores the object from the
                 HDF5 file, ignoring the command line.
+                
                 @param hdfpath : path to HDF5 dataset containing the saved parameter object
                 (NULL if this functionality is not needed)
             */
             params(unsigned int argc, const char* argv[], const char* hdfpath = "/parameters");
 
+#if defined(ALPS_HAVE_MPI)
+            /// Collective constructor from command line and a parameter file. The parsing is deferred.
+            /** Reads and parses the command line on the root process,
+                broadcasts to other processes. Tries to see if the
+                file is an HDF5, in which case restores the object
+                from the HDF5 file, ignoring the command line.
+
+                @param comm : Communicator to use for broadcast
+                @param root : Root process to broadcast from
+                @param hdfpath : path to HDF5 dataset containing the
+                                 saved parameter object
+                                 (NULL if this functionality is not needed)
+            */
+            params(unsigned int argc, const char* argv[], const alps::mpi::communicator& comm,
+                   int root=0, const char* hdfpath = "/parameters");
+#endif
 
             /// Constructor from INI file (without command line)
             params(const std::string& inifile);

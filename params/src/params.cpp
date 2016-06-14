@@ -77,7 +77,7 @@ namespace alps {
   
         namespace po=boost::program_options;
     
-        params::params(unsigned int argc, const char* argv[], const char* hdfpath)
+        void params::init(unsigned int argc, const char* argv[], const char* hdfpath)
         {
             if (argc>0) argv0_=argv[0];
             if (argc>1) {
@@ -111,6 +111,16 @@ namespace alps {
             }
         }
 
+        params::params(unsigned int argc, const char* argv[], const alps::mpi::communicator& comm,
+                                   int root, const char* hdfpath)
+        {
+            if (comm.rank()==root) {
+                init(argc, argv, hdfpath);
+            }
+            this->broadcast(comm,root);
+        }
+
+            
         /// @brief Convenience function: returns the "origin name"
         /// @Returns (parameter_file_name || restart_file name || program_name || "")
         // Rationale: the "origin name" is a useful info, otherwise

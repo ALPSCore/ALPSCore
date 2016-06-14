@@ -142,7 +142,7 @@ namespace alps {
             return out;
         }
  
-        /// Parameter object generator; accepts parameter type T.
+        /// Parameter object generator (from cmdline); accepts parameter type T.
         template <typename T>
         class CmdlineParamGenerator {
             public:
@@ -170,14 +170,63 @@ namespace alps {
                 template define<T>("present_def", val2, "Has default").
                 template define<T>("missing_def", val1, "Missing, has default").
                 template define<T>("present_nodef", "No default").
-                template define<T>("missing_nodef", "MIssing, no default");
+                template define<T>("missing_nodef", "Missing, no default");
 
               param["assigned"]=val1;
             }
  
             ~CmdlineParamGenerator() { delete param_ptr; } 
         };
+
+
+#ifdef ALPS_HAVE_MPI
+
+        /// Parameter object generator (from cmdline by broadcast); accepts parameter type T.
+        template <typename T>
+        class CmdlineMpiParamGenerator {
+            public:
+            alps::params* param_ptr;
+            typedef data_trait<T> data_trait_type;
+            typedef T value_type;
  
+            CmdlineMpiParamGenerator(): param_ptr(0)
+            {
+              const int root=0;
+              alps::mpi::communicator comm;
+              const bool is_root=(comm.rank()==root);
+
+              const T val1=data_trait_type::get(true);
+              const T val2=data_trait_type::get(false);
+              std::string argv_s[]={
+                "--present_def="+input_string<T>(val1),
+                "--present_nodef="+input_string<T>(val1),
+              };
+              // Make sure that the full command line is available
+              // only on a root process:
+              const char* argv[]={
+                "progname",
+                is_root? argv_s[0].c_str() : "",
+                is_root? argv_s[1].c_str() : ""
+              };
+              const int argc=is_root? sizeof(argv)/sizeof(*argv) : 1;
+
+              // Collective constructor:
+              param_ptr=new alps::params(argc,argv,comm,root);
+
+              alps::params& param=*param_ptr;
+              param.
+                template define<T>("present_def", val2, "Has default").
+                template define<T>("missing_def", val1, "Missing, has default").
+                template define<T>("present_nodef", "No default").
+                template define<T>("missing_nodef", "Missing, no default");
+
+              param["assigned"]=val1;
+            }
+ 
+            ~CmdlineMpiParamGenerator() { delete param_ptr; } 
+        };
+
+#endif /* ALPS_HAVE_MPI*/
         
         
     } // namespace testing

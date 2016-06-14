@@ -38,6 +38,11 @@ namespace alps {
             init();
         }
 
+        inline params::params(unsigned int argc, const char* argv[], const char* hdfpath)
+        {
+          init(argc,argv,hdfpath);
+        }
+
         inline params::params(hdf5::archive ar, std::string const & path)
         {
             this->load(ar, path);

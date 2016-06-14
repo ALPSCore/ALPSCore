@@ -22,4 +22,5 @@ endforeach(test)
 
 if(ALPS_HAVE_MPI)
   alps_add_gtest(mpi_bcast NOMAIN PARTEST)
+  alps_add_gtest(mpi_common_param_tests NOMAIN PARTEST)
 endif()
