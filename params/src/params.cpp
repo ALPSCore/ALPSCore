@@ -290,6 +290,7 @@ namespace alps {
             for (; it!=end; ++it) {
                 ostrm << "\"" << *it << "\"\n";
             }
+            ostrm << "Use \"" << argv0_ << " --help\" to see the list of options.\n";
             return true;
         }
             
