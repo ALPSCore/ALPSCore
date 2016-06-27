@@ -44,6 +44,4 @@ class ising_sim : public alps::mcbase {
     using alps::mcbase::load;
     virtual void save(alps::hdf5::archive & ar) const;
     virtual void load(alps::hdf5::archive & ar);
-
-    typedef std::vector<double> correlation_type;
 };

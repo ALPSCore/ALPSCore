@@ -22,9 +22,9 @@ void ising_sim::define_parameters(parameters_type & parameters) {
     // followed by the ising specific parameters
     alps::define_convenience_parameters(parameters)
         .description("2D ising simulation")
-        .define<int>("length", 50, "size of the periodic box")
-        .define<int>("sweeps", 10000, "maximum number of sweeps")
-        .define<int>("thermalization", "number of sweeps for thermalization")
+        .define<int>("length", "size of the periodic box")
+        .define<int>("sweeps", 0, "maximum number of sweeps (0 means indefinite)")
+        .define<int>("thermalization", 10000, "number of sweeps for thermalization")
         .define<double>("temperature", "temperature of the system");
 }
 
@@ -52,9 +52,9 @@ ising_sim::ising_sim(parameters_type const & parms, std::size_t seed_offset)
     measurements
         << alps::accumulators::FullBinningAccumulator<double>("Energy")
         << alps::accumulators::FullBinningAccumulator<double>("Magnetization")
+        << alps::accumulators::FullBinningAccumulator<double>("AbsMagnetization")
         << alps::accumulators::FullBinningAccumulator<double>("Magnetization^2")
         << alps::accumulators::FullBinningAccumulator<double>("Magnetization^4")
-        << alps::accumulators::FullBinningAccumulator<correlation_type>("Correlations")
         ;
 }
 
@@ -91,8 +91,10 @@ void ising_sim::measure() {
     
     double tmag = 0; // magnetization
     double ten = 0; // energy
-    correlation_type corr(length); // correlation (a vector)
-    
+
+    // Calculate magnetization and energy.
+    // FIXME: Actually we do not need to do it,
+    // FIXME: it's possible to know it from update!
     for (int i=0; i<length; ++i) {
         for (int j=0; j<length; ++j) {
             tmag += spins(i,j);
@@ -101,34 +103,25 @@ void ising_sim::measure() {
             ten += -(spins(i,j)*spins(i,j_next)+
                      spins(i,j)*spins(i_next,j));
             
-            for (int d = 0; d < length; ++d) {
-                int i_pair=(i+d)%length;
-                corr[d] += spins(i,j)*spins(i_pair,j);
-                // // Alternatively, we could use:
-                // int j_pair=(j+d)%length;
-                // corr[d] += spins(i,j)*spins(i_pair,j_pair);
-            }
         }
     }
-    // pull in operator/ for vectors
-    using alps::numeric::operator/;
+
     const double l2=length*length;
-    corr = corr / l2;
     ten /= l2;
     tmag /= l2;
 
     // Accumulate the data
     measurements["Energy"] << ten;
     measurements["Magnetization"] << tmag;
+    measurements["AbsMagnetization"] << fabs(tmag);
     measurements["Magnetization^2"] << tmag*tmag;
     measurements["Magnetization^4"] << tmag*tmag*tmag*tmag;
-    measurements["Correlations"] << corr;
 }
 
 // Returns a number between 0.0 and 1.0 with the completion percentage
 double ising_sim::fraction_completed() const {
     double f=0;
-    if (sweeps >= thermalization_sweeps) {
+    if (total_sweeps>0 && sweeps >= thermalization_sweeps) {
         f=(sweeps-thermalization_sweeps)/double(total_sweeps);
     }
     return f;

@@ -20,11 +20,11 @@
  * The actual work is done inside the `ising_sim` class (see file "ising.cpp" and "ising.hpp"
  * in this directory). The simulation sets up a 2-dimensional Ising model and runs a Monte Carlo
  * simulation for the requested number of steps and at the requested temperature. This example
- * also shows how to read simulation parameters, save/restore the state of the simulation,
+ * also shows how to read simulation parameters and save/restore the state of the simulation.
  * <p>
  * Run the example with `--help` argument to obtain the list of supported parameters.
  * <ul>
- *   <li>./ising_mc_--help</li>
+ *   <li>./ising_mc --help</li>
  * </ul>
  * 
  * @param argc the number of arguments
@@ -78,17 +78,6 @@ int main(int argc, char* argv[])
             std::cout << "All measured results:" << std::endl;
             std::cout << results << std::endl;
             
-            // Access results individually: print correlation to a file
-            std::ofstream corrf("correlations.dat");
-            if (corrf) {
-                corrf << "# Site Corr CorrErr\n";
-                for (int i=0; i<parameters["length"]; ++i) {
-                    corrf << i << " "
-                          << results["Correlations"].mean<my_sim_type::correlation_type>()[i] << " "
-                          << results["Correlations"].error<my_sim_type::correlation_type>()[i]
-                          << std::endl;
-                }
-            }
             std::cout << "Simulation ran for " << results["Energy"].count() << " steps." << std::endl;
 
             // Assign individual results to variables.

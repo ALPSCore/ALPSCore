@@ -26,7 +26,7 @@
  * <p>
  * Run the example with `--help` argument to obtain the list of supported parameters.
  * <ul>
- *   <li>./ising_mc_--help</li>
+ *   <li>./ising_mc --help</li>
  * </ul>
  * 
  * @param argc the number of arguments
@@ -49,9 +49,9 @@ int main(int argc, char* argv[])
     
         // Creates the parameters for the simulation
         // If an hdf5 file is supplied, reads the parameters there
-        // This constructor broadcasts to all processes
         if (is_master) std::cout << "Initializing parameters..." << std::endl;
 
+        // This constructor broadcasts to all processes
         alps::params parameters(argc, (const char**)argv, comm);
         my_sim_type::define_parameters(parameters);
 
@@ -89,17 +89,6 @@ int main(int argc, char* argv[])
             std::cout << "All measured results:" << std::endl;
             std::cout << results << std::endl;
             
-            // Access results individually: print correlation to a file
-            std::ofstream corrf("correlations.dat");
-            if (corrf) {
-                corrf << "# Site Corr CorrErr\n";
-                for (int i=0; i<parameters["length"]; ++i) {
-                    corrf << i << " "
-                          << results["Correlations"].mean<my_sim_type::correlation_type>()[i] << " "
-                          << results["Correlations"].error<my_sim_type::correlation_type>()[i]
-                          << std::endl;
-                }
-            }
             std::cout << "Simulation ran for " << results["Energy"].count() << " steps." << std::endl;
 
             // Assign individual results to variables.
