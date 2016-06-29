@@ -18,13 +18,17 @@
 
 namespace alps {
 
-    template<typename Base, typename ScheduleChecker = alps::check_schedule> class mcmpiadapter : public Base {
+    namespace detail {
+
+        /// Base class for mcmpiadapter; should never be instantiated by a user
+    
+        template<typename Base, typename ScheduleChecker> class mcmpiadapter_base : public Base {
 
         public:
             typedef typename Base::parameters_type parameters_type;
 
-            /// Construct mcmpiadapter with a custom scheduler
-            mcmpiadapter(
+            /// Construct mcmpiadapter_base with a custom scheduler
+            mcmpiadapter_base(
                   parameters_type const & parameters
                 , alps::mpi::communicator const & comm
                 , ScheduleChecker const & check
@@ -34,20 +38,6 @@ namespace alps {
                 , schedule_checker(check)
                 , clone(comm.rank())
             {}
-
-            /// Construct mcmpiadapter with alps::check_schedule with the relevant parameters Tmin and Tmax taken from the provided parameters
-            mcmpiadapter(
-                  parameters_type const & parameters
-                , alps::mpi::communicator const & comm
-                , typename boost::enable_if<boost::is_same<ScheduleChecker,  alps::check_schedule>, bool>::type* dummy = 0
-            )
-                : Base(parameters, comm.rank())
-                , communicator(comm)
-                , schedule_checker(parameters["Tmin"], parameters["Tmax"])
-                , clone(comm.rank())
-            {
-            }
-
 
             static parameters_type& define_parameters(parameters_type & parameters) {
                 Base::define_parameters(parameters);
@@ -104,7 +94,59 @@ namespace alps {
             ScheduleChecker schedule_checker;
             double fraction;
             int clone;
+        };
+    } // detail::
+
+
+    /// MPI adapter for an MC simulation class, with a general ScheduleChecker
+    template<typename Base, typename ScheduleChecker = alps::check_schedule> class mcmpiadapter : public detail::mcmpiadapter_base<Base,ScheduleChecker> {
+    private:
+        typedef detail::mcmpiadapter_base<Base,ScheduleChecker> base_type_;
+        
+    public:
+        typedef typename base_type_::parameters_type parameters_type;
+
+        /// Construct mcmpiadapter with a custom scheduler
+        // Just forwards to the base class constructor
+        mcmpiadapter(
+            parameters_type const & parameters
+            , alps::mpi::communicator const & comm
+            , ScheduleChecker const & check
+            )
+            : base_type_(parameters, comm, check)
+        {}
     };
+
+    /// MPI adapter for an MC simulation class, with default ScheduleChecker
+    // partial specialization
+    template<typename Base> class mcmpiadapter<Base,alps::check_schedule> : public detail::mcmpiadapter_base<Base,alps::check_schedule> {
+    private:
+        typedef alps::check_schedule ScheduleChecker;
+        typedef detail::mcmpiadapter_base<Base,ScheduleChecker> base_type_;
+        
+    public:
+        typedef typename base_type_::parameters_type parameters_type;
+
+        /// Construct mcmpiadapter with a custom scheduler
+        // Just forwards to the base class constructor
+        mcmpiadapter(
+            parameters_type const & parameters
+            , alps::mpi::communicator const & comm
+            , ScheduleChecker const & check
+            )
+            : base_type_(parameters, comm, check)
+        {}
+
+        /// Construct mcmpiadapter_base with alps::check_schedule with the relevant parameters Tmin and Tmax taken from the provided parameters
+        // constructs the ScheduleChecker object and then forwards the ctor
+        mcmpiadapter(
+            parameters_type const & parameters
+            , alps::mpi::communicator const & comm
+            )
+            : base_type_(parameters, comm, ScheduleChecker(parameters["Tmin"], parameters["Tmax"]))
+        { }
+    };
+    
 }
 
 #endif
