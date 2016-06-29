@@ -50,6 +50,16 @@ TEST(CustomScheduler,Run) {
     EXPECT_EQ(sim_type::MAXCOUNT+0, sim.count());
 }
 
+TEST(CustomScheduler,Params) {
+    typedef alps::mcmpiadapter<my_sim_type,my_schecker_type> sim_type;
+    alps::mpi::communicator comm;
+    alps::params p;
+    sim_type::define_parameters(p);
+
+    EXPECT_FALSE(p.defined("Tmin"));
+    EXPECT_FALSE(p.defined("Tmax"));
+}
+
 int main(int argc, char**argv)
 {
    alps::mpi::environment env(argc, argv, false);

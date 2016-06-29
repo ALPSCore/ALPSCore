@@ -41,14 +41,6 @@ namespace alps {
             {}
 
        public:
-            static parameters_type& define_parameters(parameters_type & parameters) {
-                Base::define_parameters(parameters);
-                if (parameters.is_restored()) return parameters;
-                parameters.template define<std::size_t>("Tmin", 1, "minimum time to check if simulation has finished");
-                parameters.template define<std::size_t>("Tmax", 600, "maximum time to check if simulation has finished");
-                return parameters;
-            }
-
             double fraction_completed() const {
                 return fraction;
             }
@@ -147,6 +139,15 @@ namespace alps {
             )
             : base_type_(parameters, comm, ScheduleChecker(parameters["Tmin"], parameters["Tmax"]))
         { }
+
+        /// Define parameters specific for alps::check_schedule: Tmin and Tmax
+        static parameters_type& define_parameters(parameters_type & parameters) {
+            base_type_::define_parameters(parameters);
+            if (parameters.is_restored()) return parameters;
+            parameters.template define<std::size_t>("Tmin", 1, "minimum time to check if simulation has finished");
+            parameters.template define<std::size_t>("Tmax", 600, "maximum time to check if simulation has finished");
+            return parameters;
+        }
     };
     
 }
