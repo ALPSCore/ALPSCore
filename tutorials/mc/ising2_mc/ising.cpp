@@ -73,7 +73,7 @@ void ising_sim::update() {
     uint j2 = (j-1+length) % length;     // down
     // Energy difference:
     double delta=2.*spins(i,j)*
-                    (spins(i1,j1)+  // left
+                    (spins(i1,j)+  // left
                      spins(i2,j)+  // right
                      spins(i,j1)+  // up
                      spins(i,j2)); // down
