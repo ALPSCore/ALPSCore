@@ -27,6 +27,7 @@ namespace alps {
         public:
             typedef typename Base::parameters_type parameters_type;
 
+        protected:
             /// Construct mcmpiadapter_base with a custom scheduler
             mcmpiadapter_base(
                   parameters_type const & parameters
@@ -39,6 +40,7 @@ namespace alps {
                 , clone(comm.rank())
             {}
 
+       public:
             static parameters_type& define_parameters(parameters_type & parameters) {
                 Base::define_parameters(parameters);
                 if (parameters.is_restored()) return parameters;
