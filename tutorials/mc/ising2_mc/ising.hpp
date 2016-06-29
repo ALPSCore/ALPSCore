@@ -30,6 +30,11 @@ class ising_sim : public alps::mcbase {
     int total_sweeps;
     double beta;
     storage_type spins;
+    double current_energy;
+    double current_magnetization;
+
+    double get_energy();
+    double get_magnetization();
         
   public:
     ising_sim(parameters_type const & parms, std::size_t seed_offset = 0);

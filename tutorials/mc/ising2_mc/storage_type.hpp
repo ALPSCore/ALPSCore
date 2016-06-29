@@ -4,6 +4,8 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
+#include <iostream>
+
 // Storage class for 2D spin array.
 // Implemented as vector of vectors for simplicity.
 class storage_type {
@@ -32,4 +34,18 @@ class storage_type {
     void load(alps::hdf5::archive& ar) {
         ar["2Darray"] >> data_;
     }
+
+    friend std::ostream& operator<<(std::ostream& s, const storage_type& obj) {
+        int n=obj.data_.size();
+        for (int i=0; i<n; ++i) {
+            for (int j=0; j<n; ++j) {
+                int c=obj.data_.at(i).at(j);
+                assert(c==1 || c==-1);
+                s << (c==1?".":"*");
+            }
+            s << "\n";
+        }
+        return s;
+    }
 };
+

@@ -9,6 +9,34 @@
 #include <alps/params/convenience_params.hpp>
 #include <boost/lambda/lambda.hpp>
 
+double ising_sim::get_energy()
+{
+    double en=0;
+    for (int i=0; i<length; ++i) {
+        for (int j=0; j<length; ++j) {
+            int i_next=(i+1)%length;
+            int j_next=(j+1)%length;
+            en += -(spins(i,j)*spins(i,j_next)+
+                    spins(i,j)*spins(i_next,j));
+            
+        }
+    }
+    return en;
+}
+
+double ising_sim::get_magnetization()
+{
+    double mag=0;
+    for (int i=0; i<length; ++i) {
+        for (int j=0; j<length; ++j) {
+            mag += spins(i,j);
+        }
+    }
+    return mag;
+}
+
+
+
 // Defines the parameters for the ising simulation
 void ising_sim::define_parameters(parameters_type & parameters) {
     // If the parameters are restored, they are already defined
@@ -40,13 +68,36 @@ ising_sim::ising_sim(parameters_type const & parms, std::size_t seed_offset)
     , total_sweeps(parameters["sweeps"])
     , beta(1. / parameters["temperature"].as<double>())
     , spins(length,length)
+    , current_energy(0)
+    , current_magnetization(0)
 {
     // Initializes the spins
     for(int i=0; i<length; ++i) {
         for (int j=0; j<length; ++j) {
-            spins(i,j) = (random() < 0.5 ? 1 : -1);
+            // spins(i,j) = (random() < 0.5 ? 1 : -1);
+            spins(i,j) = 1;
         }
     }
+
+    // Calculates initial magnetization and energy
+    // current_magnetization=get_magnetization();
+    // current_energy=get_energy();
+    current_magnetization=length*length;
+    current_energy=-2*length*length;
+    assert(get_energy()==current_energy);
+    assert(get_magnetization()==current_magnetization);
+    
+    // for (int i=0; i<length; ++i) {
+    //     for (int j=0; j<length; ++j) {
+    //         current_magnetization += spins(i,j);
+    //         int i_next=(i+1)%length;
+    //         int j_next=(j+1)%length;
+    //         current_energy += -(spins(i,j)*spins(i,j_next)+
+    //                             spins(i,j)*spins(i_next,j));
+            
+    //     }
+    // }
+    // std::cerr << "Initial energy=" << current_energy << " magnetization=" << current_magnetization << std::endl << spins; // DEBUG
     
     // Adds the measurements
     measurements
@@ -79,39 +130,35 @@ void ising_sim::update() {
                      spins(i,j2)); // down
     // Step acceptance:
     if (delta<=0. || random() < exp(-beta*delta)) {
+        // update energy:
+        current_energy += delta;
+        // update magnetization:
+        current_magnetization -= 2*spins(i,j);
         // flip the spin
         spins(i,j) = -spins(i,j);
+
+        // std::cerr << "Accepted, Delta=" << delta << std::endl << spins; // DEBUG
+    } else {
+        // std::cerr << "Rejected, Delta=" << delta << std::endl; // DEBUG
     }
+        
 }
 
 // Collects the measurements at each MC step.
 void ising_sim::measure() {
-    sweeps++;
+    ++sweeps;
     if (sweeps<thermalization_sweeps) return;
     
-    double tmag = 0; // magnetization
-    double ten = 0; // energy
+    const double l2=length*length; // number of sites
+    double tmag = current_magnetization / l2; // magnetization
 
-    // Calculate magnetization and energy.
-    // FIXME: Actually we do not need to do it,
-    // FIXME: it's possible to know it from update!
-    for (int i=0; i<length; ++i) {
-        for (int j=0; j<length; ++j) {
-            tmag += spins(i,j);
-            int i_next=(i+1)%length;
-            int j_next=(j+1)%length;
-            ten += -(spins(i,j)*spins(i,j_next)+
-                     spins(i,j)*spins(i_next,j));
-            
-        }
-    }
-
-    const double l2=length*length;
-    ten /= l2;
-    tmag /= l2;
-
-    // Accumulate the data
-    measurements["Energy"] << ten;
+    assert(get_energy()==current_energy); // DEBUG
+    assert(get_magnetization()==current_magnetization); // DEBUG
+    // std::cerr << "Energy=" << current_energy << " Magnetization=" << current_magnetization << std::endl; // DEBUG
+    // std::cerr << "Energ1=" << get_energy() << " Magnetizatio1=" << get_magnetization() << std::endl; // DEBUG
+    
+    // Accumulate the data (per site)
+    measurements["Energy"] << (current_energy / l2);
     measurements["Magnetization"] << tmag;
     measurements["AbsMagnetization"] << fabs(tmag);
     measurements["Magnetization^2"] << tmag*tmag;
