@@ -137,6 +137,9 @@ void ising_sim::save(alps::hdf5::archive & ar) const {
     // We just need to add our own internal state
     ar["checkpoint/sweeps"] << sweeps;
     ar["checkpoint/spins"] << spins;
+    ar["checkpoint/current_energy"] << current_energy;
+    ar["checkpoint/current_magnetization"] << current_magnetization;
+    
     // The rest of the internal state is saved as part of the parameters
 }
 
@@ -148,10 +151,13 @@ void ising_sim::load(alps::hdf5::archive & ar) {
     // Restore the internal state that came from parameters
     length = parameters["length"];
     thermalization_sweeps = parameters["thermalization"];
-    total_sweeps = parameters["sweeps"];
+    // Note: `total_sweeps` is not restored here!
     beta = 1. / parameters["temperature"].as<double>();
+    iexp_ = exp_beta(-beta);
 
     // Restore the rest of the state from the hdf5 file
     ar["checkpoint/sweeps"] >> sweeps;
     ar["checkpoint/spins"] >> spins;
+    ar["checkpoint/current_energy"] >> current_energy;
+    ar["checkpoint/current_magnetization"] >> current_magnetization;
 }
