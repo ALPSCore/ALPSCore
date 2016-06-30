@@ -4,7 +4,11 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
+#ifndef ALPS_TUTORIALS_MC_ISING2_STORAGE_TYPE_HPP_228662e62e9247d5903f52f9644b6455
+#define ALPS_TUTORIALS_MC_ISING2_STORAGE_TYPE_HPP_228662e62e9247d5903f52f9644b6455
+
 #include <iostream>
+#include <vector>
 
 // Storage class for 2D spin array.
 // Implemented as vector of vectors for simplicity.
@@ -49,3 +53,5 @@ class storage_type {
     }
 };
 
+
+#endif /* ALPS_TUTORIALS_MC_ISING2_STORAGE_TYPE_HPP_228662e62e9247d5903f52f9644b6455 */
