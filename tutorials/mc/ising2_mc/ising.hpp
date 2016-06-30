@@ -16,6 +16,7 @@
 #include <iostream>
 
 #include "storage_type.hpp"
+#include "exp_beta.hpp"
 
 // Simulation class for 2D Ising model (square lattice).
 // We extend alps::mcbase, which is the base class of all Monte Carlo simulations.
@@ -32,6 +33,8 @@ class ising_sim : public alps::mcbase {
     storage_type spins;
     double current_energy;
     double current_magnetization;
+
+    exp_beta iexp_; // function object to compute exponent
 
     double get_energy();
     double get_magnetization();

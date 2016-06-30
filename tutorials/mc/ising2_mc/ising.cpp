@@ -70,6 +70,7 @@ ising_sim::ising_sim(parameters_type const & parms, std::size_t seed_offset)
     , spins(length,length)
     , current_energy(0)
     , current_magnetization(0)
+    , iexp_(-beta)
 {
     // Initializes the spins
     for(int i=0; i<length; ++i) {
@@ -128,8 +129,12 @@ void ising_sim::update() {
                      spins(i2,j)+  // right
                      spins(i,j1)+  // up
                      spins(i,j2)); // down
+    
+    double expval=iexp_(delta); // DEBUG
+    double expval0=exp(-beta*delta); // DEBUG
+    assert(expval==expval0); // DEBUG
     // Step acceptance:
-    if (delta<=0. || random() < exp(-beta*delta)) {
+    if (delta<=0. || random() < iexp_(delta)) {
         // update energy:
         current_energy += delta;
         // update magnetization:
