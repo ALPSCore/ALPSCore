@@ -37,9 +37,6 @@ class ising_sim : public alps::mcbase {
 
     exp_beta iexp_; // function object to compute exponent
 
-    double get_energy();
-    double get_magnetization();
-        
   public:
     ising_sim(parameters_type const & parms, std::size_t seed_offset = 0);
 

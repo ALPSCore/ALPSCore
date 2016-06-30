@@ -7,7 +7,6 @@
 #ifndef ALPS_TUTORIALS_MC_ISING2_STORAGE_TYPE_HPP_228662e62e9247d5903f52f9644b6455
 #define ALPS_TUTORIALS_MC_ISING2_STORAGE_TYPE_HPP_228662e62e9247d5903f52f9644b6455
 
-#include <iostream>
 #include <vector>
 
 // Storage class for 2D spin array.
@@ -37,19 +36,6 @@ class storage_type {
     // Custom load
     void load(alps::hdf5::archive& ar) {
         ar["2Darray"] >> data_;
-    }
-
-    friend std::ostream& operator<<(std::ostream& s, const storage_type& obj) {
-        int n=obj.data_.size();
-        for (int i=0; i<n; ++i) {
-            for (int j=0; j<n; ++j) {
-                int c=obj.data_.at(i).at(j);
-                assert(c==1 || c==-1);
-                s << (c==1?".":"*");
-            }
-            s << "\n";
-        }
-        return s;
     }
 };
 
