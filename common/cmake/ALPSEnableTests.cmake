@@ -65,6 +65,10 @@ function(alps_add_gtest test)
     set(sources_ ${test} ${arg_SRCS})
     
     add_executable(${test} ${sources_})
+    if (ALPS_BUILD_STATIC)
+      set_property(TARGET ${test} PROPERTY LINK_SEARCH_START_STATIC 1)
+      set_property(TARGET ${test} PROPERTY LINK_SEARCH_END_STATIC 1)
+    endif()
 
     if (arg_NOMAIN)
         set(link_test_ ${GTEST_LIBRARY})
