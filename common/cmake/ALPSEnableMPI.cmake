@@ -32,16 +32,24 @@ if (ENABLE_MPI)
 
     find_package(MPI)
     if (${MPI_CXX_FOUND}) 
-
+        message(STATUS "MPI : Found compiler ${MPI_CXX_COMPILER}")
         # check that the versions of compilers are the same
         execute_process(COMMAND ${MPI_CXX_COMPILER}   "-dumpversion" OUTPUT_VARIABLE mpi_version OUTPUT_STRIP_TRAILING_WHITESPACE)
         execute_process(COMMAND ${CMAKE_CXX_COMPILER} "-dumpversion" OUTPUT_VARIABLE cxx_version OUTPUT_STRIP_TRAILING_WHITESPACE)
         if (NOT ${mpi_version} EQUAL ${cxx_version})
-            message(WARNING "mpi compiler doesn't match the cxx compiler. Depending on your platform this may lead to problems.")
+            message(WARNING "MPI compiler doesn't match the C++ compiler.
+MPI compiler is: ${MPI_CXX_COMPILER}
+MPI compiler version is: ${mpi_version}
+C++ compiler is: ${CMAKE_CXX_COMPILER}
+C++ compiler version is: ${cxx_version}
+Depending on your platform this may lead to problems.")
         endif()
         set(ALPS_HAVE_MPI TRUE)
-        message(STATUS "MPI : Using ${MPI_CXX_COMPILER}")
         list(APPEND CMAKE_CXX_FLAGS ${MPI_CXX_COMPILE_FLAGS}) 
+        message(STATUS "MPI : Using ${CMAKE_CXX_COMPILER}")
+        if (MPI_CXX_COMPILE_FLAGS)	
+            message(STATUS "MPI : with options ${MPI_CXX_COMPILE_FLAGS}")
+        endif()
         target_include_directories(${PROJECT_NAME} PUBLIC ${MPI_CXX_INCLUDE_PATH} ${MPI_C_INCLUDE_PATH})
         target_link_libraries(${PROJECT_NAME} PUBLIC ${MPI_CXX_LIBRARIES})
     else()
