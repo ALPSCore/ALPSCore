@@ -72,12 +72,14 @@ class AnyParamTest : public ::testing::Test {
     alps::params& param;
     const value_type val1;
     const value_type val2;
+    const std::string expected_origin_name;
     public:
 
     AnyParamTest():
         param(*gen.param_ptr),
         val1(data_trait_type::get(true)),
-        val2(data_trait_type::get(false))
+        val2(data_trait_type::get(false)),
+        expected_origin_name(gen.expected_origin_name())
     { }
 
     // Accessing const object
@@ -523,6 +525,13 @@ class AnyParamTest : public ::testing::Test {
         EXPECT_FALSE(param.defined("nosuchname"));
     }
 
+    // origin name test (the name is, alas, class-specific)
+    void origin_name()
+    {
+        EXPECT_EQ(expected_origin_name,param.get_origin_name());
+    }
+        
+
 // Saving to and restoring from archive: is a generator
 // Copying from another object: is a generator
 // Copy-constructing:  is a generator
@@ -555,6 +564,7 @@ TYPED_TEST_P(AnyParamTest,AssignIncompatibleType) { this->assign_incompatible_ty
 TYPED_TEST_P(AnyParamTest,RedefineSameType) { this->redefine_same_type(); }
 TYPED_TEST_P(AnyParamTest,RedefineAnotherType) { this->redefine_another_type(); }
 TYPED_TEST_P(AnyParamTest,Defined) { this->defined(); }
+TYPED_TEST_P(AnyParamTest,OriginName) { this->origin_name(); }
 
 REGISTER_TYPED_TEST_CASE_P(AnyParamTest,
                            AccessConst,
@@ -579,5 +589,6 @@ REGISTER_TYPED_TEST_CASE_P(AnyParamTest,
                            AssignIncompatibleType,
                            RedefineSameType,
                            RedefineAnotherType,
-                           Defined
+                           Defined,
+                           OriginName
     );

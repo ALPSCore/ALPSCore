@@ -22,3 +22,28 @@ typedef ::testing::Types<
     > CmdlineScalarGenerators;
 
 INSTANTIATE_TYPED_TEST_CASE_P(CmdlineScalarParamTest, AnyParamTest, CmdlineScalarGenerators);
+
+typedef ::testing::Types<
+    InifileParamGenerator<bool>,
+    InifileParamGenerator<char>,
+    InifileParamGenerator<int>,
+    InifileParamGenerator<unsigned int>,
+    InifileParamGenerator<long>,
+    InifileParamGenerator<unsigned long>,
+    InifileParamGenerator<double>
+    > InifileScalarGenerators;
+
+INSTANTIATE_TYPED_TEST_CASE_P(InifileScalarParamTest, AnyParamTest, InifileScalarGenerators);
+
+typedef ::testing::Types<
+    H5ParamGenerator<bool>,
+    H5ParamGenerator<char>,
+    H5ParamGenerator<int>,
+    H5ParamGenerator<unsigned int>,
+    H5ParamGenerator<long>,
+    H5ParamGenerator<unsigned long>,
+    H5ParamGenerator<double>
+    > H5ScalarGenerators;
+
+INSTANTIATE_TYPED_TEST_CASE_P(H5ScalarParamTest, AnyParamTest, H5ScalarGenerators);
+

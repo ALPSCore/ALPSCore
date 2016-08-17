@@ -14,6 +14,7 @@
 #ifndef PARAMS_TEST_PARAM_GENERATORS_V2_HPP_INCLUDED
 #define PARAMS_TEST_PARAM_GENERATORS_V2_HPP_INCLUDED
 
+#include <fstream>
 #include "alps/params.hpp"
 
 namespace alps {
@@ -145,37 +146,120 @@ namespace alps {
         /// Parameter object generator (from cmdline); accepts parameter type T.
         template <typename T>
         class CmdlineParamGenerator {
+            std::string expected_origin_name_;
             public:
             alps::params* param_ptr;
             typedef data_trait<T> data_trait_type;
             typedef T value_type;
- 
+
+            std::string expected_origin_name() {
+                return expected_origin_name_;
+            }
+            
             CmdlineParamGenerator(): param_ptr(0)
             {
-              const T val1=data_trait_type::get(true);
-              const T val2=data_trait_type::get(false);
-              std::string argv_s[]={
-                "--present_def="+input_string<T>(val1),
-                "--present_nodef="+input_string<T>(val1),
-              };
-              const char* argv[]={
-                "progname",
-                argv_s[0].c_str(),
-                argv_s[1].c_str()
-              };
-              const int argc=sizeof(argv)/sizeof(*argv);
-              param_ptr=new alps::params(argc,argv);
-              alps::params& param=*param_ptr;
-              param.
-                template define<T>("present_def", val2, "Has default").
-                template define<T>("missing_def", val1, "Missing, has default").
-                template define<T>("present_nodef", "No default").
-                template define<T>("missing_nodef", "Missing, no default");
+                const T val1=data_trait_type::get(true);
+                const T val2=data_trait_type::get(false);
+                std::string argv_s[]={
+                    "--present_def="+input_string<T>(val1),
+                    "--present_nodef="+input_string<T>(val1),
+                };
+                expected_origin_name_="/path/to/progname";
+                const char* argv[]={
+                    expected_origin_name_.c_str(),
+                    argv_s[0].c_str(),
+                    argv_s[1].c_str()
+                };
+                const int argc=sizeof(argv)/sizeof(*argv);
+                param_ptr=new alps::params(argc,argv);
+                alps::params& param=*param_ptr;
+                param.
+                    template define<T>("present_def", val2, "Has default").
+                    template define<T>("missing_def", val1, "Missing, has default").
+                    template define<T>("present_nodef", "No default").
+                    template define<T>("missing_nodef", "Missing, no default");
 
-              param["assigned"]=val1;
+                param["assigned"]=val1;
             }
  
-            ~CmdlineParamGenerator() { delete param_ptr; } 
+            ~CmdlineParamGenerator() { delete param_ptr; }  // FIXME: use smart_ptr instead!
+        };
+        
+        /// Parameter object generator (from ini-file); accepts parameter type T.
+        template <typename T>
+        class InifileParamGenerator {
+            std::string expected_origin_name_;
+            public:
+            alps::params* param_ptr;
+            typedef data_trait<T> data_trait_type;
+            typedef T value_type;
+
+            std::string expected_origin_name() {
+                return expected_origin_name_;
+            }
+            
+            InifileParamGenerator(): param_ptr(0)
+            {
+                expected_origin_name_="./inifile_input.ini"; // FIXME: use temporary directory name here
+                std::ofstream inifile(expected_origin_name_.c_str());
+                if (!inifile) throw std::runtime_error("Failed to open temporary file "+expected_origin_name_);
+
+                const T val1=data_trait_type::get(true);
+                const T val2=data_trait_type::get(false);
+                inifile << "present_def=" << input_string<T>(val1) << std::endl
+                        << "present_nodef=" << input_string<T>(val1) << std::endl;
+                
+                const char* argv[]={
+                    "/path/to/progname",
+                    expected_origin_name_.c_str()
+                };
+                const int argc=sizeof(argv)/sizeof(*argv);
+                param_ptr=new alps::params(argc,argv);
+                alps::params& param=*param_ptr;
+                param.
+                    template define<T>("present_def", val2, "Has default").
+                    template define<T>("missing_def", val1, "Missing, has default").
+                    template define<T>("present_nodef", "No default").
+                    template define<T>("missing_nodef", "Missing, no default");
+
+                param["assigned"]=val1;
+            }
+ 
+            ~InifileParamGenerator() { delete param_ptr; }  // FIXME: use smart_ptr instead!
+        };
+
+        /// Parameter object generator (from h5-file); accepts parameter type T.
+        template <typename T>
+        class H5ParamGenerator {
+            std::string expected_origin_name_;
+            public:
+            alps::params* param_ptr;
+            typedef data_trait<T> data_trait_type;
+            typedef T value_type;
+
+            std::string expected_origin_name() {
+                return expected_origin_name_;
+            }
+            
+            H5ParamGenerator(): param_ptr(0)
+            {
+                expected_origin_name_="./h5file_input.h5"; // FIXME: use temporary directory name here
+                {
+                    alps::hdf5::archive ar(expected_origin_name_,"w");
+                    CmdlineParamGenerator<T> tmp_gen;
+                    tmp_gen.param_ptr->save(ar,"/parameters");
+                }
+                
+                const char* argv[]={
+                    "/path/to/progname",
+                    expected_origin_name_.c_str()
+                };
+                const int argc=sizeof(argv)/sizeof(*argv);
+
+                param_ptr=new alps::params(argc,argv);
+            }
+ 
+            ~H5ParamGenerator() { delete param_ptr; }  // FIXME: use smart_ptr instead!
         };
 
 
@@ -184,46 +268,52 @@ namespace alps {
         /// Parameter object generator (from cmdline by broadcast); accepts parameter type T.
         template <typename T>
         class CmdlineMpiParamGenerator {
+            std::string expected_origin_name_;
             public:
             alps::params* param_ptr;
             typedef data_trait<T> data_trait_type;
             typedef T value_type;
  
+            std::string expected_origin_name() {
+                return expected_origin_name_;
+            }
+            
             CmdlineMpiParamGenerator(): param_ptr(0)
             {
-              const int root=0;
-              alps::mpi::communicator comm;
-              const bool is_root=(comm.rank()==root);
+                const int root=0;
+                alps::mpi::communicator comm;
+                const bool is_root=(comm.rank()==root);
 
-              const T val1=data_trait_type::get(true);
-              const T val2=data_trait_type::get(false);
-              std::string argv_s[]={
-                "--present_def="+input_string<T>(val1),
-                "--present_nodef="+input_string<T>(val1),
-              };
-              // Make sure that the full command line is available
-              // only on a root process:
-              const char* argv[]={
-                "progname",
-                is_root? argv_s[0].c_str() : "",
-                is_root? argv_s[1].c_str() : ""
-              };
-              const int argc=is_root? sizeof(argv)/sizeof(*argv) : 1;
+                const T val1=data_trait_type::get(true);
+                const T val2=data_trait_type::get(false);
+                std::string argv_s[]={
+                    "--present_def="+input_string<T>(val1),
+                    "--present_nodef="+input_string<T>(val1),
+                };
+                // Make sure that the full command line is available
+                // only on a root process:
+                expected_origin_name_="/path/to/progname";
+                const char* argv[]={
+                    is_root? expected_origin_name_.c_str(): "",
+                    is_root? argv_s[0].c_str() : "",
+                    is_root? argv_s[1].c_str() : ""
+                };
+                const int argc=is_root? sizeof(argv)/sizeof(*argv) : 1;
 
-              // Collective constructor:
-              param_ptr=new alps::params(argc,argv,comm,root);
+                // Collective constructor:
+                param_ptr=new alps::params(argc,argv,comm,root);
 
-              alps::params& param=*param_ptr;
-              param.
-                template define<T>("present_def", val2, "Has default").
-                template define<T>("missing_def", val1, "Missing, has default").
-                template define<T>("present_nodef", "No default").
-                template define<T>("missing_nodef", "Missing, no default");
+                alps::params& param=*param_ptr;
+                param.
+                    template define<T>("present_def", val2, "Has default").
+                    template define<T>("missing_def", val1, "Missing, has default").
+                    template define<T>("present_nodef", "No default").
+                    template define<T>("missing_nodef", "Missing, no default");
 
-              param["assigned"]=val1;
+                param["assigned"]=val1;
             }
  
-            ~CmdlineMpiParamGenerator() { delete param_ptr; } 
+            ~CmdlineMpiParamGenerator() { delete param_ptr; } // FIXME: use smart_ptr instead!
         };
 
 #endif /* ALPS_HAVE_MPI*/
