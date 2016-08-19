@@ -12,7 +12,7 @@ namespace alps {
   std::string remove_extensions(const std::string& filename)
   {
       boost::filesystem::path fp=filename;
-      while (!fp.extension().empty())  fp=fp.stem();
+      while (!fp.extension().empty())  fp.replace_extension();
       return fp.native(); // FIXME: should it be .native() or just .string() ?
   }
 }
