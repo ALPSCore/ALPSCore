@@ -24,7 +24,7 @@ add_this_package(
     # copyright //FIXME
     os
     temporary_filename
-    remove_extensions
+    filename_operations
     stacktrace
     signal
     gtest_par_xml_output

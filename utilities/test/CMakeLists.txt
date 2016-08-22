@@ -2,7 +2,7 @@ include(ALPSEnableTests)
 
 set (test_src
     temporary_filename
-    remove_extensions
+    filename_operations
     gtest_par_xml_output
     inf
     type_traits
