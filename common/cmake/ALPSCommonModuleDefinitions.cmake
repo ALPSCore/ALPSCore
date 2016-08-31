@@ -23,6 +23,14 @@ if(APPLE)
   set(CMAKE_MACOSX_RPATH ON)
 endif()
 
+#Do Release-with-debug build by default
+#If it is not set, remove it from the cache
+if (NOT CMAKE_BUILD_TYPE)
+  unset(CMAKE_BUILD_TYPE CACHE)
+endif()
+set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "Build type, such as `Debug` or `Release`")
+mark_as_advanced(CMAKE_BUILD_TYPE)
+
 # Build static XOR shared 
 # Defines ALPS_BUILD_TYPE=STATIC|DYNAMIC .
 set(ALPS_BUILD_TYPE "dynamic" CACHE STRING "Build type: `static`, `dynamic` or `unspecified`")
