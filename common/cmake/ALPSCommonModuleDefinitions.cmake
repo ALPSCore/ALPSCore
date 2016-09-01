@@ -31,6 +31,10 @@ endif()
 set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "Build type, such as `Debug` or `Release`")
 mark_as_advanced(CMAKE_BUILD_TYPE)
 
+# This option is checked, e.g., when adding -DBOOST_DISABLE_ASSERTS.
+option(ALPS_DEBUG "Set to TRUE to supress auto-adjusting your compilation flags" false)
+mark_as_advanced(ALPS_DEBUG)
+
 # Build static XOR shared 
 # Defines ALPS_BUILD_TYPE=STATIC|DYNAMIC .
 set(ALPS_BUILD_TYPE "dynamic" CACHE STRING "Build type: `static`, `dynamic` or `unspecified`")
