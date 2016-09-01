@@ -35,6 +35,13 @@ mark_as_advanced(CMAKE_BUILD_TYPE)
 option(ALPS_DEBUG "Set to TRUE to supress auto-adjusting your compilation flags" false)
 mark_as_advanced(ALPS_DEBUG)
 
+# GF uses boost::multi_array, to supress extra checks we need to define extra flags,
+# otherwise codes will slow down to a crawl.
+if (NOT ALPS_DEBUG)
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DBOOST_DISABLE_ASSERTS")
+  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -DBOOST_DISABLE_ASSERTS")
+endif()
+
 # Build static XOR shared 
 # Defines ALPS_BUILD_TYPE=STATIC|DYNAMIC .
 set(ALPS_BUILD_TYPE "dynamic" CACHE STRING "Build type: `static`, `dynamic` or `unspecified`")

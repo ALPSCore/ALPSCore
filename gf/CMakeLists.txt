@@ -10,13 +10,6 @@ message ("\nALPSCore module : ${PROJECT_NAME}\n")
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/../common/cmake)
 include(ALPSCommonModuleDefinitions)
 
-# GF uses boost::multi_array, to supress extra checks we need to define extra flags,
-# otherwise codes will slow down to a crawl.
-if (NOT ALPS_DEBUG)
-  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DBOOST_DISABLE_ASSERTS")
-  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -DBOOST_DISABLE_ASSERTS")
-endif()
-
 gen_documentation()
 if (DocumentationOnly)
   return()
