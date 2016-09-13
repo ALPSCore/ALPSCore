@@ -8,20 +8,12 @@
 #define ALPS_TUTORIALS_MC_ISING2_ISING_HPP_2e5dd7c49f7f4f209a3d27964d231a5b
 
 #include <alps/mc/mcbase.hpp>
-#include <alps/hdf5/archive.hpp>
-#include <alps/hdf5/vector.hpp>
-#include <boost/function.hpp>
-#include <boost/filesystem/path.hpp>
-#include <vector>
-#include <string>
-#include <iostream>
-
 #include "storage_type.hpp"
 #include "exp_beta.hpp"
 
 // Simulation class for 2D Ising model (square lattice).
-// We extend alps::mcbase, which is the base class of all Monte Carlo simulations.
-// We define our own state, calculation functions (update/measure) and
+// Extends alps::mcbase, the base class of all Monte Carlo simulations.
+// Defines its state, calculation functions (update/measure) and
 // serialization functions (save/load)
 class ising_sim : public alps::mcbase {
     // The internal state of our simulation

@@ -1,17 +1,15 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(ising2_mc CXX)
 
-# Not strictly necessary, but will create executables that are
-# aware of ALPSCore location
-SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
 add_executable(${PROJECT_NAME} main.cpp ising.cpp)
 add_executable(${PROJECT_NAME}_mpi main_mpi.cpp ising.cpp)
 
 # Request the ALPSCore package (with all components)
-# The ALPSCore package must be installed in some standard place (like /usr/local),
+# The ALPSCore package must be installed in some
+# standard place (like /usr/local),
 # or somewhere in your PATH. 
-# Otherwise, point ALPSCore_DIR environment variable to the ALPScore installation tree.
+# Otherwise, point ALPSCore_DIR environment variable
+# to the ALPScore installation tree.
 find_package(ALPSCore REQUIRED)
 
 # Use ALPSCore_LIBRARIES variable to link to ALPSCore 

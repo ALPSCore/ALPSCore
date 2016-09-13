@@ -7,7 +7,6 @@
 #include "ising.hpp"
 
 #include <alps/params/convenience_params.hpp>
-#include <boost/lambda/lambda.hpp>
 
 // Defines the parameters for the ising simulation
 void ising_sim::define_parameters(parameters_type & parameters) {
@@ -82,14 +81,14 @@ void ising_sim::update() {
     uint i = uint(length * random());
     uint j = uint(length * random());
     // Find neighbors indices, with wrap over box boundaries:
-    uint i1 = (i+1) % length;            // left
-    uint i2 = (i-1+length) % length;     // right
+    uint i1 = (i+1) % length;            // right
+    uint i2 = (i-1+length) % length;     // left
     uint j1 = (j+1) % length;            // up
     uint j2 = (j-1+length) % length;     // down
     // Energy difference:
     double delta=2.*spins(i,j)*
-                    (spins(i1,j)+  // left
-                     spins(i2,j)+  // right
+                    (spins(i1,j)+  // right
+                     spins(i2,j)+  // left
                      spins(i,j1)+  // up
                      spins(i,j2)); // down
     
@@ -109,11 +108,11 @@ void ising_sim::measure() {
     ++sweeps;
     if (sweeps<thermalization_sweeps) return;
     
-    const double l2=length*length; // number of sites
-    double tmag = current_magnetization / l2; // magnetization
+    const double n=length*length; // number of sites
+    double tmag = current_magnetization / n; // magnetization
 
     // Accumulate the data (per site)
-    measurements["Energy"] << (current_energy / l2);
+    measurements["Energy"] << (current_energy / n);
     measurements["Magnetization"] << tmag;
     measurements["AbsMagnetization"] << fabs(tmag);
     measurements["Magnetization^2"] << tmag*tmag;
@@ -135,8 +134,8 @@ void ising_sim::save(alps::hdf5::archive & ar) const {
     alps::mcbase::save(ar);
     
     // We just need to add our own internal state
-    ar["checkpoint/sweeps"] << sweeps;
     ar["checkpoint/spins"] << spins;
+    ar["checkpoint/sweeps"] << sweeps;
     ar["checkpoint/current_energy"] << current_energy;
     ar["checkpoint/current_magnetization"] << current_magnetization;
     
@@ -156,8 +155,8 @@ void ising_sim::load(alps::hdf5::archive & ar) {
     iexp_ = exp_beta(-beta);
 
     // Restore the rest of the state from the hdf5 file
-    ar["checkpoint/sweeps"] >> sweeps;
     ar["checkpoint/spins"] >> spins;
+    ar["checkpoint/sweeps"] >> sweeps;
     ar["checkpoint/current_energy"] >> current_energy;
     ar["checkpoint/current_magnetization"] >> current_magnetization;
 }
