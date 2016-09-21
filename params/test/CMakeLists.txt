@@ -14,6 +14,7 @@ set (test_src
      serialize
      param_ostream
      common_param_tests
+     disappearing_ini
     )
 
 
