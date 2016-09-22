@@ -9,6 +9,7 @@
 #include <alps/mc/api.hpp>
 #include <alps/mc/mcbase.hpp>
 #include <alps/mc/stop_callback.hpp>
+#include <alps/mc/mpiadapter.hpp>
 
 // Simulation class
 // We extend alps::mcbase, which is the base class of all Monte Carlo simulations.
@@ -85,9 +86,17 @@ class my_sim_type : public alps::mcbase {
  */
 int main(int argc, char* argv[])
 {
+    // Use the MPI adapter class instead of the original class:
+    typedef alps::mcmpiadapter<my_sim_type> my_sim_type;
+
+    // Initialize the MPI environment:
+    alps::mpi::environment env(argc,argv);
+    // Obtain the MPI communicator (MPI_COMM_WORLD by default):
+    alps::mpi::communicator comm;
+    
     // Creates the parameters for the simulation
     std::cout << "Initializing parameters..." << std::endl;
-    alps::parameters_type<my_sim_type>::type params(argc, (const char**)argv);
+    alps::parameters_type<my_sim_type>::type params(argc, (const char**)argv, comm);
 
     // Define the parameters for our simulation, including the ones for the
     // base class
@@ -98,19 +107,21 @@ int main(int argc, char* argv[])
     }
     
     // Create and run the simulation
-    std::cout << "Running simulation..." << std::endl;
-    my_sim_type my_sim(params);
+    std::cout << "Running simulation on rank " << comm.rank() << std::endl;
+    my_sim_type my_sim(params,comm);
     my_sim.run(alps::stop_callback(5));
 
     // Collect the results from the simulation
-    std::cout << "Collecting results..." << std::endl;
+    std::cout << "Rank " << comm.rank() << " has finished. Collecting results..." << std::endl;
     alps::results_type<my_sim_type>::type results = alps::collect_results(my_sim);
 
-    // Print the mean and the standard deviation
-    std::cout << "Results:" << std::endl;
-    std::cout << "The simulation ran for " << results["X"].count() << " steps." << std::endl;
-    std::cout << " mean: " << results["X"] << std::endl;
-    std::cout << " variance: " << results["X2"] - results["X"]*results["X"] << std::endl;
-
+    // Print the mean and the standard deviation.
+    // Only master has all the results!
+    if (comm.rank()==0) {
+        std::cout << "Results:" << std::endl;
+        std::cout << "The simulation ran for " << results["X"].count() << " steps." << std::endl;
+        std::cout << " mean: " << results["X"] << std::endl;
+        std::cout << " variance: " << results["X2"] - results["X"]*results["X"] << std::endl;
+    }
     return 0;
 }
