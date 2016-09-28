@@ -1,0 +1,52 @@
+{
+    "license": "other-open", 
+    "creators": [
+        {
+            "affiliation": "Advanced Research Computing, University of Michigan", 
+            "name": "Alexander Gaenko"
+        }, 
+        {
+            "affiliation": "University of Michigan", 
+            "name": "Emanuel Gull"
+        }, 
+        {
+            "affiliation": "University of Michigan",
+            "name": "Andrey E. Antipov"
+        }, 
+        {
+            "affiliation": ["uSystems GmbH", "ETH Zurich"]
+            "name": "Lukas Gamper"
+        }, 
+        {
+            "name": "Gabriele Carcassi"
+            "affiliation": "University of Michigan"
+        }, 
+        {
+            "name": "Joe Paki"
+            "affiliation": "University of Michigan"
+        }, 
+        {
+            "name": "Ryan Levy"
+            "affiliation": ["University of Michigan", "University of Illinois, Urbana-Champaign"]
+        }, 
+        {
+            "name": "Michele Dolfi"
+            "affiliation": "ETH Zurich"
+        }, 
+        {
+            "affiliation": "LMU Munich", 
+            "name": "Jonas Greitemann"
+        }, 
+        {
+            "name": "James P.F. LeBlanc"
+            "affiliation": "Memorial University of Newfoundland, Canada"
+        }
+    ], 
+    "access_right": "open", 
+    "related_identifiers": [
+        {
+            "identifier": "arXiv:1609.03930",
+            "relation": "isCitedBy"
+        }
+    ]
+}
