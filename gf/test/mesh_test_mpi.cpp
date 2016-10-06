@@ -27,6 +27,18 @@ class MeshTest : public ::testing::Test {
 namespace agf=alps::gf;
 // namespace gfm=agf::mesh;
 
+TEST_F(MeshTest,MpiBcastRealFrequency) {
+    typedef agf::real_frequency_mesh mesh_type;
+    typedef agf::real_frequency_mesh mesh_type2;
+    agf::mesh::linear_real_frequency_grid grid(-3.,3.,10);
+    agf::mesh::logarithmic_real_frequency_grid grid2(-2.,0.00001,4);
+    mesh_type ref_mesh(grid);
+    mesh_type my_mesh(grid2);
+    mesh_type* mesh_ptr= is_root_ ? &ref_mesh : &my_mesh;
+    mesh_ptr->broadcast(alps::mpi::communicator(), MASTER);
+    EXPECT_EQ(*mesh_ptr, ref_mesh) << "Failed at rank=" << rank_;
+}
+
 TEST_F(MeshTest,MpiBcastMatsubara) {
     typedef agf::matsubara_mesh<agf::mesh::POSITIVE_NEGATIVE> mesh_type;
     mesh_type ref_mesh(5.0, 20);

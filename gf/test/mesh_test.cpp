@@ -8,6 +8,65 @@
 #include "alps/gf/mesh.hpp"
 #include "gf_test.hpp"
 
+#include <boost/filesystem/operations.hpp>
+
+TEST(Mesh, RealFrequencyLoadSave) {
+    namespace g=alps::gf;
+    g::mesh::linear_real_frequency_grid grid(-3,3,100);
+    g::real_frequency_mesh mesh1(grid);
+    g::real_frequency_mesh mesh2;
+    {
+        alps::hdf5::archive oar("gf.h5","w");
+        mesh1.save(oar,"/gf");
+    }
+    {
+        alps::hdf5::archive iar("gf.h5");
+        g::real_frequency_mesh mesh;
+        mesh2.load(iar,"/gf");
+    }
+    EXPECT_EQ(mesh1, mesh2);
+    boost::filesystem::remove("gf.h5");
+}
+
+TEST(Mesh, RealFrequencyMeshQuadric) {
+    double spread = 5.0;
+    int nfreq = 41;
+    alps::gf::mesh::quadratic_real_frequency_grid grid(spread, nfreq);
+    alps::gf::real_frequency_mesh mesh1(grid);
+    EXPECT_EQ(mesh1.extent(), nfreq);
+}
+
+TEST(Mesh, RealFrequencyMeshLogarithmic) {
+    double tmax = 5, tmin = 0.001;
+    int nfreq = 41;
+    alps::gf::mesh::logarithmic_real_frequency_grid grid(tmax, tmin, nfreq);
+    alps::gf::real_frequency_mesh mesh1(grid);
+    EXPECT_EQ(mesh1.extent(), nfreq);
+}
+
+TEST(Mesh, RealFrequencyMeshLinear) {
+  double Emin = -5;
+  double Emax = 5;
+  int nfreq = 20;
+  alps::gf::mesh::linear_real_frequency_grid grid(Emin, Emax, nfreq);
+  alps::gf::real_frequency_mesh mesh1(grid);
+  EXPECT_EQ(mesh1.extent(), nfreq);
+}
+
+TEST(Mesh, BosonicMatsubara) {
+  alps::gf::matsubara_mesh<alps::gf::mesh::POSITIVE_NEGATIVE> mesh1(5.0, 20, alps::gf::statistics::BOSONIC);
+  EXPECT_EQ(mesh1.statistics(), alps::gf::statistics::BOSONIC);
+}
+
+TEST(Mesh,SwapMatsubara) {
+  alps::gf::matsubara_mesh<alps::gf::mesh::POSITIVE_NEGATIVE> mesh1(5.0, 20);
+  alps::gf::matsubara_mesh<alps::gf::mesh::POSITIVE_NEGATIVE> mesh2(7.0, 40);
+  mesh1.swap(mesh2);
+
+  EXPECT_EQ(mesh1.beta(), 7.0);
+  EXPECT_EQ(mesh2.beta(), 5.0);
+}
+
 TEST(Mesh,CompareMatsubara) {
   alps::gf::matsubara_mesh<alps::gf::mesh::POSITIVE_NEGATIVE> mesh1(5.0, 20);
   alps::gf::matsubara_mesh<alps::gf::mesh::POSITIVE_NEGATIVE> mesh2(5.0, 20);
