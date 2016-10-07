@@ -71,13 +71,155 @@ namespace alps {
                 POSITIVE_NEGATIVE=0,
                 POSITIVE_ONLY=1
             };
+            /**
+             * Define a linear grid in real frequency
+             */
+            class linear_real_frequency_grid {
+            private:
+                // lowest frequency in real frequency space
+                double emin_;
+                // highest frequency in real frequency space
+                double emax_;
+                // number of frequency points
+                int n_;
+            public:
+                linear_real_frequency_grid(double emin, double emax, int n) : emin_(emin), emax_(emax), n_(n){};
+                void compute_points(std::vector<double> &points){
+                    points.resize(n_);
+                    double step = (emax_ - emin_)/double(n_-1);
+                    for(int i = 0; i<n_; i++) {
+                        points[i] = emin_ + step*i;
+                    }
+                }
+            };
+            /**
+             * Define Logarithmic grid in real frequency
+             */
+            class logarithmic_real_frequency_grid {
+            private:
+                // first real frequency value
+                double t_min_;
+                // maximal positive real frequency value
+                double t_max_;
+                // number of frequency points
+                int nfreq_;
+            public:
+                logarithmic_real_frequency_grid(double tmax, double tmin, int n): t_min_(tmin), t_max_(tmax), nfreq_(n) {};
+                void compute_points(std::vector<double> &points){
+                    points.resize(nfreq_);
+                    double scale = std::log(t_max_ / t_min_) / ((float) ((nfreq_ / 2 - 1)));
+                    points[nfreq_ / 2] = 0.0;
+                    for (int i = 0; i < nfreq_ / 2; ++i) {
+                        if(i<nfreq_/2-1)
+                            points[nfreq_ / 2 + i + 1] = 0. + t_min_ * std::exp(((float) (i)) * scale);
+                        points[nfreq_ / 2 - i - 1] = 0. - t_min_ * std::exp(((float) (i)) * scale);
+                    }
+                    //if we have an odd # of frequencies, this catches the last element
+                    if (nfreq_ % 2 != 0)
+                        points[nfreq_ / 2 + nfreq_ / 2] = 0. + t_min_ * std::exp(((float) (nfreq_/2-1)) * scale);
+                }
+            };
+            class quadratic_real_frequency_grid {
+            private:
+                // number of frequency points
+                int nfreq_;
+                double spread_;
+            public:
+                quadratic_real_frequency_grid(double spread, int n): nfreq_(n) {
+                    if (spread < 1)
+                        throw std::invalid_argument("the parameter spread must be greater than 1");
+                    spread_ = spread;
+                }
+                void compute_points(std::vector<double> & points) {
+                    points.resize(nfreq_);
+                    std::vector<double> temp(nfreq_);
+                    double t = 0;
+                    for (int i = 0; i < nfreq_; ++i) {
+                        double a = double(i) / (nfreq_ - 1);
+                        double factor = 4 * (spread_ - 1) * (a * a - a) + spread_;
+                        factor /= double(nfreq_ - 1) / (3. * (nfreq_ - 2))
+                                  * ((nfreq_ - 1) * (2 + spread_) - 4 + spread_);
+                        double delta_t = factor;
+                        t += delta_t;
+                        temp[i] = t;
+                    }
+                    points[nfreq_/2] = 0.;
+                    for (int i = 1; i <= nfreq_/2; ++i) {
+                        if(i<nfreq_/2)
+                            points[i + nfreq_ / 2] = temp[i - 1] / temp[nfreq_ / 2 - 1];
+                        points[nfreq_ / 2 - i] = -temp[i - 1] / temp[nfreq_ / 2 - 1];
+                    }
+                    //if we have an odd # of frequencies, this catches the last element
+                    if (nfreq_ % 2 != 0)
+                        points[nfreq_ / 2 + nfreq_ / 2] = temp[nfreq_/2 - 1] / temp[nfreq_ / 2 - 1];
+                }
+            };
         }
+        class base_mesh {
+        public:
+            const std::vector<double> &points() const{return points_;}
+        protected:
+            // we do not want external functions be able to change a grid.
+            std::vector<double> &_points() {return points_;}
+            void swap(base_mesh &other) {
+                using std::swap;
+                swap(this->points_, other.points_);
+            }
+        private:
+            std::vector<double> points_;
+        };
+        class real_frequency_mesh: public base_mesh{
+        public:
+            real_frequency_mesh() {};
+
+            template<typename GRID>
+            real_frequency_mesh(GRID grid)  {
+                grid.compute_points(_points());
+            }
+            int extent() const {return points().size();}
+            void save(alps::hdf5::archive& ar, const std::string& path) const
+            {
+                ar[path+"/kind"] << "REAL_FREQUENCY";
+                ar[path+"/points"] << points();
+            }
+
+            void load(alps::hdf5::archive& ar, const std::string& path)
+            {
+                std::string kind;
+                ar[path+"/kind"]   >> kind;
+                if (kind!="REAL_FREQUENCY") throw std::runtime_error("Attempt to read real frequency mesh from non-real frequency data, kind="+kind);
+                ar[path+"/points"] >> _points();
+            }
+
+            /// Comparison operators
+            bool operator==(const real_frequency_mesh &mesh) const {
+                return extent()==mesh.extent() && std::equal ( mesh.points().begin(), mesh.points().end(), points().begin() );;
+            }
+
+            /// Comparison operators
+            bool operator!=(const real_frequency_mesh &mesh) const {
+                return !(*this==mesh);
+            }
+#ifdef ALPS_HAVE_MPI
+            void broadcast(const alps::mpi::communicator& comm, int root)
+            {
+                using alps::mpi::broadcast;
+                int size = extent();
+                broadcast(comm, size, root);
+                /// since real frequency mesh can be generated differently we should broadcast points
+                if(root!=comm.rank()) {
+                    /// adjust target array size
+                    _points().resize(size);
+                }
+                broadcast(comm, _points().data(), extent(), root);
+            }
+#endif
+        };
 
         template <mesh::frequency_positivity_type PTYPE>
-        class matsubara_mesh {
+        class matsubara_mesh : public base_mesh {
             double beta_;
             int nfreq_;
-            std::vector<double> points_;
       
             statistics::statistics_type statistics_;
             static const mesh::frequency_positivity_type positivity_=PTYPE;
@@ -87,14 +229,13 @@ namespace alps {
 
             public:
             typedef generic_index<matsubara_mesh> index_type;
-
             //FIXME: we should allow for bosonic meshes!
-            matsubara_mesh(double b, int nfr): beta_(b), nfreq_(nfr), statistics_(statistics::FERMIONIC), offset_((PTYPE==mesh::POSITIVE_ONLY)?0:nfr) {
+            matsubara_mesh(double b, int nfr, gf::statistics::statistics_type statistics=statistics::FERMIONIC):
+                beta_(b), nfreq_(nfr), statistics_(statistics), offset_((PTYPE==mesh::POSITIVE_ONLY)?0:nfr) {
                 check_range();
                 compute_points();
             }
             int extent() const{return nfreq_;}
-            const std::vector<double> &points() const{return points_;}
 
 
             int operator()(index_type idx) const {
@@ -105,7 +246,7 @@ namespace alps {
             bool operator==(const matsubara_mesh &mesh) const {
                 return beta_==mesh.beta_ && nfreq_==mesh.nfreq_ && statistics_==mesh.statistics_;
             }
-          
+
             /// Comparison operators
             bool operator!=(const matsubara_mesh &mesh) const {
                 return !(*this==mesh);
@@ -122,7 +263,7 @@ namespace alps {
                 using std::swap;
                 swap(this->beta_, other.beta_);
                 swap(this->nfreq_, other.nfreq_);
-                swap(this->points_, other.points_);
+                base_mesh::swap(other);
             }
           
             void save(alps::hdf5::archive& ar, const std::string& path) const
@@ -132,7 +273,7 @@ namespace alps {
                 ar[path+"/statistics"] << int(statistics_); //
                 ar[path+"/beta"] << beta_;
                 ar[path+"/positive_only"] << int(positivity_);
-                ar[path+"/points"] << points_;
+                ar[path+"/points"] << points();
             }
       
             void load(alps::hdf5::archive& ar, const std::string& path)
@@ -166,7 +307,7 @@ namespace alps {
                 broadcast(comm, beta_, root);
                 broadcast(comm, nfreq_, root);
                 try {
-                    check_range(); 
+                    check_range();
                 } catch (const std::exception& exc) {
                     // FIXME? Try to communiucate the error with all ranks, at least in debug mode?
                     int wrank=alps::mpi::communicator().rank();
@@ -178,18 +319,18 @@ namespace alps {
                 compute_points(); // recompute points rather than sending them over MPI
             }
 #endif
-            
+
             void check_range(){
-                if(statistics_!=statistics::FERMIONIC) throw std::invalid_argument("statistics should be bosonic or fermionic");
+                if(statistics_!=statistics::FERMIONIC && statistics_!=statistics::BOSONIC) throw std::invalid_argument("statistics should be bosonic or fermionic");
                 if(positivity_!=mesh::POSITIVE_ONLY &&
                    positivity_!=mesh::POSITIVE_NEGATIVE) {
                     throw std::invalid_argument("positivity should be POSITIVE_ONLY or POSITIVE_NEGATIVE");
                 }
             }
             void compute_points(){
-                points_.resize(extent());
+                _points().resize(extent());
                 for(int i=0;i<nfreq_;++i){
-                    points_[i]=(2*i+statistics_)*M_PI/beta_;
+                    _points()[i]=(2*i+statistics_)*M_PI/beta_;
                 }
             }
         };
