@@ -29,7 +29,6 @@ namespace agf=alps::gf;
 
 TEST_F(MeshTest,MpiBcastRealFrequency) {
     typedef agf::real_frequency_mesh mesh_type;
-    typedef agf::real_frequency_mesh mesh_type2;
     agf::mesh::linear_real_frequency_grid grid(-3.,3.,10);
     agf::mesh::logarithmic_real_frequency_grid grid2(-2.,0.00001,4);
     mesh_type ref_mesh(grid);

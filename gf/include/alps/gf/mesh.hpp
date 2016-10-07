@@ -229,7 +229,6 @@ namespace alps {
 
             public:
             typedef generic_index<matsubara_mesh> index_type;
-            //FIXME: we should allow for bosonic meshes!
             matsubara_mesh(double b, int nfr, gf::statistics::statistics_type statistics=statistics::FERMIONIC):
                 beta_(b), nfreq_(nfr), statistics_(statistics), offset_((PTYPE==mesh::POSITIVE_ONLY)?0:nfr) {
                 check_range();
