@@ -61,7 +61,7 @@ TEST_F(MeshTest,MpiBcastITime) {
 TEST_F(MeshTest,MpiBcastMomentum) {
     typedef agf::momentum_index_mesh mesh_type;
     mesh_type::container_type points(boost::extents[20][3]);
-    for (int i=0; i<points.num_elements(); ++i) {
+    for (std::size_t i=0; i<points.num_elements(); ++i) {
         *(points.origin()+i)=i;
     }
 
@@ -77,7 +77,7 @@ TEST_F(MeshTest,MpiBcastMomentum) {
 TEST_F(MeshTest,MpiBcastRealspace) {
     typedef agf::real_space_index_mesh mesh_type;
     mesh_type::container_type points(boost::extents[20][3]);
-    for (int i=0; i<points.num_elements(); ++i) {
+    for (std::size_t i=0; i<points.num_elements(); ++i) {
         *(points.origin()+i)=i;
     }
 

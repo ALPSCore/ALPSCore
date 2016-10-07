@@ -49,10 +49,10 @@ TEST_F(GfMultiArrayTest, MpiBroadcast) {
     alps::gf::detail::broadcast(alps::mpi::communicator(), mydata, MASTER);
 
     // Compare with ref, element-by-element
-    for (int i0=0; i0<ref_shape_[0]; ++i0) {
-        for (int i1=0; i1<ref_shape_[1]; ++i1) {
-            for (int i2=0; i2<ref_shape_[2]; ++i2) {
-                for (int i3=0; i3<ref_shape_[3]; ++i3) {
+    for (std::size_t i0=0; i0<ref_shape_[0]; ++i0) {
+        for (std::size_t i1=0; i1<ref_shape_[1]; ++i1) {
+            for (std::size_t i2=0; i2<ref_shape_[2]; ++i2) {
+                for (std::size_t i3=0; i3<ref_shape_[3]; ++i3) {
                     ASSERT_EQ(ref_data_[BASE+i0][BASE+i1][BASE+i2][BASE+i3].real(),
                               mydata[BASE+i0][BASE+i1][BASE+i2][BASE+i3].real())
                         << "The reference and the broadcast arrays differ on rank #" << rank_;
