@@ -11,7 +11,11 @@ message ("\nALPSCore module : ${PROJECT_NAME}\n")
 # add common modules from ../common/cmake
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/../common/cmake)
 
-include(ALPSCommonModuleDefinitions)
+# add common definitions, if being configured independently
+if (CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+  include(ALPSCommonModuleDefinitions)
+endif()
+
 
 gen_documentation()
 if (DocumentationOnly)
