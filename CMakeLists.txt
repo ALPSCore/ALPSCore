@@ -3,6 +3,7 @@
 #
 
 cmake_minimum_required (VERSION 2.8.12)
+project(ALPSCore CXX)
 
 # include cmake scripts from common/cmake directory
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/./common/cmake)
