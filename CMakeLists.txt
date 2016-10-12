@@ -57,14 +57,19 @@ alps_add_module(alps-mc mc)
 add_subdirectory(gf)
 alps_add_module(alps-gf gf)
 
-if(_am_building_documentation)
+#Doxygen building is a function to prevent namespace damage
+function(build_documentation_)
     set(DOXYFILE_SOURCE_DIR "${CMAKE_SOURCE_DIR}/common/doc")
     message(STATUS "Building documentation for sources in ${DOXYFILE_EXTRA_SOURCES}")  
     set(DOXYFILE_IN "${CMAKE_SOURCE_DIR}/common/doc/Doxyfile.in") 
     set(CMAKE_PROJECT_NAME "ALPSCore reference") # to provide name for the documentation 
     include(UseDoxygen)
     unset(CMAKE_PROJECT_NAME)
+endfunction()
+if(_am_building_documentation)
+  build_documentation_()
 endif(_am_building_documentation)
+
 # unset(_am_building_documentation CACHE)
 
 # miscellaneous operations
