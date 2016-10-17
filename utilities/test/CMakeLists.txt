@@ -14,6 +14,7 @@ set (test_src
 set (test_src_mpi
     mpi_utils_env
     mpi_utils_comm
+    mpi_utils_bcast
     )
 
 foreach(test ${test_src})
