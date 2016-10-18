@@ -75,6 +75,15 @@ namespace alps {
         // ALPS_MPI_DETAIL_MAKETYPE(MPI_C_FLOAT_COMPLEX,float _Complex);
         // ALPS_MPI_DETAIL_MAKETYPE(MPI_C_DOUBLE_COMPLEX,double _Complex);
         // ALPS_MPI_DETAIL_MAKETYPE(MPI_C_LONG_DOUBLE_COMPLEX,long double _Complex);
+#ifdef ALPS_MPI_HAS_MPI_CXX_BOOL
+       ALPS_MPI_DETAIL_MAKETYPE(MPI_CXX_BOOL,bool);
+#endif        
+          
+#if defined(ALPS_MPI_HAS_MPI_CXX_DOUBLE_COMPLEX) && defined(ALPS_MPI_HAS_MPI_CXX_FLOAT_COMPLEX)
+        ALPS_MPI_DETAIL_MAKETYPE(MPI_CXX_DOUBLE_COMPLEX,std::complex<double>);
+        ALPS_MPI_DETAIL_MAKETYPE(MPI_CXX_FLOAT_COMPLEX,std::complex<float>);
+#endif        
+          
 #undef ALPS_MPI_DETAIL_MAKETYPE
         } // detail::
 
@@ -209,18 +218,23 @@ namespace alps {
             MPI_Bcast(vals, count, detail::mpi_type<T>(), root, comm);
         }
 
+#ifndef ALPS_MPI_HAS_MPI_CXX_BOOL
         /// MPI_BCast of an array: overload for bool
         inline void broadcast(const communicator& comm, bool* vals, std::size_t count, int root) {
             // sizeof() returns size in chars (FIXME? should it be bytes?)
-            MPI_Bcast(vals, count*sizeof(bool), MPI_CHAR, root, comm); 
+            MPI_Bcast(vals, count*sizeof(bool), MPI_CHAR, root, comm);
         }
+#endif /* ALPS_MPI_HAS_MPI_BOOL */
 
+
+#if !defined(ALPS_MPI_HAS_MPI_CXX_DOUBLE_COMPLEX) || !defined(ALPS_MPI_HAS_MPI_CXX_FLOAT_COMPLEX)
         /// MPI_BCast of an array: overload for std::complex
         template <typename T>
         inline void broadcast(const communicator& comm, std::complex<T>* vals, std::size_t count, int root) {
             // sizeof() returns size in chars (FIXME? should it be bytes?)
             MPI_Bcast(vals, count*sizeof(std::complex<T>), MPI_CHAR, root, comm); 
         }
+#endif
 
         /// Broadcasts value `val` of a primitive type `T` on communicator `comm` with root `root`
         template <typename T>
