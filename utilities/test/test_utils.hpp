@@ -11,6 +11,7 @@
 
 #include <complex>
 #include <iostream>
+#include <boost/foreach.hpp>
 
 namespace alps {
     namespace testing {
@@ -45,6 +46,13 @@ namespace alps {
             {
                 return T(choice?('A'+.25):('B'+.75)); // good for T=int,char,double
             }
+
+            /// Returns different values of type T for the different value of the argument.
+            /** Defined for interface uniformity with the vector variant */
+            static T get(bool choice, std::size_t)
+            {
+                return T(choice?('A'+.25):('B'+.75)); // good for T=int,char,double
+            }
         };
 
         template <>
@@ -52,13 +60,27 @@ namespace alps {
           public:
             /// Returns different bool values for the different value of the argument.
             static bool get(bool choice) { return choice; }
+
+            /// Returns different bool values for the different value of the argument.
+            static bool get(bool choice, std::size_t) { return choice; }
         };
 
         template <>
         class datapoint<std::string> {
           public:
-            /// Returns different string values T for the different value of the argument.
+            /// Returns different string values for the different value of the argument.
             static std::string get(bool choice) { return choice?"one":"another"; }
+
+            /// Returns different string values (of size sz) for the different value of the argument.
+            static std::string get(bool choice, std::size_t sz) {
+                std::string base=get(choice);
+                std::size_t base_sz=base.size();
+                std::size_t nrep=(sz+base_sz-1)/base_sz;
+                std::string ret;
+                while (nrep--) ret.append(base);
+                ret.resize(sz);
+                return ret;
+            }
         };
 
         template <typename T>
@@ -68,21 +90,31 @@ namespace alps {
             static std::complex<T> get(bool choice) {
                 return std::complex<T>(datapoint<T>::get(choice), datapoint<T>::get(!choice));
             }
+
+            /// Returns different complex values for the different value of the argument.
+            static std::complex<T> get(bool choice, std::size_t) {
+                return std::complex<T>(datapoint<T>::get(choice), datapoint<T>::get(!choice));
+            }
         };
 
         template <typename T>
         class datapoint< std::vector<T> > {
           public:
-            /// Returns different vector values for the different value of the argument.
-            static std::vector<T> get(bool choice) {
-                T arr[4]={ datapoint<T>::get(choice),
-                           datapoint<T>::get(!choice),
-                           datapoint<T>::get(choice),
-                           datapoint<T>::get(!choice) };
-                std::size_t sz=sizeof(arr)/sizeof(*arr);
-                std::size_t len=choice? sz : (sz-1);
-                return std::vector<T>(arr, arr+len);
+            /// Returns different vector values of the specified length for the different value of the argument.
+            static std::vector<T> get(bool choice, std::size_t sz) {
+                std::vector<T> arr(sz);
+                BOOST_FOREACH(typename std::vector<T>::reference vref, arr) {
+                    vref=datapoint<T>::get(choice,sz);
+                    choice=!choice;
+                }
+                return arr;
             }
+
+            /// Returns different vector values (length, content) for the different value of the argument.
+            static std::vector<T> get(bool choice) {
+                return get(choice, choice?3:4);
+            }
+        
         };
         
     } // testing::
