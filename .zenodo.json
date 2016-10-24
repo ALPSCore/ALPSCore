@@ -14,7 +14,7 @@
             "name": "Andrey E. Antipov"
         }, 
         {
-            "affiliation": ["uSystems GmbH", "ETH Zurich"],
+            "affiliation": "ETH Zurich",
             "name": "Lukas Gamper"
         }, 
         {
@@ -27,7 +27,7 @@
         }, 
         {
             "name": "Ryan Levy",
-            "affiliation": ["University of Michigan", "University of Illinois, Urbana-Champaign"]
+            "affiliation": "University of Illinois, Urbana-Champaign"
         }, 
         {
             "name": "Michele Dolfi",
