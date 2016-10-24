@@ -413,18 +413,28 @@ namespace alps {
 
         /// Equality operator for option_type
         template <typename T> inline bool operator==(const option_type& lhs, const T& rhs) { return (lhs.as<T>() == rhs); }
+        /// Equality operator for option_type and a char-string
+        inline bool operator==(const option_type& lhs, const char* rhs) { return (lhs.as<std::string>() == rhs); }
 
         /// Less-then operator for option_type
         template <typename T> inline bool operator<(const option_type& lhs, const T& rhs) { return (lhs.as<T>() < rhs); }
+        /// Less-then operator for option_type and a char-string
+        inline bool operator<(const option_type& lhs, const char* rhs) { return (lhs.as<std::string>() < rhs); }
 
         /// Less-then operator for option_type
         template <typename T> inline bool operator<(const T& lhs, const option_type& rhs) { return (lhs < rhs.as<T>()); }
+        /// Less-then operator for option_type and a char-string
+        inline bool operator<(const char* lhs, const option_type& rhs) { return (lhs < rhs.as<std::string>()); }
 
         /// Greater-then operator for option_type
         template <typename T> inline bool operator>(const T& lhs, const option_type& rhs) { return (lhs > rhs.as<T>()); }
+        /// Greater-then operator for option_type and a char-string
+        inline bool operator>(const char* lhs, const option_type& rhs) { return (lhs > rhs.as<std::string>()); }
 
         /// Greater-then operator for option_type
         template <typename T> inline bool operator>(const option_type& lhs, const T& rhs) { return (lhs.as<T>() > rhs); }
+        /// Greater-then operator for option_type and a char-string
+        inline bool operator>(const option_type& lhs, const char* rhs) { return (lhs.as<std::string>() > rhs); }
             
         /// Equality operator for option_type
         template <typename T> inline bool operator==(const T& lhs, const option_type& rhs) { return (rhs == lhs); }
