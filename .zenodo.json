@@ -14,23 +14,23 @@
             "name": "Andrey E. Antipov"
         }, 
         {
-            "affiliation": ["uSystems GmbH", "ETH Zurich"]
+            "affiliation": ["uSystems GmbH", "ETH Zurich"],
             "name": "Lukas Gamper"
         }, 
         {
-            "name": "Gabriele Carcassi"
+            "name": "Gabriele Carcassi",
             "affiliation": "University of Michigan"
         }, 
         {
-            "name": "Joe Paki"
+            "name": "Joe Paki",
             "affiliation": "University of Michigan"
         }, 
         {
-            "name": "Ryan Levy"
+            "name": "Ryan Levy",
             "affiliation": ["University of Michigan", "University of Illinois, Urbana-Champaign"]
         }, 
         {
-            "name": "Michele Dolfi"
+            "name": "Michele Dolfi",
             "affiliation": "ETH Zurich"
         }, 
         {
@@ -38,7 +38,7 @@
             "name": "Jonas Greitemann"
         }, 
         {
-            "name": "James P.F. LeBlanc"
+            "name": "James P.F. LeBlanc",
             "affiliation": "Memorial University of Newfoundland, Canada"
         }
     ], 
