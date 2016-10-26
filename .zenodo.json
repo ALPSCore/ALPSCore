@@ -2,51 +2,87 @@
     "license": "other-open", 
     "creators": [
         {
-            "affiliation": "Advanced Research Computing, University of Michigan", 
+            "affiliation": "University of Michigan, Ann Arbor, MI, USA", 
             "name": "Alexander Gaenko"
         }, 
         {
-            "affiliation": "University of Michigan", 
-            "name": "Emanuel Gull"
-        }, 
-        {
-            "affiliation": "University of Michigan",
+            "affiliation": "University of Michigan, Ann Arbor, MI, USA",
             "name": "Andrey E. Antipov"
         }, 
         {
-            "affiliation": "ETH Zurich",
+            "name": "Gabriele Carcassi",
+            "affiliation": "University of Michigan, Ann Arbor, MI, USA"
+        }, 
+        {
+            "affiliation": "ETH Zurich, Zurich, Switzerland",
             "name": "Lukas Gamper"
         }, 
         {
-            "name": "Gabriele Carcassi",
-            "affiliation": "University of Michigan"
+            "name": "Tianran Chen",
+            "affiliation": "West Chester University of Pennsylvania, West Chester, PA, USA"
         }, 
         {
-            "name": "Joe Paki",
-            "affiliation": "University of Michigan"
+            "name": "Xi Chen",
+            "affiliation": "University of Michigan, Ann Arbor, MI, USA"
         }, 
         {
-            "name": "Ryan Levy",
-            "affiliation": "University of Illinois, Urbana-Champaign"
+            "name": "Qiaoyuan Dong",
+            "affiliation": "University of Michigan, Ann Arbor, MI, USA"
         }, 
         {
-            "name": "Michele Dolfi",
-            "affiliation": "ETH Zurich"
+            "name": "Jan Gukelberger",
+            "affiliation": "Université de Sherbrooke, Sherbrooke, Québec, Canada"
         }, 
         {
-            "affiliation": "LMU Munich", 
-            "name": "Jonas Greitemann"
+            "name": "Ryo Igarashi",
+            "affiliation": "University of Tokyo, Tokyo, Japan"
+        }, 
+        {
+            "name": "Sergey Iskakov",
+            "affiliation": "University of Michigan, Ann Arbor, MI, USA"
+        }, 
+        {
+            "name": "Mario Kӧnz",
+            "affiliation": "ETH Zurich, Zurich, Switzerland"
         }, 
         {
             "name": "James P.F. LeBlanc",
-            "affiliation": "Memorial University of Newfoundland, Canada"
+            "affiliation": "Memorial University of Newfoundland, Newfoundland & Labrador, Canada"
+        },
+        {
+            "name": "Ryan Levy",
+            "affiliation": "University of Illinois, Urbana-Champaign, IL, USA"
+        }, 
+        {
+            "name": "Tama Ma",
+            "affiliation": "National University of Singapore, Singapore"
+        }, 
+        {
+            "name": "Joe Paki",
+            "affiliation": "University of Michigan, Ann Arbor, MI, USA"
+        }, 
+        {
+            "name": "Hiroshi Shinaoka",
+            "affiliation": "Saitama University, Saitama, Japan"
+        }, 
+        {
+            "name": "Synge Todo",
+            "affiliation": "University of Tokyo, Kashiwa, Japan"
+        }, 
+        {
+            "name": "Matthias Troyer",
+            "affiliation": "ETH Zurich, Zurich, Switzerland"
+        }, 
+        {
+            "affiliation": "University of Michigan, Ann Arbor, MI, USA", 
+            "name": "Emanuel Gull"
         }
     ], 
     "access_right": "open", 
     "related_identifiers": [
         {
             "identifier": "arXiv:1609.03930",
-            "relation": "isCitedBy"
+            "relation": "isSupplementTo"
         }
     ]
 }
