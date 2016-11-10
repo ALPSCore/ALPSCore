@@ -21,13 +21,8 @@
 
 #include "boost/optional.hpp"
 
-// #include "boost/filesystem.hpp"
-
-// Serialization headers:
-#include "boost/archive/text_oarchive.hpp"
-#include "boost/archive/text_iarchive.hpp"
-
-#include <alps/hdf5/archive.hpp>
+// #include <alps/hdf5/archive.hpp>
+#include <alps/hdf5.hpp>
 
 #include "alps/params.hpp"
 
@@ -224,16 +219,20 @@ namespace alps {
 
         void params::save(hdf5::archive& ar) const
         {
-            std::ostringstream outs; 
-            {
-                boost::archive::text_oarchive boost_ar(outs);
-                boost_ar << *this;
-            }
-            ar["alps::params"] << outs.str();
-            BOOST_FOREACH(const options_map_type::value_type& slot, optmap_)
-            {
-                slot.second.save(ar);
-            }
+            ar["is_valid"] <<  is_valid_;
+            ar["archname"] <<  archname_;
+            ar["optmap"] <<  optmap_;
+            ar["descr_map"] <<  descr_map_;
+            ar["helpmsg"] <<  helpmsg_;
+            ar["defaulted_options"] <<  defaulted_options_;
+            ar["argvec"] <<  argvec_;
+            ar["infile"] <<  infile_;
+            ar["argv0"] <<  argv0_;
+            
+            // BOOST_FOREACH(const options_map_type::value_type& slot, optmap_)
+            // {
+            //     slot.second.save(ar);
+            // }
         }
 
         void params::save(hdf5::archive& ar, const std::string& path) const
@@ -247,13 +246,15 @@ namespace alps {
             
         void params::load(hdf5::archive& ar)
         {
-            std::string buf;
-            ar["alps::params"] >> buf;
-            std::istringstream ins(buf);
-            {
-                boost::archive::text_iarchive boost_ar(ins);
-                boost_ar >> *this;
-            }
+            ar["is_valid"] >>  is_valid_;
+            ar["archname"] >>  archname_;
+            ar["optmap"] >>  optmap_;
+            ar["descr_map"] >>  descr_map_;
+            ar["helpmsg"] >>  helpmsg_;
+            ar["defaulted_options"] >>  defaulted_options_;
+            ar["argvec"] >>  argvec_;
+            ar["infile"] >>  infile_;
+            ar["argv0"] >>  argv0_;
         }
 
         void params::load(hdf5::archive& ar, const std::string& path)
@@ -299,19 +300,18 @@ namespace alps {
         /** @NOTE  Implemented as serialization followed by string broadcast (FIXME!) */
         void params::broadcast(alps::mpi::communicator const & comm, int root)
         {
+            throw std::logic_error("Not implemented");
             std::string buf;
             if (comm.rank()==root) {
-                std::ostringstream outs; 
                 possibly_parse();
-                boost::archive::text_oarchive boost_ar(outs);
-                boost_ar << *this;
-                buf=outs.str();
+                // boost_ar << *this;
+                // buf=outs.str();
             }
             alps::mpi::broadcast(comm, buf, root);
             if (comm.rank()!=root) {
-                std::istringstream ins(buf);
-                boost::archive::text_iarchive boost_ar(ins);
-                boost_ar >> *this;
+                // std::istringstream ins(buf);
+                // boost::archive::text_iarchive boost_ar(ins);
+                // boost_ar >> *this;
             }
         }
 #endif

@@ -144,19 +144,19 @@ namespace alps {
             return optmap_["help"];
         }
 
-        template<class Archive>
-        inline void params::serialize(Archive & ar, const unsigned int)
-        {
-            ar  & is_valid_
-                & archname_
-                & optmap_
-                & descr_map_
-                & helpmsg_
-                & defaulted_options_
-                & argvec_
-                & infile_
-                & argv0_;
-        }
+        // template<class Archive>
+        // inline void params::serialize(Archive & ar, const unsigned int)
+        // {
+        //     ar  & is_valid_
+        //         & archname_
+        //         & optmap_
+        //         & descr_map_
+        //         & helpmsg_
+        //         & defaulted_options_
+        //         & argvec_
+        //         & infile_
+        //         & argv0_;
+        // }
 
         template <typename T>
         inline params& params::define(const std::string& optname, T defval, const std::string& a_descr)

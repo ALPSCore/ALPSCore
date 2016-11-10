@@ -32,14 +32,10 @@
 #include <boost/variant.hpp>
 #include <boost/utility.hpp> /* for enable_if */
 
-#include <boost/serialization/base_object.hpp>
-#include <boost/serialization/map.hpp>
-#include <boost/serialization/optional.hpp>
-#include <boost/serialization/variant.hpp>
-
 #include "alps/utilities/short_print.hpp" // for streaming
 #include "alps/hdf5/archive.hpp"          // archive support
-#include "alps/hdf5/vector.hpp"          //  vector archiving support
+#include "alps/hdf5/vector.hpp"           // vector archiving support
+#include "alps/hdf5/map.hpp"              // map archiving support
 
 #include "alps/params/param_types.hpp" // Sequences of supported types
 #include "alps/params/param_types_ranking.hpp" // for detail::is_convertible<F,T>
@@ -399,16 +395,6 @@ namespace alps {
             option_type()
                 : name_("**UNINITIALIZED**") {}
 
-        private:
-            friend class boost::serialization::access;
-
-            /// Interface to serialization
-            template<class Archive> void serialize(Archive & ar, const unsigned int)
-            {
-                ar  & val_
-                    & name_;
-            }
-                    
         };
 
         /// Equality operator for option_type
@@ -485,15 +471,16 @@ namespace alps {
                 return it->second;
             }
 
-        private:
-            friend class boost::serialization::access;
-
-            /// Interface to serialization
-            template<class Archive> void serialize(Archive & ar, const unsigned int)
+            void save(hdf5::archive& ar) const
             {
-                ar & boost::serialization::base_object< std::map<key_type,mapped_type> >(*this);
+                throw std::logic_error("options_map_type::save() not implemented yet");
             }
-            
+
+            void load(hdf5::archive& ar)
+            {
+                throw std::logic_error("options_map_type::load() not implemented yet");
+            }
+
         };
 
         namespace detail {
@@ -721,14 +708,15 @@ namespace alps {
                 option_description_type()
                     : descr_("**UNINITIALIZED**") {}
                 
-            private:
-                friend class boost::serialization::access;
 
-                /// Interface to serialization
-                template<class Archive> void serialize(Archive & ar, const unsigned int)
+                void save(hdf5::archive& ar) const
                 {
-                    ar  & descr_
-                        & deflt_;
+                    throw std::logic_error("option_description_type::save() not implemented yet");
+                }
+
+                void load(hdf5::archive& ar)
+                {
+                    throw std::logic_error("option_description_type::load() not implemented yet");
                 }
             };
 

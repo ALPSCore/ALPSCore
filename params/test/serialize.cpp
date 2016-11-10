@@ -7,10 +7,6 @@
 #include <iostream>
 #include <sstream>
 
-// Serialization headers:
-#include "boost/archive/text_oarchive.hpp"
-#include "boost/archive/text_iarchive.hpp"
-
 #include "alps/utilities/temporary_filename.hpp"
 #include <alps/hdf5/archive.hpp>
 
@@ -21,38 +17,6 @@
 //        and test ALL supported types.
 
 // FIXME: add test for saving the options as individual H5 datafields.
-
-TEST(param, Serialization)
-{
-    const char* argv[]={ "", "--param1=111" };
-    const int argc=sizeof(argv)/sizeof(*argv);
-    alps::params p(argc,argv);
-
-    p.description("Serialization test").
-        define<int>("param1","integer 1").
-        define<double>("param2",22.25,"double");
-    p["param3"]=333;
-           
-
-    std::ostringstream outs; 
-    {
-        boost::archive::text_oarchive ar(outs);
-        ar << p;
-    }
-
-    // std::cerr << outs.str();
-
-    alps::params p2;
-    std::istringstream ins(outs.str());
-    {
-        boost::archive::text_iarchive ar(ins);
-        ar >> p2;
-    }
-
-    EXPECT_EQ(111, p2["param1"]);
-    EXPECT_EQ(22.25, p2["param2"]);
-    EXPECT_EQ(333, p2["param3"]);
-}
 
 TEST(param, Archive)
 {

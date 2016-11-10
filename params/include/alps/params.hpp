@@ -83,10 +83,6 @@ namespace alps {
             /// Function to check for validity/redefinition of an option (throws!)
             void check_validity(const std::string& optname) const;
 
-            /// Interface to serialization
-            friend class boost::serialization::access;
-            template<class Archive> void serialize(Archive & ar, const unsigned int);
-
           public:
 
             typedef options_map_type::iterator iterator;
