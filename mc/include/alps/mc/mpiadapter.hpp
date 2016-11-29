@@ -67,9 +67,10 @@ namespace alps {
             typename Base::results_type collect_results(typename Base::result_names_type const & names) const {
                 typename Base::results_type partial_results;
                 for(typename Base::result_names_type::const_iterator it = names.begin(); it != names.end(); ++it) {
+                    size_t has_count=(this->measurements[*it].count() > 0);
                     const size_t sum_counts =
                             alps::alps_mpi::all_reduce(communicator,
-                                                       static_cast<size_t>(this->measurements[*it].count() > 0 ? 1 : 0),
+                                                       has_count,
                                                        std::plus<size_t>());
                     if (sum_counts == communicator.size()) {
                         if (communicator.rank() == 0) {

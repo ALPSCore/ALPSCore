@@ -115,7 +115,6 @@ int main(int argc, char* argv[]) {
     tweak(alps::mpi::communicator().rank(), argc, argv);
     ::testing::InitGoogleTest(&argc, argv);
 
-    const int MASTER = 0;
     const int rc = RUN_ALL_TESTS();
 
     return rc;
