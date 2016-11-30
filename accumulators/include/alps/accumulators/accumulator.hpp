@@ -145,20 +145,17 @@ namespace alps {
 
             // extract
             private:
-                template<typename A> struct extract_visitor: public boost::static_visitor<> {
-                    template<typename T> void operator()(T const & arg) { value = &arg->template extract<A>(); }
-                    A * value;
+                template<typename A> struct extract_visitor: public boost::static_visitor<A*> {
+                    template<typename T> A* operator()(T const & arg) { return &arg->template extract<A>(); }
                 };
             public:
                 template <typename A> A & extract() {
                     extract_visitor<A> visitor;
-                    boost::apply_visitor(visitor, m_variant);
-                    return *visitor.value;
+                    return *boost::apply_visitor(visitor, m_variant);
                 }
                 template <typename A> A const & extract() const {
                     extract_visitor<A> visitor;
-                    boost::apply_visitor(visitor, m_variant);
-                    return *visitor.value;
+                    return *boost::apply_visitor(visitor, m_variant);
                 }
 
             // cast-to-other-result visitor
@@ -201,43 +198,39 @@ namespace alps {
 
             // count
             private:
-                struct count_visitor: public boost::static_visitor<> {
-                    template<typename T> void operator()(T const & arg) const { value = arg->count(); }
-                    mutable boost::uint64_t value;
+                struct count_visitor: public boost::static_visitor<boost::uint64_t> {
+                    template<typename T> boost::uint64_t operator()(T const & arg) const { return arg->count(); }
                 };
             public:
                 boost::uint64_t count() const {
                     count_visitor visitor;
-                    boost::apply_visitor(visitor, m_variant);
-                    return visitor.value;
+                    return boost::apply_visitor(visitor, m_variant);
                 }
 
             // mean, error
             #define ALPS_ACCUMULATOR_PROPERTY_PROXY(PROPERTY, TYPE)                                                 \
                 private:                                                                                            \
-                    template<typename T> struct PROPERTY ## _visitor: public boost::static_visitor<> {              \
-                        template<typename X> void apply(typename boost::enable_if<                                  \
+                    template<typename T> struct PROPERTY ## _visitor: public boost::static_visitor<T> {             \
+                        template<typename X> T apply(typename boost::enable_if<                                     \
                             typename detail::is_valid_argument<typename TYPE <X>::type, T>::type, X const &         \
                         >::type arg) const {                                                                        \
-                            value = arg. PROPERTY ();                                                               \
+                            return arg. PROPERTY ();                                                                \
                         }                                                                                           \
-                        template<typename X> void apply(typename boost::disable_if<                                 \
+                        template<typename X> T apply(typename boost::disable_if<                                    \
                             typename detail::is_valid_argument<typename TYPE <X>::type, T>::type, X const &         \
                         >::type arg) const {                                                                        \
                             throw std::logic_error(std::string("cannot convert: ")                                  \
                                 + typeid(typename TYPE <X>::type).name() + " to "                                   \
                                 + typeid(T).name() + ALPS_STACKTRACE);                                              \
                         }                                                                                           \
-                        template<typename X> void operator()(X const & arg) const {                                 \
-                            apply<typename X::element_type>(*arg);                                                  \
+                        template<typename X> T operator()(X const & arg) const {                                    \
+                            return apply<typename X::element_type>(*arg);                                           \
                         }                                                                                           \
-                        mutable T value;                                                                            \
                     };                                                                                              \
                 public:                                                                                             \
                     template<typename T> typename TYPE <base_wrapper<T> >::type PROPERTY () const {                 \
                         PROPERTY ## _visitor<typename TYPE <base_wrapper<T> >::type> visitor;                       \
-                        boost::apply_visitor(visitor, m_variant);                                                   \
-                        return visitor.value;                                                                       \
+                        return boost::apply_visitor(visitor, m_variant);                                            \
                     }
             ALPS_ACCUMULATOR_PROPERTY_PROXY(mean, mean_type)
             ALPS_ACCUMULATOR_PROPERTY_PROXY(error, error_type)
@@ -738,57 +731,51 @@ namespace alps {
 
             // extract
             private:
-                template<typename A> struct extract_visitor: public boost::static_visitor<> {
-                    template<typename T> void operator()(T const & arg) { check_ptr(arg); value = &arg->template extract<A>(); }
-                    A * value;
+                template<typename A> struct extract_visitor: public boost::static_visitor<A*> {
+                    template<typename T> A* operator()(T const & arg) { check_ptr(arg);  return &arg->template extract<A>(); }
                 };
             public:
                 template <typename A> A & extract() {
                     extract_visitor<A> visitor;
-                    boost::apply_visitor(visitor, m_variant);
-                    return *visitor.value;
+                    return *boost::apply_visitor(visitor, m_variant);
                 }
 
             // count
             private:
-                struct count_visitor: public boost::static_visitor<> {
-                    template<typename T> void operator()(T const & arg) const { check_ptr(arg); value = arg->count(); }
-                    mutable boost::uint64_t value;
+                struct count_visitor: public boost::static_visitor<boost::uint64_t> {
+                    template<typename T> boost::uint64_t operator()(T const & arg) const { check_ptr(arg); return arg->count(); }
                 };
             public:
                 boost::uint64_t count() const {
                     count_visitor visitor;
-                    boost::apply_visitor(visitor, m_variant);
-                    return visitor.value;
+                    return boost::apply_visitor(visitor, m_variant);
                 }
 
             // mean, error
             #define ALPS_ACCUMULATOR_PROPERTY_PROXY(PROPERTY, TYPE)                                                 \
                 private:                                                                                            \
-                    template<typename T> struct PROPERTY ## _visitor: public boost::static_visitor<> {              \
-                        template<typename X> void apply(typename boost::enable_if<                                  \
+                    template<typename T> struct PROPERTY ## _visitor: public boost::static_visitor<T> {             \
+                        template<typename X> T apply(typename boost::enable_if<                                     \
                             typename detail::is_valid_argument<typename TYPE <X>::type, T>::type, X const &         \
                         >::type arg) const {                                                                        \
-                            value = arg. PROPERTY ();                                                               \
+                            return arg. PROPERTY ();                                                                \
                         }                                                                                           \
-                        template<typename X> void apply(typename boost::disable_if<                                 \
+                        template<typename X> T apply(typename boost::disable_if<                                    \
                             typename detail::is_valid_argument<typename TYPE <X>::type, T>::type, X const &         \
                         >::type arg) const {                                                                        \
                             throw std::logic_error(std::string("cannot convert: ")                                  \
                                 + typeid(typename TYPE <X>::type).name() + " to "                                   \
                                 + typeid(T).name() + ALPS_STACKTRACE);                                              \
                         }                                                                                           \
-                        template<typename X> void operator()(X const & arg) const {                                 \
+                        template<typename X> T operator()(X const & arg) const {                                    \
                             check_ptr(arg);                                                                         \
-                            apply<typename X::element_type>(*arg);                                                  \
+                            return apply<typename X::element_type>(*arg);                                           \
                         }                                                                                           \
-                        mutable T value;                                                                            \
                     };                                                                                              \
                 public:                                                                                             \
                     template<typename T> typename TYPE <base_wrapper<T> >::type PROPERTY () const {                 \
                         PROPERTY ## _visitor<typename TYPE <base_wrapper<T> >::type> visitor;                       \
-                        boost::apply_visitor(visitor, m_variant);                                                   \
-                        return visitor.value;                                                                       \
+                        return boost::apply_visitor(visitor, m_variant);                                            \
                     }
             ALPS_ACCUMULATOR_PROPERTY_PROXY(mean, mean_type)
             ALPS_ACCUMULATOR_PROPERTY_PROXY(error, error_type)
