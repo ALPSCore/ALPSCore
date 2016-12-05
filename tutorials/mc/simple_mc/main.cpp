@@ -83,11 +83,11 @@ class my_sim_type : public alps::mcbase {
  * @param argv the argument array
  * @return the exit code
  */
-int main(int argc, char* argv[])
+int main(int argc, char** argv)
 {
     // Creates the parameters for the simulation
     std::cout << "Initializing parameters..." << std::endl;
-    alps::parameters_type<my_sim_type>::type params(argc, (const char**)argv);
+    alps::parameters_type<my_sim_type>::type params(argc, argv);
 
     // Define the parameters for our simulation, including the ones for the
     // base class

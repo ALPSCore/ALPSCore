@@ -12,7 +12,7 @@
 #include <alps/mc/stop_callback.hpp>
 #include <alps/mc/mpiadapter.hpp>
 
-int main(int argc, char* argv[])
+int main(int argc, char** argv)
 {
     // Define the type for the simulation
     typedef alps::mcmpiadapter<ising_sim> my_sim_type;
@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
         if (is_master) std::cout << "Initializing parameters..." << std::endl;
 
         // This constructor broadcasts to all processes
-        alps::params parameters(argc, (const char**)argv, comm);
+        alps::params parameters(argc, argv, comm);
         my_sim_type::define_parameters(parameters);
 
         if (parameters.help_requested(std::cout) ||

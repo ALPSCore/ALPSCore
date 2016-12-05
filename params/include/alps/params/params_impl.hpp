@@ -38,7 +38,7 @@ namespace alps {
             init();
         }
 
-        inline params::params(unsigned int argc, const char* argv[], const char* hdfpath)
+        inline params::params(unsigned int argc, const char* const* argv, const char* hdfpath)
         {
           init(argc,argv,hdfpath);
         }

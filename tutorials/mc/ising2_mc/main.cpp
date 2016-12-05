@@ -11,7 +11,7 @@
 #include <alps/mc/mcbase.hpp>
 #include <alps/mc/stop_callback.hpp>
 
-int main(int argc, char* argv[])
+int main(int argc, char** argv)
 {
     // Define the type for the simulation
     typedef ising_sim my_sim_type;
@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
         // If an hdf5 file is supplied, reads the parameters there
         std::cout << "Initializing parameters..." << std::endl;
 
-        alps::params parameters(argc, (const char**)argv);
+        alps::params parameters(argc, argv);
         my_sim_type::define_parameters(parameters);
 
         if (parameters.help_requested(std::cout) ||
