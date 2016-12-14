@@ -16,6 +16,7 @@ set (test_src_mpi
     reduce
     signed_obs
     custom_scheduler
+    reduce_unavailable_results
     )
 foreach(test ${test_src_mpi})
     alps_add_gtest(${test} NOMAIN PARTEST)

@@ -111,7 +111,7 @@ std::ostream& operator<<(std::ostream& ostr, const NaiveMatrix<T>& mtx) {
  * @param argv the argument array
  * @return the exit code
  */
-int main(int argc, const char* argv[])
+int main(int argc, char** argv)
 {
     // The filename for the hdf5 file
     std::string filename("measurements.h5");

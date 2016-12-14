@@ -78,7 +78,7 @@ namespace alps {
             void init();
 
             /// Initialization code used in constructors
-            void init(unsigned int argc, const char* argv[], const char* hdfpath);
+            void init(unsigned int argc, const char* const* argv, const char* hdfpath);
 
             /// Function to check for validity/redefinition of an option (throws!)
             void check_validity(const std::string& optname) const;
@@ -136,7 +136,7 @@ namespace alps {
                 @param hdfpath : path to HDF5 dataset containing the saved parameter object
                 (NULL if this functionality is not needed)
             */
-            params(unsigned int argc, const char* argv[], const char* hdfpath = "/parameters");
+            params(unsigned int argc, const char* const* argv, const char* hdfpath = "/parameters");
 
 #if defined(ALPS_HAVE_MPI)
             /// Collective constructor from command line and a parameter file. The parsing is deferred.
@@ -151,7 +151,7 @@ namespace alps {
                                  saved parameter object
                                  (NULL if this functionality is not needed)
             */
-            params(unsigned int argc, const char* argv[], const alps::mpi::communicator& comm,
+            params(unsigned int argc, const char* const* argv, const alps::mpi::communicator& comm,
                    int root=0, const char* hdfpath = "/parameters");
 #endif
 

@@ -72,7 +72,7 @@ namespace alps {
   
         namespace po=boost::program_options;
     
-        void params::init(unsigned int argc, const char* argv[], const char* hdfpath)
+        void params::init(unsigned int argc, const char* const* argv, const char* hdfpath)
         {
             if (argc>0) argv0_=argv[0];
             if (argc>1) {
@@ -107,7 +107,7 @@ namespace alps {
         }
 
 #ifdef ALPS_HAVE_MPI      
-        params::params(unsigned int argc, const char* argv[], const alps::mpi::communicator& comm,
+        params::params(unsigned int argc, const char* const* argv, const alps::mpi::communicator& comm,
                                    int root, const char* hdfpath)
         {
             if (comm.rank()==root) {

@@ -17,7 +17,7 @@
  * @param argv the argument array
  * @return the exit code
  */
-int main(int argc, const char* argv[])
+int main(int argc, char** argv)
 {
     // Creates an instance of the parameter class.
     std::cout << "Creating parameter object..." << std::endl;

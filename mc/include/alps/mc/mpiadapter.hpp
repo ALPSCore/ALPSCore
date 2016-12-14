@@ -67,16 +67,22 @@ namespace alps {
             typename Base::results_type collect_results(typename Base::result_names_type const & names) const {
                 typename Base::results_type partial_results;
                 for(typename Base::result_names_type::const_iterator it = names.begin(); it != names.end(); ++it) {
-                    if (communicator.rank() == 0) {
-                        if (this->measurements[*it].count()) {
+                    size_t has_count=(this->measurements[*it].count() > 0);
+                    const size_t sum_counts =
+                            alps::alps_mpi::all_reduce(communicator,
+                                                       has_count,
+                                                       std::plus<size_t>());
+                    if (sum_counts == communicator.size()) {
+                        if (communicator.rank() == 0) {
                             typename Base::observable_collection_type::value_type merged = this->measurements[*it];
                             merged.collective_merge(communicator, 0);
                             partial_results.insert(*it, merged.result());
-                        } else
-                          // FIXME: throw exception here instead
-                            partial_results.insert(*it, this->measurements[*it].result());
-                    } else if (this->measurements[*it].count())
-                        this->measurements[*it].collective_merge(communicator, 0);
+                        } else {
+                            this->measurements[*it].collective_merge(communicator, 0);
+                        }
+                    } else if (sum_counts > 0 && sum_counts < communicator.size()) {
+                        throw std::runtime_error(*it + " was measured on only some of the MPI processes.");
+                    }
                 }
                 return partial_results;
             }

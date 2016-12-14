@@ -29,7 +29,7 @@
  * @param argv the argument array
  * @return the exit code
  */
-int main(int argc, const char* argv[])
+int main(int argc, char** argv)
 {
     // Creates the parameters for the simulation
     // If an hdf5 file is supplied, reads the parameters there
