@@ -354,11 +354,11 @@ namespace alps {
             } 
                 
             /// Visitor to archive an option with a proper type
-            struct archive_visitor : public boost::static_visitor<> {
+            struct save_visitor : public boost::static_visitor<> {
                 hdf5::archive& ar_;
                 const std::string& name_;
 
-                archive_visitor(hdf5::archive& ar, const std::string& name) : ar_(ar), name_(name) {}
+                save_visitor(hdf5::archive& ar, const std::string& name) : ar_(ar), name_(name) {}
 
                 /// sends value of the bound type U to an archive
                 template <typename U>
@@ -381,10 +381,16 @@ namespace alps {
             /// Outputs the option to an archive
             void save(hdf5::archive& ar) const
             {
-                archive_visitor visitor(ar,this->name_);
+                save_visitor visitor(ar,this->name_);
                 boost::apply_visitor(visitor, this->val_);
             }
                 
+            /// Outputs the option to an archive
+            void load(hdf5::archive& ar)
+            {
+                throw std::logic_error("alps::params::option_type::load() is not implemented yet");
+            }
+
           
             /// Constructor preserving the option name
             option_type(const std::string& a_name):
@@ -473,12 +479,16 @@ namespace alps {
 
             void save(hdf5::archive& ar) const
             {
-                throw std::logic_error("options_map_type::save() not implemented yet");
+                // throw std::logic_error("options_map_type::save() not implemented yet");
+                typedef std::map<std::string, option_type> super_type;
+                ar["alps::params::options_map_type"] << static_cast<const super_type&>(*this);
             }
 
             void load(hdf5::archive& ar)
             {
-                throw std::logic_error("options_map_type::load() not implemented yet");
+                // throw std::logic_error("options_map_type::load() not implemented yet");
+                typedef std::map<std::string, option_type> super_type;
+                ar["alps::params::options_map_type"] >> static_cast<super_type&>(*this);
             }
 
         };
@@ -711,12 +721,16 @@ namespace alps {
 
                 void save(hdf5::archive& ar) const
                 {
-                    throw std::logic_error("option_description_type::save() not implemented yet");
+                    // throw std::logic_error("option_description_type::save() not implemented yet");
+                    ar["alps::params::option_description_type::descr_"] << descr_;
+                    ar["alps::params::option_description_type::deflt_"] << deflt_;
                 }
 
                 void load(hdf5::archive& ar)
                 {
-                    throw std::logic_error("option_description_type::load() not implemented yet");
+                    // throw std::logic_error("option_description_type::load() not implemented yet");
+                    ar["alps::params::option_description_type::descr_"] >> descr_;
+                    ar["alps::params::option_description_type::deflt_"] >> deflt_;
                 }
             };
 
