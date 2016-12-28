@@ -16,6 +16,7 @@ set (test_src
     hdf5_vecvecdbl
     hdf5_vecveccplx
     hdf5_io_types
+    hdf5_attributes
     hdf5_omp #this one was commented out. Any idea why?
     )
 
