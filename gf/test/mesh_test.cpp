@@ -6,13 +6,14 @@
 
 #include "gtest/gtest.h"
 #include "alps/gf/mesh.hpp"
+#include "alps/gf/grid.hpp"
 #include "gf_test.hpp"
 
 #include <boost/filesystem/operations.hpp>
 
 TEST(Mesh, RealFrequencyLoadSave) {
     namespace g=alps::gf;
-    g::mesh::linear_real_frequency_grid grid(-3,3,100);
+    g::grid::linear_real_frequency_grid grid(-3,3,100);
     g::real_frequency_mesh mesh1(grid);
     g::real_frequency_mesh mesh2;
     {
@@ -31,7 +32,7 @@ TEST(Mesh, RealFrequencyLoadSave) {
 TEST(Mesh, RealFrequencyMeshQuadric) {
     double spread = 5.0;
     int nfreq = 41;
-    alps::gf::mesh::quadratic_real_frequency_grid grid(spread, nfreq);
+    alps::gf::grid::quadratic_real_frequency_grid grid(spread, nfreq);
     alps::gf::real_frequency_mesh mesh1(grid);
     EXPECT_EQ(mesh1.extent(), nfreq);
 }
@@ -39,7 +40,7 @@ TEST(Mesh, RealFrequencyMeshQuadric) {
 TEST(Mesh, RealFrequencyMeshLogarithmic) {
     double tmax = 5, tmin = 0.001;
     int nfreq = 41;
-    alps::gf::mesh::logarithmic_real_frequency_grid grid(tmax, tmin, nfreq);
+    alps::gf::grid::logarithmic_real_frequency_grid grid(tmax, tmin, nfreq);
     alps::gf::real_frequency_mesh mesh1(grid);
     EXPECT_EQ(mesh1.extent(), nfreq);
 }
@@ -48,7 +49,7 @@ TEST(Mesh, RealFrequencyMeshLinear) {
   double Emin = -5;
   double Emax = 5;
   int nfreq = 20;
-  alps::gf::mesh::linear_real_frequency_grid grid(Emin, Emax, nfreq);
+  alps::gf::grid::linear_real_frequency_grid grid(Emin, Emax, nfreq);
   alps::gf::real_frequency_mesh mesh1(grid);
   EXPECT_EQ(mesh1.extent(), nfreq);
 }
