@@ -5,6 +5,7 @@
  */
 
 #include "one_index_gf_test.hpp"
+#include "alps/gf/grid.hpp"
 
 TEST_F(OneIndexGFTest,access)
 {
@@ -101,7 +102,7 @@ TEST_F(OneIndexGFTest, RealFreq) {
     double Emax = 5;
     int nfreq = 20;
 
-    alps::gf::mesh::linear_real_frequency_grid grid(Emin, Emax, nfreq);
+    alps::gf::grid::linear_real_frequency_grid grid(Emin, Emax, nfreq);
     g::one_index_gf<std::complex<double>, g::real_frequency_mesh> other_gf((g::real_frequency_mesh(grid)));
     g::real_freq_index omega(4);
     const std::complex<double> data(3,4);

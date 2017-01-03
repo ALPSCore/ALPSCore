@@ -7,6 +7,7 @@
 #include "gtest/gtest.h"
 #include <alps/utilities/gtest_par_xml_output.hpp>
 #include "alps/gf/mesh.hpp"
+#include "alps/gf/grid.hpp"
 #include "gf_test.hpp"
 
 #include "mpi_guard.hpp"
@@ -29,8 +30,8 @@ namespace agf=alps::gf;
 
 TEST_F(MeshTest,MpiBcastRealFrequency) {
     typedef agf::real_frequency_mesh mesh_type;
-    agf::mesh::linear_real_frequency_grid grid(-3.,3.,10);
-    agf::mesh::logarithmic_real_frequency_grid grid2(-2.,0.00001,4);
+    agf::grid::linear_real_frequency_grid grid(-3.,3.,10);
+    agf::grid::logarithmic_real_frequency_grid grid2(-2.,0.00001,4);
     mesh_type ref_mesh(grid);
     mesh_type my_mesh(grid2);
     mesh_type* mesh_ptr= is_root_ ? &ref_mesh : &my_mesh;

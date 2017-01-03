@@ -10,6 +10,7 @@ set (test_srcs
   four_index_gf_pn_test 
   itime_gf_test
   fourier_test
+  grid_test
     )
 
 
