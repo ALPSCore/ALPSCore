@@ -170,6 +170,7 @@ namespace alps {
         };
         class real_frequency_mesh: public base_mesh{
         public:
+            typedef generic_index<real_frequency_mesh> index_type;
             real_frequency_mesh() {};
 
             template<typename GRID>
@@ -177,6 +178,10 @@ namespace alps {
                 grid.compute_points(_points());
             }
             int extent() const {return points().size();}
+
+            int operator()(index_type idx) const {
+              return idx();
+            }
             void save(alps::hdf5::archive& ar, const std::string& path) const
             {
                 ar[path+"/kind"] << "REAL_FREQUENCY";
@@ -745,6 +750,7 @@ namespace alps {
         typedef momentum_index_mesh::index_type momentum_index;
         typedef real_space_index_mesh::index_type real_space_index;
         typedef index_mesh::index_type index;
+        typedef real_frequency_mesh::index_type real_freq_index;
 
         namespace detail {
             /* The following is an in-house implementation of a static_assert

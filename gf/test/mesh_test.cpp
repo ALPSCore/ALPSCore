@@ -42,6 +42,9 @@ TEST(Mesh, RealFrequencyMeshLogarithmic) {
     alps::gf::mesh::logarithmic_real_frequency_grid grid(tmax, tmin, nfreq);
     alps::gf::real_frequency_mesh mesh1(grid);
     EXPECT_EQ(mesh1.extent(), nfreq);
+    double ratio1 = mesh1.points()[0]/mesh1.points()[1];
+    double ratio2 = mesh1.points()[2]/mesh1.points()[3];
+    EXPECT_NEAR(ratio1, ratio2, 1e-10);
 }
 
 TEST(Mesh, RealFrequencyMeshLinear) {
@@ -51,6 +54,11 @@ TEST(Mesh, RealFrequencyMeshLinear) {
   alps::gf::mesh::linear_real_frequency_grid grid(Emin, Emax, nfreq);
   alps::gf::real_frequency_mesh mesh1(grid);
   EXPECT_EQ(mesh1.extent(), nfreq);
+  double diff1 = mesh1.points()[0] - mesh1.points()[1];
+  double diff2 = mesh1.points()[2] - mesh1.points()[3];
+  EXPECT_NEAR(diff1, diff2, 1e-10);
+  EXPECT_NEAR(Emin, mesh1.points()[0], 1e-10);
+  EXPECT_NEAR(Emax, mesh1.points()[mesh1.points().size()-1], 1e-10);
 }
 
 TEST(Mesh, BosonicMatsubara) {

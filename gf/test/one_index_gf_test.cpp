@@ -94,3 +94,19 @@ TEST_F(OneIndexGFTest,Assign)
     EXPECT_THROW(other_gf=gf, std::invalid_argument);
     // EXPECT_EQ(data, other_gf(omega));
 }
+
+TEST_F(OneIndexGFTest, RealFreq) {
+    namespace g=alps::gf;
+    double Emin = -5;
+    double Emax = 5;
+    int nfreq = 20;
+
+    alps::gf::mesh::linear_real_frequency_grid grid(Emin, Emax, nfreq);
+    g::one_index_gf<std::complex<double>, g::real_frequency_mesh> other_gf((g::real_frequency_mesh(grid)));
+    g::real_freq_index omega(4);
+    const std::complex<double> data(3,4);
+    const std::complex<double> data2(0,0);
+    other_gf(omega)=data;
+    EXPECT_EQ(data, other_gf(omega));
+    EXPECT_EQ(data2, other_gf(++omega));
+}
