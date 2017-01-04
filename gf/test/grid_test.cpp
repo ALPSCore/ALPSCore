@@ -12,7 +12,7 @@ TEST(Grid, Logarithmic) {
   double tmax = 5, tmin = 0.001;
   double c = 2.0;
   int nfreq = 101;
-  alps::gf::grid::logarithmic_real_frequency_grid grid(tmin, tmax, nfreq);
+  alps::gf::grid::logarithmic_real_frequency_grid grid(tmin, tmax, c, nfreq);
   std::vector<double> points;
   grid.compute_points(points);
   double ratio1 = (points[0] - points[1])/(points[1] - points[2]);
