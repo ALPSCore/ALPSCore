@@ -40,32 +40,32 @@ TEST(Mesh, RealFrequencyMeshQuadric) {
 TEST(Mesh, RealFrequencyMeshLogarithmic) {
     double tmax = 5, tmin = 0.001;
     int nfreq = 41;
-    alps::gf::grid::logarithmic_real_frequency_grid grid(tmax, tmin, nfreq);
+    alps::gf::grid::logarithmic_real_frequency_grid grid(tmin, tmax, nfreq);
     alps::gf::real_frequency_mesh mesh1(grid);
     EXPECT_EQ(mesh1.extent(), nfreq);
 }
 
 TEST(Mesh, RealFrequencyMeshLinear) {
-  double Emin = -5;
-  double Emax = 5;
-  int nfreq = 20;
-  alps::gf::grid::linear_real_frequency_grid grid(Emin, Emax, nfreq);
-  alps::gf::real_frequency_mesh mesh1(grid);
-  EXPECT_EQ(mesh1.extent(), nfreq);
+    double Emin = -5;
+    double Emax = 5;
+    int nfreq = 20;
+    alps::gf::grid::linear_real_frequency_grid grid(Emin, Emax, nfreq);
+    alps::gf::real_frequency_mesh mesh1(grid);
+    EXPECT_EQ(mesh1.extent(), nfreq);
 }
 
 TEST(Mesh, BosonicMatsubara) {
-  alps::gf::matsubara_mesh<alps::gf::mesh::POSITIVE_NEGATIVE> mesh1(5.0, 20, alps::gf::statistics::BOSONIC);
-  EXPECT_EQ(mesh1.statistics(), alps::gf::statistics::BOSONIC);
+    alps::gf::matsubara_mesh<alps::gf::mesh::POSITIVE_NEGATIVE> mesh1(5.0, 20, alps::gf::statistics::BOSONIC);
+    EXPECT_EQ(mesh1.statistics(), alps::gf::statistics::BOSONIC);
 }
 
 TEST(Mesh,SwapMatsubara) {
-  alps::gf::matsubara_mesh<alps::gf::mesh::POSITIVE_NEGATIVE> mesh1(5.0, 20);
-  alps::gf::matsubara_mesh<alps::gf::mesh::POSITIVE_NEGATIVE> mesh2(7.0, 40);
-  mesh1.swap(mesh2);
+    alps::gf::matsubara_mesh<alps::gf::mesh::POSITIVE_NEGATIVE> mesh1(5.0, 20);
+    alps::gf::matsubara_mesh<alps::gf::mesh::POSITIVE_NEGATIVE> mesh2(7.0, 40);
+    mesh1.swap(mesh2);
 
-  EXPECT_EQ(mesh1.beta(), 7.0);
-  EXPECT_EQ(mesh2.beta(), 5.0);
+    EXPECT_EQ(mesh1.beta(), 7.0);
+    EXPECT_EQ(mesh2.beta(), 5.0);
 }
 
 TEST(Mesh,CompareMatsubara) {
