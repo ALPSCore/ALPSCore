@@ -31,7 +31,11 @@ namespace agf=alps::gf;
 TEST_F(MeshTest,MpiBcastRealFrequency) {
     typedef agf::real_frequency_mesh mesh_type;
     agf::grid::linear_real_frequency_grid grid(-3.,3.,10);
-    agf::grid::logarithmic_real_frequency_grid grid2(-2.,0.00001,4);
+    int tmax = 2;
+    double tmin = 0.00001;
+    int c = -1;
+    int nfreq = 4;
+    agf::grid::logarithmic_real_frequency_grid grid2(tmin, tmax, c, nfreq);
     mesh_type ref_mesh(grid);
     mesh_type my_mesh(grid2);
     mesh_type* mesh_ptr= is_root_ ? &ref_mesh : &my_mesh;
