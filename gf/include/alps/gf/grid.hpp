@@ -52,13 +52,13 @@ namespace alps {
         /// number of frequency points
         int nfreq_;
       public:
-        logarithmic_real_frequency_grid(double tmin, double tmax, double c, int n): t_min_(tmin), t_max_(tmax), nfreq_(n), c_(c) {
+        logarithmic_real_frequency_grid(double tmin, double tmax, double c, int n): t_min_(tmin), t_max_(tmax), c_(c), nfreq_(n) {
           if (tmin <= 0.0)
             throw std::invalid_argument("the parameter tmin must be greater than 0");
           if (tmax<tmin)
             throw std::invalid_argument("the parameter tmax must be greater than tmin");
         };
-        logarithmic_real_frequency_grid(double tmin, double tmax, int n): t_min_(tmin), t_max_(tmax), nfreq_(n), c_(0) {
+        logarithmic_real_frequency_grid(double tmin, double tmax, int n): t_min_(tmin), t_max_(tmax), c_(0), nfreq_(n) {
           if (tmin <= 0.0)
             throw std::invalid_argument("the parameter tmin must be greater than 0");
           if (tmax<tmin)
