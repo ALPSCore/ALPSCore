@@ -100,6 +100,9 @@ namespace alps {
                     MEMORY = 0x10 
                 } properties;
 
+                /// default constructor to create archive with out openning of any file
+                /// to be used in conjunction with `void open(const boost::filesystem::path &, std::string)` function
+                archive();
                 archive(boost::filesystem::path const & filename, std::string mode = "r");
                 explicit archive(std::string const & filename, int props); // TODO: remove that!
                 explicit archive(std::string const & filename, char prop); // TODO: remove that!
@@ -117,7 +120,9 @@ namespace alps {
                 std::string get_context() const;
                 void set_context(std::string const & context);
                 std::string complete_path(std::string path) const;
-
+                /// open a new archive file
+                /// check that the archive is not already opened and construct archive.
+                void open(const boost::filesystem::path & filename, const std::string &mode = "r");
                 void close();
                 bool is_open();
 

@@ -353,39 +353,21 @@ namespace alps {
 
         }
 
-        archive::archive(std::string const & filename, int props) { // TODO: remove that!
+        archive::archive() : context_(NULL) {}
+        archive::archive(std::string const & filename, int props) : context_(NULL) { // TODO: remove that!
             construct(filename, props);
         }
 
-        archive::archive(std::string const & filename, char prop) { // TODO: remove that!
-            construct(filename,
-                  ('w' == prop ? WRITE | REPLACE : 0)
-                | ('a' == prop ? WRITE : 0)
-                | ('c' == prop ? COMPRESS : 0)
-                | ('l' == prop ? LARGE : 0)
-                | ('m' == prop ? MEMORY : 0)
-            );
+        archive::archive(std::string const & filename, char prop) : context_(NULL) { // TODO: remove that!
+            open(filename, std::string(1, prop));
         }
 
-        archive::archive(std::string const & filename, char signed prop) { // TODO: remove that!
-            construct(filename,
-                  ('w' == prop ? WRITE | REPLACE : 0)
-                | ('a' == prop ? WRITE : 0)
-                | ('c' == prop ? COMPRESS : 0)
-                | ('l' == prop ? LARGE : 0)
-                | ('m' == prop ? MEMORY : 0)
-            );
+        archive::archive(std::string const & filename, char signed prop) : context_(NULL) { // TODO: remove that!
+            open(filename, std::string(1, prop));
         }
 
-        archive::archive(boost::filesystem::path const & filename, std::string mode) {
-            construct(filename.string(),
-                  (mode.find_last_of('w') == std::string::npos ? 0 : WRITE | REPLACE)
-                | (mode.find_last_of('a') == std::string::npos ? 0 : WRITE)
-                | (mode.find_last_of('c') == std::string::npos ? 0 : COMPRESS)
-                | (mode.find_last_of('l') == std::string::npos ? 0 : LARGE)
-                | (mode.find_last_of('m') == std::string::npos ? 0 : MEMORY)
-            );
-            
+        archive::archive(boost::filesystem::path const & filename, std::string mode) : context_(NULL) {
+            open(filename, mode);
         }
 
         archive::archive(archive const & arg)
@@ -431,6 +413,18 @@ namespace alps {
                 delete context_;
             }
             context_ = NULL;
+        }
+
+        void archive::open(const boost::filesystem::path & filename, const std::string &mode) {
+            if(is_open())
+                throw archive_opened("the archive is already opened" + ALPS_STACKTRACE);
+            construct(filename.string(),
+                      (mode.find_last_of('w') == std::string::npos ? 0 : WRITE | REPLACE)
+                      | (mode.find_last_of('a') == std::string::npos ? 0 : WRITE)
+                      | (mode.find_last_of('c') == std::string::npos ? 0 : COMPRESS)
+                      | (mode.find_last_of('l') == std::string::npos ? 0 : LARGE)
+                      | (mode.find_last_of('m') == std::string::npos ? 0 : MEMORY)
+            );
         }
         
         bool archive::is_open() {
