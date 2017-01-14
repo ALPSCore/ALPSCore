@@ -10,6 +10,7 @@
 
 #include "boost/lexical_cast.hpp"
 
+#include <cstdio>
 #include <fstream>
 
 //Dummy function to imitate use of a variable to supress spurious compiler warnings
@@ -585,6 +586,35 @@ TEST(param,CmdlineOverride)
     EXPECT_EQ(333,p["param3"]);
     EXPECT_TRUE(bool(p["trigger_opt"]));
 }
+
+// File starting with unusual character, such as '-'
+TEST(param,IniFileDashName)
+{
+    // create a strange file name
+    std::string pfilename(alps::temporary_filename("-pfile")+".ini");
+    {
+        std::ofstream pfile(pfilename.c_str());
+        pfile <<
+            "param1 = 111\n"
+            "param2 = 222\n";
+    }
+
+    // Imitate the command line args
+    const char* argv[]={"THIS_PROGRAM",         // argv[0]
+                        pfilename.c_str()      // filename is the 1st argument
+                       };
+    const int argc=sizeof(argv)/sizeof(*argv);
+    
+    alps::params p(argc, argv);
+    p.
+        define<int>("param1","Parameter 1").
+        define<int>("param2","Parameter 2");
+
+    EXPECT_EQ(111,p["param1"]);
+    EXPECT_EQ(222,p["param2"]);
+    std::remove(pfilename.c_str());
+}
+
 
 // Reading from a file without a command line
 // FIXME: use the helper generator classes, check all types

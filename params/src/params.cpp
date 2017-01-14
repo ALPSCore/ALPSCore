@@ -81,7 +81,7 @@ namespace alps {
         {
             if (argc>0) argv0_=argv[0];
             if (argc>1) {
-                if (argv[1][0]!='-') {
+                if (std::string(argv[1]).substr(0,2)!="--") {
                     // first argument exists and is not an option
                     infile_=argv[1];
                     if (hdfpath) {
