@@ -30,8 +30,15 @@ struct ParamTest : public ::testing::Test {
         params_.define<int>("intpar2", 0, "Another integer parameter");
     }
 
+    void remove_ini_file() {
+        if (!fname_.empty()) {
+            std::remove(fname_.c_str());
+        }
+        fname_.clear();
+    }
+    
     ~ParamTest() {
-        std::remove(fname_.c_str());
+        remove_ini_file();
     }
 };
 
@@ -47,6 +54,19 @@ TEST_F(ParamTest,ChdirAfterAccess) {
 TEST_F(ParamTest,ChdirBeforeAccess) {
     int rc=chdir("..");
     if (rc!=0) throw std::runtime_error("Cannot change to parent directory");
+    int intpar=params_["intpar"];
+    EXPECT_EQ(1234, intpar);
+}    
+
+TEST_F(ParamTest,RemoveBeforeAccess) {
+    remove_ini_file();
+    int intpar=params_["intpar"];
+    EXPECT_EQ(1234, intpar);
+}    
+
+TEST_F(ParamTest,RemoveAfterAccess) {
+    params_["intpar2"];
+    remove_ini_file();
     int intpar=params_["intpar"];
     EXPECT_EQ(1234, intpar);
 }    
