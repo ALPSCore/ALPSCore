@@ -38,6 +38,12 @@ std::ostream &operator<<(std::ostream &os, const index_mesh &M){
   return os;
 }
 
+std::ostream &operator<<(std::ostream &os, const real_frequency_mesh &M){
+  os<<"# "<<"REAL_FREQUENCY"<<" mesh: N: "<<M.extent();
+  os<<std::endl;
+  return os;
+}
+
 
 }
 }
