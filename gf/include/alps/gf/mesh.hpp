@@ -137,6 +137,7 @@ namespace alps {
             }
 #endif
         };
+        std::ostream &operator<<(std::ostream &os, const real_frequency_mesh &M);
 
         template <mesh::frequency_positivity_type PTYPE>
         class matsubara_mesh : public base_mesh {
