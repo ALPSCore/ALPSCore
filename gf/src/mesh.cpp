@@ -44,6 +44,22 @@ std::ostream &operator<<(std::ostream &os, const real_frequency_mesh &M){
   return os;
 }
 
+  namespace detail {
+  // print 1D boost multiarray --- a 2D-point of a mesh
+  std::ostream& operator<<(std::ostream& s, const boost::multi_array<double, 1>& data)
+  {
+    typedef boost::multi_array<double, 1> data_type;
+    typedef data_type::const_iterator iterator_type;
+    s << "(";
+    iterator_type it=data.begin();
+    if (data.end()!=it) s << *(it++);
+    for (; it!=data.end(); ++it) {
+      s << "," << *it;
+    }
+    s << ")" << std::endl;
+    return s;
+  }
+  } // detail::
 
-}
-}
+} // gf::
+} // alps::

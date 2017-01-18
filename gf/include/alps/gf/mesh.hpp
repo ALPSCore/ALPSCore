@@ -694,6 +694,10 @@ namespace alps {
 
             /* ^^^^ End of static_assert code */
             
+            /// Print a 2D double boost::multi_array (for printing 2D meshes)
+            /** @todo FIXME: Use a proper mesh-specific method instead, see operator<<(momentum_realspace_index_mesh) */
+            std::ostream& operator<<(std::ostream& s, const boost::multi_array<double, 1>& data);
+
         } // ::detail
     }
 }

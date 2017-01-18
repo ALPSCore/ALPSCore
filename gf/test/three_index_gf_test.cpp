@@ -317,6 +317,32 @@ TEST_F(ThreeIndexTestGF,print)
   EXPECT_EQ(gf_stream_by_hand.str(), gf_stream.str());
 }
 
+// FIXME: does not test the validity of print output
+TEST_F(ThreeIndexTestGF, tailPrint)
+{
+    namespace g=alps::gf;
+    typedef g::two_index_gf<double, g::momentum_index_mesh, g::index_mesh> density_matrix_type;
+    density_matrix_type denmat=density_matrix_type(g::momentum_index_mesh(get_data_for_momentum_mesh()),
+                                      g::index_mesh(nspins));
 
+    // prepare diagonal matrix
+    double U=3.0;
+    denmat.initialize();
+    for (g::momentum_index i=g::momentum_index(0); i<denmat.mesh1().extent(); ++i) {
+        denmat(i,g::index(0))=0.5*U;
+        denmat(i,g::index(1))=0.5*U;
+    }
 
+    // Attach a tail to the GF
+    int order=0;
+    
+    // FIXME: TODO: gf.set_tail(min_order, max_order, denmat, ...);
+    g::omega_k_sigma_gf_with_tail gft(gf);
+    gft.set_tail(order, denmat)
+    // .set_tail(order+1, other_gf) ....
+        ;
 
+    std::ostringstream outs;
+    outs << gft.tail(0);
+    std::cout << "Output is:\n" << outs.str() << std::endl;
+}
