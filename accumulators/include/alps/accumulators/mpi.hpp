@@ -19,27 +19,6 @@
     #include <boost/lexical_cast.hpp> // for throw() message
 
     namespace alps {
-
-        namespace debug {
-                // DEBUG!!!
-                template <typename T>
-                void debug_vector_value(const T& scalar) {
-                    std::cerr << "DEBUG: scalar value=" << scalar << std::endl;
-                }
-                
-                // DEBUG!!!
-                template <typename T>
-                void debug_vector_value(const std::vector<T>& vec) {
-                    std::size_t sz=vec.size();
-                    std::cout << "DEBUG: vector value, type=" << typeid(T).name() << " size=" << sz;
-                    if (sz==0) {
-                        std::cout << " (size is 0!)";
-                    }
-                    endl(std::cout);
-                }
-            
-        }
- 
         namespace alps_mpi {
             namespace detail {
 
@@ -219,8 +198,6 @@
                     // reduce(comm, get_pointer(in_values), std::accumulate(extent.begin(), extent.end(), 0), get_pointer(out_values), op, root);
 
                     using alps::mpi::get_mpi_datatype;
-                    // DEBUG!!! ***CRASH_POINT***
-                    ::alps::debug::debug_vector_value(in_values);
                     checked_mpi_reduce(const_cast<scalar_type*>(get_pointer(in_values)), get_pointer(out_values),
                                std::accumulate(extent.begin(), extent.end(), 1, std::multiplies<std::size_t>()),
                                get_mpi_datatype(scalar_type()), alps::mpi::is_mpi_op<Op, scalar_type>::op(), root, comm);
