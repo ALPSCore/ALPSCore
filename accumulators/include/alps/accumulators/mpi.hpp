@@ -250,7 +250,7 @@
                     } else
                         throw std::logic_error("No alps::mpi::reduce available for this type " + std::string(typeid(T).name()) + ALPS_STACKTRACE);
                 }
-            }
+            } // detail::
 
             template<typename T, typename Op> void reduce(const alps::mpi::communicator & comm, T const & in_values, Op op, int root) {
                 using detail::reduce_impl;
@@ -277,8 +277,8 @@
                 //                        +typeid(T).name() + "and OP="+typeid(OP).name() );
             }
 
-        }
-    }
+        } // alps_mpi::
+    } // alps::
 
 #endif
 
