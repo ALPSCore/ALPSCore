@@ -35,7 +35,6 @@ class MpiBcastTest_base : public ::testing::Test {
 
     void bcast_scalar() {
         value_type root_data=alps::testing::datapoint<value_type>::get(true);
-        value_type root_data0=root_data;
         value_type slave_data=alps::testing::datapoint<value_type>::get(false);
         value_type& my_data=*(this->is_root_? &root_data : &slave_data);
 
