@@ -95,7 +95,6 @@ namespace alps {
             /// Returns different string values for the different value of the argument.
             static std::string get(unsigned int choice)
             {
-                std::cout << "DEBUG: choice=" << choice;
                 const char zero='!';
                 std::string out;
                 if (choice==0) {
@@ -107,7 +106,6 @@ namespace alps {
                         choice/=radix;
                     }
                 }
-                std::cout << " out='" << out << "'\n";
                 return out;
             }
 
@@ -116,10 +114,6 @@ namespace alps {
                 std::string out=get(choice);
                 const std::size_t base_sz=out.size();
                 if (sz<base_sz) {
-                    std::cout << "DEBUG: base='" << out
-                              << "' base_sz=" << base_sz
-                              << " sz=" << sz
-                              << std::endl;
                     throw std::invalid_argument("get<std::string>(): the requested size"
                                                 " is too short for the string to be unique");
                 }
