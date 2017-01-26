@@ -15,6 +15,7 @@ set (test_src_mpi
     mpi_utils_env
     mpi_utils_comm
     mpi_utils_bcast
+    mpi_utils_reduce
     )
 
 foreach(test ${test_src})
