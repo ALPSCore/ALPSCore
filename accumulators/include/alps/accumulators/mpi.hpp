@@ -262,26 +262,6 @@
                 reduce_impl(comm, in_values, out_values, op, root, typename boost::is_scalar<T>::type(), typename hdf5::is_content_continuous<T>::type());
             }
 
-            /// performs MPI_Allreduce() for type T using operation of type OP
-            /** @NOTE Currently implemented as Reduce followed by Broadcast */
-            template <typename T, typename OP>
-            T all_reduce(const alps::mpi::communicator& comm, const T& val, const OP& op) {
-                std::cout << "DEBUG: all_reduce() is called with T=" << typeid(T).name()
-                          << " and OP=" << typeid(OP).name()
-                          << "; val=" << val
-                          << std::endl;
-                return alps::mpi::all_reduce(comm, val, op);
-                // using alps::mpi::broadcast;
-                // // FIXME!!! (BUG) Temporarily implemented as reduce + broadcast
-                // const int root=0;
-                // T outval;
-                // reduce(comm, val, outval, op, root);
-                // broadcast(comm, outval, root);
-                // return outval;
-                // // throw std::logic_error(std::string("T all_reduce(const T&, OP) is not implemented, called for type T=")
-                // //                        +typeid(T).name() + "and OP="+typeid(OP).name() );
-            }
-
         } // alps_mpi::
     } // alps::
 
