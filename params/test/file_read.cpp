@@ -328,26 +328,19 @@ TEST(param, GarbageInFile) {
    }
 
    // Imitate the command line args
-   const int argc=2;
-   const char* argv[2]={"THIS_PROGRAM",0};
-   argv[1]=pfilename.c_str();
+   const char* argv[2]={"THIS_PROGRAM", pfilename.c_str()};
+   const int argc = sizeof(argv)/sizeof(*argv);
 
-   //define the parameters
-   alps::params p(argc,argv);
-   p.description("This is a test program").
-       define<int>("int1","int1 parameter").
-       define<int>("int2","int2 parameter");
-   
-   // read the parameters
    try {
-       int param_int1_rd=p["int1"]; dummy_use(&param_int1_rd);
-       FAIL();
-       int param_int2_rd=p["int2"]; dummy_use(&param_int2_rd);
+        //define the parameters
+        alps::params p(argc,argv);
+        FAIL() << "Garbage in file not detected";
    } catch (boost::program_options::invalid_config_file_syntax& ex) {
-       SUCCEED();
-       EXPECT_TRUE(std::string(ex.what()).find(garbage) != std::string::npos);
-       // std::cout << "Exception: " << ex.what() << std::endl;
-   }
+        SUCCEED();
+        EXPECT_TRUE(std::string(ex.what()).find(garbage) != std::string::npos)
+                << "Garbage in file not reported";
+        // std::cout << "Exception: " << ex.what() << std::endl;
+    }
 }    
 
 // Incorrect input (wrong values)
