@@ -10,6 +10,7 @@
 
 #include "boost/lexical_cast.hpp"
 
+#include <cstdio>
 #include <fstream>
 
 //Dummy function to imitate use of a variable to supress spurious compiler warnings
@@ -327,26 +328,19 @@ TEST(param, GarbageInFile) {
    }
 
    // Imitate the command line args
-   const int argc=2;
-   const char* argv[2]={"THIS_PROGRAM",0};
-   argv[1]=pfilename.c_str();
+   const char* argv[2]={"THIS_PROGRAM", pfilename.c_str()};
+   const int argc = sizeof(argv)/sizeof(*argv);
 
-   //define the parameters
-   alps::params p(argc,argv);
-   p.description("This is a test program").
-       define<int>("int1","int1 parameter").
-       define<int>("int2","int2 parameter");
-   
-   // read the parameters
    try {
-       int param_int1_rd=p["int1"]; dummy_use(&param_int1_rd);
-       FAIL();
-       int param_int2_rd=p["int2"]; dummy_use(&param_int2_rd);
+        //define the parameters
+        alps::params p(argc,argv);
+        FAIL() << "Garbage in file not detected";
    } catch (boost::program_options::invalid_config_file_syntax& ex) {
-       SUCCEED();
-       EXPECT_TRUE(std::string(ex.what()).find(garbage) != std::string::npos);
-       // std::cout << "Exception: " << ex.what() << std::endl;
-   }
+        SUCCEED();
+        EXPECT_TRUE(std::string(ex.what()).find(garbage) != std::string::npos)
+                << "Garbage in file not reported";
+        // std::cout << "Exception: " << ex.what() << std::endl;
+    }
 }    
 
 // Incorrect input (wrong values)
@@ -483,34 +477,6 @@ TEST(param, VectorRead) {
    }
 }
 
-// Repeating parameters in the INI file
-TEST(param,Repeating) {
-    //create a file name
-    std::string pfilename(alps::temporary_filename("pfile")+".ini");
-
-   // Generate INI file
-   {
-     std::ofstream pfile(pfilename.c_str());
-     pfile <<
-         "parname = 1\n"
-         "parname = 2\n";
-   }
-
-   // Imitate the command line args
-   const int argc=2;
-   const char* argv[2]={"THIS_PROGRAM",0};
-   argv[1]=pfilename.c_str();
-
-   //define the parameters
-   alps::params p(argc,argv);
-   p.description("This is a test program").
-       define<int>("parname","repeating parameter");
-
-   int n;
-   EXPECT_THROW((n=p["parname"]),boost::program_options::multiple_occurrences);
-   dummy_use(&n);
-}
-
 // Unknown parameters in the INI file
 TEST(param,Unknown) {
     //create a file name
@@ -551,13 +517,11 @@ TEST(param,Triggers)
     EXPECT_FALSE(bool(p["trigger_opt2"]));
 }
 
-// Command-line options overriding file options
-TEST(param,CmdlineOverride)
+// File starting with unusual character, such as '-'
+TEST(param,IniFileDashName)
 {
-    //create a file name
-    std::string pfilename(alps::temporary_filename("pfile")+".ini");
-    
-    // Generate INI file
+    // create a strange file name
+    std::string pfilename(alps::temporary_filename("-pfile")+".ini");
     {
         std::ofstream pfile(pfilename.c_str());
         pfile <<
@@ -567,24 +531,20 @@ TEST(param,CmdlineOverride)
 
     // Imitate the command line args
     const char* argv[]={"THIS_PROGRAM",         // argv[0]
-                        pfilename.c_str(),      // filename is the 1st argument
-                        "--param1=999",         // override param1
-                        "--param3=333",         // one more parameter
-                        "--trigger_opt" };      // a trigger option  
+                        pfilename.c_str()      // filename is the 1st argument
+                       };
     const int argc=sizeof(argv)/sizeof(*argv);
     
     alps::params p(argc, argv);
     p.
         define<int>("param1","Parameter 1").
-        define<int>("param2","Parameter 2").
-        define<int>("param3","Parameter 3").
-        define("trigger_opt","Trigger param");
+        define<int>("param2","Parameter 2");
 
-    EXPECT_EQ(999,p["param1"]);
+    EXPECT_EQ(111,p["param1"]);
     EXPECT_EQ(222,p["param2"]);
-    EXPECT_EQ(333,p["param3"]);
-    EXPECT_TRUE(bool(p["trigger_opt"]));
+    std::remove(pfilename.c_str());
 }
+
 
 // Reading from a file without a command line
 // FIXME: use the helper generator classes, check all types

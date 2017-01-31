@@ -2,6 +2,7 @@ include(ALPSEnableTests)
 
 set (test_src
      file_read
+     repeated_options
      assign
      compare
      defaults
@@ -14,6 +15,7 @@ set (test_src
      serialize
      param_ostream
      common_param_tests
+     disappearing_ini
     )
 
 

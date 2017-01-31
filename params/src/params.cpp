@@ -9,6 +9,7 @@
 #include <stdexcept>
 #include <string.h>
 #include <fstream>
+#include <cassert>
 //#include <vector>
 //#include <algorithm>
 //#include <iterator>
@@ -76,24 +77,43 @@ namespace alps {
     namespace params_ns {
   
         namespace po=boost::program_options;
+
+        void params::preparse_ini()
+        {
+            po::parsed_options parsed=po::parse_config_file<char>(infile_.c_str(),po::options_description(),true);
+            BOOST_FOREACH(const po::option& opt, parsed.options) {
+                assert(opt.unregistered && "boost::program_options should mark all opts as unregistered!");
+                if (opt.value.size()!=1) {
+                    throw std::logic_error("params::ctor: Unexpected value size from boost::program_options:"
+                                           " key='" + boost::lexical_cast<std::string>(opt.string_key)
+                                           + " ' size=" + boost::lexical_cast<std::string>(opt.value.size())
+                                           + ALPS_STACKTRACE);
+                }
+                file_content_.append(opt.string_key + "=" + opt.value[0] + "\n");
+            }
+        }
     
         void params::init(unsigned int argc, const char* const* argv, const char* hdfpath)
         {
             if (argc>0) argv0_=argv[0];
             if (argc>1) {
-                if (argv[1][0]!='-') {
+                if (std::string(argv[1]).substr(0,2)!="--") {
                     // first argument exists and is not an option
                     infile_=argv[1];
-                    if (hdfpath) {
-                        boost::optional<alps::hdf5::archive> ar=try_open_ar(infile_, "r");
-                        if (ar) {
+                    boost::optional<alps::hdf5::archive> ar=try_open_ar(infile_, "r");
+                    if (ar) { // valid HDF5!
+                        if (hdfpath) { // and we want it!
                             this->load(*ar, hdfpath);
                             archname_=argv[1]; 
                             infile_.clear();
                             argvec_.clear();
                             argv0_=argv[0];
                         }
+                    } else {
+                        // it's presumably an INI: pre-parse and remember
+                        preparse_ini();
                     }
+                    
                     // skip the first argument
                     --argc;
                     ++argv;
@@ -175,21 +195,20 @@ namespace alps {
                 po::store(cmdline_opts,vm);
             }
 
-            if (!infile_.empty()) {
-                po::parsed_options cfgfile_opts=
-                    po::parse_config_file<char>(infile_.c_str(),odescr,true); // parse the file, allow unregistered options
+             if (!file_content_.empty()) {
+                 std::istringstream istr(file_content_);
+                // parse the file, allow unregistered options
+                 po::parsed_options cfgfile_opts=po::parse_config_file(istr,odescr,true);
 
-                po::store(cfgfile_opts,vm);
-            }
+                 po::store(cfgfile_opts,vm);
+             }
 
             // Now for each defined option, copy the corresponding parsed option to the this's option map
 
-            // NOTE#1: If file has changed since the last parsing,
-            //         option values will NOT be reassigned!  (only
-            //         options that are not yet in optmap_ are
+            // NOTE#1: Only options that are not yet in optmap_ are
             //         affected here, to avoid overwriting an option
-            //         that was assigned earlier) --- unless @param reassign
-            //         is set to true, indicating that the
+            //         that was assigned earlier) --- unless 
+            //         `reassign` is set to true, indicating that the
             //         command line options take precedence.
             // NOTE#2:
             //         The loop is over the content of the define()'d

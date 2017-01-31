@@ -58,6 +58,7 @@ namespace alps {
 
             std::string helpmsg_;                 ///< Help message
             std::vector<std::string> argvec_;     ///< Command line arguments
+            std::string file_content_;              ///< Content of INI file
             std::string infile_;                  ///< File name to read from (if not empty)
             std::string argv0_;                   ///< 0-th argument (program name)
             boost::optional<std::string> archname_; ///< Archive name (if restored from archive)
@@ -73,6 +74,9 @@ namespace alps {
 
             /// Invalidates the option map
             void invalidate();
+
+            /// Reads and pre-parses the INI file
+            void preparse_ini();
 
             /// Initialization code common for all constructors
             void init();
