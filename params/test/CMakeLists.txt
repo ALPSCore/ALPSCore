@@ -2,6 +2,7 @@ include(ALPSEnableTests)
 
 set (test_src
      file_read
+     repeated_options
      assign
      compare
      defaults

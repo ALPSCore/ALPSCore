@@ -484,34 +484,6 @@ TEST(param, VectorRead) {
    }
 }
 
-// Repeating parameters in the INI file
-TEST(param,Repeating) {
-    //create a file name
-    std::string pfilename(alps::temporary_filename("pfile")+".ini");
-
-   // Generate INI file
-   {
-     std::ofstream pfile(pfilename.c_str());
-     pfile <<
-         "parname = 1\n"
-         "parname = 2\n";
-   }
-
-   // Imitate the command line args
-   const int argc=2;
-   const char* argv[2]={"THIS_PROGRAM",0};
-   argv[1]=pfilename.c_str();
-
-   //define the parameters
-   alps::params p(argc,argv);
-   p.description("This is a test program").
-       define<int>("parname","repeating parameter");
-
-   int n;
-   EXPECT_THROW((n=p["parname"]),boost::program_options::multiple_occurrences);
-   dummy_use(&n);
-}
-
 // Unknown parameters in the INI file
 TEST(param,Unknown) {
     //create a file name
@@ -550,41 +522,6 @@ TEST(param,Triggers)
         define("trigger_opt2","Trigger option, missing");
     EXPECT_TRUE(bool(p["trigger_opt"]));
     EXPECT_FALSE(bool(p["trigger_opt2"]));
-}
-
-// Command-line options overriding file options
-TEST(param,CmdlineOverride)
-{
-    //create a file name
-    std::string pfilename(alps::temporary_filename("pfile")+".ini");
-    
-    // Generate INI file
-    {
-        std::ofstream pfile(pfilename.c_str());
-        pfile <<
-            "param1 = 111\n"
-            "param2 = 222\n";
-    }
-
-    // Imitate the command line args
-    const char* argv[]={"THIS_PROGRAM",         // argv[0]
-                        pfilename.c_str(),      // filename is the 1st argument
-                        "--param1=999",         // override param1
-                        "--param3=333",         // one more parameter
-                        "--trigger_opt" };      // a trigger option  
-    const int argc=sizeof(argv)/sizeof(*argv);
-    
-    alps::params p(argc, argv);
-    p.
-        define<int>("param1","Parameter 1").
-        define<int>("param2","Parameter 2").
-        define<int>("param3","Parameter 3").
-        define("trigger_opt","Trigger param");
-
-    EXPECT_EQ(999,p["param1"]);
-    EXPECT_EQ(222,p["param2"]);
-    EXPECT_EQ(333,p["param3"]);
-    EXPECT_TRUE(bool(p["trigger_opt"]));
 }
 
 // File starting with unusual character, such as '-'
