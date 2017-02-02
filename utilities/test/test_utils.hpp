@@ -102,7 +102,7 @@ namespace alps {
                 } else {
                     const int radix=(127-zero);
                     while (choice>0) {
-                        out.insert(0,1,zero+char(choice%radix));
+                        out.insert((std::size_t) 0,(std::size_t) 1,zero+char(choice%radix));
                         choice/=radix;
                     }
                 }
