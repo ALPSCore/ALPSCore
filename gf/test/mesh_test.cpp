@@ -181,6 +181,60 @@ TEST(Mesh,CompareIndex) {
   EXPECT_FALSE(mesh1!=mesh2);
 }
 
+TEST(Mesh,Legendre) {
+    alps::gf::legendre_mesh mesh_f(5.0, 20, alps::gf::statistics::FERMIONIC);
+    EXPECT_EQ(mesh_f.statistics(), alps::gf::statistics::FERMIONIC);
+
+    alps::gf::legendre_mesh mesh_b(5.0, 20, alps::gf::statistics::BOSONIC);
+    EXPECT_EQ(mesh_b.statistics(), alps::gf::statistics::BOSONIC);
+}
+
+TEST(Mesh,CompareLegendre) {
+    alps::gf::legendre_mesh mesh_f1(5.0, 20, alps::gf::statistics::FERMIONIC);
+    alps::gf::legendre_mesh mesh_f2(1.0, 20, alps::gf::statistics::FERMIONIC);
+    alps::gf::legendre_mesh mesh_f3(5.0, 20, alps::gf::statistics::FERMIONIC);
+
+    alps::gf::legendre_mesh mesh_b1(5.0, 20, alps::gf::statistics::BOSONIC);
+    alps::gf::legendre_mesh mesh_b2(1.0, 20, alps::gf::statistics::BOSONIC);
+    alps::gf::legendre_mesh mesh_b3(5.0, 20, alps::gf::statistics::BOSONIC);
+
+    EXPECT_FALSE(mesh_f1==mesh_f2);
+    EXPECT_TRUE(mesh_f1==mesh_f3);
+
+    EXPECT_FALSE(mesh_b1==mesh_b2);
+    EXPECT_TRUE(mesh_b1==mesh_b3);
+
+    EXPECT_FALSE(mesh_f1==mesh_b1);
+}
+
+TEST(Mesh, LegendreLoadSave) {
+    namespace g=alps::gf;
+    g::legendre_mesh mesh1(5.0, 20, alps::gf::statistics::FERMIONIC);
+    g::legendre_mesh mesh2;
+    {
+        alps::hdf5::archive oar("gf.h5","w");
+        mesh1.save(oar,"/gf");
+    }
+    {
+        alps::hdf5::archive iar("gf.h5");
+        g::legendre_mesh mesh;
+        mesh2.load(iar,"/gf");
+    }
+    EXPECT_EQ(mesh1, mesh2);
+    boost::filesystem::remove("gf.h5");
+}
+
+TEST(Mesh,SwapLegendre) {
+    alps::gf::legendre_mesh mesh_1(5.0, 20, alps::gf::statistics::FERMIONIC);
+    alps::gf::legendre_mesh mesh_1r(mesh_1);
+    alps::gf::legendre_mesh mesh_2(10.0, 40, alps::gf::statistics::BOSONIC);
+    alps::gf::legendre_mesh mesh_2r(mesh_2);
+
+    mesh_1.swap(mesh_2);
+    EXPECT_EQ(mesh_1, mesh_2r);
+    EXPECT_EQ(mesh_2, mesh_1r);
+}
+
 TEST(Mesh,PrintMatsubaraMeshHeader) {
   double beta=5.;
   int n=20;

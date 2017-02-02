@@ -44,6 +44,13 @@ std::ostream &operator<<(std::ostream &os, const real_frequency_mesh &M){
   return os;
 }
 
+std::ostream &operator<<(std::ostream &os, const legendre_mesh &M){
+  os<<"# "<<"LEGENDRE"<<" mesh: N: "<<M.extent()<<" beta: "<<M.beta()<<" statistics: ";
+  os<<(M.statistics()==statistics::FERMIONIC?"FERMIONIC":"BOSONIC");
+  os<<std::endl;
+  return os;
+}
+
   namespace detail {
   // print 1D boost multiarray --- a 2D-point of a mesh
   std::ostream& operator<<(std::ostream& s, const boost::multi_array<double, 1>& data)
