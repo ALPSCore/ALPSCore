@@ -71,89 +71,6 @@ namespace alps {
                 POSITIVE_NEGATIVE=0,
                 POSITIVE_ONLY=1
             };
-            /**
-             * Define a linear grid in real frequency
-             */
-            class linear_real_frequency_grid {
-            private:
-                // lowest frequency in real frequency space
-                double emin_;
-                // highest frequency in real frequency space
-                double emax_;
-                // number of frequency points
-                int n_;
-            public:
-                linear_real_frequency_grid(double emin, double emax, int n) : emin_(emin), emax_(emax), n_(n){};
-                void compute_points(std::vector<double> &points){
-                    points.resize(n_);
-                    double step = (emax_ - emin_)/double(n_-1);
-                    for(int i = 0; i<n_; i++) {
-                        points[i] = emin_ + step*i;
-                    }
-                }
-            };
-            /**
-             * Define Logarithmic grid in real frequency
-             */
-            class logarithmic_real_frequency_grid {
-            private:
-                // first real frequency value
-                double t_min_;
-                // maximal positive real frequency value
-                double t_max_;
-                // number of frequency points
-                int nfreq_;
-            public:
-                logarithmic_real_frequency_grid(double tmax, double tmin, int n): t_min_(tmin), t_max_(tmax), nfreq_(n) {};
-                void compute_points(std::vector<double> &points){
-                    points.resize(nfreq_);
-                    double scale = std::log(t_max_ / t_min_) / ((float) ((nfreq_ / 2 - 1)));
-                    points[nfreq_ / 2] = 0.0;
-                    for (int i = 0; i < nfreq_ / 2; ++i) {
-                        if(i<nfreq_/2-1)
-                            points[nfreq_ / 2 + i + 1] = 0. + t_min_ * std::exp(((float) (i)) * scale);
-                        points[nfreq_ / 2 - i - 1] = 0. - t_min_ * std::exp(((float) (i)) * scale);
-                    }
-                    //if we have an odd # of frequencies, this catches the last element
-                    if (nfreq_ % 2 != 0)
-                        points[nfreq_ / 2 + nfreq_ / 2] = 0. + t_min_ * std::exp(((float) (nfreq_/2-1)) * scale);
-                }
-            };
-            class quadratic_real_frequency_grid {
-            private:
-                // number of frequency points
-                int nfreq_;
-                double spread_;
-            public:
-                quadratic_real_frequency_grid(double spread, int n): nfreq_(n) {
-                    if (spread < 1)
-                        throw std::invalid_argument("the parameter spread must be greater than 1");
-                    spread_ = spread;
-                }
-                void compute_points(std::vector<double> & points) {
-                    points.resize(nfreq_);
-                    std::vector<double> temp(nfreq_);
-                    double t = 0;
-                    for (int i = 0; i < nfreq_; ++i) {
-                        double a = double(i) / (nfreq_ - 1);
-                        double factor = 4 * (spread_ - 1) * (a * a - a) + spread_;
-                        factor /= double(nfreq_ - 1) / (3. * (nfreq_ - 2))
-                                  * ((nfreq_ - 1) * (2 + spread_) - 4 + spread_);
-                        double delta_t = factor;
-                        t += delta_t;
-                        temp[i] = t;
-                    }
-                    points[nfreq_/2] = 0.;
-                    for (int i = 1; i <= nfreq_/2; ++i) {
-                        if(i<nfreq_/2)
-                            points[i + nfreq_ / 2] = temp[i - 1] / temp[nfreq_ / 2 - 1];
-                        points[nfreq_ / 2 - i] = -temp[i - 1] / temp[nfreq_ / 2 - 1];
-                    }
-                    //if we have an odd # of frequencies, this catches the last element
-                    if (nfreq_ % 2 != 0)
-                        points[nfreq_ / 2 + nfreq_ / 2] = temp[nfreq_/2 - 1] / temp[nfreq_ / 2 - 1];
-                }
-            };
         }
         class base_mesh {
         public:
@@ -170,13 +87,18 @@ namespace alps {
         };
         class real_frequency_mesh: public base_mesh{
         public:
+            typedef generic_index<real_frequency_mesh> index_type;
             real_frequency_mesh() {};
 
             template<typename GRID>
-            real_frequency_mesh(GRID grid)  {
+            explicit real_frequency_mesh(GRID grid)  {
                 grid.compute_points(_points());
             }
             int extent() const {return points().size();}
+
+            int operator()(index_type idx) const {
+              return idx();
+            }
             void save(alps::hdf5::archive& ar, const std::string& path) const
             {
                 ar[path+"/kind"] << "REAL_FREQUENCY";
@@ -215,6 +137,7 @@ namespace alps {
             }
 #endif
         };
+        std::ostream &operator<<(std::ostream &os, const real_frequency_mesh &M);
 
         template <mesh::frequency_positivity_type PTYPE>
         class matsubara_mesh : public base_mesh {
@@ -745,6 +668,7 @@ namespace alps {
         typedef momentum_index_mesh::index_type momentum_index;
         typedef real_space_index_mesh::index_type real_space_index;
         typedef index_mesh::index_type index;
+        typedef real_frequency_mesh::index_type real_freq_index;
 
         namespace detail {
             /* The following is an in-house implementation of a static_assert
@@ -770,6 +694,10 @@ namespace alps {
 
             /* ^^^^ End of static_assert code */
             
+            /// Print a 2D double boost::multi_array (for printing 2D meshes)
+            /** @todo FIXME: Use a proper mesh-specific method instead, see operator<<(momentum_realspace_index_mesh) */
+            std::ostream& operator<<(std::ostream& s, const boost::multi_array<double, 1>& data);
+
         } // ::detail
     }
 }

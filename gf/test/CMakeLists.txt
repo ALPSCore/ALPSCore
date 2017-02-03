@@ -4,12 +4,14 @@ set (test_srcs
   index_test 
   mesh_test
   one_index_gf_test
+  gf1_print_test
   two_index_gf_test
   three_index_gf_test
   four_index_gf_test 
   four_index_gf_pn_test 
   itime_gf_test
   fourier_test
+  grid_test
     )
 
 

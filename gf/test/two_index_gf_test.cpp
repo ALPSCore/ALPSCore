@@ -147,6 +147,30 @@ TEST_F(TwoIndexGFTest, tail)
     EXPECT_NEAR((denmat-gft.tail(order)).norm(), 0, 1.e-8);
 }
 
+// FIXME: does not test the validity of print output
+TEST_F(TwoIndexGFTest, tailPrint)
+{
+    namespace g=alps::gf;
+    typedef g::one_index_gf<double, g::index_mesh> density_matrix_type;
+    density_matrix_type denmat=density_matrix_type(g::index_mesh(nspins));
+
+    // prepare diagonal matrix
+    double U=3.0;
+    denmat.initialize();
+    denmat(g::index(0))=0.5*U;
+    denmat(g::index(1))=0.5*U;
+
+    // Attach a tail to the GF
+    int order=0;
+
+    g::omega_sigma_gf_with_tail gft(gf);
+    gft.set_tail(order, denmat);
+
+    std::ostringstream outs;
+    outs << gft.tail(0);
+    std::cout << "Output is:\n" << outs.str() << std::endl;
+}
+
 TEST_F(TwoIndexGFTest, TailSaveLoad)
 {
     namespace g=alps::gf;

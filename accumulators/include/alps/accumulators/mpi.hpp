@@ -16,10 +16,32 @@
     #include <alps/utilities/boost_mpi.hpp>
 
     #include <cassert>
+    #include <boost/lexical_cast.hpp> // for throw() message
 
     namespace alps {
         namespace alps_mpi {
             namespace detail {
+
+                /// MPI_Reduce() with argument checking.
+                /** @todo FIXME: Should be replaced with alps::mpi::reduce()
+                                 once implemented properly, with error checking */
+                inline int checked_mpi_reduce(const void* sendbuf, void* recvbuf, int count,
+                                                     MPI_Datatype datatype, MPI_Op op, int root, MPI_Comm comm)
+                {
+                    if (count<=0) {
+                        throw std::invalid_argument("MPI_Reduce() is called with invalid count="
+                                                    + boost::lexical_cast<std::string>(count)
+                                                    + ALPS_STACKTRACE);
+                    }
+                    if (sendbuf==recvbuf) {
+                        throw std::invalid_argument("MPI_Reduce() is called with sendbuf==recvbuf"
+                                                    + ALPS_STACKTRACE);
+                    }
+                    // WORKAROUND: 
+                    // for some reason, OpenMPI 1.6 declares `sendbuf` as `void*`, hence `const_cast`.
+                    const int rc=MPI_Reduce(const_cast<void*>(sendbuf), recvbuf, count, datatype, op, root, comm);
+                    return rc;
+                }
 
                 /** @brief Copy a continous-type value (array of values) into a buffer.
 
@@ -124,10 +146,10 @@
                     // reduce(comm, in_values, op, root);
                     using alps::mpi::get_mpi_datatype;                    
                     if (comm.rank()==root) {
-                        throw std::runtime_error("reduce_impl(): 4-arg overload is called by root rank."+ALPS_STACKTRACE);
+                        throw std::logic_error("reduce_impl(): 4-arg overload is called by root rank."+ALPS_STACKTRACE);
                     }
-                    MPI_Reduce((void*)&in_values, NULL, 1, get_mpi_datatype(T()),
-                               alps::mpi::is_mpi_op<Op, T>::op(), root, comm);
+                    checked_mpi_reduce((void*)&in_values, NULL, 1, get_mpi_datatype(T()),
+                                       alps::mpi::is_mpi_op<Op, T>::op(), root, comm);
                     
                 }
 
@@ -141,7 +163,9 @@
                     // reduce(comm, get_pointer(in_values), std::accumulate(extent.begin(), extent.end(), 0), op, root);
 
                     using alps::mpi::get_mpi_datatype;
-                    MPI_Reduce(const_cast<scalar_type*>(get_pointer(in_values)), NULL, std::accumulate(extent.begin(), extent.end(), 1, std::multiplies<std::size_t>()), get_mpi_datatype(scalar_type()), alps::mpi::is_mpi_op<Op, scalar_type>::op(), root, comm);
+                    checked_mpi_reduce(const_cast<scalar_type*>(get_pointer(in_values)), NULL,
+                                       std::accumulate(extent.begin(), extent.end(), 1, std::multiplies<std::size_t>()),
+                                       get_mpi_datatype(scalar_type()), alps::mpi::is_mpi_op<Op, scalar_type>::op(), root, comm);
                 }
 
                 template<typename T, typename Op, typename C> void reduce_impl(const alps::mpi::communicator & comm, T const & in_values, T & out_values, Op op, int root, boost::true_type, C) {
@@ -149,17 +173,17 @@
                     // using boost::mpi::reduce;
                     // reduce(comm, (T)in_values, out_values, op, root); // TODO: WTF? - why does boost not define unsigned long long as native datatype
                     using alps::mpi::get_mpi_datatype;
-                    if (comm.rank()!=root) {
+                    // if (comm.rank()!=root) {
                         // // usleep((comm.rank()+1)*1000000); // DEBUG!
                         // std::cerr << "DEBUG:WARNING: rank=" << comm.rank() << " is not root=" << root
                         //           << " but called 5-argument reduce_impl()." + ALPS_STACKTRACE << std::endl;
-                    }
+                    // }
                     void* sendbuf=const_cast<T*>(&in_values);
                     if (sendbuf == &out_values) {
                         sendbuf=MPI_IN_PLACE;
                     }
-                    MPI_Reduce(sendbuf, &out_values, 1, get_mpi_datatype(T()),
-                               alps::mpi::is_mpi_op<Op, T>::op(), root, comm);
+                    checked_mpi_reduce(sendbuf, &out_values, 1, get_mpi_datatype(T()),
+                                       alps::mpi::is_mpi_op<Op, T>::op(), root, comm);
                 }
 
                 template<typename T, typename Op> void reduce_impl(const alps::mpi::communicator & comm, T const & in_values, T & out_values, Op op, int root, boost::false_type, boost::true_type) {
@@ -174,7 +198,9 @@
                     // reduce(comm, get_pointer(in_values), std::accumulate(extent.begin(), extent.end(), 0), get_pointer(out_values), op, root);
 
                     using alps::mpi::get_mpi_datatype;
-                    MPI_Reduce(const_cast<scalar_type*>(get_pointer(in_values)), get_pointer(out_values), std::accumulate(extent.begin(), extent.end(), 1, std::multiplies<std::size_t>()), get_mpi_datatype(scalar_type()), alps::mpi::is_mpi_op<Op, scalar_type>::op(), root, comm);
+                    checked_mpi_reduce(const_cast<scalar_type*>(get_pointer(in_values)), get_pointer(out_values),
+                               std::accumulate(extent.begin(), extent.end(), 1, std::multiplies<std::size_t>()),
+                               get_mpi_datatype(scalar_type()), alps::mpi::is_mpi_op<Op, scalar_type>::op(), root, comm);
                 }
 
                 template<typename T, typename Op> void reduce_impl(const alps::mpi::communicator & comm, T const & in_values, Op op, int root, boost::false_type, boost::false_type) {
@@ -191,7 +217,8 @@
                         // reduce(comm, &in_buffer.front(), in_buffer.size(), op, root);
 
                         using alps::mpi::get_mpi_datatype;
-                        MPI_Reduce(&in_buffer.front(), NULL, in_buffer.size(), get_mpi_datatype(scalar_type()), alps::mpi::is_mpi_op<Op, scalar_type>::op(), root, comm);
+                        checked_mpi_reduce(&in_buffer.front(), NULL, in_buffer.size(), get_mpi_datatype(scalar_type()),
+                                           alps::mpi::is_mpi_op<Op, scalar_type>::op(), root, comm);
 
                     } else
                         throw std::logic_error("No alps::mpi::reduce available for this type " + std::string(typeid(T).name()) + ALPS_STACKTRACE);
@@ -212,7 +239,9 @@
                         // reduce(comm, &in_buffer.front(), in_buffer.size(), &out_buffer.front(), op, root);
 
                         using alps::mpi::get_mpi_datatype;
-                        MPI_Reduce(&in_buffer.front(), &out_buffer.front(), in_buffer.size(), get_mpi_datatype(scalar_type()), alps::mpi::is_mpi_op<Op, scalar_type>::op(), root, comm);
+                        checked_mpi_reduce(&in_buffer.front(), &out_buffer.front(), in_buffer.size(),
+                                           get_mpi_datatype(scalar_type()),
+                                           alps::mpi::is_mpi_op<Op, scalar_type>::op(), root, comm);
 
                         using alps::hdf5::set_extent;
                         set_extent(out_values, std::vector<std::size_t>(extent.begin(), extent.end()));
@@ -221,7 +250,7 @@
                     } else
                         throw std::logic_error("No alps::mpi::reduce available for this type " + std::string(typeid(T).name()) + ALPS_STACKTRACE);
                 }
-            }
+            } // detail::
 
             template<typename T, typename Op> void reduce(const alps::mpi::communicator & comm, T const & in_values, Op op, int root) {
                 using detail::reduce_impl;
@@ -233,23 +262,8 @@
                 reduce_impl(comm, in_values, out_values, op, root, typename boost::is_scalar<T>::type(), typename hdf5::is_content_continuous<T>::type());
             }
 
-            /// performs MPI_Allreduce() for type T using operation of type OP
-            /** @NOTE Currently implemented as Reduce followed by Broadcast */
-            template <typename T, typename OP>
-            T all_reduce(const alps::mpi::communicator& comm, const T& val, const OP& op) {
-                using alps::mpi::broadcast;
-                // FIXME!!! (BUG) Temporarily implemented as reduce + broadcast
-                const int root=0;
-                T outval;
-                reduce(comm, val, outval, op, root);
-                broadcast(comm, outval, root);
-                return outval;
-                // throw std::logic_error(std::string("T all_reduce(const T&, OP) is not implemented, called for type T=")
-                //                        +typeid(T).name() + "and OP="+typeid(OP).name() );
-            }
-
-        }
-    }
+        } // alps_mpi::
+    } // alps::
 
 #endif
 

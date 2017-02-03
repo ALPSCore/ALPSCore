@@ -48,8 +48,9 @@ namespace alps {
             this->load(ar, path);
         }
 
-        inline params::params(const std::string& inifile): infile_(inifile)
+      inline params::params(const std::string& inifile) : infile_(inifile)
         {
+            preparse_ini();
             init();
         }
 

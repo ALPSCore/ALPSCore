@@ -22,6 +22,8 @@
 #include <vector>
 #include <complex>
 #include <exception> /* for std::uncaught_exception() */
+#include <functional> /* for std::plus */
+#include <algorithm> /* for std::max */
 
 #include <boost/scoped_array.hpp> /* for std::string broadcast */
 #include <boost/shared_ptr.hpp> /* for proper copy/assign of managed communicators */
@@ -204,11 +206,15 @@ namespace alps {
                 
         };
 
-        /// Class-holder for reduction operations for type T
+        /// Class-holder for reduction operations (and a functor) for type T.
         template <typename T>
         class maximum {
             public:
             maximum() { }
+            T operator()(const T& a, const T& b) const {
+                using std::max;
+                return max(a,b);
+            }
         };
 
         
@@ -311,8 +317,40 @@ namespace alps {
                 return MPI_MAX;
             }
         };
-        
-        
+
+        /// Performs MPI_Allreduce for array of a primitive type, T[n]
+        template <typename T, typename OP>
+        void all_reduce(const alps::mpi::communicator& comm, const T* val, int n,
+                        T* out_val, const OP& op)
+        {
+            if (n<=0) {
+                throw std::invalid_argument("Non-positive array size in mpi::all_reduce()");
+            }
+            // @todo FIXME: implement in-place operations
+            if (val==out_val) {
+                throw std::invalid_argument("Implicit in-place mpi::all_reduce() is not implemented");
+            }
+            MPI_Allreduce(const_cast<T*>(val), out_val, n, detail::mpi_type<T>(),
+                          is_mpi_op<OP,T>::op(), comm);
+        }
+    
+        /// Performs MPI_Allreduce for a primitive type T
+        template <typename T, typename OP>
+        void all_reduce(const alps::mpi::communicator& comm, const T& val,
+                        T& out_val, const OP& op)
+        {
+            all_reduce(comm, &val, 1, &out_val, op);
+        }
+
+        /// Performs MPI_Allreduce for a primitive type T
+        template <typename T, typename OP>
+        T all_reduce(const alps::mpi::communicator& comm, const T& val, const OP& op)
+        {
+            T out_val;
+            all_reduce(comm, val, out_val, op);
+            return out_val;
+        }
+
     } // mpi::
 } // alps::
 

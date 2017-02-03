@@ -53,7 +53,7 @@ namespace alps {
                     if (stopped || schedule_checker.pending()) {
                         stopped = stop_callback(); 
                         double local_fraction = stopped ? 1. : Base::fraction_completed();
-                        schedule_checker.update(fraction = alps::alps_mpi::all_reduce(communicator, local_fraction, std::plus<double>()));
+                        schedule_checker.update(fraction = alps::mpi::all_reduce(communicator, local_fraction, std::plus<double>()));
                         done = fraction >= 1.;
                     }
                 } while(!done);
@@ -69,9 +69,9 @@ namespace alps {
                 for(typename Base::result_names_type::const_iterator it = names.begin(); it != names.end(); ++it) {
                     size_t has_count=(this->measurements[*it].count() > 0);
                     const size_t sum_counts =
-                            alps::alps_mpi::all_reduce(communicator,
-                                                       has_count,
-                                                       std::plus<size_t>());
+                            alps::mpi::all_reduce(communicator,
+                                                  has_count,
+                                                  std::plus<size_t>());
                     if (sum_counts == communicator.size()) {
                         if (communicator.rank() == 0) {
                             typename Base::observable_collection_type::value_type merged = this->measurements[*it];

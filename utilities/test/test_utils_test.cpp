@@ -7,10 +7,26 @@
 /** Testing the test utilities */
 
 #include <iostream>
-#include <sstream>
+#include <vector>
 #include <gtest/gtest.h>
 
 #include "./test_utils.hpp"
+
+// Different types have different useful range...
+template <typename T>
+struct range {
+    static const std::size_t VALUE=1000;
+};
+
+template <>
+struct range<bool> {
+    static const std::size_t VALUE=2;
+};
+
+template <>
+struct range<char> {
+    static const std::size_t VALUE=256;
+};
 
 template <typename T>
 class TestUtilsTest : public ::testing::Test {
@@ -23,12 +39,31 @@ class TestUtilsTest : public ::testing::Test {
         using alps::testing::operator<<;
         value_type if_true(alps::testing::datapoint<value_type>::get(true));
         value_type if_false(alps::testing::datapoint<value_type>::get(false));
-        
+
+        EXPECT_NE(if_true, if_false);
+
+        const unsigned int nvals=range<value_type>::VALUE;
+        std::vector<value_type> vals(nvals);
+
+        for (int i=0; i<nvals; ++i) {
+            vals[i]=alps::testing::datapoint<value_type>::get(i);
+        }
+        for (int i=0; i<nvals; ++i) {
+            for (int j=i+1; j<nvals; ++j) {
+                ASSERT_NE(vals[i], vals[j]) << "Value clash at i=" << i << ", j=" << j;
+            }
+        }
+        // Sample printout
+        std::cout << "  get(0)=" << vals[0]
+                  << "  get(1)=" << vals[1]
+                  << "  get(" << (nvals-1) << ")=" << vals[nvals-1]
+                  << std::endl;
+
+        // Sample printouts
         std::cout << std::boolalpha
                   << "get(true)=" << if_true
                   << "  get(false)=" << if_false
                   << std::endl;
-        EXPECT_NE(if_true, if_false);
     }
         
     void scalar_with_size_test()
@@ -37,6 +72,23 @@ class TestUtilsTest : public ::testing::Test {
         value_type if_true(alps::testing::datapoint<value_type>::get(true,10));
         value_type if_false(alps::testing::datapoint<value_type>::get(false,10));
         
+        const unsigned int nvals=range<value_type>::VALUE;
+        std::vector<value_type> vals(nvals);
+
+        for (int i=0; i<nvals; ++i) {
+            vals[i]=alps::testing::datapoint<value_type>::get(i,10);
+        }
+        for (int i=0; i<nvals; ++i) {
+            for (int j=i+1; j<nvals; ++j) {
+                ASSERT_NE(vals[i], vals[j]) << "Value clash at i=" << i << ", j=" << j;
+            }
+        }
+        // Sample printout
+        std::cout << "  get(0)=" << vals[0]
+                  << "  get(1)=" << vals[1]
+                  << "  get(" << (nvals-1) << ")=" << vals[nvals-1]
+                  << std::endl;
+
         std::cout << std::boolalpha
                   << "get(true)=" << if_true
                   << "  get(false)=" << if_false
@@ -50,6 +102,23 @@ class TestUtilsTest : public ::testing::Test {
         vector_type if_true(alps::testing::datapoint<vector_type>::get(true));
         vector_type if_false(alps::testing::datapoint<vector_type>::get(false));
         
+        const unsigned int nvals=range<value_type>::VALUE;
+        std::vector<vector_type> vals(nvals);
+
+        for (int i=0; i<nvals; ++i) {
+            vals[i]=alps::testing::datapoint<vector_type>::get(i);
+        }
+        for (int i=0; i<nvals; ++i) {
+            for (int j=i+1; j<nvals; ++j) {
+                ASSERT_NE(vals[i], vals[j]) << "Value clash at i=" << i << ", j=" << j;
+            }
+        }
+        // Sample printout
+        std::cout << "  get(0)=" << vals[0]
+                  << "  get(1)=" << vals[1]
+                  << "  get(" << (nvals-1) << ")=" << vals[nvals-1]
+                  << std::endl;
+
         std::cout << std::boolalpha
                   << "get(true)=" << if_true
                   << "  get(false)=" << if_false
@@ -65,6 +134,23 @@ class TestUtilsTest : public ::testing::Test {
         vector_type if_true(alps::testing::datapoint<vector_type>::get(true,sz));
         vector_type if_false(alps::testing::datapoint<vector_type>::get(false,sz));
         
+        const unsigned int nvals=range<value_type>::VALUE;
+        std::vector<vector_type> vals(nvals);
+
+        for (int i=0; i<nvals; ++i) {
+            vals[i]=alps::testing::datapoint<vector_type>::get(i,sz);
+        }
+        for (int i=0; i<nvals; ++i) {
+            for (int j=i+1; j<nvals; ++j) {
+                ASSERT_NE(vals[i], vals[j]) << "Value clash at i=" << i << ", j=" << j;
+            }
+        }
+        // Sample printout
+        std::cout << "  get(0)=" << vals[0]
+                  << "  get(1)=" << vals[1]
+                  << "  get(" << (nvals-1) << ")=" << vals[nvals-1]
+                  << std::endl;
+
         std::cout << std::boolalpha
                   << "get(true)=" << if_true
                   << "  get(false)=" << if_false
@@ -98,7 +184,7 @@ typedef ::testing::Types<bool,
                          std::complex<float>,
                          std::complex<double>,
                          std::vector<double> // tests vector of vectors handling
-                        > MyTestTypes;
+                         > MyTestTypes;
 
 TYPED_TEST_CASE(TestUtilsTest, MyTestTypes);
 
@@ -117,7 +203,25 @@ TYPED_TEST(TestUtilsStringTest, StringWithSize) {
     const std::size_t sz=10;
     value_type if_true(alps::testing::datapoint<value_type>::get(true,sz));
     value_type if_false(alps::testing::datapoint<value_type>::get(false,sz));
+    const unsigned int nvals=range<value_type>::VALUE;
+    std::vector<value_type> vals(nvals);
+    
+    for (int i=0; i<nvals; ++i) {
+        vals[i]=alps::testing::datapoint<value_type>::get(i,sz);
+    }
+    for (int i=0; i<nvals; ++i) {
+        for (int j=i+1; j<nvals; ++j) {
+            ASSERT_NE(vals[i], vals[j]) << "Value clash at i=" << i << ", j=" << j;
+        }
+    }
+    // Sample printout
+    std::cout << "  get(0)=" << vals[0]
+              << "  get(1)=" << vals[1]
+              << "  get(" << (nvals-1) << ")=" << vals[nvals-1]
+              << std::endl;
+
     EXPECT_EQ(sz, if_true.size());
     EXPECT_EQ(sz, if_false.size());
     EXPECT_NE(if_true, if_false);
 }
+

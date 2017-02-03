@@ -550,11 +550,24 @@ namespace alps {
         class accumulator_wrapper {
             private:
                 /// Safety check: verify that a pointer is valid.
+                /** @note Throws on a failed check */
                 // FIXME: better initialize the pointer with something reasonable to begin with?
                 template <typename T>
                 static void check_ptr(const boost::shared_ptr<T>& ptr) {
                     if (!ptr) throw std::runtime_error("Uninitialized accumulator accessed");
                 }
+
+                /// Check if the data is valid (not a 0-sized vector): Generic.
+                template <typename T>
+                static void check_nonempty_vector(const T&) {}
+
+                /// Check if the data is valid (not a 0-sized vector): vector specialization.
+                /** @note Throws on a failed check */
+                template <typename T>
+                static void check_nonempty_vector(const std::vector<T>& vec) {
+                    if (vec.empty()) throw std::runtime_error("Zero-sized vector observables are not allowed");
+                }
+            
             public:
             /// default constructor
                 accumulator_wrapper() 
@@ -601,6 +614,7 @@ namespace alps {
                 };
             public:
                 template<typename T> void operator()(T const & value) {
+                    check_nonempty_vector(value);
                     boost::apply_visitor(call_1_visitor<T>(value), m_variant);
                 }
                 template<typename T> accumulator_wrapper & operator<<(T const & value) {

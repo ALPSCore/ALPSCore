@@ -351,7 +351,7 @@ namespace alps {
                     using alps::numeric::operator/;
                     using alps::numeric::check_size;
 
-                    typename B::count_type elements_in_local_bins = alps::alps_mpi::all_reduce(comm, m_mn_elements_in_bin, alps::mpi::maximum<typename B::count_type>());
+                    typename B::count_type elements_in_local_bins = alps::mpi::all_reduce(comm, m_mn_elements_in_bin, alps::mpi::maximum<typename B::count_type>());
                     typename B::count_type howmany = (elements_in_local_bins - 1) / m_mn_elements_in_bin + 1;
                     if (howmany > 1) {
                         typename B::count_type newbins = local_bins.size() / howmany;
