@@ -1110,7 +1110,6 @@ namespace alps {
                                     }                                                                                                                                   \
                                     detail::check_error(H5Pset_chunk(prop_id, static_cast<int>(max_chunk.size()), &max_chunk.front()));                                 \
                                 }                                                                                                                                       \
-                                detail::check_error(H5Pset_chunk(prop_id, static_cast<int>(size_hid.size()), &size_hid.front()));                                       \
                                 if (context_->compress_ && dataset_size > ALPS_HDF5_SZIP_BLOCK_SIZE * sizeof( T ))                                                      \
                                     detail::check_error(H5Pset_szip(prop_id, H5_SZIP_NN_OPTION_MASK, ALPS_HDF5_SZIP_BLOCK_SIZE));                                       \
                                 detail::check_error(H5Pset_attr_creation_order(prop_id, (H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED)));                              \

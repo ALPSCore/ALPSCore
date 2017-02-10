@@ -20,6 +20,10 @@ set (test_src
     hdf5_omp #this one was commented out. Any idea why?
     )
 
+if (ExtensiveTesting)
+   set(test_src  ${test_src} hdf5_large_array)
+endif()
+
 foreach(test ${test_src})
     alps_add_gtest(${test})
 endforeach(test)
