@@ -13,7 +13,6 @@
 
 typedef ::testing::Types<
     CmdlineParamGenerator<bool>,
-    CmdlineParamGenerator<char>,
     CmdlineParamGenerator<int>,
     CmdlineParamGenerator<unsigned int>,
     CmdlineParamGenerator<long>,
@@ -25,7 +24,6 @@ INSTANTIATE_TYPED_TEST_CASE_P(CmdlineScalarParamTest, AnyParamTest, CmdlineScala
 
 typedef ::testing::Types<
     InifileParamGenerator<bool>,
-    InifileParamGenerator<char>,
     InifileParamGenerator<int>,
     InifileParamGenerator<unsigned int>,
     InifileParamGenerator<long>,
@@ -37,7 +35,6 @@ INSTANTIATE_TYPED_TEST_CASE_P(InifileScalarParamTest, AnyParamTest, InifileScala
 
 typedef ::testing::Types<
     H5ParamGenerator<bool>,
-    H5ParamGenerator<char>,
     H5ParamGenerator<int>,
     H5ParamGenerator<unsigned int>,
     H5ParamGenerator<long>,

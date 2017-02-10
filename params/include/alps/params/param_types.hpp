@@ -42,12 +42,12 @@ namespace alps {
             //         it is deemed to be an unnecessary complication.
             // NOTE 4: If new types are introduced, add them to type ranking in `param_types_ranking.hpp` also,
             //         to define what type is "convertible" to what.
-#define	    ALPS_PARAMS_DETAIL_STYPES_VEC (8,(int,            \
+#define	    ALPS_PARAMS_DETAIL_STYPES_VEC (7,(int,            \
                                               unsigned int,   \
                                               long,           \
                                               unsigned long,  \
 					      double,         \
-                                              char,           \
+                                              /* char, */     \
                                               bool,           \
 					      std::string))
 
