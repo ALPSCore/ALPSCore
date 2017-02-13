@@ -236,44 +236,104 @@ namespace alps {
             is_valid_=true;
         }        
 
+        /// @todo: FIXME: only weak exception guarantee
         void params::save(hdf5::archive& ar) const
         {
-            ar["is_valid"] <<  is_valid_;
-            ar["archname"] <<  archname_;
-            ar["optmap"] <<  optmap_;
-            ar["descr_map"] <<  descr_map_;
-            ar["helpmsg"] <<  helpmsg_;
-            ar["defaulted_options"] <<  defaulted_options_;
-            ar["argvec"] <<  argvec_;
-            ar["infile"] <<  infile_;
-            ar["argv0"] <<  argv0_;
+            possibly_parse();
+            const std::string context=ar.get_context();
+            const std::string dict_group=context+"/dict";
+            const std::string def_group=context+"/def";
+            const std::string state_group=context+"/stat";
+            ar.create_group(dict_group);
+            ar.set_context(dict_group);
+            BOOST_FOREACH(const options_map_type::value_type& slot, optmap_)
+            {
+                slot.second.save(ar);
+            }
+            ar.create_group(def_group);
+            ar.set_context(def_group);
+            BOOST_FOREACH(const detail::description_map_type::value_type& slot, descr_map_) {
+                const detail::option_description_type& opt=slot.second;
+                const std::string& key=slot.first;
+                opt.save(ar,key);
+            }
+            ar.create_group(state_group);
+            ar.set_context(state_group);
+
+            ar["help"] << helpmsg_;
+            ar["argv"] << argvec_;
+            ar["inifile"] << file_content_;
+            ar["ininame"] << infile_;
+            ar["argv0"] << argv0_;
+            ar["archname"] << archname_;
             
-            // BOOST_FOREACH(const options_map_type::value_type& slot, optmap_)
-            // {
-            //     slot.second.save(ar);
-            // }
+            ar.set_context(context);
+            
+
+            // ar["is_valid"] <<  is_valid_;
+            // ar["archname"] <<  archname_;
+            // ar["optmap"] <<  optmap_;
+            // ar["descr_map"] <<  descr_map_;
+            // ar["helpmsg"] <<  helpmsg_;
+            // ar["defaulted_options"] <<  defaulted_options_;
+            // ar["argvec"] <<  argvec_;
+            // ar["infile"] <<  infile_;
+            // ar["argv0"] <<  argv0_;
+            
         }
 
         void params::save(hdf5::archive& ar, const std::string& path) const
         {
-            possibly_parse();
             std::string context = ar.get_context();
             ar.set_context(path);
             save(ar);
             ar.set_context(context);
         }
-            
+
+        /// @todo: FIXME: only weak exception guarantee
         void params::load(hdf5::archive& ar)
         {
-            ar["is_valid"] >>  is_valid_;
-            ar["archname"] >>  archname_;
-            ar["optmap"] >>  optmap_;
-            ar["descr_map"] >>  descr_map_;
-            ar["helpmsg"] >>  helpmsg_;
-            ar["defaulted_options"] >>  defaulted_options_;
-            ar["argvec"] >>  argvec_;
-            ar["infile"] >>  infile_;
-            ar["argv0"] >>  argv0_;
+            // FXIME: implement and use swap() here
+            const std::string context=ar.get_context();
+            const std::string dict_group=context+"/dict";
+            const std::string def_group=context+"/def";
+            const std::string state_group=context+"/stat";
+
+            ar.set_context(dict_group);
+            std::vector<std::string> dict_names=ar.list_children(".");
+            optmap_.clear();
+            BOOST_FOREACH(const std::string& key, dict_names) {
+                optmap_.insert(options_map_type::value_type(key, option_type::get_loaded(ar,key)));
+            }
+            
+            ar.set_context(def_group);
+            std::vector<std::string> def_names=ar.list_children(".");
+            descr_map_.clear();
+            BOOST_FOREACH(const std::string& key, def_names) {
+                descr_map_.insert(detail::description_map_type::value_type(key, detail::option_description_type::get_loaded(ar,key)));
+            }
+
+            ar.set_context(state_group);
+            ar["help"] >> helpmsg_;
+            ar["argv"] >> argvec_;
+            ar["inifile"] >> file_content_;
+            ar["ininame"] >> infile_;
+            ar["argv0"] >> argv0_;
+            ar["archname"] >> archname_;
+            
+            ar.set_context(context);
+            certainly_parse();
+            // throw std::logic_error("params::load() is not implemented");
+            
+            // ar["is_valid"] >>  is_valid_;
+            // ar["archname"] >>  archname_;
+            // ar["optmap"] >>  optmap_;
+            // ar["descr_map"] >>  descr_map_;
+            // ar["helpmsg"] >>  helpmsg_;
+            // ar["defaulted_options"] >>  defaulted_options_;
+            // ar["argvec"] >>  argvec_;
+            // ar["infile"] >>  infile_;
+            // ar["argv0"] >>  argv0_;
         }
 
         void params::load(hdf5::archive& ar, const std::string& path)

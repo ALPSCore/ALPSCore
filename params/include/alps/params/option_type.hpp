@@ -31,6 +31,7 @@
 
 #include <boost/variant.hpp>
 #include <boost/utility.hpp> /* for enable_if */
+#include <boost/preprocessor/seq.hpp>
 
 #include "alps/utilities/short_print.hpp" // for streaming
 #include "alps/hdf5/archive.hpp"          // archive support
@@ -378,18 +379,87 @@ namespace alps {
                 }
             };
 
+            /// Class for reading the option from archive
+            // FIXME: simplified version of detail::option_description_type::reader,
+            //        can it be made more general? and used there?
+            class reader {
+                alps::hdf5::archive& ar_;
+                const std::string& name_;
+                public:
+                reader(alps::hdf5::archive& ar, const std::string& name)
+                    : ar_(ar), name_(name)
+                { }
+
+                template <typename T>
+                bool can_read(const T* dummy)
+                {
+                    bool ok=ar_.is_datatype<T>(name_);
+                    ok &= ar_.is_scalar(name_);
+                    std::cout << "DEBUG: can_read<T>=" << typeid(*dummy).name()
+                              << " name=" << name_
+                              << " ok=" << ok
+                              << std::endl;
+                    return ok;
+                }
+
+                template <typename T>
+                bool can_read(const std::vector<T>* dummy)
+                {
+                    bool ok=ar_.is_datatype<T>(name_);
+                    ok &= !ar_.is_scalar(name_);
+                    std::cout << "DEBUG: can_read<T>=" << typeid(*dummy).name()
+                              << " name=" << name_
+                              << " ok=" << ok
+                              << std::endl;
+                    return ok;
+                }
+
+                template <typename T>
+                option_type read(const T* dummy)
+                {
+                    std::cout << "DEBUG: read<T>=" << typeid(*dummy).name()
+                              << " name=" << name_
+                              << std::endl;
+                    T val;
+                    ar_[name_] >> val;
+                    option_type opt(name_);
+                    opt.reset(val);
+                    return opt;
+                }
+
+            };
+
+
             /// Outputs the option to an archive
             void save(hdf5::archive& ar) const
             {
                 save_visitor visitor(ar,this->name_);
                 boost::apply_visitor(visitor, this->val_);
             }
-                
-            /// Outputs the option to an archive
-            void load(hdf5::archive& ar)
+
+            /// Constructs the option from archive (factory method)
+            static option_type get_loaded(hdf5::archive& ar, const std::string& name)
             {
-                throw std::logic_error("alps::params::option_type::load() is not implemented yet");
+                reader rd(ar,name);
+                    
+                // macro: try reading, return if ok
+#define ALPS_LOCAL_TRY_LOAD(_r_,_d_,_type_)                             \
+                if (rd.can_read((_type_*)0)) return rd.read((_type_*)0);
+
+                // try reading for each defined type
+                BOOST_PP_SEQ_FOR_EACH(ALPS_LOCAL_TRY_LOAD, X, ALPS_PARAMS_DETAIL_VTYPES_SEQ ALPS_PARAMS_DETAIL_STYPES_SEQ);
+#undef ALPS_LOCAL_TRY_LOAD
+                    
+                throw std::runtime_error("No matching payload type in the archive "
+                                         "for `option_type` for "
+                                         "name='" + name + "'");
             }
+                
+            // /// Outputs the option to an archive
+            // void load(hdf5::archive& ar)
+            // {
+            //     throw std::logic_error("alps::params::option_type::load() is not implemented yet");
+            // }
 
           
             /// Constructor preserving the option name
@@ -477,19 +547,19 @@ namespace alps {
                 return it->second;
             }
 
-            void save(hdf5::archive& ar) const
-            {
-                // throw std::logic_error("options_map_type::save() not implemented yet");
-                typedef std::map<std::string, option_type> super_type;
-                ar["alps::params::options_map_type"] << static_cast<const super_type&>(*this);
-            }
+            // void save(hdf5::archive& ar) const
+            // {
+            //     // throw std::logic_error("options_map_type::save() not implemented yet");
+            //     typedef std::map<std::string, option_type> super_type;
+            //     ar["alps::params::options_map_type"] << static_cast<const super_type&>(*this);
+            // }
 
-            void load(hdf5::archive& ar)
-            {
-                // throw std::logic_error("options_map_type::load() not implemented yet");
-                typedef std::map<std::string, option_type> super_type;
-                ar["alps::params::options_map_type"] >> static_cast<super_type&>(*this);
-            }
+            // void load(hdf5::archive& ar)
+            // {
+            //     // throw std::logic_error("options_map_type::load() not implemented yet");
+            //     typedef std::map<std::string, option_type> super_type;
+            //     ar["alps::params::options_map_type"] >> static_cast<super_type&>(*this);
+            // }
 
         };
 
@@ -595,146 +665,6 @@ namespace alps {
             };
 
             
-            /// Option (parameter) description class. Used to interface with boost::program_options
-            class option_description_type {
-                typedef boost::program_options::options_description po_descr;
-                
-                std::string descr_; ///< Parameter description
-                variant_all_type deflt_; ///< To keep type and defaults(if any)
-
-                /// Visitor class to add the stored description to boost::program_options
-                struct add_option_visitor: public boost::static_visitor<> {
-                    po_descr& odesc_;
-                    const std::string& name_;
-                    const std::string& strdesc_;
-
-                    add_option_visitor(po_descr& a_po_descr, const std::string& a_name, const std::string& a_strdesc):
-                        odesc_(a_po_descr), name_(a_name), strdesc_(a_strdesc) {}
-
-                    void operator()(const None&) const
-                    {
-                        throw std::logic_error("add_option_visitor is called for an object containing None: should not happen!");
-                    }
-                    
-                    /// Called by apply_visitor(), for a optional<T> bound type
-                    template <typename T>
-                    void operator()(const boost::optional<T>& a_val) const
-                    {
-                        if (a_val) {
-                            // a default value is provided
-                            do_define<T>::add_option(odesc_, name_, *a_val, strdesc_);
-                        } else {
-                            // no default value
-                            do_define<T>::add_option(odesc_, name_, strdesc_);
-                        }
-                    }
-
-                    /// Called by apply_visitor(), for a trigger_tag type
-                    void operator()(const boost::optional<trigger_tag>& a_val) const
-                    {
-                        do_define<trigger_tag>::add_option(odesc_, name_, strdesc_);
-                    }
-                };
-                    
-
-                /// Visitor class to set option_type instance from boost::any; visitor is used ONLY to extract type information
-                struct set_option_visitor: public boost::static_visitor<> {
-                    option_type& opt_;
-                    const boost::any& anyval_;
-
-                    set_option_visitor(option_type& a_opt, const boost::any& a_anyval):
-                        opt_(a_opt), anyval_(a_anyval) {}
-
-                    /// Called by apply_visitor(), for None bound type
-                    void operator()(const None&) const
-                    {
-                        throw std::logic_error("set_option_visitor is called for an objec containing None: should not happen!");
-                    }
-                    
-                    /// Called by apply_visitor(), for a optional<T> bound type
-                    template <typename T>
-                    void operator()(const boost::optional<T>& a_val) const
-                    {
-                        if (anyval_.empty()) {
-                            opt_.reset<T>();
-                        } else {
-                            opt_.reset<T>(boost::any_cast<T>(anyval_));
-                        }
-                    }
-
-                    /// Called by apply_visitor(), for a optional<std::string> bound type
-                    void operator()(const boost::optional<std::string>& a_val) const
-                    {
-                        if (anyval_.empty()) {
-                            opt_.reset<std::string>();
-                        } else {
-                            // The value may contain a string or a default value, which is hidden inside string_container
-                            // (FIXME: this mess of a design must be fixed).
-                            const std::string* ptr=boost::any_cast<std::string>(&anyval_);
-                            if (ptr) {
-                                opt_.reset<std::string>(*ptr);
-                            } else {
-                                opt_.reset<std::string>(boost::any_cast<string_container>(anyval_));
-                            }
-                        }
-                    }
-
-                    /// Called by apply_visitor(), for a trigger_tag type
-                    void operator()(const boost::optional<trigger_tag>& ) const
-                    {
-                        opt_.reset<bool>(!anyval_.empty()); // non-empty value means the option is present
-                    }
-                };
-                    
-            public:
-                /// Constructor for description without the default
-                template <typename T>
-                option_description_type(const std::string& a_descr, T*): descr_(a_descr), deflt_(boost::optional<T>(boost::none))
-                { }
-
-                /// Constructor for description with default
-                template <typename T>
-                option_description_type(const std::string& a_descr, T a_deflt): descr_(a_descr), deflt_(boost::optional<T>(a_deflt)) 
-                { }
-
-                /// Constructor for a trigger option
-                option_description_type(const std::string& a_descr): descr_(a_descr), deflt_(boost::optional<trigger_tag>(trigger_tag())) 
-                { }
-
-                /// Adds to program_options options_description
-                void add_option(boost::program_options::options_description& a_po_desc, const std::string& a_name) const
-                {
-                    boost::apply_visitor(add_option_visitor(a_po_desc,a_name,descr_), deflt_);
-                }
-
-                /// Sets option_type instance to a correct value extracted from boost::any
-                void set_option(option_type& opt, const boost::any& a_val) const
-                {
-                    boost::apply_visitor(set_option_visitor(opt, a_val), deflt_);
-                }
-
-                /// Fake constructor to create uninitialized object for serialization --- DO NOT USE IT!!!
-                // FIXME: can i avoid it?
-                option_description_type()
-                    : descr_("**UNINITIALIZED**") {}
-                
-
-                void save(hdf5::archive& ar) const
-                {
-                    // throw std::logic_error("option_description_type::save() not implemented yet");
-                    ar["alps::params::option_description_type::descr_"] << descr_;
-                    ar["alps::params::option_description_type::deflt_"] << deflt_;
-                }
-
-                void load(hdf5::archive& ar)
-                {
-                    // throw std::logic_error("option_description_type::load() not implemented yet");
-                    ar["alps::params::option_description_type::descr_"] >> descr_;
-                    ar["alps::params::option_description_type::deflt_"] >> deflt_;
-                }
-            };
-
-            typedef std::map<std::string, option_description_type> description_map_type;
 
         } // detail
 

@@ -23,11 +23,12 @@ TEST(param, Archive)
     typedef std::vector<double> dblvec_type;
   
     // Prepare parameters
-    const char* argv[]={ "", "--param1=111" };
+    const char* argv[]={ "", "--param1=111", "--flag" };
     const int argc=sizeof(argv)/sizeof(*argv);
     alps::params p(argc,argv);
 
     p.description("Archiving test").
+        define("flag","trigger param").
         define<int>("param1","integer 1").
         define<double>("param2",22.25,"double").
         define<dblvec_type>("vparam","vector of doubles");
@@ -42,7 +43,7 @@ TEST(param, Archive)
 
     EXPECT_FALSE(p.is_restored());
     EXPECT_THROW(p.get_archive_name(), alps::params::not_restored);
-    
+
 
     // Save to archive
     std::string filename(alps::temporary_filename("hdf5_file")+".h5");
@@ -57,6 +58,8 @@ TEST(param, Archive)
         alps::hdf5::archive iar(filename, "r");
         p2.load(iar);
     }
+    EXPECT_FALSE(p2["help"].as<bool>());
+    EXPECT_TRUE(p2["flag"].as<bool>());
     EXPECT_EQ(111, p2["param1"]);
     EXPECT_EQ(22.25, p2["param2"]);
     EXPECT_EQ(333, p2["param3"]);

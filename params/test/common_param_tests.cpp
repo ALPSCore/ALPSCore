@@ -44,3 +44,13 @@ typedef ::testing::Types<
 
 INSTANTIATE_TYPED_TEST_CASE_P(H5ScalarParamTest, AnyParamTest, H5ScalarGenerators);
 
+typedef ::testing::Types<
+    CmdlineH5ParamGenerator<bool>,
+    CmdlineH5ParamGenerator<int>,
+    CmdlineH5ParamGenerator<unsigned int>,
+    CmdlineH5ParamGenerator<long>,
+    CmdlineH5ParamGenerator<unsigned long>,
+    CmdlineH5ParamGenerator<double>
+    > CmdlineH5ScalarGenerators;
+
+INSTANTIATE_TYPED_TEST_CASE_P(CmdlineH5ScalarParamTest, AnyParamTest, CmdlineH5ScalarGenerators);

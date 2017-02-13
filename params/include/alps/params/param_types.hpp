@@ -111,14 +111,14 @@ namespace alps {
         // Elevate choosen generated types:
         using detail::variant_all_type;
 
-	// Undefine local macros
-#undef  ALPS_PARAMS_DETAIL_STYPES_VEC
-#undef  ALPS_PARAMS_DETAIL_STYPES_SEQ
-#undef  ALPS_PARAMS_DETAIL_MAKE_TYPE
-#undef  ALPS_PARAMS_DETAIL_VTYPES_SEQ
-#undef  ALPS_PARAMS_DETAIL_ALLTYPES_SEQ
-#undef  ALPS_PARAMS_DETAIL_GEN_TYPID
-#undef  ALPS_PARAMS_DETAIL_OTYPES_SEQ
+// 	// Undefine local macros
+// #undef  ALPS_PARAMS_DETAIL_STYPES_VEC
+// #undef  ALPS_PARAMS_DETAIL_STYPES_SEQ
+// #undef  ALPS_PARAMS_DETAIL_MAKE_TYPE
+// #undef  ALPS_PARAMS_DETAIL_VTYPES_SEQ
+// #undef  ALPS_PARAMS_DETAIL_ALLTYPES_SEQ
+// #undef  ALPS_PARAMS_DETAIL_GEN_TYPID
+// #undef  ALPS_PARAMS_DETAIL_OTYPES_SEQ
 	
     } // params_ns
 }// alps

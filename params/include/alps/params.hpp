@@ -33,6 +33,7 @@
 #include <algorithm>
 
 #include "./params/option_type.hpp"
+#include "./params/option_description_type.hpp"
 #include "./params/param_iterators.hpp"
 
 namespace alps {
