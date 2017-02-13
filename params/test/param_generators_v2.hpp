@@ -267,9 +267,9 @@ namespace alps {
             }
         };
 
-        /// Parameter object generator (from cmdline, then load() from h5, then `define()` after reading); accepts parameter type T.
+        /// Parameter object generator (from INI, then load() from h5, then `define()` after reading); accepts parameter type T.
         template <typename T>
-        class CmdlineH5ParamGenerator {
+        class InifileH5ParamGenerator {
             std::string expected_origin_name_;
             public:
             alps::params* param_ptr;
@@ -281,7 +281,7 @@ namespace alps {
             }
 
           
-            CmdlineH5ParamGenerator(): param_ptr(0)
+            InifileH5ParamGenerator(): param_ptr(0)
             {
                 expected_origin_name_=alps::temporary_filename("./h5file_input")+".ini";
                 
@@ -323,9 +323,67 @@ namespace alps {
                 param["assigned"]=val1;
             }
  
-            ~CmdlineH5ParamGenerator() {
+            ~InifileH5ParamGenerator() {
                 delete param_ptr; // FIXME: use smart_ptr instead!
                 if (!expected_origin_name_.empty()) std::remove(expected_origin_name_.c_str());
+            }
+        };
+
+        /// Parameter object generator (from cmdline, then load() from h5, then `define()` after reading); accepts parameter type T.
+        template <typename T>
+        class CmdlineH5ParamGenerator {
+            std::string expected_origin_name_;
+            public:
+            alps::params* param_ptr;
+            typedef data_trait<T> data_trait_type;
+            typedef T value_type;
+
+            std::string expected_origin_name() {
+                return expected_origin_name_;
+            }
+
+          
+            CmdlineH5ParamGenerator(): param_ptr(0)
+            {
+                const T val1=data_trait_type::get(true);
+                const T val2=data_trait_type::get(false);
+                const std::string h5_fname=alps::temporary_filename("./h5file_input")+".h5"; 
+                {
+                    std::string argv_s[]={
+                        "--present_def="+input_string<T>(val1),
+                        "--present_nodef="+input_string<T>(val1),
+                    };
+                    expected_origin_name_="/path/to/progname";
+                    const char* argv[]={
+                        expected_origin_name_.c_str(),
+                        argv_s[0].c_str(),
+                        argv_s[1].c_str()
+                    };
+                    const int argc=sizeof(argv)/sizeof(*argv);
+                    alps::params param(argc,argv);
+                    alps::hdf5::archive ar(h5_fname,"w");
+                    param.save(ar,"/parameters");
+                }
+                
+                param_ptr=new alps::params();
+                alps::params& param=*param_ptr;
+                {
+                    alps::hdf5::archive ar(h5_fname,"r");
+                    param.load(ar,"/parameters");
+                }
+                std::remove(h5_fname.c_str());
+                
+                param.
+                    template define<T>("present_def", val2, "Has default").
+                    template define<T>("missing_def", val1, "Missing, has default").
+                    template define<T>("present_nodef", "No default").
+                    template define<T>("missing_nodef", "Missing, no default");
+
+                param["assigned"]=val1;
+            }
+ 
+            ~CmdlineH5ParamGenerator() {
+                delete param_ptr; // FIXME: use smart_ptr instead!
             }
         };
 
