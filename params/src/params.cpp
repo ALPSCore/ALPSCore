@@ -241,15 +241,23 @@ namespace alps {
         {
             possibly_parse();
             const std::string context=ar.get_context();
-            const std::string dict_group=context+"/dict";
-            const std::string def_group=context+"/def";
-            const std::string state_group=context+"/stat";
+            const std::string dict_group=context+"/dictionary";
+            const std::string def_group=context+"/definitions";
+            const std::string state_group=context+"/object_state";
+
+            if (ar.is_group(context)) {
+                ar.delete_group(context);
+                ar.create_group(context);
+                ar.set_context(context);
+            }
+            
             ar.create_group(dict_group);
             ar.set_context(dict_group);
             BOOST_FOREACH(const options_map_type::value_type& slot, optmap_)
             {
                 slot.second.save(ar);
             }
+
             ar.create_group(def_group);
             ar.set_context(def_group);
             BOOST_FOREACH(const detail::description_map_type::value_type& slot, descr_map_) {
@@ -257,6 +265,7 @@ namespace alps {
                 const std::string& key=slot.first;
                 opt.save(ar,key);
             }
+            
             ar.create_group(state_group);
             ar.set_context(state_group);
 
@@ -265,21 +274,9 @@ namespace alps {
             ar["inifile"] << file_content_;
             ar["ininame"] << infile_;
             ar["argv0"] << argv0_;
-            ar["archname"] << archname_;
+            if (archname_) ar["archname"] << *archname_;
             
             ar.set_context(context);
-            
-
-            // ar["is_valid"] <<  is_valid_;
-            // ar["archname"] <<  archname_;
-            // ar["optmap"] <<  optmap_;
-            // ar["descr_map"] <<  descr_map_;
-            // ar["helpmsg"] <<  helpmsg_;
-            // ar["defaulted_options"] <<  defaulted_options_;
-            // ar["argvec"] <<  argvec_;
-            // ar["infile"] <<  infile_;
-            // ar["argv0"] <<  argv0_;
-            
         }
 
         void params::save(hdf5::archive& ar, const std::string& path) const
@@ -295,14 +292,15 @@ namespace alps {
         {
             // FXIME: implement and use swap() here
             const std::string context=ar.get_context();
-            const std::string dict_group=context+"/dict";
-            const std::string def_group=context+"/def";
-            const std::string state_group=context+"/stat";
+            const std::string dict_group=context+"/dictionary";
+            const std::string def_group=context+"/definitions";
+            const std::string state_group=context+"/object_state";
 
             ar.set_context(dict_group);
             std::vector<std::string> dict_names=ar.list_children(".");
             optmap_.clear();
             BOOST_FOREACH(const std::string& key, dict_names) {
+                if (ar.is_group(key)) continue;
                 optmap_.insert(options_map_type::value_type(key, option_type::get_loaded(ar,key)));
             }
             
@@ -313,27 +311,33 @@ namespace alps {
                 descr_map_.insert(detail::description_map_type::value_type(key, detail::option_description_type::get_loaded(ar,key)));
             }
 
-            ar.set_context(state_group);
-            ar["help"] >> helpmsg_;
-            ar["argv"] >> argvec_;
-            ar["inifile"] >> file_content_;
-            ar["ininame"] >> infile_;
-            ar["argv0"] >> argv0_;
-            ar["archname"] >> archname_;
-            
+            // FIXME: once swap() is implemented and used, we don't need `else ...clear()`
+            if (ar.is_group(state_group)) {
+                ar.set_context(state_group);
+                if (ar.is_data("help")) ar["help"] >> helpmsg_; else helpmsg_.clear();
+                if (ar.is_data("argv")) ar["argv"] >> argvec_; else argvec_.clear();
+                if (ar.is_data("inifile")) ar["inifile"] >> file_content_; else file_content_.clear();
+                if (ar.is_data("ininame")) ar["ininame"] >> infile_; else infile_.clear();
+                if (ar.is_data("argv0")) ar["argv0"] >> argv0_; else argv0_.clear();
+                if (ar.is_data("archname")) {
+                    std::string archname;
+                    ar["archname"] >> archname;
+                    archname_=archname;
+                } else {
+                    archname_=boost::none;
+                }
+            } else {
+                // FIXME: once swap() is implemented and used, we don't need this
+                helpmsg_.clear();
+                argvec_.clear();
+                file_content_.clear();
+                infile_.clear();
+                argv0_.clear();
+                archname_=boost::none;
+            }
+             
             ar.set_context(context);
             certainly_parse();
-            // throw std::logic_error("params::load() is not implemented");
-            
-            // ar["is_valid"] >>  is_valid_;
-            // ar["archname"] >>  archname_;
-            // ar["optmap"] >>  optmap_;
-            // ar["descr_map"] >>  descr_map_;
-            // ar["helpmsg"] >>  helpmsg_;
-            // ar["defaulted_options"] >>  defaulted_options_;
-            // ar["argvec"] >>  argvec_;
-            // ar["infile"] >>  infile_;
-            // ar["argv0"] >>  argv0_;
         }
 
         void params::load(hdf5::archive& ar, const std::string& path)
