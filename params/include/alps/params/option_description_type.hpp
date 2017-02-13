@@ -193,9 +193,6 @@ namespace alps {
                     bool can_read(const T*)
                     {
                         bool ok=!is_trigger_ && is_scalar_ && ar_.is_datatype<T>(path_);
-                        std::cout << "DEBUG: descr can_read<T>=" << typeid(T).name()
-                                  <<" ok=" << ok
-                                  << std::endl;
                         return ok;
                     }
 
@@ -203,29 +200,18 @@ namespace alps {
                     bool can_read(const std::vector<T>*)
                     {
                         bool ok=!is_trigger_ && !is_scalar_ && ar_.is_datatype<T>(path_);
-                        std::cout << "DEBUG: descr can_read<vector-T>=" << typeid(T).name()
-                                  << " path=" << path_
-                                  << " ok=" << ok
-                                  << std::endl;
                         return ok;
                     }
 
                     bool can_read(const trigger_tag*)
                     {
                         bool ok=is_trigger_ && is_scalar_ && ar_.is_datatype<bool>(path_);
-                        std::cout << "DEBUG: descr can_read<vector-T>=" << typeid(trigger_tag).name()
-                                  << " path=" << path_
-                                  << " ok=" << ok
-                                  << std::endl;
                         return ok;
                     }
 
                     template <typename T>
                     option_description_type read(const T*)
                     {
-                        std::cout << "DEBUG: descr read<T>=" << typeid(T).name()
-                                  << " path=" << path_
-                                  << std::endl;
                         if (has_default_) {
                             T defval;
                             ar_[path_] >> defval;
@@ -237,9 +223,6 @@ namespace alps {
 
                     option_description_type read(const trigger_tag*)
                     {
-                        std::cout << "DEBUG: descr read<T>=" << typeid(trigger_tag).name()
-                                  << " path=" << path_
-                                  << std::endl;
                         if (!is_trigger_) {
                             throw std::logic_error("Invalid attemp to read option at path '"+
                                                    path_ + "' as a \"trigger\" option.\n"

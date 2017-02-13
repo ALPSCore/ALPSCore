@@ -9,9 +9,6 @@
 
 #include <boost/optional.hpp>
 
-// DEBUG!!!
-#include "../../../../utilities/test/test_utils.hpp"
-
 namespace alps {
     namespace hdf5 {
 
@@ -22,15 +19,6 @@ namespace alps {
                   std::vector<std::size_t> chunk=std::vector<std::size_t>(),
                   std::vector<std::size_t> offset=std::vector<std::size_t>())
         {
-            using alps::testing::operator<<;
-            std::cout << "save<optional>(): value=";
-            if (value) std::cout << *value; else std::cout << "[boost::none]";
-            std::cout << " path='" << path << "'"
-                      << " size=" << size
-                      << " chunk=" << chunk
-                      << " offset=" << offset
-                      << std::endl;
-
             if (ar.is_group(path)) ar.delete_group(path);
             if (!value) {
                 ar.write(path,T()); // FIXME?: T must have a default constructor then.
@@ -55,15 +43,6 @@ namespace alps {
             } else {
                 ar.read(path, *value);
             }
-            
-            using alps::testing::operator<<;
-            std::cout << "load<optional>(): value=";
-            if (value) std::cout << *value; else std::cout << "[boost::none]";
-            std::cout << " path='" << path << "'"
-                      << " size=" << size
-                      << " chunk=" << chunk
-                      << " offset=" << offset
-                      << std::endl;
         }
 
     } // hdf5::

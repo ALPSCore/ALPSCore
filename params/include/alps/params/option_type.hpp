@@ -395,10 +395,6 @@ namespace alps {
                 {
                     bool ok=ar_.is_datatype<T>(name_);
                     ok &= ar_.is_scalar(name_);
-                    std::cout << "DEBUG: can_read<T>=" << typeid(*dummy).name()
-                              << " name=" << name_
-                              << " ok=" << ok
-                              << std::endl;
                     return ok;
                 }
 
@@ -407,19 +403,12 @@ namespace alps {
                 {
                     bool ok=ar_.is_datatype<T>(name_);
                     ok &= !ar_.is_scalar(name_);
-                    std::cout << "DEBUG: can_read<T>=" << typeid(*dummy).name()
-                              << " name=" << name_
-                              << " ok=" << ok
-                              << std::endl;
                     return ok;
                 }
 
                 template <typename T>
                 option_type read(const T* dummy)
                 {
-                    std::cout << "DEBUG: read<T>=" << typeid(*dummy).name()
-                              << " name=" << name_
-                              << std::endl;
                     T val;
                     ar_[name_] >> val;
                     option_type opt(name_);
