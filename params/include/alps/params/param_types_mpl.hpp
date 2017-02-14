@@ -124,21 +124,5 @@ namespace alps {
     } // params_ns
 }// alps
 
-// The following is needed for serialization support
-namespace boost {
-    namespace serialization {
-        /// Serialization function for the "empty value" (does nothing)
-        template<class Archive>
-        inline void serialize(Archive & ar, alps::params_ns::detail::None&, const unsigned int)
-        { }
-
-        /// Serialization function for the "trigger type" (does nothing)
-        template<class Archive>
-        inline void serialize(Archive & ar, alps::params_ns::detail::trigger_tag&, const unsigned int)
-        { }
-    } // serialization
-} // boost
-
-
 
 #endif // ALPS_PARAMS_PARAM_TYPES_MPL_INCLUDED
