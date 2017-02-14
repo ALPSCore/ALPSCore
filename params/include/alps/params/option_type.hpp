@@ -51,9 +51,6 @@ namespace alps {
     namespace params_ns {
         
         class option_type {
-
-            // friend class option_description_type;  // to interface with boost::program_options
-
             public: // FIXME: not everything is public
 
             /// "Empty value" type
@@ -136,12 +133,6 @@ namespace alps {
                         + detail::type_id<LHS_T>().pretty_name()+"\"");
                 }
 
-                // /// Called when the bound type RHS_T is None (should never happen, option_type::operator=() must take care of this)
-                // void apply(None& lhs) const
-                // {
-                //     throw std::logic_error("Should not happen: setting an option_type object containing None");
-                // }
-
                 /// Called when the bound type in the variant is None (should never happen, option_type::operator=() must take care of this)
                 void operator()(const None& ) const
                 {
@@ -205,18 +196,6 @@ namespace alps {
             {
                 *this=std::string(rhs);
             }
-
-            // /// Assignment operator specialization: assigns a value of type `unsigned int`
-            // void operator=(unsigned int rhs)
-            // {
-            //     *this=int(rhs); // FIXME?? Is it good --- to abandon signedness?
-            // }
-
-            //  /// Assignment operator specialization: assigns a value of type `unsigned long`
-            // void operator=(unsigned long rhs)
-            // {
-            //     *this=long(rhs); // FIXME?? Is it good --- to abandon signedness?
-            // }
 
             /// Set the contained value to "empty" of the given type
             template <typename T>
@@ -450,12 +429,6 @@ namespace alps {
                                          "name='" + name + "'");
             }
                 
-            // /// Outputs the option to an archive
-            // void load(hdf5::archive& ar)
-            // {
-            //     throw std::logic_error("alps::params::option_type::load() is not implemented yet");
-            // }
-
 #ifdef ALPS_HAVE_MPI
             class broadcast_send_visitor : public boost::static_visitor<> {
                 const alps::mpi::communicator& comm_;
@@ -467,16 +440,10 @@ namespace alps {
 
                 template <typename T>
                 void operator()(const T& val) const {
-                    std::cout << "DEBUG: sending T=" << typeid(T).name() << std::endl;
-                    
                     // FIXME: if we make 2 versions of broadcast, sending and receiving...
                     assert(comm_.rank()==root_ && "Broadcast send from non-root?");
                     // FIXME: ...this cast won't be needed
                     alps::mpi::broadcast(comm_, const_cast<T&>(val), root_);
-
-                    // std::cout << "DEBUG: root at barrier" << std::endl;
-                    // comm_.barrier(); // DEBUG!!
-                    // std::cout << "DEBUG: root past barrier" << std::endl;
                 }
 
                 void operator()(const None&) const {
@@ -504,21 +471,15 @@ namespace alps {
                     }
                 } else { // not-null
                     if (comm.rank()==root) {
-                        std::cout << "DEBUG: Root: sent which=" << root_which << std::endl;
                         assert(!this->isNone() && "which!=0 must not be None value");
                         boost::apply_visitor(broadcast_send_visitor(comm,root), val_);
                     } else { // slave rank
-                        std::cout << "DEBUG: Slave: got which=" << root_which << std::endl;
                         // CAUTION: Fragile code!
 #define ALPS_LOCAL_TRY_TYPE(_r_,_d_,_type_) {                           \
                             boost::optional<_type_> buf;                \
                             variant_all_type trial(buf);                \
-                            std::cout << "DEBUG: trying buf type=" << typeid(buf).name() << " which=" << trial.which() << std::endl; \
                             if (trial.which()==root_which) {            \
                                 alps::mpi::broadcast(comm, buf, root);  \
-                                /* std::cout << "DEBUG: slave at barrier" << std::endl; */ \
-                                /* comm.barrier(); /* DEBUG!! */     \
-                                /* std::cout << "DEBUG: slave past barrier" << std::endl; */ \
                                 val_=buf;                               \
                             }                                           \
                         } /* end macro */
@@ -625,20 +586,6 @@ namespace alps {
                 alps::mpi::broadcast(comm, static_cast<super_type&>(*this), root);
             }
 #endif
-            // void save(hdf5::archive& ar) const
-            // {
-            //     // throw std::logic_error("options_map_type::save() not implemented yet");
-            //     typedef std::map<std::string, option_type> super_type;
-            //     ar["alps::params::options_map_type"] << static_cast<const super_type&>(*this);
-            // }
-
-            // void load(hdf5::archive& ar)
-            // {
-            //     // throw std::logic_error("options_map_type::load() not implemented yet");
-            //     typedef std::map<std::string, option_type> super_type;
-            //     ar["alps::params::options_map_type"] >> static_cast<super_type&>(*this);
-            // }
-
         };
 
         namespace detail {

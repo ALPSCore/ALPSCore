@@ -34,12 +34,6 @@
 #endif
 
 
-// /* Supported parameter types: */
-// #ifndef ALPS_PARAMS_SUPPORTED_TYPES
-// #define ALPS_PARAMS_SUPPORTED_TYPES (5, (int,unsigned,double,bool,std::string))
-// #endif
-
-
 // Anonymous namespace for service functions & classes
 namespace {
     // Service functor class to convert C-string pointer to an std::string
@@ -385,8 +379,6 @@ namespace alps{
         /** @NOTE  Implemented as serialization followed by string broadcast (FIXME!) */
         void params::broadcast(alps::mpi::communicator const & comm, int root)
         {
-            // throw std::logic_error("Not implemented");
-
             // FIXME: correct implementation would use swap()
 
             using alps::mpi::broadcast;
@@ -407,20 +399,7 @@ namespace alps{
             broadcast(comm, descr_map_, root);
 
             certainly_parse();
-            
-            // std::string buf;
-            // if (comm.rank()==root) {
-            //     possibly_parse();
-            //     // boost_ar << *this;
-            //     // buf=outs.str();
-            // }
-            // alps::mpi::broadcast(comm, buf, root);
-            // if (comm.rank()!=root) {
-            //     // std::istringstream ins(buf);
-            //     // boost::archive::text_iarchive boost_ar(ins);
-            //     // boost_ar >> *this;
-            // }
-        }
+         }
 #endif
 
         std::ostream& operator<<(std::ostream& str, params const& x) 

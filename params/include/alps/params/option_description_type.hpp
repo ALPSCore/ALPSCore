@@ -109,13 +109,6 @@ namespace alps {
                     alps::hdf5::archive& ar_;
                     const std::string& name_;
 
-                    // template <typename>
-                    // struct is_trigger { static const bool VALUE = false; };
-
-                    // template <>
-                    // struct is_trigger<trigger_tag> { static const bool VALUE = true; };
-
-                    
                   public:
                     save_visitor(alps::hdf5::archive& ar, const std::string& name)
                         : ar_(ar), name_(name)
@@ -310,13 +303,6 @@ namespace alps {
                     boost::apply_visitor(save_visitor(ar,name), deflt_);
                     ar[name+"@description"] << descr_;
                 }
-
-                // void load(hdf5::archive& ar)
-                // {
-                //     // throw std::logic_error("option_description_type::load() not implemented yet");
-                //     ar["alps::params::option_description_type::descr_"] >> descr_;
-                //     ar["alps::params::option_description_type::deflt_"] >> deflt_;
-                // }
 
                 /// Default ctor for internal use (in factory methods)
                 // FIXME: had to make it public for map broadcast

@@ -28,9 +28,7 @@
 #include <boost/scoped_array.hpp> /* for std::string broadcast */
 #include <boost/shared_ptr.hpp> /* for proper copy/assign of managed communicators */
 
-// DEBUG:
 #include <stdexcept>
-// DEBUG:
 #include <typeinfo>
 
 
@@ -272,8 +270,6 @@ namespace alps {
         template <typename T>
         MPI_Datatype get_mpi_datatype(const T& val) {
             return detail::mpi_type<T>();
-            // throw std::logic_error(std::string("get_mpi_datatype() is not implemented, called for type T=")
-            //                        +typeid(T).name());
         }
 
         /// performs MPI_Allgather() for primitive type T
@@ -284,8 +280,6 @@ namespace alps {
             MPI_Allgather((void*)&in_val, 1, detail::mpi_type<T>(),
                           &out_vals.front(), 1, detail::mpi_type<T>(),
                           comm);
-            // throw std::logic_error(std::string("all_gather() is not implemented, called for type T=")
-            //                        +typeid(T).name());
         }
 
         /// Trait for MPI reduction operations
