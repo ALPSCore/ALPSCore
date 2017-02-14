@@ -22,25 +22,16 @@
 
 #include "boost/optional.hpp"
 
-// #include "boost/filesystem.hpp"
+// #include <alps/hdf5/archive.hpp>
+#include <alps/hdf5.hpp>
 
-// Serialization headers:
-#include "boost/archive/text_oarchive.hpp"
-#include "boost/archive/text_iarchive.hpp"
-
-#include <alps/hdf5/archive.hpp>
-
-#include "alps/params.hpp"
+#include <alps/params.hpp>
 
 #ifdef ALPS_HAVE_MPI
-#include "alps/utilities/mpi.hpp"
+#include <alps/utilities/mpi.hpp>
+#include <alps/utilities/mpi_vector.hpp>
+#include <alps/utilities/mpi_optional.hpp>
 #endif
-
-
-// /* Supported parameter types: */
-// #ifndef ALPS_PARAMS_SUPPORTED_TYPES
-// #define ALPS_PARAMS_SUPPORTED_TYPES (5, (int,unsigned,double,bool,std::string))
-// #endif
 
 
 // Anonymous namespace for service functions & classes
@@ -73,7 +64,7 @@ namespace {
     };
 }
 
-namespace alps {
+namespace alps{ 
     namespace params_ns {
   
         namespace po=boost::program_options;
@@ -241,38 +232,108 @@ namespace alps {
             is_valid_=true;
         }        
 
+        /// @todo: FIXME: only weak exception guarantee
         void params::save(hdf5::archive& ar) const
         {
-            std::ostringstream outs; 
-            {
-                boost::archive::text_oarchive boost_ar(outs);
-                boost_ar << *this;
+            possibly_parse();
+            const std::string context=ar.get_context();
+            const std::string dict_group=context+"/dictionary";
+            const std::string def_group=context+"/definitions";
+            const std::string state_group=context+"/object_state";
+
+            if (ar.is_group(context)) {
+                ar.delete_group(context);
+                ar.create_group(context);
+                ar.set_context(context);
             }
-            ar["alps::params"] << outs.str();
+            
+            ar.create_group(dict_group);
+            ar.set_context(dict_group);
             BOOST_FOREACH(const options_map_type::value_type& slot, optmap_)
             {
                 slot.second.save(ar);
             }
+
+            ar.create_group(def_group);
+            ar.set_context(def_group);
+            BOOST_FOREACH(const detail::description_map_type::value_type& slot, descr_map_) {
+                const detail::option_description_type& opt=slot.second;
+                const std::string& key=slot.first;
+                opt.save(ar,key);
+            }
+            
+            ar.create_group(state_group);
+            ar.set_context(state_group);
+
+            ar["help"] << helpmsg_;
+            ar["argv"] << argvec_;
+            ar["inifile"] << file_content_;
+            ar["ininame"] << infile_;
+            ar["argv0"] << argv0_;
+            if (archname_) ar["archname"] << *archname_;
+            
+            ar.set_context(context);
         }
 
         void params::save(hdf5::archive& ar, const std::string& path) const
         {
-            possibly_parse();
             std::string context = ar.get_context();
             ar.set_context(path);
             save(ar);
             ar.set_context(context);
         }
-            
+
+        /// @todo: FIXME: only weak exception guarantee
         void params::load(hdf5::archive& ar)
         {
-            std::string buf;
-            ar["alps::params"] >> buf;
-            std::istringstream ins(buf);
-            {
-                boost::archive::text_iarchive boost_ar(ins);
-                boost_ar >> *this;
+            // FXIME: implement and use swap() here
+            const std::string context=ar.get_context();
+            const std::string dict_group=context+"/dictionary";
+            const std::string def_group=context+"/definitions";
+            const std::string state_group=context+"/object_state";
+
+            ar.set_context(dict_group);
+            std::vector<std::string> dict_names=ar.list_children(".");
+            optmap_.clear();
+            BOOST_FOREACH(const std::string& key, dict_names) {
+                if (ar.is_group(key)) continue;
+                optmap_.insert(options_map_type::value_type(key, option_type::get_loaded(ar,key)));
             }
+            
+            ar.set_context(def_group);
+            std::vector<std::string> def_names=ar.list_children(".");
+            descr_map_.clear();
+            BOOST_FOREACH(const std::string& key, def_names) {
+                descr_map_.insert(detail::description_map_type::value_type(key, detail::option_description_type::get_loaded(ar,key)));
+            }
+
+            // FIXME: once swap() is implemented and used, we don't need `else ...clear()`
+            if (ar.is_group(state_group)) {
+                ar.set_context(state_group);
+                if (ar.is_data("help")) ar["help"] >> helpmsg_; else helpmsg_.clear();
+                if (ar.is_data("argv")) ar["argv"] >> argvec_; else argvec_.clear();
+                if (ar.is_data("inifile")) ar["inifile"] >> file_content_; else file_content_.clear();
+                if (ar.is_data("ininame")) ar["ininame"] >> infile_; else infile_.clear();
+                if (ar.is_data("argv0")) ar["argv0"] >> argv0_; else argv0_.clear();
+                if (ar.is_data("archname")) {
+                    std::string archname;
+                    ar["archname"] >> archname;
+                    archname_=archname;
+                } else {
+                    archname_=boost::none;
+                }
+            } else {
+                // FIXME: once swap() is implemented and used, we don't need this
+                helpmsg_.clear();
+                argvec_.clear();
+                file_content_.clear();
+                infile_.clear();
+                argv0_.clear();
+                archname_=boost::none;
+            }
+             
+            ar.set_context(context);
+            certainly_parse();
         }
 
         void params::load(hdf5::archive& ar, const std::string& path)
@@ -318,21 +379,27 @@ namespace alps {
         /** @NOTE  Implemented as serialization followed by string broadcast (FIXME!) */
         void params::broadcast(alps::mpi::communicator const & comm, int root)
         {
-            std::string buf;
-            if (comm.rank()==root) {
-                std::ostringstream outs; 
-                possibly_parse();
-                boost::archive::text_oarchive boost_ar(outs);
-                boost_ar << *this;
-                buf=outs.str();
-            }
-            alps::mpi::broadcast(comm, buf, root);
-            if (comm.rank()!=root) {
-                std::istringstream ins(buf);
-                boost::archive::text_iarchive boost_ar(ins);
-                boost_ar >> *this;
-            }
-        }
+            // FIXME: correct implementation would use swap()
+
+            using alps::mpi::broadcast;
+            
+            possibly_parse();
+
+            broadcast(comm, helpmsg_,root);
+            broadcast(comm, file_content_, root);
+            broadcast(comm, infile_, root);
+            broadcast(comm, argv0_, root);
+
+            broadcast(comm, argvec_, root);
+
+            broadcast(comm, archname_, root);
+
+            optmap_.broadcast(comm, root);
+
+            broadcast(comm, descr_map_, root);
+
+            certainly_parse();
+         }
 #endif
 
         std::ostream& operator<<(std::ostream& str, params const& x) 

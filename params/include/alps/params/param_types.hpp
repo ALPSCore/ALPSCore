@@ -27,6 +27,11 @@
 // FIXME: will go away with acceptance of boost::TypeIndex
 #include "alps/params/typeindex.hpp"
 
+#ifdef ALPS_HAVE_MPI
+#include <alps/utilities/mpi.hpp>
+#endif
+
+
 namespace alps {
     namespace params_ns {
         namespace detail {
@@ -42,12 +47,12 @@ namespace alps {
             //         it is deemed to be an unnecessary complication.
             // NOTE 4: If new types are introduced, add them to type ranking in `param_types_ranking.hpp` also,
             //         to define what type is "convertible" to what.
-#define	    ALPS_PARAMS_DETAIL_STYPES_VEC (8,(int,            \
+#define	    ALPS_PARAMS_DETAIL_STYPES_VEC (7,(int,            \
                                               unsigned int,   \
                                               long,           \
                                               unsigned long,  \
 					      double,         \
-                                              char,           \
+                                              /* char, */     \
                                               bool,           \
 					      std::string))
 
@@ -111,32 +116,27 @@ namespace alps {
         // Elevate choosen generated types:
         using detail::variant_all_type;
 
-	// Undefine local macros
-#undef  ALPS_PARAMS_DETAIL_STYPES_VEC
-#undef  ALPS_PARAMS_DETAIL_STYPES_SEQ
-#undef  ALPS_PARAMS_DETAIL_MAKE_TYPE
-#undef  ALPS_PARAMS_DETAIL_VTYPES_SEQ
-#undef  ALPS_PARAMS_DETAIL_ALLTYPES_SEQ
-#undef  ALPS_PARAMS_DETAIL_GEN_TYPID
-#undef  ALPS_PARAMS_DETAIL_OTYPES_SEQ
+// 	// Undefine local macros
+// #undef  ALPS_PARAMS_DETAIL_STYPES_VEC
+// #undef  ALPS_PARAMS_DETAIL_STYPES_SEQ
+// #undef  ALPS_PARAMS_DETAIL_MAKE_TYPE
+// #undef  ALPS_PARAMS_DETAIL_VTYPES_SEQ
+// #undef  ALPS_PARAMS_DETAIL_ALLTYPES_SEQ
+// #undef  ALPS_PARAMS_DETAIL_GEN_TYPID
+// #undef  ALPS_PARAMS_DETAIL_OTYPES_SEQ
 	
     } // params_ns
 }// alps
 
-// The following is needed for serialization support
-namespace boost {
-    namespace serialization {
-        /// Serialization function for the "empty value" (does nothing)
-        template<class Archive>
-        inline void serialize(Archive & ar, alps::params_ns::detail::None&, const unsigned int)
-        { }
 
-        /// Serialization function for the "trigger type" (does nothing)
-        template<class Archive>
-        inline void serialize(Archive & ar, alps::params_ns::detail::trigger_tag&, const unsigned int)
-        { }
-    } // serialization
-} // boost
+#ifdef ALPS_HAVE_MPI
+namespace alps {
+    namespace mpi {
+        /// Broadcast of trigger_tag (does nothing) for uniformity of param broadcast code
+        inline void broadcast(const alps::mpi::communicator&, alps::params_ns::detail::trigger_tag&, int) {}
+    }
+}
+#endif
 
 
 #endif // ALPS_PARAMS_PARAM_TYPES_INCLUDED

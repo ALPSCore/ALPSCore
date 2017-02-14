@@ -159,6 +159,17 @@ class TestUtilsTest : public ::testing::Test {
         EXPECT_EQ(sz, if_false.size());
         EXPECT_NE(if_true, if_false);
     }
+
+    void print_test()
+    {
+        using alps::testing::operator<<;
+        vector_type empty_vec;
+        vector_type true_vec=alps::testing::datapoint<vector_type>::get(true);
+        vector_type false_vec=alps::testing::datapoint<vector_type>::get(false);
+        std::cout << "Empty vector=" << empty_vec << std::endl;
+        std::cout << "\"True\" vector=" << true_vec << std::endl;
+        std::cout << "\"False\" vector=" << false_vec << std::endl;
+    }
 };
 
 typedef ::testing::Types<bool,
@@ -181,6 +192,7 @@ TYPED_TEST(TestUtilsTest, ScalarTest) { this->scalar_test(); }
 TYPED_TEST(TestUtilsTest, ScalarWithSizeTest) { this->scalar_with_size_test(); }
 TYPED_TEST(TestUtilsTest, VectorTest) { this->vector_test(); }
 TYPED_TEST(TestUtilsTest, VectorWithSizeTest) { this->vector_with_size_test(); }
+TYPED_TEST(TestUtilsTest, PrintVectorTest) { this->print_test(); }
 
 template <typename T>
 class TestUtilsStringTest : public TestUtilsTest<T> { };

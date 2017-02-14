@@ -9,6 +9,9 @@
    (FIXME: move to some publicly-available place?)
 */
 
+#ifndef ALPS_UTILITIES_TEST_TEST_UTILS_HPP_bc68762a102b40968489f16ee603e253
+#define ALPS_UTILITIES_TEST_TEST_UTILS_HPP_bc68762a102b40968489f16ee603e253
+
 #include <complex>
 #include <iostream>
 #include <cmath> // for pow()
@@ -28,10 +31,11 @@ namespace alps {
             itype it=vec.begin();
             const itype end=vec.end();
 
-            if (end!=it) strm << *it;
-            
-            for (++it; end!=it; ++it) {
-                strm << ", " << *it;
+            if (end!=it) {
+                strm << *it;
+                for (++it; end!=it; ++it) {
+                    strm << ", " << *it;
+                }
             }
             strm << "]";
 
@@ -212,3 +216,5 @@ namespace alps {
         
     } // testing::
 } // alps::
+
+#endif /* ALPS_UTILITIES_TEST_TEST_UTILS_HPP_bc68762a102b40968489f16ee603e253 */

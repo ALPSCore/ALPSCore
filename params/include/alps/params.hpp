@@ -33,6 +33,7 @@
 #include <algorithm>
 
 #include "./params/option_type.hpp"
+#include "./params/option_description_type.hpp"
 #include "./params/param_iterators.hpp"
 
 namespace alps {
@@ -86,10 +87,6 @@ namespace alps {
 
             /// Function to check for validity/redefinition of an option (throws!)
             void check_validity(const std::string& optname) const;
-
-            /// Interface to serialization
-            friend class boost::serialization::access;
-            template<class Archive> void serialize(Archive & ar, const unsigned int);
 
           public:
 
@@ -278,5 +275,6 @@ namespace alps {
     using params_ns::params;
 
 } // alps::
+
 
 #endif /* ALPS_PARAMS_HPP_INCLUDED_8fd4d6abf4b6438cb3406e5a2d328d35 */

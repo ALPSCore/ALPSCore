@@ -16,6 +16,7 @@
 #include "alps/utilities/gtest_par_xml_output.hpp"
 #include "gtest/gtest.h"
 
+
 //Dummy function to imitate use of a variable to supress spurious compiler warnings
 static inline void dummy_use(const void*) {}
 
@@ -218,5 +219,6 @@ int main(int argc, char** argv)
    alps::gtest_par_xml_output tweak;
    tweak(alps::mpi::communicator().rank(), argc, argv);
    ::testing::InitGoogleTest(&argc, argv);
+   
    return RUN_ALL_TESTS();
 }    

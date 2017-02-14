@@ -31,26 +31,26 @@
 
 #include <boost/variant.hpp>
 #include <boost/utility.hpp> /* for enable_if */
-
-#include <boost/serialization/base_object.hpp>
-#include <boost/serialization/map.hpp>
-#include <boost/serialization/optional.hpp>
-#include <boost/serialization/variant.hpp>
+#include <boost/preprocessor/seq.hpp>
 
 #include "alps/utilities/short_print.hpp" // for streaming
 #include "alps/hdf5/archive.hpp"          // archive support
-#include "alps/hdf5/vector.hpp"          //  vector archiving support
+#include "alps/hdf5/vector.hpp"           // vector archiving support
+#include "alps/hdf5/map.hpp"              // map archiving support
 
 #include "alps/params/param_types.hpp" // Sequences of supported types
 #include "alps/params/param_types_ranking.hpp" // for detail::is_convertible<F,T>
+
+#ifdef ALPS_HAVE_MPI
+#include <alps/utilities/mpi_map.hpp>
+#include <alps/utilities/mpi_optional.hpp>
+#include <alps/utilities/mpi_vector.hpp>
+#endif
 
 namespace alps {
     namespace params_ns {
         
         class option_type {
-
-            // friend class option_description_type;  // to interface with boost::program_options
-
             public: // FIXME: not everything is public
 
             /// "Empty value" type
@@ -133,12 +133,6 @@ namespace alps {
                         + detail::type_id<LHS_T>().pretty_name()+"\"");
                 }
 
-                // /// Called when the bound type RHS_T is None (should never happen, option_type::operator=() must take care of this)
-                // void apply(None& lhs) const
-                // {
-                //     throw std::logic_error("Should not happen: setting an option_type object containing None");
-                // }
-
                 /// Called when the bound type in the variant is None (should never happen, option_type::operator=() must take care of this)
                 void operator()(const None& ) const
                 {
@@ -202,18 +196,6 @@ namespace alps {
             {
                 *this=std::string(rhs);
             }
-
-            // /// Assignment operator specialization: assigns a value of type `unsigned int`
-            // void operator=(unsigned int rhs)
-            // {
-            //     *this=int(rhs); // FIXME?? Is it good --- to abandon signedness?
-            // }
-
-            //  /// Assignment operator specialization: assigns a value of type `unsigned long`
-            // void operator=(unsigned long rhs)
-            // {
-            //     *this=long(rhs); // FIXME?? Is it good --- to abandon signedness?
-            // }
 
             /// Set the contained value to "empty" of the given type
             template <typename T>
@@ -358,11 +340,11 @@ namespace alps {
             } 
                 
             /// Visitor to archive an option with a proper type
-            struct archive_visitor : public boost::static_visitor<> {
+            struct save_visitor : public boost::static_visitor<> {
                 hdf5::archive& ar_;
                 const std::string& name_;
 
-                archive_visitor(hdf5::archive& ar, const std::string& name) : ar_(ar), name_(name) {}
+                save_visitor(hdf5::archive& ar, const std::string& name) : ar_(ar), name_(name) {}
 
                 /// sends value of the bound type U to an archive
                 template <typename U>
@@ -382,14 +364,135 @@ namespace alps {
                 }
             };
 
+            /// Class for reading the option from archive
+            // FIXME: simplified version of detail::option_description_type::reader,
+            //        can it be made more general? and used there?
+            class reader {
+                alps::hdf5::archive& ar_;
+                const std::string& name_;
+                public:
+                reader(alps::hdf5::archive& ar, const std::string& name)
+                    : ar_(ar), name_(name)
+                { }
+
+                template <typename T>
+                bool can_read(const T* dummy)
+                {
+                    bool ok=ar_.is_datatype<T>(name_);
+                    ok &= ar_.is_scalar(name_);
+                    return ok;
+                }
+
+                template <typename T>
+                bool can_read(const std::vector<T>* dummy)
+                {
+                    bool ok=ar_.is_datatype<T>(name_);
+                    ok &= !ar_.is_scalar(name_);
+                    return ok;
+                }
+
+                template <typename T>
+                option_type read(const T* dummy)
+                {
+                    T val;
+                    ar_[name_] >> val;
+                    option_type opt(name_);
+                    opt.reset(val);
+                    return opt;
+                }
+
+            };
+
+
             /// Outputs the option to an archive
             void save(hdf5::archive& ar) const
             {
-                archive_visitor visitor(ar,this->name_);
+                save_visitor visitor(ar,this->name_);
                 boost::apply_visitor(visitor, this->val_);
             }
+
+            /// Constructs the option from archive (factory method)
+            static option_type get_loaded(hdf5::archive& ar, const std::string& name)
+            {
+                reader rd(ar,name);
+                    
+                // macro: try reading, return if ok
+#define ALPS_LOCAL_TRY_LOAD(_r_,_d_,_type_)                             \
+                if (rd.can_read((_type_*)0)) return rd.read((_type_*)0);
+
+                // try reading for each defined type
+                BOOST_PP_SEQ_FOR_EACH(ALPS_LOCAL_TRY_LOAD, X, ALPS_PARAMS_DETAIL_VTYPES_SEQ ALPS_PARAMS_DETAIL_STYPES_SEQ);
+#undef ALPS_LOCAL_TRY_LOAD
+                    
+                throw std::runtime_error("No matching payload type in the archive "
+                                         "for `option_type` for "
+                                         "name='" + name + "'");
+            }
                 
-          
+#ifdef ALPS_HAVE_MPI
+            class broadcast_send_visitor : public boost::static_visitor<> {
+                const alps::mpi::communicator& comm_;
+                const int root_;
+              public:
+                broadcast_send_visitor(const alps::mpi::communicator& c, int rt)
+                    : comm_(c), root_(rt)
+                { }
+
+                template <typename T>
+                void operator()(const T& val) const {
+                    // FIXME: if we make 2 versions of broadcast, sending and receiving...
+                    assert(comm_.rank()==root_ && "Broadcast send from non-root?");
+                    // FIXME: ...this cast won't be needed
+                    alps::mpi::broadcast(comm_, const_cast<T&>(val), root_);
+                }
+
+                void operator()(const None&) const {
+                    throw std::logic_error("Attempt to option_type::broadcast() None. Should not happen.\n"
+                                           + ALPS_STACKTRACE);
+                }
+
+                void operator()(const boost::optional<detail::trigger_tag>&) const {
+                    throw std::logic_error("Attempt to option_type::broadcast() a trigger_tag. Should not happen.\n"
+                                           + ALPS_STACKTRACE);
+                }
+            };
+
+            
+            void broadcast(const alps::mpi::communicator& comm, int root)
+            {
+                alps::mpi::broadcast(comm, name_, root);
+                int root_which=val_.which();
+                alps::mpi::broadcast(comm, root_which, root);
+                if (root_which==0) { // CAUTION: relies of None being the first type!
+                    if (comm.rank()==root) {
+                        assert(this->isNone() && "which==0 must be None value");
+                    } else {
+                        val_=None();
+                    }
+                } else { // not-null
+                    if (comm.rank()==root) {
+                        assert(!this->isNone() && "which!=0 must not be None value");
+                        boost::apply_visitor(broadcast_send_visitor(comm,root), val_);
+                    } else { // slave rank
+                        // CAUTION: Fragile code!
+#define ALPS_LOCAL_TRY_TYPE(_r_,_d_,_type_) {                           \
+                            boost::optional<_type_> buf;                \
+                            variant_all_type trial(buf);                \
+                            if (trial.which()==root_which) {            \
+                                alps::mpi::broadcast(comm, buf, root);  \
+                                val_=buf;                               \
+                            }                                           \
+                        } /* end macro */
+                        
+                        BOOST_PP_SEQ_FOR_EACH(ALPS_LOCAL_TRY_TYPE, X, ALPS_PARAMS_DETAIL_VTYPES_SEQ ALPS_PARAMS_DETAIL_STYPES_SEQ);
+#undef ALPS_LOCAL_TRY_TYPE
+                        assert(val_.which()==root_which && "The `which` value must be the same as on root");
+                    } // done with slave rank 
+                }
+            }
+#endif /* ALPS_HAVE_MPI */
+
+            
             /// Constructor preserving the option name
             option_type(const std::string& a_name):
                 name_(a_name) {}
@@ -399,16 +502,6 @@ namespace alps {
             option_type()
                 : name_("**UNINITIALIZED**") {}
 
-        private:
-            friend class boost::serialization::access;
-
-            /// Interface to serialization
-            template<class Archive> void serialize(Archive & ar, const unsigned int)
-            {
-                ar  & val_
-                    & name_;
-            }
-                    
         };
 
         /// Equality operator for option_type
@@ -485,15 +578,14 @@ namespace alps {
                 return it->second;
             }
 
-        private:
-            friend class boost::serialization::access;
-
-            /// Interface to serialization
-            template<class Archive> void serialize(Archive & ar, const unsigned int)
+#ifdef ALPS_HAVE_MPI
+            /// Broadcast the map content
+            void broadcast(const alps::mpi::communicator& comm, int root)
             {
-                ar & boost::serialization::base_object< std::map<key_type,mapped_type> >(*this);
+                typedef std::map<std::string, option_type> super_type;
+                alps::mpi::broadcast(comm, static_cast<super_type&>(*this), root);
             }
-            
+#endif
         };
 
         namespace detail {
@@ -598,147 +690,23 @@ namespace alps {
             };
 
             
-            /// Option (parameter) description class. Used to interface with boost::program_options
-            class option_description_type {
-                typedef boost::program_options::options_description po_descr;
-                
-                std::string descr_; ///< Parameter description
-                variant_all_type deflt_; ///< To keep type and defaults(if any)
-
-                /// Visitor class to add the stored description to boost::program_options
-                struct add_option_visitor: public boost::static_visitor<> {
-                    po_descr& odesc_;
-                    const std::string& name_;
-                    const std::string& strdesc_;
-
-                    add_option_visitor(po_descr& a_po_descr, const std::string& a_name, const std::string& a_strdesc):
-                        odesc_(a_po_descr), name_(a_name), strdesc_(a_strdesc) {}
-
-                    void operator()(const None&) const
-                    {
-                        throw std::logic_error("add_option_visitor is called for an object containing None: should not happen!");
-                    }
-                    
-                    /// Called by apply_visitor(), for a optional<T> bound type
-                    template <typename T>
-                    void operator()(const boost::optional<T>& a_val) const
-                    {
-                        if (a_val) {
-                            // a default value is provided
-                            do_define<T>::add_option(odesc_, name_, *a_val, strdesc_);
-                        } else {
-                            // no default value
-                            do_define<T>::add_option(odesc_, name_, strdesc_);
-                        }
-                    }
-
-                    /// Called by apply_visitor(), for a trigger_tag type
-                    void operator()(const boost::optional<trigger_tag>& a_val) const
-                    {
-                        do_define<trigger_tag>::add_option(odesc_, name_, strdesc_);
-                    }
-                };
-                    
-
-                /// Visitor class to set option_type instance from boost::any; visitor is used ONLY to extract type information
-                struct set_option_visitor: public boost::static_visitor<> {
-                    option_type& opt_;
-                    const boost::any& anyval_;
-
-                    set_option_visitor(option_type& a_opt, const boost::any& a_anyval):
-                        opt_(a_opt), anyval_(a_anyval) {}
-
-                    /// Called by apply_visitor(), for None bound type
-                    void operator()(const None&) const
-                    {
-                        throw std::logic_error("set_option_visitor is called for an objec containing None: should not happen!");
-                    }
-                    
-                    /// Called by apply_visitor(), for a optional<T> bound type
-                    template <typename T>
-                    void operator()(const boost::optional<T>& a_val) const
-                    {
-                        if (anyval_.empty()) {
-                            opt_.reset<T>();
-                        } else {
-                            opt_.reset<T>(boost::any_cast<T>(anyval_));
-                        }
-                    }
-
-                    /// Called by apply_visitor(), for a optional<std::string> bound type
-                    void operator()(const boost::optional<std::string>& a_val) const
-                    {
-                        if (anyval_.empty()) {
-                            opt_.reset<std::string>();
-                        } else {
-                            // The value may contain a string or a default value, which is hidden inside string_container
-                            // (FIXME: this mess of a design must be fixed).
-                            const std::string* ptr=boost::any_cast<std::string>(&anyval_);
-                            if (ptr) {
-                                opt_.reset<std::string>(*ptr);
-                            } else {
-                                opt_.reset<std::string>(boost::any_cast<string_container>(anyval_));
-                            }
-                        }
-                    }
-
-                    /// Called by apply_visitor(), for a trigger_tag type
-                    void operator()(const boost::optional<trigger_tag>& ) const
-                    {
-                        opt_.reset<bool>(!anyval_.empty()); // non-empty value means the option is present
-                    }
-                };
-                    
-            public:
-                /// Constructor for description without the default
-                template <typename T>
-                option_description_type(const std::string& a_descr, T*): descr_(a_descr), deflt_(boost::optional<T>(boost::none))
-                { }
-
-                /// Constructor for description with default
-                template <typename T>
-                option_description_type(const std::string& a_descr, T a_deflt): descr_(a_descr), deflt_(boost::optional<T>(a_deflt)) 
-                { }
-
-                /// Constructor for a trigger option
-                option_description_type(const std::string& a_descr): descr_(a_descr), deflt_(boost::optional<trigger_tag>(trigger_tag())) 
-                { }
-
-                /// Adds to program_options options_description
-                void add_option(boost::program_options::options_description& a_po_desc, const std::string& a_name) const
-                {
-                    boost::apply_visitor(add_option_visitor(a_po_desc,a_name,descr_), deflt_);
-                }
-
-                /// Sets option_type instance to a correct value extracted from boost::any
-                void set_option(option_type& opt, const boost::any& a_val) const
-                {
-                    boost::apply_visitor(set_option_visitor(opt, a_val), deflt_);
-                }
-
-                /// Fake constructor to create uninitialized object for serialization --- DO NOT USE IT!!!
-                // FIXME: can i avoid it?
-                option_description_type()
-                    : descr_("**UNINITIALIZED**") {}
-                
-            private:
-                friend class boost::serialization::access;
-
-                /// Interface to serialization
-                template<class Archive> void serialize(Archive & ar, const unsigned int)
-                {
-                    ar  & descr_
-                        & deflt_;
-                }
-            };
-
-            typedef std::map<std::string, option_description_type> description_map_type;
 
         } // detail
 
             
         
     } // params_ns
+
+#ifdef ALPS_HAVE_MPI
+    namespace mpi {
+        inline
+        void broadcast(const alps::mpi::communicator &comm, alps::params_ns::option_type& val, int root)
+        {
+            val.broadcast(comm, root);
+        }
+    }
+#endif
+
 } // alps
 
 #endif // ALPS_PARAMS_OPTION_TYPE_INCLUDED

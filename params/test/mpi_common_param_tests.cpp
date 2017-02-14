@@ -14,7 +14,6 @@
 
 typedef ::testing::Types<
     CmdlineMpiParamGenerator<bool>,
-    CmdlineMpiParamGenerator<char>,
     CmdlineMpiParamGenerator<int>,
     CmdlineMpiParamGenerator<unsigned int>,
     CmdlineMpiParamGenerator<long>,

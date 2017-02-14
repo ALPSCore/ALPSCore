@@ -21,7 +21,7 @@ TEST(param,assignments)
 {
     alps::params parms;
     
-    ALPS_ASSIGN_PARAM(char);
+    // ALPS_ASSIGN_PARAM(char);
     // ALPS_ASSIGN_PARAM(signed char);
     // ALPS_ASSIGN_PARAM(unsigned char);
     // ALPS_ASSIGN_PARAM(short);
@@ -44,7 +44,7 @@ TEST(param,assignments)
     vd[0]=1.; vd[1]=2.; vd[2]=4.;
     parms["dblvec"] = vd;
   
-    ALPS_TEST_PARAM(char);
+    // ALPS_TEST_PARAM(char);
     // ALPS_TEST_PARAM(signed char);
     // ALPS_TEST_PARAM(unsigned char);
     // ALPS_TEST_PARAM(short);
