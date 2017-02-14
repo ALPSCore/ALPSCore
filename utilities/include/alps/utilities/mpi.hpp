@@ -45,6 +45,7 @@ namespace alps {
         template <>                                             \
         class mpi_type<_cxxtype_> {                             \
           public:                                               \
+            typedef _cxxtype_ value_type;                       \
             operator MPI_Datatype() { return _mpitype_; }       \
         }
 
@@ -217,7 +218,7 @@ namespace alps {
             }
         };
 
-        
+
         /// Broadcasts array `vals` of a primitive type `T`, length `count` on communicator `comm` with root `root`
         template <typename T>
         void broadcast(const communicator& comm, T* vals, std::size_t count, int root) {
@@ -353,5 +354,6 @@ namespace alps {
 
     } // mpi::
 } // alps::
+
 
 #endif /* ALPS_UTILITIES_MPI_HPP_INCLUDED_90206380262d48f0bcbe98fd16edd65d */

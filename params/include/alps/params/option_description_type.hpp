@@ -19,10 +19,6 @@ namespace alps {
                 std::string descr_; ///< Parameter description
                 variant_all_type deflt_; ///< To keep type and defaults(if any)
 
-                /// Default ctor for internal use (in factory methods)
-                // FIXME: do we need it??
-                option_description_type() {}
-                
                 /// Visitor class to add the stored description to boost::program_options
                 struct add_option_visitor: public boost::static_visitor<> {
                     po_descr& odesc_;
@@ -232,6 +228,35 @@ namespace alps {
                     }
                 };
 
+
+#ifdef ALPS_HAVE_MPI
+                // FIXME: copy&paste from option_type. Generalize and refactor out!
+                class broadcast_send_visitor : public boost::static_visitor<> {
+                    const alps::mpi::communicator& comm_;
+                    const int root_;
+                    public:
+                    broadcast_send_visitor(const alps::mpi::communicator& c, int rt)
+                        : comm_(c), root_(rt)
+                    { }
+
+                    // should work for optional<trigger_tag> also
+                    template <typename T>
+                    void operator()(const T& val) const {
+                        // FIXME: if we make 2 versions of broadcast, sending and receiving...
+                        assert(comm_.rank()==root_ && "Broadcast send from non-root?");
+                        // FIXME: ...this cast won't be needed
+                        alps::mpi::broadcast(comm_, const_cast<T&>(val), root_);
+                    }
+
+                    void operator()(const None&) const {
+                        throw std::logic_error("Attempt to option_descripton_type::broadcast() None. Should not happen.\n"
+                                               + ALPS_STACKTRACE);
+                    }
+
+                };
+#endif /* ALPS_HAVE_MPI */
+
+
             public:
                 /// Constructor for description without the default
                 template <typename T>
@@ -292,12 +317,64 @@ namespace alps {
                 //     ar["alps::params::option_description_type::descr_"] >> descr_;
                 //     ar["alps::params::option_description_type::deflt_"] >> deflt_;
                 // }
+
+                /// Default ctor for internal use (in factory methods)
+                // FIXME: had to make it public for map broadcast
+                option_description_type() {}
+                
+#ifdef ALPS_HAVE_MPI
+                // FIXME: copy&paste from option_type. Generalize and factor out!
+                void broadcast(const alps::mpi::communicator& comm, int root)
+                {
+                    alps::mpi::broadcast(comm, descr_, root);
+                    int root_which=deflt_.which();
+                    alps::mpi::broadcast(comm, root_which, root);
+                    if (root_which==0) { // CAUTION: relies of None being the first type!
+                        if (comm.rank()==root) {
+                            // Do nothing
+                        } else {
+                            deflt_=None();
+                        }
+                    } else { // not-null
+                        if (comm.rank()==root) {
+                            boost::apply_visitor(broadcast_send_visitor(comm,root), deflt_);
+                        } else { // slave rank
+                            // CAUTION: Fragile code!
+#define ALPS_LOCAL_TRY_TYPE(_r_,_d_,_type_) {                           \
+                                boost::optional<_type_> buf;            \
+                                variant_all_type trial(buf);            \
+                                if (trial.which()==root_which) {        \
+                                    alps::mpi::broadcast(comm, buf, root); \
+                                    deflt_=buf;                         \
+                                }                                       \
+                            } /* end macro */
+                        
+                            BOOST_PP_SEQ_FOR_EACH(ALPS_LOCAL_TRY_TYPE, X, ALPS_PARAMS_DETAIL_ALLTYPES_SEQ);
+#undef ALPS_LOCAL_TRY_TYPE
+                            assert(deflt_.which()==root_which && "The `which` value must be the same as on root");
+                        } // done with slave rank 
+                    }
+                }
+#endif
+                
             };
 
             typedef std::map<std::string, option_description_type> description_map_type;
 
         } // detail::
     } // params_ns::
+
+#ifdef ALPS_HAVE_MPI
+    namespace mpi {
+        inline
+        void broadcast(const alps::mpi::communicator &comm, alps::params_ns::detail::option_description_type& val, int root)
+        {
+            val.broadcast(comm, root);
+        }
+    }
+#endif
+
+    
 } // alps::
 
 #endif /* ALPS_PARAMS_OPTION_DESCRIPTION_TYPE_27836b27fafb4e60a89a59b80016bebc */

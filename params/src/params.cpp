@@ -25,10 +25,12 @@
 // #include <alps/hdf5/archive.hpp>
 #include <alps/hdf5.hpp>
 
-#include "alps/params.hpp"
+#include <alps/params.hpp>
 
 #ifdef ALPS_HAVE_MPI
-#include "alps/utilities/mpi.hpp"
+#include <alps/utilities/mpi.hpp>
+#include <alps/utilities/mpi_vector.hpp>
+#include <alps/utilities/mpi_optional.hpp>
 #endif
 
 
@@ -68,7 +70,7 @@ namespace {
     };
 }
 
-namespace alps {
+namespace alps{ 
     namespace params_ns {
   
         namespace po=boost::program_options;
@@ -383,19 +385,41 @@ namespace alps {
         /** @NOTE  Implemented as serialization followed by string broadcast (FIXME!) */
         void params::broadcast(alps::mpi::communicator const & comm, int root)
         {
-            throw std::logic_error("Not implemented");
-            std::string buf;
-            if (comm.rank()==root) {
-                possibly_parse();
-                // boost_ar << *this;
-                // buf=outs.str();
-            }
-            alps::mpi::broadcast(comm, buf, root);
-            if (comm.rank()!=root) {
-                // std::istringstream ins(buf);
-                // boost::archive::text_iarchive boost_ar(ins);
-                // boost_ar >> *this;
-            }
+            // throw std::logic_error("Not implemented");
+
+            // FIXME: correct implementation would use swap()
+
+            using alps::mpi::broadcast;
+            
+            possibly_parse();
+
+            broadcast(comm, helpmsg_,root);
+            broadcast(comm, file_content_, root);
+            broadcast(comm, infile_, root);
+            broadcast(comm, argv0_, root);
+
+            broadcast(comm, argvec_, root);
+
+            broadcast(comm, archname_, root);
+
+            optmap_.broadcast(comm, root);
+
+            broadcast(comm, descr_map_, root);
+
+            certainly_parse();
+            
+            // std::string buf;
+            // if (comm.rank()==root) {
+            //     possibly_parse();
+            //     // boost_ar << *this;
+            //     // buf=outs.str();
+            // }
+            // alps::mpi::broadcast(comm, buf, root);
+            // if (comm.rank()!=root) {
+            //     // std::istringstream ins(buf);
+            //     // boost::archive::text_iarchive boost_ar(ins);
+            //     // boost_ar >> *this;
+            // }
         }
 #endif
 

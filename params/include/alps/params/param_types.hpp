@@ -27,6 +27,11 @@
 // FIXME: will go away with acceptance of boost::TypeIndex
 #include "alps/params/typeindex.hpp"
 
+#ifdef ALPS_HAVE_MPI
+#include <alps/utilities/mpi.hpp>
+#endif
+
+
 namespace alps {
     namespace params_ns {
         namespace detail {
@@ -123,20 +128,15 @@ namespace alps {
     } // params_ns
 }// alps
 
-// The following is needed for serialization support
-namespace boost {
-    namespace serialization {
-        /// Serialization function for the "empty value" (does nothing)
-        template<class Archive>
-        inline void serialize(Archive & ar, alps::params_ns::detail::None&, const unsigned int)
-        { }
 
-        /// Serialization function for the "trigger type" (does nothing)
-        template<class Archive>
-        inline void serialize(Archive & ar, alps::params_ns::detail::trigger_tag&, const unsigned int)
-        { }
-    } // serialization
-} // boost
+#ifdef ALPS_HAVE_MPI
+namespace alps {
+    namespace mpi {
+        /// Broadcast of trigger_tag (does nothing) for uniformity of param broadcast code
+        inline void broadcast(const alps::mpi::communicator&, alps::params_ns::detail::trigger_tag&, int) {}
+    }
+}
+#endif
 
 
 #endif // ALPS_PARAMS_PARAM_TYPES_INCLUDED

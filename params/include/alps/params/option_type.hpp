@@ -41,6 +41,12 @@
 #include "alps/params/param_types.hpp" // Sequences of supported types
 #include "alps/params/param_types_ranking.hpp" // for detail::is_convertible<F,T>
 
+#ifdef ALPS_HAVE_MPI
+#include <alps/utilities/mpi_map.hpp>
+#include <alps/utilities/mpi_optional.hpp>
+#include <alps/utilities/mpi_vector.hpp>
+#endif
+
 namespace alps {
     namespace params_ns {
         
@@ -450,7 +456,82 @@ namespace alps {
             //     throw std::logic_error("alps::params::option_type::load() is not implemented yet");
             // }
 
-          
+#ifdef ALPS_HAVE_MPI
+            class broadcast_send_visitor : public boost::static_visitor<> {
+                const alps::mpi::communicator& comm_;
+                const int root_;
+              public:
+                broadcast_send_visitor(const alps::mpi::communicator& c, int rt)
+                    : comm_(c), root_(rt)
+                { }
+
+                template <typename T>
+                void operator()(const T& val) const {
+                    std::cout << "DEBUG: sending T=" << typeid(T).name() << std::endl;
+                    
+                    // FIXME: if we make 2 versions of broadcast, sending and receiving...
+                    assert(comm_.rank()==root_ && "Broadcast send from non-root?");
+                    // FIXME: ...this cast won't be needed
+                    alps::mpi::broadcast(comm_, const_cast<T&>(val), root_);
+
+                    // std::cout << "DEBUG: root at barrier" << std::endl;
+                    // comm_.barrier(); // DEBUG!!
+                    // std::cout << "DEBUG: root past barrier" << std::endl;
+                }
+
+                void operator()(const None&) const {
+                    throw std::logic_error("Attempt to option_type::broadcast() None. Should not happen.\n"
+                                           + ALPS_STACKTRACE);
+                }
+
+                void operator()(const boost::optional<detail::trigger_tag>&) const {
+                    throw std::logic_error("Attempt to option_type::broadcast() a trigger_tag. Should not happen.\n"
+                                           + ALPS_STACKTRACE);
+                }
+            };
+
+            
+            void broadcast(const alps::mpi::communicator& comm, int root)
+            {
+                alps::mpi::broadcast(comm, name_, root);
+                int root_which=val_.which();
+                alps::mpi::broadcast(comm, root_which, root);
+                if (root_which==0) { // CAUTION: relies of None being the first type!
+                    if (comm.rank()==root) {
+                        assert(this->isNone() && "which==0 must be None value");
+                    } else {
+                        val_=None();
+                    }
+                } else { // not-null
+                    if (comm.rank()==root) {
+                        std::cout << "DEBUG: Root: sent which=" << root_which << std::endl;
+                        assert(!this->isNone() && "which!=0 must not be None value");
+                        boost::apply_visitor(broadcast_send_visitor(comm,root), val_);
+                    } else { // slave rank
+                        std::cout << "DEBUG: Slave: got which=" << root_which << std::endl;
+                        // CAUTION: Fragile code!
+#define ALPS_LOCAL_TRY_TYPE(_r_,_d_,_type_) {                           \
+                            boost::optional<_type_> buf;                \
+                            variant_all_type trial(buf);                \
+                            std::cout << "DEBUG: trying buf type=" << typeid(buf).name() << " which=" << trial.which() << std::endl; \
+                            if (trial.which()==root_which) {            \
+                                alps::mpi::broadcast(comm, buf, root);  \
+                                /* std::cout << "DEBUG: slave at barrier" << std::endl; */ \
+                                /* comm.barrier(); /* DEBUG!! */     \
+                                /* std::cout << "DEBUG: slave past barrier" << std::endl; */ \
+                                val_=buf;                               \
+                            }                                           \
+                        } /* end macro */
+                        
+                        BOOST_PP_SEQ_FOR_EACH(ALPS_LOCAL_TRY_TYPE, X, ALPS_PARAMS_DETAIL_VTYPES_SEQ ALPS_PARAMS_DETAIL_STYPES_SEQ);
+#undef ALPS_LOCAL_TRY_TYPE
+                        assert(val_.which()==root_which && "The `which` value must be the same as on root");
+                    } // done with slave rank 
+                }
+            }
+#endif /* ALPS_HAVE_MPI */
+
+            
             /// Constructor preserving the option name
             option_type(const std::string& a_name):
                 name_(a_name) {}
@@ -536,6 +617,14 @@ namespace alps {
                 return it->second;
             }
 
+#ifdef ALPS_HAVE_MPI
+            /// Broadcast the map content
+            void broadcast(const alps::mpi::communicator& comm, int root)
+            {
+                typedef std::map<std::string, option_type> super_type;
+                alps::mpi::broadcast(comm, static_cast<super_type&>(*this), root);
+            }
+#endif
             // void save(hdf5::archive& ar) const
             // {
             //     // throw std::logic_error("options_map_type::save() not implemented yet");
@@ -660,6 +749,17 @@ namespace alps {
             
         
     } // params_ns
+
+#ifdef ALPS_HAVE_MPI
+    namespace mpi {
+        inline
+        void broadcast(const alps::mpi::communicator &comm, alps::params_ns::option_type& val, int root)
+        {
+            val.broadcast(comm, root);
+        }
+    }
+#endif
+
 } // alps
 
 #endif // ALPS_PARAMS_OPTION_TYPE_INCLUDED
