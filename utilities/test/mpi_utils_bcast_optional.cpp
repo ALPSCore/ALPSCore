@@ -5,6 +5,7 @@
  */
 
 #include <alps/utilities/mpi_optional.hpp>
+#include <boost/optional/optional_io.hpp> // to make gtest happy with printing optionals
 #include <gtest/gtest.h>
 
 #include "./test_utils.hpp"

@@ -5,6 +5,7 @@
  */
 
 #include <cstdio>
+#include <boost/optional/optional_io.hpp> // to make gtest happy with printing optionals
 
 #include <alps/hdf5.hpp>
 #include <alps/hdf5/boost_optional.hpp>
@@ -32,7 +33,7 @@ class Hdf5BoostOptionalTest : public ::testing::Test {
 
     ~Hdf5BoostOptionalTest()
     {
-        // remove(tmpfile_.c_str());
+        remove(tmpfile_.c_str());
     }
 
     void test_w_empty() {
