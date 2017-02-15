@@ -1,4 +1,12 @@
-Whenever scientific publications result from a program based on ALPS we kindly ask for an acknowledgment of ALPS and a citation to the most current ALPS paper:
+Whenever scientific publications result from a program based on ALPS Core Libraries we kindly ask for an acknowledgment of ALPS and ALPS Core Libraries and citations to:
+
+1) The most current ALPS Core Libraries paper:
+
+A. Gaenko et al., Comp. Phys. Comm. (2017) v.213, p.235-251
+http://www.sciencedirect.com/science/article/pii/S0010465516303885
+http://dx.doi.org/10.1016/j.cpc.2016.12.009
+
+2) The most current ALPS paper:
 
 B. Bauer et al., J. Stat. Mech. (2011) P05001.
 http://iopscience.iop.org/1742-5468/2011/05/P05001/
