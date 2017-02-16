@@ -69,12 +69,12 @@ namespace alps {
           double scale = std::log(t_max_ / t_min_) / ((float) ((nfreq_ / 2 - 1)));
           points[nfreq_ / 2] = c_;
           for (int i = 0; i < nfreq_ / 2; ++i) {
-            /// check boundaries for an even # of frequencies
+            // check boundaries for an even # of frequencies
             if(i<nfreq_/2 - 1)
               points[nfreq_ / 2 + i + 1] = c_ + t_min_ * std::exp(((float) (i)) * scale);
             points[nfreq_ / 2 - i - 1] = c_ - t_min_ * std::exp(((float) (i)) * scale);
           }
-          ///if we have an odd # of frequencies, this catches the last element
+          // if we have an odd # of frequencies, this catches the last element
           if (nfreq_ % 2 != 0)
             points[nfreq_ / 2 + nfreq_ / 2] = c_ + t_min_ * std::exp(((float) (nfreq_/2 - 1)) * scale);
         }
