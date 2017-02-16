@@ -57,10 +57,12 @@ TEST(LogarithmicGrid, CheckMinMax) {
     std::vector<double> points;
     odd_grid.compute_points(points);
     EXPECT_NEAR(c - points[odd_nfreq/2-1], tmin, 1e-10);
+    EXPECT_NEAR(points[odd_nfreq/2+1] - c, tmin, 1e-10);
     EXPECT_NEAR(points[odd_nfreq-1] - points[odd_nfreq/2], tmax, 1e-10);
-
+    EXPECT_NEAR(points[odd_nfreq/2] - points[0], tmax, 1e-10);
     even_grid.compute_points(points);
     EXPECT_NEAR(c - points[even_nfreq/2-1], tmin, 1e-10);
+    EXPECT_NEAR(points[even_nfreq/2+1] - c, tmin, 1e-10);
     EXPECT_NEAR(points[even_nfreq/2] - points[0], tmax, 1e-10);
 }
 
