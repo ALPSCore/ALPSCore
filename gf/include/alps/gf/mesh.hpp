@@ -701,9 +701,11 @@ namespace alps {
             // It's a member function to avoid dealing with templated friend decalration.
             void swap(legendre_mesh& other) {
                 using std::swap;
+                if (this->statistics_ != other.statistics_) {
+                    throw std::runtime_error("Attempt to swap LEGENDRE meshes with different statistics");
+                }
                 swap(this->beta_, other.beta_);
                 swap(this->n_max_, other.n_max_);
-                swap(this->statistics_, other.statistics_);//SHOULD WE ALLOW TO SWAP MESHES WITH DIFFERENT STATISTICS?
                 base_mesh::swap(other);
             }
 
@@ -713,7 +715,6 @@ namespace alps {
                 ar[path+"/N"] << n_max_;
                 ar[path+"/statistics"] << int(statistics_);
                 ar[path+"/beta"] << beta_;
-                ar[path+"/points"] << points();
             }
 
             void load(alps::hdf5::archive& ar, const std::string& path)

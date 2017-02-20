@@ -227,12 +227,21 @@ TEST(Mesh, LegendreLoadSave) {
 TEST(Mesh,SwapLegendre) {
     alps::gf::legendre_mesh mesh_1(5.0, 20, alps::gf::statistics::FERMIONIC);
     alps::gf::legendre_mesh mesh_1r(mesh_1);
-    alps::gf::legendre_mesh mesh_2(10.0, 40, alps::gf::statistics::BOSONIC);
+    alps::gf::legendre_mesh mesh_2(10.0, 40, alps::gf::statistics::FERMIONIC);
     alps::gf::legendre_mesh mesh_2r(mesh_2);
 
     mesh_1.swap(mesh_2);
     EXPECT_EQ(mesh_1, mesh_2r);
     EXPECT_EQ(mesh_2, mesh_1r);
+}
+
+TEST(Mesh,SwapLegendreDifferentStatistics) {
+    alps::gf::legendre_mesh mesh_1(5.0, 20, alps::gf::statistics::BOSONIC);
+    alps::gf::legendre_mesh mesh_1r(mesh_1);
+    alps::gf::legendre_mesh mesh_2(10.0, 40, alps::gf::statistics::FERMIONIC);
+    alps::gf::legendre_mesh mesh_2r(mesh_2);
+
+    EXPECT_THROW(mesh_1.swap(mesh_2), std::runtime_error);
 }
 
 TEST(Mesh,PrintMatsubaraMeshHeader) {
