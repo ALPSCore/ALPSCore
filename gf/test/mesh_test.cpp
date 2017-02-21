@@ -68,6 +68,13 @@ TEST(Mesh,SwapMatsubara) {
     EXPECT_EQ(mesh2.beta(), 5.0);
 }
 
+TEST(Mesh,SwapMatsubaraCheckStatistics) {
+    alps::gf::matsubara_mesh<alps::gf::mesh::POSITIVE_NEGATIVE> mesh1(5.0, 20, alps::gf::statistics::BOSONIC);
+    alps::gf::matsubara_mesh<alps::gf::mesh::POSITIVE_NEGATIVE> mesh2(7.0, 40, alps::gf::statistics::FERMIONIC);
+
+    EXPECT_ANY_THROW(mesh1.swap(mesh2));
+}
+
 TEST(Mesh,CompareMatsubara) {
   alps::gf::matsubara_mesh<alps::gf::mesh::POSITIVE_NEGATIVE> mesh1(5.0, 20);
   alps::gf::matsubara_mesh<alps::gf::mesh::POSITIVE_NEGATIVE> mesh2(5.0, 20);

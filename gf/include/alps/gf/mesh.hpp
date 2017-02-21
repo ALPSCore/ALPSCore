@@ -182,6 +182,8 @@ namespace alps {
             /// Swaps this and another mesh
             // It's a member function to avoid dealing with templated friend decalration.
             void swap(matsubara_mesh& other) {
+                if(statistics_!=other.statistics_)
+                    throw std::runtime_error("Attempt to swap two meshes with different statistics.");// FIXME: specific exception
                 using std::swap;
                 swap(this->beta_, other.beta_);
                 swap(this->nfreq_, other.nfreq_);
