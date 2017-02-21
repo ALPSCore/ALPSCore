@@ -111,3 +111,16 @@ TEST_F(OneIndexGFTest, RealFreq) {
     EXPECT_EQ(data, other_gf(omega));
     EXPECT_EQ(data2, other_gf(++omega));
 }
+
+TEST_F(OneIndexGFTest, Legendre) {
+    namespace g=alps::gf;
+    int nl = 20;
+
+    g::one_index_gf<std::complex<double>, g::legendre_mesh> other_gf(g::legendre_mesh(20.0, nl));
+    g::legendre_index il(4);
+    const std::complex<double> data(3,4);
+    const std::complex<double> data2(0,0);
+    other_gf(il)=data;
+    EXPECT_EQ(data, other_gf(il));
+    EXPECT_EQ(data2, other_gf(++il));
+}

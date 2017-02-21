@@ -106,6 +106,18 @@ TEST_F(MeshTest,MpiBcastIndex) {
     EXPECT_EQ(*mesh_ptr, ref_mesh) << "Failed at rank=" << rank_;
 }
 
+TEST_F(MeshTest,MpiBcastLegendre) {
+    typedef agf::legendre_mesh mesh_type;
+    const double beta = 5.0;
+    mesh_type ref_mesh(beta, 20);
+    mesh_type my_mesh(beta, 1);
+    mesh_type* mesh_ptr= is_root_ ? &ref_mesh : &my_mesh;
+
+    mesh_ptr->broadcast(alps::mpi::communicator(), MASTER);
+
+    EXPECT_EQ(*mesh_ptr, ref_mesh) << "Failed at rank=" << rank_;
+}
+
 
 // for testing MPI, we need main()
 int main(int argc, char**argv)

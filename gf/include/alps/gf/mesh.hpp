@@ -659,7 +659,124 @@ namespace alps {
         };
         ///Stream output operator, e.g. for printing to file
         std::ostream &operator<<(std::ostream &os, const index_mesh &M);
-    
+
+        class legendre_mesh : public base_mesh {
+            double beta_;
+            int n_max_;//number of legendre polynomials
+
+            statistics::statistics_type statistics_;
+
+        public:
+            typedef generic_index<legendre_mesh> index_type;
+
+            legendre_mesh(gf::statistics::statistics_type statistics=statistics::FERMIONIC):
+                    beta_(0.0), n_max_(0), statistics_(statistics) {}
+
+            legendre_mesh(double b, int n_max, gf::statistics::statistics_type statistics=statistics::FERMIONIC):
+                    beta_(b), n_max_(n_max), statistics_(statistics) {
+                check_range();
+                compute_points();
+            }
+            int extent() const{return n_max_;}
+
+            int operator()(index_type idx) const {
+                return idx();
+            }
+
+            /// Comparison operators
+            bool operator==(const legendre_mesh &mesh) const {
+                return beta_==mesh.beta_ && n_max_==mesh.n_max_ && statistics_==mesh.statistics_;
+            }
+
+            /// Comparison operators
+            bool operator!=(const legendre_mesh &mesh) const {
+                return !(*this==mesh);
+            }
+
+            ///getter functions for member variables
+            double beta() const{ return beta_;}
+            statistics::statistics_type statistics() const{ return statistics_;}
+
+            /// Swaps this and another mesh
+            // It's a member function to avoid dealing with templated friend decalration.
+            void swap(legendre_mesh& other) {
+                using std::swap;
+                if (this->statistics_ != other.statistics_) {
+                    throw std::runtime_error("Attempt to swap LEGENDRE meshes with different statistics");
+                }
+                swap(this->beta_, other.beta_);
+                swap(this->n_max_, other.n_max_);
+                base_mesh::swap(other);
+            }
+
+            void save(alps::hdf5::archive& ar, const std::string& path) const
+            {
+                ar[path+"/kind"] << "LEGENDRE";
+                ar[path+"/N"] << n_max_;
+                ar[path+"/statistics"] << int(statistics_);
+                ar[path+"/beta"] << beta_;
+            }
+
+            void load(alps::hdf5::archive& ar, const std::string& path)
+            {
+                std::string kind;
+                ar[path+"/kind"] >> kind;
+                if (kind!="LEGENDRE") throw std::runtime_error("Attempt to read LEGENDRE mesh from non-LEGENDRE data, kind="+kind); // FIXME: specific exception
+                double n_max, beta;
+                int stat;
+
+                ar[path+"/N"] >> n_max;
+                ar[path+"/statistics"] >> stat;
+                ar[path+"/beta"] >> beta;
+
+                statistics_=statistics::statistics_type(stat);
+                beta_=beta;
+                n_max_=n_max;
+                check_range();
+                compute_points();
+            }
+
+#ifdef ALPS_HAVE_MPI
+            void broadcast(const alps::mpi::communicator& comm, int root)
+            {
+                using alps::mpi::broadcast;
+                broadcast(comm, beta_, root);
+                broadcast(comm, n_max_, root);
+                {
+                    int stat = static_cast<int>(statistics_);
+                    broadcast(comm, stat, root);
+                    statistics_=statistics::statistics_type(stat);
+                }
+
+                try {
+                    check_range();
+                } catch (const std::exception& exc) {
+                    // FIXME? Try to communiucate the error with all ranks, at least in debug mode?
+                    int wrank=alps::mpi::communicator().rank();
+                    std::cerr << "legendre_mesh<>::broadcast() exception at WORLD rank=" << wrank << std::endl
+                              << exc.what()
+                              << "\nAborting." << std::endl;
+                    MPI_Abort(MPI_COMM_WORLD,1);
+                }
+                compute_points(); // recompute points rather than sending them over MPI
+            }
+#endif
+
+            void check_range(){
+                if(statistics_!=statistics::FERMIONIC && statistics_!=statistics::BOSONIC) throw std::invalid_argument("statistics should be bosonic or fermionic");
+            }
+            void compute_points(){
+                //This is sort of trivial in the current implementation.
+                //We use P_0, P_1, P_2, ..., P_{n_max_-1}
+                _points().resize(extent());
+                for(int i=0;i<n_max_;++i){
+                    _points()[i]=i;
+                }
+            }
+        };
+        ///Stream output operator, e.g. for printing to file
+        std::ostream &operator<<(std::ostream &os, const legendre_mesh &M);
+
         typedef matsubara_mesh<mesh::POSITIVE_ONLY> matsubara_positive_mesh;
         typedef matsubara_mesh<mesh::POSITIVE_NEGATIVE> matsubara_pn_mesh;
         typedef matsubara_mesh<mesh::POSITIVE_ONLY>::index_type matsubara_index;
@@ -669,6 +786,7 @@ namespace alps {
         typedef real_space_index_mesh::index_type real_space_index;
         typedef index_mesh::index_type index;
         typedef real_frequency_mesh::index_type real_freq_index;
+        typedef legendre_mesh::index_type legendre_index;
 
         namespace detail {
             /* The following is an in-house implementation of a static_assert

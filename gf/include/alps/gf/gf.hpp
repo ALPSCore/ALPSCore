@@ -1067,6 +1067,8 @@ namespace alps {
         typedef one_index_gf<std::complex<double>, matsubara_mesh<mesh::POSITIVE_ONLY> >omega_gf;
         typedef one_index_gf<             double , itime_mesh> itime_gf;
         typedef one_index_gf<             double , index_mesh> sigma_gf;
+        typedef one_index_gf<             double , legendre_mesh> legendre_gf;
+        typedef one_index_gf<std::complex<double>, legendre_mesh> complex_legendre_gf;
 
         typedef omega_k1_k2_sigma_gf matsubara_gf;
 
