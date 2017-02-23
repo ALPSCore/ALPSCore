@@ -81,6 +81,18 @@ TEST_F(OneIndexGFTest,scaling)
     EXPECT_NEAR(4, x1.imag(),1.e-10);
 }
 
+TEST_F(OneIndexGFTest,negation)
+{
+    alps::gf::matsubara_index omega; omega=4;
+
+    gf(omega)=std::complex<double>(3,4);
+    alps::gf::omega_gf gf_neg=-gf;
+
+    std::complex<double> x=gf_neg(omega);
+    EXPECT_NEAR(-3, x.real(),1.e-10);
+    EXPECT_NEAR(-4, x.imag(),1.e-10);
+}
+
 TEST_F(OneIndexGFTest,Assign)
 {
     namespace g=alps::gf;

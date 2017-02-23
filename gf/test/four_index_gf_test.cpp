@@ -51,6 +51,20 @@ TEST_F(FourIndexGFTest,scaling)
     EXPECT_NEAR(4, x1.imag(),1.e-10);
 }
 
+TEST_F(FourIndexGFTest,negation)
+{
+    alps::gf::matsubara_index omega; omega=4;
+    alps::gf::momentum_index i; i=2;
+    alps::gf::momentum_index j=alps::gf::momentum_index(3);
+    alps::gf::index sigma(1);
+
+    gf(omega,i,j,sigma)=std::complex<double>(3,4);
+    alps::gf::matsubara_gf gf_neg=-gf;
+
+    std::complex<double> x=gf_neg(omega,i,j,sigma);
+    EXPECT_NEAR(-3, x.real(),1.e-10);
+    EXPECT_NEAR(-4, x.imag(),1.e-10);
+}
 
 TEST_F(FourIndexGFTest,Assign)
 {

@@ -302,6 +302,20 @@ TEST_F(ThreeIndexTestGF,scaling)
     EXPECT_NEAR(4, x1.imag(),1.e-10);
 }
 
+TEST_F(ThreeIndexTestGF,negation)
+{
+    alps::gf::momentum_index i; i=2;
+    alps::gf::index sigma(1);
+    alps::gf::matsubara_index omega; omega=4;
+
+    gf(omega,i,sigma)=std::complex<double>(3,4);
+    gf_type gf_neg=-gf;
+
+    std::complex<double> x=gf_neg(omega,i,sigma);
+    EXPECT_NEAR(-3, x.real(),1.e-10);
+    EXPECT_NEAR(-4, x.imag(),1.e-10);
+}
+
 TEST_F(ThreeIndexTestGF,print)
 {
   std::stringstream gf_stream;

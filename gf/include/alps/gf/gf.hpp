@@ -167,6 +167,19 @@ namespace alps {
                 return do_op< std::divides<value_type> >(scalar);
             }
 
+            /// Element-wise negation
+            /**
+               @returns Negated Green's Function (a new copy).
+               
+               Advice to user: consider if scaling by (-1) would serve better!
+            */
+            one_index_gf operator-()
+            {
+                one_index_gf gf=*this;
+                gf *= -1.;
+                return gf;
+            }
+
             /// Element-wise assignment
             /** @Note Copies only the data, requires identical grids. */
             // FIXME: this is a hack, to be replaced by a proper assignment later
@@ -346,6 +359,19 @@ namespace alps {
             two_index_gf& operator/=(const value_type& scalar)
             {
                 return do_op< std::divides<value_type> >(scalar);
+            }
+
+            /// Element-wise negation
+            /**
+               @returns Negated Green's Function (a new copy).
+               
+               Advice to user: consider if scaling by (-1) would serve better!
+            */
+            two_index_gf operator-()
+            {
+                two_index_gf gf=*this;
+                gf *= -1.;
+                return gf;
             }
 
             /// Element-wise assignment
@@ -542,6 +568,19 @@ namespace alps {
             three_index_gf& operator/=(const value_type& scalar)
             {
                 return do_op< std::divides<value_type> >(scalar);
+            }
+
+            /// Element-wise negation
+            /**
+               @returns Negated Green's Function (a new copy).
+               
+               Advice to user: consider if scaling by (-1) would serve better!
+            */
+            three_index_gf operator-()
+            {
+                three_index_gf gf=*this;
+                gf *= -1.;
+                return gf;
             }
 
             /// Element-wise assignment
@@ -750,6 +789,19 @@ namespace alps {
             four_index_gf& operator/=(const value_type& scalar)
             {
                 return do_op< std::divides<value_type> >(scalar);
+            }
+
+            /// Element-wise negation
+            /**
+               @returns Negated Green's Function (a new copy).
+               
+               Advice to user: consider if scaling by (-1) would serve better!
+            */
+            four_index_gf operator-()
+            {
+                four_index_gf gf=*this;
+                gf *= -1.;
+                return gf;
             }
 
             /// Element-wise assignment
