@@ -9,7 +9,7 @@
 #include "alps/gf/tail.hpp"
 #include "gf_test.hpp"
 
-class ThreeIndexTestGF : public ::testing::Test
+class ThreeIndexGFTest : public ::testing::Test
 {
   public:
     const double beta;
@@ -20,14 +20,14 @@ class ThreeIndexTestGF : public ::testing::Test
     gf_type gf;
     gf_type gf2;
 
-    ThreeIndexTestGF():beta(10), nsites(4), nfreq(10), nspins(2),
+    ThreeIndexGFTest():beta(10), nsites(4), nfreq(10), nspins(2),
              gf(alps::gf::matsubara_positive_mesh(beta,nfreq),
                 alps::gf::momentum_index_mesh(get_data_for_momentum_mesh()),
                 alps::gf::index_mesh(nspins)),
              gf2(gf) {}
 };
 
-TEST_F(ThreeIndexTestGF,access)
+TEST_F(ThreeIndexGFTest,access)
 {
     alps::gf::matsubara_index omega; omega=4;
     alps::gf::momentum_index i; i=2;
@@ -39,7 +39,7 @@ TEST_F(ThreeIndexTestGF,access)
     EXPECT_EQ(4, x.imag());
 }
 
-TEST_F(ThreeIndexTestGF,init)
+TEST_F(ThreeIndexGFTest,init)
 {
     alps::gf::matsubara_index omega; omega=4;
     alps::gf::momentum_index i; i=2;
@@ -51,7 +51,7 @@ TEST_F(ThreeIndexTestGF,init)
     EXPECT_EQ(0, x.imag());
 }
 
-TEST_F(ThreeIndexTestGF,saveload)
+TEST_F(ThreeIndexGFTest,saveload)
 {
     namespace g=alps::gf;
     {
@@ -75,7 +75,7 @@ TEST_F(ThreeIndexTestGF,saveload)
 
 }
 
-TEST_F(ThreeIndexTestGF, tail)
+TEST_F(ThreeIndexGFTest, tail)
 {
     namespace g=alps::gf;
     typedef g::two_index_gf<double, g::momentum_index_mesh, g::index_mesh> density_matrix_type;
@@ -118,7 +118,7 @@ TEST_F(ThreeIndexTestGF, tail)
     */
 }
 
-TEST_F(ThreeIndexTestGF, TailSaveLoad)
+TEST_F(ThreeIndexGFTest, TailSaveLoad)
 {
     namespace g=alps::gf;
     typedef g::two_index_gf<double, g::momentum_index_mesh, g::index_mesh> density_matrix_type;
@@ -165,7 +165,7 @@ TEST_F(ThreeIndexTestGF, TailSaveLoad)
     
 }
 
-TEST_F(ThreeIndexTestGF,EqOperators)
+TEST_F(ThreeIndexGFTest,EqOperators)
 {
     namespace g=alps::gf;
 
@@ -206,7 +206,7 @@ TEST_F(ThreeIndexTestGF,EqOperators)
     }
 }
 
-TEST_F(ThreeIndexTestGF,Assign)
+TEST_F(ThreeIndexGFTest,Assign)
 {
     namespace g=alps::gf;
 
@@ -243,7 +243,7 @@ TEST_F(ThreeIndexTestGF,Assign)
 }
 
 
-TEST_F(ThreeIndexTestGF,Operators)
+TEST_F(ThreeIndexGFTest,Operators)
 {
     namespace g=alps::gf;
 
@@ -284,7 +284,7 @@ TEST_F(ThreeIndexTestGF,Operators)
     }
 }
 
-TEST_F(ThreeIndexTestGF,scaling)
+TEST_F(ThreeIndexGFTest,scaling)
 {
     alps::gf::momentum_index i; i=2;
     alps::gf::index sigma(1);
@@ -302,7 +302,7 @@ TEST_F(ThreeIndexTestGF,scaling)
     EXPECT_NEAR(4, x1.imag(),1.e-10);
 }
 
-TEST_F(ThreeIndexTestGF,negation)
+TEST_F(ThreeIndexGFTest,negation)
 {
     alps::gf::momentum_index i; i=2;
     alps::gf::index sigma(1);
@@ -316,7 +316,7 @@ TEST_F(ThreeIndexTestGF,negation)
     EXPECT_NEAR(-4, x.imag(),1.e-10);
 }
 
-TEST_F(ThreeIndexTestGF,print)
+TEST_F(ThreeIndexGFTest,print)
 {
   std::stringstream gf_stream;
   gf_stream<<gf;
@@ -332,7 +332,7 @@ TEST_F(ThreeIndexTestGF,print)
 }
 
 // FIXME: does not test the validity of print output
-TEST_F(ThreeIndexTestGF, tailPrint)
+TEST_F(ThreeIndexGFTest, tailPrint)
 {
     namespace g=alps::gf;
     typedef g::two_index_gf<double, g::momentum_index_mesh, g::index_mesh> density_matrix_type;
