@@ -118,6 +118,38 @@ TEST_F(MeshTest,MpiBcastLegendre) {
     EXPECT_EQ(*mesh_ptr, ref_mesh) << "Failed at rank=" << rank_;
 }
 
+TEST_F(MeshTest,MpiBcastNumericalMesh) {
+    typedef agf::numerical_mesh<double,3> mesh_type;
+    const double beta = 5.0;
+
+    const int n_section = 2, k = 3, dim = 10;
+    typedef double Scalar;
+    typedef alps::gf::piecewise_polynomial<Scalar,k> pp_type;
+
+    std::vector<double> section_edges(n_section+1);
+    section_edges[0] = -1.0;
+    section_edges[1] =  0.0;
+    section_edges[2] =  1.0;
+    boost::multi_array<Scalar,2> coeff(boost::extents[n_section][k+1]);
+
+    std::vector<pp_type> bf, bf2;
+    for (int l = 0; l < dim; ++l){
+        std::fill(coeff.origin(), coeff.origin()+coeff.num_elements(), 0.0);
+        bf.push_back(pp_type(n_section, section_edges, coeff));
+
+        std::fill(coeff.origin(), coeff.origin()+coeff.num_elements(), 1.0);
+        bf2.push_back(pp_type(n_section, section_edges, coeff));
+    }
+
+    mesh_type ref_mesh(beta, bf);
+    mesh_type my_mesh(beta, bf2);
+    mesh_type* mesh_ptr= is_root_ ? &ref_mesh : &my_mesh;
+
+    mesh_ptr->broadcast(alps::mpi::communicator(), MASTER);
+
+    EXPECT_EQ(*mesh_ptr, ref_mesh) << "Failed at rank=" << rank_;
+}
+
 
 // for testing MPI, we need main()
 int main(int argc, char**argv)
