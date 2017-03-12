@@ -7,6 +7,7 @@
 #include "gtest/gtest.h"
 #include "alps/gf/mesh.hpp"
 #include "alps/gf/grid.hpp"
+#include "alps/gf/piecewise_polynomial.hpp"
 #include "gf_test.hpp"
 
 #include <boost/filesystem/operations.hpp>
@@ -339,6 +340,74 @@ TEST(Mesh,PowerWeightsAddUpToOne) {
   double sum=0;
   for(int i=0;i<mesh1.extent();++i) sum+=mesh1.weights()[i];
   EXPECT_NEAR(1, sum, 1.e-10);
+}
+
+TEST(Mesh,SwapNumericalMesh) {
+    const int n_section = 2, k = 3;
+    const double beta = 100.0;
+    typedef double Scalar;
+    typedef alps::gf::piecewise_polynomial<Scalar,k> pp_type;
+
+    std::vector<double> section_edges(n_section+1);
+    section_edges[0] = -1.0;
+    section_edges[1] =  0.0;
+    section_edges[2] =  1.0;
+
+    boost::multi_array<Scalar,2> coeff(boost::extents[n_section][k+1]);
+    std::fill(coeff.origin(), coeff.origin()+coeff.num_elements(), 0.0);
+
+    pp_type p(n_section, section_edges, coeff);
+
+    std::vector<pp_type> basis_functions;
+    basis_functions.push_back(p);
+    basis_functions.push_back(p);
+
+    std::vector<pp_type> basis_functions2;
+    basis_functions2.push_back(p);
+
+    alps::gf::numerical_mesh<double,k> mesh1(beta, basis_functions, alps::gf::statistics::FERMIONIC);
+    alps::gf::numerical_mesh<double,k> mesh2(beta, basis_functions2, alps::gf::statistics::FERMIONIC);
+    alps::gf::numerical_mesh<double,k> mesh3(beta, basis_functions2, alps::gf::statistics::BOSONIC);
+
+    mesh1.swap(mesh2);
+    ASSERT_TRUE(mesh1.extent()==1);
+    ASSERT_TRUE(mesh2.extent()==2);
+
+    ASSERT_THROW(mesh1.swap(mesh3), std::runtime_error);
+}
+
+TEST(Mesh,NumericalMeshSave) {
+    const int n_section = 2, k = 3;
+    const double beta = 100.0;
+    typedef double Scalar;
+    typedef alps::gf::piecewise_polynomial<Scalar,k> pp_type;
+
+    std::vector<double> section_edges(n_section+1);
+    section_edges[0] = -1.0;
+    section_edges[1] =  0.0;
+    section_edges[2] =  1.0;
+
+    boost::multi_array<Scalar,2> coeff(boost::extents[n_section][k+1]);
+    std::fill(coeff.origin(), coeff.origin()+coeff.num_elements(), 0.0);
+
+    pp_type p(n_section, section_edges, coeff);
+    std::vector<pp_type> basis_functions;
+    basis_functions.push_back(p);
+    basis_functions.push_back(p);
+
+    alps::gf::numerical_mesh<double,k> mesh1(beta, basis_functions, alps::gf::statistics::FERMIONIC);
+    {
+        alps::hdf5::archive oar("nm.h5","w");
+        mesh1.save(oar,"/nm");
+
+    }
+
+    alps::gf::numerical_mesh<double,k> mesh2;
+    {
+        alps::hdf5::archive iar("nm.h5");
+        mesh2.load(iar,"/nm");
+    }
+    boost::filesystem::remove("nm.h5");
 }
 
 

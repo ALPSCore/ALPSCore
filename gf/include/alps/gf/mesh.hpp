@@ -9,17 +9,20 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/operators.hpp>
 #include <boost/type_traits/integral_constant.hpp>
+#include <boost/type_traits/is_same.hpp>
 
 #include <alps/hdf5/archive.hpp>
 #include <alps/hdf5/complex.hpp>
 #include <alps/hdf5/vector.hpp>
 #include <alps/hdf5/multi_array.hpp>
 
+
 #ifdef ALPS_HAVE_MPI
 #include "mpi_bcast.hpp"
 #endif
 
 #include"flagcheck.hpp"
+#include"piecewise_polynomial.hpp"
 
 namespace alps {
     namespace gf {
@@ -779,6 +782,205 @@ namespace alps {
         ///Stream output operator, e.g. for printing to file
         std::ostream &operator<<(std::ostream &os, const legendre_mesh &M);
 
+        /**
+         * Numerical mesh (T = double or std::complex<double>)
+         */
+        template<class T, int k>
+        class numerical_mesh : public base_mesh {
+            double beta_;
+            int dim_;//dimension of the basis
+
+            statistics::statistics_type statistics_;
+
+            std::vector<piecewise_polynomial<T,k> > basis_functions_;
+
+            bool valid_;
+
+            void set_validity() {
+                valid_ = true;
+                valid_ = valid_ && dim_ > 0;
+                valid_ = valid_ && dim_ == basis_functions_.size();
+                valid_ = valid_ && beta_ >= 0.0;
+                valid_ = valid_ && (statistics_==statistics::FERMIONIC || statistics_==statistics::BOSONIC);
+
+                for (int l=0; l < basis_functions_.size()-1; ++l) {
+                    valid_ = valid_ && (basis_functions_[l].section_edges() == basis_functions_[l+1].section_edges());
+                }
+            }
+
+            void check_validity() const {
+                if (!valid_) {
+                    throw std::runtime_error("numerical mesh has not been properly constructed!");
+                }
+            }
+
+        public:
+            typedef generic_index<numerical_mesh> index_type;
+
+            numerical_mesh(gf::statistics::statistics_type statistics=statistics::FERMIONIC):
+                    beta_(0.0), dim_(0), statistics_(statistics), valid_(false) {}
+
+            numerical_mesh(double b,  const std::vector<piecewise_polynomial<T,k> >&basis_functions,
+                           gf::statistics::statistics_type statistics=statistics::FERMIONIC):
+                    beta_(b), dim_(basis_functions.size()), basis_functions_(basis_functions), statistics_(statistics), valid_(false) {
+                set_validity();
+                //check_range();
+                compute_points();
+            }
+
+            int extent() const{
+                check_validity();
+                return dim_;
+            }
+
+            int operator()(index_type idx) const {
+                check_validity();
+                return idx();
+            }
+
+            /// Comparison operators
+            bool operator==(const numerical_mesh &mesh) const {
+                check_validity();
+                return beta_==mesh.beta_ && dim_==mesh.dim_ && statistics_==mesh.statistics_ && basis_functions_==mesh.basis_functions_;
+            }
+
+            /// Comparison operators
+            bool operator!=(const numerical_mesh &mesh) const {
+                check_validity();
+                return !(*this==mesh);
+            }
+
+            ///getter functions for member variables
+            double beta() const{ return beta_;}
+            statistics::statistics_type statistics() const{ return statistics_;}
+            const piecewise_polynomial<T,k>& basis_function(int l) const {
+                assert(l>=0 && l < dim_);
+                check_validity();
+                return basis_functions_[l];
+            }
+
+
+            /// Swaps this and another mesh
+            // It's a member function to avoid dealing with templated friend decalration.
+            void swap(numerical_mesh& other) {
+                using std::swap;
+                check_validity();
+                swap(this->beta_, other.beta_);
+                swap(this->dim_, other.dim_);
+                if (this->statistics_ != other.statistics_) {
+                    throw std::runtime_error("Do not swap numerical meshes with different statistics!");
+                }
+                swap(this->basis_functions_, other.basis_functions_);
+                base_mesh::swap(other);
+            }
+
+            void save(alps::hdf5::archive& ar, const std::string& path) const
+            {
+                check_validity();
+                ar[path+"/kind"] << "NUMERICAL_MESH";
+                ar[path+"/N"] << dim_;
+                ar[path+"/k"] << k;
+                if (boost::is_same<T,double>::value) {
+                    ar[path+"/scalar_type"] << "double";
+                } else if (boost::is_same<T,std::complex<double> >::value) {
+                    ar[path+"/scalar_type"] << "complex_double";
+                }
+                ar[path+"/statistics"] << int(statistics_);
+                ar[path+"/beta"] << beta_;
+                for (int l=0; l < dim_; ++l) {
+                    basis_functions_[l].save(ar, path+"/basis_functions"+boost::lexical_cast<std::string>(l));
+                }
+            }
+
+            void load(alps::hdf5::archive& ar, const std::string& path)
+            {
+                std::string kind;
+                ar[path+"/kind"] >> kind;
+                if (kind!="NUMERICAL_MESH") throw std::runtime_error("Attempt to read NUMERICAL_MESH mesh from non-LEGENDRE data, kind="+kind); // FIXME: specific exception
+                double dim, beta;
+                int stat;
+
+                int k_tmp;
+                ar[path+"/k"] >> k_tmp;
+                if (k != k_tmp) {
+                    throw std::runtime_error("Attempt to read NUMERICAL_MESH mesh from data with different polynomial orders ="+boost::lexical_cast<std::string>(k_tmp));
+                }
+
+                {
+                    std::string type_str;
+                    ar[path+"/scalar_type"] >> type_str;
+                    if (!(boost::is_same<T,double>::value && type_str=="double")
+                                    && !(boost::is_same<T,std::complex<double> >::value && type_str=="complex_double")) {
+                        throw std::runtime_error("Attempt to read NUMERICAL_MESH mesh from data with scalar type ="+type_str);
+                    }
+                }
+
+                ar[path+"/N"] >> dim;
+                ar[path+"/statistics"] >> stat;
+                if (stat != statistics_) {
+                    throw std::runtime_error("Attemp to load data with different statistics!");
+                }
+                ar[path+"/beta"] >> beta;
+                basis_functions_.resize(dim);
+                for (int l=0; l < dim; ++l) {
+                    basis_functions_[l].load(ar, path+"/basis_functions"+boost::lexical_cast<std::string>(l));
+                }
+
+                statistics_=statistics::statistics_type(stat);
+                beta_=beta;
+                dim_=dim;
+                set_validity();
+                compute_points();
+            }
+
+#ifdef ALPS_HAVE_MPI
+            void broadcast(const alps::mpi::communicator& comm, int root)
+            {
+                using alps::mpi::broadcast;
+                check_validity();
+
+                broadcast(comm, beta_, root);
+                broadcast(comm, dim_, root);
+                {
+                    int stat = static_cast<int>(statistics_);
+                    broadcast(comm, stat, root);
+                    statistics_=statistics::statistics_type(stat);
+                }
+
+                basis_functions_.resize(dim_);
+                for (int l=0; l < dim_; ++l) {
+                    basis_functions_[l].broadcast(comm, root);
+                }
+
+                set_validity();
+                try {
+                    check_validity();
+                } catch (const std::exception& exc) {
+                    // FIXME? Try to communiucate the error with all ranks, at least in debug mode?
+                    int wrank=alps::mpi::communicator().rank();
+                    std::cerr << "numerical_mesh<>::broadcast() exception at WORLD rank=" << wrank << std::endl
+                              << exc.what()
+                              << "\nAborting." << std::endl;
+                    MPI_Abort(MPI_COMM_WORLD,1);
+                }
+                compute_points(); // recompute points rather than sending them over MPI
+            }
+#endif
+
+            //void check_range(){
+                //if(statistics_!=statistics::FERMIONIC && statistics_!=statistics::BOSONIC) throw std::invalid_argument("statistics should be bosonic or fermionic");
+            //}
+
+            void compute_points(){
+                _points().resize(extent());
+                for(int i=0;i<dim_;++i){
+                    _points()[i]=i;
+                }
+            }
+        };
+        ///Stream output operator, e.g. for printing to file
+        //std::ostream &operator<<(std::ostream &os, const numerical_mesh &M);
+
         typedef matsubara_mesh<mesh::POSITIVE_ONLY> matsubara_positive_mesh;
         typedef matsubara_mesh<mesh::POSITIVE_NEGATIVE> matsubara_pn_mesh;
         typedef matsubara_mesh<mesh::POSITIVE_ONLY>::index_type matsubara_index;
@@ -789,6 +991,7 @@ namespace alps {
         typedef index_mesh::index_type index;
         typedef real_frequency_mesh::index_type real_freq_index;
         typedef legendre_mesh::index_type legendre_index;
+        typedef numerical_mesh<double,3>::index_type numerical_mesh_index;
 
         namespace detail {
             /* The following is an in-house implementation of a static_assert
