@@ -9,7 +9,6 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/operators.hpp>
 #include <boost/type_traits/integral_constant.hpp>
-#include <boost/type_traits/is_same.hpp>
 
 #include <alps/hdf5/archive.hpp>
 #include <alps/hdf5/complex.hpp>
@@ -880,11 +879,6 @@ namespace alps {
                 ar[path+"/kind"] << "NUMERICAL_MESH";
                 ar[path+"/N"] << dim_;
                 ar[path+"/k"] << k;
-                if (boost::is_same<T,double>::value) {
-                    ar[path+"/scalar_type"] << "double";
-                } else if (boost::is_same<T,std::complex<double> >::value) {
-                    ar[path+"/scalar_type"] << "complex_double";
-                }
                 ar[path+"/statistics"] << int(statistics_);
                 ar[path+"/beta"] << beta_;
                 for (int l=0; l < dim_; ++l) {
@@ -904,15 +898,6 @@ namespace alps {
                 ar[path+"/k"] >> k_tmp;
                 if (k != k_tmp) {
                     throw std::runtime_error("Attempt to read NUMERICAL_MESH mesh from data with different polynomial orders ="+boost::lexical_cast<std::string>(k_tmp));
-                }
-
-                {
-                    std::string type_str;
-                    ar[path+"/scalar_type"] >> type_str;
-                    if (!(boost::is_same<T,double>::value && type_str=="double")
-                                    && !(boost::is_same<T,std::complex<double> >::value && type_str=="complex_double")) {
-                        throw std::runtime_error("Attempt to read NUMERICAL_MESH mesh from data with scalar type ="+type_str);
-                    }
                 }
 
                 ar[path+"/N"] >> dim;

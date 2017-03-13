@@ -141,7 +141,7 @@ namespace alps {
                                                                           section_edges_(section_edges),
                                                                           coeff_(coeff), valid_(false) {
                 set_validity();
-                check_validity();
+                check_validity();//this may throw
             };
 
             /// Number of sections
