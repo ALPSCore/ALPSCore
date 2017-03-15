@@ -18,6 +18,7 @@ class FourIndexGFTest : public ::testing::Test
     const int nspins;
     alps::gf::matsubara_gf gf;
     alps::gf::matsubara_gf gf2;
+    typedef alps::gf::matsubara_gf gf_type;
     typedef alps::gf::matsubara_mesh<alps::gf::mesh::POSITIVE_ONLY> matsubara_mesh;
 
     FourIndexGFTest():beta(10), nsites(4), nfreq(10), nspins(2),

@@ -16,6 +16,7 @@ class OneIndexGFTest : public ::testing::Test
     alps::gf::omega_gf gf;
     alps::gf::omega_gf gf2;
     typedef alps::gf::matsubara_mesh<alps::gf::mesh::POSITIVE_ONLY> matsubara_mesh;
+    typedef alps::gf::omega_gf gf_type;
 
     OneIndexGFTest():beta(10), nfreq(10),
              gf(matsubara_mesh(beta,nfreq)),

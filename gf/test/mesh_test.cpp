@@ -410,4 +410,52 @@ TEST(Mesh,NumericalMeshSave) {
     boost::filesystem::remove("nm.h5");
 }
 
+TEST(Mesh,DefaultConstructive) {
+    alps::hdf5::archive oar("m.h5", "w");
 
+    //FIXME: Can we use TYPED_TEST to cover all mesh types?
+    {
+        alps::gf::matsubara_pn_mesh m;
+        EXPECT_THROW(m.save(oar, "/mesh"), std::runtime_error);
+    }
+
+    {
+        alps::gf::power_mesh m;
+        EXPECT_THROW(m.save(oar, "/mesh"), std::runtime_error);
+    }
+
+    {
+        alps::gf::matsubara_positive_mesh m;
+        EXPECT_THROW(m.save(oar, "/mesh"), std::runtime_error);
+    }
+
+    {
+        alps::gf::momentum_index_mesh m;
+        EXPECT_THROW(m.save(oar, "/mesh"), std::runtime_error);
+    }
+
+    {
+        alps::gf::itime_mesh m;
+        EXPECT_THROW(m.save(oar, "/mesh"), std::runtime_error);
+    }
+
+    {
+        alps::gf::real_frequency_mesh m;
+        EXPECT_THROW(m.save(oar, "/mesh"), std::runtime_error);
+    }
+
+    {
+        alps::gf::index_mesh m;
+        EXPECT_THROW(m.save(oar, "/mesh"), std::runtime_error);
+    }
+
+    {
+        alps::gf::legendre_mesh m;
+        EXPECT_THROW(m.save(oar, "/mesh"), std::runtime_error);
+    }
+
+    {
+        alps::gf::numerical_mesh<double,3> m;
+        EXPECT_THROW(m.save(oar, "/mesh"), std::runtime_error);
+    }
+}

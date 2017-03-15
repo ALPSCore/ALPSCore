@@ -360,3 +360,18 @@ TEST_F(ThreeIndexGFTest, tailPrint)
     outs << gft.tail(0);
     std::cout << "Output is:\n" << outs.str() << std::endl;
 }
+
+TEST_F(ThreeIndexGFTest, DefaultConstructive)
+{
+    gf_type gf_empty;
+    EXPECT_THROW(gf_empty.norm(), std::runtime_error);
+    {
+        alps::hdf5::archive oar("gf.h5","w");
+        gf.save(oar,"/gf");
+    }
+    {
+        alps::hdf5::archive iar("gf.h5");
+        gf_empty.load(iar,"/gf");
+    }
+    EXPECT_NO_THROW(gf_empty.norm());
+}
