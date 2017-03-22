@@ -346,7 +346,7 @@ TEST(Mesh,SwapNumericalMesh) {
     const int n_section = 2, k = 3;
     const double beta = 100.0;
     typedef double Scalar;
-    typedef alps::gf::piecewise_polynomial<Scalar,k> pp_type;
+    typedef alps::gf::piecewise_polynomial<Scalar> pp_type;
 
     std::vector<double> section_edges(n_section+1);
     section_edges[0] = -1.0;
@@ -365,9 +365,9 @@ TEST(Mesh,SwapNumericalMesh) {
     std::vector<pp_type> basis_functions2;
     basis_functions2.push_back(p);
 
-    alps::gf::numerical_mesh<double,k> mesh1(beta, basis_functions, alps::gf::statistics::FERMIONIC);
-    alps::gf::numerical_mesh<double,k> mesh2(beta, basis_functions2, alps::gf::statistics::FERMIONIC);
-    alps::gf::numerical_mesh<double,k> mesh3(beta, basis_functions2, alps::gf::statistics::BOSONIC);
+    alps::gf::numerical_mesh<double> mesh1(beta, basis_functions, alps::gf::statistics::FERMIONIC);
+    alps::gf::numerical_mesh<double> mesh2(beta, basis_functions2, alps::gf::statistics::FERMIONIC);
+    alps::gf::numerical_mesh<double> mesh3(beta, basis_functions2, alps::gf::statistics::BOSONIC);
 
     mesh1.swap(mesh2);
     ASSERT_TRUE(mesh1.extent()==1);
@@ -380,7 +380,7 @@ TEST(Mesh,NumericalMeshSave) {
     const int n_section = 2, k = 3;
     const double beta = 100.0;
     typedef double Scalar;
-    typedef alps::gf::piecewise_polynomial<Scalar,k> pp_type;
+    typedef alps::gf::piecewise_polynomial<Scalar> pp_type;
 
     std::vector<double> section_edges(n_section+1);
     section_edges[0] = -1.0;
@@ -395,14 +395,14 @@ TEST(Mesh,NumericalMeshSave) {
     basis_functions.push_back(p);
     basis_functions.push_back(p);
 
-    alps::gf::numerical_mesh<double,k> mesh1(beta, basis_functions, alps::gf::statistics::FERMIONIC);
+    alps::gf::numerical_mesh<double> mesh1(beta, basis_functions, alps::gf::statistics::FERMIONIC);
     {
         alps::hdf5::archive oar("nm.h5","w");
         mesh1.save(oar,"/nm");
 
     }
 
-    alps::gf::numerical_mesh<double,k> mesh2;
+    alps::gf::numerical_mesh<double> mesh2;
     {
         alps::hdf5::archive iar("nm.h5");
         mesh2.load(iar,"/nm");
@@ -455,7 +455,7 @@ TEST(Mesh,DefaultConstructive) {
     }
 
     {
-        alps::gf::numerical_mesh<double,3> m;
+        alps::gf::numerical_mesh<double> m;
         EXPECT_THROW(m.save(oar, "/mesh"), std::runtime_error);
     }
 }

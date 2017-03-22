@@ -30,7 +30,7 @@
 namespace alps {
     namespace gf {
 
-        template<typename T, int k>
+        template<typename>
         class piecewise_polynomial;
 
         namespace detail {
@@ -64,29 +64,76 @@ namespace alps {
             conjg(const std::complex<T> &a) {
                 return std::conj(a);
             }
+
+            template<typename T, typename Op>
+            struct pp_element_wise_op {
+                void perform(const T *p1, const T *p2, T *p_r, int k1, int k2, int k_r) const {
+                    Op op;
+                    int k = std::min(k1, k2);
+                    assert(k_r >= k);
+                    for (int i=0; i<k_r+1; ++i) {
+                        p_r[i] = 0.0;
+                    }
+                    for (int i=0; i<k+1; ++i) {
+                        p_r[i] = op(p1[i], p2[i]);
+                    }
+                }
+            };
+
+            template<typename T>
+            struct pp_plus : public pp_element_wise_op<T, std::plus<T> > {};
+
+            template<typename T>
+            struct pp_minus : public pp_element_wise_op<T, std::minus<T> > {};
+
+///  element-Wise operations on piecewise_polynomial coefficients
+            template<typename T, typename Op>
+            piecewise_polynomial<T>
+            do_op(const piecewise_polynomial<T> &f1, const piecewise_polynomial<T> &f2, const Op& op) {
+                if (f1.section_edges_ != f2.section_edges_) {
+                    throw std::runtime_error("Cannot add two numerical functions with different sections!");
+                }
+
+                const int k_new = std::max(f1.order(), f2.order());
+                piecewise_polynomial<T> result(k_new, f1.section_edges());
+
+                const int k_min = std::min(f1.order(), f2.order());
+
+                for (int s=0; s < f1.num_sections(); ++s) {
+                    op.perform(&f1.coeff_[s][0], &f2.coeff_[s][0], &result.coefficient(s,0), f1.order(), f2.order(), k_min);
+                }
+
+                return result;
+            }
         }
 
 /**
  * Class for representing a piecewise polynomial
  *   A function is represented by a polynomial in each section [x_n, x_{n+1}).
  */
-        template<typename T, int k>
+        template<typename T>
         class piecewise_polynomial {
         private:
+            int k_;
+
             typedef boost::multi_array<T, 2> coefficient_type;
 
-            template<typename TT, int kk>
-            friend piecewise_polynomial<TT, kk>
-            operator+(const piecewise_polynomial<TT, kk> &f1, const piecewise_polynomial<TT, kk> &f2);
+            template<typename TT, typename Op>
+            friend piecewise_polynomial<TT>
+            detail::do_op(const piecewise_polynomial<TT> &f1, const piecewise_polynomial<TT> &f2, const Op& op);
 
-            template<typename TT, int kk>
-            friend piecewise_polynomial<TT, kk>
-            operator-(const piecewise_polynomial<TT, kk> &f1, const piecewise_polynomial<TT, kk> &f2);
+            template<typename TT>
+            friend piecewise_polynomial<TT>
+            operator+(const piecewise_polynomial<TT> &f1, const piecewise_polynomial<TT> &f2);
 
-            template<typename TT, int kk>
-            friend const piecewise_polynomial<TT, kk> operator*(TT scalar, const piecewise_polynomial<TT, kk> &pp);
+            template<typename TT>
+            friend piecewise_polynomial<TT>
+            operator-(const piecewise_polynomial<TT> &f1, const piecewise_polynomial<TT> &f2);
 
-            template<typename TT, int kk>
+            template<typename TT>
+            friend const piecewise_polynomial<TT> operator*(TT scalar, const piecewise_polynomial<TT> &pp);
+
+            template<typename TT>
             friend
             class piecewise_polynomial;
 
@@ -124,7 +171,7 @@ namespace alps {
                 assert(valid_);
                 valid_ = valid_ && (coeff_.shape()[0] == n_sections_);
                 assert(valid_);
-                valid_ = valid_ && (coeff_.shape()[1] == k + 1);
+                valid_ = valid_ && (coeff_.shape()[1] == k_ + 1);
                 assert(valid_);
                 for (int i = 0; i < n_sections_; ++i) {
                     valid_ = valid_ && (section_edges_[i] < section_edges_[i + 1]);
@@ -133,16 +180,34 @@ namespace alps {
             }
 
         public:
-            piecewise_polynomial() : n_sections_(0), valid_(false) {};
+            piecewise_polynomial() : k_(-1), n_sections_(0), valid_(false) {};
+
+            /// Construct an object set to zero
+            piecewise_polynomial(int k, const std::vector<double> &section_edges) : k_(k),
+                                                                                    n_sections_(section_edges.size()-1),
+                                                                                    section_edges_(section_edges),
+                                                                                    coeff_(boost::extents[n_sections_][k+1]),
+                                                                                    valid_(false) {
+                std::fill(coeff_.origin(), coeff_.origin()+coeff_.num_elements(), 0.0);
+
+                set_validity();
+                check_validity();//this may throw
+            };
 
             piecewise_polynomial(int n_section,
                                  const std::vector<double> &section_edges,
-                                 const boost::multi_array<T, 2> &coeff) : n_sections_(section_edges.size() - 1),
+                                 const boost::multi_array<T, 2> &coeff) : k_(coeff.shape()[1]-1),
+                                                                          n_sections_(section_edges.size() - 1),
                                                                           section_edges_(section_edges),
                                                                           coeff_(coeff), valid_(false) {
                 set_validity();
                 check_validity();//this may throw
             };
+
+            /// Order of the polynomial
+            int order() const {
+                return k_;
+            }
 
             /// Number of sections
             int num_sections() const {
@@ -170,13 +235,28 @@ namespace alps {
             }
 
             /// Return the coefficient of $x^p$ for the given section.
-            inline T coefficient(int i, int p) const {
+            inline const T& coefficient(int i, int p) const {
                 assert(i >= 0 && i < section_edges_.size());
-                assert(p >= 0 && p <= k);
+                assert(p >= 0 && p <= k_);
 #ifndef NDEBUG
                 check_validity();
 #endif
                 return coeff_[i][p];
+            }
+
+            /// Return a reference to the coefficient of $x^p$ for the given section.
+            inline T& coefficient(int i, int p) {
+                assert(i >= 0 && i < section_edges_.size());
+                assert(p >= 0 && p <= k_);
+#ifndef NDEBUG
+                check_validity();
+#endif
+                return coeff_[i][p];
+            }
+
+            /// Set to zero
+            void set_zero() {
+                std::fill(coeff_.origin(), coeff_.origin()+coeff_.num_elements(), 0.0);
             }
 
             /// Compute the value at x.
@@ -198,7 +278,7 @@ namespace alps {
 
                 const double dx = x - section_edges_[section];
                 T r = 0.0, x_pow = 1.0;
-                for (int p = 0; p < k + 1; ++p) {
+                for (int p = 0; p < k_ + 1; ++p) {
                     r += coeff_[section][p] * x_pow;
                     x_pow *= dx;
                 }
@@ -223,16 +303,19 @@ namespace alps {
             }
 
             /// Compute overlap <this | other> with complex conjugate. The two objects must have the same sections.
-            template<class T2, int k2>
-            T overlap(const piecewise_polynomial<T2, k2> &other) const {
+            template<class T2>
+            T overlap(const piecewise_polynomial<T2> &other) const {
                 check_validity();
                 if (section_edges_ != other.section_edges_) {
                     throw std::runtime_error("Computing overlap between piecewise polynomials with different section edges are not supported");
                 }
                 typedef BOOST_TYPEOF(static_cast<T>(1.0)*static_cast<T2>(1.0))  Tr;
 
+                const int k = this->order();
+                const int k2 = other.order();
+
                 Tr r = 0.0;
-                boost::array<double, k + k2 + 2> x_min_power, dx_power;
+                std::vector<double> x_min_power(k+k2+2), dx_power(k+k2+2);
 
                 for (int s = 0; s < n_sections_; ++s) {
                     dx_power[0] = 1.0;
@@ -252,7 +335,7 @@ namespace alps {
             }
 
             /// Returns whether or not two objects are numerically the same.
-            bool operator==(const piecewise_polynomial<T, k> &other) const {
+            bool operator==(const piecewise_polynomial<T> &other) const {
                 return (n_sections_ == other.n_sections_) &&
                         (section_edges_ == other.section_edges_) &&
                                 (coeff_ == other.coeff_);
@@ -261,7 +344,7 @@ namespace alps {
             /// Save to a hdf5 file
             void save(alps::hdf5::archive& ar, const std::string& path) const {
                 check_validity();
-                ar[path+"/k"] <<  k;
+                ar[path+"/k"] <<  k_;
                 ar[path+"/num_sections"] << num_sections();
                 ar[path+"/section_edges"] << section_edges_;
                 ar[path+"/coefficients"] << coeff_;
@@ -269,11 +352,7 @@ namespace alps {
 
             /// Load from a hdf5 file
             void load(alps::hdf5::archive& ar, const std::string& path) {
-                int k_tmp;
-                ar[path+"/k"] >>  k_tmp;
-                if (k != k_tmp) {
-                    throw std::runtime_error("Attempt to load data with different polynomial order k"+boost::lexical_cast<std::string>(k_tmp));
-                }
+                ar[path+"/k"] >>  k_;
                 ar[path+"/num_sections"] >> n_sections_;
                 ar[path+"/section_edges"] >> section_edges_;
                 ar[path+"/coefficients"] >> coeff_;
@@ -288,12 +367,13 @@ namespace alps {
             {
                 using alps::mpi::broadcast;
 
+                broadcast(comm, k_, root);
                 broadcast(comm, n_sections_, root);
                 section_edges_.resize(n_sections_+1);
                 broadcast(comm, &section_edges_[0], n_sections_+1, root);
 
-                coeff_.resize(boost::extents[n_sections_][k+1]);
-                broadcast(comm, coeff_.origin(), (k+1)*n_sections_, root);
+                coeff_.resize(boost::extents[n_sections_][k_+1]);
+                broadcast(comm, coeff_.origin(), (k_+1)*n_sections_, root);
 
                 set_validity();
                 check_validity();
@@ -303,43 +383,23 @@ namespace alps {
         };//class pieacewise_polynomial
 
 /// Add piecewise_polynomial objects
-        template<typename T, int k>
-        piecewise_polynomial<T, k>
-        operator+(const piecewise_polynomial<T, k> &f1, const piecewise_polynomial<T, k> &f2) {
-            if (f1.section_edges_ != f2.section_edges_) {
-                throw std::runtime_error("Cannot add two numerical functions with different sections!");
-            }
-            boost::multi_array<T, 2> coeff_sum(f1.coeff_);
-            std::transform(
-                    f1.coeff_.origin(), f1.coeff_.origin() + f1.coeff_.num_elements(),
-                    f2.coeff_.origin(), coeff_sum.origin(),
-                    std::plus<T>()
-
-            );
-            return piecewise_polynomial<T, k>(f1.num_sections(), f1.section_edges_, coeff_sum);
+        template<typename T>
+        piecewise_polynomial<T>
+        operator+(const piecewise_polynomial<T> &f1, const piecewise_polynomial<T> &f2) {
+            return detail::do_op(f1, f2, detail::pp_plus<T>());
         }
 
 /// Substract piecewise_polynomial objects
-        template<typename T, int k>
-        piecewise_polynomial<T, k>
-        operator-(const piecewise_polynomial<T, k> &f1, const piecewise_polynomial<T, k> &f2) {
-            if (f1.section_edges_ != f2.section_edges_) {
-                throw std::runtime_error("Cannot add two numerical functions with different sections!");
-            }
-            boost::multi_array<T, 2> coeff_sum(f1.coeff_);
-            std::transform(
-                    f1.coeff_.origin(), f1.coeff_.origin() + f1.coeff_.num_elements(),
-                    f2.coeff_.origin(), coeff_sum.origin(),
-                    std::minus<T>()
-
-            );
-            return piecewise_polynomial<T, k>(f1.num_sections(), f1.section_edges_, coeff_sum);
+        template<typename T>
+        piecewise_polynomial<T>
+        operator-(const piecewise_polynomial<T> &f1, const piecewise_polynomial<T> &f2) {
+            return detail::do_op(f1, f2, detail::pp_minus<T>());
         }
 
 /// Multiply piecewise_polynomial by a scalar
-        template<typename T, int k>
-        const piecewise_polynomial<T, k> operator*(T scalar, const piecewise_polynomial<T, k> &pp) {
-            piecewise_polynomial<T, k> pp_copy(pp);
+        template<typename T>
+        const piecewise_polynomial<T> operator*(T scalar, const piecewise_polynomial<T> &pp) {
+            piecewise_polynomial<T> pp_copy(pp);
             std::transform(
                     pp_copy.coeff_.origin(), pp_copy.coeff_.origin() + pp_copy.coeff_.num_elements(),
                     pp_copy.coeff_.origin(), std::bind1st(std::multiplies<T>(), scalar)
@@ -349,9 +409,9 @@ namespace alps {
         }
 
 /// Gram-Schmidt orthonormalization
-        template<typename T, int k>
-        void orthonormalize(std::vector<piecewise_polynomial<T, k> > &pps) {
-            typedef piecewise_polynomial<T, k> pp_type;
+        template<typename T>
+        void orthonormalize(std::vector<piecewise_polynomial<T> > &pps) {
+            typedef piecewise_polynomial<T> pp_type;
 
             for (int l = 0; l < pps.size(); ++l) {
                 pp_type pp_new(pps[l]);
