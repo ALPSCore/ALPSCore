@@ -59,9 +59,17 @@ namespace alps {
             typedef VTYPE value_type;
 
             private:
+            bool is_empty_;
             MESH1 mesh1_;
 
             container_type data_;
+
+            /// Throws if gf is empty
+            inline void throw_if_empty() const {
+                if (is_empty_) {
+                    throw std::runtime_error("gf is empty");
+                }
+            }
 
             /// Check if meshes are compatible, throw if not
             void check_meshes(const one_index_gf& rhs)
@@ -72,15 +80,24 @@ namespace alps {
             }
           
             public:
+            one_index_gf()
+                    : is_empty_(true),
+                      mesh1_(),
+                      data_()
+            {
+            }
+
             one_index_gf(const MESH1& mesh1)
-                : mesh1_(mesh1),
+                : is_empty_(false),
+                  mesh1_(mesh1),
                   data_(boost::extents[mesh1_.extent()])
             {
             }
 
             one_index_gf(const MESH1& mesh1,
                          const container_type& data)
-                : mesh1_(mesh1),
+                : is_empty_(false),
+                  mesh1_(mesh1),
                   data_(data)
             {
                 if (mesh1_.extent()!=data_.shape()[0])
@@ -93,17 +110,20 @@ namespace alps {
 
             const value_type& operator()(typename MESH1::index_type i1) const
             {
+                throw_if_empty();
                 return data_[i1()];
             }
 
             value_type& operator()(typename MESH1::index_type i1)
             {
+                throw_if_empty();
                 return data_[i1()];
             }
 
             /// Initialize the GF data to value_type(0.)
             void initialize()
             {
+                throw_if_empty();
                 for (int i=0; i<mesh1_.extent(); ++i) {
                         data_[i]=value_type(0.0);
                 }
@@ -111,6 +131,7 @@ namespace alps {
             /// Norm operation (FIXME: is it always double??)
             double norm() const
             {
+                throw_if_empty();
                 using std::abs;
                 double v=0;
                 for (const value_type* ptr=data_.origin(); ptr!=data_.origin()+data_.num_elements(); ++ptr) {
@@ -123,6 +144,7 @@ namespace alps {
             template <typename op>
             one_index_gf& do_op(const value_type& scalar)
             {
+                throw_if_empty();
 
                 std::transform(data_.origin(), data_.origin()+data_.num_elements(), // inputs
                                data_.origin(), // output
@@ -135,6 +157,7 @@ namespace alps {
             template <typename op>
             one_index_gf& do_op(const one_index_gf& rhs)
             {
+                throw_if_empty();
                 check_meshes(rhs);
                 std::transform(data_.origin(), data_.origin()+data_.num_elements(), rhs.data_.origin(), // inputs
                                data_.origin(), // output
@@ -146,24 +169,28 @@ namespace alps {
             /// Element-wise addition
             one_index_gf& operator+=(const one_index_gf& rhs)
             {
+                throw_if_empty();
                 return do_op< std::plus<value_type> >(rhs);
             }
 
             /// Element-wise subtraction
             one_index_gf& operator-=(const one_index_gf& rhs)
             {
+                throw_if_empty();
                 return do_op< std::minus<value_type> >(rhs);
             }
 
             /// Element-wise scaling 
             one_index_gf& operator*=(const value_type& scalar)
             {
+                throw_if_empty();
                 return do_op< std::multiplies<value_type> >(scalar);
             }
 
             /// Element-wise scaling 
             one_index_gf& operator/=(const value_type& scalar)
             {
+                throw_if_empty();
                 return do_op< std::divides<value_type> >(scalar);
             }
 
@@ -175,6 +202,7 @@ namespace alps {
             */
             one_index_gf operator-()
             {
+                throw_if_empty();
                 one_index_gf gf=*this;
                 gf *= -1.;
                 return gf;
@@ -185,12 +213,14 @@ namespace alps {
             // FIXME: this is a hack, to be replaced by a proper assignment later
             one_index_gf& operator=(const one_index_gf& rhs)
             {
+                throw_if_empty();
                 return do_op< detail::choose_rhs<value_type> >(rhs);
             }
             
             /// Save the GF to HDF5
             void save(alps::hdf5::archive& ar, const std::string& path) const
             {
+                throw_if_empty();
                 save_version(ar,path);
                 ar[path+"/data"] << data_;
                 ar[path+"/mesh/N"] << int(container_type::dimensionality);
@@ -201,6 +231,8 @@ namespace alps {
             void load(alps::hdf5::archive& ar, const std::string& path)
             {
                 if (!check_version(ar,path)) throw std::runtime_error("Incompatible archive version");
+
+                is_empty_ = false;
 
                 int ndim;
                 ar[path+"/mesh/N"] >> ndim;
@@ -217,6 +249,7 @@ namespace alps {
             /// Broadcast the GF (together with meshes)
           void broadcast(const alps::mpi::communicator& comm, int root)
             {
+                throw_if_empty();
                 mesh1_.broadcast(comm,root);
                 detail::broadcast(comm, data_, root);
             }
@@ -244,11 +277,19 @@ namespace alps {
             typedef MESH2 mesh2_type;
             typedef VTYPE value_type;
 
-            private: 
+            private:
+            bool is_empty_;
             MESH1 mesh1_;
             MESH2 mesh2_;
 
             container_type data_;
+
+            /// Throws if gf is empty
+            inline void throw_if_empty() const {
+                if (is_empty_) {
+                    throw std::runtime_error("gf is empty");
+                }
+            }
 
             /// Check if meshes are compatible, throw if not
             void check_meshes(const two_index_gf& rhs)
@@ -261,9 +302,16 @@ namespace alps {
           
 
             public:
+            two_index_gf()
+                    : is_empty_(true),
+                      mesh1_(), mesh2_(),
+                      data_()
+            {
+            }
+
             two_index_gf(const MESH1& mesh1,
                          const MESH2& mesh2)
-                : mesh1_(mesh1), mesh2_(mesh2),
+                : is_empty_(false), mesh1_(mesh1), mesh2_(mesh2),
                   data_(boost::extents[mesh1_.extent()][mesh2_.extent()])
             {
             }
@@ -271,7 +319,7 @@ namespace alps {
             two_index_gf(const MESH1& mesh1,
                          const MESH2& mesh2,
                          const container_type& data)
-                : mesh1_(mesh1), mesh2_(mesh2),
+                : is_empty_(false), mesh1_(mesh1), mesh2_(mesh2),
                   data_(data)
             {
                 if (mesh1_.extent()!=data_.shape()[0] || mesh2_.extent()!=data_.shape()[1])
@@ -296,6 +344,7 @@ namespace alps {
             /// Initialize the GF data to value_type(0.)
             void initialize()
             {
+                throw_if_empty();
                 for (int i=0; i<mesh1_.extent(); ++i) {
                     for (int j=0; j<mesh2_.extent(); ++j) {
                         data_[i][j]=value_type(0.0);
@@ -306,6 +355,7 @@ namespace alps {
             double norm() const
             {
                 using std::abs;
+                throw_if_empty();
                 double v=0;
                 for (const value_type* ptr=data_.origin(); ptr!=data_.origin()+data_.num_elements(); ++ptr) {
                     v=std::max(abs(*ptr), v);
@@ -317,6 +367,7 @@ namespace alps {
             template <typename op>
             two_index_gf& do_op(const two_index_gf& rhs)
             {
+                throw_if_empty();
                 check_meshes(rhs);
                 std::transform(data_.origin(), data_.origin()+data_.num_elements(), rhs.data_.origin(), // inputs
                                data_.origin(), // output
@@ -342,6 +393,7 @@ namespace alps {
             two_index_gf& do_op(const value_type& scalar)
             {
 
+                throw_if_empty();
                 std::transform(data_.origin(), data_.origin()+data_.num_elements(), // inputs
                                data_.origin(), // output
                                std::bind2nd(op(), scalar)); // bound binary(?,scalar)
@@ -369,6 +421,7 @@ namespace alps {
             */
             two_index_gf operator-()
             {
+                throw_if_empty();
                 two_index_gf gf=*this;
                 gf *= -1.;
                 return gf;
@@ -385,6 +438,7 @@ namespace alps {
             /// Save the GF to HDF5
             void save(alps::hdf5::archive& ar, const std::string& path) const
             {
+                throw_if_empty();
                 save_version(ar,path);
                 ar[path+"/data"] << data_;
                 ar[path+"/mesh/N"] << int(container_type::dimensionality);
@@ -396,6 +450,8 @@ namespace alps {
             void load(alps::hdf5::archive& ar, const std::string& path)
             {
                 if (!check_version(ar,path)) throw std::runtime_error("Incompatible archive version");
+
+                is_empty_ = false;
           
                 int ndim;
                 ar[path+"/mesh/N"] >> ndim;
@@ -413,6 +469,7 @@ namespace alps {
             /// Broadcast the GF (with meshes)
           void broadcast(const alps::mpi::communicator& comm, int root)
             {
+                throw_if_empty();
                 mesh1_.broadcast(comm, root);
                 mesh2_.broadcast(comm, root);
                 detail::broadcast(comm, data_, root);
@@ -447,12 +504,20 @@ namespace alps {
             typedef MESH3 mesh3_type;
 
             private:
+            bool is_empty_;
             mesh1_type mesh1_;
             mesh2_type mesh2_;
             mesh3_type mesh3_;
         
             container_type data_;
-            
+
+            /// Throws if gf is empty
+            inline void throw_if_empty() const {
+                if (is_empty_) {
+                    throw std::runtime_error("gf is empty");
+                }
+            }
+
             /// Check if meshes are compatible, throw if not
             void check_meshes(const three_index_gf& rhs)
             {
@@ -464,10 +529,16 @@ namespace alps {
             }
             
             public:
+            three_index_gf()
+                    : is_empty_(true), mesh1_(), mesh2_(), mesh3_(),
+                      data_()
+            {
+            }
+
             three_index_gf(const MESH1& mesh1,
                            const MESH2& mesh2,
                            const MESH3& mesh3)
-                : mesh1_(mesh1), mesh2_(mesh2), mesh3_(mesh3),
+                : is_empty_(false), mesh1_(mesh1), mesh2_(mesh2), mesh3_(mesh3),
                   data_(boost::extents[mesh1_.extent()][mesh2_.extent()][mesh3_.extent()])
             {
             }
@@ -476,7 +547,7 @@ namespace alps {
                            const MESH2& mesh2,
                            const MESH3& mesh3,
                            const container_type& data)
-                : mesh1_(mesh1), mesh2_(mesh2), mesh3_(mesh3),
+                : is_empty_(false), mesh1_(mesh1), mesh2_(mesh2), mesh3_(mesh3),
                   data_(data)
             {
                 if (mesh1_.extent()!=data_.shape()[0] || mesh2_.extent()!=data_.shape()[1] || mesh3_.extent()!=data_.shape()[2])
@@ -502,6 +573,7 @@ namespace alps {
             /// Initialize the GF data to value_type(0.)
             void initialize()
             {
+                throw_if_empty();
                 for (int i=0; i<mesh1_.extent(); ++i) {
                     for (int j=0; j<mesh2_.extent(); ++j) {
                         for (int k=0; k<mesh3_.extent(); ++k) {
@@ -514,6 +586,7 @@ namespace alps {
             /// Norm operation (FIXME: is it always double??)
             double norm() const
             {
+                throw_if_empty();
                 using std::abs;
                 double v=0;
                 for (const value_type* ptr=data_.origin(); ptr!=data_.origin()+data_.num_elements(); ++ptr) {
@@ -526,6 +599,7 @@ namespace alps {
             template <typename op>
             three_index_gf& do_op(const three_index_gf& rhs)
             {
+                throw_if_empty();
                 check_meshes(rhs);
                 std::transform(data_.origin(), data_.origin()+data_.num_elements(), rhs.data_.origin(), // inputs
                                data_.origin(), // output
@@ -551,6 +625,7 @@ namespace alps {
             three_index_gf& do_op(const value_type& scalar)
             {
 
+                throw_if_empty();
                 std::transform(data_.origin(), data_.origin()+data_.num_elements(), // inputs
                                data_.origin(), // output
                                std::bind2nd(op(), scalar)); // bound binary(?,scalar)
@@ -578,6 +653,7 @@ namespace alps {
             */
             three_index_gf operator-()
             {
+                throw_if_empty();
                 three_index_gf gf=*this;
                 gf *= -1.;
                 return gf;
@@ -594,6 +670,7 @@ namespace alps {
             /// Save the GF to HDF5
             void save(alps::hdf5::archive& ar, const std::string& path) const
             {
+                throw_if_empty();
                 save_version(ar,path);
                 ar[path+"/data"] << data_;
                 ar[path+"/mesh/N"] << int(container_type::dimensionality);
@@ -606,6 +683,8 @@ namespace alps {
             void load(alps::hdf5::archive& ar, const std::string& path)
             {
                 if (!check_version(ar,path)) throw std::runtime_error("Incompatible archive version");
+
+                is_empty_ = false;
           
                 int ndim;
                 ar[path+"/mesh/N"] >> ndim;
@@ -624,6 +703,7 @@ namespace alps {
             /// Broadcast the GF (with meshes)
           void broadcast(const alps::mpi::communicator& comm, int root)
             {
+                throw_if_empty();
                 mesh1_.broadcast(comm, root);
                 mesh2_.broadcast(comm, root);
                 mesh3_.broadcast(comm, root);
@@ -661,12 +741,20 @@ namespace alps {
 
             private:
 
+            bool is_empty_;
             MESH1 mesh1_;
             MESH2 mesh2_;
             MESH3 mesh3_;
             MESH4 mesh4_;
 
             container_type data_;
+
+            /// Throws if gf is empty
+            inline void throw_if_empty() const {
+                if (is_empty_) {
+                    throw std::runtime_error("gf is empty");
+                }
+            }
 
             /// Check if meshes are compatible, throw if not
             void check_meshes(const four_index_gf& rhs)
@@ -681,11 +769,16 @@ namespace alps {
 
             public:
 
+            four_index_gf()
+                    : is_empty_(true), mesh1_(), mesh2_(), mesh3_(), mesh4_(),
+                      data_() {
+            }
+
             four_index_gf(const MESH1& mesh1,
                           const MESH2& mesh2,
                           const MESH3& mesh3,
                           const MESH4& mesh4)
-                : mesh1_(mesh1), mesh2_(mesh2), mesh3_(mesh3), mesh4_(mesh4),
+                : is_empty_(false), mesh1_(mesh1), mesh2_(mesh2), mesh3_(mesh3), mesh4_(mesh4),
                   data_(boost::extents[mesh1_.extent()][mesh2_.extent()][mesh3_.extent()][mesh4_.extent()])
             {
             }
@@ -695,7 +788,7 @@ namespace alps {
                           const MESH3& mesh3,
                           const MESH4& mesh4,
                           const container_type& data)
-                : mesh1_(mesh1), mesh2_(mesh2), mesh3_(mesh3), mesh4_(mesh4),
+                : is_empty_(false), mesh1_(mesh1), mesh2_(mesh2), mesh3_(mesh3), mesh4_(mesh4),
                   data_(data)
             {
                 if (mesh1_.extent()!=data_.shape()[0] || mesh2_.extent()!=data_.shape()[1] ||
@@ -735,6 +828,7 @@ namespace alps {
             }
             double norm() const
             {
+                throw_if_empty();
                 using std::abs;
                 double v=0;
                 for (const value_type* ptr=data_.origin(); ptr!=data_.origin()+data_.num_elements(); ++ptr) {
@@ -747,6 +841,7 @@ namespace alps {
             template <typename op>
             four_index_gf& do_op(const four_index_gf& rhs)
             {
+                throw_if_empty();
                 check_meshes(rhs);
                 std::transform(data_.origin(), data_.origin()+data_.num_elements(), rhs.data_.origin(), // inputs
                                data_.origin(), // output
@@ -772,6 +867,7 @@ namespace alps {
             four_index_gf& do_op(const value_type& scalar)
             {
 
+                throw_if_empty();
                 std::transform(data_.origin(), data_.origin()+data_.num_elements(), // inputs
                                data_.origin(), // output
                                std::bind2nd(op(), scalar)); // bound binary(?,scalar)
@@ -799,6 +895,7 @@ namespace alps {
             */
             four_index_gf operator-()
             {
+                throw_if_empty();
                 four_index_gf gf=*this;
                 gf *= -1.;
                 return gf;
@@ -815,6 +912,7 @@ namespace alps {
             /// Save the GF to HDF5
             void save(alps::hdf5::archive& ar, const std::string& path) const
             {
+                throw_if_empty();
                 save_version(ar,path);
                 ar[path+"/data"] << data_;
                 ar[path+"/mesh/N"] << int(container_type::dimensionality);
@@ -828,6 +926,8 @@ namespace alps {
             void load(alps::hdf5::archive& ar, const std::string& path)
             {
                 if (!check_version(ar,path)) throw std::runtime_error("Incompatible archive version");
+
+                is_empty_ = false;
 
                 int ndim;
                 ar[path+"/mesh/N"] >> ndim;
@@ -847,6 +947,7 @@ namespace alps {
             /// Broadcast the GF (with meshes)
           void broadcast(const alps::mpi::communicator& comm, int root)
             {
+                throw_if_empty();
                 mesh1_.broadcast(comm,root);
                 mesh2_.broadcast(comm,root);
                 mesh3_.broadcast(comm,root);
@@ -889,6 +990,8 @@ namespace alps {
 
             private:
 
+            bool is_empty_;
+
             MESH1 mesh1_;
             MESH2 mesh2_;
             MESH3 mesh3_;
@@ -896,6 +999,13 @@ namespace alps {
             MESH5 mesh5_;
 
             container_type data_;
+
+            /// Throws if gf is empty
+            inline void throw_if_empty() const {
+                if (is_empty_) {
+                    throw std::runtime_error("gf is empty");
+                }
+            }
 
             /// Check if meshes are compatible, throw if not
             void check_meshes(const five_index_gf& rhs)
@@ -910,13 +1020,17 @@ namespace alps {
             }
 
             public:
+            five_index_gf()
+                    : is_empty_(true), mesh1_(), mesh2_(), mesh3_(), mesh4_(),mesh5_(), data_()
+            {
+            }
 
             five_index_gf(const MESH1& mesh1,
                           const MESH2& mesh2,
                           const MESH3& mesh3,
                           const MESH4& mesh4,
                           const MESH5& mesh5)
-                : mesh1_(mesh1), mesh2_(mesh2), mesh3_(mesh3), mesh4_(mesh4),mesh5_(mesh5),
+                : is_empty_(false), mesh1_(mesh1), mesh2_(mesh2), mesh3_(mesh3), mesh4_(mesh4),mesh5_(mesh5),
                   data_(boost::extents[mesh1_.extent()][mesh2_.extent()][mesh3_.extent()][mesh4_.extent()][mesh5_.extent()])
             {
             }
@@ -927,7 +1041,7 @@ namespace alps {
                           const MESH4& mesh4,
                           const MESH5& mesh5,
                           const container_type& data)
-                : mesh1_(mesh1), mesh2_(mesh2), mesh3_(mesh3), mesh4_(mesh4), mesh5_(mesh5),
+                : is_empty_(false), mesh1_(mesh1), mesh2_(mesh2), mesh3_(mesh3), mesh4_(mesh4), mesh5_(mesh5),
                   data_(data)
             {
                 if (mesh1_.extent()!=data_.shape()[0] || mesh2_.extent()!=data_.shape()[1] ||
@@ -970,6 +1084,7 @@ namespace alps {
             }
             double norm() const
             {
+                throw_if_empty();
                 using std::abs;
                 double v=0;
                 for (const value_type* ptr=data_.origin(); ptr!=data_.origin()+data_.num_elements(); ++ptr) {
@@ -981,6 +1096,7 @@ namespace alps {
             template <typename op>
             five_index_gf& do_op(const five_index_gf& rhs)
             {
+                throw_if_empty();
                 check_meshes(rhs);
                 std::transform(data_.origin(), data_.origin()+data_.num_elements(), rhs.data_.origin(), // inputs
                                data_.origin(), // output
@@ -1005,6 +1121,7 @@ namespace alps {
             five_index_gf& do_op(const value_type& scalar)
             {
 
+                throw_if_empty();
                 std::transform(data_.origin(), data_.origin()+data_.num_elements(), // inputs
                                data_.origin(), // output
                                std::bind2nd(op(), scalar)); // bound binary(?,scalar)
@@ -1034,6 +1151,7 @@ namespace alps {
             /// Save the GF to HDF5
             void save(alps::hdf5::archive& ar, const std::string& path) const
             {
+                throw_if_empty();
                 save_version(ar,path);
                 ar[path+"/data"] << data_;
                 ar[path+"/mesh/N"] << int(container_type::dimensionality);
@@ -1048,6 +1166,8 @@ namespace alps {
             void load(alps::hdf5::archive& ar, const std::string& path)
             {
                 if (!check_version(ar,path)) throw std::runtime_error("Incompatible archive version");
+
+                is_empty_ = false;
 
                 int ndim;
                 ar[path+"/mesh/N"] >> ndim;
@@ -1068,6 +1188,7 @@ namespace alps {
             /// Broadcast the GF (with meshes)
           void broadcast(const alps::mpi::communicator& comm, int root)
             {
+                throw_if_empty();
                 mesh1_.broadcast(comm,root);
                 mesh2_.broadcast(comm,root);
                 mesh3_.broadcast(comm,root);

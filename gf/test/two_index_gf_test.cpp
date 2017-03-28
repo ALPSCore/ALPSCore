@@ -19,6 +19,7 @@ class TwoIndexGFTest : public ::testing::Test
     alps::gf::omega_sigma_gf gf;
     alps::gf::omega_sigma_gf gf2;
     typedef alps::gf::matsubara_mesh<alps::gf::mesh::POSITIVE_ONLY> matsubara_mesh;
+    typedef alps::gf::omega_sigma_gf gf_type;
 
     TwoIndexGFTest():beta(10), nsites(4), nfreq(10), nspins(2),
              gf(matsubara_mesh(beta,nfreq),
@@ -240,4 +241,19 @@ TEST_F(TwoIndexGFTest,Assign)
     EXPECT_EQ(data, gf2(omega,sigma));
     EXPECT_THROW(other_gf=gf, std::invalid_argument);
     // EXPECT_EQ(data, other_gf(omega,sigma));
+}
+
+TEST_F(TwoIndexGFTest, DefaultConstructive)
+{
+    gf_type gf_empty;
+    EXPECT_THROW(gf_empty.norm(), std::runtime_error);
+    {
+        alps::hdf5::archive oar("gf.h5","w");
+        gf.save(oar,"/gf");
+    }
+    {
+        alps::hdf5::archive iar("gf.h5");
+        gf_empty.load(iar,"/gf");
+    }
+    EXPECT_NO_THROW(gf_empty.norm());
 }

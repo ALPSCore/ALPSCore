@@ -223,3 +223,18 @@ TEST_F(FourIndexGFTest,print)
   }
   EXPECT_EQ(gf_stream_by_hand.str(), gf_stream.str());
 }
+
+TEST_F(FourIndexGFTest, DefaultConstructive)
+{
+    gf_type gf_empty;
+    EXPECT_THROW(gf_empty.norm(), std::runtime_error);
+    {
+        alps::hdf5::archive oar("gf.h5","w");
+        gf.save(oar,"/gf");
+    }
+    {
+        alps::hdf5::archive iar("gf.h5");
+        gf_empty.load(iar,"/gf");
+    }
+    EXPECT_NO_THROW(gf_empty.norm());
+}
