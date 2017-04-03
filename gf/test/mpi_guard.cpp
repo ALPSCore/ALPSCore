@@ -11,9 +11,16 @@
 #include "mpi_guard.hpp"
 
 #include <fstream>
+#include <iostream>
 #include <cstdio>
 #include <cstdlib>
 #include <boost/lexical_cast.hpp>
+
+#include <sys/types.h> // for pid_t ?
+#include <unistd.h> // for getpid()
+#include <stdlib.h> // for getenv()
+#include <signal.h> // for raise()
+
 
 static int Number_of_bcasts=0; //< Number of broadcasts performed.
 
@@ -34,8 +41,36 @@ int get_number_of_bcasts()
 
 /* ^^^ End of the MPI-correctnes checker code  ^^^ */
 
+// Some more helper code intercepting MPI
+extern "C" int MPI_Init(int* argc, char*** argv);
+extern "C" int PMPI_Init(int* argc, char*** argv);
 
-/* Implementation of I/I-based communication class (see header for docs) */
+int MPI_Init(int* argc, char*** argv)
+{
+    int rc=PMPI_Init(argc, argv); // initialize MPI
+    if (rc!=0) {
+        std::cerr << "*** ERROR *** MPI_Init() failed." << std::endl;
+        return rc;
+    }
+    int myrank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+    int stop=0;
+    if (myrank==0) {
+        const char* stop_env=getenv("ALPS_TEST_MPI_DEBUG_STOP");
+        stop = (stop_env!=0) && (*stop_env!=0) && (*stop_env!='0');
+    }
+    MPI_Bcast(&stop, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    if (stop) {
+        pid_t pid=getpid();
+        std::cout << "Stopping rank=" << myrank << " with PID=" << pid << std::endl;
+        raise(SIGSTOP);
+    }
+
+    return rc;
+}
+
+
+/* Implementation of I/O-based communication class (see header for docs) */
 
 Mpi_guard::Mpi_guard(int master, const std::string& basename) : master_(master), sig_fname_base_(basename) {
     MPI_Comm_rank(MPI_COMM_WORLD, &rank_);
