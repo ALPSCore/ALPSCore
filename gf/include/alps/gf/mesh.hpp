@@ -647,7 +647,9 @@ namespace alps {
           void broadcast(const alps::mpi::communicator& comm, int root)
             {
                 using alps::mpi::broadcast;
-                throw_if_empty();
+                if (comm.rank()==root) {
+                  throw_if_empty();
+                }
                 // FIXME: introduce (debug-only?) consistency check, like type checking? akin to load()?
                 detail::broadcast(comm, points_, root);
                 broadcast(comm, kind_, root);
