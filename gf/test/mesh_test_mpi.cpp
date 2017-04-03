@@ -119,12 +119,12 @@ TEST_F(MeshTest,MpiBcastLegendre) {
 }
 
 TEST_F(MeshTest,MpiBcastNumericalMesh) {
-    typedef agf::numerical_mesh<double,3> mesh_type;
+    typedef agf::numerical_mesh<double> mesh_type;
     const double beta = 5.0;
 
     const int n_section = 2, k = 3, dim = 10;
     typedef double Scalar;
-    typedef alps::gf::piecewise_polynomial<Scalar,k> pp_type;
+    typedef alps::gf::piecewise_polynomial<Scalar> pp_type;
 
     std::vector<double> section_edges(n_section+1);
     section_edges[0] = -1.0;

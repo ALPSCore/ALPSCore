@@ -11,7 +11,7 @@
 TEST(PiecewisePolynomial, Orthogonalization) {
     typedef double Scalar;
     const int n_section = 10, k = 8, n_basis = 3;
-    typedef alps::gf::piecewise_polynomial<Scalar,k> pp_type;
+    typedef alps::gf::piecewise_polynomial<Scalar> pp_type;
 
     std::vector<double> section_edges(n_section+1);
     boost::multi_array<Scalar,3> coeff(boost::extents[n_basis][n_section][k+1]);
@@ -88,7 +88,7 @@ TEST(PiecewisePolynomial, Orthogonalization) {
 TEST(PiecewisePolynomial, SaveLoad) {
     const int n_section = 2, k = 3;
     typedef double Scalar;
-    typedef alps::gf::piecewise_polynomial<Scalar,k> pp_type;
+    typedef alps::gf::piecewise_polynomial<Scalar> pp_type;
 
     std::vector<double> section_edges(n_section+1);
     section_edges[0] = -1.0;

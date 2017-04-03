@@ -901,14 +901,14 @@ namespace alps {
         /**
          * Numerical mesh (T = double or std::complex<double>)
          */
-        template<class T, int k>
+        template<class T>
         class numerical_mesh : public base_mesh {
             double beta_;
             int dim_;//dimension of the basis
 
             statistics::statistics_type statistics_;
 
-            std::vector<piecewise_polynomial<T,k> > basis_functions_;
+            std::vector<piecewise_polynomial<T> > basis_functions_;
 
             bool valid_;
 
@@ -936,7 +936,7 @@ namespace alps {
             numerical_mesh(gf::statistics::statistics_type statistics=statistics::FERMIONIC):
                     beta_(0.0), dim_(0), statistics_(statistics), valid_(false) {}
 
-            numerical_mesh(double b,  const std::vector<piecewise_polynomial<T,k> >&basis_functions,
+            numerical_mesh(double b,  const std::vector<piecewise_polynomial<T> >&basis_functions,
                            gf::statistics::statistics_type statistics=statistics::FERMIONIC):
                     beta_(b), dim_(basis_functions.size()), basis_functions_(basis_functions), statistics_(statistics), valid_(false) {
                 set_validity();
@@ -969,7 +969,7 @@ namespace alps {
             ///getter functions for member variables
             double beta() const{ return beta_;}
             statistics::statistics_type statistics() const{ return statistics_;}
-            const piecewise_polynomial<T,k>& basis_function(int l) const {
+            const piecewise_polynomial<T>& basis_function(int l) const {
                 assert(l>=0 && l < dim_);
                 check_validity();
                 return basis_functions_[l];
@@ -995,7 +995,6 @@ namespace alps {
                 check_validity();
                 ar[path+"/kind"] << "NUMERICAL_MESH";
                 ar[path+"/N"] << dim_;
-                ar[path+"/k"] << k;
                 ar[path+"/statistics"] << int(statistics_);
                 ar[path+"/beta"] << beta_;
                 for (int l=0; l < dim_; ++l) {
@@ -1010,12 +1009,6 @@ namespace alps {
                 if (kind!="NUMERICAL_MESH") throw std::runtime_error("Attempt to read NUMERICAL_MESH mesh from non-LEGENDRE data, kind="+kind); // FIXME: specific exception
                 double dim, beta;
                 int stat;
-
-                int k_tmp;
-                ar[path+"/k"] >> k_tmp;
-                if (k != k_tmp) {
-                    throw std::runtime_error("Attempt to read NUMERICAL_MESH mesh from data with different polynomial orders ="+boost::lexical_cast<std::string>(k_tmp));
-                }
 
                 ar[path+"/N"] >> dim;
                 ar[path+"/statistics"] >> stat;
@@ -1093,7 +1086,7 @@ namespace alps {
         typedef index_mesh::index_type index;
         typedef real_frequency_mesh::index_type real_freq_index;
         typedef legendre_mesh::index_type legendre_index;
-        typedef numerical_mesh<double,3>::index_type numerical_mesh_index;
+        typedef numerical_mesh<double>::index_type numerical_mesh_index;
 
         namespace detail {
             /* The following is an in-house implementation of a static_assert
