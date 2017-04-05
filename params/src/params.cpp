@@ -376,7 +376,6 @@ namespace alps{
             
       
 #ifdef ALPS_HAVE_MPI
-        /** @NOTE  Implemented as serialization followed by string broadcast (FIXME!) */
         void params::broadcast(alps::mpi::communicator const & comm, int root)
         {
             // FIXME: correct implementation would use swap()
