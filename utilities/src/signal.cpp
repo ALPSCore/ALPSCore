@@ -34,8 +34,6 @@ namespace alps {
                 sigaction(SIGQUIT, &action, NULL);
                 sigaction(SIGUSR1, &action, NULL);
                 sigaction(SIGUSR2, &action, NULL);
-                sigaction(SIGSTOP, &action, NULL);
-                sigaction(SIGKILL, &action, NULL);
             }
         #endif
         listen();
