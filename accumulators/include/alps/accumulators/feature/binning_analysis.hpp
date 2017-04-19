@@ -266,24 +266,24 @@ namespace alps {
 
                     template<typename S> void print(S & os, bool terse=false) const {
                         if (terse) {
-                            os << short_print(this->mean())
+                            os << alps::short_print(this->mean())
                                << " #" << this->count()
-                               << " +/-" << short_print(this->error())
-                               << " Tau:" << short_print(autocorrelation())
+                               << " +/-" << alps::short_print(this->error())
+                               << " Tau:" << alps::short_print(autocorrelation())
                                << " (warning: print result rather than accumulator)";
                         } else {
                             os << "DEBUG PRINTING of the accumulator object state (use mean(), error() and autocorrelation() methods instead)\n"
                                << "No-binning parent accumulator state:\n";
                             B::print(os, terse);
                             os << "\nLog-binning accumulator state:\n"
-                               << " Error bar: " << short_print(error())
-                               << " Autocorrelation: " << short_print(autocorrelation());
+                               << " Error bar: " << alps::short_print(error())
+                               << " Autocorrelation: " << alps::short_print(autocorrelation());
                             if (m_ac_sum2.size() > 0) {
                                 for (std::size_t i = 0; i < binning_depth(); ++i)
                                     os << std::endl
                                        << "    bin #" << std::setw(3) <<  i + 1
                                        << " : " << std::setw(8) << m_ac_count[i]
-                                       << " entries: error = " << short_print(error(i));
+                                       << " entries: error = " << alps::short_print(error(i));
                                 os << std::endl;
                             } else
                                 os << "No measurements" << std::endl;
@@ -446,18 +446,18 @@ namespace alps {
 
                     template<typename S> void print(S & os, bool terse=false) const {
                         if (terse) {
-                            os << short_print(this->mean())
+                            os << alps::short_print(this->mean())
                                << " #" << this->count()
-                               << " +/-" << short_print(this->error())
-                               << " Tau:" << short_print(autocorrelation());
+                               << " +/-" << alps::short_print(this->error())
+                               << " Tau:" << alps::short_print(autocorrelation());
                         } else {
-                            os << " Error bar: " << short_print(error());
-                            os << " Autocorrelation: " << short_print(autocorrelation());
+                            os << " Error bar: " << alps::short_print(error());
+                            os << " Autocorrelation: " << alps::short_print(autocorrelation());
                             if (m_ac_errors.size() > 0) {
                                 for (std::size_t i = 0; i < m_ac_errors.size(); ++i)
                                     os << std::endl
                                        << "    bin #" << std::setw(3) <<  i + 1
-                                       << " entries: error = " << short_print(m_ac_errors[i]);
+                                       << " entries: error = " << alps::short_print(m_ac_errors[i]);
                             } else {
                                 os << "No bins";
                             }
