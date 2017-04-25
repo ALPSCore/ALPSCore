@@ -9,6 +9,7 @@ set (test_srcs
   three_index_gf_test
   four_index_gf_test 
   four_index_gf_pn_test 
+  seven_index_gf_test
   itime_gf_test
   fourier_test
   grid_test
