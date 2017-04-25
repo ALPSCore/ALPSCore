@@ -1481,8 +1481,8 @@ namespace alps {
                      for(int l=0;l<G.mesh4().extent();++l){
                        for(int m=0;m<G.mesh5().extent();++m){
                          for(int n=0;n<G.mesh6().extent();++n){
-                           for(int o=0;o<G.mesh5().extent();++o){
-                       detail::print_no_complex<value_type>(os, G(typename MESH1::index_type(i),typename MESH2::index_type(j),typename MESH3::index_type(k),typename MESH4::index_type(l),typename MESH5::index_type(m),typename MESH5::index_type(n),typename MESH5::index_type(o))); os<<" ";
+                           for(int o=0;o<G.mesh7().extent();++o){
+                       detail::print_no_complex<value_type>(os, G(typename MESH1::index_type(i),typename MESH2::index_type(j),typename MESH3::index_type(k),typename MESH4::index_type(l),typename MESH5::index_type(m),typename MESH6::index_type(n),typename MESH7::index_type(o))); os<<" ";
                      }
                      }
                        }
