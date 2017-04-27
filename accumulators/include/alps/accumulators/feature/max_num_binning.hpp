@@ -70,12 +70,12 @@ namespace alps {
                         return os;
                     }
                     if (terse) {
-                        os << short_print(m_bins, 4) << "#" << m_num_elements;
+                        os << alps::short_print(m_bins, 4) << "#" << m_num_elements;
                         return os;
                     }
                     os << m_num_elements << " elements per bin, bins are:\n";
                     for (int i=0; i<m_bins.size(); ++i) {
-                        os << "#" << (i+1) << ": " << short_print(m_bins[i],4) << "\n";
+                        os << "#" << (i+1) << ": " << alps::short_print(m_bins[i],4) << "\n";
                     }
                     return os;
                 }
@@ -230,17 +230,17 @@ namespace alps {
 
                 template<typename S> void print(S & os, bool terse=false) const {
                     if (terse) {
-                        os << short_print(this->mean())
+                        os << alps::short_print(this->mean())
                            << " #" << this->count()
-                           << " +/-" << short_print(this->error())
-                           << " Tau:" << short_print(this->autocorrelation());
+                           << " +/-" << alps::short_print(this->error())
+                           << " Tau:" << alps::short_print(this->autocorrelation());
                     } else {
                         B::print(os, terse);
                         os << "Full-binning accumulator state:\n"
                            << "Mean +/-error (tau): "
-                           << short_print(this->mean())
-                           << " +/-" << short_print(this->error())
-                           << "(" << short_print(this->autocorrelation()) << ")\n";
+                           << alps::short_print(this->mean())
+                           << " +/-" << alps::short_print(this->error())
+                           << "(" << alps::short_print(this->autocorrelation()) << ")\n";
                         os << " Bins: ";
                         max_num_binning().print(os,false);
                     }
@@ -557,9 +557,9 @@ namespace alps {
                 template<typename S> void print(S & os, bool terse=false) const {
                     // TODO: use m_mn_variables!
                     os << "Mean +/-error (tau): "
-                       << short_print(mean())
-                       << " +/-" << short_print(error())
-                       << "(" << short_print(this->autocorrelation()) << ")";
+                       << alps::short_print(mean())
+                       << " +/-" << alps::short_print(error())
+                       << "(" << alps::short_print(this->autocorrelation()) << ")";
                     if (!terse) {
                         os << "\n Bins: " << max_num_binning();
                     }
