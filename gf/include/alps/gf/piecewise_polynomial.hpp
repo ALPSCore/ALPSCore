@@ -204,6 +204,18 @@ namespace alps {
                 check_validity();//this may throw
             };
 
+            /// Copy operator
+            piecewise_polynomial<T>& operator=(const piecewise_polynomial<T>& other) {
+                k_ = other.k_;
+                n_sections_ = other.n_sections_;
+                section_edges_ = other.section_edges_;
+                //Should be resized before a copy
+                coeff_.resize(boost::extents[other.coeff_.shape()[0]][other.coeff_.shape()[1]]);
+                coeff_ = other.coeff_;
+                valid_ = other.valid_;
+                return *this;
+            }
+
             /// Order of the polynomial
             int order() const {
                 return k_;
@@ -332,6 +344,11 @@ namespace alps {
                     }
                 }
                 return r;
+            }
+
+            /// Compute squared norm
+            double squared_norm() const {
+                return static_cast<double>(this->overlap(*this));
             }
 
             /// Returns whether or not two objects are numerically the same.

@@ -113,3 +113,21 @@ TEST(PiecewisePolynomial, SaveLoad) {
     ASSERT_TRUE(p == p2);
 }
 
+TEST(PiecewisePolynomial, Copy) {
+    const int n_section = 2, k = 3;
+    typedef double Scalar;
+    typedef alps::gf::piecewise_polynomial<Scalar> pp_type;
+
+    std::vector<double> section_edges(n_section+1);
+    section_edges[0] = -1.0;
+    section_edges[1] =  0.0;
+    section_edges[2] =  1.0;
+    boost::multi_array<Scalar,2> coeff(boost::extents[n_section][k+1]);
+    std::fill(coeff.origin(), coeff.origin()+coeff.num_elements(), 0.0);
+
+    pp_type p(n_section, section_edges, coeff), p2;
+    EXPECT_NO_THROW({p2 = p;});
+
+    std::vector<pp_type> p_vec(1);
+    EXPECT_NO_THROW({p_vec[0] = p;});
+}

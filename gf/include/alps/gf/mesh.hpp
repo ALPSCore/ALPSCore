@@ -921,8 +921,10 @@ namespace alps {
                 valid_ = valid_ && beta_ >= 0.0;
                 valid_ = valid_ && (statistics_==statistics::FERMIONIC || statistics_==statistics::BOSONIC);
 
-                for (int l=0; l < basis_functions_.size()-1; ++l) {
-                    valid_ = valid_ && (basis_functions_[l].section_edges() == basis_functions_[l+1].section_edges());
+                if (basis_functions_.size() > 1) {
+                    for (int l=0; l < basis_functions_.size()-1; ++l) {
+                        valid_ = valid_ && (basis_functions_[l].section_edges() == basis_functions_[l+1].section_edges());
+                    }
                 }
             }
 
@@ -992,6 +994,18 @@ namespace alps {
                 base_mesh::swap(other);
             }
 
+            numerical_mesh& operator=(const numerical_mesh& other) {
+                this->beta_ = other.beta_;
+                this->dim_ = other.dim_;
+                this->statistics_ = other.statistics_;
+                this->basis_functions_ = other.basis_functions_;
+                this->basis_functions_in_matsubara_.resize(
+                        boost::extents[other.basis_functions_in_matsubara_.shape()[0]][other.basis_functions_in_matsubara_.shape()[1]]
+                );
+                this->basis_functions_in_matsubara_ = other.basis_functions_in_matsubara_;
+                base_mesh::operator=(other);
+            }
+
             void save(alps::hdf5::archive& ar, const std::string& path) const
             {
                 check_validity();
@@ -1008,15 +1022,17 @@ namespace alps {
             {
                 std::string kind;
                 ar[path+"/kind"] >> kind;
-                if (kind!="NUMERICAL_MESH") throw std::runtime_error("Attempt to read NUMERICAL_MESH mesh from non-LEGENDRE data, kind="+kind); // FIXME: specific exception
+                if (kind!="NUMERICAL_MESH") throw std::runtime_error("Attempt to read NUMERICAL_MESH mesh from non-numerical-mesh data, kind="+kind); // FIXME: specific exception
                 double dim, beta;
                 int stat;
 
                 ar[path+"/N"] >> dim;
                 ar[path+"/statistics"] >> stat;
-                if (stat != statistics_) {
+                if (valid_ && stat != statistics_) {
                     throw std::runtime_error("Attemp to load data with different statistics!");
                 }
+                statistics_ = static_cast<statistics::statistics_type>(stat);
+
                 ar[path+"/beta"] >> beta;
                 basis_functions_.resize(dim);
                 for (int l=0; l < dim; ++l) {
