@@ -127,7 +127,5 @@ TEST(PiecewisePolynomial, Copy) {
 
     pp_type p(n_section, section_edges, coeff), p2;
     EXPECT_NO_THROW({p2 = p;});
-
-    std::vector<pp_type> p_vec(1);
-    EXPECT_NO_THROW({p_vec[0] = p;});
+    EXPECT_TRUE(p2 == p);
 }
