@@ -41,6 +41,8 @@ int get_number_of_bcasts()
 
 /* ^^^ End of the MPI-correctnes checker code  ^^^ */
 
+
+#ifdef ALPS_TEST_MPI_DEBUG
 // Some more helper code intercepting MPI
 extern "C" int MPI_Init(int* argc, char*** argv);
 extern "C" int PMPI_Init(int* argc, char*** argv);
@@ -68,6 +70,7 @@ int MPI_Init(int* argc, char*** argv)
 
     return rc;
 }
+#endif // ALPS_TEST_MPI_DEBUG
 
 
 /* Implementation of I/O-based communication class (see header for docs) */
