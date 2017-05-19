@@ -26,7 +26,6 @@ include(CheckIncludeFile)
 
 add_this_package(
     # copyright //FIXME
-    os
     temporary_filename
     filename_operations
     stacktrace
