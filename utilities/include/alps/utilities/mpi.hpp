@@ -192,6 +192,14 @@ namespace alps {
                     initialized_=true;
                 }
             }
+            environment(bool abort_on_exception=true)
+                : initialized_(false), abort_on_exception_(abort_on_exception)
+            {
+                if (!initialized()) {
+                    MPI_Init(NULL,NULL);
+                    initialized_=true;
+                }
+            }
 
             ~environment()
             {
