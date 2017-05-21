@@ -204,6 +204,7 @@ namespace alps {
                     , large_(large)
                     , memory_(memory)
                     , filename_(filename)
+                    , filename_new_(filename)
                 {
                     construct();
                 }
@@ -227,7 +228,7 @@ namespace alps {
                 bool large_;
                 bool memory_;
                 std::string filename_;
-                std::string suffix_;
+                std::string filename_new_;
                 hid_t file_id_;
                 
                 private:
@@ -243,23 +244,24 @@ namespace alps {
                                 detail::check_error(H5Pset_fclose_degree(prop_id, H5F_CLOSE_SEMI));
                             #endif
                             if (write_) {
-                                if ((file_id_ = H5Fopen((filename_ + suffix_).c_str(), H5F_ACC_RDWR, prop_id)) < 0) {
+                                if ((file_id_ = H5Fopen(filename_new_.c_str(), H5F_ACC_RDWR, prop_id)) < 0) {
                                     detail::property_type fcrt_id(H5Pcreate(H5P_FILE_CREATE));
                                     detail::check_error(H5Pset_link_creation_order(fcrt_id, (H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED)));
                                     detail::check_error(H5Pset_attr_creation_order(fcrt_id, (H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED)));
-                                    detail::check_error(file_id_ = H5Fcreate((filename_ + suffix_).c_str(), H5F_ACC_TRUNC, fcrt_id, prop_id));
+                                    detail::check_error(file_id_ = H5Fcreate(filename_new_.c_str(), H5F_ACC_TRUNC, fcrt_id, prop_id));
                                 }
-                            } else if ((file_id_ = H5Fopen((filename_ + suffix_).c_str(), H5F_ACC_RDONLY, prop_id)) < 0)
-                                throw archive_not_found("file does not exists or is not a valid hdf5 archive: " + filename_ + suffix_ + ALPS_STACKTRACE);
+                            } else if ((file_id_ = H5Fopen(filename_new_.c_str(), H5F_ACC_RDONLY, prop_id)) < 0)
+                                throw archive_not_found("file does not exists or is not a valid hdf5 archive: " + filename_new_ + ALPS_STACKTRACE);
                             else
                                 detail::check_error(file_id_);
                         } else {
                             if (replace_ && large_)
                                 throw archive_error("the combination 'wl' is not allowd!" + ALPS_STACKTRACE);
                             if (replace_)
-                                for (std::size_t i = 0; boost::filesystem::exists(filename_ + (suffix_ = ".tmp." + cast<std::string>(i))); ++i);
+                                /// @todo:FIXME_DEBOOST:insert proper tempname generation
+                                for (std::size_t i = 0; boost::filesystem::exists(filename_new_=(filename_ + ".tmp." + cast<std::string>(i))); ++i);
                             if (write_ && replace_ && boost::filesystem::exists(filename_))
-                                boost::filesystem::copy_file(filename_, filename_ + suffix_);
+                                boost::filesystem::copy_file(filename_, filename_new_);
                             if (large_) {
                                 {
                                     char filename0[4096], filename1[4096];
@@ -274,22 +276,22 @@ namespace alps {
                                     detail::check_error(H5Pset_fclose_degree(prop_id, H5F_CLOSE_SEMI));
                                 #endif
                                 if (write_) {
-                                    if ((file_id_ = H5Fopen((filename_ + suffix_).c_str(), H5F_ACC_RDWR, prop_id)) < 0) {
+                                    if ((file_id_ = H5Fopen(filename_new_.c_str(), H5F_ACC_RDWR, prop_id)) < 0) {
                                         detail::property_type fcrt_id(H5Pcreate(H5P_FILE_CREATE));
                                         detail::check_error(H5Pset_link_creation_order(fcrt_id, (H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED)));
                                         detail::check_error(H5Pset_attr_creation_order(fcrt_id, (H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED)));
-                                        detail::check_error(file_id_ = H5Fcreate((filename_ + suffix_).c_str(), H5F_ACC_TRUNC, fcrt_id, prop_id));
+                                        detail::check_error(file_id_ = H5Fcreate(filename_new_.c_str(), H5F_ACC_TRUNC, fcrt_id, prop_id));
                                     }
-                                } else if ((file_id_ = H5Fopen((filename_ + suffix_).c_str(), H5F_ACC_RDONLY, prop_id)) < 0)
-                                    throw archive_not_found("file does not exists or is not a valid hdf5 archive: " + filename_ + suffix_ + ALPS_STACKTRACE);
+                                } else if ((file_id_ = H5Fopen(filename_new_.c_str(), H5F_ACC_RDONLY, prop_id)) < 0)
+                                    throw archive_not_found("file does not exists or is not a valid hdf5 archive: " + filename_new_ + ALPS_STACKTRACE);
                                 else
                                     detail::check_error(file_id_);
                             } else {
                                 if (!write_) {
-                                    if (!boost::filesystem::exists(filename_ + suffix_))
-                                        throw archive_not_found("file does not exist: " + filename_ + suffix_ + ALPS_STACKTRACE);
-                                    if (detail::check_error(H5Fis_hdf5((filename_ + suffix_).c_str())) == 0)
-                                        throw archive_error("no valid hdf5 file: " + filename_ + suffix_ + ALPS_STACKTRACE);
+                                    if (!boost::filesystem::exists(filename_new_))
+                                        throw archive_not_found("file does not exist: " + filename_new_ + ALPS_STACKTRACE);
+                                    if (detail::check_error(H5Fis_hdf5(filename_new_.c_str())) == 0)
+                                        throw archive_error("no valid hdf5 file: " + filename_new_ + ALPS_STACKTRACE);
                                 }
                                 #ifndef ALPS_HDF5_CLOSE_GREEDY
                                     detail::property_type ALPS_HDF5_FILE_ACCESS(H5Pcreate(H5P_FILE_ACCESS));
@@ -298,14 +300,14 @@ namespace alps {
                                     #define ALPS_HDF5_FILE_ACCESS H5P_DEFAULT
                                 #endif
                                 if (write_) {
-                                    if ((file_id_ = H5Fopen((filename_ + suffix_).c_str(), H5F_ACC_RDWR, ALPS_HDF5_FILE_ACCESS)) < 0) {
+                                    if ((file_id_ = H5Fopen(filename_new_.c_str(), H5F_ACC_RDWR, ALPS_HDF5_FILE_ACCESS)) < 0) {
                                         detail::property_type fcrt_id(H5Pcreate(H5P_FILE_CREATE));
                                         detail::check_error(H5Pset_link_creation_order(fcrt_id, (H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED)));
                                         detail::check_error(H5Pset_attr_creation_order(fcrt_id, (H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED)));
-                                        detail::check_error(file_id_ = H5Fcreate((filename_ + suffix_).c_str(), H5F_ACC_TRUNC, fcrt_id, ALPS_HDF5_FILE_ACCESS));
+                                        detail::check_error(file_id_ = H5Fcreate(filename_new_.c_str(), H5F_ACC_TRUNC, fcrt_id, ALPS_HDF5_FILE_ACCESS));
                                     }
                                 } else
-                                    detail::check_error(file_id_ = H5Fopen((filename_ + suffix_).c_str(), H5F_ACC_RDONLY, ALPS_HDF5_FILE_ACCESS));
+                                    detail::check_error(file_id_ = H5Fopen(filename_new_.c_str(), H5F_ACC_RDONLY, ALPS_HDF5_FILE_ACCESS));
                                 #ifdef ALPS_HDF5_CLOSE_GREEDY
                                     #undef(ALPS_HDF5_FILE_ACCESS)
                                 #endif
@@ -321,7 +323,7 @@ namespace alps {
                                        H5Fget_obj_count(file_id_, H5F_OBJ_DATATYPE) > 0
                                     || H5Fget_obj_count(file_id_, H5F_OBJ_ALL) - H5Fget_obj_count(file_id_, H5F_OBJ_FILE) > 0
                                 ) {
-                                    std::cerr << "Not all resources closed in file '" << filename_ << suffix_ << "'" << std::endl;
+                                    std::cerr << "Not all resources closed in file '" << filename_new_ << "'" << std::endl;
                                     std::abort();
                                 }
                             #endif
@@ -339,11 +341,11 @@ namespace alps {
                             if (replace_) {
                                 if (boost::filesystem::exists(filename_))
                                     boost::filesystem::remove(filename_);
-                                boost::filesystem::rename(filename_ + suffix_, filename_);
+                                boost::filesystem::rename(filename_new_, filename_);
                             }
                         } catch (std::exception & ex) {
                             if (abort) {
-                                std::cerr << "Error destroying HDF5 context of file '" << filename_ << suffix_ << "'\n" << ex.what() << std::endl;
+                                std::cerr << "Error destroying HDF5 context of file '" << filename_new_ << "'\n" << ex.what() << std::endl;
                                 std::abort();
                             } else
                                 throw ex;
