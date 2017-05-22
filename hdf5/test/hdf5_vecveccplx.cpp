@@ -24,7 +24,7 @@ TEST(hdf5, TestingIoOfComplexVectors){
       vector< vector< complex<double> > > v;
       for( int i = 0; i < 3; ++i )
         v.push_back(vector< complex<double> >(i+1, complex<double>(i,2*i)));
-      alps::hdf5::archive ar("vvcplx.h5",alps::hdf5::archive::WRITE);
+      alps::hdf5::archive ar("vvcplx.h5","w");
       ar << alps::make_pvp("v",v);
 	}
     boost::filesystem::remove(boost::filesystem::path("vvcplx.h5"));

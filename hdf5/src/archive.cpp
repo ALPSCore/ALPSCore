@@ -263,13 +263,13 @@ namespace alps {
                             if (write_ && replace_ && boost::filesystem::exists(filename_))
                                 boost::filesystem::copy_file(filename_, filename_new_);
                             if (large_) {
-                                {
-                                    char filename0[4096], filename1[4096];
-                                    sprintf(filename0, filename_.c_str(), 0);
-                                    sprintf(filename1, filename_.c_str(), 1);
-                                    if (!strcmp(filename0, filename1))
-                                        throw archive_error("Large hdf5 archives need to have a '%d' part in the filename" + ALPS_STACKTRACE);
-                                }
+                                // {
+                                //     char filename0[4096], filename1[4096];
+                                //     sprintf(filename0, filename_.c_str(), 0);
+                                //     sprintf(filename1, filename_.c_str(), 1);
+                                //     if (!strcmp(filename0, filename1))
+                                //         throw archive_error("Large hdf5 archives need to have a '%d' part in the filename" + ALPS_STACKTRACE);
+                                // }
                                 detail::property_type prop_id(H5Pcreate(H5P_FILE_ACCESS));
                                 detail::check_error(H5Pset_fapl_family(prop_id, 1 << 30, H5P_DEFAULT));
                                 #ifndef ALPS_HDF5_CLOSE_GREEDY
@@ -356,17 +356,6 @@ namespace alps {
         }
 
         archive::archive() : context_(NULL) {}
-        archive::archive(std::string const & filename, int props) : context_(NULL) { // TODO: remove that!
-            construct(filename, props);
-        }
-
-        archive::archive(std::string const & filename, char prop) : context_(NULL) { // TODO: remove that!
-            open(filename, std::string(1, prop));
-        }
-
-        archive::archive(std::string const & filename, char signed prop) : context_(NULL) { // TODO: remove that!
-            open(filename, std::string(1, prop));
-        }
 
         archive::archive(boost::filesystem::path const & filename, std::string mode) : context_(NULL) {
             open(filename, mode);

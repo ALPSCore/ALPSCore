@@ -69,13 +69,13 @@ TEST(hdf5, TestingIoOfBoolVars){
     a.b.b = true; a.b.p = std::make_pair(3,4); a.b.e = E1;
     a.c.b = false; a.c.u = 1;
     {
-        hdf5::archive ar("test_hdf5_bool.h5",1);
+        hdf5::archive ar("test_hdf5_bool.h5","w");
         ar << make_pvp("/true",true);
         ar << make_pvp("/false",false);
         ar << make_pvp("/a",a);
     }
     {
-        hdf5::archive ar("test_hdf5_bool.h5", 0);
+        hdf5::archive ar("test_hdf5_bool.h5", "r");
         bool bb, bc, bt, bf;
         ar 
             >> make_pvp("/a/b/b",bb) 

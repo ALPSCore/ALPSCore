@@ -87,10 +87,7 @@ namespace alps {
         }
 
         class archive {
-
-            public:
-
-                // TODO: make this private
+            private:
                 typedef enum {
                     READ = 0x00, 
                     WRITE = 0x01, 
@@ -100,13 +97,12 @@ namespace alps {
                     MEMORY = 0x10 
                 } properties;
 
+            public:
+
                 /// default constructor to create archive with out openning of any file
                 /// to be used in conjunction with `void open(const boost::filesystem::path &, std::string)` function
                 archive();
                 archive(boost::filesystem::path const & filename, std::string mode = "r");
-                explicit archive(std::string const & filename, int props); // TODO: remove that!
-                explicit archive(std::string const & filename, char prop); // TODO: remove that!
-                explicit archive(std::string const & filename, char signed prop); // TODO: remove that!
                 archive(archive const & arg);
 
                 virtual ~archive();
