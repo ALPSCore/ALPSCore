@@ -197,11 +197,10 @@ namespace alps {
 
             struct archivecontext : boost::noncopyable {
 
-                archivecontext(std::string const & filename, bool write, bool replace, bool compress, bool large, bool memory)
+                archivecontext(std::string const & filename, bool write, bool replace, bool compress, bool memory)
                     : compress_(compress)
                     , write_(write || replace)
                     , replace_(!memory && replace)
-                    , large_(large)
                     , memory_(memory)
                     , filename_(filename)
                     , filename_new_(filename)
@@ -225,7 +224,6 @@ namespace alps {
                 bool compress_;
                 bool write_;
                 bool replace_;
-                bool large_;
                 bool memory_;
                 std::string filename_;
                 std::string filename_new_;
@@ -235,9 +233,7 @@ namespace alps {
 
                     void construct() {
                         alps::signal::listen();
-                        if (memory_ && large_)
-                            throw archive_error("either memory or large file system can be used!" + ALPS_STACKTRACE);
-                        else if (memory_) {
+                        if (memory_) {
                             detail::property_type prop_id(H5Pcreate(H5P_FILE_ACCESS));
                             detail::check_error(H5Pset_fapl_core(prop_id, 1 << 20, true));
                             #ifndef ALPS_HDF5_CLOSE_GREEDY
@@ -255,63 +251,35 @@ namespace alps {
                             else
                                 detail::check_error(file_id_);
                         } else {
-                            if (replace_ && large_)
-                                throw archive_error("the combination 'wl' is not allowd!" + ALPS_STACKTRACE);
                             if (replace_)
                                 /// @todo:FIXME_DEBOOST:insert proper tempname generation
                                 for (std::size_t i = 0; boost::filesystem::exists(filename_new_=(filename_ + ".tmp." + cast<std::string>(i))); ++i);
                             if (write_ && replace_ && boost::filesystem::exists(filename_))
                                 boost::filesystem::copy_file(filename_, filename_new_);
-                            if (large_) {
-                                // {
-                                //     char filename0[4096], filename1[4096];
-                                //     sprintf(filename0, filename_.c_str(), 0);
-                                //     sprintf(filename1, filename_.c_str(), 1);
-                                //     if (!strcmp(filename0, filename1))
-                                //         throw archive_error("Large hdf5 archives need to have a '%d' part in the filename" + ALPS_STACKTRACE);
-                                // }
-                                detail::property_type prop_id(H5Pcreate(H5P_FILE_ACCESS));
-                                detail::check_error(H5Pset_fapl_family(prop_id, 1 << 30, H5P_DEFAULT));
-                                #ifndef ALPS_HDF5_CLOSE_GREEDY
-                                    detail::check_error(H5Pset_fclose_degree(prop_id, H5F_CLOSE_SEMI));
-                                #endif
-                                if (write_) {
-                                    if ((file_id_ = H5Fopen(filename_new_.c_str(), H5F_ACC_RDWR, prop_id)) < 0) {
-                                        detail::property_type fcrt_id(H5Pcreate(H5P_FILE_CREATE));
-                                        detail::check_error(H5Pset_link_creation_order(fcrt_id, (H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED)));
-                                        detail::check_error(H5Pset_attr_creation_order(fcrt_id, (H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED)));
-                                        detail::check_error(file_id_ = H5Fcreate(filename_new_.c_str(), H5F_ACC_TRUNC, fcrt_id, prop_id));
-                                    }
-                                } else if ((file_id_ = H5Fopen(filename_new_.c_str(), H5F_ACC_RDONLY, prop_id)) < 0)
-                                    throw archive_not_found("file does not exists or is not a valid hdf5 archive: " + filename_new_ + ALPS_STACKTRACE);
-                                else
-                                    detail::check_error(file_id_);
-                            } else {
-                                if (!write_) {
-                                    if (!boost::filesystem::exists(filename_new_))
-                                        throw archive_not_found("file does not exist: " + filename_new_ + ALPS_STACKTRACE);
-                                    if (detail::check_error(H5Fis_hdf5(filename_new_.c_str())) == 0)
-                                        throw archive_error("no valid hdf5 file: " + filename_new_ + ALPS_STACKTRACE);
-                                }
-                                #ifndef ALPS_HDF5_CLOSE_GREEDY
-                                    detail::property_type ALPS_HDF5_FILE_ACCESS(H5Pcreate(H5P_FILE_ACCESS));
-                                    detail::check_error(H5Pset_fclose_degree(ALPS_HDF5_FILE_ACCESS, H5F_CLOSE_SEMI));
-                                #else
-                                    #define ALPS_HDF5_FILE_ACCESS H5P_DEFAULT
-                                #endif
-                                if (write_) {
-                                    if ((file_id_ = H5Fopen(filename_new_.c_str(), H5F_ACC_RDWR, ALPS_HDF5_FILE_ACCESS)) < 0) {
-                                        detail::property_type fcrt_id(H5Pcreate(H5P_FILE_CREATE));
-                                        detail::check_error(H5Pset_link_creation_order(fcrt_id, (H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED)));
-                                        detail::check_error(H5Pset_attr_creation_order(fcrt_id, (H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED)));
-                                        detail::check_error(file_id_ = H5Fcreate(filename_new_.c_str(), H5F_ACC_TRUNC, fcrt_id, ALPS_HDF5_FILE_ACCESS));
-                                    }
-                                } else
-                                    detail::check_error(file_id_ = H5Fopen(filename_new_.c_str(), H5F_ACC_RDONLY, ALPS_HDF5_FILE_ACCESS));
-                                #ifdef ALPS_HDF5_CLOSE_GREEDY
-                                    #undef(ALPS_HDF5_FILE_ACCESS)
-                                #endif
+                            if (!write_) {
+                                if (!boost::filesystem::exists(filename_new_))
+                                    throw archive_not_found("file does not exist: " + filename_new_ + ALPS_STACKTRACE);
+                                if (detail::check_error(H5Fis_hdf5(filename_new_.c_str())) == 0)
+                                    throw archive_error("no valid hdf5 file: " + filename_new_ + ALPS_STACKTRACE);
                             }
+                            #ifndef ALPS_HDF5_CLOSE_GREEDY
+                                detail::property_type ALPS_HDF5_FILE_ACCESS(H5Pcreate(H5P_FILE_ACCESS));
+                                detail::check_error(H5Pset_fclose_degree(ALPS_HDF5_FILE_ACCESS, H5F_CLOSE_SEMI));
+                            #else
+                                #define ALPS_HDF5_FILE_ACCESS H5P_DEFAULT
+                            #endif
+                            if (write_) {
+                                if ((file_id_ = H5Fopen(filename_new_.c_str(), H5F_ACC_RDWR, ALPS_HDF5_FILE_ACCESS)) < 0) {
+                                    detail::property_type fcrt_id(H5Pcreate(H5P_FILE_CREATE));
+                                    detail::check_error(H5Pset_link_creation_order(fcrt_id, (H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED)));
+                                    detail::check_error(H5Pset_attr_creation_order(fcrt_id, (H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED)));
+                                    detail::check_error(file_id_ = H5Fcreate(filename_new_.c_str(), H5F_ACC_TRUNC, fcrt_id, ALPS_HDF5_FILE_ACCESS));
+                                }
+                            } else
+                                detail::check_error(file_id_ = H5Fopen(filename_new_.c_str(), H5F_ACC_RDONLY, ALPS_HDF5_FILE_ACCESS));
+                            #ifdef ALPS_HDF5_CLOSE_GREEDY
+                                #undef(ALPS_HDF5_FILE_ACCESS)
+                            #endif
                         }
                     }
 
@@ -367,7 +335,7 @@ namespace alps {
         {
             if (context_ != NULL) {
                 ALPS_HDF5_LOCK_MUTEX
-                ++ref_cnt_[file_key(context_->filename_, context_->large_, context_->memory_)].second;
+                ++ref_cnt_[file_key(context_->filename_, context_->memory_)].second;
             }
         }
 
@@ -399,8 +367,8 @@ namespace alps {
                 throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
             ALPS_HDF5_LOCK_MUTEX
             H5Fflush(context_->file_id_, H5F_SCOPE_GLOBAL);
-            if (!--ref_cnt_[file_key(context_->filename_, context_->large_, context_->memory_)].second) {
-                ref_cnt_.erase(file_key(context_->filename_, context_->large_, context_->memory_));
+            if (!--ref_cnt_[file_key(context_->filename_, context_->memory_)].second) {
+                ref_cnt_.erase(file_key(context_->filename_, context_->memory_));
                 delete context_;
             }
             context_ = NULL;
@@ -413,7 +381,6 @@ namespace alps {
                       (mode.find_last_of('w') == std::string::npos ? 0 : WRITE | REPLACE)
                       | (mode.find_last_of('a') == std::string::npos ? 0 : WRITE)
                       | (mode.find_last_of('c') == std::string::npos ? 0 : COMPRESS)
-                      | (mode.find_last_of('l') == std::string::npos ? 0 : LARGE)
                       | (mode.find_last_of('m') == std::string::npos ? 0 : MEMORY)
             );
         }
@@ -1288,20 +1255,20 @@ namespace alps {
                 detail::check_error(H5Zget_filter_info(H5Z_FILTER_SZIP, &flag));
                 props &= (flag & H5Z_FILTER_CONFIG_ENCODE_ENABLED ? ~0x00 : ~COMPRESS);
             }
-            if (ref_cnt_.find(file_key(filename, props & LARGE, props & MEMORY)) == ref_cnt_.end())
+            if (ref_cnt_.find(file_key(filename, props & MEMORY)) == ref_cnt_.end())
                 ref_cnt_.insert(std::make_pair(
-                      file_key(filename, props & LARGE, props & MEMORY)
-                    , std::make_pair(context_ = new detail::archivecontext(filename, props & WRITE, props & REPLACE, props & COMPRESS, props & LARGE, props & MEMORY), 1)
+                      file_key(filename, props & MEMORY)
+                    , std::make_pair(context_ = new detail::archivecontext(filename, props & WRITE, props & REPLACE, props & COMPRESS, props & MEMORY), 1)
                 ));
             else {
-                context_ = ref_cnt_.find(file_key(filename, props & LARGE, props & MEMORY))->second.first;
+                context_ = ref_cnt_.find(file_key(filename, props & MEMORY))->second.first;
                 context_->grant(props & WRITE, props & REPLACE);
-                ++ref_cnt_.find(file_key(filename, props & LARGE, props & MEMORY))->second.second;
+                ++ref_cnt_.find(file_key(filename, props & MEMORY))->second.second;
             }
         }
 
-        std::string archive::file_key(std::string filename, bool large, bool memory) const {
-            return (large ? "l" : (memory ? "m" : "_")) + filename;
+        std::string archive::file_key(std::string filename, bool memory) const {
+            return (memory ? "m" : "_") + filename;
         }
     
 #ifndef ALPS_SINGLE_THREAD

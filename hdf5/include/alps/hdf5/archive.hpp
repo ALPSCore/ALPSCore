@@ -93,7 +93,6 @@ namespace alps {
                     WRITE = 0x01, 
                     REPLACE = 0x02, 
                     COMPRESS = 0x04, 
-                    LARGE = 0x08, 
                     MEMORY = 0x10 
                 } properties;
 
@@ -201,7 +200,7 @@ namespace alps {
             private:
 
                 void construct(std::string const & filename, std::size_t props = READ);
-                std::string file_key(std::string filename, bool large, bool memory) const;
+                std::string file_key(std::string filename, bool memory) const;
 
                 std::string current_;
                 detail::archivecontext * context_;

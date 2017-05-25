@@ -5,7 +5,6 @@ set (test_src
     hdf5_bool
     hdf5_copy
     hdf5_exceptions
-    hdf5_family
     hdf5_memory
     hdf5_misc
     hdf5_multiarchive
