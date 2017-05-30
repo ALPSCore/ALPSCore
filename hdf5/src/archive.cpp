@@ -251,11 +251,17 @@ namespace alps {
                             else
                                 detail::check_error(file_id_);
                         } else {
-                            if (replace_)
-                                /// @todo:FIXME_DEBOOST:insert proper tempname generation
-                                for (std::size_t i = 0; boost::filesystem::exists(filename_new_=(filename_ + ".tmp." + cast<std::string>(i))); ++i);
-                            if (write_ && replace_ && boost::filesystem::exists(filename_))
-                                boost::filesystem::copy_file(filename_, filename_new_);
+                            if (replace_) {
+                                throw std::logic_error("'Replace' functionality is not yet implemented by hdf5::archive"
+                                                       +ALPS_STACKTRACE);
+                                // @todo:FIXME_DEBOOST:insert proper tempname generation
+                                // for (std::size_t i = 0; boost::filesystem::exists(filename_new_=(filename_ + ".tmp." + cast<std::string>(i))); ++i);
+                            }
+                            if (write_ && replace_ && boost::filesystem::exists(filename_)) {
+                                throw std::logic_error("'Replace' functionality is not yet implemented by hdf5::archive"
+                                                       +ALPS_STACKTRACE);
+                                // @todo:FIXME_DEBOOST boost::filesystem::copy_file(filename_, filename_new_);
+                            }
                             if (!write_) {
                                 if (!boost::filesystem::exists(filename_new_))
                                     throw archive_not_found("file does not exist: " + filename_new_ + ALPS_STACKTRACE);
@@ -307,9 +313,11 @@ namespace alps {
                                           << error().invoke(file_id_)
                                           << std::endl;
                             if (replace_) {
-                                if (boost::filesystem::exists(filename_))
-                                    boost::filesystem::remove(filename_);
-                                boost::filesystem::rename(filename_new_, filename_);
+                                throw std::logic_error("'Replace' functionality is not yet implemented by hdf5::archive"
+                                                       +ALPS_STACKTRACE);
+                                //@todo:FIXME_DEBOOST if (boost::filesystem::exists(filename_))
+                                //@todo:FIXME_DEBOOST     boost::filesystem::remove(filename_);
+                                //@todo:FIXME_DEBOOST boost::filesystem::rename(filename_new_, filename_);
                             }
                         } catch (std::exception & ex) {
                             if (abort) {
@@ -349,18 +357,21 @@ namespace alps {
                 }
         }
 
-        void archive::abort() {
-            // Do not use a lock here, else deadlocking is really likly
-            for (std::map<std::string, std::pair<detail::archivecontext *, std::size_t> >::iterator it = ref_cnt_.begin(); it != ref_cnt_.end(); ++it) {
-                bool replace = it->second.first->replace_;
-                std::string filename = it->second.first->filename_;
-                it->second.first->replace_ = false;
-                delete it->second.first;
-                if (replace && boost::filesystem::exists(filename))
-                    boost::filesystem::remove(filename);
-            }
-            ref_cnt_.clear();
-        }
+/*  This method does not seem to be ever used
+************************************
+*        void archive::abort() {
+*            // Do not use a lock here, else deadlocking is really likly
+*            for (std::map<std::string, std::pair<detail::archivecontext *, std::size_t> >::iterator it = ref_cnt_.begin(); it != ref_cnt_.end(); ++it) {
+*                bool replace = it->second.first->replace_;
+*                std::string filename = it->second.first->filename_;
+*                it->second.first->replace_ = false;
+*                delete it->second.first;
+*                if (replace && boost::filesystem::exists(filename))
+*                    boost::filesystem::remove(filename);
+*            }
+*            ref_cnt_.clear();
+*        }
+*************************************/
 
         void archive::close() {
             if (context_ == NULL)
@@ -378,7 +389,7 @@ namespace alps {
             if(is_open())
                 throw archive_opened("the archive is already opened" + ALPS_STACKTRACE);
             construct(filename.string(),
-                      (mode.find_last_of('w') == std::string::npos ? 0 : WRITE | REPLACE)
+                      (mode.find_last_of('w') == std::string::npos ? 0 : WRITE) //@todo FIXME_DEBOOST: "w" is equiv to "a"
                       | (mode.find_last_of('a') == std::string::npos ? 0 : WRITE)
                       | (mode.find_last_of('c') == std::string::npos ? 0 : COMPRESS)
                       | (mode.find_last_of('m') == std::string::npos ? 0 : MEMORY)
