@@ -33,6 +33,45 @@ TEST(hdf5,OpenModesAWR) {
         EXPECT_EQ(2,n);
         ar["/int3"] >> n;
         EXPECT_EQ(3,n);
+        EXPECT_THROW(ar["/int4"] << 4, alps::hdf5::archive_error);
+    }
+    {
+        alps::hdf5::archive ar(h5name,"");
+        int n=0;
+        ar["/int1"] >> n;
+        EXPECT_EQ(1,n);
+        ar["/int2"] >> n;
+        EXPECT_EQ(2,n);
+        ar["/int3"] >> n;
+        EXPECT_EQ(3,n);
+        EXPECT_THROW(ar["/int4"] << 4, alps::hdf5::archive_error);
+    }
+    {
+        alps::hdf5::archive ar(h5name);
+        int n=0;
+        ar["/int1"] >> n;
+        EXPECT_EQ(1,n);
+        ar["/int2"] >> n;
+        EXPECT_EQ(2,n);
+        ar["/int3"] >> n;
+        EXPECT_EQ(3,n);
+        EXPECT_THROW(ar["/int4"] << 4, alps::hdf5::archive_error);
+    }
+    std::remove(h5name.c_str());
+}
+
+/// Test for incorrect open modes
+TEST(hdf5,OpenModesWrong) {
+    std::string h5name=alps::temporary_filename("hdf5_open")+".h5";
+    {
+      alps::hdf5::archive ar(h5name,"w");
+      ar["int"]=1;
+    }
+    {
+      EXPECT_THROW(alps::hdf5::archive ar(h5name,"wl"), alps::hdf5::wrong_mode);
+    }
+    {
+      EXPECT_THROW(alps::hdf5::archive ar(h5name,"no_such_mode"), alps::hdf5::wrong_mode);
     }
     std::remove(h5name.c_str());
 }

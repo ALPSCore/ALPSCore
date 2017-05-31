@@ -387,7 +387,10 @@ namespace alps {
 
         void archive::open(const boost::filesystem::path & filename, const std::string &mode) {
             if(is_open())
-                throw archive_opened("the archive is already opened" + ALPS_STACKTRACE);
+                throw archive_opened("the archive '"+ filename.string() + "' is already opened" + ALPS_STACKTRACE);
+            if (mode.find_first_not_of("rwacm")!=std::string::npos)
+                throw wrong_mode("Incorrect mode '"+mode+"' opening file '"+filename.string()+"'" + ALPS_STACKTRACE);
+            
             construct(filename.string(),
                       (mode.find_last_of('w') == std::string::npos ? 0 : WRITE) //@todo FIXME_DEBOOST: "w" is equiv to "a"
                       | (mode.find_last_of('a') == std::string::npos ? 0 : WRITE)

@@ -33,6 +33,7 @@ namespace alps {
         DEFINE_ALPS_HDF5_EXCEPTION(invalid_path)
         DEFINE_ALPS_HDF5_EXCEPTION(path_not_found)
         DEFINE_ALPS_HDF5_EXCEPTION(wrong_type)
+        DEFINE_ALPS_HDF5_EXCEPTION(wrong_mode)
         #undef DEFINE_ALPS_HDF5_EXCEPTION
     }
 };
