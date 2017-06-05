@@ -17,7 +17,7 @@
 #include <fstream>
 #include <cstdio> // for std::remove()
 #include "alps/params.hpp"
-#include <alps/utilities/temporary_filename.hpp>
+#include <alps/testing/unique_file.hpp>
 
 namespace alps {
   namespace params_ns {
@@ -199,7 +199,7 @@ namespace alps {
             
             InifileParamGenerator(): param_ptr(0)
             {
-                expected_origin_name_=alps::temporary_filename("./inifile_input_")+".ini";
+                expected_origin_name_=alps::testing::temporary_filename("./inifile_input.ini.");
                 std::ofstream inifile(expected_origin_name_.c_str());
                 if (!inifile) throw std::runtime_error("Failed to open temporary file "+expected_origin_name_);
 
@@ -245,7 +245,7 @@ namespace alps {
             
             H5ParamGenerator(): param_ptr(0)
             {
-                expected_origin_name_=alps::temporary_filename("./h5file_input")+".h5";
+                expected_origin_name_=alps::testing::temporary_filename("./h5file_input.h5.");
                 {
                     alps::hdf5::archive ar(expected_origin_name_,"w");
                     CmdlineParamGenerator<T> tmp_gen;
@@ -283,7 +283,7 @@ namespace alps {
           
             InifileH5ParamGenerator(): param_ptr(0)
             {
-                expected_origin_name_=alps::temporary_filename("./h5file_input")+".ini";
+                expected_origin_name_=alps::testing::temporary_filename("./h5file_input.ini.");
                 
                 std::ofstream inifile(expected_origin_name_.c_str());
                 if (!inifile) throw std::runtime_error("Failed to open temporary file "+expected_origin_name_);
@@ -293,7 +293,7 @@ namespace alps {
                 inifile << "present_def=" << input_string<T>(val1) << std::endl
                         << "present_nodef=" << input_string<T>(val1) << std::endl;
 
-                const std::string h5_fname=alps::temporary_filename("./h5file_input")+".h5"; 
+                const std::string h5_fname=alps::testing::temporary_filename("./h5file_input.h5."); 
                 {
                     const char* argv[]={
                         "/path/to/progname",
@@ -347,7 +347,7 @@ namespace alps {
             {
                 const T val1=data_trait_type::get(true);
                 const T val2=data_trait_type::get(false);
-                const std::string h5_fname=alps::temporary_filename("./h5file_input")+".h5"; 
+                const std::string h5_fname=alps::testing::temporary_filename("./h5file_input.h5."); 
                 {
                     std::string argv_s[]={
                         "--present_def="+input_string<T>(val1),

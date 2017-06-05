@@ -6,7 +6,7 @@
 
 #include <iostream>
 #include <alps/hdf5/archive.hpp>
-#include <alps/utilities/temporary_filename.hpp>
+#include <alps/testing/unique_file.hpp>
 
 #include <vector>
 
@@ -17,7 +17,7 @@ class TestHDF5Attributes : public ::testing::Test {
     std::string fname_;
 
     TestHDF5Attributes() {
-        fname_=alps::temporary_filename("attr")+".h5";
+        fname_=alps::testing::temporary_filename("attr.h5.");
     }
 
     ~TestHDF5Attributes() {

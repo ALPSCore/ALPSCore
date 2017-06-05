@@ -11,7 +11,7 @@
 #include <alps/hdf5/boost_optional.hpp>
 
 #include <gtest/gtest.h>
-#include <alps/utilities/temporary_filename.hpp>
+#include <alps/testing/unique_file.hpp>
 
 // FIXME: this is fragile!
 #include "../../utilities/test/test_utils.hpp"
@@ -28,7 +28,7 @@ class Hdf5BoostOptionalTest : public ::testing::Test {
     typedef T value_type;
 
     Hdf5BoostOptionalTest()
-        : tmpfile_(alps::temporary_filename("boost_optional")+".h5")
+        : tmpfile_(alps::testing::temporary_filename("boost_optional.h5."))
     {}
 
     ~Hdf5BoostOptionalTest()

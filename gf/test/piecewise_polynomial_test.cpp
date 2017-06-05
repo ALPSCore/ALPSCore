@@ -6,7 +6,7 @@
 
 #include "gtest/gtest.h"
 #include "alps/gf/piecewise_polynomial.hpp"
-#include <boost/filesystem/operations.hpp>
+#include <alps/testing/unique_file.hpp>
 
 TEST(PiecewisePolynomial, Orthogonalization) {
     typedef double Scalar;
@@ -86,6 +86,8 @@ TEST(PiecewisePolynomial, Orthogonalization) {
 }
 
 TEST(PiecewisePolynomial, SaveLoad) {
+    alps::testing::unique_file ufile("pp.h5.", alps::testing::unique_file::REMOVE_NOW);
+    const std::string&  filename = ufile.name();
     const int n_section = 2, k = 3;
     typedef double Scalar;
     typedef alps::gf::piecewise_polynomial<Scalar> pp_type;
@@ -99,16 +101,15 @@ TEST(PiecewisePolynomial, SaveLoad) {
 
     pp_type p(n_section, section_edges, coeff), p2;
     {
-        alps::hdf5::archive oar("pp.h5","w");
+        alps::hdf5::archive oar(filename,"w");
         p.save(oar,"/pp");
 
     }
 
     {
-        alps::hdf5::archive iar("pp.h5");
+        alps::hdf5::archive iar(filename);
         p2.load(iar,"/pp");
     }
-    boost::filesystem::remove("pp.h5");
 
     ASSERT_TRUE(p == p2);
 }

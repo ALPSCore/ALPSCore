@@ -8,7 +8,7 @@
 #include <unistd.h>
 
 #include <alps/params.hpp>
-#include <alps/utilities/temporary_filename.hpp>
+#include <alps/testing/unique_file.hpp>
 
 #include <gtest/gtest.h>
 
@@ -17,7 +17,7 @@ struct ParamTest : public ::testing::Test {
     alps::params params_;
 
     ParamTest() {
-        std::string fn=alps::temporary_filename("./pfile")+".ini";
+        std::string fn=alps::testing::temporary_filename("./pfile.ini.");
         {
             std::ofstream inifile(fn.c_str());
             if (!inifile) throw std::runtime_error("Cannot open "+fn);

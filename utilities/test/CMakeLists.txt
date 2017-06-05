@@ -2,7 +2,7 @@ include(ALPSEnableTests)
 
 set (test_src
     test_utils_test
-    temporary_filename
+    unique_file
     filename_operations
     gtest_par_xml_output
     inf

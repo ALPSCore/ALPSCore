@@ -6,7 +6,7 @@
 
 #include "alps/params.hpp"
 #include "gtest/gtest.h"
-#include "alps/utilities/temporary_filename.hpp"
+#include "alps/testing/unique_file.hpp"
 
 #include "boost/lexical_cast.hpp"
 
@@ -35,7 +35,7 @@ template <typename T>
 alps::params get_file_param(const std::string& name1, const std::string& name2, T val1, T val2)
 {
     //create a file name
-    std::string pfilename(alps::temporary_filename("pfile")+".ini");
+    std::string pfilename(alps::testing::temporary_filename("pfile.ini."));
     // Generate INI file
     {
         std::ofstream pfile(pfilename.c_str());

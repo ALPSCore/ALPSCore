@@ -9,8 +9,7 @@
 #include <alps/hdf5/complex.hpp>
 #include <alps/utilities/short_print.hpp>
 
-#include <boost/filesystem.hpp>
-
+#include <alps/testing/unique_file.hpp>
 #include <vector>
 #include <complex>
 #include <iostream>
@@ -18,9 +17,8 @@
 #include "gtest/gtest.h"
 
 TEST(hdf5, TestingOfRealComplexVec){
-
-    if (boost::filesystem::exists("real_complex_vec.h5") && boost::filesystem::is_regular_file("real_complex_vec.h5"))
-        boost::filesystem::remove("real_complex_vec.h5");
+    alps::testing::unique_file ufile("real_complex_vec.h5.", alps::testing::unique_file::REMOVE_NOW);
+    const std::string&  filename = ufile.name();
 
     try {
         const int size = 6;
@@ -30,19 +28,17 @@ TEST(hdf5, TestingOfRealComplexVec){
         std::cout << "v: " << alps::short_print(v) << std::endl;
 
         {
-            alps::hdf5::archive ar("real_complex_vec.h5", "w");
+            alps::hdf5::archive ar(filename, "w");
             ar["/vec"] << v;
         }
 
         std::vector<std::complex<double> > w;
         {
-            alps::hdf5::archive ar("real_complex_vec.h5", "r");
+            alps::hdf5::archive ar(filename, "r");
             ar["/vec"] >> w;
         }
 
         std::cout << "w: " << alps::short_print(w) << std::endl;
-        
-        boost::filesystem::remove("real_complex_vec.h5");
         
 		bool passed = true;
 		for (int i=0; passed && i<size; ++i)
@@ -52,7 +48,6 @@ TEST(hdf5, TestingOfRealComplexVec){
         EXPECT_TRUE(passed);
 
     } catch (alps::hdf5::archive_error & ex) {
-        boost::filesystem::remove("real_complex_vec.h5");
         std::cout << "Test passed because Exception was thrown." << std::endl;
         EXPECT_TRUE(true);
     }

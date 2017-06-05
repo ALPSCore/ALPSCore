@@ -5,9 +5,7 @@
  */
 
 #include <alps/hdf5/archive.hpp>
-
-#include <boost/filesystem.hpp>
-#include <boost/random.hpp>
+#include <alps/testing/unique_file.hpp>
 
 #include <string>
 #include <vector>
@@ -16,9 +14,9 @@
 #include "gtest/gtest.h"
 
 TEST(hdf5, TestingOfMultiArchive){
-    std::string const filename = "test_hdf5_multiarchive.h5";
-    if (boost::filesystem::exists(boost::filesystem::path(filename)))
-        boost::filesystem::remove(boost::filesystem::path(filename));
+    alps::testing::unique_file ufile("test_hdf5_multiarchive.h5.", alps::testing::unique_file::REMOVE_NOW);
+    const std::string& filename=ufile.name();
+    
     {
         using namespace alps;
         alps::hdf5::archive oar(filename, "a");
@@ -55,5 +53,4 @@ TEST(hdf5, TestingOfMultiArchive){
         int test4;
         iar4 >> make_pvp("/data", test4);
     }
-    boost::filesystem::remove(boost::filesystem::path(filename));
 }

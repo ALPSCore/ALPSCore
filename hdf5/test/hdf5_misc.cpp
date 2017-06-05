@@ -6,8 +6,8 @@
 
 #include <alps/hdf5.hpp>
 
-#include <boost/filesystem.hpp>
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
+#include <alps/testing/unique_file.hpp>
 
 class my_class {
     public:
@@ -25,29 +25,28 @@ class my_class {
 };
 
 TEST(hdf5, TestingHDF5Misc){
-
-    if (boost::filesystem::exists(boost::filesystem::path("data.h5")))
-        boost::filesystem::remove(boost::filesystem::path("data.h5"));
-
+    alps::testing::unique_file ufile("data.h5.", alps::testing::unique_file::REMOVE_NOW);
+    const std::string& data_h5=ufile.name();
+    
     {
-        alps::hdf5::archive ar("data.h5", "w");
+        alps::hdf5::archive ar(data_h5, "w");
         ar << alps::make_pvp("/value", 42);
     }
     
     {
-        alps::hdf5::archive ar("data.h5");
+        alps::hdf5::archive ar(data_h5);
         int i;
         ar >> alps::make_pvp("/value", i);
     }
 
     {
-        alps::hdf5::archive ar("data.h5");
+        alps::hdf5::archive ar(data_h5);
         std::string s;
         ar >> alps::make_pvp("/value", s);
     }
 
     {
-        alps::hdf5::archive ar("data.h5", "w");
+        alps::hdf5::archive ar(data_h5, "w");
         std::vector<double> vec(5, 42);
         ar << alps::make_pvp("/path/2/vec", vec);
     }
@@ -55,18 +54,18 @@ TEST(hdf5, TestingHDF5Misc){
     {
         std::vector<double> vec;
         // fill the vector
-        alps::hdf5::archive ar("data.h5");
+        alps::hdf5::archive ar(data_h5);
         ar >> alps::make_pvp("/path/2/vec", vec);
     }
 
     {
         std::string str("foobar");
-        alps::hdf5::archive ar("data.h5", "w");
+        alps::hdf5::archive ar(data_h5, "w");
         ar << alps::make_pvp("/foo/bar", str);
     }
     
     {
-        alps::hdf5::archive ar("data.h5");
+        alps::hdf5::archive ar(data_h5);
         std::string str;
         ar >> alps::make_pvp("/foo/bar", str);
     }
@@ -74,13 +73,13 @@ TEST(hdf5, TestingHDF5Misc){
     {
         long *d = new long[17];
         // fill the array
-        alps::hdf5::archive ar("data.h5", "w");
+        alps::hdf5::archive ar(data_h5, "w");
         ar << alps::make_pvp("/c/array", d, 17);
         delete[] d;
     }
 
     {
-        alps::hdf5::archive ar("data.h5");
+        alps::hdf5::archive ar(data_h5);
         std::size_t size = ar.extent("/c/array")[0];
         long *d = new long[size];
         ar >> alps::make_pvp("/c/array", d, size);
@@ -90,28 +89,26 @@ TEST(hdf5, TestingHDF5Misc){
     {
         {
                 my_class c(42);
-                alps::hdf5::archive ar("data.h5", "w");
+                alps::hdf5::archive ar(data_h5, "w");
                 ar << alps::make_pvp("/my/class", c);
         }
         {
                 my_class c;
-                alps::hdf5::archive ar("data.h5");
+                alps::hdf5::archive ar(data_h5);
                 ar >> alps::make_pvp("/my/class", c);
         }
     }
 
     {
-        alps::hdf5::archive ar("data.h5", "w"); 
+        alps::hdf5::archive ar(data_h5, "w"); 
         // the parent of an attribute must exist
         ar.create_group("/foo");
         ar << alps::make_pvp("/foo/@bar", std::string("hello"));
     }
 
     {
-        alps::hdf5::archive ar("data.h5");
+        alps::hdf5::archive ar(data_h5);
         std::string str;
         ar >> alps::make_pvp("/foo/@bar", str);
     }
-
-    boost::filesystem::remove(boost::filesystem::path("data.h5"));
 }

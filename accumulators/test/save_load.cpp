@@ -8,7 +8,7 @@
 
 #include "alps/config.hpp"
 #include "alps/accumulators.hpp"
-#include "alps/utilities/temporary_filename.hpp"
+#include "alps/testing/unique_file.hpp"
 #include "alps/hdf5.hpp"
 #include "gtest/gtest.h"
 
@@ -46,7 +46,7 @@ class AccumulatorTest : public ::testing::Test {
     int nsamples;
     const std::string h5name;
 
-    AccumulatorTest() : nsamples(0), h5name(alps::temporary_filename("save_load")+".h5")
+    AccumulatorTest() : nsamples(0), h5name(alps::testing::temporary_filename("save_load.h5."))
     { }
   
     // Add (constant) data to an accumulator

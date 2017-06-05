@@ -7,7 +7,7 @@
 #include <iostream>
 #include <sstream>
 
-#include "alps/utilities/temporary_filename.hpp"
+#include "alps/testing/unique_file.hpp"
 #include <alps/hdf5/archive.hpp>
 
 #include "alps/params.hpp"
@@ -46,7 +46,7 @@ TEST(param, Archive)
 
 
     // Save to archive
-    std::string filename(alps::temporary_filename("hdf5_file")+".h5");
+    std::string filename(alps::testing::temporary_filename("hdf5_file.h5."));
     {
         alps::hdf5::archive oar(filename, "w");
         p.save(oar);

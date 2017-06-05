@@ -7,18 +7,18 @@
 #include <alps/hdf5/archive.hpp>
 
 #include <boost/random.hpp>
-#include <boost/filesystem.hpp>
 
 #include <string>
 #include <vector>
 #include <iostream>
 #include <algorithm>
 #include "gtest/gtest.h"
+#include <alps/testing/unique_file.hpp>
 
 TEST(hdf5, TestingCopyingOfHDF5){
-    std::string const filename = "test_hdf5_exceptions.h5";
-    if (boost::filesystem::exists(boost::filesystem::path(filename)))
-        boost::filesystem::remove(boost::filesystem::path(filename));
+    alps::testing::unique_file ufile("test_hdf5_exceptions.h5.", alps::testing::unique_file::REMOVE_NOW);
+    const std::string&  filename = ufile.name();
+
     {
         alps::hdf5::archive oar(filename, "a");
     }
@@ -34,5 +34,4 @@ TEST(hdf5, TestingCopyingOfHDF5){
             std::cout << str.substr(0, start) << std::endl;
         }
     }
-    boost::filesystem::remove(boost::filesystem::path(filename));
 }

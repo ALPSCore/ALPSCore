@@ -6,7 +6,7 @@
 
 #include <fstream>
 #include "alps/params.hpp"
-#include "alps/utilities/temporary_filename.hpp"
+#include "alps/testing/unique_file.hpp"
 #include "gtest/gtest.h"
 
 //Dummy function to imitate use of a variable to supress spurious compiler warnings
@@ -43,7 +43,7 @@ TEST(param, ShortenedInCmdline)
 // Shortened versions of options in the INI file -- not allowed
 TEST(param, ShortenedInFile)
 {
-    std::string pfilename(alps::temporary_filename("pfile")+".ini");
+   std::string pfilename(alps::testing::temporary_filename("pfile.ini."));
     const char* argv[]={ "THIS PROGRAM", pfilename.c_str() };
     const int argc=sizeof(argv)/sizeof(*argv);
 
@@ -92,7 +92,7 @@ TEST(param, ShortAndLongDefined)
 // Shorter and longer options in the INI file --- are distinct
 TEST(param, ShortAndLongFile)
 {
-    std::string pfilename(alps::temporary_filename("pfile")+".ini");
+    std::string pfilename(alps::testing::temporary_filename("pfile.ini."));
     const char* argv[]={ "THIS PROGRAM", pfilename.c_str() };
     const int argc=sizeof(argv)/sizeof(*argv);
 

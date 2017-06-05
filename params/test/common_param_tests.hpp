@@ -15,7 +15,7 @@
 #include "gtest/gtest.h"
 #include "param_generators_v2.hpp"
 
-#include "alps/utilities/temporary_filename.hpp"
+#include "alps/testing/unique_file.hpp"
 #include "alps/hdf5/archive.hpp"
 
 using namespace alps::params_ns::testing;

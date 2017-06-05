@@ -7,8 +7,7 @@
 #include <alps/hdf5/archive.hpp>
 #include <alps/hdf5/complex.hpp>
 #include <alps/hdf5/vector.hpp>
-
-#include <boost/filesystem.hpp>
+#include <alps/testing/unique_file.hpp>
 
 #include <iostream>
 
@@ -16,10 +15,11 @@
 using namespace std;
 
 TEST(hdf5, TestingHDF5Memory){
-    if (boost::filesystem::exists(boost::filesystem::path("test_hdf5_memory.h5")))
-        boost::filesystem::remove(boost::filesystem::path("test_hdf5_memory.h5"));
+    alps::testing::unique_file ufile("test_hdf5_memory.h5.", alps::testing::unique_file::REMOVE_NOW);
+    const std::string& memname_h5=ufile.name();
+    
     {
-        alps::hdf5::archive oa("test_hdf5_memory.h5", "w");
+        alps::hdf5::archive oa(memname_h5, "w");
         std::vector<std::complex<double> > foo(3);
         std::vector<double> foo2(3);
         oa << alps::make_pvp("/foo", foo);
@@ -30,13 +30,11 @@ TEST(hdf5, TestingHDF5Memory){
  
         std::vector<double> foo, foo2;
         try {
-			alps::hdf5::archive ia("test_hdf5_memory.h5");
+            alps::hdf5::archive ia(memname_h5);
             ia >> alps::make_pvp("/foo", foo);
             ia >> alps::make_pvp("/foo2", foo2);
         } catch (exception e) {
             cout << "Exception caught: no complex value" << endl;
-            boost::filesystem::remove(boost::filesystem::path("test_hdf5_memory.h5"));
         }
     }
-    boost::filesystem::remove(boost::filesystem::path("test_hdf5_memory.h5"));
 }

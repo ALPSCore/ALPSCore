@@ -9,8 +9,7 @@
 #include <alps/hdf5/vector.hpp>
 #include <alps/hdf5/complex.hpp>
 
-#include <boost/filesystem.hpp>
-
+#include <alps/testing/unique_file.hpp>
 #include <vector>
 #include <complex>
 
@@ -19,21 +18,20 @@
 using namespace std;
 
 TEST(hdf5, TestingIoOfDoubleVectors){
-    if (boost::filesystem::exists(boost::filesystem::path("vvdbl.h5")))
-        boost::filesystem::remove(boost::filesystem::path("vvdbl.h5"));
+    alps::testing::unique_file ufile("vvdbl.h5.", alps::testing::unique_file::REMOVE_NOW);
+    const std::string&  filename = ufile.name();
     {
         vector<vector<double> > v;
         for(int i = 0; i < 3; ++i)
             v.push_back(vector<double>(i+1, 2*i));
-        alps::hdf5::archive ar("vvdbl.h5", "w");
+        alps::hdf5::archive ar(filename, "w");
         ar["/spectrum/sectors/5/results/cdag-c/mean/value"] = v;
         std::cout << v.size() << std::endl;
     }
-	 {
+    {
         vector<vector<double> > v;
-        alps::hdf5::archive ar("vvdbl.h5", "r");
+        alps::hdf5::archive ar(filename, "r");
         ar["/spectrum/sectors/5/results/cdag-c/mean/value"] >> v;
         std::cout << v.size() << std::endl;
     }
-    boost::filesystem::remove(boost::filesystem::path("vvdbl.h5"));
 }

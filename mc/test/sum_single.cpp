@@ -8,7 +8,7 @@
 #include <alps/mc/mcbase.hpp>
 #include <alps/mc/stop_callback.hpp>
 
-#include <alps/utilities/temporary_filename.hpp>
+#include <alps/testing/unique_file.hpp>
 
 #include <boost/lambda/lambda.hpp>
 
@@ -74,5 +74,5 @@ TEST(mc, sum_single){
 
     std::cout << "e^(-x*x): " << results["SValue"] << std::endl;
     std::cout << "e^(-x*x): " << results["VValue"] << std::endl;
-    alps::save_results(results, params, alps::temporary_filename("sum_single")+".h5", "/simulation/results");
+    alps::save_results(results, params, alps::testing::temporary_filename("sum_single.h5."), "/simulation/results");
 }

@@ -5,9 +5,7 @@
  */
 
 #include <alps/utilities/signal.hpp>
-#include <alps/utilities/remove_extensions.hpp>
 #include <alps/mc/mcbase.hpp>
-// #include "boost/filesystem/path.hpp"
 
 namespace alps {
 

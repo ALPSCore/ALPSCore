@@ -13,13 +13,9 @@
 #include <alps/hdf5/vector.hpp>
 #include <alps/hdf5/complex.hpp>
 #include <alps/hdf5/valarray.hpp>
-// #include <alps/hdf5/multi_array.hpp>
-// #include <alps/hdf5/matrix.hpp>
 #include <alps/hdf5/shared_array.hpp>
-// #include <alps/hdf5/ublas/matrix.hpp>
-// #include <alps/hdf5/ublas/vector.hpp>
 
-#include <alps/utilities/temporary_filename.hpp>
+#include <alps/testing/unique_file.hpp>
 
 #include <deque>
 #include <numeric>
@@ -27,7 +23,6 @@
 #include <algorithm>
 
 #include <boost/random.hpp>
-#include <boost/filesystem.hpp>
 #include <boost/multi_array.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
@@ -1208,9 +1203,9 @@ template<typename T> struct skip_attribute<boost::shared_array<T> >: public skip
 template<typename XXXX> class TypedTestEncapsulation: public ::testing::Test{
 public:
   TypedTestEncapsulation(){
-    std::string const filename = alps::temporary_filename("hdf5_io_generic_test") + ".h5";
-    if (boost::filesystem::exists(boost::filesystem::path(filename)))
-      boost::filesystem::remove(boost::filesystem::path(filename));
+    alps::testing::unique_file ufile("hdf5_io_generic_test.h5.", alps::testing::unique_file::REMOVE_NOW);
+    const std::string& filename = ufile.name();
+    
     result_ = true;
     if (IS_ATTRIBUTE && skip_attribute<XXXX >::value)
       std::cout << "SKIP" << std::endl;
@@ -1228,7 +1223,6 @@ public:
           EXPECT_TRUE(result_);
         }
       }
-      boost::filesystem::remove(boost::filesystem::path(filename));
       //std::cout << (result_ ? "SUCCESS" : "FAILURE") << std::endl;
     }
   }

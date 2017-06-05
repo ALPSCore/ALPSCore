@@ -10,24 +10,25 @@
 #include "alps/gf/piecewise_polynomial.hpp"
 #include "gf_test.hpp"
 
-#include <boost/filesystem/operations.hpp>
+#include <alps/testing/unique_file.hpp>
 
 TEST(Mesh, RealFrequencyLoadSave) {
+    alps::testing::unique_file ufile("gf.h5.", alps::testing::unique_file::REMOVE_NOW);
+    const std::string&  filename = ufile.name();
     namespace g=alps::gf;
     g::grid::linear_real_frequency_grid grid(-3,3,100);
     g::real_frequency_mesh mesh1(grid);
     g::real_frequency_mesh mesh2;
     {
-        alps::hdf5::archive oar("gf.h5","w");
+        alps::hdf5::archive oar(filename,"w");
         mesh1.save(oar,"/gf");
     }
     {
-        alps::hdf5::archive iar("gf.h5");
+        alps::hdf5::archive iar(filename);
         g::real_frequency_mesh mesh;
         mesh2.load(iar,"/gf");
     }
     EXPECT_EQ(mesh1, mesh2);
-    boost::filesystem::remove("gf.h5");
 }
 
 TEST(Mesh, RealFrequencyMeshQuadric) {
@@ -217,19 +218,21 @@ TEST(Mesh,CompareLegendre) {
 
 TEST(Mesh, LegendreLoadSave) {
     namespace g=alps::gf;
+    alps::testing::unique_file ufile("gf.h5.", alps::testing::unique_file::REMOVE_NOW);
+    const std::string&  filename = ufile.name();
+
     g::legendre_mesh mesh1(5.0, 20, alps::gf::statistics::FERMIONIC);
     g::legendre_mesh mesh2;
     {
-        alps::hdf5::archive oar("gf.h5","w");
+        alps::hdf5::archive oar(filename,"w");
         mesh1.save(oar,"/gf");
     }
     {
-        alps::hdf5::archive iar("gf.h5");
+        alps::hdf5::archive iar(filename);
         g::legendre_mesh mesh;
         mesh2.load(iar,"/gf");
     }
     EXPECT_EQ(mesh1, mesh2);
-    boost::filesystem::remove("gf.h5");
 }
 
 TEST(Mesh,SwapLegendre) {
@@ -382,6 +385,9 @@ TEST(Mesh,NumericalMeshSave) {
     typedef double Scalar;
     typedef alps::gf::piecewise_polynomial<Scalar> pp_type;
 
+    alps::testing::unique_file ufile("nm.h5.", alps::testing::unique_file::REMOVE_NOW);
+    const std::string&  filename = ufile.name();
+
     std::vector<double> section_edges(n_section+1);
     section_edges[0] = -1.0;
     section_edges[1] =  0.0;
@@ -397,21 +403,22 @@ TEST(Mesh,NumericalMeshSave) {
 
     alps::gf::numerical_mesh<double> mesh1(beta, basis_functions, alps::gf::statistics::FERMIONIC);
     {
-        alps::hdf5::archive oar("nm.h5","w");
+        alps::hdf5::archive oar(filename,"w");
         mesh1.save(oar,"/nm");
 
     }
 
     alps::gf::numerical_mesh<double> mesh2;
     {
-        alps::hdf5::archive iar("nm.h5");
+        alps::hdf5::archive iar(filename);
         mesh2.load(iar,"/nm");
     }
-    boost::filesystem::remove("nm.h5");
 }
 
 TEST(Mesh,DefaultConstructive) {
-    alps::hdf5::archive oar("m.h5", "w");
+    alps::testing::unique_file ufile("m.h5.", alps::testing::unique_file::REMOVE_NOW);
+    const std::string&  filename = ufile.name();
+    alps::hdf5::archive oar(filename, "w");
 
     //FIXME: Can we use TYPED_TEST to cover all mesh types?
     {

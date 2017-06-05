@@ -7,9 +7,7 @@
 #include <alps/hdf5/archive.hpp>
 #include <alps/hdf5/vector.hpp>
 #include <alps/hdf5/complex.hpp>
-
-#include <boost/filesystem.hpp>
-
+#include <alps/testing/unique_file.hpp>
 #include <vector>
 #include <complex>
 
@@ -18,15 +16,14 @@
 using namespace std;
 
 TEST(hdf5, TestingIoOfComplexVectors){
-    if (boost::filesystem::exists(boost::filesystem::path("vvcplx.h5")))
-        boost::filesystem::remove(boost::filesystem::path("vvcplx.h5"));
-	{
-      vector< vector< complex<double> > > v;
-      for( int i = 0; i < 3; ++i )
-        v.push_back(vector< complex<double> >(i+1, complex<double>(i,2*i)));
-      alps::hdf5::archive ar("vvcplx.h5","w");
-      ar << alps::make_pvp("v",v);
-	}
-    boost::filesystem::remove(boost::filesystem::path("vvcplx.h5"));
+    alps::testing::unique_file ufile("vvcplx.h5.", alps::testing::unique_file::REMOVE_NOW);
+    const std::string&  filename = ufile.name();
+    {
+        vector< vector< complex<double> > > v;
+        for( int i = 0; i < 3; ++i )
+            v.push_back(vector< complex<double> >(i+1, complex<double>(i,2*i)));
+        alps::hdf5::archive ar(filename,"w");
+        ar << alps::make_pvp("v",v);
+    }
 }
 

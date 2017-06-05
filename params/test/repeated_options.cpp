@@ -6,7 +6,7 @@
 
 #include "alps/params.hpp"
 #include "gtest/gtest.h"
-#include "alps/utilities/temporary_filename.hpp"
+#include "alps/testing/unique_file.hpp"
 
 #include "boost/lexical_cast.hpp"
 
@@ -16,7 +16,7 @@
 // Repeated parameters in the INI file
 TEST(param,RepeatingInFile) {
     //create a file name
-    std::string pfilename(alps::temporary_filename("pfile")+".ini");
+  std::string pfilename(alps::testing::temporary_filename("pfile.ini."));
 
    // Generate INI file
    {
@@ -56,7 +56,7 @@ TEST(param,RepeatingInCmdline) {
 TEST(param,CmdlineOverride)
 {
     //create a file name
-    std::string pfilename(alps::temporary_filename("pfile")+".ini");
+    std::string pfilename(alps::testing::temporary_filename("pfile.ini."));
     
     // Generate INI file
     {

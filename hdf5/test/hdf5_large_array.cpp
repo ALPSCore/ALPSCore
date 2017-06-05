@@ -4,7 +4,7 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#include <alps/utilities/temporary_filename.hpp>
+#include <alps/testing/unique_file.hpp>
 #include <alps/hdf5/archive.hpp>
 #include <alps/hdf5/multi_array.hpp>
 #include <boost/scoped_ptr.hpp>
@@ -19,7 +19,7 @@ class TestHDF5Large : public ::testing::Test {
     std::string fname_;
 
     TestHDF5Large() {
-        fname_=alps::temporary_filename("hdf5_large_array_")+".h5";
+        fname_=alps::testing::temporary_filename("hdf5_large_array.h5."));
     }
 
     ~TestHDF5Large() {
