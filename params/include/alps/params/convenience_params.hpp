@@ -7,14 +7,14 @@
 #define ALPS_CONV_PARAMS_INCLUDED
 
 #include "alps/params.hpp"
-#include "alps/utilities/remove_extensions.hpp"
-#include "alps/utilities/get_basename.hpp"
+#include "alps/utilities/fs/remove_extensions.hpp"
+#include "alps/utilities/fs/get_basename.hpp"
 
 namespace alps {
     /// @brief Defines a number of frequently-used parameters.
     /// Defines `size_t timelimt`, `string outputfile`, `string checkpoint`.
     params& define_convenience_parameters(params & parameters) {
-        std::string basename=alps::remove_extensions(alps::get_basename(parameters.get_origin_name()));
+        std::string basename=alps::fs::remove_extensions(alps::fs::get_basename(parameters.get_origin_name()));
         parameters
             .define<std::size_t>("timelimit", 0, "time limit for the simulation")
             .define<std::string>("outputfile", basename+".out.h5", "name of the output file")

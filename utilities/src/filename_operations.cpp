@@ -5,12 +5,35 @@
  */
 
 
-#include <alps/utilities/remove_extensions.hpp>
-#include <alps/utilities/get_basename.hpp>
-#include <alps/utilities/get_dirname.hpp>
-#include <boost/filesystem.hpp>
+#include <alps/utilities/fs/remove_extensions.hpp>
+#include <alps/utilities/fs/get_basename.hpp>
+#include <alps/utilities/fs/get_dirname.hpp>
+#include <alps/utilities/fs/get_extension.hpp>
 
-namespace alps {
+namespace alps { namespace fs {
+    std::string get_extension(const std::string& filename)
+    {
+        using std::string;
+        typedef std::string::size_type size_type;
+
+        size_type basedir_len=filename.rfind('/');
+        if (basedir_len==string::npos)
+            basedir_len=0;
+        else
+            ++basedir_len;
+        
+        // special cases: "dir/." and "dir/.."
+        if (filename.compare(basedir_len, string::npos, ".")==0 ||
+            filename.compare(basedir_len, string::npos, "..")==0)
+            return "";
+
+        size_type last_dot_pos=filename.rfind('.');
+        if (last_dot_pos==string::npos || last_dot_pos<basedir_len) // no dot in filename
+            return "";
+        
+        return filename.substr(last_dot_pos);
+    }
+  
     std::string remove_extensions(const std::string& filename)
     {
         using std::string;
@@ -64,4 +87,4 @@ namespace alps {
 
         return filename.substr(0,basedir_len);
     }
-} // alps::
+} } // alps::fs::
