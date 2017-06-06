@@ -20,12 +20,12 @@ namespace alps {
         return parameters.define<long>("SEED", 42, "PRNG seed");
     }
 
-    void mcbase::save(boost::filesystem::path const & filename) const {
+  void mcbase::save(std::string const & filename) const {
         alps::hdf5::archive ar(filename, "w");
         ar["/simulation/realizations/0/clones/0"] << *this;
     }
 
-    void mcbase::load(boost::filesystem::path const & filename) {
+    void mcbase::load(std::string const & filename) {
         alps::hdf5::archive ar(filename);
         ar["/simulation/realizations/0/clones/0"] >> *this;
     }

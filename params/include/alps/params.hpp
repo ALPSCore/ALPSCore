@@ -14,7 +14,6 @@
 #include "alps/utilities/mpi.hpp"
 #endif
 
-#include "boost/filesystem.hpp"
 #include "boost/program_options.hpp"
 #include "boost/any.hpp"
 #include "boost/tokenizer.hpp"

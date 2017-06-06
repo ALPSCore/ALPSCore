@@ -14,7 +14,6 @@
 #include <alps/utilities/type_wrapper.hpp>
 
 #include <boost/mpl/and.hpp>
-#include <boost/filesystem/path.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/type_traits/is_array.hpp>
@@ -99,9 +98,9 @@ namespace alps {
             public:
 
                 /// default constructor to create archive with out openning of any file
-                /// to be used in conjunction with `void open(const boost::filesystem::path &, std::string)` function
+                /// to be used in conjunction with `void open(const std::string &, std::string)` function
                 archive();
-                archive(boost::filesystem::path const & filename, std::string mode = "r");
+                archive(std::string const & filename, std::string mode = "r");
                 archive(archive const & arg);
 
                 virtual ~archive();
@@ -117,7 +116,7 @@ namespace alps {
                 std::string complete_path(std::string path) const;
                 /// open a new archive file
                 /// check that the archive is not already opened and construct archive.
-                void open(const boost::filesystem::path & filename, const std::string &mode = "r");
+                void open(const std::string & filename, const std::string &mode = "r");
                 void close();
                 bool is_open();
 

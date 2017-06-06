@@ -7,7 +7,6 @@
 #pragma once
 
 #include <boost/function.hpp>
-#include <boost/filesystem/path.hpp>
 
 #include <alps/accumulators.hpp>
 #include <alps/params.hpp>
@@ -46,8 +45,8 @@ namespace alps {
             results_type collect_results() const;
             results_type collect_results(result_names_type const & names) const;
 
-            void save(boost::filesystem::path const & filename) const;
-            void load(boost::filesystem::path const & filename);
+            void save(std::string const & filename) const;
+            void load(std::string const & filename);
             virtual void save(alps::hdf5::archive & ar) const;
             virtual void load(alps::hdf5::archive & ar);
 

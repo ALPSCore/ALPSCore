@@ -6,16 +6,18 @@
 
 #include <alps/hdf5/archive.hpp>
 #include <alps/utilities/cast.hpp>
-//#include <alps/ngs/config.hpp>
 #include <alps/utilities/signal.hpp>
 #include <alps/utilities/stacktrace.hpp>
 
 #include <boost/scoped_array.hpp>
-#include <boost/filesystem/operations.hpp>
+#include <boost/noncopyable.hpp>
+#include <boost/type_traits/remove_cv.hpp>
+#include <boost/type_traits/remove_reference.hpp>
 
 #include <hdf5.h>
 
 #include <sstream>
+#include <fstream>
 #include <iostream>
 #include <typeinfo>
 
@@ -257,14 +259,17 @@ namespace alps {
                                 // @todo:FIXME_DEBOOST:insert proper tempname generation
                                 // for (std::size_t i = 0; boost::filesystem::exists(filename_new_=(filename_ + ".tmp." + cast<std::string>(i))); ++i);
                             }
-                            if (write_ && replace_ && boost::filesystem::exists(filename_)) {
+                            if (write_ && replace_ /* && boost::filesystem::exists(filename_)*/) { // @todo:FIXME_DEBOOST:verify exists() necessity
                                 throw std::logic_error("'Replace' functionality is not yet implemented by hdf5::archive"
                                                        +ALPS_STACKTRACE);
                                 // @todo:FIXME_DEBOOST boost::filesystem::copy_file(filename_, filename_new_);
                             }
                             if (!write_) {
-                                if (!boost::filesystem::exists(filename_new_))
-                                    throw archive_not_found("file does not exist: " + filename_new_ + ALPS_STACKTRACE);
+                                // pre-check that file is readable. HDF5 would complain anyway,
+                                // but the pre-check makes the exception less scary.
+                                // It is potentially time-consuming, so do not open archives in a tight loop!
+                                if (!std::ifstream(filename_new_.c_str(),std::ios::in).good())
+                                    throw archive_not_found("file cannot be read or does not exist: " + filename_new_ + ALPS_STACKTRACE);
                                 if (detail::check_error(H5Fis_hdf5(filename_new_.c_str())) == 0)
                                     throw archive_error("no valid hdf5 file: " + filename_new_ + ALPS_STACKTRACE);
                             }
@@ -333,7 +338,7 @@ namespace alps {
 
         archive::archive() : context_(NULL) {}
 
-        archive::archive(boost::filesystem::path const & filename, std::string mode) : context_(NULL) {
+        archive::archive(std::string const & filename, std::string mode) : context_(NULL) {
             open(filename, mode);
         }
 
@@ -385,13 +390,13 @@ namespace alps {
             context_ = NULL;
         }
 
-        void archive::open(const boost::filesystem::path & filename, const std::string &mode) {
+        void archive::open(const std::string & filename, const std::string &mode) {
             if(is_open())
-                throw archive_opened("the archive '"+ filename.string() + "' is already opened" + ALPS_STACKTRACE);
+                throw archive_opened("the archive '"+ filename + "' is already opened" + ALPS_STACKTRACE);
             if (mode.find_first_not_of("rwacm")!=std::string::npos)
-                throw wrong_mode("Incorrect mode '"+mode+"' opening file '"+filename.string()+"'" + ALPS_STACKTRACE);
+                throw wrong_mode("Incorrect mode '"+mode+"' opening file '"+filename+"'" + ALPS_STACKTRACE);
             
-            construct(filename.string(),
+            construct(filename,
                       (mode.find_last_of('w') == std::string::npos ? 0 : WRITE) //@todo FIXME_DEBOOST: "w" is equiv to "a"
                       | (mode.find_last_of('a') == std::string::npos ? 0 : WRITE)
                       | (mode.find_last_of('c') == std::string::npos ? 0 : COMPRESS)

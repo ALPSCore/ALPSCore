@@ -10,7 +10,7 @@ TEST(hdf5,OpenModesAWR) {
     alps::testing::unique_file ufile("hdf5_open.h5.", alps::testing::unique_file::REMOVE_NOW);
     const std::string& h5name=ufile.name();
     {
-        ASSERT_THROW(alps::hdf5::archive ar(h5name,"r"),alps::hdf5::archive_not_found);
+        ASSERT_THROW(alps::hdf5::archive ar(h5name,"r"),  alps::hdf5::archive_not_found);
         ASSERT_THROW(alps::hdf5::archive ar2(h5name,"r"), alps::hdf5::archive_not_found);
     }
     {

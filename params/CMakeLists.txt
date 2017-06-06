@@ -26,7 +26,7 @@ add_this_package(params)
 
 include(ALPSEnableMPI)
 
-add_boost(filesystem system program_options)
+add_boost(program_options)
 add_hdf5()
 
 add_alps_package(alps-utilities alps-hdf5)

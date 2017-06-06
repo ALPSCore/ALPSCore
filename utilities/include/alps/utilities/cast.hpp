@@ -12,7 +12,6 @@
 
 #include <boost/bind.hpp>
 #include <boost/mpl/int.hpp>
-#include <boost/filesystem/path.hpp>
 
 #include <string>
 #include <complex>
@@ -149,18 +148,6 @@ namespace alps {
         }
     };
     
-    template<typename T> struct cast_hook<boost::filesystem::path, T> {
-        static inline boost::filesystem::path apply(T const & arg) {
-            return boost::filesystem::path(cast<std::string>(arg));
-        }
-    };
-
-    template<typename T> struct cast_hook<boost::filesystem::path, std::complex<T> > {
-        static inline boost::filesystem::path apply(std::complex<T> const & arg) {
-            return boost::filesystem::path(cast<std::string>(arg));
-        }
-    };
-
     template<typename U, typename T> inline U cast(T const & arg) {
         return cast_hook<U, T>::apply(arg);
     }
