@@ -2,6 +2,7 @@ include(ALPSEnableTests)
 
 set (test_src
     sum_single
+    timer_in_sim
     )
 
 foreach(test ${test_src})
