@@ -4,6 +4,7 @@ set (test_src
     sum_single
     timer_in_sim
     timer
+    check_schedule
     )
 
 foreach(test ${test_src})
