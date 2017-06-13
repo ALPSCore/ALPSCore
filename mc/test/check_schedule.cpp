@@ -6,17 +6,107 @@
 
 /* This is to test schedule checker */
 
-// FIXME: this is provisional test; for real, we have to mock the timer
-//        rather than rely on the timing of the test code!
-
 #include <ctime>
 
 #include <alps/mc/check_schedule.hpp>
 #include <gtest/gtest.h>
 
+class fake_timer {
+  public:
+    typedef std::time_t time_point_type;
+    typedef double time_duration_type;
 
+    static void reset(std::size_t ini) { now_=ini; }
+    
+    static void advance(std::size_t delta) { now_+=delta; }
+    
+    static time_point_type now_time() { return now_; }
 
-TEST(CheckScheduleTest, CheckSchedule)
+    static time_duration_type time_diff(time_point_type t1, time_point_type t0)
+    {
+        return std::difftime(t1, t0);
+    }
+  private:
+    static time_point_type now_;
+};
+
+fake_timer::time_point_type fake_timer::now_;
+
+/// Test the `fake_timer` behavior
+TEST(CheckScheduleTest, FakeTimerTest)
+{
+    const std::size_t step=10;
+    
+    fake_timer timer;
+    timer.reset(1000);
+    
+    fake_timer timer2(timer);
+    EXPECT_EQ(timer.now_time(), timer2.now_time());
+    
+    fake_timer::time_point_type t1=timer.now_time();
+    timer.advance(step);
+    fake_timer::time_point_type t2=timer.now_time();
+    fake_timer::time_duration_type delta=timer.time_diff(t2, t1);
+
+    EXPECT_EQ(std::difftime(t2, t1), delta);
+    EXPECT_EQ(step, delta);
+
+    EXPECT_EQ(timer.now_time(), timer2.now_time());
+}
+
+typedef alps::detail::generic_check_schedule<fake_timer> test_check_schedule;
+
+TEST(CheckScheduleTest, UseFakeTimer)
+{
+    const std::size_t MIN_CHECK=3;
+    const std::size_t MAX_CHECK=5;
+
+    // First, our fake timer is at some zero time
+    fake_timer timer;
+    timer.reset(10000);
+    
+    test_check_schedule checker(MIN_CHECK, MAX_CHECK, timer);
+
+    EXPECT_TRUE(checker.pending());
+
+    checker.update(0.05);
+    EXPECT_FALSE(checker.pending());
+
+    timer.advance(MIN_CHECK+1);
+
+    EXPECT_TRUE(checker.pending());
+    EXPECT_TRUE(checker.pending());
+    
+    checker.update(0.1);
+    EXPECT_FALSE(checker.pending());
+    
+    timer.advance(MIN_CHECK);
+    EXPECT_FALSE(checker.pending());
+
+    timer.advance(MAX_CHECK-MIN_CHECK+1);
+    EXPECT_TRUE(checker.pending());
+
+    checker.update(0.35);
+    EXPECT_FALSE(checker.pending());
+    
+    timer.advance(6);
+    EXPECT_TRUE(checker.pending());
+
+    checker.update(0.9);
+    EXPECT_FALSE(checker.pending());
+
+    timer.advance(MIN_CHECK-1);
+    EXPECT_FALSE(checker.pending());
+    timer.advance(2);
+    EXPECT_TRUE(checker.pending());
+}
+
+// WARNING: the following test relies on a real timing of the code,
+// and thus:
+// (a) Long (about 15 sec)
+// (b) May be unreliable under high system load
+// therefore it's disabled by default.
+TEST(CheckScheduleTest, DISABLED_UseRealTimer)
 {
     const std::size_t MIN_CHECK=3;
     const std::size_t MAX_CHECK=5;

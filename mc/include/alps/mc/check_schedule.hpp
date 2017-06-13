@@ -9,66 +9,119 @@
 #include <boost/chrono.hpp>
 
 namespace alps {
-    
-    class check_schedule
-    {
-    public:
-        typedef boost::chrono::high_resolution_clock clock;
-        typedef clock::time_point time_point;
-        typedef boost::chrono::duration<double> duration;
 
-        /// Constructor
-        /// \param[in] tmin minimum time to check if simulation has finished 
-        /// \param[in] tmax maximum time to check if simulation has finished 
-        check_schedule(double tmin, double tmax)
-        :   min_check_(tmin)
-        ,   max_check_(tmax)
-        {
-        }
+    namespace detail {
+        /// Class template to check for simulation completion with adaptive check frequency
+        /** Typename CLOCK_T provides time-related types and methods */
+        // (Note: We could use traits, but we don't)
+        template <typename CLOCK_T>
+        class generic_check_schedule {
+            public:
+            typedef CLOCK_T clock_type;
+            typedef typename clock_type::time_point_type time_point_type;
+            typedef typename clock_type::time_duration_type time_duration_type;
 
-        bool pending() const
-        {
-            time_point now = clock::now();
-            return now > (last_check_time_ + next_check_);
-        }
-    
-        void update(double fraction)
-        {
-            time_point now = clock::now();
+            private:
+            clock_type clock_;
+            
+            bool next_check_known_;
+            double start_fraction_;
 
-            // first check
-            if( start_time_ == time_point() )
+            time_duration_type min_check_;
+            time_duration_type max_check_;
+
+            time_point_type start_time_;
+            time_point_type last_check_time_;
+
+            time_duration_type next_check_;
+
+            public:
+            /// Constructor using default clock instance
+            /**
+               \param[in] tmin minimum time to check if simulation has finished 
+               \param[in] tmax maximum time to check if simulation has finished
+            */
+            generic_check_schedule(double tmin, double tmax)
+                : clock_(),
+                  next_check_known_(false),
+                  min_check_(tmin),
+                  max_check_(tmax)
+            { }
+
+            /// Constructor using a given clock instance
+            /**
+               \param[in] tmin minimum time to check if simulation has finished 
+               \param[in] tmax maximum time to check if simulation has finished
+               \param[in] clock Clock object to use
+            */
+            generic_check_schedule(double tmin, double tmax, const clock_type& clock)
+                : clock_(clock),
+                  next_check_known_(false),
+                  min_check_(tmin),
+                  max_check_(tmax)
+            { }
+
+            /// Returns `true` if it's time to check progress and to schedule new check
+            bool pending() const
             {
-                start_time_ = now;
-                start_fraction_ = fraction;
+                time_point_type now = clock_.now_time();
+                return clock_.time_diff(now, last_check_time_) > next_check_;
             }
-
-            if( fraction > start_fraction_ )
-            {
-                // estimate remaining time; propose to run 1/4 of that time
-                duration old_check = next_check_;
-                next_check_ = 0.25 * (1 - fraction) * (now - start_time_) / (fraction - start_fraction_);
-                if( next_check_ > 2*old_check ) next_check_ = 2 * old_check;
-                if( next_check_ < min_check_ ) next_check_ = min_check_;
-                if( next_check_ > max_check_ ) next_check_ = max_check_;
-            }
-            else
-                next_check_ = min_check_;
-
-            last_check_time_ = now;
-        }
-
-    private:
-        duration min_check_;
-        duration max_check_;
-
-        time_point start_time_;
-        time_point last_check_time_;
-        double start_fraction_;
-        duration next_check_;
     
-    };
+            /// Schedule the next check based on the fraction of the simulation completed
+            void update(double fraction)
+            {
+                time_point_type now = clock_.now_time();
+
+                // first check
+                if (!next_check_known_)
+                {
+                    start_time_ = now;
+                    start_fraction_ = fraction;
+                    next_check_known_=true;
+                }
+
+                if (fraction > start_fraction_)
+                {
+                    // estimate remaining time; propose to run 1/4 of that time
+                    time_duration_type old_check = next_check_;
+                    next_check_ = 0.25 * (1 - fraction)
+                                  * clock_.time_diff(now, start_time_) / (fraction - start_fraction_);
+                    
+                    if( next_check_ > 2*old_check ) next_check_ = 2 * old_check;
+                    if( next_check_ < min_check_ ) next_check_ = min_check_;
+                    if( next_check_ > max_check_ ) next_check_ = max_check_;
+                }
+                else
+                    next_check_ = min_check_;
+
+                last_check_time_ = now;
+            }
+        };
+
+
+        /// Type for Boost `chrono::high_resolution_clock`
+        class boost_hires_clock {
+          private:
+            typedef boost::chrono::high_resolution_clock clock_type_;
+          public:
+            /// Type for "point at time" (that is, duration from some epoch)
+            typedef clock_type_::time_point time_point_type;
+
+            /// Type for "duration of time" (that is, difference between to points in time)
+            typedef boost::chrono::duration<double> time_duration_type;
+
+            /// Returns current time point
+            static time_point_type now_time() { return clock_type_::now(); }
+
+            /// Returns a difference (duration) between time points
+            static time_duration_type time_diff(time_point_type t1, time_point_type t0)
+            {
+                return t1-t0;
+            }
+        };
+    } // detail::
+        
+    typedef detail::generic_check_schedule<detail::boost_hires_clock> check_schedule;
 
 } // namespace alps 
-
-
