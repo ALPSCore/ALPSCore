@@ -25,7 +25,7 @@ add_this_package(mcbase api stop_callback)
 
 include(ALPSEnableMPI)
 
-add_boost(program_options) # FIXME: do we need to add program_options?
+add_boost()
 
 add_hdf5()
 add_alps_package(alps-utilities alps-hdf5 alps-params alps-accumulators)
