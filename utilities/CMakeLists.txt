@@ -35,7 +35,7 @@ add_this_package(
 
 include(ALPSEnableMPI)
 
-add_boost(chrono program_options)
+add_boost()
 
 add_testing()
 CHECK_INCLUDE_FILE(unistd.h ALPS_HAVE_UNISTD_H)
