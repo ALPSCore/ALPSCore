@@ -19,7 +19,7 @@ class TestHDF5Large : public ::testing::Test {
     std::string fname_;
 
     TestHDF5Large() {
-        fname_=alps::testing::temporary_filename("hdf5_large_array.h5."));
+        fname_=alps::testing::temporary_filename("hdf5_large_array.h5.");
     }
 
     ~TestHDF5Large() {
