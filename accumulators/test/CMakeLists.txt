@@ -26,6 +26,7 @@ set (test_src
     autocorrelation
     print
     scalar_result_type
+    negative_error # FIXME!! Incorporate in the corresponding test
     )
 
 #add tests for MPI

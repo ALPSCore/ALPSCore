@@ -491,9 +491,9 @@ namespace alps {
                     template<typename U> void operator*=(U const & arg) { augmul(arg); }
                     template<typename U> void operator/=(U const & arg) { augdiv(arg); }
                     void negate() {
-                        using alps::numeric::operator-;
-                        for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
-                            *it = -*it;
+                        // using alps::numeric::operator-;
+                        // for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
+                        //     *it = -*it;
                         B::negate();
                     }
                     void inverse() {
