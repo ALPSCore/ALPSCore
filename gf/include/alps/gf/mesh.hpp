@@ -5,6 +5,7 @@
  */
 #pragma once
 #include <complex>
+#include <cassert>
 #include <boost/multi_array.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/operators.hpp>

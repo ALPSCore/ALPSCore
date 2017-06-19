@@ -10,7 +10,7 @@
 #include <complex>
 #include <cmath>
 #include <vector>
-
+#include <cassert>
 #include <boost/multi_array.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/typeof/typeof.hpp>
