@@ -26,7 +26,7 @@ add_this_package(accumulator accumulators wrapper_set)
 
 include(ALPSEnableMPI)
 
-add_boost()
+# add_boost(filesystem system)
 add_hdf5()
 add_alps_package(alps-utilities alps-hdf5)
 add_testing()

@@ -25,7 +25,8 @@ add_this_package(mcbase api stop_callback)
 
 include(ALPSEnableMPI)
 
-add_boost()
+set(boost_libs_ chrono system program_options)
+add_boost(${boost_libs_})
 
 add_hdf5()
 add_alps_package(alps-utilities alps-hdf5 alps-params alps-accumulators)

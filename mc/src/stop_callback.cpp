@@ -13,37 +13,35 @@ namespace alps {
 
     stop_callback::stop_callback(std::size_t timelimit)
         : limit(timelimit)
-        , start(std::time(0))
+        , start(boost::chrono::high_resolution_clock::now())
     {}
 
 #ifdef ALPS_HAVE_MPI
     stop_callback::stop_callback(alps::mpi::communicator const & cm, std::size_t timelimit)
-        : limit(timelimit), start(std::time(0)), comm(cm)
+        : limit(timelimit), start(boost::chrono::high_resolution_clock::now()), comm(cm)
     {}
 #endif
 
     bool stop_callback::operator()() const {
-        std::time_t now(std::time(0));
 #ifdef ALPS_HAVE_MPI
         if (comm) {
             bool to_stop;
             if (comm->rank() == 0)
-                to_stop = !signals.empty() || (limit > 0 && std::difftime(now, start) > limit);
+                to_stop = !signals.empty() || (limit.count() > 0 && boost::chrono::high_resolution_clock::now() > start + limit);
             broadcast(*comm, to_stop, 0);
             return to_stop;
         } else
 #endif
-            return !signals.empty() || (limit > 0 && std::difftime(now, start) > limit);
+            return !signals.empty() || (limit.count() > 0 && boost::chrono::high_resolution_clock::now() > start + limit);
     }
 
 
     simple_time_callback::simple_time_callback(std::size_t timelimit)
         : limit(timelimit)
-        , start(std::time(0))
+        , start(boost::chrono::steady_clock::now())
     {}
 
     bool simple_time_callback::operator()() const {
-        std::time_t now(time(0));
-        return (limit > 0 && std::difftime(now, start) > limit);
+            return (limit.count() > 0 && boost::chrono::steady_clock::now() > start + limit);
     }
 }
