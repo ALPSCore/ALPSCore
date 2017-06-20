@@ -13,6 +13,10 @@
 #include <alps/utilities/remove_cvr.hpp>
 #include <alps/utilities/type_wrapper.hpp>
 
+// FIXME: remove together with deprecated methods
+#include <alps/utilities/deprecated.hpp>
+
+
 #include <boost/mpl/and.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/is_same.hpp>
@@ -86,7 +90,8 @@ namespace alps {
         }
 
         class archive {
-            private:
+            // FIXME: MAKE private:
+            public:
                 typedef enum {
                     READ = 0x00, 
                     WRITE = 0x01, 
@@ -100,7 +105,8 @@ namespace alps {
                 /// default constructor to create archive with out openning of any file
                 /// to be used in conjunction with `void open(const std::string &, std::string)` function
                 archive();
-                archive(std::string const & filename, std::string mode = "r");
+                archive(std::string const & filename, std::string mode = "r") ALPS_DEPRECATED;
+                archive(std::string const & filename, int prop);
                 archive(archive const & arg);
 
                 virtual ~archive();

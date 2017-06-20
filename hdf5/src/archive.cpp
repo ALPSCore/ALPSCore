@@ -338,6 +338,28 @@ namespace alps {
 
         archive::archive() : context_(NULL) {}
 
+        archive::archive(std::string const & filename, int prop) : context_(NULL) {
+            std::cerr << "WARNING: Use of `archive(string name, int mode)` constructor (name=\""
+                      << filename << "\") is DEPRECATED!\n";
+            
+            std::string mode="";
+            if (prop & COMPRESS) mode += "c";
+            if (prop & MEMORY) mode += "m";
+
+            prop = prop & ~(COMPRESS|MEMORY);
+            
+            if (prop == READ) {
+                mode += "r";
+            } else if ((prop == WRITE) || (prop == REPLACE) || (prop == (WRITE|REPLACE))) {
+                mode += "w";
+            } else {
+                throw wrong_mode("Unsupported mode flags when openinge file '"+filename+"'" + ALPS_STACKTRACE);
+            }
+            std::cerr << "WARNING: Use of `archive(string name, string mode) constructor with mode=\""
+                      << mode << "\" instead!\n";
+            open(filename,mode);
+        }
+        
         archive::archive(std::string const & filename, std::string mode) : context_(NULL) {
             open(filename, mode);
         }
