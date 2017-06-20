@@ -105,8 +105,8 @@ namespace alps {
                 /// default constructor to create archive with out openning of any file
                 /// to be used in conjunction with `void open(const std::string &, std::string)` function
                 archive();
-                archive(std::string const & filename, std::string mode = "r") ALPS_DEPRECATED;
-                archive(std::string const & filename, int prop);
+                archive(std::string const & filename, std::string mode = "r");
+                archive(std::string const & filename, int prop)  ALPS_DEPRECATED;
                 archive(archive const & arg);
 
                 virtual ~archive();
