@@ -1000,10 +1000,6 @@ namespace alps {
                 this->dim_ = other.dim_;
                 this->statistics_ = other.statistics_;
                 this->basis_functions_ = other.basis_functions_;
-                this->basis_functions_in_matsubara_.resize(
-                        boost::extents[other.basis_functions_in_matsubara_.shape()[0]][other.basis_functions_in_matsubara_.shape()[1]]
-                );
-                this->basis_functions_in_matsubara_ = other.basis_functions_in_matsubara_;
                 base_mesh::operator=(other);
             }
 
