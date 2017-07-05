@@ -13,7 +13,7 @@
 namespace alps {
     /// @brief Defines a number of frequently-used parameters.
     /// Defines `size_t timelimt`, `string outputfile`, `string checkpoint`.
-    params& define_convenience_parameters(params & parameters) {
+    inline params& define_convenience_parameters(params & parameters) {
         std::string basename=alps::fs::remove_extensions(alps::fs::get_basename(parameters.get_origin_name()));
         parameters
             .define<std::size_t>("timelimit", 0, "time limit for the simulation")
