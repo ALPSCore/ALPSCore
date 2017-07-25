@@ -72,7 +72,29 @@ TEST_F(ThreeIndexGFTest,saveload)
     }
     EXPECT_EQ(7, gf2(g::matsubara_index(4),g::momentum_index(3), g::index(1)).real());
     EXPECT_EQ(3, gf2(g::matsubara_index(4),g::momentum_index(3), g::index(1)).imag());
+}
 
+TEST_F(ThreeIndexGFTest,saveloadstream)
+{
+    namespace g=alps::gf;
+    {
+        alps::hdf5::archive oar("gf.h5","w");
+        gf(g::matsubara_index(4),g::momentum_index(3), g::index(1))=std::complex<double>(7., 3.);
+        oar["/gf"] << gf;
+    }
+    {
+        alps::hdf5::archive iar("gf.h5");
+        iar["/gf"] >> gf2;
+    }
+    EXPECT_EQ(7, gf2(g::matsubara_index(4),g::momentum_index(3), g::index(1)).real());
+    EXPECT_EQ(3, gf2(g::matsubara_index(4),g::momentum_index(3), g::index(1)).imag());
+    {
+        alps::hdf5::archive oar("gf.h5","rw");
+        oar["/gf/version/major"]<<7;
+        EXPECT_THROW(oar["/gf"]>>gf2, std::runtime_error);
+    }
+    EXPECT_EQ(7, gf2(g::matsubara_index(4),g::momentum_index(3), g::index(1)).real());
+    EXPECT_EQ(3, gf2(g::matsubara_index(4),g::momentum_index(3), g::index(1)).imag());
 }
 
 TEST_F(ThreeIndexGFTest, tail)
@@ -150,12 +172,11 @@ TEST_F(ThreeIndexGFTest, TailSaveLoad)
     {
         alps::hdf5::archive oar("gft.h5","w");
         gft(g::matsubara_index(4),g::momentum_index(3), g::index(1))=std::complex<double>(7., 3.);
-        gft.save(oar,"/gft");
+        oar["/gft"] << gft;
     }
     {
         alps::hdf5::archive iar("gft.h5");
-        
-        gft2.load(iar,"/gft");
+        iar["/gft"] >> gft2;
     }
     EXPECT_EQ(gft2.tail().size(), gft.tail().size()) << "Tail size mismatch";
     EXPECT_NEAR(0, (gft.tail(0)-gft2.tail(0)).norm(), 1E-8)<<"Tail loaded differs from tail stored"; 
@@ -367,11 +388,11 @@ TEST_F(ThreeIndexGFTest, DefaultConstructive)
     EXPECT_THROW(gf_empty.norm(), std::runtime_error);
     {
         alps::hdf5::archive oar("gf.h5","w");
-        gf.save(oar,"/gf");
+        oar["/gf"] << gf;
     }
     {
         alps::hdf5::archive iar("gf.h5");
-        gf_empty.load(iar,"/gf");
+        iar["/gf"] >> gf_empty;
     }
     EXPECT_NO_THROW(gf_empty.norm());
 }

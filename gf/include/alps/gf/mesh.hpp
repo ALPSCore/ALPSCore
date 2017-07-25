@@ -125,6 +125,18 @@ namespace alps {
                 ar[path+"/points"] >> _points();
             }
 
+            /// Save to HDF5
+            void save(alps::hdf5::archive& ar) const
+            {
+                save(ar, ar.get_context());
+            }
+            
+            /// Load from HDF5
+            void load(alps::hdf5::archive& ar)
+            {
+                load(ar, ar.get_context());
+            }
+            
             /// Comparison operators
             bool operator==(const real_frequency_mesh &mesh) const {
                 throw_if_empty();
@@ -256,6 +268,18 @@ namespace alps {
                 compute_points();
             }
 
+            /// Save to HDF5
+            void save(alps::hdf5::archive& ar) const
+            {
+                save(ar, ar.get_context());
+            }
+            
+            /// Load from HDF5
+            void load(alps::hdf5::archive& ar)
+            {
+                load(ar, ar.get_context());
+            }
+            
 #ifdef ALPS_HAVE_MPI
           void broadcast(const alps::mpi::communicator& comm, int root)
             {
@@ -394,6 +418,18 @@ namespace alps {
                 compute_points();
             }
 
+            /// Save to HDF5
+            void save(alps::hdf5::archive& ar) const
+            {
+                save(ar, ar.get_context());
+            }
+            
+            /// Load from HDF5
+            void load(alps::hdf5::archive& ar)
+            {
+                load(ar, ar.get_context());
+            }
+            
 #ifdef ALPS_HAVE_MPI
           void broadcast(const alps::mpi::communicator& comm, int root)
             {
@@ -521,6 +557,18 @@ namespace alps {
                 compute_weights();
             }
 
+            /// Save to HDF5
+            void save(alps::hdf5::archive& ar) const
+            {
+                save(ar, ar.get_context());
+            }
+            
+            /// Load from HDF5
+            void load(alps::hdf5::archive& ar)
+            {
+                load(ar, ar.get_context());
+            }
+            
 #ifdef ALPS_HAVE_MPI
           void broadcast(const alps::mpi::communicator& comm, int root)
             {
@@ -644,6 +692,18 @@ namespace alps {
                 ar[path+"/points"] >> points_;
             }
 
+            /// Save to HDF5
+            void save(alps::hdf5::archive& ar) const
+            {
+                save(ar, ar.get_context());
+            }
+            
+            /// Load from HDF5
+            void load(alps::hdf5::archive& ar)
+            {
+                load(ar, ar.get_context());
+            }
+            
 #ifdef ALPS_HAVE_MPI
           void broadcast(const alps::mpi::communicator& comm, int root)
             {
@@ -756,6 +816,19 @@ namespace alps {
                 npoints_=np;
                 compute_points();
             }
+
+            /// Save to HDF5
+            void save(alps::hdf5::archive& ar) const
+            {
+                save(ar, ar.get_context());
+            }
+            
+            /// Load from HDF5
+            void load(alps::hdf5::archive& ar)
+            {
+                load(ar, ar.get_context());
+            }
+            
             void compute_points(){ points_.resize(npoints_); for(int i=0;i<npoints_;++i){points_[i]=i;} }
 
 #ifdef ALPS_HAVE_MPI
@@ -859,6 +932,18 @@ namespace alps {
                 compute_points();
             }
 
+            /// Save to HDF5
+            void save(alps::hdf5::archive& ar) const
+            {
+                save(ar, ar.get_context());
+            }
+            
+            /// Load from HDF5
+            void load(alps::hdf5::archive& ar)
+            {
+                load(ar, ar.get_context());
+            }
+            
 #ifdef ALPS_HAVE_MPI
             void broadcast(const alps::mpi::communicator& comm, int root)
             {
@@ -1043,6 +1128,18 @@ namespace alps {
                 compute_points();
             }
 
+            /// Save to HDF5
+            void save(alps::hdf5::archive& ar) const
+            {
+                save(ar, ar.get_context());
+            }
+            
+            /// Load from HDF5
+            void load(alps::hdf5::archive& ar)
+            {
+                load(ar, ar.get_context());
+            }
+            
 #ifdef ALPS_HAVE_MPI
             void broadcast(const alps::mpi::communicator& comm, int root)
             {

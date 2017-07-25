@@ -31,6 +31,25 @@ TEST(Mesh, RealFrequencyLoadSave) {
     EXPECT_EQ(mesh1, mesh2);
 }
 
+TEST(Mesh, RealFrequencyLoadSaveStream) {
+    alps::testing::unique_file ufile("gf.h5.", alps::testing::unique_file::REMOVE_NOW);
+    const std::string&  filename = ufile.name();
+    namespace g=alps::gf;
+    g::grid::linear_real_frequency_grid grid(-3,3,100);
+    g::real_frequency_mesh mesh1(grid);
+    g::real_frequency_mesh mesh2;
+    {
+        alps::hdf5::archive oar(filename,"w");
+        oar["/gf"] << mesh1;
+    }
+    {
+        alps::hdf5::archive iar(filename);
+        g::real_frequency_mesh mesh;
+        iar["/gf"] >> mesh2;
+    }
+    EXPECT_EQ(mesh1, mesh2);
+}
+
 TEST(Mesh, RealFrequencyMeshQuadric) {
     double spread = 5.0;
     int nfreq = 41;
@@ -235,6 +254,25 @@ TEST(Mesh, LegendreLoadSave) {
     EXPECT_EQ(mesh1, mesh2);
 }
 
+TEST(Mesh, LegendreLoadSaveStream) {
+    namespace g=alps::gf;
+    alps::testing::unique_file ufile("gf.h5.", alps::testing::unique_file::REMOVE_NOW);
+    const std::string&  filename = ufile.name();
+
+    g::legendre_mesh mesh1(5.0, 20, alps::gf::statistics::FERMIONIC);
+    g::legendre_mesh mesh2;
+    {
+        alps::hdf5::archive oar(filename,"w");
+        oar["/gf"]<<mesh1;
+    }
+    {
+        alps::hdf5::archive iar(filename);
+        g::legendre_mesh mesh;
+        iar["/gf"]>>mesh2;
+    }
+    EXPECT_EQ(mesh1, mesh2);
+}
+
 TEST(Mesh,SwapLegendre) {
     alps::gf::legendre_mesh mesh_1(5.0, 20, alps::gf::statistics::FERMIONIC);
     alps::gf::legendre_mesh mesh_1r(mesh_1);
@@ -415,6 +453,42 @@ TEST(Mesh,NumericalMeshSave) {
     }
 }
 
+TEST(Mesh,NumericalMeshSaveStream) {
+    const int n_section = 2, k = 3;
+    const double beta = 100.0;
+    typedef double Scalar;
+    typedef alps::gf::piecewise_polynomial<Scalar> pp_type;
+
+    alps::testing::unique_file ufile("nm.h5.", alps::testing::unique_file::REMOVE_NOW);
+    const std::string&  filename = ufile.name();
+
+    std::vector<double> section_edges(n_section+1);
+    section_edges[0] = -1.0;
+    section_edges[1] =  0.0;
+    section_edges[2] =  1.0;
+
+    boost::multi_array<Scalar,2> coeff(boost::extents[n_section][k+1]);
+    std::fill(coeff.origin(), coeff.origin()+coeff.num_elements(), 0.0);
+
+    pp_type p(n_section, section_edges, coeff);
+    std::vector<pp_type> basis_functions;
+    basis_functions.push_back(p);
+    basis_functions.push_back(p);
+
+    alps::gf::numerical_mesh<double> mesh1(beta, basis_functions, alps::gf::statistics::FERMIONIC);
+    {
+        alps::hdf5::archive oar(filename,"w");
+        oar["/nm"] << mesh1;
+
+    }
+
+    alps::gf::numerical_mesh<double> mesh2;
+    {
+        alps::hdf5::archive iar(filename);
+        iar["/nm"] >> mesh2;
+    }
+}
+
 TEST(Mesh,DefaultConstructive) {
     alps::testing::unique_file ufile("m.h5.", alps::testing::unique_file::REMOVE_NOW);
     const std::string&  filename = ufile.name();
@@ -423,46 +497,46 @@ TEST(Mesh,DefaultConstructive) {
     //FIXME: Can we use TYPED_TEST to cover all mesh types?
     {
         alps::gf::matsubara_pn_mesh m;
-        EXPECT_THROW(m.save(oar, "/mesh"), std::runtime_error);
+        EXPECT_THROW(oar["/mesh"] << m, std::runtime_error);
     }
 
     {
         alps::gf::power_mesh m;
-        EXPECT_THROW(m.save(oar, "/mesh"), std::runtime_error);
+        EXPECT_THROW(oar["/mesh"] << m, std::runtime_error);
     }
 
     {
         alps::gf::matsubara_positive_mesh m;
-        EXPECT_THROW(m.save(oar, "/mesh"), std::runtime_error);
+        EXPECT_THROW(oar["/mesh"] << m, std::runtime_error);
     }
 
     {
         alps::gf::momentum_index_mesh m;
-        EXPECT_THROW(m.save(oar, "/mesh"), std::runtime_error);
+        EXPECT_THROW(oar["/mesh"] << m, std::runtime_error);
     }
 
     {
         alps::gf::itime_mesh m;
-        EXPECT_THROW(m.save(oar, "/mesh"), std::runtime_error);
+        EXPECT_THROW(oar["/mesh"] << m, std::runtime_error);
     }
 
     {
         alps::gf::real_frequency_mesh m;
-        EXPECT_THROW(m.save(oar, "/mesh"), std::runtime_error);
+        EXPECT_THROW(oar["/mesh"] << m, std::runtime_error);
     }
 
     {
         alps::gf::index_mesh m;
-        EXPECT_THROW(m.save(oar, "/mesh"), std::runtime_error);
+        EXPECT_THROW(oar["/mesh"] << m, std::runtime_error);
     }
 
     {
         alps::gf::legendre_mesh m;
-        EXPECT_THROW(m.save(oar, "/mesh"), std::runtime_error);
+        EXPECT_THROW(oar["/mesh"] << m, std::runtime_error);
     }
 
     {
         alps::gf::numerical_mesh<double> m;
-        EXPECT_THROW(m.save(oar, "/mesh"), std::runtime_error);
+        EXPECT_THROW(oar["/mesh"] << m, std::runtime_error);
     }
 }

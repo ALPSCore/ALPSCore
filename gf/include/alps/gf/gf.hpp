@@ -245,6 +245,18 @@ namespace alps {
                 ar[path+"/data"] >> data_;
             }
 
+            /// Save the GF to HDF5
+            void save(alps::hdf5::archive& ar) const
+            {
+                save(ar, ar.get_context());
+            }
+            
+            /// Load the GF from HDF5
+            void load(alps::hdf5::archive& ar)
+            {
+                load(ar, ar.get_context());
+            }
+            
 #ifdef ALPS_HAVE_MPI
             /// Broadcast the GF (together with meshes)
           void broadcast(const alps::mpi::communicator& comm, int root)
@@ -465,6 +477,18 @@ namespace alps {
                 ar[path+"/data"] >> data_;
             }
         
+            /// Save the GF to HDF5
+            void save(alps::hdf5::archive& ar) const
+            {
+                save(ar, ar.get_context());
+            }
+            
+            /// Load the GF from HDF5
+            void load(alps::hdf5::archive& ar)
+            {
+                load(ar, ar.get_context());
+            }
+            
 #ifdef ALPS_HAVE_MPI
             /// Broadcast the GF (with meshes)
           void broadcast(const alps::mpi::communicator& comm, int root)
@@ -699,6 +723,18 @@ namespace alps {
                 ar[path+"/data"] >> data_;
             }
         
+            /// Save the GF to HDF5
+            void save(alps::hdf5::archive& ar) const
+            {
+                save(ar, ar.get_context());
+            }
+            
+            /// Load the GF from HDF5
+            void load(alps::hdf5::archive& ar)
+            {
+                load(ar, ar.get_context());
+            }
+            
 #ifdef ALPS_HAVE_MPI
             /// Broadcast the GF (with meshes)
           void broadcast(const alps::mpi::communicator& comm, int root)
@@ -943,6 +979,18 @@ namespace alps {
                 ar[path+"/data"] >> data_;
             }
 
+            /// Save the GF to HDF5
+            void save(alps::hdf5::archive& ar) const
+            {
+                save(ar, ar.get_context());
+            }
+            
+            /// Load the GF from HDF5
+            void load(alps::hdf5::archive& ar)
+            {
+                load(ar, ar.get_context());
+            }
+            
 #ifdef ALPS_HAVE_MPI
             /// Broadcast the GF (with meshes)
           void broadcast(const alps::mpi::communicator& comm, int root)
@@ -1187,6 +1235,18 @@ namespace alps {
                 ar[path+"/data"] >> data_;
             }
 
+            /// Save the GF to HDF5
+            void save(alps::hdf5::archive& ar) const
+            {
+                save(ar, ar.get_context());
+            }
+            
+            /// Load the GF from HDF5
+            void load(alps::hdf5::archive& ar)
+            {
+                load(ar, ar.get_context());
+            }
+            
 #ifdef ALPS_HAVE_MPI
             /// Broadcast the GF (with meshes)
           void broadcast(const alps::mpi::communicator& comm, int root)
@@ -1454,7 +1514,19 @@ namespace alps {
                      ar[path+"/data"] >> data_;
                  }
 
-     #ifdef ALPS_HAVE_MPI
+            /// Save the GF to HDF5
+            void save(alps::hdf5::archive& ar) const
+            {
+                save(ar, ar.get_context());
+            }
+            
+            /// Load the GF from HDF5
+            void load(alps::hdf5::archive& ar)
+            {
+                load(ar, ar.get_context());
+            }
+            
+#ifdef ALPS_HAVE_MPI
                  /// Broadcast the GF (with meshes)
                void broadcast(const alps::mpi::communicator& comm, int root)
                  {

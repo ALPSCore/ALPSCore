@@ -378,6 +378,18 @@ namespace alps {
                 check_validity();
             }
 
+            /// Save to HDF5
+            void save(alps::hdf5::archive& ar) const
+            {
+                save(ar, ar.get_context());
+            }
+            
+            /// Load from HDF5
+            void load(alps::hdf5::archive& ar)
+            {
+                load(ar, ar.get_context());
+            }
+            
 #ifdef ALPS_HAVE_MPI
             /// Broadcast
             void broadcast(const alps::mpi::communicator& comm, int root)

@@ -129,6 +129,18 @@ namespace alps {
                 }
             }
 
+            /// Save the GF to HDF5
+            void save(alps::hdf5::archive& ar) const
+            {
+                save(ar, ar.get_context());
+            }
+            
+            /// Load the GF from HDF5
+            void load(alps::hdf5::archive& ar)
+            {
+                load(ar, ar.get_context());
+            }
+            
 #ifdef ALPS_HAVE_MPI
             /// Broadcast the tail and the GF
           void broadcast(const alps::mpi::communicator& comm, int root)
@@ -239,6 +251,18 @@ namespace alps {
                 }
             }
 
+            /// Save the GF to HDF5
+            void save(alps::hdf5::archive& ar) const
+            {
+                save(ar, ar.get_context());
+            }
+            
+            /// Load the GF from HDF5
+            void load(alps::hdf5::archive& ar)
+            {
+                load(ar, ar.get_context());
+            }
+            
 #ifdef ALPS_HAVE_MPI
             /// Broadcast the tail and the GF
           void broadcast(const alps::mpi::communicator& comm, int root)
@@ -350,6 +374,18 @@ namespace alps {
                 }
             }
 
+            /// Save the GF to HDF5
+            void save(alps::hdf5::archive& ar) const
+            {
+                save(ar, ar.get_context());
+            }
+            
+            /// Load the GF from HDF5
+            void load(alps::hdf5::archive& ar)
+            {
+                load(ar, ar.get_context());
+            }
+            
 #ifdef ALPS_HAVE_MPI
             /// Broadcast the tail and the GF
           void broadcast(const alps::mpi::communicator& comm, int root)
@@ -463,6 +499,18 @@ namespace alps {
                 }
             }
 
+            /// Save the GF to HDF5
+            void save(alps::hdf5::archive& ar) const
+            {
+                save(ar, ar.get_context());
+            }
+            
+            /// Load the GF from HDF5
+            void load(alps::hdf5::archive& ar)
+            {
+                load(ar, ar.get_context());
+            }
+            
         };
 
         typedef two_index_gf_with_tail<omega_sigma_gf, one_index_gf<double, index_mesh> > omega_sigma_gf_with_tail;
