@@ -27,11 +27,11 @@ namespace alps {
 
         const int minor_version=1;
         const int major_version=0;
-       
+
         void save_version(alps::hdf5::archive& ar, const std::string& path);
-        
+
         bool check_version(alps::hdf5::archive& ar, const std::string& path);
-        
+
         namespace detail{
             template<typename T> void print_no_complex(std::ostream &os, const T &z){
                 os<<z;
@@ -78,7 +78,7 @@ namespace alps {
                     throw std::invalid_argument("Green Functions have incompatible meshes");
                 }
             }
-          
+
             public:
             one_index_gf()
                     : is_empty_(true),
@@ -180,14 +180,14 @@ namespace alps {
                 return do_op< std::minus<value_type> >(rhs);
             }
 
-            /// Element-wise scaling 
+            /// Element-wise scaling
             one_index_gf& operator*=(const value_type& scalar)
             {
                 throw_if_empty();
                 return do_op< std::multiplies<value_type> >(scalar);
             }
 
-            /// Element-wise scaling 
+            /// Element-wise scaling
             one_index_gf& operator/=(const value_type& scalar)
             {
                 throw_if_empty();
@@ -197,7 +197,7 @@ namespace alps {
             /// Element-wise negation
             /**
                @returns Negated Green's Function (a new copy).
-               
+
                Advice to user: consider if scaling by (-1) would serve better!
             */
             one_index_gf operator-()
@@ -216,7 +216,7 @@ namespace alps {
                 throw_if_empty();
                 return do_op< detail::choose_rhs<value_type> >(rhs);
             }
-            
+
             /// Save the GF to HDF5
             void save(alps::hdf5::archive& ar, const std::string& path) const
             {
@@ -224,7 +224,7 @@ namespace alps {
                 save_version(ar,path);
                 ar[path+"/data"] << data_;
                 ar[path+"/mesh/N"] << int(container_type::dimensionality);
-                mesh1_.save(ar,path+"/mesh/1");
+                ar[path+"/mesh/1"] << mesh1_;
             }
 
             /// Load the GF from HDF5
@@ -238,7 +238,7 @@ namespace alps {
                 ar[path+"/mesh/N"] >> ndim;
                 if (ndim != container_type::dimensionality) throw std::runtime_error("Wrong number of dimension reading Matsubara GF, ndim="+boost::lexical_cast<std::string>(ndim) );
 
-                mesh1_.load(ar,path+"/mesh/1");
+                ar[path+"/mesh/1"] >> mesh1_;
 
                 data_.resize(boost::extents[mesh1_.extent()]);
 
@@ -250,13 +250,13 @@ namespace alps {
             {
                 save(ar, ar.get_context());
             }
-            
+
             /// Load the GF from HDF5
             void load(alps::hdf5::archive& ar)
             {
                 load(ar, ar.get_context());
             }
-            
+
 #ifdef ALPS_HAVE_MPI
             /// Broadcast the GF (together with meshes)
           void broadcast(const alps::mpi::communicator& comm, int root)
@@ -265,7 +265,7 @@ namespace alps {
                 mesh1_.broadcast(comm,root);
                 detail::broadcast(comm, data_, root);
             }
-#endif          
+#endif
 
         };
         template<class value_type, class MESH1> std::ostream &operator<<(std::ostream &os, one_index_gf<value_type,MESH1> G){
@@ -311,7 +311,7 @@ namespace alps {
                     throw std::invalid_argument("Green Functions have incompatible meshes");
                 }
             }
-          
+
 
             public:
             two_index_gf()
@@ -339,20 +339,20 @@ namespace alps {
             }
 
             const container_type& data() const { return data_; }
-            
-            const MESH1& mesh1() const { return mesh1_; } 
-            const MESH2& mesh2() const { return mesh2_; } 
+
+            const MESH1& mesh1() const { return mesh1_; }
+            const MESH2& mesh2() const { return mesh2_; }
 
             const value_type& operator()(typename MESH1::index_type i1, typename MESH2::index_type i2) const
             {
                 return data_[i1()][i2()];
             }
-        
+
             value_type& operator()(typename MESH1::index_type i1, typename MESH2::index_type i2)
             {
                 return data_[i1()][i2()];
             }
-        
+
             /// Initialize the GF data to value_type(0.)
             void initialize()
             {
@@ -399,7 +399,7 @@ namespace alps {
             {
                 return do_op< std::minus<value_type> >(rhs);
             }
-        
+
             /// Assignment-op with scalar
             template <typename op>
             two_index_gf& do_op(const value_type& scalar)
@@ -413,13 +413,13 @@ namespace alps {
                 return *this;
             }
 
-            /// Element-wise scaling 
+            /// Element-wise scaling
             two_index_gf& operator*=(const value_type& scalar)
             {
                 return do_op< std::multiplies<value_type> >(scalar);
             }
 
-            /// Element-wise scaling 
+            /// Element-wise scaling
             two_index_gf& operator/=(const value_type& scalar)
             {
                 return do_op< std::divides<value_type> >(scalar);
@@ -428,7 +428,7 @@ namespace alps {
             /// Element-wise negation
             /**
                @returns Negated Green's Function (a new copy).
-               
+
                Advice to user: consider if scaling by (-1) would serve better!
             */
             two_index_gf operator-()
@@ -446,7 +446,7 @@ namespace alps {
             {
                 return do_op< detail::choose_rhs<value_type> >(rhs);
             }
-            
+
             /// Save the GF to HDF5
             void save(alps::hdf5::archive& ar, const std::string& path) const
             {
@@ -454,41 +454,41 @@ namespace alps {
                 save_version(ar,path);
                 ar[path+"/data"] << data_;
                 ar[path+"/mesh/N"] << int(container_type::dimensionality);
-                mesh1_.save(ar,path+"/mesh/1");
-                mesh2_.save(ar,path+"/mesh/2");
+                ar[path+"/mesh/1"] << mesh1_;
+                ar[path+"/mesh/2"] << mesh2_;
             }
-        
+
             /// Load the GF from HDF5
             void load(alps::hdf5::archive& ar, const std::string& path)
             {
                 if (!check_version(ar,path)) throw std::runtime_error("Incompatible archive version");
 
                 is_empty_ = false;
-          
+
                 int ndim;
                 ar[path+"/mesh/N"] >> ndim;
                 if (ndim != container_type::dimensionality) throw std::runtime_error("Wrong number of dimension reading Matsubara GF, ndim="+boost::lexical_cast<std::string>(ndim) );
-          
-                mesh1_.load(ar,path+"/mesh/1");
-                mesh2_.load(ar,path+"/mesh/2");
-          
+
+                ar[path+"/mesh/1"] >> mesh1_;
+                ar[path+"/mesh/2"] >> mesh2_;
+
                 data_.resize(boost::extents[mesh1_.extent()][mesh2_.extent()]);
-          
+
                 ar[path+"/data"] >> data_;
             }
-        
+
             /// Save the GF to HDF5
             void save(alps::hdf5::archive& ar) const
             {
                 save(ar, ar.get_context());
             }
-            
+
             /// Load the GF from HDF5
             void load(alps::hdf5::archive& ar)
             {
                 load(ar, ar.get_context());
             }
-            
+
 #ifdef ALPS_HAVE_MPI
             /// Broadcast the GF (with meshes)
           void broadcast(const alps::mpi::communicator& comm, int root)
@@ -532,7 +532,7 @@ namespace alps {
             mesh1_type mesh1_;
             mesh2_type mesh2_;
             mesh3_type mesh3_;
-        
+
             container_type data_;
 
             /// Throws if gf is empty
@@ -551,7 +551,7 @@ namespace alps {
                     throw std::invalid_argument("Green Functions have incompatible meshes");
                 }
             }
-            
+
             public:
             three_index_gf()
                     : is_empty_(true), mesh1_(), mesh2_(), mesh3_(),
@@ -579,21 +579,21 @@ namespace alps {
             }
 
 
-            const MESH1& mesh1() const { return mesh1_; } 
-            const MESH2& mesh2() const { return mesh2_; } 
-            const MESH3& mesh3() const { return mesh3_; } 
+            const MESH1& mesh1() const { return mesh1_; }
+            const MESH2& mesh2() const { return mesh2_; }
+            const MESH3& mesh3() const { return mesh3_; }
             const container_type& data() const { return data_; }
-            
+
             const value_type& operator()(typename MESH1::index_type i1, typename MESH2::index_type i2, typename MESH3::index_type i3) const
             {
                 return data_[i1()][i2()][i3()];
             }
-        
+
             value_type& operator()(typename MESH1::index_type i1, typename MESH2::index_type i2, typename MESH3::index_type i3)
             {
                 return data_[i1()][i2()][i3()];
             }
-        
+
             /// Initialize the GF data to value_type(0.)
             void initialize()
             {
@@ -606,7 +606,7 @@ namespace alps {
                     }
                 }
             }
-        
+
             /// Norm operation (FIXME: is it always double??)
             double norm() const
             {
@@ -657,13 +657,13 @@ namespace alps {
                 return *this;
             }
 
-            /// Element-wise scaling 
+            /// Element-wise scaling
             three_index_gf& operator*=(const value_type& scalar)
             {
                 return do_op< std::multiplies<value_type> >(scalar);
             }
 
-            /// Element-wise scaling 
+            /// Element-wise scaling
             three_index_gf& operator/=(const value_type& scalar)
             {
                 return do_op< std::divides<value_type> >(scalar);
@@ -672,7 +672,7 @@ namespace alps {
             /// Element-wise negation
             /**
                @returns Negated Green's Function (a new copy).
-               
+
                Advice to user: consider if scaling by (-1) would serve better!
             */
             three_index_gf operator-()
@@ -690,7 +690,7 @@ namespace alps {
             {
                 return do_op< detail::choose_rhs<value_type> >(rhs);
             }
-            
+
             /// Save the GF to HDF5
             void save(alps::hdf5::archive& ar, const std::string& path) const
             {
@@ -698,43 +698,43 @@ namespace alps {
                 save_version(ar,path);
                 ar[path+"/data"] << data_;
                 ar[path+"/mesh/N"] << int(container_type::dimensionality);
-                mesh1_.save(ar,path+"/mesh/1");
-                mesh2_.save(ar,path+"/mesh/2");
-                mesh3_.save(ar,path+"/mesh/3");
+                ar[path+"/mesh/1"] << mesh1_;
+                ar[path+"/mesh/2"] << mesh2_;
+                ar[path+"/mesh/3"] << mesh3_;
             }
-        
+
             /// Load the GF from HDF5
             void load(alps::hdf5::archive& ar, const std::string& path)
             {
                 if (!check_version(ar,path)) throw std::runtime_error("Incompatible archive version");
 
                 is_empty_ = false;
-          
+
                 int ndim;
                 ar[path+"/mesh/N"] >> ndim;
                 if (ndim != container_type::dimensionality) throw std::runtime_error("Wrong number of dimension reading Matsubara GF, ndim="+boost::lexical_cast<std::string>(ndim));
-          
-                mesh1_.load(ar,path+"/mesh/1");
-                mesh2_.load(ar,path+"/mesh/2");
-                mesh3_.load(ar,path+"/mesh/3");
-          
+
+                ar[path+"/mesh/1"] >> mesh1_;
+                ar[path+"/mesh/2"] >> mesh2_;
+                ar[path+"/mesh/3"] >> mesh3_;
+
                 data_.resize(boost::extents[mesh1_.extent()][mesh2_.extent()][mesh3_.extent()]);
-          
+
                 ar[path+"/data"] >> data_;
             }
-        
+
             /// Save the GF to HDF5
             void save(alps::hdf5::archive& ar) const
             {
                 save(ar, ar.get_context());
             }
-            
+
             /// Load the GF from HDF5
             void load(alps::hdf5::archive& ar)
             {
                 load(ar, ar.get_context());
             }
-            
+
 #ifdef ALPS_HAVE_MPI
             /// Broadcast the GF (with meshes)
           void broadcast(const alps::mpi::communicator& comm, int root)
@@ -763,7 +763,7 @@ namespace alps {
           return os;
         }
 
-        template<class VTYPE, class MESH1, class MESH2, class MESH3, class MESH4> class four_index_gf 
+        template<class VTYPE, class MESH1, class MESH2, class MESH3, class MESH4> class four_index_gf
         :boost::additive<four_index_gf<VTYPE,MESH1,MESH2,MESH3,MESH4>,
          boost::multiplicative2<four_index_gf<VTYPE,MESH1,MESH2,MESH3,MESH4>,VTYPE> > {
             public:
@@ -832,12 +832,12 @@ namespace alps {
                     throw std::invalid_argument("Initialization of GF with the data of incorrect size");
             }
 
-            const MESH1& mesh1() const { return mesh1_; } 
-            const MESH2& mesh2() const { return mesh2_; } 
-            const MESH3& mesh3() const { return mesh3_; } 
-            const MESH4& mesh4() const { return mesh4_; } 
+            const MESH1& mesh1() const { return mesh1_; }
+            const MESH2& mesh2() const { return mesh2_; }
+            const MESH3& mesh3() const { return mesh3_; }
+            const MESH4& mesh4() const { return mesh4_; }
             const container_type& data() const { return data_; }
-            
+
             const value_type& operator()(typename MESH1::index_type i1, typename MESH2::index_type i2, typename MESH3::index_type i3, typename MESH4::index_type i4) const
             {
                 return data_[mesh1_(i1)][mesh2_(i2)][mesh3_(i3)][mesh4_(i4)];
@@ -911,13 +911,13 @@ namespace alps {
                 return *this;
             }
 
-            /// Element-wise scaling 
+            /// Element-wise scaling
             four_index_gf& operator*=(const value_type& scalar)
             {
                 return do_op< std::multiplies<value_type> >(scalar);
             }
 
-            /// Element-wise scaling 
+            /// Element-wise scaling
             four_index_gf& operator/=(const value_type& scalar)
             {
                 return do_op< std::divides<value_type> >(scalar);
@@ -926,7 +926,7 @@ namespace alps {
             /// Element-wise negation
             /**
                @returns Negated Green's Function (a new copy).
-               
+
                Advice to user: consider if scaling by (-1) would serve better!
             */
             four_index_gf operator-()
@@ -944,7 +944,7 @@ namespace alps {
             {
                 return do_op< detail::choose_rhs<value_type> >(rhs);
             }
-            
+
             /// Save the GF to HDF5
             void save(alps::hdf5::archive& ar, const std::string& path) const
             {
@@ -952,10 +952,10 @@ namespace alps {
                 save_version(ar,path);
                 ar[path+"/data"] << data_;
                 ar[path+"/mesh/N"] << int(container_type::dimensionality);
-                mesh1_.save(ar,path+"/mesh/1");
-                mesh2_.save(ar,path+"/mesh/2");
-                mesh3_.save(ar,path+"/mesh/3");
-                mesh4_.save(ar,path+"/mesh/4");
+                ar[path+"/mesh/1"] << mesh1_;
+                ar[path+"/mesh/2"] << mesh2_;
+                ar[path+"/mesh/3"] << mesh3_;
+                ar[path+"/mesh/4"] << mesh4_;
             }
 
             /// Load the GF from HDF5
@@ -969,13 +969,13 @@ namespace alps {
                 ar[path+"/mesh/N"] >> ndim;
                 if (ndim != container_type::dimensionality) throw std::runtime_error("Wrong number of dimension reading Matsubara GF, ndim="+boost::lexical_cast<std::string>(ndim));
 
-                mesh1_.load(ar,path+"/mesh/1");
-                mesh2_.load(ar,path+"/mesh/2");
-                mesh3_.load(ar,path+"/mesh/3");
-                mesh4_.load(ar,path+"/mesh/4");
+                ar[path+"/mesh/1"] >> mesh1_;
+                ar[path+"/mesh/2"] >> mesh2_;
+                ar[path+"/mesh/3"] >> mesh3_;
+                ar[path+"/mesh/4"] >> mesh4_;
 
                 data_.resize(boost::extents[mesh1_.extent()][mesh2_.extent()][mesh3_.extent()][mesh4_.extent()]);
-                
+
                 ar[path+"/data"] >> data_;
             }
 
@@ -984,13 +984,13 @@ namespace alps {
             {
                 save(ar, ar.get_context());
             }
-            
+
             /// Load the GF from HDF5
             void load(alps::hdf5::archive& ar)
             {
                 load(ar, ar.get_context());
             }
-            
+
 #ifdef ALPS_HAVE_MPI
             /// Broadcast the GF (with meshes)
           void broadcast(const alps::mpi::communicator& comm, int root)
@@ -1206,11 +1206,11 @@ namespace alps {
                 save_version(ar,path);
                 ar[path+"/data"] << data_;
                 ar[path+"/mesh/N"] << int(container_type::dimensionality);
-                mesh1_.save(ar,path+"/mesh/1");
-                mesh2_.save(ar,path+"/mesh/2");
-                mesh3_.save(ar,path+"/mesh/3");
-                mesh4_.save(ar,path+"/mesh/4");
-                mesh5_.save(ar,path+"/mesh/5");
+                ar[path+"/mesh/1"] << mesh1_;
+                ar[path+"/mesh/2"] << mesh2_;
+                ar[path+"/mesh/3"] << mesh3_;
+                ar[path+"/mesh/4"] << mesh4_;
+                ar[path+"/mesh/5"] << mesh5_;
             }
 
             /// Load the GF from HDF5
@@ -1224,11 +1224,11 @@ namespace alps {
                 ar[path+"/mesh/N"] >> ndim;
                 if (ndim != container_type::dimensionality) throw std::runtime_error("Wrong number of dimension reading Matsubara GF, ndim="+boost::lexical_cast<std::string>(ndim));
 
-                mesh1_.load(ar,path+"/mesh/1");
-                mesh2_.load(ar,path+"/mesh/2");
-                mesh3_.load(ar,path+"/mesh/3");
-                mesh4_.load(ar,path+"/mesh/4");
-                mesh5_.load(ar,path+"/mesh/5");
+                ar[path+"/mesh/1"] >> mesh1_;
+                ar[path+"/mesh/2"] >> mesh2_;
+                ar[path+"/mesh/3"] >> mesh3_;
+                ar[path+"/mesh/4"] >> mesh4_;
+                ar[path+"/mesh/5"] >> mesh5_;
 
                 data_.resize(boost::extents[mesh1_.extent()][mesh2_.extent()][mesh3_.extent()][mesh4_.extent()][mesh5_.extent()]);
 
@@ -1240,13 +1240,13 @@ namespace alps {
             {
                 save(ar, ar.get_context());
             }
-            
+
             /// Load the GF from HDF5
             void load(alps::hdf5::archive& ar)
             {
                 load(ar, ar.get_context());
             }
-            
+
 #ifdef ALPS_HAVE_MPI
             /// Broadcast the GF (with meshes)
           void broadcast(const alps::mpi::communicator& comm, int root)
@@ -1481,13 +1481,13 @@ namespace alps {
                      save_version(ar,path);
                      ar[path+"/data"] << data_;
                      ar[path+"/mesh/N"] << int(container_type::dimensionality);
-                     mesh1_.save(ar,path+"/mesh/1");
-                     mesh2_.save(ar,path+"/mesh/2");
-                     mesh3_.save(ar,path+"/mesh/3");
-                     mesh4_.save(ar,path+"/mesh/4");
-                     mesh5_.save(ar,path+"/mesh/5");
-                     mesh6_.save(ar,path+"/mesh/6");
-                     mesh7_.save(ar,path+"/mesh/7");
+                     ar[path+"/mesh/1"] << mesh1_;
+                     ar[path+"/mesh/2"] << mesh2_;
+                     ar[path+"/mesh/3"] << mesh3_;
+                     ar[path+"/mesh/4"] << mesh4_;
+                     ar[path+"/mesh/5"] << mesh5_;
+                     ar[path+"/mesh/6"] << mesh6_;
+                     ar[path+"/mesh/7"] << mesh7_;
                  }
 
                  /// Load the GF from HDF5
@@ -1501,13 +1501,13 @@ namespace alps {
                      ar[path+"/mesh/N"] >> ndim;
                      if (ndim != container_type::dimensionality) throw std::runtime_error("Wrong number of dimension reading Matsubara GF, ndim="+boost::lexical_cast<std::string>(ndim));
 
-                     mesh1_.load(ar,path+"/mesh/1");
-                     mesh2_.load(ar,path+"/mesh/2");
-                     mesh3_.load(ar,path+"/mesh/3");
-                     mesh4_.load(ar,path+"/mesh/4");
-                     mesh5_.load(ar,path+"/mesh/5");
-                     mesh6_.load(ar,path+"/mesh/6");
-                     mesh7_.load(ar,path+"/mesh/7");
+                     ar[path+"/mesh/1"] >> mesh1_;
+                     ar[path+"/mesh/2"] >> mesh2_;
+                     ar[path+"/mesh/3"] >> mesh3_;
+                     ar[path+"/mesh/4"] >> mesh4_;
+                     ar[path+"/mesh/5"] >> mesh5_;
+                     ar[path+"/mesh/6"] >> mesh6_;
+                     ar[path+"/mesh/7"] >> mesh7_;
 
                      data_.resize(boost::extents[mesh1_.extent()][mesh2_.extent()][mesh3_.extent()][mesh4_.extent()][mesh5_.extent()][mesh6_.extent()][mesh7_.extent()]);
 
@@ -1519,13 +1519,13 @@ namespace alps {
             {
                 save(ar, ar.get_context());
             }
-            
+
             /// Load the GF from HDF5
             void load(alps::hdf5::archive& ar)
             {
                 load(ar, ar.get_context());
             }
-            
+
 #ifdef ALPS_HAVE_MPI
                  /// Broadcast the GF (with meshes)
                void broadcast(const alps::mpi::communicator& comm, int root)
@@ -1579,7 +1579,7 @@ namespace alps {
         typedef three_index_gf<std::complex<double>, matsubara_mesh<mesh::POSITIVE_ONLY>, momentum_index_mesh, index_mesh> omega_k_sigma_gf;
         typedef three_index_gf<             double , itime_mesh    , momentum_index_mesh, index_mesh> itime_k_sigma_gf;
         typedef three_index_gf<             double , momentum_index_mesh, index_mesh, index_mesh> k_sigma1_sigma2_gf;
-        
+
         typedef two_index_gf<std::complex<double>, matsubara_mesh<mesh::POSITIVE_ONLY>, index_mesh> omega_sigma_gf;
         typedef two_index_gf<             double , itime_mesh, index_mesh> itime_sigma_gf;
         typedef two_index_gf<double, momentum_index_mesh, index_mesh> k_sigma_gf;
