@@ -173,7 +173,22 @@ namespace alps {
                         using std::sqrt;
                         using alps::numeric::sqrt;
 
-                        // FIXME: here and in other places there are magic numbers: 8, 7 (presumably 8-1) and 4 (presumably 8/2).
+                        // Basically, we try to estimate the integrated
+                        // autocorrelation time as
+                        //
+                        //           tau_int = s^2(n) / s^2(1),
+                        //
+                        // where s^2(n) is the sample variance when grouping
+                        // n measurements together in a bin.  In the above
+                        // approximation, there is a tradeoff to be had between
+                        //
+                        //  (1) formal validity, which improves with n,
+                        //  (2) statistical uncertainty, which improves with N/n,
+                        //
+                        // where N is the total number of steps. Here, 8 means
+                        // N/n = 2**8 = 256, which from the \chi^2 distribution
+                        // can be worked out to be a ~90% confidence interval
+                        // for an accuracy of 10%.
                         if (m_ac_sum2.size()<8) {
                             bin_level = 0;
                         } else if (bin_level > m_ac_sum2.size() - 8) {
@@ -254,6 +269,8 @@ namespace alps {
                         BOOST_ASSERT_MSG(m_ac_sum.size() >= m_ac_sum2.size(), "m_ac_sum is as large as m_ac_sum2");
                         for (unsigned i = 0; i < m_ac_sum2.size(); ++i) {
                             m_ac_partial[i] += val;
+
+                            // in other words: (B::count() % (1L << i) == 0)
                             if (!(B::count() & ((1ll << i) - 1))) {
                                 m_ac_sum2[i] += m_ac_partial[i] * m_ac_partial[i];
                                 m_ac_sum[i] += m_ac_partial[i];
