@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <boost/chrono.hpp>
+#include <ctime>
 
 namespace alps {
 
@@ -100,28 +100,26 @@ namespace alps {
         };
 
 
-        /// Type for Boost `chrono::high_resolution_clock`
-        class boost_hires_clock {
-          private:
-            typedef boost::chrono::high_resolution_clock clock_type_;
+        /// Type for POSIX wall-clock time
+        class posix_wall_clock {
           public:
             /// Type for "point at time" (that is, duration from some epoch)
-            typedef clock_type_::time_point time_point_type;
+            typedef std::time_t time_point_type;
 
             /// Type for "duration of time" (that is, difference between to points in time)
-            typedef boost::chrono::duration<double> time_duration_type;
+            typedef double time_duration_type;
 
             /// Returns current time point
-            static time_point_type now_time() { return clock_type_::now(); }
+            static time_point_type now_time() { return std::time(0); }
 
             /// Returns a difference (duration) between time points
             static time_duration_type time_diff(time_point_type t1, time_point_type t0)
             {
-                return t1-t0;
+                return std::difftime(t1, t0);
             }
         };
     } // detail::
         
-    typedef detail::generic_check_schedule<detail::boost_hires_clock> check_schedule;
+    typedef detail::generic_check_schedule<detail::posix_wall_clock> check_schedule;
 
 } // namespace alps 

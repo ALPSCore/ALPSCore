@@ -144,3 +144,20 @@ TEST(CheckScheduleTest, DISABLED_UseRealTimer)
     }
     EXPECT_NEAR(MIN_CHECK, std::difftime(std::time(0), start), 1);
 }
+
+/// Test that our POSIX timer wrapper works as expected
+TEST(CheckSheduleTest, PosixTimerWrapper)
+{
+    std::time_t t0=std::time(0);
+    EXPECT_NEAR(t0, alps::detail::posix_wall_clock::now_time(), 1) <<"Timer wrapper is not in sync with clock";
+
+    std::time_t t1=t0;
+    double delta=0;
+    while (delta<2) {
+        t1=std::time(0);
+        delta=std::difftime(t1, t0);
+    }
+
+    EXPECT_NEAR(t1, alps::detail::posix_wall_clock::now_time(), 1) << "Timer wrapper counts time differently";
+    EXPECT_EQ(delta, alps::detail::posix_wall_clock::time_diff(t1, t0)) << "Timer wrapper computes intervals differently";
+}
