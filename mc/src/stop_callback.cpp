@@ -27,8 +27,9 @@ namespace alps {
 #ifdef ALPS_HAVE_MPI
         if (comm) {
             bool to_stop;
-            if (comm->rank() == 0)
+            if (comm->rank() == 0) {
                 to_stop = !signals.empty() || (limit > 0 && std::difftime(now, start) > limit);
+            }
             broadcast(*comm, to_stop, 0);
             return to_stop;
         } else
