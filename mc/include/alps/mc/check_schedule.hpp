@@ -44,8 +44,12 @@ namespace alps {
             generic_check_schedule(double tmin, double tmax)
                 : clock_(),
                   next_check_known_(false),
+                  start_fraction_(),
                   min_check_(tmin),
-                  max_check_(tmax)
+                  max_check_(tmax),
+                  start_time_(),
+                  last_check_time_(),
+                  next_check_()
             { }
 
             /// Constructor using a given clock instance
@@ -58,12 +62,16 @@ namespace alps {
                 : clock_(clock),
                   next_check_known_(false),
                   min_check_(tmin),
-                  max_check_(tmax)
+                  max_check_(tmax),
+                  start_time_(),
+                  last_check_time_(),
+                  next_check_()
             { }
 
             /// Returns `true` if it's time to check progress and to schedule new check
             bool pending() const
             {
+                if (!next_check_known_) return true;
                 time_point_type now = clock_.now_time();
                 return clock_.time_diff(now, last_check_time_) > next_check_;
             }
@@ -72,8 +80,8 @@ namespace alps {
             void update(double fraction)
             {
                 time_point_type now = clock_.now_time();
-
                 // first check
+
                 if (!next_check_known_)
                 {
                     start_time_ = now;
