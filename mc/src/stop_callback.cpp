@@ -13,28 +13,28 @@ namespace alps {
 
     stop_callback::stop_callback(std::size_t timelimit)
         : limit(timelimit)
-        , start(std::time(0))
+        , start(clock_type::now_time())
     {}
 
 #ifdef ALPS_HAVE_MPI
     stop_callback::stop_callback(alps::mpi::communicator const & cm, std::size_t timelimit)
-        : limit(timelimit), start(std::time(0)), comm(cm)
+        : limit(timelimit), start(clock_type::now_time()), comm(cm)
     {}
 #endif
 
     bool stop_callback::operator()() const {
-        std::time_t now(std::time(0));
+        time_point_type now(clock_type::now_time());
 #ifdef ALPS_HAVE_MPI
         if (comm) {
             bool to_stop;
             if (comm->rank() == 0) {
-                to_stop = !signals.empty() || (limit > 0 && std::difftime(now, start) > limit);
+                to_stop = !signals.empty() || (limit > 0 && clock_type::time_diff(now, start) > limit);
             }
             broadcast(*comm, to_stop, 0);
             return to_stop;
         } else
 #endif
-            return !signals.empty() || (limit > 0 && std::difftime(now, start) > limit);
+            return !signals.empty() || (limit > 0 && clock_type::time_diff(now, start) > limit);
     }
 
 
@@ -44,7 +44,7 @@ namespace alps {
     {}
 
     bool simple_time_callback::operator()() const {
-        std::time_t now(time(0));
-        return (limit > 0 && std::difftime(now, start) > limit);
+        time_point_type now(time(0));
+        return (limit > 0 && clock_type::time_diff(now, start) > limit);
     }
 }
