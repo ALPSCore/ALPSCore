@@ -12,6 +12,8 @@
 #include <alps/params_new.hpp>
 #include <gtest/gtest.h>
 
+#include <boost/utility.hpp> // for enable_if<>
+
 #include "./dict_values_test.hpp"
 
 namespace ap=alps::params_new_ns;
@@ -65,6 +67,19 @@ TEST_F(DictionaryTest0, constAccess) {
 }
 
 
+// Helper meta-predicate to distinguish strings (general)
+template <typename T>
+struct is_string {
+    typedef bool no;
+};
+
+// Helper meta-predicate to distinguish strings (specialization)
+template <>
+struct is_string<std::string> {
+    typedef bool yes;
+};
+
+
 // Parametrized on the value type stored in the dictionary
 template <typename T>
 class DictionaryTest : public ::testing::Test {
@@ -82,7 +97,8 @@ class DictionaryTest : public ::testing::Test {
     public:
     DictionaryTest(): dict_(), cdict_(dict_) {
         dict_["none"];
-        dict_["name"]=trait::get(false);
+        const T expected=trait::get(false);
+        dict_["name"]=expected;
     }
 
     void afterCtor() {
@@ -98,20 +114,38 @@ class DictionaryTest : public ::testing::Test {
     }
 
     // assignment is done in ctor; check if it worked
-    void assignSameType() {
+    template <typename X>
+    void explicitAssignSameType_helper(typename is_string<X>::no =true) {
         const T expected=trait::get(false);
-        {
-            const T actual=static_cast<T>(cdict_["name"]);
-            EXPECT_EQ(expected, actual) << "Explicit conversion";
-        }
-        {
-            const T actual=cdict_["name"];
-            EXPECT_EQ(expected, actual) << "Implicit conversion";
-        }
-        {
-            const T actual=cdict_["name"].as<T>();
-            EXPECT_EQ(expected, actual) << "Shortcut conversion";
-        }
+        const T actual=static_cast<T>(cdict_["name"]);
+        EXPECT_EQ(expected, actual) << "Explicit conversion";
+    }
+    
+    // assignment is done in ctor; check if it worked
+    template <typename X>
+    void explicitAssignSameType_helper(typename is_string<X>::yes =true) {
+        // The following does not compile, due to ambiguous string ctor call.
+        /*
+          const T expected=trait::get(false);
+          const T actual=static_cast<T>(cdict_["name"]);
+          EXPECT_EQ(expected, actual) << "Explicit conversion";
+        */
+    }
+    
+    // assignment is done in ctor; check if it worked
+    void explicitAssignSameType() { explicitAssignSameType_helper<T>(); }
+
+    void implicitAssignSameType() {
+        const T expected=trait::get(false);
+        const T actual=cdict_["name"];
+        EXPECT_EQ(expected, actual) << "Implicit conversion";
+    }
+    
+
+    void asSameType() {
+        const T expected=trait::get(false);
+        const T actual=cdict_["name"].template as<T>();
+        EXPECT_EQ(expected, actual) << "Shortcut conversion";
     }
     
 
@@ -122,13 +156,36 @@ class DictionaryTest : public ::testing::Test {
         EXPECT_EQ(expected, actual);
     }
 
-    void assignFromNone() {
+    template <typename X>
+    void assignFromNone_helper(typename is_string<X>::no =true) {
         const T expected=trait::get(false);
         T actual=expected;
         ASSERT_THROW(actual=cdict_["none"], de::uninitialized_value);
         EXPECT_EQ(expected,actual);
     }
 
+    template <typename X>
+    void assignFromNone_helper(typename is_string<X>::yes =true) {
+        // The following does not compile due to ambiguous string assignment
+        /*
+          const T expected=trait::get(false);
+          T actual=expected;
+          ASSERT_THROW(actual=cdict_["none"], de::uninitialized_value);
+          EXPECT_EQ(expected,actual);
+        */
+    }
+
+    void assignFromNone() {
+        assignFromNone_helper<T>();
+    }
+
+    void convertFromNoneExplicit() {
+        const T expected=trait::get(false);
+        T actual=expected;
+        ASSERT_THROW(actual=cdict_["none"].template as<T>(), de::uninitialized_value);
+        EXPECT_EQ(expected,actual);
+    }
+    
     void setToNone() {
         dict_["name"].clear();
         EXPECT_TRUE(cdict_["name"].empty());
@@ -136,7 +193,17 @@ class DictionaryTest : public ::testing::Test {
 };
 
 typedef ::testing::Types<
+    bool
+    ,
+    int
+    ,
     long
+    ,
+    unsigned long int
+    ,
+    double
+    ,
+    std::string
     > my_types;
 
 TYPED_TEST_CASE(DictionaryTest, my_types);
@@ -145,8 +212,11 @@ TYPED_TEST_CASE(DictionaryTest, my_types);
 
 MAKE_TEST(afterCtor);
 MAKE_TEST(assignRetval);
-MAKE_TEST(assignSameType);
+MAKE_TEST(explicitAssignSameType);
+MAKE_TEST(implicitAssignSameType);
+MAKE_TEST(asSameType);
 MAKE_TEST(reassignSameType);
 MAKE_TEST(assignFromNone);
+MAKE_TEST(convertFromNoneExplicit);
 MAKE_TEST(setToNone);
 

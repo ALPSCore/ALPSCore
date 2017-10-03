@@ -61,10 +61,19 @@ namespace alps {
         };
  
         template <>
-        struct data_trait<long> : public data_trait_base<long, bool, double, std::string> {};
+        struct data_trait<char> : public data_trait_base<char, bool, int, std::string> {};
  
         template <>
-        struct data_trait<unsigned long> : public data_trait_base<long, bool, double, std::string> {};
+        struct data_trait<int> : public data_trait_base<int, bool, long, std::string> {};
+ 
+        template <>
+        struct data_trait<unsigned int> : public data_trait_base<unsigned int, bool, long, std::string> {};
+ 
+        template <>
+        struct data_trait<long> : public data_trait_base<long, int, double, std::string> {};
+ 
+        template <>
+        struct data_trait<unsigned long> : public data_trait_base<unsigned long, int, double, std::string> {};
  
         template <>
         struct data_trait<double> : public data_trait_base<double, int, void, std::string> {};

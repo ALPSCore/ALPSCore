@@ -13,7 +13,8 @@
 
     2. Any value can be assigned to it; the object acquires both the
        type and the value, if it is convertible to one of the
-       supported types. Important special case is "char*"!
+       supported types. The value is converted to a "larger" supported
+       type.  Important special case is "char*"!
 
     3. If "undefined", it cannot be assigned to anything.
 
@@ -36,6 +37,15 @@
 
 #include <boost/variant/variant.hpp>
 // #include <boost/utility.hpp> /* for enable_if */
+
+#include <boost/type_traits/is_integral.hpp>
+#include <boost/type_traits/is_signed.hpp>
+#include <boost/type_traits/is_unsigned.hpp>
+#include <boost/type_traits/is_floating_point.hpp>
+using boost::enable_if;
+using boost::disable_if;
+
+
 
 // #include "alps/utilities/short_print.hpp" // for streaming
 // #include "alps/hdf5/archive.hpp"          // archive support
@@ -60,6 +70,10 @@ namespace alps {
         //     dict_value(const std::string& name): name_(name) {}
         //     bool empty() { return true; }
         // };
+
+
+        namespace detail {
+        } //::detail
         
         class dict_value {
           public:
@@ -71,6 +85,39 @@ namespace alps {
             std::string name_; ///< The option name (FIXME: make it "functionally const")
             value_type val_; ///< Value of the option
 
+            /// Assignment helper: assigns a value of boolean type
+            const bool& assign_helper(const bool& rhs) {
+                val_=rhs;
+                return rhs;
+            }
+
+            /// Assignment operator helper: assigns a value of a signed type
+            template <typename T>
+            const T& assign_helper(const T& rhs, typename enable_if< boost::is_signed<T> >::type* =0) {
+                val_=static_cast<long int>(rhs);
+                return rhs;
+            }
+
+            /// Assignment operator helper: assigns a value of an unsigned type
+            template <typename T>
+            const T& assign_helper(const T& rhs, typename enable_if< boost::is_unsigned<T> >::type* =0) {
+                val_=static_cast<long unsigned int>(rhs);
+                return rhs;
+            }
+
+            /// Assignment operator helper: assigns a value of a floating point type (converts to double)
+            template <typename T>
+            const T& assign_helper(const T& rhs, typename enable_if< boost::is_floating_point<T> >::type* =0) {
+                val_=static_cast<double>(rhs);
+                return rhs;
+            }
+            
+            /// Assignment operator helper: assigns a value of some other, non-arithmetic type
+            template <typename T>
+            const T& assign_helper(const T& rhs, typename disable_if< boost::is_arithmetic<T> >::type* =0) {
+                val_=rhs;
+                return rhs;
+            }
 
             /// Visitor to get a value (with conversion): returns type LHS_T, converts from the bound type RHS_T
             template <typename LHS_T>
@@ -84,7 +131,7 @@ namespace alps {
                 /// Placeholder: extracting any other type
                 template <typename RHS_T>
                 LHS_T apply(const RHS_T& val) const {
-                    return LHS_T();
+                    throw std::logic_error("getter for different type is not implemented");
                 }
                 
                 // /// Extracting None type --- always fails and should never happen
@@ -126,23 +173,23 @@ namespace alps {
             /// whether the value contains None
             bool empty() const { return val_.which()==0; } // NOTE: relies on `None` being the first type
 
-            /// Assignment operator: assigns a value of type T
+
+            /// Assignment operator (with conversion)
             template <typename T>
             const T& operator=(const T& rhs) {
-                val_=rhs;
-                return rhs;
+                return assign_helper(rhs);
             }
-
+            
             /// Shortcut for explicit conversion to a target type
             template <typename T>
             T as() const {
+                if (this->empty()) throw exception::uninitialized_value(name_,"Attempt to read uninitialized value");
                 return boost::apply_visitor(getter_visitor<T>(), val_);
             }
             
             /// Conversion to a target type, explicit or implicit
             template <typename T>
             operator T() const {
-                if (this->empty()) throw exception::uninitialized_value(name_,"Attempt to read uninitialized value");
                 return as<T>();
             }
 
