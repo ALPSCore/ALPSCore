@@ -85,39 +85,39 @@ namespace alps {
             std::string name_; ///< The option name (FIXME: make it "functionally const")
             value_type val_; ///< Value of the option
 
-            /// Assignment helper: assigns a value of boolean type
-            const bool& assign_helper(const bool& rhs) {
-                val_=rhs;
-                return rhs;
-            }
+            // /// Assignment helper: assigns a value of boolean type
+            // const bool& assign_helper(const bool& rhs) {
+            //     val_=rhs;
+            //     return rhs;
+            // }
 
-            /// Assignment operator helper: assigns a value of a signed type
-            template <typename T>
-            const T& assign_helper(const T& rhs, typename enable_if< boost::is_signed<T> >::type* =0) {
-                val_=static_cast<long int>(rhs);
-                return rhs;
-            }
+            // /// Assignment operator helper: assigns a value of a signed type
+            // template <typename T>
+            // const T& assign_helper(const T& rhs, typename enable_if< boost::is_signed<T> >::type* =0) {
+            //     val_=static_cast<long int>(rhs);
+            //     return rhs;
+            // }
 
-            /// Assignment operator helper: assigns a value of an unsigned type
-            template <typename T>
-            const T& assign_helper(const T& rhs, typename enable_if< boost::is_unsigned<T> >::type* =0) {
-                val_=static_cast<long unsigned int>(rhs);
-                return rhs;
-            }
+            // /// Assignment operator helper: assigns a value of an unsigned type
+            // template <typename T>
+            // const T& assign_helper(const T& rhs, typename enable_if< boost::is_unsigned<T> >::type* =0) {
+            //     val_=static_cast<long unsigned int>(rhs);
+            //     return rhs;
+            // }
 
-            /// Assignment operator helper: assigns a value of a floating point type (converts to double)
-            template <typename T>
-            const T& assign_helper(const T& rhs, typename enable_if< boost::is_floating_point<T> >::type* =0) {
-                val_=static_cast<double>(rhs);
-                return rhs;
-            }
+            // /// Assignment operator helper: assigns a value of a floating point type (converts to double)
+            // template <typename T>
+            // const T& assign_helper(const T& rhs, typename enable_if< boost::is_floating_point<T> >::type* =0) {
+            //     val_=static_cast<double>(rhs);
+            //     return rhs;
+            // }
             
-            /// Assignment operator helper: assigns a value of some other, non-arithmetic type
-            template <typename T>
-            const T& assign_helper(const T& rhs, typename disable_if< boost::is_arithmetic<T> >::type* =0) {
-                val_=rhs;
-                return rhs;
-            }
+            // /// Assignment operator helper: assigns a value of some other, non-arithmetic type
+            // template <typename T>
+            // const T& assign_helper(const T& rhs, typename disable_if< boost::is_arithmetic<T> >::type* =0) {
+            //     val_=rhs;
+            //     return rhs;
+            // }
 
             /// Visitor to get a value (with conversion): returns type LHS_T, converts from the bound type RHS_T
             template <typename LHS_T>
@@ -177,7 +177,8 @@ namespace alps {
             /// Assignment operator (with conversion)
             template <typename T>
             const T& operator=(const T& rhs) {
-                return assign_helper(rhs);
+                val_=rhs;
+                return rhs;
             }
             
             /// Shortcut for explicit conversion to a target type

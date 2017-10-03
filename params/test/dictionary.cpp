@@ -67,15 +67,32 @@ TEST_F(DictionaryTest0, constAccess) {
 }
 
 
-// Helper meta-predicate to distinguish strings (general)
+// Helper meta-predicate to distinguish strings,vectors (general)
+template <typename T>
+struct is_string_or_vec {
+    typedef bool no;
+};
+
 template <typename T>
 struct is_string {
     typedef bool no;
 };
 
-// Helper meta-predicate to distinguish strings (specialization)
+// Helper meta-predicate to distinguish strings, vectors (specialization)
+template <>
+struct is_string_or_vec<std::string> {
+    typedef bool yes;
+};
+
+// Helper meta-predicate to distinguish strings, vectors (specialization)
 template <>
 struct is_string<std::string> {
+    typedef bool yes;
+};
+
+// Helper meta-predicate to distinguish strings, vectors (specialization)
+template <typename T>
+struct is_string_or_vec< std::vector<T> > {
     typedef bool yes;
 };
 
@@ -115,7 +132,7 @@ class DictionaryTest : public ::testing::Test {
 
     // assignment is done in ctor; check if it worked
     template <typename X>
-    void explicitAssignSameType_helper(typename is_string<X>::no =true) {
+    void explicitAssignSameType_helper(typename is_string_or_vec<X>::no =true) {
         const T expected=trait::get(false);
         const T actual=static_cast<T>(cdict_["name"]);
         EXPECT_EQ(expected, actual) << "Explicit conversion";
@@ -123,8 +140,8 @@ class DictionaryTest : public ::testing::Test {
     
     // assignment is done in ctor; check if it worked
     template <typename X>
-    void explicitAssignSameType_helper(typename is_string<X>::yes =true) {
-        // The following does not compile, due to ambiguous string ctor call.
+    void explicitAssignSameType_helper(typename is_string_or_vec<X>::yes =true) {
+        // The following does not compile, due to ambiguous string/vector ctor call.
         /*
           const T expected=trait::get(false);
           const T actual=static_cast<T>(cdict_["name"]);
@@ -204,6 +221,19 @@ typedef ::testing::Types<
     double
     ,
     std::string
+    ,
+    std::vector<bool>
+    ,
+    std::vector<int>
+    ,
+    std::vector<long>
+    ,
+    std::vector<unsigned long int>
+    ,
+    std::vector<double>
+    ,
+    std::vector<std::string>
+    
     > my_types;
 
 TYPED_TEST_CASE(DictionaryTest, my_types);

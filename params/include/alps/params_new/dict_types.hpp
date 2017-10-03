@@ -27,9 +27,12 @@ namespace alps {
             struct None {};
 
             // List of allowed basic scalar types:
-            typedef mpl::list5<bool,
+            typedef mpl::list8<bool,
+                               int,
+                               unsigned int,
                                long int,
                                unsigned long int,
+                               float,
                                double,
                                std::string> dict_scalar_types;
             
