@@ -585,7 +585,7 @@ MAKE_TEST_TMPL(toBool);
 
 // Parametrized on the value type stored in the dictionary
 template <typename T>
-class DictionaryTestBool : public ::testing::Test {
+class DictionaryTestIntegral2 : public ::testing::Test {
     protected:
     dictionary dict_;
     const dictionary& cdict_;
@@ -593,13 +593,13 @@ class DictionaryTestBool : public ::testing::Test {
     typedef aptest::data_trait<T> trait;
 
     public:
-    DictionaryTestBool(): dict_(), cdict_(dict_) {
+    DictionaryTestIntegral2(): dict_(), cdict_(dict_) {
         dict_["true"]=true;
         dict_["false"]=false;
     }
 
     // Bool can be converted to any integral type
-    void toIntegral() {
+    void boolToIntegral() {
         {
             T expected=true;
             T actual=cdict_["true"];
@@ -612,46 +612,84 @@ class DictionaryTestBool : public ::testing::Test {
         }
     }
 
-    // Bool cannot be converted to any non-integral type
-    void toNonIntegral() {
+    // Floating point cannot be converted to an integral type
+    void fpToIntegral() {
+        T expected=trait::get(true);
+        dict_["integral"]=expected;
+
         {
-            T expected=trait::get(false);
-            T actual=expected;
-            ASSERT_THROW(actual=cdict_["true"].template as<T>(), de::type_mismatch);
+            float f=1.25;
+            EXPECT_THROW(dict_["integral"]=f, de::type_mismatch);
+            T actual=cdict_["integral"];
             EXPECT_EQ(expected, actual);
         }
         {
-            T expected=trait::get(true);
-            T actual=expected;
-            ASSERT_THROW(actual=cdict_["false"].template as<T>(), de::type_mismatch);
+            double d=3.75;
+            EXPECT_THROW(dict_["integral"]=d, de::type_mismatch);
+            T actual=cdict_["integral"];
             EXPECT_EQ(expected, actual);
         }
     }
-
 };
 
 typedef ::testing::Types<
-    char
-    ,
+    // char
+    // ,
     int
+    ,
+    unsigned int
     ,
     long
     ,
-    unsigned long int
+    unsigned long
     > my_integral_types;
 
-TYPED_TEST_CASE(DictionaryTestBool, my_integral_types);
+TYPED_TEST_CASE(DictionaryTestIntegral2, my_integral_types);
 
-#define MAKE_TEST(_name_) TYPED_TEST(DictionaryTestBool,_name_) { this->_name_(); }
+#define MAKE_TEST(_name_) TYPED_TEST(DictionaryTestIntegral2,_name_) { this->_name_(); }
 
-MAKE_TEST(toIntegral);
+MAKE_TEST(boolToIntegral);
+MAKE_TEST(fpToIntegral);
 
 #undef MAKE_TEST
 
 
 // Parametrized on the value type stored in the dictionary
 template <typename T>
-class DictionaryTestBool2 : public DictionaryTestBool<T> { };
+class DictionaryTestNonnumeric : public ::testing::Test {
+    protected:
+    dictionary dict_;
+    const dictionary& cdict_;
+    
+    typedef aptest::data_trait<T> trait;
+
+    public:
+    DictionaryTestNonnumeric(): dict_(), cdict_(dict_) {
+    }
+
+    // Nothing (numeric) can be converted to a non-integral type
+    template <typename X>
+    void ToNonIntegral() {
+        dict_["integral"]=aptest::data_trait<X>::get(true);
+        T expected=trait::get(false);
+        T actual=expected;
+        EXPECT_THROW(actual=cdict_["integral"].template as<T>(), de::type_mismatch);
+        EXPECT_EQ(expected, actual);
+    }
+
+    // Nothing can be converted from a non-integral type
+    template <typename X>
+    void FromNonIntegral() {
+        X expected=aptest::data_trait<X>::get(true);
+        X actual=expected;
+        dict_["nonint"]=trait::get(false);
+        EXPECT_THROW(actual=cdict_["nonint"], de::type_mismatch);
+        EXPECT_EQ(expected, actual);
+    }
+
+};
+
+
 
 typedef ::testing::Types<
     std::string
@@ -669,10 +707,19 @@ typedef ::testing::Types<
     std::vector<std::string>
     > my_nonintegral_types;
 
-TYPED_TEST_CASE(DictionaryTestBool2, my_nonintegral_types);
+TYPED_TEST_CASE(DictionaryTestNonnumeric, my_nonintegral_types);
 
-#define MAKE_TEST(_name_) TYPED_TEST(DictionaryTestBool2,_name_) { this->_name_(); }
+#define MAKE_TEST(_name_) TYPED_TEST(DictionaryTestNonnumeric,_name_) { this->_name_(); }
+#define MAKE_TEST_X(_name_,_type_) TYPED_TEST(DictionaryTestNonnumeric,_type_ ## _name_) { this->template _name_<_type_>(); }
 
-MAKE_TEST(toNonIntegral);
+MAKE_TEST_X(ToNonIntegral, bool);
+MAKE_TEST_X(ToNonIntegral, int);
+MAKE_TEST_X(ToNonIntegral, long);
+MAKE_TEST_X(ToNonIntegral, double);
+
+MAKE_TEST_X(FromNonIntegral, bool);
+MAKE_TEST_X(FromNonIntegral, int);
+MAKE_TEST_X(FromNonIntegral, long);
+MAKE_TEST_X(FromNonIntegral, double);
 
 #undef MAKE_TEST
