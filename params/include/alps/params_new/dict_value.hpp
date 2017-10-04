@@ -14,11 +14,15 @@
     2. Any value can be assigned to it; the object acquires both the
        type and the value, if it is convertible to one of the
        supported types. The value is converted to a "larger" supported
-       type.  Important special case is "char*"!
+       type.
+       Special case 1: conversion from char is unspecified.
+       Special case 2: conversion from char* to string is supported.
 
     3. If "undefined", it cannot be assigned to anything.
 
     4. If holds a value of some type, it can be assigned to the same or a "larger" type.
+       Special case 1: conversion to char is unspecified (may throw).
+       Special case 2: conversion to char* is supported for strings.
 
     5. It holds its name for error reporting purposes.
 
@@ -106,7 +110,8 @@ namespace alps {
                     /// Placeholder: extracting any other type
                     template <typename RHS_T>
                     LHS_T apply(const RHS_T& val, typename detail::is_bool_to_integral<RHS_T,LHS_T>::no =true) const {
-                        throw std::logic_error("getter for different type is not implemented");
+                        // throw std::logic_error("getter for different type is not implemented");
+                        throw exception::type_mismatch("","Types do not match"); // FIXME: catch, pass name
                     }
                 
                     // /// Extracting None type --- always fails and should never happen
@@ -197,7 +202,12 @@ namespace alps {
             template <typename T>
             T as() const {
                 if (this->empty()) throw exception::uninitialized_value(name_,"Attempt to read uninitialized value");
-                return boost::apply_visitor(detail::visitor::getter<T>(), val_);
+                try {
+                    return boost::apply_visitor(detail::visitor::getter<T>(), val_);
+                } catch (exception::exception_base& exc) {
+                    exc.set_name(name_);
+                    throw;
+                }
             }
             
             /// Conversion to a target type, explicit or implicit

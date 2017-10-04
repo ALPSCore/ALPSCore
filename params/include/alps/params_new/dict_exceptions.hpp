@@ -16,13 +16,21 @@ namespace alps {
             /// General exception (base class)
             class exception_base : public std::runtime_error {
                 std::string name_; ///< name of the option that caused the error
+                mutable std::string what_; ///< explanation of the error
             public:
                 exception_base(const std::string& a_name, const std::string& a_reason)
-                    : std::runtime_error("Key '"+a_name+"': "+a_reason),
-                      name_(a_name)
+                    : std::runtime_error(a_reason),
+                      name_(a_name), what_(a_reason)
                 {}
 
                 std::string name() const { return name_; }
+                void set_name(const std::string& name) { name_=name; }
+
+                virtual const char* what() const throw() {
+                    const std::string key(name_.empty() ? std::string("Unknown_key") : ("Key '"+name_+"'"));
+                    what_=key+": "+std::runtime_error::what();
+                    return what_.c_str();
+                }
 
                 ~exception_base() throw() {}
             };
@@ -36,6 +44,12 @@ namespace alps {
             /// Exception for type mismatch
             struct type_mismatch : public exception_base {
                 type_mismatch(const std::string& a_name, const std::string& a_reason)
+                    : exception_base(a_name, a_reason) {};
+            };
+            
+            /// Exception for value mismatch
+            struct value_mismatch : public exception_base {
+                value_mismatch(const std::string& a_name, const std::string& a_reason)
                     : exception_base(a_name, a_reason) {};
             };
             
