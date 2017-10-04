@@ -596,6 +596,9 @@ class DictionaryTestIntegral2 : public ::testing::Test {
     DictionaryTestIntegral2(): dict_(), cdict_(dict_) {
         dict_["true"]=true;
         dict_["false"]=false;
+        dict_["float"]=1.25f;
+        dict_["double"]=3.75;
+
     }
 
     // Bool can be converted to any integral type
@@ -615,26 +618,18 @@ class DictionaryTestIntegral2 : public ::testing::Test {
     // Floating point cannot be converted to an integral type
     void fpToIntegral() {
         T expected=trait::get(true);
-        dict_["integral"]=expected;
-
-        {
-            float f=1.25;
-            EXPECT_THROW(dict_["integral"]=f, de::type_mismatch);
-            T actual=cdict_["integral"];
-            EXPECT_EQ(expected, actual);
-        }
-        {
-            double d=3.75;
-            EXPECT_THROW(dict_["integral"]=d, de::type_mismatch);
-            T actual=cdict_["integral"];
-            EXPECT_EQ(expected, actual);
-        }
+        T actual=expected;
+        EXPECT_THROW(actual=dict_["float"], de::type_mismatch);
+        EXPECT_EQ(expected, actual);
+        
+        EXPECT_THROW(actual=dict_["double"], de::type_mismatch);
+        EXPECT_EQ(expected, actual);
     }
 };
 
 typedef ::testing::Types<
-    // char
-    // ,
+    char
+    ,
     int
     ,
     unsigned int
