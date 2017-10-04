@@ -43,7 +43,9 @@
 #include <boost/type_traits/is_unsigned.hpp>
 #include <boost/type_traits/is_floating_point.hpp>
 using boost::enable_if;
+using boost::enable_if_c;
 using boost::disable_if;
+using boost::disable_if_c;
 
 
 
@@ -73,6 +75,95 @@ namespace alps {
 
 
         namespace detail {
+            template <bool V> struct yes_no {};
+            template <> struct yes_no<true> : public boost::true_type { typedef bool yes; };
+            template <> struct yes_no<false> : public boost::false_type { typedef bool no; };
+
+            template <typename T>
+            struct is_bool : public yes_no<boost::is_same<T,bool>::value> {};
+            
+            template <typename FROM, typename TO>
+            struct is_bool_to_integral
+                : public yes_no<is_bool<FROM>::value && boost::is_integral<TO>::value>
+            {};
+
+            namespace visitor {
+                /// Visitor to get a value (with conversion): returns type LHS_T, converts from the bound type RHS_T
+                template <typename LHS_T>
+                struct getter: public boost::static_visitor<LHS_T> {
+
+                    /// Simplest case: the values are of the same type
+                    LHS_T apply(const LHS_T& val) const {
+                        return val; // no conversion 
+                    }
+
+                    /// Extracting bool type to an integral type
+                    template <typename RHS_T>
+                    LHS_T apply(const RHS_T& val, typename detail::is_bool_to_integral<RHS_T,LHS_T>::yes =true) const {
+                        return val;
+                    }
+                
+                    /// Placeholder: extracting any other type
+                    template <typename RHS_T>
+                    LHS_T apply(const RHS_T& val, typename detail::is_bool_to_integral<RHS_T,LHS_T>::no =true) const {
+                        throw std::logic_error("getter for different type is not implemented");
+                    }
+                
+                    // /// Extracting None type --- always fails and should never happen
+                    // LHS_T operator ()(const None&) const {
+                    //     throw visitor_none_used("Attempt to use uninitialized option value");
+                    // }
+
+                    // /// Types are convertible (Both are scalar types)
+                    // template <typename RHS_T>
+                    // LHS_T apply(const RHS_T& val,
+                    //             typename boost::enable_if< detail::is_convertible<RHS_T,LHS_T> >::type* =0) const {
+                    //     return val; // invokes implicit conversion 
+                    // }
+
+                    // /// Types are not convertible 
+                    // template <typename RHS_T>
+                    // LHS_T apply(const RHS_T& val,
+                    //             typename boost::disable_if< detail::is_convertible<RHS_T,LHS_T> >::type* =0) const {
+                    //     throw visitor_type_mismatch(
+                    //         std::string("Attempt to assign an option_type object containing a value of type \"")
+                    //         + detail::type_id<RHS_T>().pretty_name()
+                    //         + "\" to a value of an incompatible type \""
+                    //         + detail::type_id<LHS_T>().pretty_name()+"\"");
+                    // }
+
+                    /// Called by apply_visitor()
+                    template <typename RHS_T>
+                    LHS_T operator()(const RHS_T& val) const {
+                        return apply(val);
+                    }
+                };
+
+                /// Visitor to get a value (with conversion to bool): returns type bool, converts from the bound type RHS_T
+                template <>
+                struct getter<bool>: public boost::static_visitor<bool> {
+
+                    /// Simplest case: the value is of type bool
+                    bool apply(const bool& val) const {
+                        return val; // no conversion 
+                    }
+
+                    /// Extracting any other type
+                    template <typename RHS_T>
+                    bool apply(const RHS_T& val) const {
+                        throw exception::type_mismatch("","Cannot convert non-bool to bool"); // FIXME
+                    }
+
+                    /// Called by apply_visitor()
+                    template <typename RHS_T>
+                    bool operator()(const RHS_T& val) const {
+                        return apply(val);
+                    }
+                };
+            
+            }
+            
+
         } //::detail
         
         class dict_value {
@@ -84,85 +175,6 @@ namespace alps {
           private:
             std::string name_; ///< The option name (FIXME: make it "functionally const")
             value_type val_; ///< Value of the option
-
-            // /// Assignment helper: assigns a value of boolean type
-            // const bool& assign_helper(const bool& rhs) {
-            //     val_=rhs;
-            //     return rhs;
-            // }
-
-            // /// Assignment operator helper: assigns a value of a signed type
-            // template <typename T>
-            // const T& assign_helper(const T& rhs, typename enable_if< boost::is_signed<T> >::type* =0) {
-            //     val_=static_cast<long int>(rhs);
-            //     return rhs;
-            // }
-
-            // /// Assignment operator helper: assigns a value of an unsigned type
-            // template <typename T>
-            // const T& assign_helper(const T& rhs, typename enable_if< boost::is_unsigned<T> >::type* =0) {
-            //     val_=static_cast<long unsigned int>(rhs);
-            //     return rhs;
-            // }
-
-            // /// Assignment operator helper: assigns a value of a floating point type (converts to double)
-            // template <typename T>
-            // const T& assign_helper(const T& rhs, typename enable_if< boost::is_floating_point<T> >::type* =0) {
-            //     val_=static_cast<double>(rhs);
-            //     return rhs;
-            // }
-            
-            // /// Assignment operator helper: assigns a value of some other, non-arithmetic type
-            // template <typename T>
-            // const T& assign_helper(const T& rhs, typename disable_if< boost::is_arithmetic<T> >::type* =0) {
-            //     val_=rhs;
-            //     return rhs;
-            // }
-
-            /// Visitor to get a value (with conversion): returns type LHS_T, converts from the bound type RHS_T
-            template <typename LHS_T>
-            struct getter_visitor: public boost::static_visitor<LHS_T> {
-
-                /// Simplest case: the values are of the same type
-                LHS_T apply(const LHS_T& val) const {
-                    return val; // no conversion 
-                }
-
-                /// Placeholder: extracting any other type
-                template <typename RHS_T>
-                LHS_T apply(const RHS_T& val) const {
-                    throw std::logic_error("getter for different type is not implemented");
-                }
-                
-                // /// Extracting None type --- always fails and should never happen
-                // LHS_T operator ()(const None&) const {
-                //     throw visitor_none_used("Attempt to use uninitialized option value");
-                // }
-
-                // /// Types are convertible (Both are scalar types)
-                // template <typename RHS_T>
-                // LHS_T apply(const RHS_T& val,
-                //             typename boost::enable_if< detail::is_convertible<RHS_T,LHS_T> >::type* =0) const {
-                //     return val; // invokes implicit conversion 
-                // }
-
-                // /// Types are not convertible 
-                // template <typename RHS_T>
-                // LHS_T apply(const RHS_T& val,
-                //             typename boost::disable_if< detail::is_convertible<RHS_T,LHS_T> >::type* =0) const {
-                //     throw visitor_type_mismatch(
-                //         std::string("Attempt to assign an option_type object containing a value of type \"")
-                //         + detail::type_id<RHS_T>().pretty_name()
-                //         + "\" to a value of an incompatible type \""
-                //         + detail::type_id<LHS_T>().pretty_name()+"\"");
-                // }
-
-                /// Called by apply_visitor()
-                template <typename RHS_T>
-                LHS_T operator()(const RHS_T& val) const {
-                    return apply(val);
-                }
-            };
 
             
           public: // FIXME: not everything should be public
@@ -185,7 +197,7 @@ namespace alps {
             template <typename T>
             T as() const {
                 if (this->empty()) throw exception::uninitialized_value(name_,"Attempt to read uninitialized value");
-                return boost::apply_visitor(getter_visitor<T>(), val_);
+                return boost::apply_visitor(detail::visitor::getter<T>(), val_);
             }
             
             /// Conversion to a target type, explicit or implicit

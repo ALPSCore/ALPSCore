@@ -33,6 +33,12 @@ namespace alps {
                     : exception_base(a_name, a_reason) {};
             };
             
+            /// Exception for type mismatch
+            struct type_mismatch : public exception_base {
+                type_mismatch(const std::string& a_name, const std::string& a_reason)
+                    : exception_base(a_name, a_reason) {};
+            };
+            
         } // ::exception
     } // ::params_ns
 } // ::alps

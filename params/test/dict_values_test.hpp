@@ -100,6 +100,11 @@ namespace alps {
         };
  
         template <>
+        struct data_trait<float> : public data_trait_base0<float, int, void, std::string> {
+            static float get(bool choice) { return choice?-1.75f:3.25f; }
+        };
+ 
+        template <>
         struct data_trait<std::string> : public data_trait_base0<std::string, void, void, int> {
             static std::string get(bool choice) {return choice?"aaaa":"bbb"; }; 
         };
