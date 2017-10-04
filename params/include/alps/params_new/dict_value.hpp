@@ -46,10 +46,10 @@
 #include <boost/type_traits/is_signed.hpp>
 #include <boost/type_traits/is_unsigned.hpp>
 #include <boost/type_traits/is_floating_point.hpp>
-using boost::enable_if;
-using boost::enable_if_c;
-using boost::disable_if;
-using boost::disable_if_c;
+// using boost::enable_if;
+// using boost::enable_if_c;
+// using boost::disable_if;
+// using boost::disable_if_c;
 
 
 
@@ -85,12 +85,38 @@ namespace alps {
 
             template <typename T>
             struct is_bool : public yes_no<boost::is_same<T,bool>::value> {};
-            
+
+            // bool type is NOT integral for the purposes of this code
+            template <typename T>
+            struct is_integral : public yes_no<boost::is_integral<T>::value && !is_bool<T>::value> {};
+
+            // meta-predicate: conversion bool->integral
             template <typename FROM, typename TO>
             struct is_bool_to_integral
-                : public yes_no<is_bool<FROM>::value && boost::is_integral<TO>::value>
+                : public yes_no<is_bool<FROM>::value && is_integral<TO>::value>
             {};
 
+            // meta-predicate: conversion integral->integral
+            template <typename FROM, typename TO>
+            struct is_btw_integral
+                : public yes_no<is_integral<FROM>::value && is_integral<TO>::value>
+            {};
+
+            // meta-predicate: conversion integral->floating_point
+            template <typename FROM, typename TO>
+            struct is_intgl_to_fp
+                : public yes_no<is_integral<FROM>::value && boost::is_floating_point<TO>::value>
+            {};
+
+            // meta-predicate: general conversion, not caught by other ones
+            template <typename FROM, typename TO>
+            struct is_other_conversion
+                : public yes_no<!is_bool_to_integral<FROM,TO>::value &&
+                                !is_btw_integral<FROM,TO>::value &&
+                                !is_intgl_to_fp<FROM,TO>::value
+                               >
+            {};
+            
             namespace visitor {
                 /// Visitor to get a value (with conversion): returns type LHS_T, converts from the bound type RHS_T
                 template <typename LHS_T>
@@ -103,14 +129,25 @@ namespace alps {
 
                     /// Extracting bool type to an integral type
                     template <typename RHS_T>
-                    LHS_T apply(const RHS_T& val, typename detail::is_bool_to_integral<RHS_T,LHS_T>::yes =true) const {
+                    LHS_T apply(const RHS_T& val, typename is_bool_to_integral<RHS_T,LHS_T>::yes =true) const {
                         return val;
+                    }
+
+                    /// Extracting integral type to a floating point type
+                    template <typename RHS_T>
+                    LHS_T apply(const RHS_T& val, typename is_intgl_to_fp<RHS_T,LHS_T>::yes =true) const {
+                        return val;
+                    }
+
+                    /// Extracting integral type to an integral type
+                    template <typename RHS_T>
+                    LHS_T apply(const RHS_T& val, typename is_btw_integral<RHS_T,LHS_T>::yes =true) const {
+                        throw std::logic_error("Conversion btw integrals is not implemented");
                     }
                 
                     /// Placeholder: extracting any other type
                     template <typename RHS_T>
-                    LHS_T apply(const RHS_T& val, typename detail::is_bool_to_integral<RHS_T,LHS_T>::no =true) const {
-                        // throw std::logic_error("getter for different type is not implemented");
+                    LHS_T apply(const RHS_T& val, typename is_other_conversion<RHS_T,LHS_T>::yes =true) const {
                         throw exception::type_mismatch("","Types do not match"); // FIXME: catch, pass name
                     }
                 

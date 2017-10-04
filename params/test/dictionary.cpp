@@ -12,6 +12,7 @@
 #include <alps/params_new.hpp>
 #include <gtest/gtest.h>
 
+
 // #include <boost/utility.hpp> // for enable_if<>
 #include <boost/type_traits/is_same.hpp>
 using boost::is_same;
@@ -19,12 +20,20 @@ using boost::is_same;
 #include <boost/integer_traits.hpp>
 using boost::integer_traits;
 
+#include <alps/testing/fp_compare.hpp>
 #include "./dict_values_test.hpp"
 
 namespace ap=alps::params_new_ns;
 using ap::dictionary;
 namespace de=ap::exception;
 namespace aptest=ap::testing;
+
+// FIXME: this is a mess og GTest predicates and must be cleaned
+static inline bool is_near_dbl(double a, double b) { return alps::testing::is_near<double>(a,b); }
+static inline bool is_near_flt(float a, float b) { return alps::testing::is_near<float>(a,b); }
+
+#define EXPECT_FLT_EQ(_a_,_b_) EXPECT_PRED2(is_near_flt, _a_,_b_) 
+#define EXPECT_DBL_EQ(_a_,_b_) EXPECT_PRED2(is_near_dbl, _a_,_b_) 
 
 class DictionaryTest0 : public ::testing::Test {
     protected:
@@ -310,90 +319,90 @@ TEST_F(DictionaryTestIntegrals, toInt) {
 
 TEST_F(DictionaryTestIntegrals, toFloat) {
     float actual=1.00;
-    float eps=1E-3;
+    // float eps=1E-3;
 
     actual=cdict_["neg_long"];
-    EXPECT_NEAR(+neg_long, actual, eps);
+    EXPECT_FLT_EQ(float(+neg_long), actual);
         
     actual=cdict_["neg_int"];
-    EXPECT_NEAR(+neg_int, actual, eps);
+    EXPECT_FLT_EQ(+neg_int, actual);
 
     actual=cdict_["neg_long_is"];
-    EXPECT_NEAR(+neg_int, actual, eps);
+    EXPECT_FLT_EQ(+neg_int, actual);
         
     actual=cdict_["pos_int"];
-    EXPECT_NEAR(+pos_int, actual, eps);
+    EXPECT_FLT_EQ(+pos_int, actual);
 
     actual=cdict_["uint_is"];
-    EXPECT_NEAR(+pos_int, actual, eps);
+    EXPECT_FLT_EQ(+pos_int, actual);
 
     actual=cdict_["pos_long_is"];
-    EXPECT_NEAR(+pos_int, actual, eps);
+    EXPECT_FLT_EQ(+pos_int, actual);
 
     actual=cdict_["ulong_is"];
-    EXPECT_NEAR(+pos_int, actual, eps);
+    EXPECT_FLT_EQ(+pos_int, actual);
         
     actual=cdict_["uint"];
-    EXPECT_NEAR(+pos_uint, actual, eps);
+    EXPECT_FLT_EQ(+pos_uint, actual);
 
     actual=cdict_["pos_long_uis"];
-    EXPECT_NEAR(+pos_uint, actual, eps);
+    EXPECT_FLT_EQ(+pos_uint, actual);
 
     actual=cdict_["ulong_uis"];
-    EXPECT_NEAR(+pos_uint, actual, eps);
+    EXPECT_FLT_EQ(+pos_uint, actual);
 
     actual=cdict_["pos_long"];
-    EXPECT_NEAR(+pos_long, actual, eps);
+    EXPECT_FLT_EQ(+pos_long, actual);
 
     actual=cdict_["ulong_ls"];
-    EXPECT_NEAR(+pos_long, actual, eps);
+    EXPECT_FLT_EQ(+pos_long, actual);
 
     actual=cdict_["ulong"];
-    EXPECT_NEAR(+pos_ulong, actual, eps);
+    EXPECT_FLT_EQ(+pos_ulong, actual);
 }
 
 TEST_F(DictionaryTestIntegrals, toDouble) {
     double actual=1.00;
-    double eps=1E-3;
+    // double eps=1E-3;
 
     actual=cdict_["neg_long"];
-    EXPECT_NEAR(+neg_long, actual, eps);
+    EXPECT_DBL_EQ(+neg_long, actual);
         
     actual=cdict_["neg_int"];
-    EXPECT_NEAR(+neg_int, actual, eps);
+    EXPECT_DBL_EQ(+neg_int, actual);
 
     actual=cdict_["neg_long_is"];
-    EXPECT_NEAR(+neg_int, actual, eps);
+    EXPECT_DBL_EQ(+neg_int, actual);
         
     actual=cdict_["pos_int"];
-    EXPECT_NEAR(+pos_int, actual, eps);
+    EXPECT_DBL_EQ(+pos_int, actual);
 
     actual=cdict_["uint_is"];
-    EXPECT_NEAR(+pos_int, actual, eps);
+    EXPECT_DBL_EQ(+pos_int, actual);
 
     actual=cdict_["pos_long_is"];
-    EXPECT_NEAR(+pos_int, actual, eps);
+    EXPECT_DBL_EQ(+pos_int, actual);
 
     actual=cdict_["ulong_is"];
-    EXPECT_NEAR(+pos_int, actual, eps);
+    EXPECT_DBL_EQ(+pos_int, actual);
         
     actual=cdict_["uint"];
-    EXPECT_NEAR(+pos_uint, actual, eps);
+    EXPECT_DBL_EQ(+pos_uint, actual);
 
     actual=cdict_["pos_long_uis"];
-    EXPECT_NEAR(+pos_uint, actual, eps);
+    EXPECT_DBL_EQ(+pos_uint, actual);
 
     actual=cdict_["ulong_uis"];
-    EXPECT_NEAR(+pos_uint, actual, eps);
+    EXPECT_DBL_EQ(+pos_uint, actual);
 
     actual=cdict_["pos_long"];
-    EXPECT_NEAR(+pos_long, actual, eps);
+    EXPECT_DBL_EQ(+pos_long, actual);
 
     actual=cdict_["ulong_ls"];
-    EXPECT_NEAR(+pos_long, actual, eps);
+    EXPECT_DBL_EQ(+pos_long, actual);
 
     actual=cdict_["ulong"];
-    EXPECT_NEAR(+pos_ulong, actual, eps);
+    EXPECT_DBL_EQ(+pos_ulong, actual);
 }
 
 
