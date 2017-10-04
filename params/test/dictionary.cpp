@@ -16,6 +16,9 @@
 #include <boost/type_traits/is_same.hpp>
 using boost::is_same;
 
+#include <boost/integer_traits.hpp>
+using boost::integer_traits;
+
 #include "./dict_values_test.hpp"
 
 namespace ap=alps::params_new_ns;
@@ -23,8 +26,6 @@ using ap::dictionary;
 namespace de=ap::exception;
 namespace aptest=ap::testing;
 
-// // Parametrized on the value type stored in the dictionary
-// template <typename T>
 class DictionaryTest0 : public ::testing::Test {
     protected:
     dictionary dict_;
@@ -87,11 +88,223 @@ TEST_F(DictionaryTest0, charAsIntGetter) {
     EXPECT_EQ(expected, actual);
 }
 
-TEST_F(DictionaryTest0, boolToString) {
-    bool expected=true;
-    dict_["name"]=expected;
-    std::string actual=cdict_["name"];
-    // EXPECT_EQ(expected, actual);
+
+class DictionaryTestIntegrals : public ::testing::Test {
+    protected:
+    dictionary dict_;
+    const dictionary& cdict_;
+
+    static const long neg_long= integer_traits<long>::const_min+5;
+    static const int  neg_int=  integer_traits<int>::const_min+7;
+    static const int  pos_int=  integer_traits<int>::const_max-7;
+    static const long pos_long= integer_traits<long>::const_max-5;
+    
+    static const unsigned int pos_uint=   integer_traits<unsigned int>::const_max-9;
+    static const unsigned long pos_ulong= integer_traits<unsigned long>::const_max-10;
+
+    // FIXME: consider this too
+    // static const bool long_is_int=(sizeof(long)==sizeof(int));
+
+    public:
+    DictionaryTestIntegrals(): dict_(), cdict_(dict_) {
+        // suffix "_is" means "integer size" (that is, value small enough to fit into signed integer)
+        // suffix "_uis" means "unsigned integer size"
+        // suffix "_ls" means "long size"
+        
+        dict_["neg_long"]= +neg_long;
+
+        dict_["neg_int"]= +neg_int;
+        dict_["neg_long_is"]= static_cast<long>(+neg_int);
+        
+        dict_["pos_int"]= +pos_int;
+        dict_["uint_is"]= static_cast<unsigned int>(+pos_int);
+        dict_["pos_long_is"]= static_cast<long>(+pos_int);
+        dict_["ulong_is"]= static_cast<unsigned long>(+pos_int);
+        
+        dict_["uint"]= +pos_uint;
+        dict_["pos_long_uis"]= static_cast<long>(+pos_uint);
+        dict_["ulong_uis"]= static_cast<unsigned long>(+pos_uint);
+
+        dict_["pos_long"]= +pos_long;
+        dict_["ulong_ls"]= static_cast<unsigned long>(+pos_long);
+
+        dict_["ulong"]= +pos_ulong;
+    }
+};
+
+TEST_F(DictionaryTestIntegrals, toUlong) {
+    unsigned long actual=1;
+
+    EXPECT_THROW(actual=cdict_["neg_long"], de::value_mismatch);
+    EXPECT_EQ(1u,actual);
+
+    EXPECT_THROW(actual=cdict_["neg_int"], de::value_mismatch);
+    EXPECT_EQ(1u,actual);
+
+    EXPECT_THROW(actual=cdict_["neg_long_is"], de::value_mismatch);
+    EXPECT_EQ(1u,actual);
+
+    actual=cdict_["pos_int"];
+    EXPECT_EQ(0u, actual-pos_int);
+
+    actual=cdict_["uint_is"];
+    EXPECT_EQ(0u, actual-pos_int);
+
+    actual=cdict_["pos_long_is"];
+    EXPECT_EQ(0u, actual-pos_int);
+
+    actual=cdict_["ulong_is"];
+    EXPECT_EQ(0u, actual-pos_int);
+        
+    actual=cdict_["uint"];
+    EXPECT_EQ(0u, actual-pos_uint);
+
+    actual=cdict_["pos_long_uis"];
+    EXPECT_EQ(0u, actual-pos_uint);
+
+    actual=cdict_["ulong_uis"];
+    EXPECT_EQ(0u, actual-pos_uint);
+
+    actual=cdict_["pos_long"];
+    EXPECT_EQ(0u, actual-pos_long);
+
+    actual=cdict_["ulong_ls"];
+    EXPECT_EQ(0u, actual-pos_long);
+
+    actual=cdict_["ulong"];
+    EXPECT_EQ(0u, actual-pos_ulong);
+}
+
+TEST_F(DictionaryTestIntegrals, toLong) {
+    long actual=1;
+
+    EXPECT_THROW(actual=cdict_["neg_long"], de::value_mismatch);
+    EXPECT_EQ(1,actual);
+
+    EXPECT_THROW(actual=cdict_["neg_int"], de::value_mismatch);
+    EXPECT_EQ(1,actual);
+
+    EXPECT_THROW(actual=cdict_["neg_long_is"], de::value_mismatch);
+    EXPECT_EQ(1,actual);
+
+    EXPECT_THROW(actual=cdict_["ulong"], de::value_mismatch);
+    EXPECT_EQ(1,actual);
+
+    actual=cdict_["pos_int"];
+    EXPECT_EQ(0u, actual-pos_int);
+
+    actual=cdict_["uint_is"];
+    EXPECT_EQ(0u, actual-pos_int);
+
+    actual=cdict_["pos_long_is"];
+    EXPECT_EQ(0u, actual-pos_int);
+
+    actual=cdict_["ulong_is"];
+    EXPECT_EQ(0u, actual-pos_int);
+        
+    actual=cdict_["uint"];
+    EXPECT_EQ(0u, actual-pos_uint);
+
+    actual=cdict_["pos_long_uis"];
+    EXPECT_EQ(0u, actual-pos_uint);
+
+    actual=cdict_["ulong_uis"];
+    EXPECT_EQ(0u, actual-pos_uint);
+
+    actual=cdict_["pos_long"];
+    EXPECT_EQ(0u, actual-pos_long);
+
+    actual=cdict_["ulong_ls"];
+    EXPECT_EQ(0u, actual-pos_long);
+}
+
+
+TEST_F(DictionaryTestIntegrals, toUint) {
+    unsigned int actual=1;
+
+    EXPECT_THROW(actual=cdict_["neg_long"], de::value_mismatch);
+    EXPECT_EQ(1u,actual);
+
+    EXPECT_THROW(actual=cdict_["neg_int"], de::value_mismatch);
+    EXPECT_EQ(1u,actual);
+
+    EXPECT_THROW(actual=cdict_["neg_long_is"], de::value_mismatch);
+    EXPECT_EQ(1u,actual);
+
+    EXPECT_THROW(actual=cdict_["pos_long"], de::value_mismatch);
+    EXPECT_EQ(1u,actual);
+
+    EXPECT_THROW(actual=cdict_["ulong_ls"], de::value_mismatch);
+    EXPECT_EQ(1u,actual);
+
+    EXPECT_THROW(actual=cdict_["ulong"], de::value_mismatch);
+    EXPECT_EQ(1u,actual);
+
+
+    actual=cdict_["pos_int"];
+    EXPECT_EQ(0u, actual-pos_int);
+
+    actual=cdict_["uint_is"];
+    EXPECT_EQ(0u, actual-pos_int);
+
+    actual=cdict_["pos_long_is"];
+    EXPECT_EQ(0u, actual-pos_int);
+
+    actual=cdict_["ulong_is"];
+    EXPECT_EQ(0u, actual-pos_int);
+        
+    actual=cdict_["uint"];
+    EXPECT_EQ(0u, actual-pos_uint);
+
+    actual=cdict_["pos_long_uis"];
+    EXPECT_EQ(0u, actual-pos_uint);
+
+    actual=cdict_["ulong_uis"];
+    EXPECT_EQ(0u, actual-pos_uint);
+}
+
+TEST_F(DictionaryTestIntegrals, toInt) {
+    int actual=1;
+
+    EXPECT_THROW(actual=cdict_["neg_long"], de::value_mismatch);
+    EXPECT_EQ(1,actual);
+
+    EXPECT_THROW(actual=cdict_["uint"], de::value_mismatch);
+    EXPECT_EQ(1,actual);
+
+    EXPECT_THROW(actual=cdict_["pos_long_uis"], de::value_mismatch);
+    EXPECT_EQ(1,actual);
+
+    EXPECT_THROW(actual=cdict_["ulong_uis"], de::value_mismatch);
+    EXPECT_EQ(1,actual);
+
+    EXPECT_THROW(actual=cdict_["pos_long"], de::value_mismatch);
+    EXPECT_EQ(1,actual);
+
+    EXPECT_THROW(actual=cdict_["ulong_ls"], de::value_mismatch);
+    EXPECT_EQ(1,actual);
+
+    EXPECT_THROW(actual=cdict_["ulong"], de::value_mismatch);
+    EXPECT_EQ(1,actual);
+
+
+    actual=cdict_["neg_int"];
+    EXPECT_EQ(0, actual-neg_int);
+
+    actual=cdict_["neg_long_is"];
+    EXPECT_EQ(0, actual-neg_int);
+        
+    actual=cdict_["pos_int"];
+    EXPECT_EQ(0, actual-pos_int);
+
+    actual=cdict_["uint_is"];
+    EXPECT_EQ(0, actual-pos_int);
+
+    actual=cdict_["pos_long_is"];
+    EXPECT_EQ(0, actual-pos_int);
+
+    actual=cdict_["ulong_is"];
+    EXPECT_EQ(0, actual-pos_int);
 }
 
 
@@ -230,7 +443,7 @@ class DictionaryTest : public ::testing::Test {
 
     template <typename X>
     void toBool(typename is_bool<X>::yes =true) {}
-    
+
 };
 
 typedef ::testing::Types<
@@ -308,6 +521,23 @@ class DictionaryTestBool : public ::testing::Test {
             EXPECT_EQ(expected, actual) << "false value test";
         }
     }
+
+    // Bool cannot be converted to any non-integral type
+    void toNonIntegral() {
+        {
+            T expected=trait::get(false);
+            T actual=expected;
+            ASSERT_THROW(actual=cdict_["true"].template as<T>(), de::type_mismatch);
+            EXPECT_EQ(expected, actual);
+        }
+        {
+            T expected=trait::get(true);
+            T actual=expected;
+            ASSERT_THROW(actual=cdict_["false"].template as<T>(), de::type_mismatch);
+            EXPECT_EQ(expected, actual);
+        }
+    }
+
 };
 
 typedef ::testing::Types<
@@ -325,5 +555,34 @@ TYPED_TEST_CASE(DictionaryTestBool, my_integral_types);
 #define MAKE_TEST(_name_) TYPED_TEST(DictionaryTestBool,_name_) { this->_name_(); }
 
 MAKE_TEST(toIntegral);
+
+#undef MAKE_TEST
+
+
+// Parametrized on the value type stored in the dictionary
+template <typename T>
+class DictionaryTestBool2 : public DictionaryTestBool<T> { };
+
+typedef ::testing::Types<
+    std::string
+    ,
+    std::vector<bool>
+    ,
+    std::vector<int>
+    ,
+    std::vector<long>
+    ,
+    std::vector<unsigned long int>
+    ,
+    std::vector<double>
+    ,
+    std::vector<std::string>
+    > my_nonintegral_types;
+
+TYPED_TEST_CASE(DictionaryTestBool2, my_nonintegral_types);
+
+#define MAKE_TEST(_name_) TYPED_TEST(DictionaryTestBool2,_name_) { this->_name_(); }
+
+MAKE_TEST(toNonIntegral);
 
 #undef MAKE_TEST
