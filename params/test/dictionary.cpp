@@ -308,6 +308,96 @@ TEST_F(DictionaryTestIntegrals, toInt) {
 }
 
 
+TEST_F(DictionaryTestIntegrals, toFloat) {
+    float actual=1.00;
+    float eps=1E-3;
+
+    actual=cdict_["neg_long"];
+    EXPECT_NEAR(+neg_long, actual, eps);
+        
+    actual=cdict_["neg_int"];
+    EXPECT_NEAR(+neg_int, actual, eps);
+
+    actual=cdict_["neg_long_is"];
+    EXPECT_NEAR(+neg_int, actual, eps);
+        
+    actual=cdict_["pos_int"];
+    EXPECT_NEAR(+pos_int, actual, eps);
+
+    actual=cdict_["uint_is"];
+    EXPECT_NEAR(+pos_int, actual, eps);
+
+    actual=cdict_["pos_long_is"];
+    EXPECT_NEAR(+pos_int, actual, eps);
+
+    actual=cdict_["ulong_is"];
+    EXPECT_NEAR(+pos_int, actual, eps);
+        
+    actual=cdict_["uint"];
+    EXPECT_NEAR(+pos_uint, actual, eps);
+
+    actual=cdict_["pos_long_uis"];
+    EXPECT_NEAR(+pos_uint, actual, eps);
+
+    actual=cdict_["ulong_uis"];
+    EXPECT_NEAR(+pos_uint, actual, eps);
+
+    actual=cdict_["pos_long"];
+    EXPECT_NEAR(+pos_long, actual, eps);
+
+    actual=cdict_["ulong_ls"];
+    EXPECT_NEAR(+pos_long, actual, eps);
+
+    actual=cdict_["ulong"];
+    EXPECT_NEAR(+pos_ulong, actual, eps);
+}
+
+TEST_F(DictionaryTestIntegrals, toDouble) {
+    double actual=1.00;
+    double eps=1E-3;
+
+    actual=cdict_["neg_long"];
+    EXPECT_NEAR(+neg_long, actual, eps);
+        
+    actual=cdict_["neg_int"];
+    EXPECT_NEAR(+neg_int, actual, eps);
+
+    actual=cdict_["neg_long_is"];
+    EXPECT_NEAR(+neg_int, actual, eps);
+        
+    actual=cdict_["pos_int"];
+    EXPECT_NEAR(+pos_int, actual, eps);
+
+    actual=cdict_["uint_is"];
+    EXPECT_NEAR(+pos_int, actual, eps);
+
+    actual=cdict_["pos_long_is"];
+    EXPECT_NEAR(+pos_int, actual, eps);
+
+    actual=cdict_["ulong_is"];
+    EXPECT_NEAR(+pos_int, actual, eps);
+        
+    actual=cdict_["uint"];
+    EXPECT_NEAR(+pos_uint, actual, eps);
+
+    actual=cdict_["pos_long_uis"];
+    EXPECT_NEAR(+pos_uint, actual, eps);
+
+    actual=cdict_["ulong_uis"];
+    EXPECT_NEAR(+pos_uint, actual, eps);
+
+    actual=cdict_["pos_long"];
+    EXPECT_NEAR(+pos_long, actual, eps);
+
+    actual=cdict_["ulong_ls"];
+    EXPECT_NEAR(+pos_long, actual, eps);
+
+    actual=cdict_["ulong"];
+    EXPECT_NEAR(+pos_ulong, actual, eps);
+}
+
+
+
 /// Helper metafunctions / metapredicates
 template <bool V> struct yes_no {};
 template <> struct yes_no<true> { typedef bool yes; static const bool value=true; };
