@@ -178,18 +178,18 @@ TEST_F(DictionaryTestIntegrals, toUlong) {
 TEST_F(DictionaryTestIntegrals, toLong) {
     long actual=1;
 
-    EXPECT_THROW(actual=cdict_["neg_long"], de::value_mismatch);
-    EXPECT_EQ(1,actual);
-
-    EXPECT_THROW(actual=cdict_["neg_int"], de::value_mismatch);
-    EXPECT_EQ(1,actual);
-
-    EXPECT_THROW(actual=cdict_["neg_long_is"], de::value_mismatch);
-    EXPECT_EQ(1,actual);
-
     EXPECT_THROW(actual=cdict_["ulong"], de::value_mismatch);
     EXPECT_EQ(1,actual);
 
+    actual=cdict_["neg_long"];
+    EXPECT_EQ(0u, actual-neg_long);
+        
+    actual=cdict_["neg_int"];
+    EXPECT_EQ(0u, actual-neg_int);
+
+    actual=cdict_["neg_long_is"];
+    EXPECT_EQ(0u, actual-neg_int);
+        
     actual=cdict_["pos_int"];
     EXPECT_EQ(0u, actual-pos_int);
 
