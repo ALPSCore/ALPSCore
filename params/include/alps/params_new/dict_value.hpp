@@ -46,6 +46,9 @@
 #include <boost/type_traits/is_signed.hpp>
 #include <boost/type_traits/is_unsigned.hpp>
 #include <boost/type_traits/is_floating_point.hpp>
+#include <boost/type_traits/make_unsigned.hpp>
+#include <boost/type_traits/make_signed.hpp>
+#include <boost/integer_traits.hpp>
 // using boost::enable_if;
 // using boost::enable_if_c;
 // using boost::disable_if;
@@ -90,16 +93,30 @@ namespace alps {
             template <typename T>
             struct is_integral : public yes_no<boost::is_integral<T>::value && !is_bool<T>::value> {};
 
+            // signed value: integral and signed
+            template <typename T>
+            struct is_signed : public yes_no<boost::is_signed<T>::value && is_integral<T>::value> {};
+
+            // unsigned value: integral and unsigned
+            template <typename T>
+            struct is_unsigned : public yes_no<boost::is_unsigned<T>::value && is_integral<T>::value> {};
+
             // meta-predicate: conversion bool->integral
             template <typename FROM, typename TO>
             struct is_bool_to_integral
                 : public yes_no<is_bool<FROM>::value && is_integral<TO>::value>
             {};
 
-            // meta-predicate: conversion integral->integral
+            // meta-predicate: conversion signed->integral
             template <typename FROM, typename TO>
-            struct is_btw_integral
-                : public yes_no<is_integral<FROM>::value && is_integral<TO>::value>
+            struct is_sig_to_intgl
+                : public yes_no<is_signed<FROM>::value && is_integral<TO>::value>
+            {};
+
+            // meta-predicate: conversion unsigned->integral
+            template <typename FROM, typename TO>
+            struct is_unsig_to_intgl
+                : public yes_no<is_unsigned<FROM>::value && is_integral<TO>::value>
             {};
 
             // meta-predicate: conversion integral->floating_point
@@ -112,7 +129,8 @@ namespace alps {
             template <typename FROM, typename TO>
             struct is_other_conversion
                 : public yes_no<!is_bool_to_integral<FROM,TO>::value &&
-                                !is_btw_integral<FROM,TO>::value &&
+                                !is_sig_to_intgl<FROM,TO>::value &&
+                                !is_unsig_to_intgl<FROM,TO>::value &&
                                 !is_intgl_to_fp<FROM,TO>::value
                                >
             {};
@@ -139,10 +157,37 @@ namespace alps {
                         return val;
                     }
 
-                    /// Extracting integral type to an integral type
+                    /// Extracting unsigned integral type to an integral type
                     template <typename RHS_T>
-                    LHS_T apply(const RHS_T& val, typename is_btw_integral<RHS_T,LHS_T>::yes =true) const {
-                        throw std::logic_error("Conversion btw integrals is not implemented");
+                    LHS_T apply(const RHS_T& val, typename is_unsig_to_intgl<RHS_T,LHS_T>::yes =true) const {
+                        typedef typename boost::make_unsigned<LHS_T>::type U_LHS_T;
+                        const U_LHS_T max_num=boost::integer_traits<LHS_T>::const_max; // always possible
+                        // compare 2 unsigned
+                        if (val>max_num)
+                            throw exception::value_mismatch("", "Integer overflow detected: unsigned integer too large");
+                        return val;
+                    }
+                
+                    /// Extracting signed integral type to an integral type
+                    template <typename RHS_T>
+                    LHS_T apply(const RHS_T& val, typename is_sig_to_intgl<RHS_T,LHS_T>::yes =true) const {
+                        typedef typename boost::make_signed<LHS_T>::type S_LHS_T;
+                        typedef typename boost::make_unsigned<LHS_T>::type U_LHS_T;
+                        typedef typename boost::make_unsigned<RHS_T>::type U_RHS_T;
+
+                        const S_LHS_T min_num=boost::integer_traits<LHS_T>::const_min; // always possible
+                        
+                        if (val<min_num)
+                            throw exception::value_mismatch("", "Integer underflow detected: signed integer too small");
+
+                        if (val<0) return val; // always within range
+                        
+                        const U_LHS_T max_num=boost::integer_traits<LHS_T>::const_max; // always possible
+                        const U_RHS_T uval=val; // as val>=0, it's always correct
+                        // compare 2 unsigned
+                        if (uval>max_num)
+                            throw exception::value_mismatch("", "Integer overflow detected: signed integer too large");
+                        return val;
                     }
                 
                     /// Placeholder: extracting any other type
