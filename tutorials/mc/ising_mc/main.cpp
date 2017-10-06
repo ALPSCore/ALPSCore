@@ -66,7 +66,7 @@ int main(int argc, char** argv)
 
     // Saving to the output file
     std::string output_file = parameters["outputfile"];
-    alps::hdf5::archive ar(boost::filesystem::path(output_file), "w");
+    alps::hdf5::archive ar(output_file, "w");
     ar["/parameters"] << parameters;
     ar["/simulation/results"] << results;
 
