@@ -12,7 +12,7 @@ project(linking CXX)
 # the project relies on the ALPSCore package. If ALPSCore is not found
 # automatically, specify its location using:
 # export ALPSCore_DIR=/location/to/ALPSCORE/
-find_package(ALPSCore REQUIRED)
+find_package(ALPSCore 1.0  REQUIRED)
 
 # we only have one cpp file: it's called linking.cpp
 add_executable(${PROJECT_NAME} linking.cpp)

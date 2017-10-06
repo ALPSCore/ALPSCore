@@ -11,7 +11,7 @@ add_executable(${PROJECT_NAME} main.cpp ising.cpp)
 # The ALPSCore package must be installed in some standard place (like /usr/local),
 # or somewhere in your PATH. 
 # Otherwise, point ALPSCore_DIR environment variable to the ALPScore installation tree.
-find_package(ALPSCore REQUIRED mc accumulators params)
+find_package(ALPSCore 1.0 REQUIRED mc accumulators params)
 
 # Use ALPSCore_LIBRARIES variable to link to ALPSCore 
 target_link_libraries(${PROJECT_NAME} ${ALPSCore_LIBRARIES})
