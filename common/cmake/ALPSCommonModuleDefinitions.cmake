@@ -2,6 +2,9 @@
 # Provide common definitions for building alps modules 
 #
 
+# Do not forget to adjust as needed!
+set(ALPSCORE_VERSION "1.0.0.1")
+
 # Disable in-source builds
 if (${CMAKE_BINARY_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
     message(FATAL_ERROR "In source builds are disabled. Please use a separate build directory")
@@ -171,6 +174,21 @@ function(add_this_package)
     set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
   endif()
 
+  if (ALPS_HAVE_MPI)
+    if (MPI_CXX_INCLUDE_PATH)
+      target_include_directories(${PROJECT_NAME} PUBLIC ${MPI_CXX_INCLUDE_PATH})
+      message(STATUS "MPI C++ include path: ${MPI_CXX_INCLUDE_PATH}")
+    endif()
+    if (MPI_C_INCLUDE_PATH)
+      target_include_directories(${PROJECT_NAME} PUBLIC ${MPI_C_INCLUDE_PATH})
+      message(STATUS "MPI C include path: ${MPI_C_INCLUDE_PATH}")
+    endif()
+    if (MPI_CXX_LIBRARIES)
+      target_link_libraries(${PROJECT_NAME} PUBLIC ${MPI_CXX_LIBRARIES})
+      message(STATUS "MPI libraries: ${MPI_CXX_LIBRARIES}")
+    endif()
+  endif(ALPS_HAVE_MPI)
+
   install(TARGETS ${PROJECT_NAME} 
           EXPORT ${PROJECT_NAME} 
           LIBRARY DESTINATION lib
@@ -213,6 +231,16 @@ macro(gen_pkg_config)
   install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}.pc" DESTINATION "lib/pkgconfig")
 endmacro(gen_pkg_config)
 
+# Function: generates main ALPSCore config
+function(gen_cfg_main)
+  configure_file("${PROJECT_SOURCE_DIR}/common/cmake/ALPSCoreConfig.cmake.in" 
+                 "${PROJECT_BINARY_DIR}/ALPSCoreConfig.cmake" @ONLY)
+  configure_file("${PROJECT_SOURCE_DIR}/common/cmake/ALPSCoreConfigVersion.cmake.in" 
+                 "${PROJECT_BINARY_DIR}/ALPSCoreConfigVersion.cmake" @ONLY)
+  install(FILES "${PROJECT_BINARY_DIR}/ALPSCoreConfig.cmake" DESTINATION "share/ALPSCore/")
+  install(FILES "${PROJECT_BINARY_DIR}/ALPSCoreConfigVersion.cmake" DESTINATION "share/ALPSCore/")
+endfunction()
+
 
 # Function: generates package-specific CMake configs
 # Arguments: [DEPENDS <list-of-dependencies>] [EXPORTS <list-of-exported-targets>]
@@ -236,10 +264,11 @@ function(gen_cfg_module)
     endif()
     configure_file("${PROJECT_SOURCE_DIR}/../common/cmake/ALPSModuleConfig.cmake.in" 
                    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" @ONLY)
-    configure_file("${PROJECT_SOURCE_DIR}/../common/cmake/ALPSCoreConfig.cmake.in" 
-                   "${PROJECT_BINARY_DIR}/ALPSCoreConfig.cmake" @ONLY)
     install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" DESTINATION "share/${PROJECT_NAME}/")
-    install(FILES "${PROJECT_BINARY_DIR}/ALPSCoreConfig.cmake" DESTINATION "share/ALPSCore/")
+
+    # configure_file("${PROJECT_SOURCE_DIR}/../common/cmake/ALPSCoreConfig.cmake.in" 
+    #                "${PROJECT_BINARY_DIR}/ALPSCoreConfig.cmake" @ONLY)
+    # install(FILES "${PROJECT_BINARY_DIR}/ALPSCoreConfig.cmake" DESTINATION "share/ALPSCore/")
 endfunction()
 
 # # Requred parameters:

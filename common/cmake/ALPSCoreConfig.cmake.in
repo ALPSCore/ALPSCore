@@ -1,4 +1,4 @@
-#  Try to find ALPSCore. Depends on  Once done this will define
+#  Try to find ALPSCore. Once done this will define
 #  ALPSCore_FOUND         - System has ALPSCore
 #  ALPSCore_LIBRARIES     - The ALPSCore libraries (imported targets)
 #  ALPSCore_HAS_MPI       - True if ALPSCore is compiled with MPI enabled

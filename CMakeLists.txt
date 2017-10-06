@@ -16,6 +16,8 @@ include(ALPSCompilerVersionCheck)
 # take care of compiler-specific tweaks
 include(ALPSCompilerTweaks)
 
+include(ALPSEnableMPI)
+
 # ALPS_GLOBAL_BUILD means building project all at once
 set(ALPS_GLOBAL_BUILD true)
 
@@ -73,5 +75,9 @@ endif(_am_building_documentation)
 # unset(_am_building_documentation CACHE)
 
 # miscellaneous operations
+# Create the main config file
+gen_cfg_main()
+
 # create module file for lmod manager 
 configure_file("${CMAKE_SOURCE_DIR}/common/misc/alpscore.lmod.in" "${CMAKE_BINARY_DIR}/alpscore.lmod")
+

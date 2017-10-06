@@ -14,6 +14,7 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/../common/cmake)
 # add common definitions, if being configured independently
 if (CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   include(ALPSCommonModuleDefinitions)
+  include(ALPSEnableMPI)
 endif()
 
 gen_documentation()
@@ -23,8 +24,6 @@ if (DocumentationOnly)
 endif()
 
 add_this_package(params)
-
-include(ALPSEnableMPI)
 
 add_boost(program_options)
 add_hdf5()
