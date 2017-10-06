@@ -40,11 +40,11 @@ namespace alps {
 
     simple_time_callback::simple_time_callback(std::size_t timelimit)
         : limit(timelimit)
-        , start(std::time(0))
+        , start(clock_type::now_time())
     {}
 
     bool simple_time_callback::operator()() const {
-        time_point_type now(time(0));
+        time_point_type now(clock_type::now_time());
         return (limit > 0 && clock_type::time_diff(now, start) > limit);
     }
 }
