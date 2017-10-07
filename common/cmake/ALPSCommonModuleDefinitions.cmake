@@ -233,6 +233,14 @@ endmacro(gen_pkg_config)
 
 # Function: generates main ALPSCore config
 function(gen_cfg_main)
+
+  message("DEBUG: Eigen version is ${ALPS_HAVE_EIGEN_VERSION}")
+  if (TARGET eigen)
+    message("DEBUG: OK, Eigen target is global")
+  else()
+    message("DEBUG: No Eigen target is visible???")
+  endif()
+  
   configure_file("${PROJECT_SOURCE_DIR}/common/cmake/ALPSCoreConfig.cmake.in" 
                  "${PROJECT_BINARY_DIR}/ALPSCoreConfig.cmake" @ONLY)
   configure_file("${PROJECT_SOURCE_DIR}/common/cmake/ALPSCoreConfigVersion.cmake.in" 

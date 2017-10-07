@@ -1,6 +1,7 @@
 include(ALPSEnableTests)
 
 set (test_srcs
+  gf_check_eigen
   index_test 
   mesh_test
   one_index_gf_test

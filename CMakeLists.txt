@@ -17,6 +17,7 @@ include(ALPSCompilerVersionCheck)
 include(ALPSCompilerTweaks)
 
 include(ALPSEnableMPI)
+include(ALPSEnableEigen)
 
 # ALPS_GLOBAL_BUILD means building project all at once
 set(ALPS_GLOBAL_BUILD true)

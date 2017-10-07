@@ -12,6 +12,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/../common/cmake)
 if (CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   include(ALPSCommonModuleDefinitions)
   include(ALPSEnableMPI)
+  include(ALPSEnableEigen)
 endif()
 
 
@@ -24,6 +25,7 @@ add_this_package(mesh gf)
 
 add_boost()
 add_hdf5()
+add_eigen()
 add_alps_package(alps-utilities alps-hdf5)
 add_testing()
 
