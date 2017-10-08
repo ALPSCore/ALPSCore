@@ -40,20 +40,24 @@ function(add_eigen)
       # Create the interface target and set up installation
       add_library(eigen INTERFACE)
 
-      set(eigen_install_dir "${CMAKE_INSTALL_DIR}/alps/deps")
-      install(DIRECTORY "${eigen_dir}/Eigen" "${eigen_dir}/unsupported" DESTINATION ${eigen_install_dir})
+      set(eigen_install_dir "${CMAKE_INSTALL_PREFIX}/alps/deps/eigen")
       
       target_include_directories(eigen INTERFACE
         $<BUILD_INTERFACE:${eigen_dir}>
         $<INSTALL_INTERFACE:${eigen_install_dir}>)
       
-      install(TARGETS eigen EXPORT ${PROJECT_NAME})
+      install(TARGETS eigen EXPORT eigen INCLUDES DESTINATION ".")
+      install(EXPORT eigen DESTINATION "share/ALPSCore" NAMESPACE alps::)
+      install(DIRECTORY "${eigen_dir}/Eigen" "${eigen_dir}/unsupported" DESTINATION ${eigen_install_dir})
     endif()
+    target_link_libraries(${PROJECT_NAME} PUBLIC eigen)
 
   else(ALPS_USE_EIGEN)
 
-    message("DEBUG: an external Eigen requested")
-    if (NOT EIGEN_INCLUDE_DIR AND ENV{EIGEN_INCLUDE_DIR})
+    message("DEBUG: an external Eigen requested; EIGEN_INCLUDE_DIR=${EIGEN_INCLUDE_DIR} ENV{EIGEN_INCLUDE_DIR}=$ENV{EIGEN_INCLUDE_DIR}")
+
+    set(env_ $ENV{EIGEN_INCLUDE_DIR})
+    if (NOT EIGEN_INCLUDE_DIR AND env_)
       set(EIGEN_INCLUDE_DIR $ENV{EIGEN_INCLUDE_DIR})
       message("DEBUG: the Eigen location is set from the environment")
     endif()
@@ -69,12 +73,15 @@ function(add_eigen)
       message("DEBUG: the external version is ${ALPS_HAVE_EIGEN_VERSION}")
       set(ALPS_HAVE_EIGEN_VERSION ${ALPS_HAVE_EIGEN_VERSION} CACHE INTERNAL "The Eigen version used by ALPSCore")
         
-      # Create the interface target
+      # Create the imported target
       if (NOT TARGET eigen)
         message("DEBUG: setting the `eigen` target to external Eigen")
-        add_library(eigen INTERFACE)
-        target_include_directories(eigen INTERFACE ${EIGEN_INCLUDE_DIR})
+        add_library(eigen INTERFACE IMPORTED GLOBAL)
+        set(dependency_on_eigen "eigen")
+        
+        set_target_properties(eigen PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${EIGEN_INCLUDE_DIR})
       endif()
+      target_link_libraries(${PROJECT_NAME} PUBLIC eigen)
         
     else(EIGEN_INCLUDE_DIR)
 
@@ -88,16 +95,18 @@ function(add_eigen)
         message(FATAL_ERROR "The expected target `Eigen3::Eigen` is not defined by the Eigen3 package, "
           "try to use bundled-in Eigen3 version and/or report this problem to ALPSCore developers")
       endif()
-
-      if (NOT TARGET eigen)
-        message("DEBUG: setting the `eigen` target to imported Eigen3::Eigen")
-        add_library(eigen INTERFACE)
-        target_link_libraries(eigen INTERFACE Eigen3::Eigen)
-      endif()
+      target_link_libraries(${PROJECT_NAME} PUBLIC Eigen3::Eigen)
+      set(ALPS_HAVE_EIGEN_VERSION ${ALPS_HAVE_EIGEN_VERSION} CACHE INTERNAL "The Eigen version used by ALPSCore")
+      
+      # if (NOT TARGET eigen)
+      #   message("DEBUG: setting the `eigen` target to imported Eigen3::Eigen")
+      #   add_library(eigen INTERFACE IMPORTED GLOBAL)
+      #   target_link_libraries(eigen  Eigen3::Eigen)
+      #   # install(TARGETS eigen EXPORT ${PROJECT_NAME})
+      # endif()
         
     endif(EIGEN_INCLUDE_DIR)
 
   endif(ALPS_USE_EIGEN)
 
-  target_link_libraries(${PROJECT_NAME} PUBLIC eigen)
 endfunction()
