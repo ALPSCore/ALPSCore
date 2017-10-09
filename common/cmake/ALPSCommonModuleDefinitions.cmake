@@ -220,10 +220,10 @@ macro(gen_documentation)
   endif(Documentation)
 endmacro(gen_documentation)
 
-macro(gen_hpp_config)
-  configure_file("${PROJECT_SOURCE_DIR}/include/config.hpp.in" "${PROJECT_BINARY_DIR}/include/alps/config.hpp")
-  install(FILES "${PROJECT_BINARY_DIR}/include/alps/config.hpp" DESTINATION include/alps) 
-endmacro(gen_hpp_config)
+function(gen_main_hpp_config)
+  configure_file("${CMAKE_SOURCE_DIR}/utilities/include/config.hpp.in" "${CMAKE_BINARY_DIR}/utilities/include/alps/config.hpp")
+  install(FILES "${CMAKE_BINARY_DIR}/utilities/include/alps/config.hpp" DESTINATION include/alps) 
+endfunction(gen_main_hpp_config)
 
 macro(gen_pkg_config)
   # Generate pkg-config file
@@ -233,15 +233,14 @@ endmacro(gen_pkg_config)
 
 # Function: generates main ALPSCore config
 function(gen_cfg_main)
-
-  message("DEBUG: Eigen version is ${ALPS_HAVE_EIGEN_VERSION}")
-  if (TARGET eigen)
-    message("DEBUG: OK, Eigen target is global")
-    get_target_property(prop_ eigen INTERFACE_INCLUDE_DIRECTORIES)
-    message("DEBUG: Eigen interface directories: ${prop_}")
-  else()
-    message("DEBUG: No Eigen target is visible???")
-  endif()
+  # message("DEBUG: Eigen version is ${ALPS_HAVE_EIGEN_VERSION}")
+  # if (TARGET eigen)
+  #   message("DEBUG: OK, Eigen target is global")
+  #   get_target_property(prop_ eigen INTERFACE_INCLUDE_DIRECTORIES)
+  #   message("DEBUG: Eigen interface directories: ${prop_}")
+  # else()
+  #   message("DEBUG: No Eigen target is visible???")
+  # endif()
   
   configure_file("${PROJECT_SOURCE_DIR}/common/cmake/ALPSCoreConfig.cmake.in" 
                  "${PROJECT_BINARY_DIR}/ALPSCoreConfig.cmake" @ONLY)

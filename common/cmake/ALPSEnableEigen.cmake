@@ -4,11 +4,11 @@ mark_as_advanced(ALPS_USE_EIGEN)
 
 # Add eigen to the current module (target ${PROJECT_NAME})
 function(add_eigen)
-  message("DEBUG: eigen requested")
+  message(STATUS "eigen requested")
 
   # nested function to determine Eigen version
   function(get_eigen_version_ eigen_dir return_var_name)
-    message("DEBUG: determining Eigen version...")
+    # message("DEBUG: determining Eigen version...")
     # the code is borrowed from Eigen's CMakeLists.txt
     file(READ "${eigen_dir}/Eigen/src/Core/util/Macros.h" _eigen_version_header)
     string(REGEX MATCH "define[ \t]+EIGEN_WORLD_VERSION[ \t]+([0-9]+)" _eigen_world_version_match "${_eigen_version_header}")
@@ -18,25 +18,22 @@ function(add_eigen)
     string(REGEX MATCH "define[ \t]+EIGEN_MINOR_VERSION[ \t]+([0-9]+)" _eigen_minor_version_match "${_eigen_version_header}")
     set(EIGEN_MINOR_VERSION "${CMAKE_MATCH_1}")
     set(EIGEN_VERSION_NUMBER ${EIGEN_WORLD_VERSION}.${EIGEN_MAJOR_VERSION}.${EIGEN_MINOR_VERSION})
-    message("DEBUG: ...it's ${EIGEN_VERSION_NUMBER}")
+    # message("DEBUG: ...it's ${EIGEN_VERSION_NUMBER}")
     set(${return_var_name} ${EIGEN_VERSION_NUMBER} PARENT_SCOPE)
   endfunction(get_eigen_version_)
   
-  # if (NOT ALPS_HAVE_EIGEN_VERSION)
-  #   # we have not yet found EIGEN, try to do it
-  #   message("DEBUG: trying to locate Eigen")
   if (ALPS_USE_EIGEN)
     # use the bundled version
     set(eigen_dir "${CMAKE_SOURCE_DIR}/common/deps/eigen-eigen-5a0156e40feb")
-    message("DEBUG: using the bundled version in ${eigen_dir}")
+    message(STATUS "using the bundled version in ${eigen_dir}")
     if (NOT ALPS_HAVE_EIGEN_VERSION)
       get_eigen_version_(${eigen_dir} ALPS_HAVE_EIGEN_VERSION)
       set(ALPS_HAVE_EIGEN_VERSION ${ALPS_HAVE_EIGEN_VERSION} CACHE INTERNAL "The Eigen version used by ALPSCore")
     endif()
-    message("DEBUG: the bundled version is ${ALPS_HAVE_EIGEN_VERSION}")
+    message(STATUS "The bundled Eigen version is ${ALPS_HAVE_EIGEN_VERSION}")
 
     if (NOT TARGET eigen)
-      message("DEBUG: setting the `eigen` target to bundled Eigen")
+      # message("DEBUG: setting the `eigen` target to bundled Eigen")
       # Create the interface target and set up installation
       add_library(eigen INTERFACE)
 
@@ -54,6 +51,9 @@ function(add_eigen)
 
   else(ALPS_USE_EIGEN)
 
+    # FIXME:
+    message(FATAL_ERROR "An external Eigen is not yet supported.")
+    
     message("DEBUG: an external Eigen requested; EIGEN_INCLUDE_DIR=${EIGEN_INCLUDE_DIR} ENV{EIGEN_INCLUDE_DIR}=$ENV{EIGEN_INCLUDE_DIR}")
 
     set(env_ $ENV{EIGEN_INCLUDE_DIR})
