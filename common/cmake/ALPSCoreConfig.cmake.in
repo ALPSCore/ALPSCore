@@ -46,10 +46,15 @@ function(alpscore_config_main_)
         endif()
     endforeach()
     set(ALPSCore_LIBRARIES ${ALPSCore_LIBRARIES} PARENT_SCOPE)
+
+    get_filename_component(cwd_ ${CMAKE_CURRENT_LIST_FILE} DIRECTORY)
+    include("${cwd_}/eigen.cmake")
 endfunction(alpscore_config_main_)
 
 alpscore_config_main_()
 set(ALPSCore_HAS_MPI @ALPS_HAVE_MPI@)
+set(ALPSCore_HAS_EIGEN_VERSION @ALPS_HAVE_EIGEN_VERSION@)
+
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(ALPSCore REQUIRED_VARS ALPSCore_LIBRARIES HANDLE_COMPONENTS)
 

@@ -38,6 +38,5 @@ add_boost()
 
 add_testing()
 CHECK_INCLUDE_FILE(unistd.h ALPS_HAVE_UNISTD_H)
-gen_hpp_config()
 gen_pkg_config()
 gen_cfg_module()

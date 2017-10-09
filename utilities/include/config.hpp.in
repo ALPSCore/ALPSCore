@@ -23,6 +23,9 @@
 // Define to 1 if you have the MPI library
 #cmakedefine ALPS_HAVE_MPI 1
 
+// Define to the Eigen version ALPSCore is compiled with
+#cmakedefine ALPS_HAVE_EIGEN_VERSION ${ALPS_HAVE_EIGEN_VERSION} 
+
 //
 // Introduce [int,uint]*_t into alps namespace
 //
