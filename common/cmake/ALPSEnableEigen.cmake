@@ -1,112 +1,51 @@
 # enable using Eigen
-option(ALPS_USE_EIGEN "Use Eigen3 library bundled with ALPSCore" ON)
-mark_as_advanced(ALPS_USE_EIGEN)
+option(ALPS_INSTALL_EIGEN "Download and install Eigen3 together with ALPSCore" OFF)
+mark_as_advanced(ALPS_INSTALL_EIGEN)
+set(ALPS_EIGEN_MIN_VERSION "3.3.4" CACHE STRING "Minimum Eigen version required by ALPSCore")
+mark_as_advanced(ALPS_EIGEN_MIN_VERSION)
 
 # Add eigen to the current module (target ${PROJECT_NAME})
 function(add_eigen)
   message(STATUS "eigen requested")
 
-  # nested function to determine Eigen version
-  function(get_eigen_version_ eigen_dir return_var_name)
-    # message("DEBUG: determining Eigen version...")
-    # the code is borrowed from Eigen's CMakeLists.txt
-    file(READ "${eigen_dir}/Eigen/src/Core/util/Macros.h" _eigen_version_header)
-    string(REGEX MATCH "define[ \t]+EIGEN_WORLD_VERSION[ \t]+([0-9]+)" _eigen_world_version_match "${_eigen_version_header}")
-    set(EIGEN_WORLD_VERSION "${CMAKE_MATCH_1}")
-    string(REGEX MATCH "define[ \t]+EIGEN_MAJOR_VERSION[ \t]+([0-9]+)" _eigen_major_version_match "${_eigen_version_header}")
-    set(EIGEN_MAJOR_VERSION "${CMAKE_MATCH_1}")
-    string(REGEX MATCH "define[ \t]+EIGEN_MINOR_VERSION[ \t]+([0-9]+)" _eigen_minor_version_match "${_eigen_version_header}")
-    set(EIGEN_MINOR_VERSION "${CMAKE_MATCH_1}")
-    set(EIGEN_VERSION_NUMBER ${EIGEN_WORLD_VERSION}.${EIGEN_MAJOR_VERSION}.${EIGEN_MINOR_VERSION})
-    # message("DEBUG: ...it's ${EIGEN_VERSION_NUMBER}")
-    set(${return_var_name} ${EIGEN_VERSION_NUMBER} PARENT_SCOPE)
-  endfunction(get_eigen_version_)
-  
-  if (ALPS_USE_EIGEN)
-    # use the bundled version
-    set(eigen_dir "${CMAKE_SOURCE_DIR}/common/deps/eigen-eigen-5a0156e40feb")
-    message(STATUS "using the bundled version in ${eigen_dir}")
-    if (NOT ALPS_HAVE_EIGEN_VERSION)
-      get_eigen_version_(${eigen_dir} ALPS_HAVE_EIGEN_VERSION)
-      set(ALPS_HAVE_EIGEN_VERSION ${ALPS_HAVE_EIGEN_VERSION} CACHE INTERNAL "The Eigen version used by ALPSCore")
+  if (NOT ALPS_EIGEN_DOWNLOAD_DIR)
+    set(ALPS_EIGEN_DOWNLOAD_DIR "${CMAKE_BINARY_DIR}/eigen")
+  endif()
+  if (NOT ALPS_EIGEN_BUILD_DIR)
+    set(ALPS_EIGEN_BUILD_DIR "${ALPS_EIGEN_DOWNLOAD_DIR}/000build")
+  endif()
+
+  if (NOT ALPS_INSTALL_EIGEN)
+    find_package(Eigen3 ${ALPS_EIGEN_MIN_VERSION})
+    if (NOT Eigen3_FOUND)
+      message(FATAL_ERROR
+" The required library Eigen3 has not been found on your system.
+ Your could try the following options:
+ 1. Set environment variable Eigen3_DIR
+    to point to the root of your CMake-based Eigen3 installation.
+ 2. Rerun CMake with option:
+     -DEIGEN3_INCLUDE_DIR=<path to your Eigen3 directory> 
+    to point to the location of Eigen3 headers.
+ 3. Rerun CMake with option:
+     -DALPS_INSTALL_EIGEN=true 
+    to request the installation script to attempt to download and install Eigen3.
+
+    In the latter case, you may optionally also set:
+     -DALPS_EIGEN_DOWNLOAD_DIR=<path to downloaded Eigen3> 
+     (currently set to ${ALPS_EIGEN_DOWNLOAD_DIR})
+
+     -DALPS_EIGEN_BUILD_DIR=<path where to set up Eigen3>
+      (currently set to ${ALPS_EIGEN_BUILD_DIR})
+")
     endif()
-    message(STATUS "The bundled Eigen version is ${ALPS_HAVE_EIGEN_VERSION}")
 
-    if (NOT TARGET eigen)
-      # message("DEBUG: setting the `eigen` target to bundled Eigen")
-      # Create the interface target and set up installation
-      add_library(eigen INTERFACE)
-
-      set(eigen_install_dir "${CMAKE_INSTALL_PREFIX}/alps/deps/eigen")
-      
-      target_include_directories(eigen INTERFACE
-        $<BUILD_INTERFACE:${eigen_dir}>
-        $<INSTALL_INTERFACE:${eigen_install_dir}>)
-      
-      install(TARGETS eigen EXPORT eigen INCLUDES DESTINATION ".")
-      install(EXPORT eigen DESTINATION "share/ALPSCore" NAMESPACE alps::)
-      install(DIRECTORY "${eigen_dir}/Eigen" "${eigen_dir}/unsupported" DESTINATION ${eigen_install_dir})
+    if (NOT TARGET Eigen3::Eigen)
+      message("DEBUG: Eigen3 target not found")
+      add_library(Eigen3::Eigen INTERFACE IMPORTED)
+      set_target_properties(Eigen3::Eigen PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${EIGEN3_INCLUDE_DIR})
     endif()
-    target_link_libraries(${PROJECT_NAME} PUBLIC eigen)
-
-  else(ALPS_USE_EIGEN)
-
-    # FIXME:
-    message(FATAL_ERROR "An external Eigen is not yet supported.")
-    
-    message("DEBUG: an external Eigen requested; EIGEN_INCLUDE_DIR=${EIGEN_INCLUDE_DIR} ENV{EIGEN_INCLUDE_DIR}=$ENV{EIGEN_INCLUDE_DIR}")
-
-    set(env_ $ENV{EIGEN_INCLUDE_DIR})
-    if (NOT EIGEN_INCLUDE_DIR AND env_)
-      set(EIGEN_INCLUDE_DIR $ENV{EIGEN_INCLUDE_DIR})
-      message("DEBUG: the Eigen location is set from the environment")
-    endif()
-    
-    if (EIGEN_INCLUDE_DIR)
-      message("DEBUG: external Eigen is in ${EIGEN_INCLUDE_DIR}")
-      if (NOT ALPS_HAVE_EIGEN_VERSION)
-        get_eigen_version_(${EIGEN_INCLUDE_DIR} ALPS_HAVE_EIGEN_VERSION)
-        if (NOT ALPS_HAVE_EIGEN_VERSION)
-          message(FATAL_ERROR "Cannot find Eigen at ${EIGEN_INCLUDE_DIR}")
-        endif()
-      endif()
-      message("DEBUG: the external version is ${ALPS_HAVE_EIGEN_VERSION}")
-      set(ALPS_HAVE_EIGEN_VERSION ${ALPS_HAVE_EIGEN_VERSION} CACHE INTERNAL "The Eigen version used by ALPSCore")
-        
-      # Create the imported target
-      if (NOT TARGET eigen)
-        message("DEBUG: setting the `eigen` target to external Eigen")
-        add_library(eigen INTERFACE IMPORTED GLOBAL)
-        set(dependency_on_eigen "eigen")
-        
-        set_target_properties(eigen PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${EIGEN_INCLUDE_DIR})
-      endif()
-      target_link_libraries(${PROJECT_NAME} PUBLIC eigen)
-        
-    else(EIGEN_INCLUDE_DIR)
-
-      message("DEBUG: trying to locate external Eigen3")
-      find_package(Eigen3 REQUIRED)
-      set(ALPS_HAVE_EIGEN_VERSION ${Eigen3_VERSION})
-      message("DEBUG: found external Eigen3, version is ${ALPS_HAVE_EIGEN_VERSION}")
-
-      # The imported target should be available
-      if (NOT TARGET Eigen3::Eigen)
-        message(FATAL_ERROR "The expected target `Eigen3::Eigen` is not defined by the Eigen3 package, "
-          "try to use bundled-in Eigen3 version and/or report this problem to ALPSCore developers")
-      endif()
-      target_link_libraries(${PROJECT_NAME} PUBLIC Eigen3::Eigen)
-      set(ALPS_HAVE_EIGEN_VERSION ${ALPS_HAVE_EIGEN_VERSION} CACHE INTERNAL "The Eigen version used by ALPSCore")
-      
-      # if (NOT TARGET eigen)
-      #   message("DEBUG: setting the `eigen` target to imported Eigen3::Eigen")
-      #   add_library(eigen INTERFACE IMPORTED GLOBAL)
-      #   target_link_libraries(eigen  Eigen3::Eigen)
-      #   # install(TARGETS eigen EXPORT ${PROJECT_NAME})
-      # endif()
-        
-    endif(EIGEN_INCLUDE_DIR)
-
-  endif(ALPS_USE_EIGEN)
-
+    target_link_libraries(${PROJECT_NAME} PUBLIC Eigen3::Eigen)
+  else()
+    message(FATAL_ERROR "Eigen installation is not yet implemented")
+  endif()
 endfunction()

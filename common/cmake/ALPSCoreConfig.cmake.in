@@ -46,9 +46,6 @@ function(alpscore_config_main_)
         endif()
     endforeach()
     set(ALPSCore_LIBRARIES ${ALPSCore_LIBRARIES} PARENT_SCOPE)
-
-    get_filename_component(cwd_ ${CMAKE_CURRENT_LIST_FILE} DIRECTORY)
-    include("${cwd_}/eigen.cmake")
 endfunction(alpscore_config_main_)
 
 alpscore_config_main_()
