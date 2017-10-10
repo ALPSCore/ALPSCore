@@ -3,8 +3,8 @@
 # Several additional options are possible (or even recommended), 
 # this tutorial only illustrates the minimal options
 
-# we need at least cmake version 2.8.12
-cmake_minimum_required(VERSION 2.8.12)
+# we need at least cmake version 3.0
+cmake_minimum_required(VERSION 3.0)
 
 # the project is called 'linking', and it is a C++ project
 project(linking CXX)

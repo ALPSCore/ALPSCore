@@ -2,7 +2,7 @@
 # global cmake configuration file for ALPSCore
 #
 
-cmake_minimum_required (VERSION 2.8.12)
+cmake_minimum_required (VERSION 3.0)
 project(ALPSCore C CXX)
 
 # include cmake scripts from common/cmake directory

@@ -1,8 +1,8 @@
 # This is a minimal CMake file that illustrates how to use Eigen
 # in project that uses ALPSCore
 
-# we need at least cmake version 2.8.12
-cmake_minimum_required(VERSION 2.8.12)
+# we need at least cmake version 3.0
+cmake_minimum_required(VERSION 3.0)
 
 # the project is called 'use_eigen', and it is a C++ project
 project(use_eigen CXX)

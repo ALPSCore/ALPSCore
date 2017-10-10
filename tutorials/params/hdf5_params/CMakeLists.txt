@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.0)
 project(hdf5_params CXX)
 
 # Not strictly necessary, but will create executables that are
