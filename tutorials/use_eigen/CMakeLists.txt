@@ -16,7 +16,7 @@ find_package(ALPSCore 1.0  REQUIRED)
 if (ALPSCore_HAS_EIGEN_VERSION)
   message(STATUS "ALPSCore provides Eigen, version ${ALPSCore_HAS_EIGEN_VERSION}")
 else()
-  message("WARNING: ALPSCore does not provide Eigen, the program won't compile!")
+  message("WARNING: ALPSCore does not provide Eigen, the code won't compile!")
 endif()
 
 # we only have one cpp file: it's called use_eigen.cpp
