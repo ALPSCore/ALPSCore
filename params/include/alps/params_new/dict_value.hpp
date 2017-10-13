@@ -22,7 +22,8 @@
 
     4. If holds a value of some type, it can be assigned to the same or a "larger" type.
        Special case 1: conversion to char is unspecified (may throw).
-       Special case 2: conversion to char* is supported for strings.
+       Special case 2: conversion to char* is explicitly unsupported, even for strings
+       (the user can use `const char* p=val.as<string>().c_str()` and face the consequences).
 
     5. It holds its name for error reporting purposes.
 
@@ -229,7 +230,19 @@ namespace alps {
                         return apply(val);
                     }
                 };
-            
+
+                /// Visitor to check if the type is X
+                template <typename X>
+                class check_type : public boost::static_visitor<bool> {
+                  public:
+                    /// Called by apply_visitor() if the bound type is X
+                    bool operator()(const X& val) const { return true; }
+                    
+                    /// Called by apply_visitor() for bound type T
+                    template <typename T>
+                    bool operator()(const T& val) const { return false; }
+                };
+                    
             }
             
 
@@ -254,11 +267,22 @@ namespace alps {
             /// whether the value contains None
             bool empty() const { return val_.which()==0; } // NOTE: relies on `None` being the first type
 
+            /// check the type of the containing value
+            template <typename X>
+            bool isType() const {
+                return boost::apply_visitor(detail::visitor::check_type<X>(), val_);
+            }
 
             /// Assignment operator (with conversion)
             template <typename T>
             const T& operator=(const T& rhs) {
                 val_=rhs;
+                return rhs;
+            }
+            
+            /// Assignment operator (with conversion from `const char*`)
+            const char* operator=(const char* rhs) {
+                val_=std::string(rhs);
                 return rhs;
             }
             

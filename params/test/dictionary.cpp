@@ -97,6 +97,39 @@ TEST_F(DictionaryTest0, charAsIntGetter) {
     EXPECT_EQ(expected, actual);
 }
 
+TEST_F(DictionaryTest0, storeCharPtr) {
+    dict_["name"]="Hello, world!";
+    EXPECT_TRUE(cdict_["name"].isType<std::string>());
+
+    EXPECT_FALSE(cdict_["name"].isType<bool         >());
+    EXPECT_FALSE(cdict_["name"].isType<char         >());
+    EXPECT_FALSE(cdict_["name"].isType<int          >());
+    EXPECT_FALSE(cdict_["name"].isType<unsigned int >());
+    EXPECT_FALSE(cdict_["name"].isType<long         >());
+    EXPECT_FALSE(cdict_["name"].isType<unsigned long>());
+    EXPECT_FALSE(cdict_["name"].isType<float        >());
+    EXPECT_FALSE(cdict_["name"].isType<double       >());
+}
+
+TEST_F(DictionaryTest0, storeCharPtrGetString) {
+    const char* const expected="Hello, world!";
+    dict_["name"]=expected;
+    const std::string actual=cdict_["name"];
+    EXPECT_EQ(expected, actual);
+}
+
+TEST_F(DictionaryTest0, storeStringGetCharPtr) {
+    const std::string expected="Hello, world!";
+    dict_["name"]=expected;
+    
+    const char* actual=0;
+    EXPECT_THROW(actual=cdict_["name"], de::type_mismatch);
+    EXPECT_EQ(0, actual);
+
+    actual=cdict_["name"].as<std::string>().c_str();
+    EXPECT_EQ(expected, std::string(actual));
+}
+
 
 class DictionaryTestIntegrals : public ::testing::Test {
     protected:
@@ -426,6 +459,9 @@ struct is_string_or_vec : public yes_no<is_string<T>::value || is_vector<T>::val
 template <typename T>
 struct is_bool : public yes_no<is_same<T,bool>::value> {};
 
+template <typename T>
+struct is_int : public yes_no<is_same<T,int>::value> {};
+
 
 // Parametrized on the value type stored in the dictionary
 template <typename T>
@@ -532,6 +568,18 @@ class DictionaryTest : public ::testing::Test {
         EXPECT_TRUE(cdict_["name"].empty());
     }
 
+    void checkType() {
+        EXPECT_TRUE(cdict_["name"].template isType<T>());
+        EXPECT_FALSE(cdict_["name"].template isType<ap::dict_value::None>());
+        
+        EXPECT_TRUE(is_int<T>::value==cdict_["name"]. template isType<int>());
+        EXPECT_TRUE(is_string<T>::value==cdict_["name"]. template isType<std::string>());
+
+        dict_["name"].clear();
+        EXPECT_FALSE(cdict_["name"].template isType<T>());
+        EXPECT_TRUE(cdict_["name"].template isType<ap::dict_value::None>());
+    }
+
     // Nothing (except bool) can be converted to bool
     template <typename X>
     void toBool(typename is_bool<X>::no =true) {
@@ -588,6 +636,7 @@ MAKE_TEST(reassignSameType);
 MAKE_TEST_TMPL(assignFromNone);
 MAKE_TEST(convertFromNoneExplicit);
 MAKE_TEST(setToNone);
+MAKE_TEST(checkType);
 MAKE_TEST_TMPL(toBool);
 
 #undef MAKE_TEST
