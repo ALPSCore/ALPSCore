@@ -54,7 +54,7 @@
 // using boost::disable_if;
 // using boost::disable_if_c;
 
-
+#include <boost/type_index.hpp> // for pretty-printing exceptions
 
 // #include "alps/utilities/short_print.hpp" // for streaming
 // #include "alps/hdf5/archive.hpp"          // archive support
@@ -193,31 +193,12 @@ namespace alps {
                     /// Placeholder: extracting any other type
                     template <typename RHS_T>
                     LHS_T apply(const RHS_T& val, typename is_other_conversion<RHS_T,LHS_T>::yes =true) const {
-                        throw exception::type_mismatch("","Types do not match"); // FIXME: catch, pass name
+                        std::string rhs_name=boost::typeindex::type_id<RHS_T>().pretty_name();
+                        std::string lhs_name=boost::typeindex::type_id<LHS_T>().pretty_name();
+                        throw exception::type_mismatch("","Types do not match;"
+                                                       " conversion " + rhs_name + " --> " + lhs_name);
                     }
                 
-                    // /// Extracting None type --- always fails and should never happen
-                    // LHS_T operator ()(const None&) const {
-                    //     throw visitor_none_used("Attempt to use uninitialized option value");
-                    // }
-
-                    // /// Types are convertible (Both are scalar types)
-                    // template <typename RHS_T>
-                    // LHS_T apply(const RHS_T& val,
-                    //             typename boost::enable_if< detail::is_convertible<RHS_T,LHS_T> >::type* =0) const {
-                    //     return val; // invokes implicit conversion 
-                    // }
-
-                    // /// Types are not convertible 
-                    // template <typename RHS_T>
-                    // LHS_T apply(const RHS_T& val,
-                    //             typename boost::disable_if< detail::is_convertible<RHS_T,LHS_T> >::type* =0) const {
-                    //     throw visitor_type_mismatch(
-                    //         std::string("Attempt to assign an option_type object containing a value of type \"")
-                    //         + detail::type_id<RHS_T>().pretty_name()
-                    //         + "\" to a value of an incompatible type \""
-                    //         + detail::type_id<LHS_T>().pretty_name()+"\"");
-                    // }
 
                     /// Called by apply_visitor()
                     template <typename RHS_T>
@@ -238,7 +219,8 @@ namespace alps {
                     /// Extracting any other type
                     template <typename RHS_T>
                     bool apply(const RHS_T& val) const {
-                        throw exception::type_mismatch("","Cannot convert non-bool to bool"); // FIXME
+                        std::string rhs_name=boost::typeindex::type_id<RHS_T>().pretty_name();
+                        throw exception::type_mismatch("","Cannot convert non-bool type "+rhs_name+" to bool");
                     }
 
                     /// Called by apply_visitor()
