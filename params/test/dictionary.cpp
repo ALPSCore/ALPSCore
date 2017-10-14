@@ -619,7 +619,20 @@ typedef ::testing::Types<
     std::vector<double>
     ,
     std::vector<std::string>
-    
+    ,
+    std::pair<std::string,bool>
+    ,
+    std::pair<std::string,int>
+    ,
+    std::pair<std::string,long>
+    ,
+    std::pair<std::string,unsigned long int>
+    ,
+    std::pair<std::string,float>
+    ,
+    std::pair<std::string,double>
+    ,
+    std::pair<std::string,std::string>
     > my_all_types;
 
 TYPED_TEST_CASE(DictionaryTest, my_all_types);
