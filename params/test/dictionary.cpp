@@ -78,6 +78,17 @@ TEST_F(DictionaryTest0, constAccess) {
     EXPECT_TRUE(cdict_["name"].empty());
 }
 
+TEST_F(DictionaryTest0, exists) {
+    EXPECT_FALSE(cdict_.exists("name"));
+    EXPECT_EQ(0u, cdict_.size());
+    
+    dict_["name"];
+    EXPECT_FALSE(cdict_.exists("name"));
+
+    dict_["name"]=0;
+    EXPECT_TRUE(cdict_.exists("name"));
+}
+
 TEST_F(DictionaryTest0, charAssign) {
     dict_["name"]='x';
     EXPECT_EQ(1ul, cdict_.size());
@@ -568,6 +579,18 @@ class DictionaryTest : public ::testing::Test {
         EXPECT_TRUE(cdict_["name"].empty());
     }
 
+    void existsTyped() {
+        EXPECT_TRUE(cdict_.exists<T>("name"));
+        EXPECT_FALSE(cdict_.exists<T>("no_such_name"));
+
+        EXPECT_FALSE(cdict_.exists<ap::dict_value::None>("name"));
+        EXPECT_FALSE(cdict_.exists<ap::dict_value::None>("no_such_name"));
+
+        EXPECT_TRUE(is_int<T>::value==cdict_.exists<int>("name"));
+        EXPECT_TRUE(is_string<T>::value==cdict_.exists<std::string>("name"));
+    }
+        
+    
     void checkType() {
         EXPECT_TRUE(cdict_["name"].template isType<T>());
         EXPECT_FALSE(cdict_["name"].template isType<ap::dict_value::None>());
@@ -649,6 +672,7 @@ MAKE_TEST(reassignSameType);
 MAKE_TEST_TMPL(assignFromNone);
 MAKE_TEST(convertFromNoneExplicit);
 MAKE_TEST(setToNone);
+MAKE_TEST(existsTyped);
 MAKE_TEST(checkType);
 MAKE_TEST_TMPL(toBool);
 

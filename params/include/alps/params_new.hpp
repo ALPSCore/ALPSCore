@@ -14,14 +14,7 @@
 #include "alps/utilities/mpi.hpp"
 #endif
 
-// #include <boost/any.hpp>
-// #include <boost/tokenizer.hpp>
-
 #include <map>
-// #include <vector>
-// #include <string>
-// #include <algorithm>
-
 
 #include "./params_new/dict_exceptions.hpp"
 #include "./params_new/dict_value.hpp"
@@ -64,11 +57,33 @@ namespace alps {
                 return it->second;
             }
 
+          private:
+            /// Check if the key exists and has a value; return the iterator
+            map_type::const_iterator find_nonempty_(const std::string& key) const {
+                map_type::const_iterator it=map_.find(key);
+                if (it!=map_.end() && !(it->second).empty())
+                    return it;
+                else
+                    return map_.end();
+            }
+          public:
+            
+            /// Check if a key exists and has a value (without creating the key)
+            bool exists(const std::string& key) const {
+                return find_nonempty_(key)!=map_.end();
+            }
+            
+            /// Check if a key exists and has a value of a particular type (without creating the key)
+            template <typename T>
+            bool exists(const std::string& key) const {
+                map_type::const_iterator it=find_nonempty_(key);
+                return it!=map_.end() && (it->second).isType<T>();
+            }
+
         };
         
     } // params_ns::
 } // alps::
-
 
 
 #endif /* ALPS_PARAMS_HPP_INCLUDED_00f672a032d949a7aa0e760a6b6f0602 */
