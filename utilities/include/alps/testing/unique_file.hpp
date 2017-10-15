@@ -32,10 +32,10 @@ namespace alps {
                 @param prefix The file prefix
                 @param action Whether to delete file in dtor
             */
-            explicit unique_file(std::string prefix, action_type action=KEEP_AFTER);
+            explicit unique_file(const std::string& prefix, action_type action=KEEP_AFTER);
 
             /// Returns temporary file name
-            const std::string& name() { return name_; }
+            const std::string& name() const { return name_; }
 
             /// Closes and optionally deletes the file
             ~unique_file();
