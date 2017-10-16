@@ -29,6 +29,14 @@ include(ALPSEnableMPI)
 add_boost(program_options)
 add_hdf5()
 
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../common/deps/iniparser" "./iniparser")
+if (ALPS_BUILD_SHARED OR ALPS_BUILD_PIC)
+  # FIXME: is it necessary or CMake can figure it out?
+  set_target_properties(libiniparser PROPERTIES POSITION_INDEPENDENT_CODE ON)
+endif()
+
+target_link_libraries(${PROJECT_NAME} PRIVATE libiniparser)
+
 add_alps_package(alps-utilities alps-hdf5)
 
 add_testing()
