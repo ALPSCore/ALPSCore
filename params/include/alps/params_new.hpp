@@ -34,6 +34,9 @@ namespace alps {
             map_type map_;
             
           public:
+            /// Virtual destructor to make dictionary inheritable
+            virtual ~dictionary() {}
+            
             bool empty() const { return map_.empty(); }
             std::size_t size() const { return map_.size(); }
 
@@ -81,9 +84,61 @@ namespace alps {
             }
 
         };
+
+
+        /// Parse sectioned INI file or HDF5 or command line, provide the results as dictionary.
+        /**
+           1. Default-constructed `params` object cannot be re-associated with a file;
+              therefore, is 100% equivalent to `dictionary` ("is-a" dictionary).
+              
+           2. Lexing of the file and of the command line occurs at construction.
+              Command line overrides the file. INI file name is taken from the command line.
+
+           3. Parsing of a specific parameter occurs at the time of its type definition.
+              There is no way for parameters to appear after the file and cmdline are read.
+              
+           // 3. Command line parsing is rudimentary:
+           //    3.1. First argument is always INI file or HDF5 file.
+           //    3.2. Options arguments start with single or double dash: `[-]-option_pair`
+           //    3.3. `option_pair` has format `key[=value]`
+           //    3.4. Keys are case-insensitive and contain [A-Za-z0-9_-].
+           //         (MAYBE: disallow [_] and convert [-] to [_]?)
+           //    3.5. 
+         */
+        class params : public dictionary {
+          public:
+            /// Default ctor
+            params() : dictionary() {}
+
+            params(const std::string& inifile) : dictionary() {}
+
+            template<typename T>
+            void define(const std::string& name, const std::string& descr);
+
+            template<typename T>
+            void define(const std::string& name, const T& defval, const std::string& descr);
+        };
         
     } // params_ns::
 } // alps::
 
+
+// ** Implementation **
+namespace alps {
+    namespace params_new_ns {
+
+        template <typename T>
+        void params::define(const std::string& name, const std::string& descr)
+        {
+        }
+
+        template <typename T>
+        void params::define(const std::string& name, const T& defval, const std::string& descr)
+        {
+        }
+
+    } // params_ns::
+} // alps::
+        
 
 #endif /* ALPS_PARAMS_HPP_INCLUDED_00f672a032d949a7aa0e760a6b6f0602 */

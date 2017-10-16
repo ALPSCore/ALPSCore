@@ -20,6 +20,7 @@ include(ALPSEnableTests)
 
 set (test_src
   dictionary
+  params
   )
 
 foreach(test ${test_src})
