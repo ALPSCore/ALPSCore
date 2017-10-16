@@ -4,7 +4,7 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-/** @file iniparser_interface.hpp
+/** @file iniparser_interface.cpp
     Implements C++ class to work with C ini-file parser library */
 
 #include <alps/params_new/iniparser_interface.hpp>
@@ -16,9 +16,6 @@
 #include <iterator>
 
 #include <boost/foreach.hpp>
-
-#include <iostream> // DEBUG!!!
-#include <cstdio> // DEBUG
 
 namespace alps {
     namespace params_new_ns {
@@ -34,8 +31,6 @@ namespace alps {
                 ini_dict_impl(const std::string& inifile) : inifile_(inifile), inidict_(iniparser_load(inifile.c_str()))
                 {
                     if (!inidict_) throw std::runtime_error("Cannot read INI file " + inifile);
-
-                    dictionary_dump(inidict_, stdout); //DEBUG!!!
                 }
                 
                 ~ini_dict_impl() {
@@ -72,7 +67,6 @@ namespace alps {
                 if (nkeys<0) throw std::runtime_error("Cannot determin number of keys in sec '"
                                                       + sec + "' of inifile '"
                                                       + inifile_+"'");
-                std::cout << "DEBUG: " << nkeys << " keys.\n";
                 std::vector<const char*> vptr(nkeys, (char*)0);
                 if (!vptr.empty() && iniparser_getseckeys(inidict_, sec.c_str(), &vptr.front())==0)
                 {
@@ -111,10 +105,8 @@ namespace alps {
                 
                 const stringvec sections=ini_dict_ptr_->list_sections();
                 BOOST_FOREACH(const std::string& sec, sections) {
-                    std::cout << "DEBUG: sec='" << sec << "'" << std::endl;
                     const stringvec keys=ini_dict_ptr_->list_keys(sec);
                     BOOST_FOREACH(const std::string& k, keys) {
-                        std::cout << "DEBUG: key='" << k << "'" << std::endl;
                         kv_vec.push_back(std::make_pair(k, ini_dict_ptr_->get_value(k)));
                     }
                 }
