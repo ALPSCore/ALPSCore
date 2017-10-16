@@ -42,6 +42,11 @@ function(alpscore_config_main_)
                 set(ALPSCore_${component_}_FOUND true PARENT_SCOPE)
                 set(ALPSCore_${component_}_LIBRARIES ${${pkg_}_LIBRARIES} PARENT_SCOPE)
                 list(APPEND ALPSCore_LIBRARIES ${${pkg_}_LIBRARIES})
+
+                if (ALPSCore_HAS_EIGEN_VERSION)
+                  set(ALPSCore_HAS_EIGEN_VERSION ${ALPSCore_HAS_EIGEN_VERSION} PARENT_SCOPE)
+                endif()
+                
             endif()
         endif()
     endforeach()
@@ -50,19 +55,6 @@ endfunction(alpscore_config_main_)
 
 alpscore_config_main_()
 set(ALPSCore_HAS_MPI @ALPS_HAVE_MPI@)
+
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(ALPSCore REQUIRED_VARS ALPSCore_LIBRARIES HANDLE_COMPONENTS)
-
-
-# # Definitions for compatibility
-# set(ALPSCore_INCLUDE_DIR  ${ALPSCore_INCLUDES} )
-# set(ALPSCore_INCLUDE_DIRS ${ALPSCore_INCLUDES} )
-# set(ALPSCore_LIBRARY      ${ALPSCore_LIBRARIES})
-
-# mark_as_advanced(
-#     ALPSCore_INCLUDES
-#     ALPSCore_INCLUDE_DIR
-#     ALPSCore_INCLUDE_DIRS
-#     ALPSCore_LIBRARIES
-#     ALPSCore_LIBRARY
-#     )
