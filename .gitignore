@@ -1,6 +1,22 @@
+# misc files
 *~
-*.pyc
+.*
+\#*\#
+!.gitignore
+
+# build files
+*build*/
 target/
-build.tmp/
-.DS_Store
-.idea/
+
+# patching files
+*.patch
+*.orig
+*.rej
+
+# generated files
+*.pyc
+
+# stuff
+*.kdev*
+*.project
+

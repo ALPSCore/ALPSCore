@@ -59,6 +59,8 @@ add_subdirectory(mc)
 alps_add_module(alps-mc mc)
 add_subdirectory(gf)
 alps_add_module(alps-gf gf)
+add_subdirectory(alea)
+alps_add_module(alps-alea alea)
 
 #Doxygen building is a function to prevent namespace damage
 function(build_documentation_)
