@@ -32,7 +32,11 @@ namespace test_data {
         "simple_string=simple!\n"
         "quoted_string=\"quoted\"\n"
         "spaced_string=\"string with spaces\"\n"
+        "# it's a comment\n"
+        "duplicate=duplicate1\n"
+        "duplicate=duplicate2\n"
         "[section1]\n"
+        "# it's another comment\n"
         "simple_string=simple1!\n"
         "quoted_string=\"quoted1\"\n"
         "[empty]\n"
@@ -97,12 +101,74 @@ class ParamsTest0 : public testing::Test {
 
 };
 
-TEST_F(ParamsTest0, DISABLED_defineNoDefault) {
+TEST_F(ParamsTest0, defineNoDefault) {
     EXPECT_FALSE(cpar_.exists("simple_string"));
     
-    par_.define<std::string>("simple_string", "Simple string parameter");
+    EXPECT_TRUE(par_.define<std::string>("simple_string", "Simple string parameter"));
     ASSERT_TRUE(cpar_.exists<std::string>("simple_string"));
 
     std::string actual=cpar_["simple_string"];
     EXPECT_EQ("simple!", actual);
 }
+
+TEST_F(ParamsTest0, defineWithDefault) {
+    EXPECT_TRUE(par_.define<std::string>("simple_string", "new string", "Simple string parameter"));
+    ASSERT_TRUE(cpar_.exists<std::string>("simple_string"));
+
+    std::string actual=cpar_["simple_string"];
+    EXPECT_EQ("simple!", actual);
+}
+
+TEST_F(ParamsTest0, defineWithDefaultNonexistent) {
+    std::string expected="new string";
+    EXPECT_TRUE(par_.define<std::string>("no_such_arg", expected, "Missing string parameter"));
+    
+    EXPECT_TRUE(cpar_.exists("no_such_arg"));
+
+    std::string actual=cpar_["no_such_arg"];
+    EXPECT_EQ(expected, actual);
+}
+
+TEST_F(ParamsTest0, defineNoDefaultNonexistent) {
+    EXPECT_FALSE(par_.define<std::string>("no_such_arg", "Missing string parameter"));
+    
+    EXPECT_FALSE(cpar_.exists("no_such_arg"));
+}
+
+TEST_F(ParamsTest0, defineNoDefaultPreexistent) {
+    std::string expected="expected value";
+    par_["no_such_arg"]=expected;
+    EXPECT_THROW(par_.define<std::string>("no_such_arg", "Pre-existing string parameter"),
+                 de::double_definition);
+    EXPECT_EQ(expected, cpar_["no_such_arg"].as<std::string>());
+}
+
+TEST_F(ParamsTest0, defineWithDefaultPreexistent) {
+    std::string expected="expected value";
+    par_["no_such_arg"]=expected;
+    EXPECT_THROW(par_.define<std::string>("no_such_arg", "new value", "Pre-existing string parameter"),
+                 de::double_definition);
+    EXPECT_EQ(expected, cpar_["no_such_arg"].as<std::string>());
+}
+
+TEST_F(ParamsTest0, defineNoDefaultDoubleDef) {
+    EXPECT_TRUE(par_.define<std::string>("simple_string", "A string parameter"));
+
+    EXPECT_THROW(par_.define<std::string>("simple_string", "A string parameter defined again"),
+                 de::double_definition);
+
+    std::string actual=cpar_["simple_string"];
+    EXPECT_EQ("simple!", actual);
+}
+
+TEST_F(ParamsTest0, defineWithDefaultDoubleDef) {
+    EXPECT_TRUE(par_.define<std::string>("simple_string", "new value", "A string parameter"));
+
+    EXPECT_THROW(par_.define<std::string>("simple_string", "another new value", "A string parameter defined again"),
+                 de::double_definition);
+
+    std::string actual=cpar_["simple_string"];
+    EXPECT_EQ("simple!", actual);
+}
+
+// #define X_EXPECT_THROW(a,b) a

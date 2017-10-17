@@ -106,17 +106,27 @@ namespace alps {
            //    3.5. 
          */
         class params : public dictionary {
+          private:
+            typedef std::map<std::string,std::string> strmap;
+            // typedef std::vector<std::string> strvec;
+            strmap raw_kv_content_;
+            strmap descriptions_;
+            // strvec def_errors_;
+            
+            void read_ini_file_(const std::string& inifile);
           public:
             /// Default ctor
-            params() : dictionary() {}
+            params() : dictionary(), raw_kv_content_() {}
 
-            params(const std::string& inifile) : dictionary() {}
+            params(const std::string& inifile) : dictionary(), raw_kv_content_()  { read_ini_file_(inifile); }
 
+            /// Defines a parameter; returns false on error, and records the error in the object
             template<typename T>
-            void define(const std::string& name, const std::string& descr);
+            bool define(const std::string& name, const std::string& descr);
 
+            /// Defines a parameter with a default; returns false on error, and records the error in the object
             template<typename T>
-            void define(const std::string& name, const T& defval, const std::string& descr);
+            bool define(const std::string& name, const T& defval, const std::string& descr);
         };
         
     } // params_ns::
@@ -128,13 +138,34 @@ namespace alps {
     namespace params_new_ns {
 
         template <typename T>
-        void params::define(const std::string& name, const std::string& descr)
+        bool params::define(const std::string& name, const std::string& descr)
         {
+            if (this->exists(name))
+                throw exception::double_definition(name, "Parameter already successfully defined "
+                                                   "or assigned a value");
+            
+            strmap::const_iterator it=raw_kv_content_.find(name);
+            if (it==raw_kv_content_.end()) return false; // FIXME: and record the problem
+            // FIXME: do type conversion! possibly return false and record the problem
+            (*this)[name]=it->second;
+            return true;
         }
 
         template <typename T>
-        void params::define(const std::string& name, const T& defval, const std::string& descr)
+        bool params::define(const std::string& name, const T& defval, const std::string& descr)
         {
+            if (this->exists(name))
+                throw exception::double_definition(name, "Parameter already successfully defined "
+                                                   "or assigned a value");
+            
+            strmap::const_iterator it=raw_kv_content_.find(name);
+            if (it==raw_kv_content_.end()) {
+                (*this)[name]=defval;
+            } else {
+                // FIXME: do type conversion! possibly return false and record the problem
+                (*this)[name]=it->second;
+            }
+            return true;
         }
 
     } // params_ns::

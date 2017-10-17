@@ -38,19 +38,25 @@ namespace alps {
             /// Exception for using uninitialized value
             struct uninitialized_value : public exception_base {
                 uninitialized_value (const std::string& a_name, const std::string& a_reason)
-                    : exception_base(a_name, a_reason) {};
+                    : exception_base(a_name, a_reason) {}
             };
             
             /// Exception for type mismatch
             struct type_mismatch : public exception_base {
                 type_mismatch(const std::string& a_name, const std::string& a_reason)
-                    : exception_base(a_name, a_reason) {};
+                    : exception_base(a_name, a_reason) {}
             };
             
             /// Exception for value mismatch
             struct value_mismatch : public exception_base {
                 value_mismatch(const std::string& a_name, const std::string& a_reason)
-                    : exception_base(a_name, a_reason) {};
+                    : exception_base(a_name, a_reason) {}
+            };
+
+            // /// Exception for duplicated definition
+            struct double_definition : public exception_base {
+                double_definition(const std::string& a_name, const std::string& a_reason)
+                    : exception_base(a_name, a_reason) {}
             };
             
         } // ::exception
