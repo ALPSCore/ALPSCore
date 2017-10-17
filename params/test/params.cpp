@@ -32,6 +32,7 @@ namespace test_data {
         "simple_string=simple!\n"
         "quoted_string=\"quoted\"\n"
         "spaced_string=\"string with spaces\"\n"
+        "an_int=1234\n"
         "# it's a comment\n"
         "duplicate=duplicate1\n"
         "duplicate=duplicate2\n"
@@ -101,74 +102,1286 @@ class ParamsTest0 : public testing::Test {
 
 };
 
-TEST_F(ParamsTest0, defineNoDefault) {
+TEST_F(ParamsTest0, ctor) {
     EXPECT_FALSE(cpar_.exists("simple_string"));
-    
-    EXPECT_TRUE(par_.define<std::string>("simple_string", "Simple string parameter"));
-    ASSERT_TRUE(cpar_.exists<std::string>("simple_string"));
+}
 
-    std::string actual=cpar_["simple_string"];
+
+/* ***** */
+/* The following 54 test cases are pre-generated using the script `params_def_gen_test_helper.sh`
+   and manually edited.
+
+   The test names are of the following format:
+
+   defined{DEF|NODEF}dict{N|C|W}arg{N|C|W}redef{N|C|W},
+
+   where:
+   N generally stand for "nothing", C for "correct", W for "wrong"; specifically:
+   
+   defined... : call to the defined<T>():
+                { with default | without default }
+
+   dict... : before defined<T>(), the parameter was:
+             { not in dictionary | in dictionary, of type T | in dictionary, of other type }
+
+   arg... : in the INI file, the argument is:
+            { absent | parseable as T | not parseable as T}
+
+   redef... : the second call to define<X>() with default is:
+            { absent | X is T | X is another type }
+
+*/
+
+/*
+   Variant 1
+   the argument is missing
+   not defined in dict
+   Parameter defined without default
+   not redefined
+*/
+TEST_F(ParamsTest0, definedNODEFdictNargNredefN) {
+    std::string name="no_such_arg";
+
+    /* not in dict */
+
+    EXPECT_FALSE(par_.define<int>(name, "Int arg without default"));
+
+    /* not redefined */
+
+    ASSERT_FALSE(cpar_.exists(name));
+}
+
+/*
+   Variant 2
+   the argument is missing
+   not defined in dict
+   Parameter defined without default
+   redefined with the same type
+*/
+TEST_F(ParamsTest0, definedNODEFdictNargNredefC) {
+    std::string name="no_such_arg";
+
+    /* not in dict */
+
+    EXPECT_FALSE(par_.define<int>(name, "Int arg without default"));
+
+    const int redef_int_value=9999;
+    EXPECT_TRUE(par_.define<int>(name, redef_int_value, "int argument with a default"));
+
+    ASSERT_TRUE(cpar_.exists(name));
+    int actual=cpar_[name];
+    EXPECT_EQ(redef_int_value, actual);
+}
+
+/*
+   Variant 3
+   the argument is missing
+   not defined in dict
+   Parameter defined without default
+   redefined with new type
+*/
+TEST_F(ParamsTest0, definedNODEFdictNargNredefW) {
+    std::string name="no_such_arg";
+
+    /* not in dict */
+
+    EXPECT_FALSE(par_.define<int>(name, "Int arg without default"));
+
+    EXPECT_TRUE(par_.define<std::string>(name, "NEW default value", "String arg with NEW default"));
+
+    ASSERT_TRUE(cpar_.exists(name));
+    std::string actual=cpar_[name];
+    EXPECT_EQ("NEW default value", actual);
+}
+
+/*
+   Variant 4
+   the argument is correct type
+   not defined in dict
+   Parameter defined without default
+   not redefined
+*/
+TEST_F(ParamsTest0, definedNODEFdictNargCredefN) {
+    std::string name="an_int";
+     const int expected_arg_val=1234;
+
+    /* not in dict */
+
+    EXPECT_TRUE(par_.define<int>(name, "Int arg without default"));
+
+    /* not redefined */
+
+    ASSERT_TRUE(cpar_.exists(name));
+    int actual=cpar_[name];
+    EXPECT_EQ(expected_arg_val, actual);
+}
+
+/*
+   Variant 5
+   the argument is correct type
+   not defined in dict
+   Parameter defined without default
+   redefined with the same type
+*/
+TEST_F(ParamsTest0, definedNODEFdictNargCredefC) {
+    std::string name="an_int";
+     const int expected_arg_val=1234;
+
+    /* not in dict */
+
+    EXPECT_TRUE(par_.define<int>(name, "Int arg without default"));
+
+    const int redef_int_value=9999;
+    EXPECT_TRUE(par_.define<int>(name, redef_int_value, "int argument with a default"));
+
+    ASSERT_TRUE(cpar_.exists(name));
+    int actual=cpar_[name];
+    EXPECT_EQ(expected_arg_val, actual);
+}
+
+/*
+   Variant 6
+   the argument is correct type
+   not defined in dict
+   Parameter defined without default
+   redefined with new type
+*/
+TEST_F(ParamsTest0, definedNODEFdictNargCredefW) {
+    std::string name="an_int";
+     const int expected_arg_val=1234;
+
+    /* not in dict */
+
+    EXPECT_TRUE(par_.define<int>(name, "Int arg without default"));
+
+    EXPECT_THROW(par_.define<std::string>(name, "NEW default value", "String arg with NEW default"),
+                 de::type_mismatch);
+
+    ASSERT_TRUE(cpar_.exists(name));
+    int actual=cpar_[name];
+    EXPECT_EQ(expected_arg_val, actual);
+}
+
+/*
+   Variant 7
+   the argument is incorrect type
+   not defined in dict
+   Parameter defined without default
+   not redefined
+*/
+TEST_F(ParamsTest0, definedNODEFdictNargWredefN) {
+    std::string name="simple_string";
+
+    /* not in dict */
+
+    EXPECT_FALSE(par_.define<int>(name, "Int arg without default"));
+
+    /* not redefined */
+
+    ASSERT_FALSE(cpar_.exists(name));
+}
+
+/*
+   Variant 8
+   the argument is incorrect type
+   not defined in dict
+   Parameter defined without default
+   redefined with the same type
+*/
+TEST_F(ParamsTest0, definedNODEFdictNargWredefC) {
+    std::string name="simple_string";
+
+    /* not in dict */
+
+    EXPECT_FALSE(par_.define<int>(name, "Int arg without default"));
+
+    const int redef_int_value=9999;
+    EXPECT_FALSE(par_.define<int>(name, redef_int_value, "int argument with a default"));
+
+    ASSERT_FALSE(cpar_.exists(name));
+}
+
+/*
+   Variant 9
+   the argument is incorrect type
+   not defined in dict
+   Parameter defined without default
+   redefined with new type
+*/
+TEST_F(ParamsTest0, definedNODEFdictNargWredefW) {
+    std::string name="simple_string";
+
+    /* not in dict */
+
+    EXPECT_FALSE(par_.define<int>(name, "Int arg without default"));
+
+    EXPECT_TRUE(par_.define<std::string>(name, "NEW default value", "String arg with NEW default"));
+
+    ASSERT_TRUE(cpar_.exists(name));
+    std::string actual=cpar_[name];
     EXPECT_EQ("simple!", actual);
 }
 
-TEST_F(ParamsTest0, defineWithDefault) {
-    EXPECT_TRUE(par_.define<std::string>("simple_string", "new string", "Simple string parameter"));
-    ASSERT_TRUE(cpar_.exists<std::string>("simple_string"));
+/*
+   Variant 10
+   the argument is missing
+   pre-defined in dict, same type
+   Parameter defined without default
+   not redefined
+*/
+TEST_F(ParamsTest0, definedNODEFdictCargNredefN) {
+    std::string name="no_such_arg";
 
-    std::string actual=cpar_["simple_string"];
+    const int preexisting_int_val=7777;
+    par_[name]=preexisting_int_val;
+
+    EXPECT_TRUE(par_.define<int>(name, "Int arg without default"));
+
+    /* not redefined */
+
+    ASSERT_TRUE(cpar_.exists(name));
+    int actual=cpar_[name];
+    EXPECT_EQ(preexisting_int_val, actual);
+}
+
+/*
+   Variant 11
+   the argument is missing
+   pre-defined in dict, same type
+   Parameter defined without default
+   redefined with the same type
+*/
+TEST_F(ParamsTest0, definedNODEFdictCargNredefC) {
+    std::string name="no_such_arg";
+
+    const int preexisting_int_val=7777;
+    par_[name]=preexisting_int_val;
+
+    EXPECT_TRUE(par_.define<int>(name, "Int arg without default"));
+
+    const int redef_int_value=9999;
+    EXPECT_TRUE(par_.define<int>(name, redef_int_value, "int argument with a default"));
+
+    ASSERT_TRUE(cpar_.exists(name));
+    int actual=cpar_[name];
+    EXPECT_EQ(preexisting_int_val, actual);
+}
+
+/*
+   Variant 12
+   the argument is missing
+   pre-defined in dict, same type
+   Parameter defined without default
+   redefined with new type
+*/
+TEST_F(ParamsTest0, definedNODEFdictCargNredefW) {
+    std::string name="no_such_arg";
+
+    const int preexisting_int_val=7777;
+    par_[name]=preexisting_int_val;
+
+    EXPECT_TRUE(par_.define<int>(name, "Int arg without default"));
+
+    EXPECT_THROW(par_.define<std::string>(name, "NEW default value", "String arg with NEW default"),
+                 de::type_mismatch);
+
+    ASSERT_TRUE(cpar_.exists(name));
+    int actual=cpar_[name];
+    EXPECT_EQ(preexisting_int_val, actual);
+}
+
+/*
+   Variant 13
+   the argument is correct type
+   pre-defined in dict, same type
+   Parameter defined without default
+   not redefined
+*/
+TEST_F(ParamsTest0, definedNODEFdictCargCredefN) {
+    std::string name="an_int";
+    const int expected_arg_val=1234;
+
+    const int preexisting_int_val=7777;
+    par_[name]=preexisting_int_val;
+
+    EXPECT_TRUE(par_.define<int>(name, "Int arg without default"));
+
+    /* not redefined */
+
+    ASSERT_TRUE(cpar_.exists(name));
+    int actual=cpar_[name];
+    EXPECT_EQ(expected_arg_val, actual);
+}
+
+/*
+   Variant 14
+   the argument is correct type
+   pre-defined in dict, same type
+   Parameter defined without default
+   redefined with the same type
+*/
+TEST_F(ParamsTest0, definedNODEFdictCargCredefC) {
+    std::string name="an_int";
+     const int expected_arg_val=1234;
+
+    const int preexisting_int_val=7777;
+    par_[name]=preexisting_int_val;
+
+    EXPECT_TRUE(par_.define<int>(name, "Int arg without default"));
+
+    const int redef_int_value=9999;
+    EXPECT_TRUE(par_.define<int>(name, redef_int_value, "int argument with a default"));
+
+    ASSERT_TRUE(cpar_.exists(name));
+    int actual=cpar_[name];
+    EXPECT_EQ(expected_arg_val, actual);
+}
+
+/*
+   Variant 15
+   the argument is correct type
+   pre-defined in dict, same type
+   Parameter defined without default
+   redefined with new type
+*/
+TEST_F(ParamsTest0, definedNODEFdictCargCredefW) {
+    std::string name="an_int";
+    const int expected_arg_val=1234;
+
+    const int preexisting_int_val=7777;
+    par_[name]=preexisting_int_val;
+
+    EXPECT_TRUE(par_.define<int>(name, "Int arg without default"));
+
+    EXPECT_THROW(par_.define<std::string>(name, "NEW default value", "String arg with NEW default"),
+                 de::type_mismatch);
+
+    ASSERT_TRUE(cpar_.exists(name));
+    int actual=cpar_[name];
+    EXPECT_EQ(expected_arg_val, actual);
+}
+
+/*
+   Variant 16
+   the argument is incorrect type
+   pre-defined in dict, same type
+   Parameter defined without default
+   not redefined
+*/
+TEST_F(ParamsTest0, definedNODEFdictCargWredefN) {
+    std::string name="simple_string";
+
+    const int preexisting_int_val=7777;
+    par_[name]=preexisting_int_val;
+
+    EXPECT_FALSE(par_.define<int>(name, "Int arg without default"));
+
+    /* not redefined */
+
+    ASSERT_TRUE(cpar_.exists(name));
+    int actual=cpar_[name];
+    EXPECT_EQ(preexisting_int_val, actual);
+}
+
+/*
+   Variant 17
+   the argument is incorrect type
+   pre-defined in dict, same type
+   Parameter defined without default
+   redefined with the same type
+*/
+TEST_F(ParamsTest0, definedNODEFdictCargWredefC) {
+    std::string name="simple_string";
+
+    const int preexisting_int_val=7777;
+    par_[name]=preexisting_int_val;
+
+    EXPECT_FALSE(par_.define<int>(name, "Int arg without default"));
+
+    const int redef_int_value=9999;
+    EXPECT_FALSE(par_.define<int>(name, redef_int_value, "int argument with a default"));
+
+    ASSERT_TRUE(cpar_.exists(name));
+    int actual=cpar_[name];
+    EXPECT_EQ(preexisting_int_val, actual);
+}
+
+/*
+   Variant 18
+   the argument is incorrect type
+   pre-defined in dict, same type
+   Parameter defined without default
+   redefined with new type
+*/
+TEST_F(ParamsTest0, definedNODEFdictCargWredefW) {
+    std::string name="simple_string";
+
+    const int preexisting_int_val=7777;
+    par_[name]=preexisting_int_val;
+
+    EXPECT_FALSE(par_.define<int>(name, "Int arg without default"));
+
+    EXPECT_THROW(par_.define<std::string>(name, "NEW default value", "String arg with NEW default"),
+                 de::type_mismatch);
+
+    ASSERT_TRUE(cpar_.exists(name));
+    int actual=cpar_[name];
+    EXPECT_EQ(preexisting_int_val, actual);
+}
+
+/*
+   Variant 19
+   the argument is missing
+   pre-defined in dict, different type
+   Parameter defined without default
+   not redefined
+*/
+TEST_F(ParamsTest0, definedNODEFdictWargNredefN) {
+    std::string name="no_such_arg";
+
+    const std::string preexisting_string_val="pre-existing value";
+    par_[name]=preexisting_string_val;
+
+    EXPECT_THROW(par_.define<int>(name, "Int arg without default"),
+                 de::type_mismatch);
+
+    /* not redefined */
+
+    ASSERT_TRUE(cpar_.exists(name));
+    std::string actual=cpar_[name];
+    EXPECT_EQ(preexisting_string_val, actual);
+}
+
+/*
+   Variant 20
+   the argument is missing
+   pre-defined in dict, different type
+   Parameter defined without default
+   redefined with the same type
+*/
+TEST_F(ParamsTest0, definedNODEFdictWargNredefC) {
+    std::string name="no_such_arg";
+
+    const std::string preexisting_string_val="pre-existing value";
+    par_[name]=preexisting_string_val;
+
+    EXPECT_THROW(par_.define<int>(name, "Int arg without default"),
+                 de::type_mismatch);
+
+    const int redef_int_value=9999;
+    EXPECT_THROW(par_.define<int>(name, redef_int_value, "int argument with a default"),
+                 de::type_mismatch);
+
+    ASSERT_TRUE(cpar_.exists(name));
+    std::string actual=cpar_[name];
+    EXPECT_EQ(preexisting_string_val, actual);
+}
+
+/*
+   Variant 21
+   the argument is missing
+   pre-defined in dict, different type
+   Parameter defined without default
+   redefined with new type
+*/
+TEST_F(ParamsTest0, definedNODEFdictWargNredefW) {
+    std::string name="no_such_arg";
+
+    const std::string preexisting_string_val="pre-existing value";
+    par_[name]=preexisting_string_val;
+
+    EXPECT_THROW(par_.define<int>(name, "Int arg without default"),
+                 de::type_mismatch);
+
+    EXPECT_TRUE(par_.define<std::string>(name, "NEW default value", "String arg with NEW default"));
+
+    ASSERT_TRUE(cpar_.exists(name));
+    std::string actual=cpar_[name];
+    EXPECT_EQ(preexisting_string_val, actual);
+}
+
+/*
+   Variant 22
+   the argument is correct type
+   pre-defined in dict, different type
+   Parameter defined without default
+   not redefined
+*/
+TEST_F(ParamsTest0, definedNODEFdictWargCredefN) {
+    std::string name="an_int";
+    // const int expected_arg_val=1234;
+
+    const std::string preexisting_string_val="pre-existing value";
+    par_[name]=preexisting_string_val;
+
+    EXPECT_THROW(par_.define<int>(name, "Int arg without default"),
+                 de::type_mismatch);
+
+    /* not redefined */
+
+    ASSERT_TRUE(cpar_.exists(name));
+    std::string actual=cpar_[name];
+    EXPECT_EQ(preexisting_string_val, actual);
+}
+
+/*
+   Variant 23
+   the argument is correct type
+   pre-defined in dict, different type
+   Parameter defined without default
+   redefined with the same type
+*/
+TEST_F(ParamsTest0, definedNODEFdictWargCredefC) {
+    std::string name="an_int";
+    // const int expected_arg_val=1234;
+
+    const std::string preexisting_string_val="pre-existing value";
+    par_[name]=preexisting_string_val;
+
+    EXPECT_THROW(par_.define<int>(name, "Int arg without default"),
+                 de::type_mismatch);
+
+    const int redef_int_value=9999;
+    EXPECT_THROW(par_.define<int>(name, redef_int_value, "int argument with a default"),
+                 de::type_mismatch);
+
+    ASSERT_TRUE(cpar_.exists(name));
+    std::string actual=cpar_[name];
+    EXPECT_EQ(preexisting_string_val, actual);
+}
+
+/*
+   Variant 24
+   the argument is correct type
+   pre-defined in dict, different type
+   Parameter defined without default
+   redefined with new type
+*/
+TEST_F(ParamsTest0, definedNODEFdictWargCredefW) {
+    std::string name="simple_string";
+
+    const int preexisting_int_val=7777;
+    par_[name]=preexisting_int_val;
+
+    EXPECT_THROW(par_.define<std::string>(name, "String arg without default"),
+                 de::type_mismatch);
+
+    const int redef_int_value=9999;
+    EXPECT_FALSE(par_.define<int>(name, redef_int_value, "int argument with a default"));
+
+    ASSERT_FALSE(cpar_.exists(name));
+}
+
+/*
+   Variant 25
+   the argument is incorrect type
+   pre-defined in dict, different type
+   Parameter defined without default
+   not redefined
+*/
+TEST_F(ParamsTest0, definedNODEFdictWargWredefN) {
+    std::string name="simple_string";
+
+    const std::string preexisting_string_val="pre-existing value";
+    par_[name]=preexisting_string_val;
+
+    EXPECT_THROW(par_.define<int>(name, "Int arg without default"),
+                 de::type_mismatch);
+
+    /* not redefined */
+
+    ASSERT_TRUE(cpar_.exists(name));
+    std::string actual=cpar_[name];
+    EXPECT_EQ(preexisting_string_val, actual);
+}
+
+/*
+   Variant 26
+   the argument is incorrect type
+   pre-defined in dict, different type
+   Parameter defined without default
+   redefined with the same type
+*/
+TEST_F(ParamsTest0, definedNODEFdictWargWredefC) {
+    std::string name="simple_string";
+
+    const std::string preexisting_string_val="pre-existing value";
+    par_[name]=preexisting_string_val;
+
+    EXPECT_THROW(par_.define<int>(name, "Int arg without default"),
+                 de::type_mismatch);
+
+    const int redef_int_value=9999;
+    EXPECT_THROW(par_.define<int>(name, redef_int_value, "int argument with a default"),
+                 de::type_mismatch);
+
+    ASSERT_TRUE(cpar_.exists(name));
+    std::string actual=cpar_[name];
+    EXPECT_EQ(preexisting_string_val, actual);
+}
+
+/*
+   Variant 27
+   the argument is incorrect type
+   pre-defined in dict, different type
+   Parameter defined without default
+   redefined with new type
+*/
+TEST_F(ParamsTest0, definedNODEFdictWargWredefW) {
+    std::string name="simple_string";
+
+    const std::string preexisting_string_val="pre-existing value";
+    par_[name]=preexisting_string_val;
+
+    EXPECT_THROW(par_.define<int>(name, "Int arg without default"),
+                 de::type_mismatch);
+
+    EXPECT_TRUE(par_.define<std::string>(name, "NEW default value", "String arg with NEW default"));
+
+    ASSERT_TRUE(cpar_.exists(name));
+    std::string actual=cpar_[name];
     EXPECT_EQ("simple!", actual);
 }
 
-TEST_F(ParamsTest0, defineWithDefaultNonexistent) {
-    std::string expected="new string";
-    EXPECT_TRUE(par_.define<std::string>("no_such_arg", expected, "Missing string parameter"));
-    
-    EXPECT_TRUE(cpar_.exists("no_such_arg"));
+/*
+   Variant 28
+   the argument is missing
+   not defined in dict
+   Parameter defined with default
+   not redefined
+*/
+TEST_F(ParamsTest0, definedDEFdictNargNredefN) {
+    std::string name="no_such_arg";
 
-    std::string actual=cpar_["no_such_arg"];
-    EXPECT_EQ(expected, actual);
+    /* not in dict */
+
+    const int deflt_int_val=1111;
+    EXPECT_TRUE(par_.define<int>(name, deflt_int_val, "Int arg with default"));
+
+    /* not redefined */
+
+    ASSERT_TRUE(cpar_.exists(name));
+    int actual=cpar_[name];
+    EXPECT_EQ(deflt_int_val, actual);
 }
 
-TEST_F(ParamsTest0, defineNoDefaultNonexistent) {
-    EXPECT_FALSE(par_.define<std::string>("no_such_arg", "Missing string parameter"));
-    
-    EXPECT_FALSE(cpar_.exists("no_such_arg"));
+/*
+   Variant 29
+   the argument is missing
+   not defined in dict
+   Parameter defined with default
+   redefined with the same type
+*/
+TEST_F(ParamsTest0, definedDEFdictNargNredefC) {
+    std::string name="no_such_arg";
+
+    /* not in dict */
+
+    const int deflt_int_val=1111;
+    EXPECT_TRUE(par_.define<int>(name, deflt_int_val, "Int arg with default"));
+
+    const int redef_int_value=9999;
+    EXPECT_TRUE(par_.define<int>(name, redef_int_value, "int argument with a default"));
+
+    ASSERT_TRUE(cpar_.exists(name));
+    int actual=cpar_[name];
+    EXPECT_EQ(deflt_int_val, actual);
 }
 
-TEST_F(ParamsTest0, defineNoDefaultPreexistent) {
-    std::string expected="expected value";
-    par_["no_such_arg"]=expected;
-    EXPECT_THROW(par_.define<std::string>("no_such_arg", "Pre-existing string parameter"),
-                 de::double_definition);
-    EXPECT_EQ(expected, cpar_["no_such_arg"].as<std::string>());
+/*
+   Variant 30
+   the argument is missing
+   not defined in dict
+   Parameter defined with default
+   redefined with new type
+*/
+TEST_F(ParamsTest0, definedDEFdictNargNredefW) {
+    std::string name="no_such_arg";
+
+    /* not in dict */
+
+    const int deflt_int_val=1111;
+    EXPECT_TRUE(par_.define<int>(name, deflt_int_val, "Int arg with default"));
+
+    EXPECT_THROW(par_.define<std::string>(name, "NEW default value", "String arg with NEW default"),
+                 de::type_mismatch);
+
+    ASSERT_TRUE(cpar_.exists(name));
+    int actual=cpar_[name];
+    EXPECT_EQ(deflt_int_val, actual);
 }
 
-TEST_F(ParamsTest0, defineWithDefaultPreexistent) {
-    std::string expected="expected value";
-    par_["no_such_arg"]=expected;
-    EXPECT_THROW(par_.define<std::string>("no_such_arg", "new value", "Pre-existing string parameter"),
-                 de::double_definition);
-    EXPECT_EQ(expected, cpar_["no_such_arg"].as<std::string>());
+/*
+   Variant 31
+   the argument is correct type
+   not defined in dict
+   Parameter defined with default
+   not redefined
+*/
+TEST_F(ParamsTest0, definedDEFdictNargCredefN) {
+    std::string name="an_int";
+     const int expected_arg_val=1234;
+
+    /* not in dict */
+
+    const int deflt_int_val=1111;
+    EXPECT_TRUE(par_.define<int>(name, deflt_int_val, "Int arg with default"));
+
+    /* not redefined */
+
+    ASSERT_TRUE(cpar_.exists(name));
+    int actual=cpar_[name];
+    EXPECT_EQ(expected_arg_val, actual);
 }
 
-TEST_F(ParamsTest0, defineNoDefaultDoubleDef) {
-    EXPECT_TRUE(par_.define<std::string>("simple_string", "A string parameter"));
+/*
+   Variant 32
+   the argument is correct type
+   not defined in dict
+   Parameter defined with default
+   redefined with the same type
+*/
+TEST_F(ParamsTest0, definedDEFdictNargCredefC) {
+    std::string name="an_int";
+     const int expected_arg_val=1234;
 
-    EXPECT_THROW(par_.define<std::string>("simple_string", "A string parameter defined again"),
-                 de::double_definition);
+    /* not in dict */
 
-    std::string actual=cpar_["simple_string"];
+    const int deflt_int_val=1111;
+    EXPECT_TRUE(par_.define<int>(name, deflt_int_val, "Int arg with default"));
+
+    const int redef_int_value=9999;
+    EXPECT_TRUE(par_.define<int>(name, redef_int_value, "int argument with a default"));
+
+    ASSERT_TRUE(cpar_.exists(name));
+    int actual=cpar_[name];
+    EXPECT_EQ(expected_arg_val, actual);
+}
+
+/*
+   Variant 33
+   the argument is correct type
+   not defined in dict
+   Parameter defined with default
+   redefined with new type
+*/
+TEST_F(ParamsTest0, definedDEFdictNargCredefW) {
+    std::string name="an_int";
+     const int expected_arg_val=1234;
+
+    /* not in dict */
+
+    const int deflt_int_val=1111;
+    EXPECT_TRUE(par_.define<int>(name, deflt_int_val, "Int arg with default"));
+
+    EXPECT_THROW(par_.define<std::string>(name, "NEW default value", "String arg with NEW default"),
+                 de::type_mismatch);
+
+    ASSERT_TRUE(cpar_.exists(name));
+    int actual=cpar_[name];
+    EXPECT_EQ(expected_arg_val, actual);
+}
+
+/*
+   Variant 34
+   the argument is incorrect type
+   not defined in dict
+   Parameter defined with default
+   not redefined
+*/
+TEST_F(ParamsTest0, definedDEFdictNargWredefN) {
+    std::string name="simple_string";
+
+    /* not in dict */
+
+    const int deflt_int_val=1111;
+    EXPECT_FALSE(par_.define<int>(name, deflt_int_val, "Int arg with default"));
+
+    /* not redefined */
+
+    ASSERT_FALSE(cpar_.exists(name));
+}
+
+/*
+   Variant 35
+   the argument is incorrect type
+   not defined in dict
+   Parameter defined with default
+   redefined with the same type
+*/
+TEST_F(ParamsTest0, definedDEFdictNargWredefC) {
+    std::string name="simple_string";
+
+    /* not in dict */
+
+    const int deflt_int_val=1111;
+    EXPECT_FALSE(par_.define<int>(name, deflt_int_val, "Int arg with default"));
+
+    const int redef_int_value=9999;
+    EXPECT_FALSE(par_.define<int>(name, redef_int_value, "int argument with a default"));
+
+    ASSERT_FALSE(cpar_.exists(name));
+}
+
+/*
+   Variant 36
+   the argument is incorrect type
+   not defined in dict
+   Parameter defined with default
+   redefined with new type
+*/
+TEST_F(ParamsTest0, definedDEFdictNargWredefW) {
+    std::string name="simple_string";
+
+    /* not in dict */
+
+    const int deflt_int_val=1111;
+    EXPECT_TRUE(par_.define<int>(name, deflt_int_val, "Int arg with default"));
+
+    EXPECT_TRUE(par_.define<std::string>(name, "NEW default value", "String arg with NEW default"));
+
+    ASSERT_TRUE(cpar_.exists(name));
+    std::string actual=cpar_[name];
     EXPECT_EQ("simple!", actual);
 }
 
-TEST_F(ParamsTest0, defineWithDefaultDoubleDef) {
-    EXPECT_TRUE(par_.define<std::string>("simple_string", "new value", "A string parameter"));
+/*
+   Variant 37
+   the argument is missing
+   pre-defined in dict, same type
+   Parameter defined with default
+   not redefined
+*/
+TEST_F(ParamsTest0, definedDEFdictCargNredefN) {
+    std::string name="no_such_arg";
 
-    EXPECT_THROW(par_.define<std::string>("simple_string", "another new value", "A string parameter defined again"),
-                 de::double_definition);
+    const int preexisting_int_val=7777;
+    par_[name]=preexisting_int_val;
 
-    std::string actual=cpar_["simple_string"];
+    const int deflt_int_val=1111;
+    EXPECT_TRUE(par_.define<int>(name, deflt_int_val, "Int arg with default"));
+
+    /* not redefined */
+
+    ASSERT_TRUE(cpar_.exists(name));
+    int actual=cpar_[name];
+    EXPECT_EQ(preexisting_int_val, actual);
+}
+
+/*
+   Variant 38
+   the argument is missing
+   pre-defined in dict, same type
+   Parameter defined with default
+   redefined with the same type
+*/
+TEST_F(ParamsTest0, definedDEFdictCargNredefC) {
+    std::string name="no_such_arg";
+
+    const int preexisting_int_val=7777;
+    par_[name]=preexisting_int_val;
+
+    const int deflt_int_val=1111;
+    EXPECT_TRUE(par_.define<int>(name, deflt_int_val, "Int arg with default"));
+
+    const int redef_int_value=9999;
+    EXPECT_TRUE(par_.define<int>(name, redef_int_value, "int argument with a default"));
+
+    ASSERT_TRUE(cpar_.exists(name));
+    int actual=cpar_[name];
+    EXPECT_EQ(preexisting_int_val, actual);
+}
+
+/*
+   Variant 39
+   the argument is missing
+   pre-defined in dict, same type
+   Parameter defined with default
+   redefined with new type
+*/
+TEST_F(ParamsTest0, definedDEFdictCargNredefW) {
+    std::string name="no_such_arg";
+
+    const int preexisting_int_val=7777;
+    par_[name]=preexisting_int_val;
+
+    const int deflt_int_val=1111;
+    EXPECT_TRUE(par_.define<int>(name, deflt_int_val, "Int arg with default"));
+
+    EXPECT_THROW(par_.define<std::string>(name, "NEW default value", "String arg with NEW default"),
+                 de::type_mismatch);
+
+    ASSERT_TRUE(cpar_.exists(name));
+    int actual=cpar_[name];
+    EXPECT_EQ(preexisting_int_val, actual);
+}
+
+/*
+   Variant 40
+   the argument is correct type
+   pre-defined in dict, same type
+   Parameter defined with default
+   not redefined
+*/
+TEST_F(ParamsTest0, definedDEFdictCargCredefN) {
+    std::string name="an_int";
+    const int expected_arg_val=1234;
+
+    const int preexisting_int_val=7777;
+    par_[name]=preexisting_int_val;
+
+    const int deflt_int_val=1111;
+    EXPECT_TRUE(par_.define<int>(name, deflt_int_val, "Int arg with default"));
+
+    /* not redefined */
+
+    ASSERT_TRUE(cpar_.exists(name));
+    int actual=cpar_[name];
+    EXPECT_EQ(expected_arg_val, actual);
+}
+
+/*
+   Variant 41
+   the argument is correct type
+   pre-defined in dict, same type
+   Parameter defined with default
+   redefined with the same type
+*/
+TEST_F(ParamsTest0, definedDEFdictCargCredefC) {
+    std::string name="an_int";
+    const int expected_arg_val=1234;
+
+    const int preexisting_int_val=7777;
+    par_[name]=preexisting_int_val;
+
+    const int deflt_int_val=1111;
+    EXPECT_TRUE(par_.define<int>(name, deflt_int_val, "Int arg with default"));
+
+    const int redef_int_value=9999;
+    EXPECT_TRUE(par_.define<int>(name, redef_int_value, "int argument with a default"));
+
+    ASSERT_TRUE(cpar_.exists(name));
+    int actual=cpar_[name];
+    EXPECT_EQ(expected_arg_val, actual);
+}
+
+/*
+   Variant 42
+   the argument is correct type
+   pre-defined in dict, same type
+   Parameter defined with default
+   redefined with new type
+*/
+TEST_F(ParamsTest0, definedDEFdictCargCredefW) {
+    std::string name="an_int";
+     const int expected_arg_val=1234;
+
+    const int preexisting_int_val=7777;
+    par_[name]=preexisting_int_val;
+
+    const int deflt_int_val=1111;
+    EXPECT_TRUE(par_.define<int>(name, deflt_int_val, "Int arg with default"));
+
+    EXPECT_THROW(par_.define<std::string>(name, "NEW default value", "String arg with NEW default"),
+                 de::type_mismatch);
+
+    ASSERT_TRUE(cpar_.exists(name));
+    int actual=cpar_[name];
+    EXPECT_EQ(expected_arg_val, actual);
+}
+
+/*
+   Variant 43
+   the argument is incorrect type
+   pre-defined in dict, same type
+   Parameter defined with default
+   not redefined
+*/
+TEST_F(ParamsTest0, definedDEFdictCargWredefN) {
+    std::string name="simple_string";
+
+    const int preexisting_int_val=7777;
+    par_[name]=preexisting_int_val;
+
+    const int deflt_int_val=1111;
+    EXPECT_FALSE(par_.define<int>(name, deflt_int_val, "Int arg with default"));
+
+    /* not redefined */
+
+    ASSERT_FALSE(cpar_.exists(name));
+}
+
+/*
+   Variant 44
+   the argument is incorrect type
+   pre-defined in dict, same type
+   Parameter defined with default
+   redefined with the same type
+*/
+TEST_F(ParamsTest0, definedDEFdictCargWredefC) {
+    std::string name="simple_string";
+
+    const int preexisting_int_val=7777;
+    par_[name]=preexisting_int_val;
+
+    const int deflt_int_val=1111;
+    EXPECT_FALSE(par_.define<int>(name, deflt_int_val, "Int arg with default"));
+
+    const int redef_int_value=9999;
+    EXPECT_FALSE(par_.define<int>(name, redef_int_value, "int argument with a default"));
+
+    ASSERT_FALSE(cpar_.exists(name));
+}
+
+/*
+   Variant 45
+   the argument is incorrect type
+   pre-defined in dict, same type
+   Parameter defined with default
+   redefined with new type
+*/
+TEST_F(ParamsTest0, definedDEFdictCargWredefW) {
+    std::string name="simple_string";
+
+    const int preexisting_int_val=7777;
+    par_[name]=preexisting_int_val;
+
+    const int deflt_int_val=1111;
+    EXPECT_FALSE(par_.define<int>(name, deflt_int_val, "Int arg with default"));
+
+    EXPECT_TRUE(par_.define<std::string>(name, "NEW default value", "String arg with NEW default"));
+
+    ASSERT_TRUE(cpar_.exists(name));
+    std::string actual=cpar_[name];
     EXPECT_EQ("simple!", actual);
 }
+
+/*
+   Variant 46
+   the argument is missing
+   pre-defined in dict, different type
+   Parameter defined with default
+   not redefined
+*/
+TEST_F(ParamsTest0, definedDEFdictWargNredefN) {
+    std::string name="no_such_arg";
+
+    const std::string preexisting_string_val="pre-existing value";
+    par_[name]=preexisting_string_val;
+
+    const int deflt_int_val=1111;
+    EXPECT_THROW(par_.define<int>(name, deflt_int_val, "Int arg with default"),
+                 de::type_mismatch);
+
+    /* not redefined */
+
+    ASSERT_TRUE(cpar_.exists(name));
+    std::string actual=cpar_[name];
+    EXPECT_EQ(preexisting_string_val, actual);
+}
+
+/*
+   Variant 47
+   the argument is missing
+   pre-defined in dict, different type
+   Parameter defined with default
+   redefined with the same type
+*/
+TEST_F(ParamsTest0, definedDEFdictWargNredefC) {
+    std::string name="no_such_arg";
+
+    const std::string preexisting_string_val="pre-existing value";
+    par_[name]=preexisting_string_val;
+
+    const int deflt_int_val=1111;
+    EXPECT_THROW(par_.define<int>(name, deflt_int_val, "Int arg with default"),
+                 de::type_mismatch);
+
+    const int redef_int_value=9999;
+    EXPECT_THROW(par_.define<int>(name, redef_int_value, "int argument with a default"),
+                 de::type_mismatch);
+
+    ASSERT_TRUE(cpar_.exists(name));
+    std::string actual=cpar_[name];
+    EXPECT_EQ(preexisting_string_val, actual);
+}
+
+/*
+   Variant 48
+   the argument is missing
+   pre-defined in dict, different type
+   Parameter defined with default
+   redefined with new type
+*/
+TEST_F(ParamsTest0, definedDEFdictWargNredefW) {
+    std::string name="no_such_arg";
+
+    const std::string preexisting_string_val="pre-existing value";
+    par_[name]=preexisting_string_val;
+
+    const int deflt_int_val=1111;
+    EXPECT_THROW(par_.define<int>(name, deflt_int_val, "Int arg with default"),
+                 de::type_mismatch);
+
+    EXPECT_TRUE(par_.define<std::string>(name, "NEW default value", "String arg with NEW default"));
+
+    ASSERT_TRUE(cpar_.exists(name));
+    std::string actual=cpar_[name];
+    EXPECT_EQ(preexisting_string_val, actual);
+}
+
+/*
+   Variant 49
+   the argument is correct type
+   pre-defined in dict, different type
+   Parameter defined with default
+   not redefined
+*/
+TEST_F(ParamsTest0, definedDEFdictWargCredefN) {
+    std::string name="an_int";
+    // const int expected_arg_val=1234;
+
+    const std::string preexisting_string_val="pre-existing value";
+    par_[name]=preexisting_string_val;
+
+    const int deflt_int_val=1111;
+    EXPECT_THROW(par_.define<int>(name, deflt_int_val, "Int arg with default"),
+                 de::type_mismatch);
+
+    /* not redefined */
+
+    ASSERT_TRUE(cpar_.exists(name));
+    std::string actual=cpar_["name"];
+    EXPECT_EQ(preexisting_string_val, actual);
+}
+
+/*
+   Variant 50
+   the argument is correct type
+   pre-defined in dict, different type
+   Parameter defined with default
+   redefined with the same type
+*/
+TEST_F(ParamsTest0, definedDEFdictWargCredefC) {
+    std::string name="an_int";
+    // const int expected_arg_val=1234;
+
+    const std::string preexisting_string_val="pre-existing value";
+    par_[name]=preexisting_string_val;
+
+    const int deflt_int_val=1111;
+    EXPECT_THROW(par_.define<int>(name, deflt_int_val, "Int arg with default"),
+                 de::type_mismatch);
+
+    const int redef_int_value=9999;
+    EXPECT_THROW(par_.define<int>(name, redef_int_value, "int argument with a default"),
+                 de::type_mismatch);
+
+    ASSERT_TRUE(cpar_.exists(name));
+    std::string actual=cpar_["name"];
+    EXPECT_EQ(preexisting_string_val, actual);
+}
+
+/*
+   Variant 51
+   the argument is correct type
+   pre-defined in dict, different type
+   Parameter defined with default
+   redefined with new type
+*/
+TEST_F(ParamsTest0, definedDEFdictWargCredefW) {
+    std::string name="simple_string";
+    // const std::string expected_arg_val="simple!";
+
+    const int preexisting_int_val=7777;
+    par_[name]=preexisting_int_val;
+
+    EXPECT_THROW(par_.define<std::string>(name, "default string val", "String arg with default"),
+                 de::type_mismatch);
+
+    const int redef_int_value=9999;
+    EXPECT_FALSE(par_.define<int>(name, redef_int_value, "int argument with a default"));
+
+    ASSERT_FALSE(cpar_.exists(name));
+}
+
+/*
+   Variant 52
+   the argument is incorrect type
+   pre-defined in dict, different type
+   Parameter defined with default
+   not redefined
+*/
+TEST_F(ParamsTest0, definedDEFdictWargWredefN) {
+    std::string name="simple_string";
+
+    const std::string preexisting_string_val="pre-existing value";
+    par_[name]=preexisting_string_val;
+
+    const int deflt_int_val=1111;
+    EXPECT_THROW(par_.define<int>(name, deflt_int_val, "Int arg with default"),
+                 de::type_mismatch);
+
+    /* not redefined */
+
+    ASSERT_TRUE(cpar_.exists(name));
+    std::string actual=cpar_["name"];
+    EXPECT_EQ(preexisting_string_val, actual);
+}
+
+/*
+   Variant 53
+   the argument is incorrect type
+   pre-defined in dict, different type
+   Parameter defined with default
+   redefined with the same type
+*/
+TEST_F(ParamsTest0, definedDEFdictWargWredefC) {
+    std::string name="simple_string";
+
+    const std::string preexisting_string_val="pre-existing value";
+    par_[name]=preexisting_string_val;
+
+    const int deflt_int_val=1111;
+    EXPECT_THROW(par_.define<int>(name, deflt_int_val, "Int arg with default"),
+                 de::type_mismatch);
+
+    const int redef_int_value=9999;
+    EXPECT_THROW(par_.define<int>(name, redef_int_value, "int argument with a default"),
+                 de::type_mismatch);
+
+    ASSERT_TRUE(cpar_.exists(name));
+    std::string actual=cpar_["name"];
+    EXPECT_EQ(preexisting_string_val, actual);
+}
+
+/*
+   Variant 54
+   the argument is incorrect type
+   pre-defined in dict, different type
+   Parameter defined with default
+   redefined with new type
+*/
+TEST_F(ParamsTest0, definedDEFdictWargWredefW) {
+    std::string name="simple_string";
+    const std::string expected_arg_val="simple!";
+
+    const std::string preexisting_string_val="pre-existing value";
+    par_[name]=preexisting_string_val;
+
+    const int deflt_int_val=1111;
+    EXPECT_THROW(par_.define<int>(name, deflt_int_val, "Int arg with default"),
+                 de::type_mismatch);
+
+    EXPECT_TRUE(par_.define<std::string>(name, "NEW default value", "String arg with NEW default"));
+
+    ASSERT_TRUE(cpar_.exists(name));
+    std::string actual=cpar_["name"];
+    EXPECT_EQ(expected_arg_val, actual);
+}
+
+/* ***** */
+/* *** End of auto-generated tests *** */
+
 
 // #define X_EXPECT_THROW(a,b) a
