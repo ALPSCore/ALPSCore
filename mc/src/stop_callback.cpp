@@ -28,13 +28,13 @@ namespace alps {
         if (comm) {
             bool to_stop;
             if (comm->rank() == 0) {
-                to_stop = !signals.empty() || (limit > 0 && clock_type::time_diff(now, start) > limit);
+                to_stop = !signals.empty() || (limit > 0 && clock_type::time_diff(now, start) >= limit);
             }
             broadcast(*comm, to_stop, 0);
             return to_stop;
         } else
 #endif
-            return !signals.empty() || (limit > 0 && clock_type::time_diff(now, start) > limit);
+            return !signals.empty() || (limit > 0 && clock_type::time_diff(now, start) >= limit);
     }
 
 
@@ -45,6 +45,6 @@ namespace alps {
 
     bool simple_time_callback::operator()() const {
         time_point_type now(clock_type::now_time());
-        return (limit > 0 && clock_type::time_diff(now, start) > limit);
+        return (limit > 0 && clock_type::time_diff(now, start) >= limit);
     }
 }

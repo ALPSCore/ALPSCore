@@ -84,18 +84,18 @@ TEST_F(TwoIndexGFTest,saveload)
 {
     namespace g=alps::gf;
     {
-        alps::hdf5::archive oar("gf.h5","w");
+        alps::hdf5::archive oar("gf_2i_saveload.h5","w");
         gf(g::matsubara_index(4), g::index(1))=std::complex<double>(7., 3.);
         gf.save(oar,"/gf");
     }
     {
-        alps::hdf5::archive iar("gf.h5");
+        alps::hdf5::archive iar("gf_2i_saveload.h5");
         gf2.load(iar,"/gf");
     }
     EXPECT_EQ(7, gf2(g::matsubara_index(4), g::index(1)).real());
     EXPECT_EQ(3, gf2(g::matsubara_index(4), g::index(1)).imag());
     {
-        alps::hdf5::archive oar("gf.h5","rw");
+        alps::hdf5::archive oar("gf_2i_saveload.h5","rw");
         oar["/gf/version/major"]<<7;
         EXPECT_THROW(gf2.load(oar,"/gf"),std::runtime_error);
     }
@@ -107,18 +107,18 @@ TEST_F(TwoIndexGFTest,saveloadstream)
 {
     namespace g=alps::gf;
     {
-        alps::hdf5::archive oar("gf.h5","w");
+        alps::hdf5::archive oar("gf_2i_saveloadstr.h5","w");
         gf(g::matsubara_index(4), g::index(1))=std::complex<double>(7., 3.);
         oar["/gf"] << gf;
     }
     {
-        alps::hdf5::archive iar("gf.h5");
+        alps::hdf5::archive iar("gf_2i_saveloadstr.h5");
         iar["/gf"] >> gf2;
     }
     EXPECT_EQ(7, gf2(g::matsubara_index(4), g::index(1)).real());
     EXPECT_EQ(3, gf2(g::matsubara_index(4), g::index(1)).imag());
     {
-        alps::hdf5::archive oar("gf.h5","rw");
+        alps::hdf5::archive oar("gf_2i_saveloadstr.h5","rw");
         oar["/gf/version/major"]<<7;
         EXPECT_THROW(oar["/gf"]>>gf2, std::runtime_error);
     }
@@ -234,12 +234,12 @@ TEST_F(TwoIndexGFTest, TailSaveLoad)
     EXPECT_EQ(0,gft.max_tail_order());
     EXPECT_EQ(0,(denmat-gft.tail(0)).norm());
     {
-        alps::hdf5::archive oar("gft.h5","w");
+        alps::hdf5::archive oar("gf_2i_tailsaveload.h5","w");
         gft(g::matsubara_index(4),g::index(1))=std::complex<double>(7., 3.);
         oar["/gft"] << gft;
     }
     {
-        alps::hdf5::archive iar("gft.h5");
+        alps::hdf5::archive iar("gf_2i_tailsaveload.h5");
 
         iar["/gft"] >> gft2;
     }
@@ -271,11 +271,11 @@ TEST_F(TwoIndexGFTest, DefaultConstructive)
     gf_type gf_empty;
     EXPECT_THROW(gf_empty.norm(), std::runtime_error);
     {
-        alps::hdf5::archive oar("gf.h5","w");
+        alps::hdf5::archive oar("gf_2i_defconstr.h5","w");
         oar["/gf"] << gf;
     }
     {
-        alps::hdf5::archive iar("gf.h5");
+        alps::hdf5::archive iar("gf_2i_defconstr.h5");
         iar["/gf"] >> gf_empty;
     }
     EXPECT_NO_THROW(gf_empty.norm());

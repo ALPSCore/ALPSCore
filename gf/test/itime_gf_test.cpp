@@ -63,17 +63,17 @@ TEST_F(ItimeTestGF,saveload)
 {
     namespace g=alps::gf;
     {
-        alps::hdf5::archive oar("gf.h5","w");
+        alps::hdf5::archive oar("gf_it_saveload.h5","w");
         gf(g::itime_index(4),g::momentum_index(3), g::momentum_index(2), g::index(1))=6.;
         gf.save(oar,"/gf");
     }
     {
-        alps::hdf5::archive iar("gf.h5");
+        alps::hdf5::archive iar("gf_it_saveload.h5");
         gf2.load(iar,"/gf");
     }
     EXPECT_EQ(6., gf2(g::itime_index(4),g::momentum_index(3), g::momentum_index(2), g::index(1)));
     {
-        alps::hdf5::archive oar("gf.h5","rw");
+        alps::hdf5::archive oar("gf_it_saveload.h5","rw");
         oar["/gf/version/major"]<<7;
         EXPECT_THROW(gf2.load(oar,"/gf"),std::runtime_error);
     }
@@ -87,17 +87,17 @@ TEST_F(ItimeTestGF,saveloadstream)
 {
     namespace g=alps::gf;
     {
-        alps::hdf5::archive oar("gf.h5","w");
+        alps::hdf5::archive oar("gf_it_stream.h5","w");
         gf(g::itime_index(4),g::momentum_index(3), g::momentum_index(2), g::index(1))=6.;
         oar["/gf"] << gf;
     }
     {
-        alps::hdf5::archive iar("gf.h5");
+        alps::hdf5::archive iar("gf_it_stream.h5");
         iar["/gf"] >> gf2;
     }
     EXPECT_EQ(6., gf2(g::itime_index(4),g::momentum_index(3), g::momentum_index(2), g::index(1)));
     {
-        alps::hdf5::archive oar("gf.h5","rw");
+        alps::hdf5::archive oar("gf_it_stream.h5","rw");
         oar["/gf/version/major"]<<7;
         EXPECT_THROW(oar["/gf"]>>gf2, std::runtime_error);
     }
