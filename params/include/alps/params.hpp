@@ -132,9 +132,16 @@ namespace alps {
             bool define(const std::string& name, const T& defval, const std::string& descr);
 
             const std::string get_descr(const std::string& name) const;
+
+            template <typename A>
+            void save(const A&) const { throw std::logic_error("params::save() is not yet implemented"); }
+            
+            template <typename A>
+            void load(const A&) { throw std::logic_error("params::load() is not yet implemented"); }
         };
         
     } // params_ns::
+    typedef params_ns::params params;
 } // alps::
 
 
