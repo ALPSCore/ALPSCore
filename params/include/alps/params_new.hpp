@@ -114,6 +114,9 @@ namespace alps {
             // strvec def_errors_;
             
             void read_ini_file_(const std::string& inifile);
+
+            template <typename T>
+            bool assign_to_name_(const std::string& name, const std::string& descr, const std::string& strval);
           public:
             /// Default ctor
             params() : dictionary(), raw_kv_content_() {}
@@ -134,36 +137,76 @@ namespace alps {
 
 
 // ** Implementation **
+#include <boost/lexical_cast.hpp>
+#include <boost/optional.hpp>
 namespace alps {
     namespace params_new_ns {
 
+        // inline params::find_def_(
+
+        namespace detail {
+            template <typename T>
+            struct parse_string {
+                static boost::optional<T> apply(const std::string& in) {
+                    T conv_result;
+                    boost::optional<T> result;
+                    if (boost::conversion::try_lexical_convert(in, conv_result)) {
+                        result=conv_result;
+                    }
+                    return result;
+                }
+            };
+
+            template <>
+            struct parse_string<std::string> {
+                static boost::optional<std::string> apply(const std::string& in) {
+                    return in;
+                }
+            };
+        } // ::detail
+
+        template <typename T>
+        bool params::assign_to_name_(const std::string& name, const std::string& descr, const std::string& strval)
+        {
+            boost::optional<T> result=detail::parse_string<T>::apply(strval);
+            if (result) {
+                (*this)[name]=*result;
+                // FIXME! store description
+                return true;
+            } else {
+                return false;
+            }
+        }
+        
         template <typename T>
         bool params::define(const std::string& name, const std::string& descr)
         {
-            if (this->exists(name))
-                throw exception::double_definition(name, "Parameter already successfully defined "
-                                                   "or assigned a value");
+            if (this->exists(name) && !this->exists<T>(name))
+                throw exception::type_mismatch(name, "Parameter already defined with a different type");
             
             strmap::const_iterator it=raw_kv_content_.find(name);
-            if (it==raw_kv_content_.end()) return false; // FIXME: and record the problem
-            // FIXME: do type conversion! possibly return false and record the problem
-            (*this)[name]=it->second;
-            return true;
+            if (it==raw_kv_content_.end()) {
+                if (this->exists(name)) return true;
+                return false; // FIXME: and record the problem
+            }
+            return assign_to_name_<T>(name, descr, it->second);
         }
 
         template <typename T>
         bool params::define(const std::string& name, const T& defval, const std::string& descr)
         {
-            if (this->exists(name))
-                throw exception::double_definition(name, "Parameter already successfully defined "
-                                                   "or assigned a value");
+            if (this->exists(name) && !this->exists<T>(name))
+                throw exception::type_mismatch(name, "Parameter already defined with a different type");
             
             strmap::const_iterator it=raw_kv_content_.find(name);
             if (it==raw_kv_content_.end()) {
-                (*this)[name]=defval;
+                if (!this->exists(name)) (*this)[name]=defval;
             } else {
-                // FIXME: do type conversion! possibly return false and record the problem
-                (*this)[name]=it->second;
+                if (!assign_to_name_<T>(name, descr, it->second)) {
+                    // FIXME: record the problem
+                    (*this)[name].clear();
+                    return false;
+                }
             }
             return true;
         }

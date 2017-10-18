@@ -501,9 +501,7 @@ TEST_F(ParamsTest0, definedNODEFdictCargWredefC) {
     const int redef_int_value=9999;
     EXPECT_FALSE(par_.define<int>(name, redef_int_value, "int argument with a default"));
 
-    ASSERT_TRUE(cpar_.exists(name));
-    int actual=cpar_[name];
-    EXPECT_EQ(preexisting_int_val, actual);
+    ASSERT_FALSE(cpar_.exists(name));
 }
 
 /*
@@ -936,7 +934,7 @@ TEST_F(ParamsTest0, definedDEFdictNargWredefW) {
     /* not in dict */
 
     const int deflt_int_val=1111;
-    EXPECT_TRUE(par_.define<int>(name, deflt_int_val, "Int arg with default"));
+    EXPECT_FALSE(par_.define<int>(name, deflt_int_val, "Int arg with default"));
 
     EXPECT_TRUE(par_.define<std::string>(name, "NEW default value", "String arg with NEW default"));
 
@@ -1251,7 +1249,7 @@ TEST_F(ParamsTest0, definedDEFdictWargCredefN) {
     /* not redefined */
 
     ASSERT_TRUE(cpar_.exists(name));
-    std::string actual=cpar_["name"];
+    std::string actual=cpar_[name];
     EXPECT_EQ(preexisting_string_val, actual);
 }
 
@@ -1278,7 +1276,7 @@ TEST_F(ParamsTest0, definedDEFdictWargCredefC) {
                  de::type_mismatch);
 
     ASSERT_TRUE(cpar_.exists(name));
-    std::string actual=cpar_["name"];
+    std::string actual=cpar_[name];
     EXPECT_EQ(preexisting_string_val, actual);
 }
 
@@ -1325,7 +1323,7 @@ TEST_F(ParamsTest0, definedDEFdictWargWredefN) {
     /* not redefined */
 
     ASSERT_TRUE(cpar_.exists(name));
-    std::string actual=cpar_["name"];
+    std::string actual=cpar_[name];
     EXPECT_EQ(preexisting_string_val, actual);
 }
 
@@ -1351,7 +1349,7 @@ TEST_F(ParamsTest0, definedDEFdictWargWredefC) {
                  de::type_mismatch);
 
     ASSERT_TRUE(cpar_.exists(name));
-    std::string actual=cpar_["name"];
+    std::string actual=cpar_[name];
     EXPECT_EQ(preexisting_string_val, actual);
 }
 
@@ -1376,7 +1374,7 @@ TEST_F(ParamsTest0, definedDEFdictWargWredefW) {
     EXPECT_TRUE(par_.define<std::string>(name, "NEW default value", "String arg with NEW default"));
 
     ASSERT_TRUE(cpar_.exists(name));
-    std::string actual=cpar_["name"];
+    std::string actual=cpar_[name];
     EXPECT_EQ(expected_arg_val, actual);
 }
 
