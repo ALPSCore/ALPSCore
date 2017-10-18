@@ -47,6 +47,7 @@ if (Testing AND NOT DocumentationOnly)
 endif(Testing AND NOT DocumentationOnly)
 
 # each module is defined as a cmake project in a subdirectory
+# also add in alpscore_config_main_() at common/cmake/ALPSCoreConfig.cmake.in
 add_subdirectory(utilities)
 alps_add_module(alps-utilities utilities)
 add_subdirectory(hdf5)
