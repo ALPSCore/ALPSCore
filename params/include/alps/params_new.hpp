@@ -176,6 +176,30 @@ namespace alps {
                     return result;
                 }
             };
+
+            template <typename T>
+            struct parse_string< std::vector<T> > {
+                static boost::optional< std::vector<T> > apply(const std::string& in) {
+                    typedef std::vector<T> value_type;
+                    typedef boost::optional<value_type> result_type;
+                    typedef boost::optional<T> optional_el_type;
+                    typedef std::string::const_iterator sit_type;
+                    value_type result_vec;
+                    result_type result;
+                    sit_type it1=in.begin();
+                    while (it1!=in.end()) {
+                        sit_type it2=find(it1, in.end(), ',');
+                        optional_el_type elem=parse_string<T>::apply(std::string(it1,it2));
+                        if (!elem) return result;
+                        result_vec.push_back(*elem);
+                        if (it2!=in.end()) ++it2;
+                        it1=it2;
+                    }
+                    result=result_vec;
+                    return result;
+                }
+            };
+
         } // ::detail
 
         template <typename T>
