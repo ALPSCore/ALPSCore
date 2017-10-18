@@ -9,15 +9,10 @@
     @brief Tests the behaviour of parameters
 */
 
+#include "./params_test_support.hpp"
+
 #include <alps/params_new/iniparser_interface.hpp>
 
-#include <alps/params_new.hpp>
-#include <alps/testing/unique_file.hpp>
-
-#include <gtest/gtest.h>
-
-#include <fstream>
-// #include <boost/scoped_ptr.hpp>
 #include <boost/foreach.hpp>
 
 namespace ap=alps::params_new_ns;
@@ -47,28 +42,6 @@ namespace test_data {
         "simple_string=simple2!\n"
 ;
 }
-
-class ParamsAndFile {
-    atst::unique_file uniqf_;
-    boost::scoped_ptr<params> params_ptr_;
-
-    void write_ini_(const std::string& content) const {
-        std::ofstream outf(uniqf_.name().c_str());
-        if (!outf) throw std::runtime_error("Can't open temporary file "+uniqf_.name());
-        outf << content;
-    }
-
-    public:
-    // Make param object from a given file content
-    ParamsAndFile(const char* ini_content) : uniqf_("params.ini.", atst::unique_file::KEEP_AFTER), params_ptr_(0)
-    {
-        write_ini_(ini_content);
-        params_ptr_.reset(new params(uniqf_.name()));
-    }
-
-    const std::string& fname() const { return uniqf_.name(); }
-    params* get_params_ptr() const { return params_ptr_.get(); }
-};
 
 
 // FIXME: This class tests implementation details,
@@ -126,6 +99,15 @@ TEST_F(ParamsTest0, numbersWithQuotes) {
     EXPECT_EQ(123456, actual);
 }
 
+TEST_F(ParamsTest0, sections) {
+    EXPECT_TRUE(par_.define<std::string>("section1:simple_string", "String in sec 1"));
+    EXPECT_EQ(std::string("simple1!"), cpar_["section1:simple_string"].as<std::string>());
+}
+
+TEST_F(ParamsTest0, duplicates) {
+    EXPECT_TRUE(par_.define<std::string>("duplicate", "Repeated string"));
+    EXPECT_EQ(std::string("duplicate2"), cpar_["duplicate"].as<std::string>());
+}
 
 /* ***** */
 /* The following 54 test cases are pre-generated using the script `params_def_gen_test_helper.sh`
