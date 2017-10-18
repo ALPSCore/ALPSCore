@@ -107,6 +107,14 @@ TEST_F(ParamsTest0, ctor) {
 }
 
 
+TEST_F(ParamsTest0, quotesAndSpaces) {
+    const std::string expected="string with spaces";
+    par_.define<std::string>("spaced_string", "Quoted string with spaces");
+    const std::string actual=cpar_["spaced_string"];
+    EXPECT_EQ(expected, actual);
+}
+
+
 /* ***** */
 /* The following 54 test cases are pre-generated using the script `params_def_gen_test_helper.sh`
    and manually edited.
