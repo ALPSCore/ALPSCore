@@ -165,6 +165,17 @@ namespace alps {
                     return in;
                 }
             };
+
+            template <>
+            struct parse_string<bool> {
+                static boost::optional<bool> apply(const std::string& in) {
+                    // FIXME: use C_locale and lowercase the string
+                    boost::optional<bool> result;
+                    if (in=="true") result=true;
+                    if (in=="false") result=false;
+                    return result;
+                }
+            };
         } // ::detail
 
         template <typename T>
