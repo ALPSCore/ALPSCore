@@ -7,7 +7,7 @@
 /** @file iniparser_interface.cpp
     Implements C++ class to work with C ini-file parser library */
 
-#include <alps/params_new/iniparser_interface.hpp>
+#include <alps/params/iniparser_interface.hpp>
 
 #include <iniparser.h>
 
@@ -18,7 +18,7 @@
 #include <boost/foreach.hpp>
 
 namespace alps {
-    namespace params_new_ns {
+    namespace params_ns {
         namespace detail {
 
             class ini_dict_impl {

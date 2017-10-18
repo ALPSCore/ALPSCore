@@ -16,7 +16,7 @@
 
 
 namespace alps {
-    namespace params_new_ns {
+    namespace params_ns {
         namespace detail {
             
             // Have namespaces handy
@@ -54,9 +54,9 @@ namespace alps {
                 None
                 >::type dict_all_types;
             
-        } // detail
-    } // params_new_ns
-}// alps
+        } // ::detail
+    } // ::params_ns
+}// ::alps
 
 
 #endif /* ALPS_PARAMS_PARAM_TYPES_HPP_2b33f1b375e64b6fa9adcb68d7de2407 */

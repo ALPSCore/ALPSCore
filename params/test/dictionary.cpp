@@ -9,7 +9,7 @@
     @brief Tests the behaviour of dictionary
 */
 
-#include <alps/params_new.hpp>
+#include <alps/params.hpp>
 #include <gtest/gtest.h>
 
 
@@ -23,7 +23,7 @@ using boost::integer_traits;
 #include <alps/testing/fp_compare.hpp>
 #include "./dict_values_test.hpp"
 
-namespace ap=alps::params_new_ns;
+namespace ap=alps::params_ns;
 using ap::dictionary;
 namespace de=ap::exception;
 namespace aptest=ap::testing;

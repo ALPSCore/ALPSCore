@@ -17,7 +17,7 @@
 
 
 namespace alps {
-    namespace params_new_ns {
+    namespace params_ns {
         namespace detail {
 
             class ini_dict_impl;

@@ -15,7 +15,7 @@
 #include <boost/integer_traits.hpp>
 
 namespace alps {
-  namespace params_new_ns {
+  namespace params_ns {
     namespace testing {
         using boost::integer_traits;
 
@@ -142,9 +142,9 @@ namespace alps {
             typedef int incompatible_type;
         };
         
-    } // namespace testing
-  } // namespace params_new_ns
-} // namespace alps
+    } // ::testing
+  } // ::params_ns
+} // ::alps
 
 
 #endif /* PARAMS_TEST_DICT_VALUES_TEST_a01595088dd442f7889035afaf1cbf07 */

@@ -10,7 +10,7 @@
 #define ALPS_PARAMS_DICT_EXCEPTIONS_HPP_046b246d331b4e54bedf6bfef6e54a71
 
 namespace alps {
-    namespace params_new_ns {
+    namespace params_ns {
 
         namespace exception {
             /// General exception (base class)

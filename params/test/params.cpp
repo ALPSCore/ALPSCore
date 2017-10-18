@@ -11,11 +11,11 @@
 
 #include "./params_test_support.hpp"
 
-#include <alps/params_new/iniparser_interface.hpp>
+#include <alps/params/iniparser_interface.hpp>
 
 #include <boost/foreach.hpp>
 
-namespace ap=alps::params_new_ns;
+namespace ap=alps::params_ns;
 using ap::dictionary;
 using ap::params;
 namespace de=ap::exception;

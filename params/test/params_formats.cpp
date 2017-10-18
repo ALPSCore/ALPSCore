@@ -13,7 +13,7 @@
 
 #include "./params_test_support.hpp"
 
-namespace ap=alps::params_new_ns;
+namespace ap=alps::params_ns;
 namespace de=ap::exception;
 using ap::params;
 
