@@ -116,7 +116,7 @@ namespace alps {
             void read_ini_file_(const std::string& inifile);
 
             template <typename T>
-            bool assign_to_name_(const std::string& name, const std::string& descr, const std::string& strval);
+            bool assign_to_name_(const std::string& name, const std::string& strval);
           public:
             /// Default ctor
             params() : dictionary(), raw_kv_content_() {}
@@ -130,6 +130,8 @@ namespace alps {
             /// Defines a parameter with a default; returns false on error, and records the error in the object
             template<typename T>
             bool define(const std::string& name, const T& defval, const std::string& descr);
+
+            const std::string get_descr(const std::string& name) const;
         };
         
     } // params_ns::
@@ -166,12 +168,11 @@ namespace alps {
         } // ::detail
 
         template <typename T>
-        bool params::assign_to_name_(const std::string& name, const std::string& descr, const std::string& strval)
+        bool params::assign_to_name_(const std::string& name, const std::string& strval)
         {
             boost::optional<T> result=detail::parse_string<T>::apply(strval);
             if (result) {
                 (*this)[name]=*result;
-                // FIXME! store description
                 return true;
             } else {
                 return false;
@@ -183,13 +184,14 @@ namespace alps {
         {
             if (this->exists(name) && !this->exists<T>(name))
                 throw exception::type_mismatch(name, "Parameter already defined with a different type");
-            
+
+            descriptions_[name]=descr;
             strmap::const_iterator it=raw_kv_content_.find(name);
             if (it==raw_kv_content_.end()) {
                 if (this->exists(name)) return true;
                 return false; // FIXME: and record the problem
             }
-            return assign_to_name_<T>(name, descr, it->second);
+            return assign_to_name_<T>(name, it->second);
         }
 
         template <typename T>
@@ -198,11 +200,12 @@ namespace alps {
             if (this->exists(name) && !this->exists<T>(name))
                 throw exception::type_mismatch(name, "Parameter already defined with a different type");
             
+            descriptions_[name]=descr;
             strmap::const_iterator it=raw_kv_content_.find(name);
             if (it==raw_kv_content_.end()) {
                 if (!this->exists(name)) (*this)[name]=defval;
             } else {
-                if (!assign_to_name_<T>(name, descr, it->second)) {
+                if (!assign_to_name_<T>(name, it->second)) {
                     // FIXME: record the problem
                     (*this)[name].clear();
                     return false;

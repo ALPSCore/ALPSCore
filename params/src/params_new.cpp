@@ -26,6 +26,11 @@ namespace alps {
             }
         }
 
+        const std::string params::get_descr(const std::string& name) const
+        {
+            strmap::const_iterator it=descriptions_.find(name);
+            return (descriptions_.end()==it)? std::string() : it->second;
+        }
     } // ::params_ns
 }// alps::
             
