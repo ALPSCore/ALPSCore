@@ -33,6 +33,8 @@ namespace test_data {
         "quoted_string=\"quoted\"\n"
         "spaced_string=\"string with spaces\"\n"
         "an_int=1234\n"
+        "spaced_int=\"123 456\"\n"
+        "quoted_int=\"123456\"\n"
         "# it's a comment\n"
         "duplicate=duplicate1\n"
         "duplicate=duplicate2\n"
@@ -112,6 +114,16 @@ TEST_F(ParamsTest0, quotesAndSpaces) {
     par_.define<std::string>("spaced_string", "Quoted string with spaces");
     const std::string actual=cpar_["spaced_string"];
     EXPECT_EQ(expected, actual);
+}
+
+TEST_F(ParamsTest0, numbersWithSpaces) {
+    EXPECT_FALSE(par_.define<int>("spaced_int", "Quoted int with spaces"));
+}
+
+TEST_F(ParamsTest0, numbersWithQuotes) {
+    EXPECT_TRUE(par_.define<int>("quoted_int", "Quoted int without spaces"));
+    const int actual=cpar_["quoted_int"];
+    EXPECT_EQ(123456, actual);
 }
 
 
