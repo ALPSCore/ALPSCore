@@ -9,7 +9,7 @@
 #include <alps/alea/util.hpp>
 #include <alps/alea/variance.hpp>
 
-#include <list>
+#include <vector>
 
 namespace alps { namespace alea {
 
@@ -53,7 +53,7 @@ public:
     typedef computed_cmember<var_type, autocorr_acc> eresult;
 
 public:
-    autocorr_acc(size_t size, size_t batch_size=1, size_t granularity=2);
+    autocorr_acc(size_t size=0, size_t batch_size=1, size_t granularity=2);
 
     size_t size() const { return level_.begin()->size(); }
 
@@ -61,10 +61,10 @@ public:
     autocorr_acc &operator<<(const S &obj)
     {
         computed_adapter<T, S> source(obj);
-        return *this << (computed<T> &) source;
+        return *this << (const computed<T> &) source;
     }
 
-    autocorr_acc &operator<<(computed<T> &source);
+    autocorr_acc &operator<<(const computed<T> &source);
 
     void reset();
 

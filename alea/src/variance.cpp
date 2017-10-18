@@ -64,7 +64,7 @@ void var_acc<T,Str>::reset()
 }
 
 template <typename T, typename Str>
-var_acc<T,Str> &var_acc<T,Str>::operator<<(computed<value_type> &source)
+var_acc<T,Str> &var_acc<T,Str>::operator<<(const computed<value_type> &source)
 {
     source.add_to(sink<T>(current_.sum().data(), current_.size()));
     ++current_.count();

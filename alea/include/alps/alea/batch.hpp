@@ -134,7 +134,7 @@ public:
     typedef computed_cmember<error_type, batch_acc> eresult;
 
 public:
-    batch_acc(size_t size, size_t num_batches=256, size_t base_size=1);
+    batch_acc(size_t size=0, size_t num_batches=256, size_t base_size=1);
 
     void reset();
 
@@ -144,10 +144,10 @@ public:
     batch_acc &operator<<(const S &obj)
     {
         computed_adapter<T, S> source(obj);
-        return *this << (computed<T> &) source;
+        return *this << (const computed<T> &) source;
     }
 
-    batch_acc &operator<<(computed<T> &source);
+    batch_acc &operator<<(const computed<T> &source);
 
     const galois_hopper &cursor() const { return cursor_; }
 

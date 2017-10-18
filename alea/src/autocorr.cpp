@@ -25,7 +25,7 @@ void autocorr_acc<T>::add_level()
 }
 
 template <typename T>
-autocorr_acc<T> &autocorr_acc<T>::operator<<(computed<T> &source)
+autocorr_acc<T> &autocorr_acc<T>::operator<<(const computed<T> &source)
 {
     assert(count_ < nextlevel_);
 

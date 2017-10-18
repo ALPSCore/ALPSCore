@@ -101,7 +101,7 @@ struct computed
      *     for (size_t i = 0; i != size(); ++i)
      *         out[i] += in(i);
      */
-    virtual void add_to(sink<T> out) = 0;
+    virtual void add_to(sink<T> out) const = 0;
 
     /** Returns a clone of the estimator (optional) */
     virtual computed *clone() { throw unsupported_operation(); }
@@ -113,14 +113,14 @@ struct computed
     //   template <typename U>  U as();
 
     /** Allow for default conversions for convenience */
-    operator std::vector<T>()
+    operator std::vector<T>() const
     {
         std::vector<T> res(size(), 0);
         add_to(sink<T>(&res[0], res.size())); // TODO: data
         return res;
     }
 
-    operator T()
+    operator T() const
     {
         T res;
         add_to(sink<T>(&res, 1));
@@ -184,13 +184,13 @@ struct reducer
  */
 struct serializer
 {
-    virtual void write(const std::string &key, computed<double> &value) = 0;
+    virtual void write(const std::string &key, const computed<double> &value) = 0;
 
-    virtual void write(const std::string &key, computed<std::complex<double> > &value) = 0;
+    virtual void write(const std::string &key, const computed<std::complex<double> > &value) = 0;
 
-    virtual void write(const std::string &key, computed<complex_op<double> > &value) = 0;
+    virtual void write(const std::string &key, const computed<complex_op<double> > &value) = 0;
 
-    virtual void write(const std::string &key, computed<long> &value) = 0;
+    virtual void write(const std::string &key, const computed<long> &value) = 0;
 
     virtual ~serializer() { }
 };

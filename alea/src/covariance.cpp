@@ -62,7 +62,7 @@ void cov_acc<T,Str>::reset()
 }
 
 template <typename T, typename Str>
-cov_acc<T,Str> &cov_acc<T,Str>::operator<<(computed<T> &source)
+cov_acc<T,Str> &cov_acc<T,Str>::operator<<(const computed<T> &source)
 {
     source.add_to(sink<T>(current_.sum().data(), current_.size()));
     ++current_.count();

@@ -34,7 +34,7 @@ public:
     typedef typename Strategy::var_type var_type;
 
 public:
-    var_data(size_t size);
+    var_data(size_t size=0);
 
     void reset();
 
@@ -102,10 +102,10 @@ public:
     var_acc &operator<<(const S &obj)
     {
         computed_adapter<value_type, S> source(obj);
-        return *this << (computed<value_type> &) source;
+        return *this << (const computed<value_type> &) source;
     }
 
-    var_acc &operator<<(computed<value_type> &source);
+    var_acc &operator<<(const computed<value_type> &source);
 
     size_t count() const { return store_.count(); }
 

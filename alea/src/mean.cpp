@@ -58,7 +58,6 @@ void mean_data<T>::reduce(reducer &r)
 template <typename T>
 void mean_data<T>::serialize(serializer &s) const
 {
-    // FIXME: constness
     computed_adapter<T, column<T> > data_ad(data_);
     computed_adapter<long, long> count_ad(count_);
 
@@ -72,7 +71,7 @@ template class mean_data<std::complex<double> >;
 
 
 template <typename T>
-mean_acc<T> &mean_acc<T>::operator<<(computed<T> &source)
+mean_acc<T> &mean_acc<T>::operator<<(const computed<T> &source)
 {
     store_.unlock_sum();
     source.add_to(sink<T>(store_.data().data(), store_.size()));

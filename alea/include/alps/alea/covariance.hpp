@@ -97,7 +97,7 @@ public:
     typedef computed_cmember<var_type, cov_acc> vresult;
 
 public:
-    cov_acc(size_t size, size_t bundle_size=1);
+    cov_acc(size_t size=0, size_t bundle_size=1);
 
     size_t size() const { return store_.size(); }
 
@@ -105,10 +105,10 @@ public:
     cov_acc &operator<<(const S &obj)
     {
         computed_adapter<T, S> source(obj);
-        return *this << (computed<T> &) source;
+        return *this << (const computed<T> &) source;
     }
 
-    cov_acc &operator<<(computed<T> &source);
+    cov_acc &operator<<(const computed<T> &source);
 
     void reset();
 

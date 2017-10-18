@@ -72,16 +72,16 @@ template <typename T>
 class mean_acc
 {
 public:
-    mean_acc(size_t size) : store_(size) { }
+    mean_acc(size_t size=0) : store_(size) { }
 
     template <typename S>
     mean_acc &operator<<(const S &obj)
     {
         computed_adapter<T, S> source(obj);
-        return *this << (computed<T> &) source;
+        return *this << (const computed<T> &) source;
     }
 
-    mean_acc &operator<<(computed<T> &source);
+    mean_acc &operator<<(const computed<T> &source);
 
     size_t count() const { return store_.count(); }
 

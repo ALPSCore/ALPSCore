@@ -123,7 +123,7 @@ void batch_acc<T>::reset()
 }
 
 template <typename T>
-batch_acc<T> &batch_acc<T>::operator<<(computed<T> &source)
+batch_acc<T> &batch_acc<T>::operator<<(const computed<T> &source)
 {
     // batch is full, move the cursor.
     // Doing this before the addition ensures no empty batches.

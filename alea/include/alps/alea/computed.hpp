@@ -44,7 +44,7 @@ public:
 
     size_t size() const { return 1; }
 
-    void add_to( sink<T> out)
+    void add_to(sink<T> out) const
     {
         if (out.size() != 1)
             throw size_mismatch();
@@ -69,7 +69,7 @@ public:
 
     size_t size() const { return in_.size(); }
 
-    void add_to( sink<T> out)
+    void add_to(sink<T> out) const
     {
         if (out.size() != in_.size())
             throw size_mismatch();
@@ -96,7 +96,7 @@ public:
 
     size_t size() const { return in_.size(); }
 
-    void add_to( sink<T> out)
+    void add_to(sink<T> out) const
     {
         if (out.size() != (size_t)in_.rows())
             throw size_mismatch();
@@ -108,40 +108,6 @@ public:
 
 private:
     const column<T> &in_;
-};
-
-/**
- * Proxy object for computed results.
- */
-template <typename T, typename Parent>
-class computed_member
-    : public computed<T>
-{
-public:
-    typedef T value_type;
-    typedef void (Parent::*adder_type)(sink<T>);
-
-public:
-    computed_member(Parent &parent, adder_type adder, size_t size)
-        : parent_(parent)
-        , adder_(adder)
-        , size_(size)
-    { }
-
-    size_t size() const { return size_; }
-
-    void add_to(sink<T> out) { (parent_.*adder_)(out); }
-
-    const Parent &parent() const { return parent_; }
-
-    const adder_type &adder() const { return adder_; }
-
-    ~computed_member() { }
-
-private:
-    Parent &parent_;
-    adder_type adder_;
-    size_t size_;
 };
 
 /**
@@ -164,7 +130,7 @@ public:
 
     size_t size() const { return size_; }
 
-    void add_to(sink<T> out) { (parent_.*adder_)(out); }
+    void add_to(sink<T> out) const { (parent_.*adder_)(out); }
 
     void fast_add_to(sink<T> out) { (parent_.*adder_)(out); }
 
