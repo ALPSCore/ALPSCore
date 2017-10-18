@@ -43,7 +43,7 @@ template <typename C>
 class TestCallback : public ::testing::Test {
   public:
     typedef C callback_type;
-    static const std::size_t TIMELIMIT=3; 
+    static const std::size_t TIMELIMIT=1;
     alps::params param_;
     longish_sim sim_;
 

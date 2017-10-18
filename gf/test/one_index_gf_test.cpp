@@ -31,18 +31,18 @@ TEST_F(OneIndexGFTest,saveload)
 {
     namespace g=alps::gf;
     {
-        alps::hdf5::archive oar("gf.h5","w");
+        alps::hdf5::archive oar("gf_1i_saveload.h5","w");
         gf(g::matsubara_index(4))=std::complex<double>(7., 3.);
         gf.save(oar,"/gf");
     }
     {
-        alps::hdf5::archive iar("gf.h5");
+        alps::hdf5::archive iar("gf_1i_saveload.h5");
         gf2.load(iar,"/gf");
     }
     EXPECT_EQ(7, gf2(g::matsubara_index(4)).real());
     EXPECT_EQ(3, gf2(g::matsubara_index(4)).imag());
     {
-        alps::hdf5::archive oar("gf.h5","rw");
+        alps::hdf5::archive oar("gf_1i_saveload.h5","rw");
         oar["/gf/version/major"]<<7;
         EXPECT_THROW(gf2.load(oar,"/gf"),std::runtime_error);
     }
@@ -54,18 +54,18 @@ TEST_F(OneIndexGFTest,saveloadstream)
 {
     namespace g=alps::gf;
     {
-        alps::hdf5::archive oar("gf.h5","w");
+        alps::hdf5::archive oar("gf_1i_saveloadstr.h5","w");
         gf(g::matsubara_index(4))=std::complex<double>(7., 3.);
         oar["/gf"] << gf;
     }
     {
-        alps::hdf5::archive iar("gf.h5");
+        alps::hdf5::archive iar("gf_1i_saveloadstr.h5");
         iar["/gf"] >> gf2;
     }
     EXPECT_EQ(7, gf2(g::matsubara_index(4)).real());
     EXPECT_EQ(3, gf2(g::matsubara_index(4)).imag());
     {
-        alps::hdf5::archive oar("gf.h5","rw");
+        alps::hdf5::archive oar("gf_1i_saveloadstr.h5","rw");
         oar["/gf/version/major"]<<7;
         EXPECT_THROW(oar["/gf"]>>gf2, std::runtime_error);
     }
@@ -165,11 +165,11 @@ TEST_F(OneIndexGFTest, DefaultConstructive)
     gf_type gf_empty;
     EXPECT_THROW(gf_empty.norm(), std::runtime_error);
     {
-        alps::hdf5::archive oar("gf.h5","w");
+        alps::hdf5::archive oar("gf_1i_defconstr.h5","w");
         oar["/gf"] << gf;
     }
     {
-        alps::hdf5::archive iar("gf.h5");
+        alps::hdf5::archive iar("gf_1i_defconstr.h5");
         iar["/gf"] >> gf_empty;
     }
     EXPECT_NO_THROW(gf_empty.norm());
