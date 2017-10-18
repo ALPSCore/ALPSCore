@@ -69,6 +69,14 @@ private:
     size_t count_;
 };
 
+template <typename T, typename Strategy>
+struct traits< cov_data<T,Strategy> >
+{
+    typedef typename Strategy::value_type value_type;
+    typedef typename Strategy::var_type var_type;
+    typedef typename Strategy::cov_type cov_type;
+};
+
 extern template class cov_data<double>;
 extern template class cov_data<std::complex<double> >;
 extern template class cov_data<std::complex<double>, elliptic_var<std::complex<double> > >;
@@ -131,6 +139,14 @@ private:
     bundle<value_type> current_;
     cov_data<value_type, Strategy> store_;
     cov_acc *uplevel_;
+};
+
+template <typename T, typename Strategy>
+struct traits< cov_acc<T,Strategy> >
+{
+    typedef typename Strategy::value_type value_type;
+    typedef typename Strategy::var_type var_type;
+    typedef typename Strategy::cov_type cov_type;
 };
 
 extern template class cov_acc<double>;

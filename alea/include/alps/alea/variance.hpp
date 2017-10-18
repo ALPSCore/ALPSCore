@@ -68,11 +68,16 @@ private:
     size_t count_;
 };
 
+template <typename T, typename Strategy>
+struct traits< var_data<T,Strategy> >
+{
+    typedef typename Strategy::value_type value_type;
+    typedef typename Strategy::var_type var_type;
+};
+
 extern template class var_data<double>;
 extern template class var_data<std::complex<double> >;
 extern template class var_data<std::complex<double>, elliptic_var<std::complex<double> > >;
-
-
 
 /**
  * Accumulator which tracks the mean and a naive variance estimate.
@@ -125,6 +130,13 @@ private:
     bundle<value_type> current_;
     var_data<value_type, Strategy> store_;
     var_acc *uplevel_;
+};
+
+template <typename T, typename Strategy>
+struct traits< var_acc<T,Strategy> >
+{
+    typedef typename Strategy::value_type value_type;
+    typedef typename Strategy::var_type var_type;
 };
 
 extern template class var_acc<double>;

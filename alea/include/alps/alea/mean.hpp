@@ -55,6 +55,12 @@ private:
     size_t count_;
 };
 
+template <typename T>
+struct traits< mean_data<T> >
+{
+    typedef T value_type;
+};
+
 extern template class mean_data<double>;
 extern template class mean_data<std::complex<double> >;
 
@@ -90,6 +96,12 @@ protected:
 
 private:
     mean_data<T> store_;
+};
+
+template <typename T>
+struct traits< mean_acc<T> >
+{
+    typedef T value_type;
 };
 
 extern template class mean_acc<double>;

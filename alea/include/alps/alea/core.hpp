@@ -26,6 +26,9 @@ struct size_mismatch : public std::exception { };
 /** Estimator does not support this operation */
 struct unsupported_operation : public std::exception { };
 
+template <typename T>
+struct traits;
+
 /**
  * Data sink as a thin wrapper around a continuous array.
  *

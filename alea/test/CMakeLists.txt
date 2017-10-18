@@ -1,7 +1,8 @@
 include(ALPSEnableTests)
 
 set (test_src
-     # List of files
+     twogauss
+     galois
     )
 
 #add tests for MPI

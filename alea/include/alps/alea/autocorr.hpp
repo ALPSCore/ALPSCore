@@ -100,6 +100,15 @@ private:
     std::vector< var_acc<T> > level_;    // dangerous, but convenient ...
 };
 
+
+template <typename T>
+struct traits< autocorr_acc<T> >
+{
+    typedef T value_type;
+    typedef typename make_real<T>::type var_type;
+    typedef T cov_type;
+};
+
 extern template class autocorr_acc<double>;
 extern template class autocorr_acc<std::complex<double> >;
 
