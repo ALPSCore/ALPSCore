@@ -28,8 +28,8 @@ namespace alps {
 
         const std::string params::get_descr(const std::string& name) const
         {
-            strmap::const_iterator it=descriptions_.find(name);
-            return (descriptions_.end()==it)? std::string() : it->second;
+            td_map_type::const_iterator it=td_map_.find(name);
+            return (td_map_.end()==it)? std::string() : it->second.descr;
         }
     } // ::params_ns
 }// alps::

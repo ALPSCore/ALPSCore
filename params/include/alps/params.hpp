@@ -19,7 +19,6 @@
 #include "./params/dict_exceptions.hpp"
 #include "./params/dict_value.hpp"
 
-
 namespace alps {
     namespace params_ns {
 
@@ -109,27 +108,45 @@ namespace alps {
           private:
             typedef std::map<std::string,std::string> strmap;
             // typedef std::vector<std::string> strvec;
-            strmap raw_kv_content_;
-            strmap descriptions_;
-            // strvec def_errors_;
             
+            struct td_pair {
+                std::string typestr;
+                std::string descr;
+                td_pair(const std::string& t, const std::string& d) : typestr(t), descr(d) {}
+            };
+            typedef std::map<std::string, td_pair> td_map_type;
+            
+            
+            strmap raw_kv_content_;
+            td_map_type td_map_;
+            
+            int err_status_;
+
             void read_ini_file_(const std::string& inifile);
 
             template <typename T>
             bool assign_to_name_(const std::string& name, const std::string& strval);
+
+            /// Does the job of define(), returns false if the name is missing in raw_argsand default must be checked
+            template <typename T>
+            bool define_(const std::string& name, const std::string& descr);
+            
           public:
             /// Default ctor
-            params() : dictionary(), raw_kv_content_() {}
+            params() : dictionary(), raw_kv_content_(), td_map_(), err_status_(0) {}
 
-            params(const std::string& inifile) : dictionary(), raw_kv_content_()  { read_ini_file_(inifile); }
+            params(const std::string& inifile) : dictionary(), raw_kv_content_(), td_map_(), err_status_(0)  { read_ini_file_(inifile); }
 
+            /// No-errors status
+            bool ok() const { return 0==err_status_; }
+            
             /// Defines a parameter; returns false on error, and records the error in the object
             template<typename T>
-            bool define(const std::string& name, const std::string& descr);
+            params& define(const std::string& name, const std::string& descr);
 
             /// Defines a parameter with a default; returns false on error, and records the error in the object
             template<typename T>
-            bool define(const std::string& name, const T& defval, const std::string& descr);
+            params& define(const std::string& name, const T& defval, const std::string& descr);
 
             const std::string get_descr(const std::string& name) const;
 
@@ -220,38 +237,49 @@ namespace alps {
         }
         
         template <typename T>
-        bool params::define(const std::string& name, const std::string& descr)
+        bool params::define_(const std::string& name, const std::string& descr)
         {
             if (this->exists(name) && !this->exists<T>(name))
-                throw exception::type_mismatch(name, "Parameter already defined with a different type");
+                throw exception::type_mismatch(name, "Parameter already in dictionary with a different type");
 
-            descriptions_[name]=descr;
+            td_map_type::iterator td_it=td_map_.find(name); // FIXME: use lower-bound instead
+            if (td_it!=td_map_.end()) {
+                // std::cout << "DEBUG: err_stat_=" << err_status_ <<" redefinition for '" << name << "' , td_it->second.typestr='" << td_it->second.typestr << "' td_it->second.descr='" << td_it->second.descr << std::endl;
+                // FIXME: use pretty-typename!
+                if (td_it->second.typestr != typeid(T).name()) throw exception::type_mismatch(name, "Parameter already defined with a different type");
+                td_it->second.descr=descr;
+                return true;
+            }
+            td_map_.insert(std::make_pair(name, td_pair(typeid(T).name(), descr))); // FIXME: use pretty-typename!
+
             strmap::const_iterator it=raw_kv_content_.find(name);
             if (it==raw_kv_content_.end()) {
                 if (this->exists(name)) return true;
-                return false; // FIXME: and record the problem
+                return false; // need to decide whether the default available
             }
-            return assign_to_name_<T>(name, it->second);
+            if (!assign_to_name_<T>(name, it->second)) {
+                ++err_status_; // FIXME: record the problem: cannot parse
+                (*this)[name].clear();
+            }
+            return true;
         }
 
         template <typename T>
-        bool params::define(const std::string& name, const T& defval, const std::string& descr)
+        params& params::define(const std::string& name, const std::string& descr)
         {
-            if (this->exists(name) && !this->exists<T>(name))
-                throw exception::type_mismatch(name, "Parameter already defined with a different type");
-            
-            descriptions_[name]=descr;
-            strmap::const_iterator it=raw_kv_content_.find(name);
-            if (it==raw_kv_content_.end()) {
-                if (!this->exists(name)) (*this)[name]=defval;
-            } else {
-                if (!assign_to_name_<T>(name, it->second)) {
-                    // FIXME: record the problem
-                    (*this)[name].clear();
-                    return false;
-                }
+            if (!define_<T>(name, descr)) {
+                if (!this->exists<T>(name)) ++err_status_; // FIXME: record the problem: missing required param
             }
-            return true;
+            return *this;
+        }
+        
+         template <typename T>
+         params& params::define(const std::string& name, const T& defval, const std::string& descr)
+         {
+            if (!define_<T>(name, descr)) {
+                (*this)[name]=defval;
+            }
+            return *this;
         }
 
     } // params_ns::

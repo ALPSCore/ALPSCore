@@ -90,22 +90,22 @@ TEST_F(ParamsTest0, quotesAndSpaces) {
 }
 
 TEST_F(ParamsTest0, numbersWithSpaces) {
-    EXPECT_FALSE(par_.define<int>("spaced_int", "Quoted int with spaces"));
+    EXPECT_FALSE(par_.define<int>("spaced_int", "Quoted int with spaces").ok());
 }
 
 TEST_F(ParamsTest0, numbersWithQuotes) {
-    EXPECT_TRUE(par_.define<int>("quoted_int", "Quoted int without spaces"));
+    EXPECT_TRUE(par_.define<int>("quoted_int", "Quoted int without spaces").ok());
     const int actual=cpar_["quoted_int"];
     EXPECT_EQ(123456, actual);
 }
 
 TEST_F(ParamsTest0, sections) {
-    EXPECT_TRUE(par_.define<std::string>("section1:simple_string", "String in sec 1"));
+    EXPECT_TRUE(par_.define<std::string>("section1:simple_string", "String in sec 1").ok());
     EXPECT_EQ(std::string("simple1!"), cpar_["section1:simple_string"].as<std::string>());
 }
 
 TEST_F(ParamsTest0, duplicates) {
-    EXPECT_TRUE(par_.define<std::string>("duplicate", "Repeated string"));
+    EXPECT_TRUE(par_.define<std::string>("duplicate", "Repeated string").ok());
     EXPECT_EQ(std::string("duplicate2"), cpar_["duplicate"].as<std::string>());
 }
 
@@ -148,7 +148,7 @@ TEST_F(ParamsTest0, definedNODEFdictNargNredefN) {
 
     EXPECT_EQ("", cpar_.get_descr(name));
 
-    EXPECT_FALSE(par_.define<int>(name, "Int arg without default"));
+    EXPECT_FALSE(par_.define<int>(name, "Int arg without default").ok());
     EXPECT_EQ("Int arg without default", cpar_.get_descr(name));
 
     /* not redefined */
@@ -168,16 +168,14 @@ TEST_F(ParamsTest0, definedNODEFdictNargNredefC) {
 
     /* not in dict */
 
-    EXPECT_FALSE(par_.define<int>(name, "Int arg without default"));
+    EXPECT_FALSE(par_.define<int>(name, "Int arg without default").ok());
     EXPECT_EQ("Int arg without default", cpar_.get_descr(name));
 
     const int redef_int_value=9999;
-    EXPECT_TRUE(par_.define<int>(name, redef_int_value, "int argument with a default"));
+    EXPECT_FALSE(par_.define<int>(name, redef_int_value, "int argument with a default").ok());
     EXPECT_EQ("int argument with a default", cpar_.get_descr(name));
 
-    ASSERT_TRUE(cpar_.exists(name));
-    int actual=cpar_[name];
-    EXPECT_EQ(redef_int_value, actual);
+    ASSERT_FALSE(cpar_.exists(name));
 }
 
 /*
@@ -192,15 +190,13 @@ TEST_F(ParamsTest0, definedNODEFdictNargNredefW) {
 
     /* not in dict */
 
-    EXPECT_FALSE(par_.define<int>(name, "Int arg without default"));
+    EXPECT_FALSE(par_.define<int>(name, "Int arg without default").ok());
     EXPECT_EQ("Int arg without default", cpar_.get_descr(name));
 
-    EXPECT_TRUE(par_.define<std::string>(name, "NEW default value", "String arg with NEW default"));
-    EXPECT_EQ("String arg with NEW default", cpar_.get_descr(name));
+    EXPECT_THROW(par_.define<std::string>(name, "NEW default value", "String arg with NEW default"),
+                 de::type_mismatch);
 
-    ASSERT_TRUE(cpar_.exists(name));
-    std::string actual=cpar_[name];
-    EXPECT_EQ("NEW default value", actual);
+    ASSERT_FALSE(cpar_.exists(name));
 }
 
 /*
@@ -216,7 +212,7 @@ TEST_F(ParamsTest0, definedNODEFdictNargCredefN) {
 
     /* not in dict */
 
-    EXPECT_TRUE(par_.define<int>(name, "Int arg without default"));
+     EXPECT_TRUE(par_.define<int>(name, "Int arg without default").ok());
     EXPECT_EQ("Int arg without default", cpar_.get_descr(name));
 
     /* not redefined */
@@ -235,15 +231,15 @@ TEST_F(ParamsTest0, definedNODEFdictNargCredefN) {
 */
 TEST_F(ParamsTest0, definedNODEFdictNargCredefC) {
     std::string name="an_int";
-     const int expected_arg_val=1234;
+    const int expected_arg_val=1234;
 
     /* not in dict */
 
-    EXPECT_TRUE(par_.define<int>(name, "Int arg without default"));
+    EXPECT_TRUE(par_.define<int>(name, "Int arg without default").ok());
     EXPECT_EQ("Int arg without default", cpar_.get_descr(name));
 
     const int redef_int_value=9999;
-    EXPECT_TRUE(par_.define<int>(name, redef_int_value, "int argument with a default"));
+    EXPECT_TRUE(par_.define<int>(name, redef_int_value, "int argument with a default").ok());
     EXPECT_EQ("int argument with a default", cpar_.get_descr(name));
 
     ASSERT_TRUE(cpar_.exists(name));
@@ -260,11 +256,11 @@ TEST_F(ParamsTest0, definedNODEFdictNargCredefC) {
 */
 TEST_F(ParamsTest0, definedNODEFdictNargCredefW) {
     std::string name="an_int";
-     const int expected_arg_val=1234;
+    const int expected_arg_val=1234;
 
     /* not in dict */
 
-    EXPECT_TRUE(par_.define<int>(name, "Int arg without default"));
+    EXPECT_TRUE(par_.define<int>(name, "Int arg without default").ok());
     EXPECT_EQ("Int arg without default", cpar_.get_descr(name));
 
     EXPECT_THROW(par_.define<std::string>(name, "NEW default value", "String arg with NEW default"),
@@ -288,7 +284,7 @@ TEST_F(ParamsTest0, definedNODEFdictNargWredefN) {
 
     /* not in dict */
 
-    EXPECT_FALSE(par_.define<int>(name, "Int arg without default"));
+    EXPECT_FALSE(par_.define<int>(name, "Int arg without default").ok());
     EXPECT_EQ("Int arg without default", cpar_.get_descr(name));
 
     /* not redefined */
@@ -308,11 +304,11 @@ TEST_F(ParamsTest0, definedNODEFdictNargWredefC) {
 
     /* not in dict */
 
-    EXPECT_FALSE(par_.define<int>(name, "Int arg without default"));
+    EXPECT_FALSE(par_.define<int>(name, "Int arg without default").ok());
     EXPECT_EQ("Int arg without default", cpar_.get_descr(name));
 
     const int redef_int_value=9999;
-    EXPECT_FALSE(par_.define<int>(name, redef_int_value, "int argument with a default"));
+    EXPECT_FALSE(par_.define<int>(name, redef_int_value, "int argument with a default").ok());
     EXPECT_EQ("int argument with a default", cpar_.get_descr(name));
 
     ASSERT_FALSE(cpar_.exists(name));
@@ -330,15 +326,13 @@ TEST_F(ParamsTest0, definedNODEFdictNargWredefW) {
 
     /* not in dict */
 
-    EXPECT_FALSE(par_.define<int>(name, "Int arg without default"));
+    EXPECT_FALSE(par_.define<int>(name, "Int arg without default").ok());
     EXPECT_EQ("Int arg without default", cpar_.get_descr(name));
 
-    EXPECT_TRUE(par_.define<std::string>(name, "NEW default value", "String arg with NEW default"));
-    EXPECT_EQ("String arg with NEW default", cpar_.get_descr(name));
+    EXPECT_THROW(par_.define<std::string>(name, "NEW default value", "String arg with NEW default"),
+                 de::type_mismatch);
 
-    ASSERT_TRUE(cpar_.exists(name));
-    std::string actual=cpar_[name];
-    EXPECT_EQ("simple!", actual);
+    ASSERT_FALSE(cpar_.exists(name));
 }
 
 /*
@@ -356,7 +350,7 @@ TEST_F(ParamsTest0, definedNODEFdictCargNredefN) {
 
     EXPECT_EQ("", cpar_.get_descr(name));
     
-    EXPECT_TRUE(par_.define<int>(name, "Int arg without default"));
+    EXPECT_TRUE(par_.define<int>(name, "Int arg without default").ok());
     EXPECT_EQ("Int arg without default", cpar_.get_descr(name));
 
     /* not redefined */
@@ -379,11 +373,11 @@ TEST_F(ParamsTest0, definedNODEFdictCargNredefC) {
     const int preexisting_int_val=7777;
     par_[name]=preexisting_int_val;
 
-    EXPECT_TRUE(par_.define<int>(name, "Int arg without default"));
+    EXPECT_TRUE(par_.define<int>(name, "Int arg without default").ok());
     EXPECT_EQ("Int arg without default", cpar_.get_descr(name));
 
     const int redef_int_value=9999;
-    EXPECT_TRUE(par_.define<int>(name, redef_int_value, "int argument with a default"));
+    EXPECT_TRUE(par_.define<int>(name, redef_int_value, "int argument with a default").ok());
     EXPECT_EQ("int argument with a default", cpar_.get_descr(name));
 
     ASSERT_TRUE(cpar_.exists(name));
@@ -404,7 +398,7 @@ TEST_F(ParamsTest0, definedNODEFdictCargNredefW) {
     const int preexisting_int_val=7777;
     par_[name]=preexisting_int_val;
 
-    EXPECT_TRUE(par_.define<int>(name, "Int arg without default"));
+    EXPECT_TRUE(par_.define<int>(name, "Int arg without default").ok());
     EXPECT_EQ("Int arg without default", cpar_.get_descr(name));
 
     EXPECT_THROW(par_.define<std::string>(name, "NEW default value", "String arg with NEW default"),
@@ -430,7 +424,7 @@ TEST_F(ParamsTest0, definedNODEFdictCargCredefN) {
     const int preexisting_int_val=7777;
     par_[name]=preexisting_int_val;
 
-    EXPECT_TRUE(par_.define<int>(name, "Int arg without default"));
+    EXPECT_TRUE(par_.define<int>(name, "Int arg without default").ok());
     EXPECT_EQ("Int arg without default", cpar_.get_descr(name));
 
     /* not redefined */
@@ -454,11 +448,11 @@ TEST_F(ParamsTest0, definedNODEFdictCargCredefC) {
     const int preexisting_int_val=7777;
     par_[name]=preexisting_int_val;
 
-    EXPECT_TRUE(par_.define<int>(name, "Int arg without default"));
+    EXPECT_TRUE(par_.define<int>(name, "Int arg without default").ok());
     EXPECT_EQ("Int arg without default", cpar_.get_descr(name));
 
     const int redef_int_value=9999;
-    EXPECT_TRUE(par_.define<int>(name, redef_int_value, "int argument with a default"));
+    EXPECT_TRUE(par_.define<int>(name, redef_int_value, "int argument with a default").ok());
     EXPECT_EQ("int argument with a default", cpar_.get_descr(name));
 
     ASSERT_TRUE(cpar_.exists(name));
@@ -480,7 +474,7 @@ TEST_F(ParamsTest0, definedNODEFdictCargCredefW) {
     const int preexisting_int_val=7777;
     par_[name]=preexisting_int_val;
 
-    EXPECT_TRUE(par_.define<int>(name, "Int arg without default"));
+    EXPECT_TRUE(par_.define<int>(name, "Int arg without default").ok());
     EXPECT_EQ("Int arg without default", cpar_.get_descr(name));
 
     EXPECT_THROW(par_.define<std::string>(name, "NEW default value", "String arg with NEW default"),
@@ -505,14 +499,12 @@ TEST_F(ParamsTest0, definedNODEFdictCargWredefN) {
     const int preexisting_int_val=7777;
     par_[name]=preexisting_int_val;
 
-    EXPECT_FALSE(par_.define<int>(name, "Int arg without default"));
+    EXPECT_FALSE(par_.define<int>(name, "Int arg without default").ok());
     EXPECT_EQ("Int arg without default", cpar_.get_descr(name));
 
     /* not redefined */
 
-    ASSERT_TRUE(cpar_.exists(name));
-    int actual=cpar_[name];
-    EXPECT_EQ(preexisting_int_val, actual);
+    ASSERT_FALSE(cpar_.exists(name));
 }
 
 /*
@@ -528,11 +520,11 @@ TEST_F(ParamsTest0, definedNODEFdictCargWredefC) {
     const int preexisting_int_val=7777;
     par_[name]=preexisting_int_val;
 
-    EXPECT_FALSE(par_.define<int>(name, "Int arg without default"));
+    EXPECT_FALSE(par_.define<int>(name, "Int arg without default").ok());
     EXPECT_EQ("Int arg without default", cpar_.get_descr(name));
 
     const int redef_int_value=9999;
-    EXPECT_FALSE(par_.define<int>(name, redef_int_value, "int argument with a default"));
+    EXPECT_FALSE(par_.define<int>(name, redef_int_value, "int argument with a default").ok());
     EXPECT_EQ("int argument with a default", cpar_.get_descr(name));
 
     ASSERT_FALSE(cpar_.exists(name));
@@ -551,16 +543,14 @@ TEST_F(ParamsTest0, definedNODEFdictCargWredefW) {
     const int preexisting_int_val=7777;
     par_[name]=preexisting_int_val;
 
-    EXPECT_FALSE(par_.define<int>(name, "Int arg without default"));
+    EXPECT_FALSE(par_.define<int>(name, "Int arg without default").ok());
     EXPECT_EQ("Int arg without default", cpar_.get_descr(name));
 
     EXPECT_THROW(par_.define<std::string>(name, "NEW default value", "String arg with NEW default"),
                  de::type_mismatch);
     EXPECT_EQ("Int arg without default", cpar_.get_descr(name));
 
-    ASSERT_TRUE(cpar_.exists(name));
-    int actual=cpar_[name];
-    EXPECT_EQ(preexisting_int_val, actual);
+    ASSERT_FALSE(cpar_.exists(name));
 }
 
 /*
@@ -631,7 +621,7 @@ TEST_F(ParamsTest0, definedNODEFdictWargNredefW) {
                  de::type_mismatch);
     EXPECT_EQ("", cpar_.get_descr(name));
 
-    EXPECT_TRUE(par_.define<std::string>(name, "NEW default value", "String arg with NEW default"));
+    EXPECT_TRUE(par_.define<std::string>(name, "NEW default value", "String arg with NEW default").ok());
     EXPECT_EQ("String arg with NEW default", cpar_.get_descr(name));
 
     ASSERT_TRUE(cpar_.exists(name));
@@ -708,7 +698,7 @@ TEST_F(ParamsTest0, definedNODEFdictWargCredefW) {
     EXPECT_EQ("", cpar_.get_descr(name));
 
     const int redef_int_value=9999;
-    EXPECT_FALSE(par_.define<int>(name, redef_int_value, "int argument with a default"));
+    EXPECT_FALSE(par_.define<int>(name, redef_int_value, "int argument with a default").ok());
     EXPECT_EQ("int argument with a default", cpar_.get_descr(name));
 
     ASSERT_FALSE(cpar_.exists(name));
@@ -782,7 +772,7 @@ TEST_F(ParamsTest0, definedNODEFdictWargWredefW) {
                  de::type_mismatch);
     EXPECT_EQ("", cpar_.get_descr(name));
 
-    EXPECT_TRUE(par_.define<std::string>(name, "NEW default value", "String arg with NEW default"));
+    EXPECT_TRUE(par_.define<std::string>(name, "NEW default value", "String arg with NEW default").ok());
     EXPECT_EQ("String arg with NEW default", cpar_.get_descr(name));
 
     ASSERT_TRUE(cpar_.exists(name));
@@ -803,7 +793,7 @@ TEST_F(ParamsTest0, definedDEFdictNargNredefN) {
     /* not in dict */
 
     const int deflt_int_val=1111;
-    EXPECT_TRUE(par_.define<int>(name, deflt_int_val, "Int arg with default"));
+    EXPECT_TRUE(par_.define<int>(name, deflt_int_val, "Int arg with default").ok());
     EXPECT_EQ("Int arg with default", cpar_.get_descr(name));
 
     /* not redefined */
@@ -826,11 +816,11 @@ TEST_F(ParamsTest0, definedDEFdictNargNredefC) {
     /* not in dict */
 
     const int deflt_int_val=1111;
-    EXPECT_TRUE(par_.define<int>(name, deflt_int_val, "Int arg with default"));
+    EXPECT_TRUE(par_.define<int>(name, deflt_int_val, "Int arg with default").ok());
     EXPECT_EQ("Int arg with default", cpar_.get_descr(name));
 
     const int redef_int_value=9999;
-    EXPECT_TRUE(par_.define<int>(name, redef_int_value, "int argument with a default"));
+    EXPECT_TRUE(par_.define<int>(name, redef_int_value, "int argument with a default").ok());
     EXPECT_EQ("int argument with a default", cpar_.get_descr(name));
 
     ASSERT_TRUE(cpar_.exists(name));
@@ -851,7 +841,7 @@ TEST_F(ParamsTest0, definedDEFdictNargNredefW) {
     /* not in dict */
 
     const int deflt_int_val=1111;
-    EXPECT_TRUE(par_.define<int>(name, deflt_int_val, "Int arg with default"));
+    EXPECT_TRUE(par_.define<int>(name, deflt_int_val, "Int arg with default").ok());
     EXPECT_EQ("Int arg with default", cpar_.get_descr(name));
 
     EXPECT_THROW(par_.define<std::string>(name, "NEW default value", "String arg with NEW default"),
@@ -877,7 +867,7 @@ TEST_F(ParamsTest0, definedDEFdictNargCredefN) {
     /* not in dict */
 
     const int deflt_int_val=1111;
-    EXPECT_TRUE(par_.define<int>(name, deflt_int_val, "Int arg with default"));
+    EXPECT_TRUE(par_.define<int>(name, deflt_int_val, "Int arg with default").ok());
     EXPECT_EQ("Int arg with default", cpar_.get_descr(name));
 
     /* not redefined */
@@ -901,11 +891,11 @@ TEST_F(ParamsTest0, definedDEFdictNargCredefC) {
     /* not in dict */
 
     const int deflt_int_val=1111;
-    EXPECT_TRUE(par_.define<int>(name, deflt_int_val, "Int arg with default"));
+    EXPECT_TRUE(par_.define<int>(name, deflt_int_val, "Int arg with default").ok());
     EXPECT_EQ("Int arg with default", cpar_.get_descr(name));
 
     const int redef_int_value=9999;
-    EXPECT_TRUE(par_.define<int>(name, redef_int_value, "int argument with a default"));
+    EXPECT_TRUE(par_.define<int>(name, redef_int_value, "int argument with a default").ok());
     EXPECT_EQ("int argument with a default", cpar_.get_descr(name));
 
     ASSERT_TRUE(cpar_.exists(name));
@@ -927,7 +917,7 @@ TEST_F(ParamsTest0, definedDEFdictNargCredefW) {
     /* not in dict */
 
     const int deflt_int_val=1111;
-    EXPECT_TRUE(par_.define<int>(name, deflt_int_val, "Int arg with default"));
+    EXPECT_TRUE(par_.define<int>(name, deflt_int_val, "Int arg with default").ok());
     EXPECT_EQ("Int arg with default", cpar_.get_descr(name));
 
     EXPECT_THROW(par_.define<std::string>(name, "NEW default value", "String arg with NEW default"),
@@ -952,7 +942,7 @@ TEST_F(ParamsTest0, definedDEFdictNargWredefN) {
     /* not in dict */
 
     const int deflt_int_val=1111;
-    EXPECT_FALSE(par_.define<int>(name, deflt_int_val, "Int arg with default"));
+    EXPECT_FALSE(par_.define<int>(name, deflt_int_val, "Int arg with default").ok());
     EXPECT_EQ("Int arg with default", cpar_.get_descr(name));
 
     /* not redefined */
@@ -973,11 +963,11 @@ TEST_F(ParamsTest0, definedDEFdictNargWredefC) {
     /* not in dict */
 
     const int deflt_int_val=1111;
-    EXPECT_FALSE(par_.define<int>(name, deflt_int_val, "Int arg with default"));
+    EXPECT_FALSE(par_.define<int>(name, deflt_int_val, "Int arg with default").ok());
     EXPECT_EQ("Int arg with default", cpar_.get_descr(name));
 
     const int redef_int_value=9999;
-    EXPECT_FALSE(par_.define<int>(name, redef_int_value, "int argument with a default"));
+    EXPECT_FALSE(par_.define<int>(name, redef_int_value, "int argument with a default").ok());
     EXPECT_EQ("int argument with a default", cpar_.get_descr(name));
 
     ASSERT_FALSE(cpar_.exists(name));
@@ -996,15 +986,13 @@ TEST_F(ParamsTest0, definedDEFdictNargWredefW) {
     /* not in dict */
 
     const int deflt_int_val=1111;
-    EXPECT_FALSE(par_.define<int>(name, deflt_int_val, "Int arg with default"));
+    EXPECT_FALSE(par_.define<int>(name, deflt_int_val, "Int arg with default").ok());
     EXPECT_EQ("Int arg with default", cpar_.get_descr(name));
 
-    EXPECT_TRUE(par_.define<std::string>(name, "NEW default value", "String arg with NEW default"));
-    EXPECT_EQ("String arg with NEW default", cpar_.get_descr(name));
-
-    ASSERT_TRUE(cpar_.exists(name));
-    std::string actual=cpar_[name];
-    EXPECT_EQ("simple!", actual);
+    EXPECT_THROW(par_.define<std::string>(name, "NEW default value", "String arg with NEW default"),
+                 de::type_mismatch);
+    
+    ASSERT_FALSE(cpar_.exists(name));
 }
 
 /*
@@ -1021,7 +1009,7 @@ TEST_F(ParamsTest0, definedDEFdictCargNredefN) {
     par_[name]=preexisting_int_val;
 
     const int deflt_int_val=1111;
-    EXPECT_TRUE(par_.define<int>(name, deflt_int_val, "Int arg with default"));
+    EXPECT_TRUE(par_.define<int>(name, deflt_int_val, "Int arg with default").ok());
     EXPECT_EQ("Int arg with default", cpar_.get_descr(name));
 
     /* not redefined */
@@ -1045,11 +1033,11 @@ TEST_F(ParamsTest0, definedDEFdictCargNredefC) {
     par_[name]=preexisting_int_val;
 
     const int deflt_int_val=1111;
-    EXPECT_TRUE(par_.define<int>(name, deflt_int_val, "Int arg with default"));
+    EXPECT_TRUE(par_.define<int>(name, deflt_int_val, "Int arg with default").ok());
     EXPECT_EQ("Int arg with default", cpar_.get_descr(name));
 
     const int redef_int_value=9999;
-    EXPECT_TRUE(par_.define<int>(name, redef_int_value, "int argument with a default"));
+    EXPECT_TRUE(par_.define<int>(name, redef_int_value, "int argument with a default").ok());
     EXPECT_EQ("int argument with a default", cpar_.get_descr(name));
 
     ASSERT_TRUE(cpar_.exists(name));
@@ -1071,7 +1059,7 @@ TEST_F(ParamsTest0, definedDEFdictCargNredefW) {
     par_[name]=preexisting_int_val;
 
     const int deflt_int_val=1111;
-    EXPECT_TRUE(par_.define<int>(name, deflt_int_val, "Int arg with default"));
+    EXPECT_TRUE(par_.define<int>(name, deflt_int_val, "Int arg with default").ok());
     EXPECT_EQ("Int arg with default", cpar_.get_descr(name));
 
     EXPECT_THROW(par_.define<std::string>(name, "NEW default value", "String arg with NEW default"),
@@ -1098,7 +1086,7 @@ TEST_F(ParamsTest0, definedDEFdictCargCredefN) {
     par_[name]=preexisting_int_val;
 
     const int deflt_int_val=1111;
-    EXPECT_TRUE(par_.define<int>(name, deflt_int_val, "Int arg with default"));
+    EXPECT_TRUE(par_.define<int>(name, deflt_int_val, "Int arg with default").ok());
     EXPECT_EQ("Int arg with default", cpar_.get_descr(name));
 
     /* not redefined */
@@ -1123,11 +1111,11 @@ TEST_F(ParamsTest0, definedDEFdictCargCredefC) {
     par_[name]=preexisting_int_val;
 
     const int deflt_int_val=1111;
-    EXPECT_TRUE(par_.define<int>(name, deflt_int_val, "Int arg with default"));
+    EXPECT_TRUE(par_.define<int>(name, deflt_int_val, "Int arg with default").ok());
     EXPECT_EQ("Int arg with default", cpar_.get_descr(name));
 
     const int redef_int_value=9999;
-    EXPECT_TRUE(par_.define<int>(name, redef_int_value, "int argument with a default"));
+    EXPECT_TRUE(par_.define<int>(name, redef_int_value, "int argument with a default").ok());
     EXPECT_EQ("int argument with a default", cpar_.get_descr(name));
 
     ASSERT_TRUE(cpar_.exists(name));
@@ -1150,7 +1138,7 @@ TEST_F(ParamsTest0, definedDEFdictCargCredefW) {
     par_[name]=preexisting_int_val;
 
     const int deflt_int_val=1111;
-    EXPECT_TRUE(par_.define<int>(name, deflt_int_val, "Int arg with default"));
+    EXPECT_TRUE(par_.define<int>(name, deflt_int_val, "Int arg with default").ok());
     EXPECT_EQ("Int arg with default", cpar_.get_descr(name));
 
     EXPECT_THROW(par_.define<std::string>(name, "NEW default value", "String arg with NEW default"),
@@ -1176,7 +1164,7 @@ TEST_F(ParamsTest0, definedDEFdictCargWredefN) {
     par_[name]=preexisting_int_val;
 
     const int deflt_int_val=1111;
-    EXPECT_FALSE(par_.define<int>(name, deflt_int_val, "Int arg with default"));
+    EXPECT_FALSE(par_.define<int>(name, deflt_int_val, "Int arg with default").ok());
     EXPECT_EQ("Int arg with default", cpar_.get_descr(name));
 
     /* not redefined */
@@ -1198,11 +1186,11 @@ TEST_F(ParamsTest0, definedDEFdictCargWredefC) {
     par_[name]=preexisting_int_val;
 
     const int deflt_int_val=1111;
-    EXPECT_FALSE(par_.define<int>(name, deflt_int_val, "Int arg with default"));
+    EXPECT_FALSE(par_.define<int>(name, deflt_int_val, "Int arg with default").ok());
     EXPECT_EQ("Int arg with default", cpar_.get_descr(name));
 
     const int redef_int_value=9999;
-    EXPECT_FALSE(par_.define<int>(name, redef_int_value, "int argument with a default"));
+    EXPECT_FALSE(par_.define<int>(name, redef_int_value, "int argument with a default").ok());
     EXPECT_EQ("int argument with a default", cpar_.get_descr(name));
 
     ASSERT_FALSE(cpar_.exists(name));
@@ -1222,15 +1210,13 @@ TEST_F(ParamsTest0, definedDEFdictCargWredefW) {
     par_[name]=preexisting_int_val;
 
     const int deflt_int_val=1111;
-    EXPECT_FALSE(par_.define<int>(name, deflt_int_val, "Int arg with default"));
+    EXPECT_FALSE(par_.define<int>(name, deflt_int_val, "Int arg with default").ok());
     EXPECT_EQ("Int arg with default", cpar_.get_descr(name));
 
-    EXPECT_TRUE(par_.define<std::string>(name, "NEW default value", "String arg with NEW default"));
-    EXPECT_EQ("String arg with NEW default", cpar_.get_descr(name));
+    EXPECT_THROW(par_.define<std::string>(name, "NEW default value", "String arg with NEW default"),
+                 de::type_mismatch);
 
-    ASSERT_TRUE(cpar_.exists(name));
-    std::string actual=cpar_[name];
-    EXPECT_EQ("simple!", actual);
+    ASSERT_FALSE(cpar_.exists(name));
 }
 
 /*
@@ -1303,7 +1289,7 @@ TEST_F(ParamsTest0, definedDEFdictWargNredefW) {
     EXPECT_THROW(par_.define<int>(name, deflt_int_val, "Int arg with default"),
                  de::type_mismatch);
 
-    EXPECT_TRUE(par_.define<std::string>(name, "NEW default value", "String arg with NEW default"));
+    EXPECT_TRUE(par_.define<std::string>(name, "NEW default value", "String arg with NEW default").ok());
     EXPECT_EQ("String arg with NEW default", cpar_.get_descr(name));
 
     ASSERT_TRUE(cpar_.exists(name));
@@ -1385,7 +1371,7 @@ TEST_F(ParamsTest0, definedDEFdictWargCredefW) {
     EXPECT_EQ("", cpar_.get_descr(name));
 
     const int redef_int_value=9999;
-    EXPECT_FALSE(par_.define<int>(name, redef_int_value, "int argument with a default"));
+    EXPECT_FALSE(par_.define<int>(name, redef_int_value, "int argument with a default").ok());
     EXPECT_EQ("int argument with a default", cpar_.get_descr(name));
 
     ASSERT_FALSE(cpar_.exists(name));
@@ -1463,7 +1449,7 @@ TEST_F(ParamsTest0, definedDEFdictWargWredefW) {
                  de::type_mismatch);
     EXPECT_EQ("", cpar_.get_descr(name));
 
-    EXPECT_TRUE(par_.define<std::string>(name, "NEW default value", "String arg with NEW default"));
+    EXPECT_TRUE(par_.define<std::string>(name, "NEW default value", "String arg with NEW default").ok());
     EXPECT_EQ("String arg with NEW default", cpar_.get_descr(name));
 
     ASSERT_TRUE(cpar_.exists(name));
