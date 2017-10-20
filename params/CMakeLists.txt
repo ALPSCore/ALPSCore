@@ -26,7 +26,7 @@ add_this_package(params iniparser_interface)
 
 include(ALPSEnableMPI)
 
-add_boost(program_options)
+add_boost()
 add_hdf5()
 
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../common/deps/iniparser" "./iniparser")
