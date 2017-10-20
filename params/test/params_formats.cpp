@@ -113,7 +113,7 @@ class ParamsTest1 : public testing::Test {
     void read() {
         std::string name=generator_type::name();
         value_type expected=generator_type::get();
-        EXPECT_TRUE(par_.define<value_type>(name, "parameter"));
+        EXPECT_TRUE(par_.define<value_type>(name, "parameter").ok());
         value_type actual=cpar_[name];
         EXPECT_EQ(expected,actual);
     }

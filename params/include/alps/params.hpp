@@ -9,6 +9,8 @@
 
 #include "alps/config.hpp"
 // #include "alps/hdf5/archive.hpp"
+#include <alps/utilities/deprecated.hpp>
+
 
 #ifdef ALPS_HAVE_MPI
 #include "alps/utilities/mpi.hpp"
@@ -139,6 +141,10 @@ namespace alps {
 
             /// No-errors status
             bool ok() const { return 0==err_status_; }
+
+            /// Check whether a parameter was ever defined
+            // FIXME: we don't really need it, must be removed from client code
+            bool defined(const std::string& name) ALPS_DEPRECATED { return td_map_.count(name)!=0 || exists(name); }
             
             /// Defines a parameter; returns false on error, and records the error in the object
             template<typename T>
@@ -155,6 +161,9 @@ namespace alps {
             
             template <typename A>
             void load(const A&) { throw std::logic_error("params::load() is not yet implemented"); }
+
+            template <typename C>
+            void broadcast(const C& comm, int rank) { throw std::logic_error("params::broadcast() is not yet implemented"); }
         };
         
     } // params_ns::
@@ -244,7 +253,6 @@ namespace alps {
 
             td_map_type::iterator td_it=td_map_.find(name); // FIXME: use lower-bound instead
             if (td_it!=td_map_.end()) {
-                // std::cout << "DEBUG: err_stat_=" << err_status_ <<" redefinition for '" << name << "' , td_it->second.typestr='" << td_it->second.typestr << "' td_it->second.descr='" << td_it->second.descr << std::endl;
                 // FIXME: use pretty-typename!
                 if (td_it->second.typestr != typeid(T).name()) throw exception::type_mismatch(name, "Parameter already defined with a different type");
                 td_it->second.descr=descr;
