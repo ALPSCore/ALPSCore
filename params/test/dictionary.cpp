@@ -28,7 +28,7 @@ using ap::dictionary;
 namespace de=ap::exception;
 namespace aptest=ap::testing;
 
-// FIXME: this is a mess og GTest predicates and must be cleaned
+// FIXME: this is a mess of GTest predicates and must be cleaned
 static inline bool is_near_dbl(double a, double b) { return alps::testing::is_near<double>(a,b); }
 static inline bool is_near_flt(float a, float b) { return alps::testing::is_near<float>(a,b); }
 
