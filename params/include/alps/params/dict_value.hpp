@@ -251,7 +251,7 @@ namespace alps {
             value_type val_; ///< Value of the option
 
             
-          public: // FIXME: not everything should be public
+          public:
 
             /// Constructs the empty value
             explicit dict_value(const std::string& name): name_(name), val_() {}
@@ -299,6 +299,55 @@ namespace alps {
             /// Reset to an empty value
             void clear() { val_=None(); }
         };
+
+        template <typename T>
+        bool operator==(const T& lhs, const dict_value& rhs) {return false; }
+        
+        // template <typename T>
+        // bool operator<(const T& lhs, const dict_value& rhs) {return false; }
+        
+        // template <typename T>
+        // bool operator>(const T& lhs, const dict_value& rhs) {return false; }
+        
+        template <typename T>
+        bool operator!=(const T& lhs, const dict_value& rhs) {return false; }
+        
+        // template <typename T>
+        // bool operator>=(const T& lhs, const dict_value& rhs) {return false; }
+        
+        // template <typename T>
+        // bool operator<=(const T& lhs, const dict_value& rhs) {return false; }
+        
+        template <typename T>
+        bool operator==(const dict_value& lhs, const T& rhs) {return false; }
+        
+        // template <typename T>
+        // bool operator<(const dict_value& lhs, const T& rhs) {return false; }
+        
+        // template <typename T>
+        // bool operator>(const dict_value& lhs, const T& rhs) {return false; }
+        
+        template <typename T>
+        bool operator!=(const dict_value& lhs, const T& rhs) {return false; }
+        
+        // template <typename T>
+        // bool operator>=(const dict_value& lhs, const T& rhs) {return false; }
+        
+        // template <typename T>
+        // bool operator<=(const dict_value& lhs, const T& rhs) {return false; }
+        
+        inline bool operator==(const dict_value& lhs, const dict_value& rhs) {return false; }
+        
+        // inline bool operator<(const dict_value& lhs, const dict_value& rhs) {return false; }
+        
+        // inline bool operator>(const dict_value& lhs, const dict_value& rhs) {return false; }
+        
+        inline bool operator!=(const dict_value& lhs, const dict_value& rhs) {return false; }
+        
+        // inline bool operator>=(const dict_value& lhs, const dict_value& rhs) {return false; }
+        
+        // inline bool operator<=(const dict_value& lhs, const dict_value& rhs) {return false; }
+        
     } // ::params_ns
 
 #if 0

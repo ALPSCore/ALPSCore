@@ -8,10 +8,9 @@ from itertools import \
 num_domains=(('neg_long',),
              ('neg_int', 'neg_long_is'),
              ('pos_int', 'uint_is', 'pos_long_is', 'ulong_is'),
+             ('pos_uint',),
              ('pos_long', 'ulong_ls'),
-             ('ulong',))
-
-fp_types=('my_float', 'my_double')
+             ('pos_ulong',))
 
 incompat_types=('my_bool', 'my_int', 'my_string', 'my_vec', 'my_pair')
 
@@ -20,8 +19,9 @@ dom_name={
     'neg_long' : 'NegLong',
     'neg_int' : 'NegInt',
     'pos_int' : 'PosInt',
+    'pos_uint' : 'PosUint',
     'pos_long' : 'PosLong',
-    'ulong' : 'ULong',
+    'pos_ulong' : 'ULong',
     'my_int' : 'Int',
     'my_string' : 'String',
     'my_bool'  : 'Bool',
@@ -30,14 +30,14 @@ dom_name={
     'my_float' : 'Float',
     'my_double' : 'Double'}
 
-def get_refs(v): return (v, 'p["%s"]'%v)
-
-def get_ref_pairs(lhs,rhs):
-    p=product(get_refs(lhs), get_refs(rhs))
-    p.__next__()
-    return p
-
 def generate_num_equalities():
+    def get_refs(v): return ('+'+v, 'cdict_["%s"]'%v)
+
+    def get_ref_pairs(lhs,rhs):
+        p=product(get_refs(lhs), get_refs(rhs))
+        p.__next__()
+        return p
+
     for lhs_domain, rhs_domain in tri_prod(num_domains, 2):
         if lhs_domain is rhs_domain:
             print("// Equalities within domain %s" % lhs_domain[0])
@@ -66,6 +66,13 @@ def generate_num_equalities():
     return
 
 def generate_obj_equalities():
+    def get_refs(v): return (v, 'cdict_["%s"]'%v)
+
+    def get_ref_pairs(lhs,rhs):
+        p=product(get_refs(lhs), get_refs(rhs))
+        p.__next__()
+        return p
+
     for lhs_type, rhs_type in tri_prod(incompat_types, 2):
         if lhs_type is rhs_type:
             print("// Equalities within same type %s" % lhs_type)
@@ -88,9 +95,7 @@ def generate_obj_equalities():
             
 
         print("}\n")
-            
 
 
-# generate_num_equalities()
+generate_num_equalities()
 generate_obj_equalities()
-

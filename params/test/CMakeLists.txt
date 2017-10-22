@@ -21,7 +21,9 @@ include(ALPSEnableTests)
 set (test_src
   dictionary
   params
-  params_formats  
+  params_formats
+  dictionary_eq  
+  params_eq
   )
 
 foreach(test ${test_src})

@@ -31,6 +31,13 @@ namespace alps {
             td_map_type::const_iterator it=td_map_.find(name);
             return (td_map_.end()==it)? std::string() : it->second.descr;
         }
+
+        bool params::operator==(const alps::params_ns::params& rhs) const
+        {
+            const params& lhs=*this;
+            return lhs.raw_kv_content_ == rhs.raw_kv_content_;
+        }
+        
     } // ::params_ns
 }// alps::
             

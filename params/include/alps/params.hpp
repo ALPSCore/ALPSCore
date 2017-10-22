@@ -142,6 +142,9 @@ namespace alps {
             /// No-errors status
             bool ok() const { return 0==err_status_; }
 
+            /// Returns true if the objects are identical
+            bool operator==(const params& rhs) const;
+            
             /// Check whether a parameter was ever defined
             // FIXME: we don't really need it, must be removed from client code
             bool defined(const std::string& name) ALPS_DEPRECATED { return td_map_.count(name)!=0 || exists(name); }
