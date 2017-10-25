@@ -6,7 +6,7 @@
 
 /** @file params_formats.cpp
     
-    @brief Tests various input formats fro parameters
+    @brief Tests various input formats for parameters
 */
 
 #include <boost/foreach.hpp>
