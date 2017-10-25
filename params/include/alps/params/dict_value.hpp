@@ -395,12 +395,45 @@ namespace alps {
                     }
                         
 
+                    // FIXME:TODO:
                     // Same types: compare directly
                     // Integral types: compare using signs (extract it to a separate namespace/class)
                     // FP types: compare directly
                     // Everything else: throw
                 };
-                
+
+                /// Visitor to test for exact equality (name and value)
+                class equals2 : public boost::static_visitor<bool> {
+                  public:
+                    /// Called when bound values have the same type
+                    template <typename LHS_RHS_T>
+                    bool operator()(const LHS_RHS_T& lhs, const LHS_RHS_T& rhs) const {
+                        return lhs==rhs;
+                    }
+
+                    /// Called when bound types are different
+                    template <typename LHS_T, typename RHS_T>
+                    bool operator()(const LHS_T& lhs, const RHS_T& rhs) const{
+                        return false;
+                    }
+
+                    /// Called when LHS is None
+                    template <typename RHS_T>
+                    bool operator()(const None&, const RHS_T&) const {
+                        return false;
+                    }
+                    
+                    /// Called when RHS is None
+                    template <typename LHS_T>
+                    bool operator()(const LHS_T&, const None&) const {
+                        return false;
+                    }
+                    
+                    /// Called when both are None
+                    bool operator()(const None&, const None&) const {
+                        return true;
+                    }
+                };
 
             } // ::visitor
             
@@ -491,6 +524,12 @@ namespace alps {
                     exc.set_name(name_+"<=>"+rhs.name_);
                     throw;
                 } 
+            }
+
+            /// Returns true if the objects hold the same type and value, false otherwise
+            bool equals(const dict_value& rhs) const
+            {
+                return boost::apply_visitor(detail::visitor::equals2(), val_, rhs.val_);
             }
         };
 

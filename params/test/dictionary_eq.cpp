@@ -180,6 +180,35 @@ TEST_F(DictionaryTestEq, eqNoneBoth) {
     EXPECT_TRUE(dummy);
 }
 
+TEST_F(DictionaryTestEq, EqualsNonempty) {
+    dict_["pos_int0"]=+pos_int;
+    dict_["my_string0"]=my_string;
+    
+    EXPECT_TRUE(cdict_["pos_int"].equals(cdict_["pos_int"])) << "Identical numerical objects";
+    EXPECT_TRUE(cdict_["my_string"].equals(cdict_["my_string"])) << "Identical non-num objects";
+
+    EXPECT_TRUE(cdict_["pos_int"].equals(cdict_["pos_int0"])) << "Same values, different names";
+    EXPECT_TRUE(cdict_["my_string"].equals(cdict_["my_string0"])) << "Same values, different names";
+
+    EXPECT_FALSE(cdict_["pos_int"].equals(cdict_["pos_long_is"])) << "Same values, different types";
+    EXPECT_FALSE(cdict_["pos_int"].equals(cdict_["pos_int1"])) << "Different values, same types";
+
+    EXPECT_FALSE(cdict_["my_string"].equals(cdict_["my_string1"])) << "Different values, same types";
+
+    EXPECT_FALSE(cdict_["pos_int"].equals(cdict_["my_string"])) << "Incompatible types";
+}
+
+TEST_F(DictionaryTestEq, EqualsEmpty) {
+    dict_["no_such_name"];
+    EXPECT_FALSE(cdict_["pos_int"].equals(cdict_["no_such_name"])) << "Nonempty vs empty";
+    EXPECT_FALSE(cdict_["no_such_name"].equals(cdict_["pos_int"])) << "Empty vs nonempty";
+
+    EXPECT_TRUE(dict_["no_such_name"].equals(dict_["no_such_name"])) << "Empty with itself";
+
+    dict_["no_such_other_name"];
+    EXPECT_TRUE(dict_["no_such_name"].equals(dict_["no_such_other_name"])) << "Empty with another empty";
+}
+
 /* *** Script-generated code follows *** */
 
 // Equalities within domain neg_long
