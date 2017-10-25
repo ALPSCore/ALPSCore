@@ -4,7 +4,7 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-/** @file dictionary_eq.cpp
+/** @file dictval_eq.cpp
     
     @brief Tests the equality/inequality of dictionary values
 */
