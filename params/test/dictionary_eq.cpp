@@ -19,6 +19,7 @@
 using boost::integer_traits;
 namespace ap=alps::params_ns;
 namespace apt=ap::testing;
+namespace de=ap::exception;
 using ap::dictionary;
 
 class DictionaryTestEq : public ::testing::Test {
@@ -129,6 +130,19 @@ class DictionaryTestEq : public ::testing::Test {
     }
 };
 
+// TEST_F(DictionaryTestEq, Test) {
+//     EXPECT_ANY_THROW(cdict_["dummy"]==true);
+//     EXPECT_ANY_THROW(true==cdict_["dummy"]);
+
+//     EXPECT_ANY_THROW(cdict_["dummy"]==int(1));
+//     EXPECT_ANY_THROW(cdict_["dummy"]==long(1));
+//     EXPECT_ANY_THROW(cdict_["dummy"]==1.0f);
+//     EXPECT_ANY_THROW(cdict_["dummy"]==1.0);
+//     EXPECT_ANY_THROW(cdict_["dummy"]==std::string());
+
+    
+// }
+
 TEST_F(DictionaryTestEq, eqDouble) {
     EXPECT_TRUE(  cdict_["my_int"]==double(my_int) );
     EXPECT_FALSE( cdict_["my_int"]!=double(my_int) );
@@ -190,823 +204,1135 @@ TEST_F(DictionaryTestEq, eqFloat) {
 /* *** Script-generated code follows *** */
 
 // Equalities within domain neg_long
-TEST_F(DictionaryTestEq, eqNegLong) {
+TEST_F(DictionaryTestEq, eqNegLongLeft) {
+    // Same values:
+    EXPECT_TRUE(  cdict_["neg_long"]==+neg_long );
+    EXPECT_FALSE( cdict_["neg_long"]!=+neg_long );
+    // Different values:
+    EXPECT_TRUE(  cdict_["neg_long"]!=+neg_long1 );
+    EXPECT_FALSE( cdict_["neg_long"]==+neg_long1 );
+}
+
+TEST_F(DictionaryTestEq, eqNegLongRight) {
     // Same values:
     EXPECT_TRUE(  +neg_long==cdict_["neg_long"] );
     EXPECT_FALSE( +neg_long!=cdict_["neg_long"] );
-    EXPECT_TRUE(  cdict_["neg_long"]==+neg_long );
-    EXPECT_FALSE( cdict_["neg_long"]!=+neg_long );
-    EXPECT_TRUE(  cdict_["neg_long"]==cdict_["neg_long"] );
-    EXPECT_FALSE( cdict_["neg_long"]!=cdict_["neg_long"] );
     // Different values:
     EXPECT_TRUE(  +neg_long!=cdict_["neg_long1"] );
     EXPECT_FALSE( +neg_long==cdict_["neg_long1"] );
-    EXPECT_TRUE(  cdict_["neg_long"]!=+neg_long1 );
-    EXPECT_FALSE( cdict_["neg_long"]==+neg_long1 );
+}
+
+TEST_F(DictionaryTestEq, eqNegLongBoth) {
+    // Same values:
+    EXPECT_TRUE(  cdict_["neg_long"]==cdict_["neg_long"] );
+    EXPECT_FALSE( cdict_["neg_long"]!=cdict_["neg_long"] );
+    // Different values:
     EXPECT_TRUE(  cdict_["neg_long"]!=cdict_["neg_long1"] );
     EXPECT_FALSE( cdict_["neg_long"]==cdict_["neg_long1"] );
 }
 
 // Equalities between domains neg_long:neg_int
-TEST_F(DictionaryTestEq, eqNegLongNegInt) {
-    EXPECT_TRUE(  +neg_long!=cdict_["neg_int"] );
-    EXPECT_FALSE( +neg_long==cdict_["neg_int"] );
+TEST_F(DictionaryTestEq, eqNegLongNegIntLeft) {
     EXPECT_TRUE(  cdict_["neg_long"]!=+neg_int );
     EXPECT_FALSE( cdict_["neg_long"]==+neg_int );
-    EXPECT_TRUE(  cdict_["neg_long"]!=cdict_["neg_int"] );
-    EXPECT_FALSE( cdict_["neg_long"]==cdict_["neg_int"] );
-    EXPECT_TRUE(  +neg_long!=cdict_["neg_long_is"] );
-    EXPECT_FALSE( +neg_long==cdict_["neg_long_is"] );
     EXPECT_TRUE(  cdict_["neg_long"]!=+neg_long_is );
     EXPECT_FALSE( cdict_["neg_long"]==+neg_long_is );
+}
+
+TEST_F(DictionaryTestEq, eqNegLongNegIntRight) {
+    EXPECT_TRUE(  +neg_long!=cdict_["neg_int"] );
+    EXPECT_FALSE( +neg_long==cdict_["neg_int"] );
+    EXPECT_TRUE(  +neg_long!=cdict_["neg_long_is"] );
+    EXPECT_FALSE( +neg_long==cdict_["neg_long_is"] );
+}
+
+TEST_F(DictionaryTestEq, eqNegLongNegIntBoth) {
+    EXPECT_TRUE(  cdict_["neg_long"]!=cdict_["neg_int"] );
+    EXPECT_FALSE( cdict_["neg_long"]==cdict_["neg_int"] );
     EXPECT_TRUE(  cdict_["neg_long"]!=cdict_["neg_long_is"] );
     EXPECT_FALSE( cdict_["neg_long"]==cdict_["neg_long_is"] );
 }
 
 // Equalities between domains neg_long:pos_int
-TEST_F(DictionaryTestEq, eqNegLongPosInt) {
-    EXPECT_TRUE(  +neg_long!=cdict_["pos_int"] );
-    EXPECT_FALSE( +neg_long==cdict_["pos_int"] );
+TEST_F(DictionaryTestEq, eqNegLongPosIntLeft) {
     EXPECT_TRUE(  cdict_["neg_long"]!=+pos_int );
     EXPECT_FALSE( cdict_["neg_long"]==+pos_int );
-    EXPECT_TRUE(  cdict_["neg_long"]!=cdict_["pos_int"] );
-    EXPECT_FALSE( cdict_["neg_long"]==cdict_["pos_int"] );
-    EXPECT_TRUE(  +neg_long!=cdict_["uint_is"] );
-    EXPECT_FALSE( +neg_long==cdict_["uint_is"] );
     EXPECT_TRUE(  cdict_["neg_long"]!=+uint_is );
     EXPECT_FALSE( cdict_["neg_long"]==+uint_is );
-    EXPECT_TRUE(  cdict_["neg_long"]!=cdict_["uint_is"] );
-    EXPECT_FALSE( cdict_["neg_long"]==cdict_["uint_is"] );
-    EXPECT_TRUE(  +neg_long!=cdict_["pos_long_is"] );
-    EXPECT_FALSE( +neg_long==cdict_["pos_long_is"] );
     EXPECT_TRUE(  cdict_["neg_long"]!=+pos_long_is );
     EXPECT_FALSE( cdict_["neg_long"]==+pos_long_is );
-    EXPECT_TRUE(  cdict_["neg_long"]!=cdict_["pos_long_is"] );
-    EXPECT_FALSE( cdict_["neg_long"]==cdict_["pos_long_is"] );
-    EXPECT_TRUE(  +neg_long!=cdict_["ulong_is"] );
-    EXPECT_FALSE( +neg_long==cdict_["ulong_is"] );
     EXPECT_TRUE(  cdict_["neg_long"]!=+ulong_is );
     EXPECT_FALSE( cdict_["neg_long"]==+ulong_is );
+}
+
+TEST_F(DictionaryTestEq, eqNegLongPosIntRight) {
+    EXPECT_TRUE(  +neg_long!=cdict_["pos_int"] );
+    EXPECT_FALSE( +neg_long==cdict_["pos_int"] );
+    EXPECT_TRUE(  +neg_long!=cdict_["uint_is"] );
+    EXPECT_FALSE( +neg_long==cdict_["uint_is"] );
+    EXPECT_TRUE(  +neg_long!=cdict_["pos_long_is"] );
+    EXPECT_FALSE( +neg_long==cdict_["pos_long_is"] );
+    EXPECT_TRUE(  +neg_long!=cdict_["ulong_is"] );
+    EXPECT_FALSE( +neg_long==cdict_["ulong_is"] );
+}
+
+TEST_F(DictionaryTestEq, eqNegLongPosIntBoth) {
+    EXPECT_TRUE(  cdict_["neg_long"]!=cdict_["pos_int"] );
+    EXPECT_FALSE( cdict_["neg_long"]==cdict_["pos_int"] );
+    EXPECT_TRUE(  cdict_["neg_long"]!=cdict_["uint_is"] );
+    EXPECT_FALSE( cdict_["neg_long"]==cdict_["uint_is"] );
+    EXPECT_TRUE(  cdict_["neg_long"]!=cdict_["pos_long_is"] );
+    EXPECT_FALSE( cdict_["neg_long"]==cdict_["pos_long_is"] );
     EXPECT_TRUE(  cdict_["neg_long"]!=cdict_["ulong_is"] );
     EXPECT_FALSE( cdict_["neg_long"]==cdict_["ulong_is"] );
 }
 
 // Equalities between domains neg_long:pos_uint
-TEST_F(DictionaryTestEq, eqNegLongPosUint) {
-    EXPECT_TRUE(  +neg_long!=cdict_["pos_uint"] );
-    EXPECT_FALSE( +neg_long==cdict_["pos_uint"] );
+TEST_F(DictionaryTestEq, eqNegLongPosUintLeft) {
     EXPECT_TRUE(  cdict_["neg_long"]!=+pos_uint );
     EXPECT_FALSE( cdict_["neg_long"]==+pos_uint );
+}
+
+TEST_F(DictionaryTestEq, eqNegLongPosUintRight) {
+    EXPECT_TRUE(  +neg_long!=cdict_["pos_uint"] );
+    EXPECT_FALSE( +neg_long==cdict_["pos_uint"] );
+}
+
+TEST_F(DictionaryTestEq, eqNegLongPosUintBoth) {
     EXPECT_TRUE(  cdict_["neg_long"]!=cdict_["pos_uint"] );
     EXPECT_FALSE( cdict_["neg_long"]==cdict_["pos_uint"] );
 }
 
 // Equalities between domains neg_long:pos_long
-TEST_F(DictionaryTestEq, eqNegLongPosLong) {
-    EXPECT_TRUE(  +neg_long!=cdict_["pos_long"] );
-    EXPECT_FALSE( +neg_long==cdict_["pos_long"] );
+TEST_F(DictionaryTestEq, eqNegLongPosLongLeft) {
     EXPECT_TRUE(  cdict_["neg_long"]!=+pos_long );
     EXPECT_FALSE( cdict_["neg_long"]==+pos_long );
-    EXPECT_TRUE(  cdict_["neg_long"]!=cdict_["pos_long"] );
-    EXPECT_FALSE( cdict_["neg_long"]==cdict_["pos_long"] );
-    EXPECT_TRUE(  +neg_long!=cdict_["ulong_ls"] );
-    EXPECT_FALSE( +neg_long==cdict_["ulong_ls"] );
     EXPECT_TRUE(  cdict_["neg_long"]!=+ulong_ls );
     EXPECT_FALSE( cdict_["neg_long"]==+ulong_ls );
+}
+
+TEST_F(DictionaryTestEq, eqNegLongPosLongRight) {
+    EXPECT_TRUE(  +neg_long!=cdict_["pos_long"] );
+    EXPECT_FALSE( +neg_long==cdict_["pos_long"] );
+    EXPECT_TRUE(  +neg_long!=cdict_["ulong_ls"] );
+    EXPECT_FALSE( +neg_long==cdict_["ulong_ls"] );
+}
+
+TEST_F(DictionaryTestEq, eqNegLongPosLongBoth) {
+    EXPECT_TRUE(  cdict_["neg_long"]!=cdict_["pos_long"] );
+    EXPECT_FALSE( cdict_["neg_long"]==cdict_["pos_long"] );
     EXPECT_TRUE(  cdict_["neg_long"]!=cdict_["ulong_ls"] );
     EXPECT_FALSE( cdict_["neg_long"]==cdict_["ulong_ls"] );
 }
 
 // Equalities between domains neg_long:pos_ulong
-TEST_F(DictionaryTestEq, eqNegLongULong) {
-    EXPECT_TRUE(  +neg_long!=cdict_["pos_ulong"] );
-    EXPECT_FALSE( +neg_long==cdict_["pos_ulong"] );
+TEST_F(DictionaryTestEq, eqNegLongULongLeft) {
     EXPECT_TRUE(  cdict_["neg_long"]!=+pos_ulong );
     EXPECT_FALSE( cdict_["neg_long"]==+pos_ulong );
+}
+
+TEST_F(DictionaryTestEq, eqNegLongULongRight) {
+    EXPECT_TRUE(  +neg_long!=cdict_["pos_ulong"] );
+    EXPECT_FALSE( +neg_long==cdict_["pos_ulong"] );
+}
+
+TEST_F(DictionaryTestEq, eqNegLongULongBoth) {
     EXPECT_TRUE(  cdict_["neg_long"]!=cdict_["pos_ulong"] );
     EXPECT_FALSE( cdict_["neg_long"]==cdict_["pos_ulong"] );
 }
 
 // Equalities within domain neg_int
-TEST_F(DictionaryTestEq, eqNegInt) {
+TEST_F(DictionaryTestEq, eqNegIntLeft) {
+    // Same values:
+    EXPECT_TRUE(  cdict_["neg_int"]==+neg_int );
+    EXPECT_FALSE( cdict_["neg_int"]!=+neg_int );
+    // Different values:
+    EXPECT_TRUE(  cdict_["neg_int"]!=+neg_int1 );
+    EXPECT_FALSE( cdict_["neg_int"]==+neg_int1 );
+    // Same values:
+    EXPECT_TRUE(  cdict_["neg_int"]==+neg_long_is );
+    EXPECT_FALSE( cdict_["neg_int"]!=+neg_long_is );
+    // Different values:
+    EXPECT_TRUE(  cdict_["neg_int"]!=+neg_long_is1 );
+    EXPECT_FALSE( cdict_["neg_int"]==+neg_long_is1 );
+    // Same values:
+    EXPECT_TRUE(  cdict_["neg_long_is"]==+neg_long_is );
+    EXPECT_FALSE( cdict_["neg_long_is"]!=+neg_long_is );
+    // Different values:
+    EXPECT_TRUE(  cdict_["neg_long_is"]!=+neg_long_is1 );
+    EXPECT_FALSE( cdict_["neg_long_is"]==+neg_long_is1 );
+}
+
+TEST_F(DictionaryTestEq, eqNegIntRight) {
     // Same values:
     EXPECT_TRUE(  +neg_int==cdict_["neg_int"] );
     EXPECT_FALSE( +neg_int!=cdict_["neg_int"] );
-    EXPECT_TRUE(  cdict_["neg_int"]==+neg_int );
-    EXPECT_FALSE( cdict_["neg_int"]!=+neg_int );
-    EXPECT_TRUE(  cdict_["neg_int"]==cdict_["neg_int"] );
-    EXPECT_FALSE( cdict_["neg_int"]!=cdict_["neg_int"] );
     // Different values:
     EXPECT_TRUE(  +neg_int!=cdict_["neg_int1"] );
     EXPECT_FALSE( +neg_int==cdict_["neg_int1"] );
-    EXPECT_TRUE(  cdict_["neg_int"]!=+neg_int1 );
-    EXPECT_FALSE( cdict_["neg_int"]==+neg_int1 );
-    EXPECT_TRUE(  cdict_["neg_int"]!=cdict_["neg_int1"] );
-    EXPECT_FALSE( cdict_["neg_int"]==cdict_["neg_int1"] );
     // Same values:
     EXPECT_TRUE(  +neg_int==cdict_["neg_long_is"] );
     EXPECT_FALSE( +neg_int!=cdict_["neg_long_is"] );
-    EXPECT_TRUE(  cdict_["neg_int"]==+neg_long_is );
-    EXPECT_FALSE( cdict_["neg_int"]!=+neg_long_is );
-    EXPECT_TRUE(  cdict_["neg_int"]==cdict_["neg_long_is"] );
-    EXPECT_FALSE( cdict_["neg_int"]!=cdict_["neg_long_is"] );
     // Different values:
     EXPECT_TRUE(  +neg_int!=cdict_["neg_long_is1"] );
     EXPECT_FALSE( +neg_int==cdict_["neg_long_is1"] );
-    EXPECT_TRUE(  cdict_["neg_int"]!=+neg_long_is1 );
-    EXPECT_FALSE( cdict_["neg_int"]==+neg_long_is1 );
-    EXPECT_TRUE(  cdict_["neg_int"]!=cdict_["neg_long_is1"] );
-    EXPECT_FALSE( cdict_["neg_int"]==cdict_["neg_long_is1"] );
     // Same values:
     EXPECT_TRUE(  +neg_long_is==cdict_["neg_long_is"] );
     EXPECT_FALSE( +neg_long_is!=cdict_["neg_long_is"] );
-    EXPECT_TRUE(  cdict_["neg_long_is"]==+neg_long_is );
-    EXPECT_FALSE( cdict_["neg_long_is"]!=+neg_long_is );
-    EXPECT_TRUE(  cdict_["neg_long_is"]==cdict_["neg_long_is"] );
-    EXPECT_FALSE( cdict_["neg_long_is"]!=cdict_["neg_long_is"] );
     // Different values:
     EXPECT_TRUE(  +neg_long_is!=cdict_["neg_long_is1"] );
     EXPECT_FALSE( +neg_long_is==cdict_["neg_long_is1"] );
-    EXPECT_TRUE(  cdict_["neg_long_is"]!=+neg_long_is1 );
-    EXPECT_FALSE( cdict_["neg_long_is"]==+neg_long_is1 );
+}
+
+TEST_F(DictionaryTestEq, eqNegIntBoth) {
+    // Same values:
+    EXPECT_TRUE(  cdict_["neg_int"]==cdict_["neg_int"] );
+    EXPECT_FALSE( cdict_["neg_int"]!=cdict_["neg_int"] );
+    // Different values:
+    EXPECT_TRUE(  cdict_["neg_int"]!=cdict_["neg_int1"] );
+    EXPECT_FALSE( cdict_["neg_int"]==cdict_["neg_int1"] );
+    // Same values:
+    EXPECT_TRUE(  cdict_["neg_int"]==cdict_["neg_long_is"] );
+    EXPECT_FALSE( cdict_["neg_int"]!=cdict_["neg_long_is"] );
+    // Different values:
+    EXPECT_TRUE(  cdict_["neg_int"]!=cdict_["neg_long_is1"] );
+    EXPECT_FALSE( cdict_["neg_int"]==cdict_["neg_long_is1"] );
+    // Same values:
+    EXPECT_TRUE(  cdict_["neg_long_is"]==cdict_["neg_long_is"] );
+    EXPECT_FALSE( cdict_["neg_long_is"]!=cdict_["neg_long_is"] );
+    // Different values:
     EXPECT_TRUE(  cdict_["neg_long_is"]!=cdict_["neg_long_is1"] );
     EXPECT_FALSE( cdict_["neg_long_is"]==cdict_["neg_long_is1"] );
 }
 
 // Equalities between domains neg_int:pos_int
-TEST_F(DictionaryTestEq, eqNegIntPosInt) {
-    EXPECT_TRUE(  +neg_int!=cdict_["pos_int"] );
-    EXPECT_FALSE( +neg_int==cdict_["pos_int"] );
+TEST_F(DictionaryTestEq, eqNegIntPosIntLeft) {
     EXPECT_TRUE(  cdict_["neg_int"]!=+pos_int );
     EXPECT_FALSE( cdict_["neg_int"]==+pos_int );
-    EXPECT_TRUE(  cdict_["neg_int"]!=cdict_["pos_int"] );
-    EXPECT_FALSE( cdict_["neg_int"]==cdict_["pos_int"] );
-    EXPECT_TRUE(  +neg_int!=cdict_["uint_is"] );
-    EXPECT_FALSE( +neg_int==cdict_["uint_is"] );
     EXPECT_TRUE(  cdict_["neg_int"]!=+uint_is );
     EXPECT_FALSE( cdict_["neg_int"]==+uint_is );
-    EXPECT_TRUE(  cdict_["neg_int"]!=cdict_["uint_is"] );
-    EXPECT_FALSE( cdict_["neg_int"]==cdict_["uint_is"] );
-    EXPECT_TRUE(  +neg_int!=cdict_["pos_long_is"] );
-    EXPECT_FALSE( +neg_int==cdict_["pos_long_is"] );
     EXPECT_TRUE(  cdict_["neg_int"]!=+pos_long_is );
     EXPECT_FALSE( cdict_["neg_int"]==+pos_long_is );
-    EXPECT_TRUE(  cdict_["neg_int"]!=cdict_["pos_long_is"] );
-    EXPECT_FALSE( cdict_["neg_int"]==cdict_["pos_long_is"] );
-    EXPECT_TRUE(  +neg_int!=cdict_["ulong_is"] );
-    EXPECT_FALSE( +neg_int==cdict_["ulong_is"] );
     EXPECT_TRUE(  cdict_["neg_int"]!=+ulong_is );
     EXPECT_FALSE( cdict_["neg_int"]==+ulong_is );
-    EXPECT_TRUE(  cdict_["neg_int"]!=cdict_["ulong_is"] );
-    EXPECT_FALSE( cdict_["neg_int"]==cdict_["ulong_is"] );
-    EXPECT_TRUE(  +neg_long_is!=cdict_["pos_int"] );
-    EXPECT_FALSE( +neg_long_is==cdict_["pos_int"] );
     EXPECT_TRUE(  cdict_["neg_long_is"]!=+pos_int );
     EXPECT_FALSE( cdict_["neg_long_is"]==+pos_int );
-    EXPECT_TRUE(  cdict_["neg_long_is"]!=cdict_["pos_int"] );
-    EXPECT_FALSE( cdict_["neg_long_is"]==cdict_["pos_int"] );
-    EXPECT_TRUE(  +neg_long_is!=cdict_["uint_is"] );
-    EXPECT_FALSE( +neg_long_is==cdict_["uint_is"] );
     EXPECT_TRUE(  cdict_["neg_long_is"]!=+uint_is );
     EXPECT_FALSE( cdict_["neg_long_is"]==+uint_is );
-    EXPECT_TRUE(  cdict_["neg_long_is"]!=cdict_["uint_is"] );
-    EXPECT_FALSE( cdict_["neg_long_is"]==cdict_["uint_is"] );
-    EXPECT_TRUE(  +neg_long_is!=cdict_["pos_long_is"] );
-    EXPECT_FALSE( +neg_long_is==cdict_["pos_long_is"] );
     EXPECT_TRUE(  cdict_["neg_long_is"]!=+pos_long_is );
     EXPECT_FALSE( cdict_["neg_long_is"]==+pos_long_is );
-    EXPECT_TRUE(  cdict_["neg_long_is"]!=cdict_["pos_long_is"] );
-    EXPECT_FALSE( cdict_["neg_long_is"]==cdict_["pos_long_is"] );
-    EXPECT_TRUE(  +neg_long_is!=cdict_["ulong_is"] );
-    EXPECT_FALSE( +neg_long_is==cdict_["ulong_is"] );
     EXPECT_TRUE(  cdict_["neg_long_is"]!=+ulong_is );
     EXPECT_FALSE( cdict_["neg_long_is"]==+ulong_is );
+}
+
+TEST_F(DictionaryTestEq, eqNegIntPosIntRight) {
+    EXPECT_TRUE(  +neg_int!=cdict_["pos_int"] );
+    EXPECT_FALSE( +neg_int==cdict_["pos_int"] );
+    EXPECT_TRUE(  +neg_int!=cdict_["uint_is"] );
+    EXPECT_FALSE( +neg_int==cdict_["uint_is"] );
+    EXPECT_TRUE(  +neg_int!=cdict_["pos_long_is"] );
+    EXPECT_FALSE( +neg_int==cdict_["pos_long_is"] );
+    EXPECT_TRUE(  +neg_int!=cdict_["ulong_is"] );
+    EXPECT_FALSE( +neg_int==cdict_["ulong_is"] );
+    EXPECT_TRUE(  +neg_long_is!=cdict_["pos_int"] );
+    EXPECT_FALSE( +neg_long_is==cdict_["pos_int"] );
+    EXPECT_TRUE(  +neg_long_is!=cdict_["uint_is"] );
+    EXPECT_FALSE( +neg_long_is==cdict_["uint_is"] );
+    EXPECT_TRUE(  +neg_long_is!=cdict_["pos_long_is"] );
+    EXPECT_FALSE( +neg_long_is==cdict_["pos_long_is"] );
+    EXPECT_TRUE(  +neg_long_is!=cdict_["ulong_is"] );
+    EXPECT_FALSE( +neg_long_is==cdict_["ulong_is"] );
+}
+
+TEST_F(DictionaryTestEq, eqNegIntPosIntBoth) {
+    EXPECT_TRUE(  cdict_["neg_int"]!=cdict_["pos_int"] );
+    EXPECT_FALSE( cdict_["neg_int"]==cdict_["pos_int"] );
+    EXPECT_TRUE(  cdict_["neg_int"]!=cdict_["uint_is"] );
+    EXPECT_FALSE( cdict_["neg_int"]==cdict_["uint_is"] );
+    EXPECT_TRUE(  cdict_["neg_int"]!=cdict_["pos_long_is"] );
+    EXPECT_FALSE( cdict_["neg_int"]==cdict_["pos_long_is"] );
+    EXPECT_TRUE(  cdict_["neg_int"]!=cdict_["ulong_is"] );
+    EXPECT_FALSE( cdict_["neg_int"]==cdict_["ulong_is"] );
+    EXPECT_TRUE(  cdict_["neg_long_is"]!=cdict_["pos_int"] );
+    EXPECT_FALSE( cdict_["neg_long_is"]==cdict_["pos_int"] );
+    EXPECT_TRUE(  cdict_["neg_long_is"]!=cdict_["uint_is"] );
+    EXPECT_FALSE( cdict_["neg_long_is"]==cdict_["uint_is"] );
+    EXPECT_TRUE(  cdict_["neg_long_is"]!=cdict_["pos_long_is"] );
+    EXPECT_FALSE( cdict_["neg_long_is"]==cdict_["pos_long_is"] );
     EXPECT_TRUE(  cdict_["neg_long_is"]!=cdict_["ulong_is"] );
     EXPECT_FALSE( cdict_["neg_long_is"]==cdict_["ulong_is"] );
 }
 
 // Equalities between domains neg_int:pos_uint
-TEST_F(DictionaryTestEq, eqNegIntPosUint) {
-    EXPECT_TRUE(  +neg_int!=cdict_["pos_uint"] );
-    EXPECT_FALSE( +neg_int==cdict_["pos_uint"] );
+TEST_F(DictionaryTestEq, eqNegIntPosUintLeft) {
     EXPECT_TRUE(  cdict_["neg_int"]!=+pos_uint );
     EXPECT_FALSE( cdict_["neg_int"]==+pos_uint );
-    EXPECT_TRUE(  cdict_["neg_int"]!=cdict_["pos_uint"] );
-    EXPECT_FALSE( cdict_["neg_int"]==cdict_["pos_uint"] );
-    EXPECT_TRUE(  +neg_long_is!=cdict_["pos_uint"] );
-    EXPECT_FALSE( +neg_long_is==cdict_["pos_uint"] );
     EXPECT_TRUE(  cdict_["neg_long_is"]!=+pos_uint );
     EXPECT_FALSE( cdict_["neg_long_is"]==+pos_uint );
+}
+
+TEST_F(DictionaryTestEq, eqNegIntPosUintRight) {
+    EXPECT_TRUE(  +neg_int!=cdict_["pos_uint"] );
+    EXPECT_FALSE( +neg_int==cdict_["pos_uint"] );
+    EXPECT_TRUE(  +neg_long_is!=cdict_["pos_uint"] );
+    EXPECT_FALSE( +neg_long_is==cdict_["pos_uint"] );
+}
+
+TEST_F(DictionaryTestEq, eqNegIntPosUintBoth) {
+    EXPECT_TRUE(  cdict_["neg_int"]!=cdict_["pos_uint"] );
+    EXPECT_FALSE( cdict_["neg_int"]==cdict_["pos_uint"] );
     EXPECT_TRUE(  cdict_["neg_long_is"]!=cdict_["pos_uint"] );
     EXPECT_FALSE( cdict_["neg_long_is"]==cdict_["pos_uint"] );
 }
 
 // Equalities between domains neg_int:pos_long
-TEST_F(DictionaryTestEq, eqNegIntPosLong) {
-    EXPECT_TRUE(  +neg_int!=cdict_["pos_long"] );
-    EXPECT_FALSE( +neg_int==cdict_["pos_long"] );
+TEST_F(DictionaryTestEq, eqNegIntPosLongLeft) {
     EXPECT_TRUE(  cdict_["neg_int"]!=+pos_long );
     EXPECT_FALSE( cdict_["neg_int"]==+pos_long );
-    EXPECT_TRUE(  cdict_["neg_int"]!=cdict_["pos_long"] );
-    EXPECT_FALSE( cdict_["neg_int"]==cdict_["pos_long"] );
-    EXPECT_TRUE(  +neg_int!=cdict_["ulong_ls"] );
-    EXPECT_FALSE( +neg_int==cdict_["ulong_ls"] );
     EXPECT_TRUE(  cdict_["neg_int"]!=+ulong_ls );
     EXPECT_FALSE( cdict_["neg_int"]==+ulong_ls );
-    EXPECT_TRUE(  cdict_["neg_int"]!=cdict_["ulong_ls"] );
-    EXPECT_FALSE( cdict_["neg_int"]==cdict_["ulong_ls"] );
-    EXPECT_TRUE(  +neg_long_is!=cdict_["pos_long"] );
-    EXPECT_FALSE( +neg_long_is==cdict_["pos_long"] );
     EXPECT_TRUE(  cdict_["neg_long_is"]!=+pos_long );
     EXPECT_FALSE( cdict_["neg_long_is"]==+pos_long );
-    EXPECT_TRUE(  cdict_["neg_long_is"]!=cdict_["pos_long"] );
-    EXPECT_FALSE( cdict_["neg_long_is"]==cdict_["pos_long"] );
-    EXPECT_TRUE(  +neg_long_is!=cdict_["ulong_ls"] );
-    EXPECT_FALSE( +neg_long_is==cdict_["ulong_ls"] );
     EXPECT_TRUE(  cdict_["neg_long_is"]!=+ulong_ls );
     EXPECT_FALSE( cdict_["neg_long_is"]==+ulong_ls );
+}
+
+TEST_F(DictionaryTestEq, eqNegIntPosLongRight) {
+    EXPECT_TRUE(  +neg_int!=cdict_["pos_long"] );
+    EXPECT_FALSE( +neg_int==cdict_["pos_long"] );
+    EXPECT_TRUE(  +neg_int!=cdict_["ulong_ls"] );
+    EXPECT_FALSE( +neg_int==cdict_["ulong_ls"] );
+    EXPECT_TRUE(  +neg_long_is!=cdict_["pos_long"] );
+    EXPECT_FALSE( +neg_long_is==cdict_["pos_long"] );
+    EXPECT_TRUE(  +neg_long_is!=cdict_["ulong_ls"] );
+    EXPECT_FALSE( +neg_long_is==cdict_["ulong_ls"] );
+}
+
+TEST_F(DictionaryTestEq, eqNegIntPosLongBoth) {
+    EXPECT_TRUE(  cdict_["neg_int"]!=cdict_["pos_long"] );
+    EXPECT_FALSE( cdict_["neg_int"]==cdict_["pos_long"] );
+    EXPECT_TRUE(  cdict_["neg_int"]!=cdict_["ulong_ls"] );
+    EXPECT_FALSE( cdict_["neg_int"]==cdict_["ulong_ls"] );
+    EXPECT_TRUE(  cdict_["neg_long_is"]!=cdict_["pos_long"] );
+    EXPECT_FALSE( cdict_["neg_long_is"]==cdict_["pos_long"] );
     EXPECT_TRUE(  cdict_["neg_long_is"]!=cdict_["ulong_ls"] );
     EXPECT_FALSE( cdict_["neg_long_is"]==cdict_["ulong_ls"] );
 }
 
 // Equalities between domains neg_int:pos_ulong
-TEST_F(DictionaryTestEq, eqNegIntULong) {
-    EXPECT_TRUE(  +neg_int!=cdict_["pos_ulong"] );
-    EXPECT_FALSE( +neg_int==cdict_["pos_ulong"] );
+TEST_F(DictionaryTestEq, eqNegIntULongLeft) {
     EXPECT_TRUE(  cdict_["neg_int"]!=+pos_ulong );
     EXPECT_FALSE( cdict_["neg_int"]==+pos_ulong );
-    EXPECT_TRUE(  cdict_["neg_int"]!=cdict_["pos_ulong"] );
-    EXPECT_FALSE( cdict_["neg_int"]==cdict_["pos_ulong"] );
-    EXPECT_TRUE(  +neg_long_is!=cdict_["pos_ulong"] );
-    EXPECT_FALSE( +neg_long_is==cdict_["pos_ulong"] );
     EXPECT_TRUE(  cdict_["neg_long_is"]!=+pos_ulong );
     EXPECT_FALSE( cdict_["neg_long_is"]==+pos_ulong );
+}
+
+TEST_F(DictionaryTestEq, eqNegIntULongRight) {
+    EXPECT_TRUE(  +neg_int!=cdict_["pos_ulong"] );
+    EXPECT_FALSE( +neg_int==cdict_["pos_ulong"] );
+    EXPECT_TRUE(  +neg_long_is!=cdict_["pos_ulong"] );
+    EXPECT_FALSE( +neg_long_is==cdict_["pos_ulong"] );
+}
+
+TEST_F(DictionaryTestEq, eqNegIntULongBoth) {
+    EXPECT_TRUE(  cdict_["neg_int"]!=cdict_["pos_ulong"] );
+    EXPECT_FALSE( cdict_["neg_int"]==cdict_["pos_ulong"] );
     EXPECT_TRUE(  cdict_["neg_long_is"]!=cdict_["pos_ulong"] );
     EXPECT_FALSE( cdict_["neg_long_is"]==cdict_["pos_ulong"] );
 }
 
 // Equalities within domain pos_int
-TEST_F(DictionaryTestEq, eqPosInt) {
+TEST_F(DictionaryTestEq, eqPosIntLeft) {
+    // Same values:
+    EXPECT_TRUE(  cdict_["pos_int"]==+pos_int );
+    EXPECT_FALSE( cdict_["pos_int"]!=+pos_int );
+    // Different values:
+    EXPECT_TRUE(  cdict_["pos_int"]!=+pos_int1 );
+    EXPECT_FALSE( cdict_["pos_int"]==+pos_int1 );
+    // Same values:
+    EXPECT_TRUE(  cdict_["pos_int"]==+uint_is );
+    EXPECT_FALSE( cdict_["pos_int"]!=+uint_is );
+    // Different values:
+    EXPECT_TRUE(  cdict_["pos_int"]!=+uint_is1 );
+    EXPECT_FALSE( cdict_["pos_int"]==+uint_is1 );
+    // Same values:
+    EXPECT_TRUE(  cdict_["pos_int"]==+pos_long_is );
+    EXPECT_FALSE( cdict_["pos_int"]!=+pos_long_is );
+    // Different values:
+    EXPECT_TRUE(  cdict_["pos_int"]!=+pos_long_is1 );
+    EXPECT_FALSE( cdict_["pos_int"]==+pos_long_is1 );
+    // Same values:
+    EXPECT_TRUE(  cdict_["pos_int"]==+ulong_is );
+    EXPECT_FALSE( cdict_["pos_int"]!=+ulong_is );
+    // Different values:
+    EXPECT_TRUE(  cdict_["pos_int"]!=+ulong_is1 );
+    EXPECT_FALSE( cdict_["pos_int"]==+ulong_is1 );
+    // Same values:
+    EXPECT_TRUE(  cdict_["uint_is"]==+uint_is );
+    EXPECT_FALSE( cdict_["uint_is"]!=+uint_is );
+    // Different values:
+    EXPECT_TRUE(  cdict_["uint_is"]!=+uint_is1 );
+    EXPECT_FALSE( cdict_["uint_is"]==+uint_is1 );
+    // Same values:
+    EXPECT_TRUE(  cdict_["uint_is"]==+pos_long_is );
+    EXPECT_FALSE( cdict_["uint_is"]!=+pos_long_is );
+    // Different values:
+    EXPECT_TRUE(  cdict_["uint_is"]!=+pos_long_is1 );
+    EXPECT_FALSE( cdict_["uint_is"]==+pos_long_is1 );
+    // Same values:
+    EXPECT_TRUE(  cdict_["uint_is"]==+ulong_is );
+    EXPECT_FALSE( cdict_["uint_is"]!=+ulong_is );
+    // Different values:
+    EXPECT_TRUE(  cdict_["uint_is"]!=+ulong_is1 );
+    EXPECT_FALSE( cdict_["uint_is"]==+ulong_is1 );
+    // Same values:
+    EXPECT_TRUE(  cdict_["pos_long_is"]==+pos_long_is );
+    EXPECT_FALSE( cdict_["pos_long_is"]!=+pos_long_is );
+    // Different values:
+    EXPECT_TRUE(  cdict_["pos_long_is"]!=+pos_long_is1 );
+    EXPECT_FALSE( cdict_["pos_long_is"]==+pos_long_is1 );
+    // Same values:
+    EXPECT_TRUE(  cdict_["pos_long_is"]==+ulong_is );
+    EXPECT_FALSE( cdict_["pos_long_is"]!=+ulong_is );
+    // Different values:
+    EXPECT_TRUE(  cdict_["pos_long_is"]!=+ulong_is1 );
+    EXPECT_FALSE( cdict_["pos_long_is"]==+ulong_is1 );
+    // Same values:
+    EXPECT_TRUE(  cdict_["ulong_is"]==+ulong_is );
+    EXPECT_FALSE( cdict_["ulong_is"]!=+ulong_is );
+    // Different values:
+    EXPECT_TRUE(  cdict_["ulong_is"]!=+ulong_is1 );
+    EXPECT_FALSE( cdict_["ulong_is"]==+ulong_is1 );
+}
+
+TEST_F(DictionaryTestEq, eqPosIntRight) {
     // Same values:
     EXPECT_TRUE(  +pos_int==cdict_["pos_int"] );
     EXPECT_FALSE( +pos_int!=cdict_["pos_int"] );
-    EXPECT_TRUE(  cdict_["pos_int"]==+pos_int );
-    EXPECT_FALSE( cdict_["pos_int"]!=+pos_int );
-    EXPECT_TRUE(  cdict_["pos_int"]==cdict_["pos_int"] );
-    EXPECT_FALSE( cdict_["pos_int"]!=cdict_["pos_int"] );
     // Different values:
     EXPECT_TRUE(  +pos_int!=cdict_["pos_int1"] );
     EXPECT_FALSE( +pos_int==cdict_["pos_int1"] );
-    EXPECT_TRUE(  cdict_["pos_int"]!=+pos_int1 );
-    EXPECT_FALSE( cdict_["pos_int"]==+pos_int1 );
-    EXPECT_TRUE(  cdict_["pos_int"]!=cdict_["pos_int1"] );
-    EXPECT_FALSE( cdict_["pos_int"]==cdict_["pos_int1"] );
     // Same values:
     EXPECT_TRUE(  +pos_int==cdict_["uint_is"] );
     EXPECT_FALSE( +pos_int!=cdict_["uint_is"] );
-    EXPECT_TRUE(  cdict_["pos_int"]==+uint_is );
-    EXPECT_FALSE( cdict_["pos_int"]!=+uint_is );
-    EXPECT_TRUE(  cdict_["pos_int"]==cdict_["uint_is"] );
-    EXPECT_FALSE( cdict_["pos_int"]!=cdict_["uint_is"] );
     // Different values:
     EXPECT_TRUE(  +pos_int!=cdict_["uint_is1"] );
     EXPECT_FALSE( +pos_int==cdict_["uint_is1"] );
-    EXPECT_TRUE(  cdict_["pos_int"]!=+uint_is1 );
-    EXPECT_FALSE( cdict_["pos_int"]==+uint_is1 );
-    EXPECT_TRUE(  cdict_["pos_int"]!=cdict_["uint_is1"] );
-    EXPECT_FALSE( cdict_["pos_int"]==cdict_["uint_is1"] );
     // Same values:
     EXPECT_TRUE(  +pos_int==cdict_["pos_long_is"] );
     EXPECT_FALSE( +pos_int!=cdict_["pos_long_is"] );
-    EXPECT_TRUE(  cdict_["pos_int"]==+pos_long_is );
-    EXPECT_FALSE( cdict_["pos_int"]!=+pos_long_is );
-    EXPECT_TRUE(  cdict_["pos_int"]==cdict_["pos_long_is"] );
-    EXPECT_FALSE( cdict_["pos_int"]!=cdict_["pos_long_is"] );
     // Different values:
     EXPECT_TRUE(  +pos_int!=cdict_["pos_long_is1"] );
     EXPECT_FALSE( +pos_int==cdict_["pos_long_is1"] );
-    EXPECT_TRUE(  cdict_["pos_int"]!=+pos_long_is1 );
-    EXPECT_FALSE( cdict_["pos_int"]==+pos_long_is1 );
-    EXPECT_TRUE(  cdict_["pos_int"]!=cdict_["pos_long_is1"] );
-    EXPECT_FALSE( cdict_["pos_int"]==cdict_["pos_long_is1"] );
     // Same values:
     EXPECT_TRUE(  +pos_int==cdict_["ulong_is"] );
     EXPECT_FALSE( +pos_int!=cdict_["ulong_is"] );
-    EXPECT_TRUE(  cdict_["pos_int"]==+ulong_is );
-    EXPECT_FALSE( cdict_["pos_int"]!=+ulong_is );
-    EXPECT_TRUE(  cdict_["pos_int"]==cdict_["ulong_is"] );
-    EXPECT_FALSE( cdict_["pos_int"]!=cdict_["ulong_is"] );
     // Different values:
     EXPECT_TRUE(  +pos_int!=cdict_["ulong_is1"] );
     EXPECT_FALSE( +pos_int==cdict_["ulong_is1"] );
-    EXPECT_TRUE(  cdict_["pos_int"]!=+ulong_is1 );
-    EXPECT_FALSE( cdict_["pos_int"]==+ulong_is1 );
-    EXPECT_TRUE(  cdict_["pos_int"]!=cdict_["ulong_is1"] );
-    EXPECT_FALSE( cdict_["pos_int"]==cdict_["ulong_is1"] );
     // Same values:
     EXPECT_TRUE(  +uint_is==cdict_["uint_is"] );
     EXPECT_FALSE( +uint_is!=cdict_["uint_is"] );
-    EXPECT_TRUE(  cdict_["uint_is"]==+uint_is );
-    EXPECT_FALSE( cdict_["uint_is"]!=+uint_is );
-    EXPECT_TRUE(  cdict_["uint_is"]==cdict_["uint_is"] );
-    EXPECT_FALSE( cdict_["uint_is"]!=cdict_["uint_is"] );
     // Different values:
     EXPECT_TRUE(  +uint_is!=cdict_["uint_is1"] );
     EXPECT_FALSE( +uint_is==cdict_["uint_is1"] );
-    EXPECT_TRUE(  cdict_["uint_is"]!=+uint_is1 );
-    EXPECT_FALSE( cdict_["uint_is"]==+uint_is1 );
-    EXPECT_TRUE(  cdict_["uint_is"]!=cdict_["uint_is1"] );
-    EXPECT_FALSE( cdict_["uint_is"]==cdict_["uint_is1"] );
     // Same values:
     EXPECT_TRUE(  +uint_is==cdict_["pos_long_is"] );
     EXPECT_FALSE( +uint_is!=cdict_["pos_long_is"] );
-    EXPECT_TRUE(  cdict_["uint_is"]==+pos_long_is );
-    EXPECT_FALSE( cdict_["uint_is"]!=+pos_long_is );
-    EXPECT_TRUE(  cdict_["uint_is"]==cdict_["pos_long_is"] );
-    EXPECT_FALSE( cdict_["uint_is"]!=cdict_["pos_long_is"] );
     // Different values:
     EXPECT_TRUE(  +uint_is!=cdict_["pos_long_is1"] );
     EXPECT_FALSE( +uint_is==cdict_["pos_long_is1"] );
-    EXPECT_TRUE(  cdict_["uint_is"]!=+pos_long_is1 );
-    EXPECT_FALSE( cdict_["uint_is"]==+pos_long_is1 );
-    EXPECT_TRUE(  cdict_["uint_is"]!=cdict_["pos_long_is1"] );
-    EXPECT_FALSE( cdict_["uint_is"]==cdict_["pos_long_is1"] );
     // Same values:
     EXPECT_TRUE(  +uint_is==cdict_["ulong_is"] );
     EXPECT_FALSE( +uint_is!=cdict_["ulong_is"] );
-    EXPECT_TRUE(  cdict_["uint_is"]==+ulong_is );
-    EXPECT_FALSE( cdict_["uint_is"]!=+ulong_is );
-    EXPECT_TRUE(  cdict_["uint_is"]==cdict_["ulong_is"] );
-    EXPECT_FALSE( cdict_["uint_is"]!=cdict_["ulong_is"] );
     // Different values:
     EXPECT_TRUE(  +uint_is!=cdict_["ulong_is1"] );
     EXPECT_FALSE( +uint_is==cdict_["ulong_is1"] );
-    EXPECT_TRUE(  cdict_["uint_is"]!=+ulong_is1 );
-    EXPECT_FALSE( cdict_["uint_is"]==+ulong_is1 );
-    EXPECT_TRUE(  cdict_["uint_is"]!=cdict_["ulong_is1"] );
-    EXPECT_FALSE( cdict_["uint_is"]==cdict_["ulong_is1"] );
     // Same values:
     EXPECT_TRUE(  +pos_long_is==cdict_["pos_long_is"] );
     EXPECT_FALSE( +pos_long_is!=cdict_["pos_long_is"] );
-    EXPECT_TRUE(  cdict_["pos_long_is"]==+pos_long_is );
-    EXPECT_FALSE( cdict_["pos_long_is"]!=+pos_long_is );
-    EXPECT_TRUE(  cdict_["pos_long_is"]==cdict_["pos_long_is"] );
-    EXPECT_FALSE( cdict_["pos_long_is"]!=cdict_["pos_long_is"] );
     // Different values:
     EXPECT_TRUE(  +pos_long_is!=cdict_["pos_long_is1"] );
     EXPECT_FALSE( +pos_long_is==cdict_["pos_long_is1"] );
-    EXPECT_TRUE(  cdict_["pos_long_is"]!=+pos_long_is1 );
-    EXPECT_FALSE( cdict_["pos_long_is"]==+pos_long_is1 );
-    EXPECT_TRUE(  cdict_["pos_long_is"]!=cdict_["pos_long_is1"] );
-    EXPECT_FALSE( cdict_["pos_long_is"]==cdict_["pos_long_is1"] );
     // Same values:
     EXPECT_TRUE(  +pos_long_is==cdict_["ulong_is"] );
     EXPECT_FALSE( +pos_long_is!=cdict_["ulong_is"] );
-    EXPECT_TRUE(  cdict_["pos_long_is"]==+ulong_is );
-    EXPECT_FALSE( cdict_["pos_long_is"]!=+ulong_is );
-    EXPECT_TRUE(  cdict_["pos_long_is"]==cdict_["ulong_is"] );
-    EXPECT_FALSE( cdict_["pos_long_is"]!=cdict_["ulong_is"] );
     // Different values:
     EXPECT_TRUE(  +pos_long_is!=cdict_["ulong_is1"] );
     EXPECT_FALSE( +pos_long_is==cdict_["ulong_is1"] );
-    EXPECT_TRUE(  cdict_["pos_long_is"]!=+ulong_is1 );
-    EXPECT_FALSE( cdict_["pos_long_is"]==+ulong_is1 );
-    EXPECT_TRUE(  cdict_["pos_long_is"]!=cdict_["ulong_is1"] );
-    EXPECT_FALSE( cdict_["pos_long_is"]==cdict_["ulong_is1"] );
     // Same values:
     EXPECT_TRUE(  +ulong_is==cdict_["ulong_is"] );
     EXPECT_FALSE( +ulong_is!=cdict_["ulong_is"] );
-    EXPECT_TRUE(  cdict_["ulong_is"]==+ulong_is );
-    EXPECT_FALSE( cdict_["ulong_is"]!=+ulong_is );
-    EXPECT_TRUE(  cdict_["ulong_is"]==cdict_["ulong_is"] );
-    EXPECT_FALSE( cdict_["ulong_is"]!=cdict_["ulong_is"] );
     // Different values:
     EXPECT_TRUE(  +ulong_is!=cdict_["ulong_is1"] );
     EXPECT_FALSE( +ulong_is==cdict_["ulong_is1"] );
-    EXPECT_TRUE(  cdict_["ulong_is"]!=+ulong_is1 );
-    EXPECT_FALSE( cdict_["ulong_is"]==+ulong_is1 );
+}
+
+TEST_F(DictionaryTestEq, eqPosIntBoth) {
+    // Same values:
+    EXPECT_TRUE(  cdict_["pos_int"]==cdict_["pos_int"] );
+    EXPECT_FALSE( cdict_["pos_int"]!=cdict_["pos_int"] );
+    // Different values:
+    EXPECT_TRUE(  cdict_["pos_int"]!=cdict_["pos_int1"] );
+    EXPECT_FALSE( cdict_["pos_int"]==cdict_["pos_int1"] );
+    // Same values:
+    EXPECT_TRUE(  cdict_["pos_int"]==cdict_["uint_is"] );
+    EXPECT_FALSE( cdict_["pos_int"]!=cdict_["uint_is"] );
+    // Different values:
+    EXPECT_TRUE(  cdict_["pos_int"]!=cdict_["uint_is1"] );
+    EXPECT_FALSE( cdict_["pos_int"]==cdict_["uint_is1"] );
+    // Same values:
+    EXPECT_TRUE(  cdict_["pos_int"]==cdict_["pos_long_is"] );
+    EXPECT_FALSE( cdict_["pos_int"]!=cdict_["pos_long_is"] );
+    // Different values:
+    EXPECT_TRUE(  cdict_["pos_int"]!=cdict_["pos_long_is1"] );
+    EXPECT_FALSE( cdict_["pos_int"]==cdict_["pos_long_is1"] );
+    // Same values:
+    EXPECT_TRUE(  cdict_["pos_int"]==cdict_["ulong_is"] );
+    EXPECT_FALSE( cdict_["pos_int"]!=cdict_["ulong_is"] );
+    // Different values:
+    EXPECT_TRUE(  cdict_["pos_int"]!=cdict_["ulong_is1"] );
+    EXPECT_FALSE( cdict_["pos_int"]==cdict_["ulong_is1"] );
+    // Same values:
+    EXPECT_TRUE(  cdict_["uint_is"]==cdict_["uint_is"] );
+    EXPECT_FALSE( cdict_["uint_is"]!=cdict_["uint_is"] );
+    // Different values:
+    EXPECT_TRUE(  cdict_["uint_is"]!=cdict_["uint_is1"] );
+    EXPECT_FALSE( cdict_["uint_is"]==cdict_["uint_is1"] );
+    // Same values:
+    EXPECT_TRUE(  cdict_["uint_is"]==cdict_["pos_long_is"] );
+    EXPECT_FALSE( cdict_["uint_is"]!=cdict_["pos_long_is"] );
+    // Different values:
+    EXPECT_TRUE(  cdict_["uint_is"]!=cdict_["pos_long_is1"] );
+    EXPECT_FALSE( cdict_["uint_is"]==cdict_["pos_long_is1"] );
+    // Same values:
+    EXPECT_TRUE(  cdict_["uint_is"]==cdict_["ulong_is"] );
+    EXPECT_FALSE( cdict_["uint_is"]!=cdict_["ulong_is"] );
+    // Different values:
+    EXPECT_TRUE(  cdict_["uint_is"]!=cdict_["ulong_is1"] );
+    EXPECT_FALSE( cdict_["uint_is"]==cdict_["ulong_is1"] );
+    // Same values:
+    EXPECT_TRUE(  cdict_["pos_long_is"]==cdict_["pos_long_is"] );
+    EXPECT_FALSE( cdict_["pos_long_is"]!=cdict_["pos_long_is"] );
+    // Different values:
+    EXPECT_TRUE(  cdict_["pos_long_is"]!=cdict_["pos_long_is1"] );
+    EXPECT_FALSE( cdict_["pos_long_is"]==cdict_["pos_long_is1"] );
+    // Same values:
+    EXPECT_TRUE(  cdict_["pos_long_is"]==cdict_["ulong_is"] );
+    EXPECT_FALSE( cdict_["pos_long_is"]!=cdict_["ulong_is"] );
+    // Different values:
+    EXPECT_TRUE(  cdict_["pos_long_is"]!=cdict_["ulong_is1"] );
+    EXPECT_FALSE( cdict_["pos_long_is"]==cdict_["ulong_is1"] );
+    // Same values:
+    EXPECT_TRUE(  cdict_["ulong_is"]==cdict_["ulong_is"] );
+    EXPECT_FALSE( cdict_["ulong_is"]!=cdict_["ulong_is"] );
+    // Different values:
     EXPECT_TRUE(  cdict_["ulong_is"]!=cdict_["ulong_is1"] );
     EXPECT_FALSE( cdict_["ulong_is"]==cdict_["ulong_is1"] );
 }
 
 // Equalities between domains pos_int:pos_uint
-TEST_F(DictionaryTestEq, eqPosIntPosUint) {
-    EXPECT_TRUE(  +pos_int!=cdict_["pos_uint"] );
-    EXPECT_FALSE( +pos_int==cdict_["pos_uint"] );
+TEST_F(DictionaryTestEq, eqPosIntPosUintLeft) {
     EXPECT_TRUE(  cdict_["pos_int"]!=+pos_uint );
     EXPECT_FALSE( cdict_["pos_int"]==+pos_uint );
-    EXPECT_TRUE(  cdict_["pos_int"]!=cdict_["pos_uint"] );
-    EXPECT_FALSE( cdict_["pos_int"]==cdict_["pos_uint"] );
-    EXPECT_TRUE(  +uint_is!=cdict_["pos_uint"] );
-    EXPECT_FALSE( +uint_is==cdict_["pos_uint"] );
     EXPECT_TRUE(  cdict_["uint_is"]!=+pos_uint );
     EXPECT_FALSE( cdict_["uint_is"]==+pos_uint );
-    EXPECT_TRUE(  cdict_["uint_is"]!=cdict_["pos_uint"] );
-    EXPECT_FALSE( cdict_["uint_is"]==cdict_["pos_uint"] );
-    EXPECT_TRUE(  +pos_long_is!=cdict_["pos_uint"] );
-    EXPECT_FALSE( +pos_long_is==cdict_["pos_uint"] );
     EXPECT_TRUE(  cdict_["pos_long_is"]!=+pos_uint );
     EXPECT_FALSE( cdict_["pos_long_is"]==+pos_uint );
-    EXPECT_TRUE(  cdict_["pos_long_is"]!=cdict_["pos_uint"] );
-    EXPECT_FALSE( cdict_["pos_long_is"]==cdict_["pos_uint"] );
-    EXPECT_TRUE(  +ulong_is!=cdict_["pos_uint"] );
-    EXPECT_FALSE( +ulong_is==cdict_["pos_uint"] );
     EXPECT_TRUE(  cdict_["ulong_is"]!=+pos_uint );
     EXPECT_FALSE( cdict_["ulong_is"]==+pos_uint );
+}
+
+TEST_F(DictionaryTestEq, eqPosIntPosUintRight) {
+    EXPECT_TRUE(  +pos_int!=cdict_["pos_uint"] );
+    EXPECT_FALSE( +pos_int==cdict_["pos_uint"] );
+    EXPECT_TRUE(  +uint_is!=cdict_["pos_uint"] );
+    EXPECT_FALSE( +uint_is==cdict_["pos_uint"] );
+    EXPECT_TRUE(  +pos_long_is!=cdict_["pos_uint"] );
+    EXPECT_FALSE( +pos_long_is==cdict_["pos_uint"] );
+    EXPECT_TRUE(  +ulong_is!=cdict_["pos_uint"] );
+    EXPECT_FALSE( +ulong_is==cdict_["pos_uint"] );
+}
+
+TEST_F(DictionaryTestEq, eqPosIntPosUintBoth) {
+    EXPECT_TRUE(  cdict_["pos_int"]!=cdict_["pos_uint"] );
+    EXPECT_FALSE( cdict_["pos_int"]==cdict_["pos_uint"] );
+    EXPECT_TRUE(  cdict_["uint_is"]!=cdict_["pos_uint"] );
+    EXPECT_FALSE( cdict_["uint_is"]==cdict_["pos_uint"] );
+    EXPECT_TRUE(  cdict_["pos_long_is"]!=cdict_["pos_uint"] );
+    EXPECT_FALSE( cdict_["pos_long_is"]==cdict_["pos_uint"] );
     EXPECT_TRUE(  cdict_["ulong_is"]!=cdict_["pos_uint"] );
     EXPECT_FALSE( cdict_["ulong_is"]==cdict_["pos_uint"] );
 }
 
 // Equalities between domains pos_int:pos_long
-TEST_F(DictionaryTestEq, eqPosIntPosLong) {
-    EXPECT_TRUE(  +pos_int!=cdict_["pos_long"] );
-    EXPECT_FALSE( +pos_int==cdict_["pos_long"] );
+TEST_F(DictionaryTestEq, eqPosIntPosLongLeft) {
     EXPECT_TRUE(  cdict_["pos_int"]!=+pos_long );
     EXPECT_FALSE( cdict_["pos_int"]==+pos_long );
-    EXPECT_TRUE(  cdict_["pos_int"]!=cdict_["pos_long"] );
-    EXPECT_FALSE( cdict_["pos_int"]==cdict_["pos_long"] );
-    EXPECT_TRUE(  +pos_int!=cdict_["ulong_ls"] );
-    EXPECT_FALSE( +pos_int==cdict_["ulong_ls"] );
     EXPECT_TRUE(  cdict_["pos_int"]!=+ulong_ls );
     EXPECT_FALSE( cdict_["pos_int"]==+ulong_ls );
-    EXPECT_TRUE(  cdict_["pos_int"]!=cdict_["ulong_ls"] );
-    EXPECT_FALSE( cdict_["pos_int"]==cdict_["ulong_ls"] );
-    EXPECT_TRUE(  +uint_is!=cdict_["pos_long"] );
-    EXPECT_FALSE( +uint_is==cdict_["pos_long"] );
     EXPECT_TRUE(  cdict_["uint_is"]!=+pos_long );
     EXPECT_FALSE( cdict_["uint_is"]==+pos_long );
-    EXPECT_TRUE(  cdict_["uint_is"]!=cdict_["pos_long"] );
-    EXPECT_FALSE( cdict_["uint_is"]==cdict_["pos_long"] );
-    EXPECT_TRUE(  +uint_is!=cdict_["ulong_ls"] );
-    EXPECT_FALSE( +uint_is==cdict_["ulong_ls"] );
     EXPECT_TRUE(  cdict_["uint_is"]!=+ulong_ls );
     EXPECT_FALSE( cdict_["uint_is"]==+ulong_ls );
-    EXPECT_TRUE(  cdict_["uint_is"]!=cdict_["ulong_ls"] );
-    EXPECT_FALSE( cdict_["uint_is"]==cdict_["ulong_ls"] );
-    EXPECT_TRUE(  +pos_long_is!=cdict_["pos_long"] );
-    EXPECT_FALSE( +pos_long_is==cdict_["pos_long"] );
     EXPECT_TRUE(  cdict_["pos_long_is"]!=+pos_long );
     EXPECT_FALSE( cdict_["pos_long_is"]==+pos_long );
-    EXPECT_TRUE(  cdict_["pos_long_is"]!=cdict_["pos_long"] );
-    EXPECT_FALSE( cdict_["pos_long_is"]==cdict_["pos_long"] );
-    EXPECT_TRUE(  +pos_long_is!=cdict_["ulong_ls"] );
-    EXPECT_FALSE( +pos_long_is==cdict_["ulong_ls"] );
     EXPECT_TRUE(  cdict_["pos_long_is"]!=+ulong_ls );
     EXPECT_FALSE( cdict_["pos_long_is"]==+ulong_ls );
-    EXPECT_TRUE(  cdict_["pos_long_is"]!=cdict_["ulong_ls"] );
-    EXPECT_FALSE( cdict_["pos_long_is"]==cdict_["ulong_ls"] );
-    EXPECT_TRUE(  +ulong_is!=cdict_["pos_long"] );
-    EXPECT_FALSE( +ulong_is==cdict_["pos_long"] );
     EXPECT_TRUE(  cdict_["ulong_is"]!=+pos_long );
     EXPECT_FALSE( cdict_["ulong_is"]==+pos_long );
-    EXPECT_TRUE(  cdict_["ulong_is"]!=cdict_["pos_long"] );
-    EXPECT_FALSE( cdict_["ulong_is"]==cdict_["pos_long"] );
-    EXPECT_TRUE(  +ulong_is!=cdict_["ulong_ls"] );
-    EXPECT_FALSE( +ulong_is==cdict_["ulong_ls"] );
     EXPECT_TRUE(  cdict_["ulong_is"]!=+ulong_ls );
     EXPECT_FALSE( cdict_["ulong_is"]==+ulong_ls );
+}
+
+TEST_F(DictionaryTestEq, eqPosIntPosLongRight) {
+    EXPECT_TRUE(  +pos_int!=cdict_["pos_long"] );
+    EXPECT_FALSE( +pos_int==cdict_["pos_long"] );
+    EXPECT_TRUE(  +pos_int!=cdict_["ulong_ls"] );
+    EXPECT_FALSE( +pos_int==cdict_["ulong_ls"] );
+    EXPECT_TRUE(  +uint_is!=cdict_["pos_long"] );
+    EXPECT_FALSE( +uint_is==cdict_["pos_long"] );
+    EXPECT_TRUE(  +uint_is!=cdict_["ulong_ls"] );
+    EXPECT_FALSE( +uint_is==cdict_["ulong_ls"] );
+    EXPECT_TRUE(  +pos_long_is!=cdict_["pos_long"] );
+    EXPECT_FALSE( +pos_long_is==cdict_["pos_long"] );
+    EXPECT_TRUE(  +pos_long_is!=cdict_["ulong_ls"] );
+    EXPECT_FALSE( +pos_long_is==cdict_["ulong_ls"] );
+    EXPECT_TRUE(  +ulong_is!=cdict_["pos_long"] );
+    EXPECT_FALSE( +ulong_is==cdict_["pos_long"] );
+    EXPECT_TRUE(  +ulong_is!=cdict_["ulong_ls"] );
+    EXPECT_FALSE( +ulong_is==cdict_["ulong_ls"] );
+}
+
+TEST_F(DictionaryTestEq, eqPosIntPosLongBoth) {
+    EXPECT_TRUE(  cdict_["pos_int"]!=cdict_["pos_long"] );
+    EXPECT_FALSE( cdict_["pos_int"]==cdict_["pos_long"] );
+    EXPECT_TRUE(  cdict_["pos_int"]!=cdict_["ulong_ls"] );
+    EXPECT_FALSE( cdict_["pos_int"]==cdict_["ulong_ls"] );
+    EXPECT_TRUE(  cdict_["uint_is"]!=cdict_["pos_long"] );
+    EXPECT_FALSE( cdict_["uint_is"]==cdict_["pos_long"] );
+    EXPECT_TRUE(  cdict_["uint_is"]!=cdict_["ulong_ls"] );
+    EXPECT_FALSE( cdict_["uint_is"]==cdict_["ulong_ls"] );
+    EXPECT_TRUE(  cdict_["pos_long_is"]!=cdict_["pos_long"] );
+    EXPECT_FALSE( cdict_["pos_long_is"]==cdict_["pos_long"] );
+    EXPECT_TRUE(  cdict_["pos_long_is"]!=cdict_["ulong_ls"] );
+    EXPECT_FALSE( cdict_["pos_long_is"]==cdict_["ulong_ls"] );
+    EXPECT_TRUE(  cdict_["ulong_is"]!=cdict_["pos_long"] );
+    EXPECT_FALSE( cdict_["ulong_is"]==cdict_["pos_long"] );
     EXPECT_TRUE(  cdict_["ulong_is"]!=cdict_["ulong_ls"] );
     EXPECT_FALSE( cdict_["ulong_is"]==cdict_["ulong_ls"] );
 }
 
 // Equalities between domains pos_int:pos_ulong
-TEST_F(DictionaryTestEq, eqPosIntULong) {
-    EXPECT_TRUE(  +pos_int!=cdict_["pos_ulong"] );
-    EXPECT_FALSE( +pos_int==cdict_["pos_ulong"] );
+TEST_F(DictionaryTestEq, eqPosIntULongLeft) {
     EXPECT_TRUE(  cdict_["pos_int"]!=+pos_ulong );
     EXPECT_FALSE( cdict_["pos_int"]==+pos_ulong );
-    EXPECT_TRUE(  cdict_["pos_int"]!=cdict_["pos_ulong"] );
-    EXPECT_FALSE( cdict_["pos_int"]==cdict_["pos_ulong"] );
-    EXPECT_TRUE(  +uint_is!=cdict_["pos_ulong"] );
-    EXPECT_FALSE( +uint_is==cdict_["pos_ulong"] );
     EXPECT_TRUE(  cdict_["uint_is"]!=+pos_ulong );
     EXPECT_FALSE( cdict_["uint_is"]==+pos_ulong );
-    EXPECT_TRUE(  cdict_["uint_is"]!=cdict_["pos_ulong"] );
-    EXPECT_FALSE( cdict_["uint_is"]==cdict_["pos_ulong"] );
-    EXPECT_TRUE(  +pos_long_is!=cdict_["pos_ulong"] );
-    EXPECT_FALSE( +pos_long_is==cdict_["pos_ulong"] );
     EXPECT_TRUE(  cdict_["pos_long_is"]!=+pos_ulong );
     EXPECT_FALSE( cdict_["pos_long_is"]==+pos_ulong );
-    EXPECT_TRUE(  cdict_["pos_long_is"]!=cdict_["pos_ulong"] );
-    EXPECT_FALSE( cdict_["pos_long_is"]==cdict_["pos_ulong"] );
-    EXPECT_TRUE(  +ulong_is!=cdict_["pos_ulong"] );
-    EXPECT_FALSE( +ulong_is==cdict_["pos_ulong"] );
     EXPECT_TRUE(  cdict_["ulong_is"]!=+pos_ulong );
     EXPECT_FALSE( cdict_["ulong_is"]==+pos_ulong );
+}
+
+TEST_F(DictionaryTestEq, eqPosIntULongRight) {
+    EXPECT_TRUE(  +pos_int!=cdict_["pos_ulong"] );
+    EXPECT_FALSE( +pos_int==cdict_["pos_ulong"] );
+    EXPECT_TRUE(  +uint_is!=cdict_["pos_ulong"] );
+    EXPECT_FALSE( +uint_is==cdict_["pos_ulong"] );
+    EXPECT_TRUE(  +pos_long_is!=cdict_["pos_ulong"] );
+    EXPECT_FALSE( +pos_long_is==cdict_["pos_ulong"] );
+    EXPECT_TRUE(  +ulong_is!=cdict_["pos_ulong"] );
+    EXPECT_FALSE( +ulong_is==cdict_["pos_ulong"] );
+}
+
+TEST_F(DictionaryTestEq, eqPosIntULongBoth) {
+    EXPECT_TRUE(  cdict_["pos_int"]!=cdict_["pos_ulong"] );
+    EXPECT_FALSE( cdict_["pos_int"]==cdict_["pos_ulong"] );
+    EXPECT_TRUE(  cdict_["uint_is"]!=cdict_["pos_ulong"] );
+    EXPECT_FALSE( cdict_["uint_is"]==cdict_["pos_ulong"] );
+    EXPECT_TRUE(  cdict_["pos_long_is"]!=cdict_["pos_ulong"] );
+    EXPECT_FALSE( cdict_["pos_long_is"]==cdict_["pos_ulong"] );
     EXPECT_TRUE(  cdict_["ulong_is"]!=cdict_["pos_ulong"] );
     EXPECT_FALSE( cdict_["ulong_is"]==cdict_["pos_ulong"] );
 }
 
 // Equalities within domain pos_uint
-TEST_F(DictionaryTestEq, eqPosUint) {
+TEST_F(DictionaryTestEq, eqPosUintLeft) {
+    // Same values:
+    EXPECT_TRUE(  cdict_["pos_uint"]==+pos_uint );
+    EXPECT_FALSE( cdict_["pos_uint"]!=+pos_uint );
+    // Different values:
+    EXPECT_TRUE(  cdict_["pos_uint"]!=+pos_uint1 );
+    EXPECT_FALSE( cdict_["pos_uint"]==+pos_uint1 );
+}
+
+TEST_F(DictionaryTestEq, eqPosUintRight) {
     // Same values:
     EXPECT_TRUE(  +pos_uint==cdict_["pos_uint"] );
     EXPECT_FALSE( +pos_uint!=cdict_["pos_uint"] );
-    EXPECT_TRUE(  cdict_["pos_uint"]==+pos_uint );
-    EXPECT_FALSE( cdict_["pos_uint"]!=+pos_uint );
-    EXPECT_TRUE(  cdict_["pos_uint"]==cdict_["pos_uint"] );
-    EXPECT_FALSE( cdict_["pos_uint"]!=cdict_["pos_uint"] );
     // Different values:
     EXPECT_TRUE(  +pos_uint!=cdict_["pos_uint1"] );
     EXPECT_FALSE( +pos_uint==cdict_["pos_uint1"] );
-    EXPECT_TRUE(  cdict_["pos_uint"]!=+pos_uint1 );
-    EXPECT_FALSE( cdict_["pos_uint"]==+pos_uint1 );
+}
+
+TEST_F(DictionaryTestEq, eqPosUintBoth) {
+    // Same values:
+    EXPECT_TRUE(  cdict_["pos_uint"]==cdict_["pos_uint"] );
+    EXPECT_FALSE( cdict_["pos_uint"]!=cdict_["pos_uint"] );
+    // Different values:
     EXPECT_TRUE(  cdict_["pos_uint"]!=cdict_["pos_uint1"] );
     EXPECT_FALSE( cdict_["pos_uint"]==cdict_["pos_uint1"] );
 }
 
 // Equalities between domains pos_uint:pos_long
-TEST_F(DictionaryTestEq, eqPosUintPosLong) {
-    EXPECT_TRUE(  +pos_uint!=cdict_["pos_long"] );
-    EXPECT_FALSE( +pos_uint==cdict_["pos_long"] );
+TEST_F(DictionaryTestEq, eqPosUintPosLongLeft) {
     EXPECT_TRUE(  cdict_["pos_uint"]!=+pos_long );
     EXPECT_FALSE( cdict_["pos_uint"]==+pos_long );
-    EXPECT_TRUE(  cdict_["pos_uint"]!=cdict_["pos_long"] );
-    EXPECT_FALSE( cdict_["pos_uint"]==cdict_["pos_long"] );
-    EXPECT_TRUE(  +pos_uint!=cdict_["ulong_ls"] );
-    EXPECT_FALSE( +pos_uint==cdict_["ulong_ls"] );
     EXPECT_TRUE(  cdict_["pos_uint"]!=+ulong_ls );
     EXPECT_FALSE( cdict_["pos_uint"]==+ulong_ls );
+}
+
+TEST_F(DictionaryTestEq, eqPosUintPosLongRight) {
+    EXPECT_TRUE(  +pos_uint!=cdict_["pos_long"] );
+    EXPECT_FALSE( +pos_uint==cdict_["pos_long"] );
+    EXPECT_TRUE(  +pos_uint!=cdict_["ulong_ls"] );
+    EXPECT_FALSE( +pos_uint==cdict_["ulong_ls"] );
+}
+
+TEST_F(DictionaryTestEq, eqPosUintPosLongBoth) {
+    EXPECT_TRUE(  cdict_["pos_uint"]!=cdict_["pos_long"] );
+    EXPECT_FALSE( cdict_["pos_uint"]==cdict_["pos_long"] );
     EXPECT_TRUE(  cdict_["pos_uint"]!=cdict_["ulong_ls"] );
     EXPECT_FALSE( cdict_["pos_uint"]==cdict_["ulong_ls"] );
 }
 
 // Equalities between domains pos_uint:pos_ulong
-TEST_F(DictionaryTestEq, eqPosUintULong) {
-    EXPECT_TRUE(  +pos_uint!=cdict_["pos_ulong"] );
-    EXPECT_FALSE( +pos_uint==cdict_["pos_ulong"] );
+TEST_F(DictionaryTestEq, eqPosUintULongLeft) {
     EXPECT_TRUE(  cdict_["pos_uint"]!=+pos_ulong );
     EXPECT_FALSE( cdict_["pos_uint"]==+pos_ulong );
+}
+
+TEST_F(DictionaryTestEq, eqPosUintULongRight) {
+    EXPECT_TRUE(  +pos_uint!=cdict_["pos_ulong"] );
+    EXPECT_FALSE( +pos_uint==cdict_["pos_ulong"] );
+}
+
+TEST_F(DictionaryTestEq, eqPosUintULongBoth) {
     EXPECT_TRUE(  cdict_["pos_uint"]!=cdict_["pos_ulong"] );
     EXPECT_FALSE( cdict_["pos_uint"]==cdict_["pos_ulong"] );
 }
 
 // Equalities within domain pos_long
-TEST_F(DictionaryTestEq, eqPosLong) {
+TEST_F(DictionaryTestEq, eqPosLongLeft) {
+    // Same values:
+    EXPECT_TRUE(  cdict_["pos_long"]==+pos_long );
+    EXPECT_FALSE( cdict_["pos_long"]!=+pos_long );
+    // Different values:
+    EXPECT_TRUE(  cdict_["pos_long"]!=+pos_long1 );
+    EXPECT_FALSE( cdict_["pos_long"]==+pos_long1 );
+    // Same values:
+    EXPECT_TRUE(  cdict_["pos_long"]==+ulong_ls );
+    EXPECT_FALSE( cdict_["pos_long"]!=+ulong_ls );
+    // Different values:
+    EXPECT_TRUE(  cdict_["pos_long"]!=+ulong_ls1 );
+    EXPECT_FALSE( cdict_["pos_long"]==+ulong_ls1 );
+    // Same values:
+    EXPECT_TRUE(  cdict_["ulong_ls"]==+ulong_ls );
+    EXPECT_FALSE( cdict_["ulong_ls"]!=+ulong_ls );
+    // Different values:
+    EXPECT_TRUE(  cdict_["ulong_ls"]!=+ulong_ls1 );
+    EXPECT_FALSE( cdict_["ulong_ls"]==+ulong_ls1 );
+}
+
+TEST_F(DictionaryTestEq, eqPosLongRight) {
     // Same values:
     EXPECT_TRUE(  +pos_long==cdict_["pos_long"] );
     EXPECT_FALSE( +pos_long!=cdict_["pos_long"] );
-    EXPECT_TRUE(  cdict_["pos_long"]==+pos_long );
-    EXPECT_FALSE( cdict_["pos_long"]!=+pos_long );
-    EXPECT_TRUE(  cdict_["pos_long"]==cdict_["pos_long"] );
-    EXPECT_FALSE( cdict_["pos_long"]!=cdict_["pos_long"] );
     // Different values:
     EXPECT_TRUE(  +pos_long!=cdict_["pos_long1"] );
     EXPECT_FALSE( +pos_long==cdict_["pos_long1"] );
-    EXPECT_TRUE(  cdict_["pos_long"]!=+pos_long1 );
-    EXPECT_FALSE( cdict_["pos_long"]==+pos_long1 );
-    EXPECT_TRUE(  cdict_["pos_long"]!=cdict_["pos_long1"] );
-    EXPECT_FALSE( cdict_["pos_long"]==cdict_["pos_long1"] );
     // Same values:
     EXPECT_TRUE(  +pos_long==cdict_["ulong_ls"] );
     EXPECT_FALSE( +pos_long!=cdict_["ulong_ls"] );
-    EXPECT_TRUE(  cdict_["pos_long"]==+ulong_ls );
-    EXPECT_FALSE( cdict_["pos_long"]!=+ulong_ls );
-    EXPECT_TRUE(  cdict_["pos_long"]==cdict_["ulong_ls"] );
-    EXPECT_FALSE( cdict_["pos_long"]!=cdict_["ulong_ls"] );
     // Different values:
     EXPECT_TRUE(  +pos_long!=cdict_["ulong_ls1"] );
     EXPECT_FALSE( +pos_long==cdict_["ulong_ls1"] );
-    EXPECT_TRUE(  cdict_["pos_long"]!=+ulong_ls1 );
-    EXPECT_FALSE( cdict_["pos_long"]==+ulong_ls1 );
-    EXPECT_TRUE(  cdict_["pos_long"]!=cdict_["ulong_ls1"] );
-    EXPECT_FALSE( cdict_["pos_long"]==cdict_["ulong_ls1"] );
     // Same values:
     EXPECT_TRUE(  +ulong_ls==cdict_["ulong_ls"] );
     EXPECT_FALSE( +ulong_ls!=cdict_["ulong_ls"] );
-    EXPECT_TRUE(  cdict_["ulong_ls"]==+ulong_ls );
-    EXPECT_FALSE( cdict_["ulong_ls"]!=+ulong_ls );
-    EXPECT_TRUE(  cdict_["ulong_ls"]==cdict_["ulong_ls"] );
-    EXPECT_FALSE( cdict_["ulong_ls"]!=cdict_["ulong_ls"] );
     // Different values:
     EXPECT_TRUE(  +ulong_ls!=cdict_["ulong_ls1"] );
     EXPECT_FALSE( +ulong_ls==cdict_["ulong_ls1"] );
-    EXPECT_TRUE(  cdict_["ulong_ls"]!=+ulong_ls1 );
-    EXPECT_FALSE( cdict_["ulong_ls"]==+ulong_ls1 );
+}
+
+TEST_F(DictionaryTestEq, eqPosLongBoth) {
+    // Same values:
+    EXPECT_TRUE(  cdict_["pos_long"]==cdict_["pos_long"] );
+    EXPECT_FALSE( cdict_["pos_long"]!=cdict_["pos_long"] );
+    // Different values:
+    EXPECT_TRUE(  cdict_["pos_long"]!=cdict_["pos_long1"] );
+    EXPECT_FALSE( cdict_["pos_long"]==cdict_["pos_long1"] );
+    // Same values:
+    EXPECT_TRUE(  cdict_["pos_long"]==cdict_["ulong_ls"] );
+    EXPECT_FALSE( cdict_["pos_long"]!=cdict_["ulong_ls"] );
+    // Different values:
+    EXPECT_TRUE(  cdict_["pos_long"]!=cdict_["ulong_ls1"] );
+    EXPECT_FALSE( cdict_["pos_long"]==cdict_["ulong_ls1"] );
+    // Same values:
+    EXPECT_TRUE(  cdict_["ulong_ls"]==cdict_["ulong_ls"] );
+    EXPECT_FALSE( cdict_["ulong_ls"]!=cdict_["ulong_ls"] );
+    // Different values:
     EXPECT_TRUE(  cdict_["ulong_ls"]!=cdict_["ulong_ls1"] );
     EXPECT_FALSE( cdict_["ulong_ls"]==cdict_["ulong_ls1"] );
 }
 
 // Equalities between domains pos_long:pos_ulong
-TEST_F(DictionaryTestEq, eqPosLongULong) {
-    EXPECT_TRUE(  +pos_long!=cdict_["pos_ulong"] );
-    EXPECT_FALSE( +pos_long==cdict_["pos_ulong"] );
+TEST_F(DictionaryTestEq, eqPosLongULongLeft) {
     EXPECT_TRUE(  cdict_["pos_long"]!=+pos_ulong );
     EXPECT_FALSE( cdict_["pos_long"]==+pos_ulong );
-    EXPECT_TRUE(  cdict_["pos_long"]!=cdict_["pos_ulong"] );
-    EXPECT_FALSE( cdict_["pos_long"]==cdict_["pos_ulong"] );
-    EXPECT_TRUE(  +ulong_ls!=cdict_["pos_ulong"] );
-    EXPECT_FALSE( +ulong_ls==cdict_["pos_ulong"] );
     EXPECT_TRUE(  cdict_["ulong_ls"]!=+pos_ulong );
     EXPECT_FALSE( cdict_["ulong_ls"]==+pos_ulong );
+}
+
+TEST_F(DictionaryTestEq, eqPosLongULongRight) {
+    EXPECT_TRUE(  +pos_long!=cdict_["pos_ulong"] );
+    EXPECT_FALSE( +pos_long==cdict_["pos_ulong"] );
+    EXPECT_TRUE(  +ulong_ls!=cdict_["pos_ulong"] );
+    EXPECT_FALSE( +ulong_ls==cdict_["pos_ulong"] );
+}
+
+TEST_F(DictionaryTestEq, eqPosLongULongBoth) {
+    EXPECT_TRUE(  cdict_["pos_long"]!=cdict_["pos_ulong"] );
+    EXPECT_FALSE( cdict_["pos_long"]==cdict_["pos_ulong"] );
     EXPECT_TRUE(  cdict_["ulong_ls"]!=cdict_["pos_ulong"] );
     EXPECT_FALSE( cdict_["ulong_ls"]==cdict_["pos_ulong"] );
 }
 
 // Equalities within domain pos_ulong
-TEST_F(DictionaryTestEq, eqULong) {
+TEST_F(DictionaryTestEq, eqULongLeft) {
+    // Same values:
+    EXPECT_TRUE(  cdict_["pos_ulong"]==+pos_ulong );
+    EXPECT_FALSE( cdict_["pos_ulong"]!=+pos_ulong );
+    // Different values:
+    EXPECT_TRUE(  cdict_["pos_ulong"]!=+pos_ulong1 );
+    EXPECT_FALSE( cdict_["pos_ulong"]==+pos_ulong1 );
+}
+
+TEST_F(DictionaryTestEq, eqULongRight) {
     // Same values:
     EXPECT_TRUE(  +pos_ulong==cdict_["pos_ulong"] );
     EXPECT_FALSE( +pos_ulong!=cdict_["pos_ulong"] );
-    EXPECT_TRUE(  cdict_["pos_ulong"]==+pos_ulong );
-    EXPECT_FALSE( cdict_["pos_ulong"]!=+pos_ulong );
-    EXPECT_TRUE(  cdict_["pos_ulong"]==cdict_["pos_ulong"] );
-    EXPECT_FALSE( cdict_["pos_ulong"]!=cdict_["pos_ulong"] );
     // Different values:
     EXPECT_TRUE(  +pos_ulong!=cdict_["pos_ulong1"] );
     EXPECT_FALSE( +pos_ulong==cdict_["pos_ulong1"] );
-    EXPECT_TRUE(  cdict_["pos_ulong"]!=+pos_ulong1 );
-    EXPECT_FALSE( cdict_["pos_ulong"]==+pos_ulong1 );
+}
+
+TEST_F(DictionaryTestEq, eqULongBoth) {
+    // Same values:
+    EXPECT_TRUE(  cdict_["pos_ulong"]==cdict_["pos_ulong"] );
+    EXPECT_FALSE( cdict_["pos_ulong"]!=cdict_["pos_ulong"] );
+    // Different values:
     EXPECT_TRUE(  cdict_["pos_ulong"]!=cdict_["pos_ulong1"] );
     EXPECT_FALSE( cdict_["pos_ulong"]==cdict_["pos_ulong1"] );
 }
 
 // Equalities within same type my_bool
-TEST_F(DictionaryTestEq, eqBool) {
+TEST_F(DictionaryTestEq, eqBoolLeft) {
+    // Same values:
+    EXPECT_TRUE(  cdict_["my_bool"]==my_bool );
+    EXPECT_FALSE( cdict_["my_bool"]!=my_bool );
+    // Different values:
+    EXPECT_TRUE(  cdict_["my_bool"]!=my_bool1 );
+    EXPECT_FALSE( cdict_["my_bool"]==my_bool1 );
+}
+
+TEST_F(DictionaryTestEq, eqBoolRight) {
     // Same values:
     EXPECT_TRUE(  my_bool==cdict_["my_bool"] );
     EXPECT_FALSE( my_bool!=cdict_["my_bool"] );
-    EXPECT_TRUE(  cdict_["my_bool"]==my_bool );
-    EXPECT_FALSE( cdict_["my_bool"]!=my_bool );
-    EXPECT_TRUE(  cdict_["my_bool"]==cdict_["my_bool"] );
-    EXPECT_FALSE( cdict_["my_bool"]!=cdict_["my_bool"] );
     // Different values:
     EXPECT_TRUE(  my_bool!=cdict_["my_bool1"] );
     EXPECT_FALSE( my_bool==cdict_["my_bool1"] );
-    EXPECT_TRUE(  cdict_["my_bool"]!=my_bool1 );
-    EXPECT_FALSE( cdict_["my_bool"]==my_bool1 );
+}
+
+TEST_F(DictionaryTestEq, eqBoolBoth) {
+    // Same values:
+    EXPECT_TRUE(  cdict_["my_bool"]==cdict_["my_bool"] );
+    EXPECT_FALSE( cdict_["my_bool"]!=cdict_["my_bool"] );
+    // Different values:
     EXPECT_TRUE(  cdict_["my_bool"]!=cdict_["my_bool1"] );
     EXPECT_FALSE( cdict_["my_bool"]==cdict_["my_bool1"] );
 }
 
 // Equalities between different types my_bool:my_int
-TEST_F(DictionaryTestEq, eqBoolInt) {
-    EXPECT_TRUE(  my_bool!=cdict_["my_int"] );
-    EXPECT_FALSE( my_bool==cdict_["my_int"] );
-    EXPECT_TRUE(  cdict_["my_bool"]!=my_int );
-    EXPECT_FALSE( cdict_["my_bool"]==my_int );
-    EXPECT_TRUE(  cdict_["my_bool"]!=cdict_["my_int"] );
-    EXPECT_FALSE( cdict_["my_bool"]==cdict_["my_int"] );
+TEST_F(DictionaryTestEq, eqBoolIntLeft) {
+    EXPECT_THROW(  cdict_["my_bool"]!=my_int, de::type_mismatch );
+    EXPECT_THROW(  cdict_["my_bool"]==my_int, de::type_mismatch );
+}
+
+TEST_F(DictionaryTestEq, eqBoolIntRight) {
+    EXPECT_THROW(  my_bool!=cdict_["my_int"], de::type_mismatch );
+    EXPECT_THROW(  my_bool==cdict_["my_int"], de::type_mismatch );
+}
+
+TEST_F(DictionaryTestEq, eqBoolIntBoth) {
+    EXPECT_THROW(  cdict_["my_bool"]!=cdict_["my_int"], de::type_mismatch );
+    EXPECT_THROW(  cdict_["my_bool"]==cdict_["my_int"], de::type_mismatch );
 }
 
 // Equalities between different types my_bool:my_string
-TEST_F(DictionaryTestEq, eqBoolString) {
-    EXPECT_TRUE(  my_bool!=cdict_["my_string"] );
-    EXPECT_FALSE( my_bool==cdict_["my_string"] );
-    EXPECT_TRUE(  cdict_["my_bool"]!=my_string );
-    EXPECT_FALSE( cdict_["my_bool"]==my_string );
-    EXPECT_TRUE(  cdict_["my_bool"]!=cdict_["my_string"] );
-    EXPECT_FALSE( cdict_["my_bool"]==cdict_["my_string"] );
+TEST_F(DictionaryTestEq, eqBoolStringLeft) {
+    EXPECT_THROW(  cdict_["my_bool"]!=my_string, de::type_mismatch );
+    EXPECT_THROW(  cdict_["my_bool"]==my_string, de::type_mismatch );
+}
+
+TEST_F(DictionaryTestEq, eqBoolStringRight) {
+    EXPECT_THROW(  my_bool!=cdict_["my_string"], de::type_mismatch );
+    EXPECT_THROW(  my_bool==cdict_["my_string"], de::type_mismatch );
+}
+
+TEST_F(DictionaryTestEq, eqBoolStringBoth) {
+    EXPECT_THROW(  cdict_["my_bool"]!=cdict_["my_string"], de::type_mismatch );
+    EXPECT_THROW(  cdict_["my_bool"]==cdict_["my_string"], de::type_mismatch );
 }
 
 // Equalities between different types my_bool:my_vec
-TEST_F(DictionaryTestEq, eqBoolVec) {
-    EXPECT_TRUE(  my_bool!=cdict_["my_vec"] );
-    EXPECT_FALSE( my_bool==cdict_["my_vec"] );
-    EXPECT_TRUE(  cdict_["my_bool"]!=my_vec );
-    EXPECT_FALSE( cdict_["my_bool"]==my_vec );
-    EXPECT_TRUE(  cdict_["my_bool"]!=cdict_["my_vec"] );
-    EXPECT_FALSE( cdict_["my_bool"]==cdict_["my_vec"] );
+TEST_F(DictionaryTestEq, eqBoolVecLeft) {
+    EXPECT_THROW(  cdict_["my_bool"]!=my_vec, de::type_mismatch );
+    EXPECT_THROW(  cdict_["my_bool"]==my_vec, de::type_mismatch );
+}
+
+TEST_F(DictionaryTestEq, eqBoolVecRight) {
+    EXPECT_THROW(  my_bool!=cdict_["my_vec"], de::type_mismatch );
+    EXPECT_THROW(  my_bool==cdict_["my_vec"], de::type_mismatch );
+}
+
+TEST_F(DictionaryTestEq, eqBoolVecBoth) {
+    EXPECT_THROW(  cdict_["my_bool"]!=cdict_["my_vec"], de::type_mismatch );
+    EXPECT_THROW(  cdict_["my_bool"]==cdict_["my_vec"], de::type_mismatch );
 }
 
 // Equalities between different types my_bool:my_pair
-TEST_F(DictionaryTestEq, eqBoolPair) {
-    EXPECT_TRUE(  my_bool!=cdict_["my_pair"] );
-    EXPECT_FALSE( my_bool==cdict_["my_pair"] );
-    EXPECT_TRUE(  cdict_["my_bool"]!=my_pair );
-    EXPECT_FALSE( cdict_["my_bool"]==my_pair );
-    EXPECT_TRUE(  cdict_["my_bool"]!=cdict_["my_pair"] );
-    EXPECT_FALSE( cdict_["my_bool"]==cdict_["my_pair"] );
+TEST_F(DictionaryTestEq, eqBoolPairLeft) {
+    EXPECT_THROW(  cdict_["my_bool"]!=my_pair, de::type_mismatch );
+    EXPECT_THROW(  cdict_["my_bool"]==my_pair, de::type_mismatch );
+}
+
+TEST_F(DictionaryTestEq, eqBoolPairRight) {
+    EXPECT_THROW(  my_bool!=cdict_["my_pair"], de::type_mismatch );
+    EXPECT_THROW(  my_bool==cdict_["my_pair"], de::type_mismatch );
+}
+
+TEST_F(DictionaryTestEq, eqBoolPairBoth) {
+    EXPECT_THROW(  cdict_["my_bool"]!=cdict_["my_pair"], de::type_mismatch );
+    EXPECT_THROW(  cdict_["my_bool"]==cdict_["my_pair"], de::type_mismatch );
 }
 
 // Equalities within same type my_int
-TEST_F(DictionaryTestEq, eqInt) {
+TEST_F(DictionaryTestEq, eqIntLeft) {
+    // Same values:
+    EXPECT_TRUE(  cdict_["my_int"]==my_int );
+    EXPECT_FALSE( cdict_["my_int"]!=my_int );
+    // Different values:
+    EXPECT_TRUE(  cdict_["my_int"]!=my_int1 );
+    EXPECT_FALSE( cdict_["my_int"]==my_int1 );
+}
+
+TEST_F(DictionaryTestEq, eqIntRight) {
     // Same values:
     EXPECT_TRUE(  my_int==cdict_["my_int"] );
     EXPECT_FALSE( my_int!=cdict_["my_int"] );
-    EXPECT_TRUE(  cdict_["my_int"]==my_int );
-    EXPECT_FALSE( cdict_["my_int"]!=my_int );
-    EXPECT_TRUE(  cdict_["my_int"]==cdict_["my_int"] );
-    EXPECT_FALSE( cdict_["my_int"]!=cdict_["my_int"] );
     // Different values:
     EXPECT_TRUE(  my_int!=cdict_["my_int1"] );
     EXPECT_FALSE( my_int==cdict_["my_int1"] );
-    EXPECT_TRUE(  cdict_["my_int"]!=my_int1 );
-    EXPECT_FALSE( cdict_["my_int"]==my_int1 );
+}
+
+TEST_F(DictionaryTestEq, eqIntBoth) {
+    // Same values:
+    EXPECT_TRUE(  cdict_["my_int"]==cdict_["my_int"] );
+    EXPECT_FALSE( cdict_["my_int"]!=cdict_["my_int"] );
+    // Different values:
     EXPECT_TRUE(  cdict_["my_int"]!=cdict_["my_int1"] );
     EXPECT_FALSE( cdict_["my_int"]==cdict_["my_int1"] );
 }
 
 // Equalities between different types my_int:my_string
-TEST_F(DictionaryTestEq, eqIntString) {
-    EXPECT_TRUE(  my_int!=cdict_["my_string"] );
-    EXPECT_FALSE( my_int==cdict_["my_string"] );
-    EXPECT_TRUE(  cdict_["my_int"]!=my_string );
-    EXPECT_FALSE( cdict_["my_int"]==my_string );
-    EXPECT_TRUE(  cdict_["my_int"]!=cdict_["my_string"] );
-    EXPECT_FALSE( cdict_["my_int"]==cdict_["my_string"] );
+TEST_F(DictionaryTestEq, eqIntStringLeft) {
+    EXPECT_THROW(  cdict_["my_int"]!=my_string, de::type_mismatch );
+    EXPECT_THROW(  cdict_["my_int"]==my_string, de::type_mismatch );
+}
+
+TEST_F(DictionaryTestEq, eqIntStringRight) {
+    EXPECT_THROW(  my_int!=cdict_["my_string"], de::type_mismatch );
+    EXPECT_THROW(  my_int==cdict_["my_string"], de::type_mismatch );
+}
+
+TEST_F(DictionaryTestEq, eqIntStringBoth) {
+    EXPECT_THROW(  cdict_["my_int"]!=cdict_["my_string"], de::type_mismatch );
+    EXPECT_THROW(  cdict_["my_int"]==cdict_["my_string"], de::type_mismatch );
 }
 
 // Equalities between different types my_int:my_vec
-TEST_F(DictionaryTestEq, eqIntVec) {
-    EXPECT_TRUE(  my_int!=cdict_["my_vec"] );
-    EXPECT_FALSE( my_int==cdict_["my_vec"] );
-    EXPECT_TRUE(  cdict_["my_int"]!=my_vec );
-    EXPECT_FALSE( cdict_["my_int"]==my_vec );
-    EXPECT_TRUE(  cdict_["my_int"]!=cdict_["my_vec"] );
-    EXPECT_FALSE( cdict_["my_int"]==cdict_["my_vec"] );
+TEST_F(DictionaryTestEq, eqIntVecLeft) {
+    EXPECT_THROW(  cdict_["my_int"]!=my_vec, de::type_mismatch );
+    EXPECT_THROW(  cdict_["my_int"]==my_vec, de::type_mismatch );
+}
+
+TEST_F(DictionaryTestEq, eqIntVecRight) {
+    EXPECT_THROW(  my_int!=cdict_["my_vec"], de::type_mismatch );
+    EXPECT_THROW(  my_int==cdict_["my_vec"], de::type_mismatch );
+}
+
+TEST_F(DictionaryTestEq, eqIntVecBoth) {
+    EXPECT_THROW(  cdict_["my_int"]!=cdict_["my_vec"], de::type_mismatch );
+    EXPECT_THROW(  cdict_["my_int"]==cdict_["my_vec"], de::type_mismatch );
 }
 
 // Equalities between different types my_int:my_pair
-TEST_F(DictionaryTestEq, eqIntPair) {
-    EXPECT_TRUE(  my_int!=cdict_["my_pair"] );
-    EXPECT_FALSE( my_int==cdict_["my_pair"] );
-    EXPECT_TRUE(  cdict_["my_int"]!=my_pair );
-    EXPECT_FALSE( cdict_["my_int"]==my_pair );
-    EXPECT_TRUE(  cdict_["my_int"]!=cdict_["my_pair"] );
-    EXPECT_FALSE( cdict_["my_int"]==cdict_["my_pair"] );
+TEST_F(DictionaryTestEq, eqIntPairLeft) {
+    EXPECT_THROW(  cdict_["my_int"]!=my_pair, de::type_mismatch );
+    EXPECT_THROW(  cdict_["my_int"]==my_pair, de::type_mismatch );
+}
+
+TEST_F(DictionaryTestEq, eqIntPairRight) {
+    EXPECT_THROW(  my_int!=cdict_["my_pair"], de::type_mismatch );
+    EXPECT_THROW(  my_int==cdict_["my_pair"], de::type_mismatch );
+}
+
+TEST_F(DictionaryTestEq, eqIntPairBoth) {
+    EXPECT_THROW(  cdict_["my_int"]!=cdict_["my_pair"], de::type_mismatch );
+    EXPECT_THROW(  cdict_["my_int"]==cdict_["my_pair"], de::type_mismatch );
 }
 
 // Equalities within same type my_string
-TEST_F(DictionaryTestEq, eqString) {
+TEST_F(DictionaryTestEq, eqStringLeft) {
+    // Same values:
+    EXPECT_TRUE(  cdict_["my_string"]==my_string );
+    EXPECT_FALSE( cdict_["my_string"]!=my_string );
+    // Different values:
+    EXPECT_TRUE(  cdict_["my_string"]!=my_string1 );
+    EXPECT_FALSE( cdict_["my_string"]==my_string1 );
+}
+
+TEST_F(DictionaryTestEq, eqStringRight) {
     // Same values:
     EXPECT_TRUE(  my_string==cdict_["my_string"] );
     EXPECT_FALSE( my_string!=cdict_["my_string"] );
-    EXPECT_TRUE(  cdict_["my_string"]==my_string );
-    EXPECT_FALSE( cdict_["my_string"]!=my_string );
-    EXPECT_TRUE(  cdict_["my_string"]==cdict_["my_string"] );
-    EXPECT_FALSE( cdict_["my_string"]!=cdict_["my_string"] );
     // Different values:
     EXPECT_TRUE(  my_string!=cdict_["my_string1"] );
     EXPECT_FALSE( my_string==cdict_["my_string1"] );
-    EXPECT_TRUE(  cdict_["my_string"]!=my_string1 );
-    EXPECT_FALSE( cdict_["my_string"]==my_string1 );
+}
+
+TEST_F(DictionaryTestEq, eqStringBoth) {
+    // Same values:
+    EXPECT_TRUE(  cdict_["my_string"]==cdict_["my_string"] );
+    EXPECT_FALSE( cdict_["my_string"]!=cdict_["my_string"] );
+    // Different values:
     EXPECT_TRUE(  cdict_["my_string"]!=cdict_["my_string1"] );
     EXPECT_FALSE( cdict_["my_string"]==cdict_["my_string1"] );
 }
 
 // Equalities between different types my_string:my_vec
-TEST_F(DictionaryTestEq, eqStringVec) {
-    EXPECT_TRUE(  my_string!=cdict_["my_vec"] );
-    EXPECT_FALSE( my_string==cdict_["my_vec"] );
-    EXPECT_TRUE(  cdict_["my_string"]!=my_vec );
-    EXPECT_FALSE( cdict_["my_string"]==my_vec );
-    EXPECT_TRUE(  cdict_["my_string"]!=cdict_["my_vec"] );
-    EXPECT_FALSE( cdict_["my_string"]==cdict_["my_vec"] );
+TEST_F(DictionaryTestEq, eqStringVecLeft) {
+    EXPECT_THROW(  cdict_["my_string"]!=my_vec, de::type_mismatch );
+    EXPECT_THROW(  cdict_["my_string"]==my_vec, de::type_mismatch );
+}
+
+TEST_F(DictionaryTestEq, eqStringVecRight) {
+    EXPECT_THROW(  my_string!=cdict_["my_vec"], de::type_mismatch );
+    EXPECT_THROW(  my_string==cdict_["my_vec"], de::type_mismatch );
+}
+
+TEST_F(DictionaryTestEq, eqStringVecBoth) {
+    EXPECT_THROW(  cdict_["my_string"]!=cdict_["my_vec"], de::type_mismatch );
+    EXPECT_THROW(  cdict_["my_string"]==cdict_["my_vec"], de::type_mismatch );
 }
 
 // Equalities between different types my_string:my_pair
-TEST_F(DictionaryTestEq, eqStringPair) {
-    EXPECT_TRUE(  my_string!=cdict_["my_pair"] );
-    EXPECT_FALSE( my_string==cdict_["my_pair"] );
-    EXPECT_TRUE(  cdict_["my_string"]!=my_pair );
-    EXPECT_FALSE( cdict_["my_string"]==my_pair );
-    EXPECT_TRUE(  cdict_["my_string"]!=cdict_["my_pair"] );
-    EXPECT_FALSE( cdict_["my_string"]==cdict_["my_pair"] );
+TEST_F(DictionaryTestEq, eqStringPairLeft) {
+    EXPECT_THROW(  cdict_["my_string"]!=my_pair, de::type_mismatch );
+    EXPECT_THROW(  cdict_["my_string"]==my_pair, de::type_mismatch );
+}
+
+TEST_F(DictionaryTestEq, eqStringPairRight) {
+    EXPECT_THROW(  my_string!=cdict_["my_pair"], de::type_mismatch );
+    EXPECT_THROW(  my_string==cdict_["my_pair"], de::type_mismatch );
+}
+
+TEST_F(DictionaryTestEq, eqStringPairBoth) {
+    EXPECT_THROW(  cdict_["my_string"]!=cdict_["my_pair"], de::type_mismatch );
+    EXPECT_THROW(  cdict_["my_string"]==cdict_["my_pair"], de::type_mismatch );
 }
 
 // Equalities within same type my_vec
-TEST_F(DictionaryTestEq, eqVec) {
+TEST_F(DictionaryTestEq, eqVecLeft) {
+    // Same values:
+    EXPECT_TRUE(  cdict_["my_vec"]==my_vec );
+    EXPECT_FALSE( cdict_["my_vec"]!=my_vec );
+    // Different values:
+    EXPECT_TRUE(  cdict_["my_vec"]!=my_vec1 );
+    EXPECT_FALSE( cdict_["my_vec"]==my_vec1 );
+}
+
+TEST_F(DictionaryTestEq, eqVecRight) {
     // Same values:
     EXPECT_TRUE(  my_vec==cdict_["my_vec"] );
     EXPECT_FALSE( my_vec!=cdict_["my_vec"] );
-    EXPECT_TRUE(  cdict_["my_vec"]==my_vec );
-    EXPECT_FALSE( cdict_["my_vec"]!=my_vec );
-    EXPECT_TRUE(  cdict_["my_vec"]==cdict_["my_vec"] );
-    EXPECT_FALSE( cdict_["my_vec"]!=cdict_["my_vec"] );
     // Different values:
     EXPECT_TRUE(  my_vec!=cdict_["my_vec1"] );
     EXPECT_FALSE( my_vec==cdict_["my_vec1"] );
-    EXPECT_TRUE(  cdict_["my_vec"]!=my_vec1 );
-    EXPECT_FALSE( cdict_["my_vec"]==my_vec1 );
+}
+
+TEST_F(DictionaryTestEq, eqVecBoth) {
+    // Same values:
+    EXPECT_TRUE(  cdict_["my_vec"]==cdict_["my_vec"] );
+    EXPECT_FALSE( cdict_["my_vec"]!=cdict_["my_vec"] );
+    // Different values:
     EXPECT_TRUE(  cdict_["my_vec"]!=cdict_["my_vec1"] );
     EXPECT_FALSE( cdict_["my_vec"]==cdict_["my_vec1"] );
 }
 
 // Equalities between different types my_vec:my_pair
-TEST_F(DictionaryTestEq, eqVecPair) {
-    EXPECT_TRUE(  my_vec!=cdict_["my_pair"] );
-    EXPECT_FALSE( my_vec==cdict_["my_pair"] );
-    EXPECT_TRUE(  cdict_["my_vec"]!=my_pair );
-    EXPECT_FALSE( cdict_["my_vec"]==my_pair );
-    EXPECT_TRUE(  cdict_["my_vec"]!=cdict_["my_pair"] );
-    EXPECT_FALSE( cdict_["my_vec"]==cdict_["my_pair"] );
+TEST_F(DictionaryTestEq, eqVecPairLeft) {
+    EXPECT_THROW(  cdict_["my_vec"]!=my_pair, de::type_mismatch );
+    EXPECT_THROW(  cdict_["my_vec"]==my_pair, de::type_mismatch );
+}
+
+TEST_F(DictionaryTestEq, eqVecPairRight) {
+    EXPECT_THROW(  my_vec!=cdict_["my_pair"], de::type_mismatch );
+    EXPECT_THROW(  my_vec==cdict_["my_pair"], de::type_mismatch );
+}
+
+TEST_F(DictionaryTestEq, eqVecPairBoth) {
+    EXPECT_THROW(  cdict_["my_vec"]!=cdict_["my_pair"], de::type_mismatch );
+    EXPECT_THROW(  cdict_["my_vec"]==cdict_["my_pair"], de::type_mismatch );
 }
 
 // Equalities within same type my_pair
-TEST_F(DictionaryTestEq, eqPair) {
+TEST_F(DictionaryTestEq, eqPairLeft) {
+    // Same values:
+    EXPECT_TRUE(  cdict_["my_pair"]==my_pair );
+    EXPECT_FALSE( cdict_["my_pair"]!=my_pair );
+    // Different values:
+    EXPECT_TRUE(  cdict_["my_pair"]!=my_pair1 );
+    EXPECT_FALSE( cdict_["my_pair"]==my_pair1 );
+}
+
+TEST_F(DictionaryTestEq, eqPairRight) {
     // Same values:
     EXPECT_TRUE(  my_pair==cdict_["my_pair"] );
     EXPECT_FALSE( my_pair!=cdict_["my_pair"] );
-    EXPECT_TRUE(  cdict_["my_pair"]==my_pair );
-    EXPECT_FALSE( cdict_["my_pair"]!=my_pair );
-    EXPECT_TRUE(  cdict_["my_pair"]==cdict_["my_pair"] );
-    EXPECT_FALSE( cdict_["my_pair"]!=cdict_["my_pair"] );
     // Different values:
     EXPECT_TRUE(  my_pair!=cdict_["my_pair1"] );
     EXPECT_FALSE( my_pair==cdict_["my_pair1"] );
-    EXPECT_TRUE(  cdict_["my_pair"]!=my_pair1 );
-    EXPECT_FALSE( cdict_["my_pair"]==my_pair1 );
+}
+
+TEST_F(DictionaryTestEq, eqPairBoth) {
+    // Same values:
+    EXPECT_TRUE(  cdict_["my_pair"]==cdict_["my_pair"] );
+    EXPECT_FALSE( cdict_["my_pair"]!=cdict_["my_pair"] );
+    // Different values:
     EXPECT_TRUE(  cdict_["my_pair"]!=cdict_["my_pair1"] );
     EXPECT_FALSE( cdict_["my_pair"]==cdict_["my_pair1"] );
 }
