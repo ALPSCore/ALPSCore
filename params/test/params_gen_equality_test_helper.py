@@ -30,72 +30,69 @@ dom_name={
     'my_float' : 'Float',
     'my_double' : 'Double'}
 
+labels=('Left','Right','Both')
+
 def generate_num_equalities():
-    def get_refs(v): return ('+'+v, 'cdict_["%s"]'%v)
-
-    def get_ref_pairs(lhs,rhs):
-        p=product(get_refs(lhs), get_refs(rhs))
-        p.__next__()
-        return p
-
+    vars2refs={'Left' :lambda lhs,rhs: ('cdict_["%s"]'%lhs, "+"+rhs),
+               'Right':lambda lhs,rhs: ("+"+lhs, 'cdict_["%s"]'%rhs),
+               'Both' : lambda lhs,rhs: ('cdict_["%s"]'%lhs, 'cdict_["%s"]'%rhs)}
+    
     for lhs_domain, rhs_domain in tri_prod(num_domains, 2):
         if lhs_domain is rhs_domain:
             print("// Equalities within domain %s" % lhs_domain[0])
-            print("TEST_F(MyTest, eq%s) {" % dom_name[lhs_domain[0]])
-            for lhs_val, rhs_val in tri_prod(lhs_domain, 2):
-                print("    // Same values:")
-                for lhs,rhs in get_ref_pairs(lhs_val,rhs_val):
-                    print('    EXPECT_TRUE(  %s==%s );' % (lhs,rhs))
-                    print('    EXPECT_FALSE( %s!=%s );' % (lhs,rhs))
+            # print("TEST_F(MyTest, eq%s) {" % dom_name[lhs_domain[0]])
+            
+            for lab in labels:
+                v2r=vars2refs[lab]
+                print("TEST_F(MyTest, eq%s%s) {" % (dom_name[lhs_domain[0]], lab))
+                for lhs, rhs in tri_prod(lhs_domain, 2):
+                    print("    // Same values:")
+                    print('    EXPECT_TRUE(  %s==%s );' % v2r(lhs,rhs))
+                    print('    EXPECT_FALSE( %s!=%s );' % v2r(lhs,rhs))
     
-                print("    // Different values:")
-                for lhs,rhs in get_ref_pairs(lhs_val,rhs_val+"1"):
-                    print('    EXPECT_TRUE(  %s!=%s );' % (lhs,rhs))
-                    print('    EXPECT_FALSE( %s==%s );' % (lhs,rhs))
+                    print("    // Different values:")
+                    print('    EXPECT_TRUE(  %s!=%s );' % v2r(lhs,rhs+'1'))
+                    print('    EXPECT_FALSE( %s==%s );' % v2r(lhs,rhs+'1'))
+                print("}\n")
         else:
             print("// Equalities between domains %s:%s" % (lhs_domain[0],rhs_domain[0]))
-            print("TEST_F(MyTest, eq%s%s) {" % (dom_name[lhs_domain[0]], dom_name[rhs_domain[0]]))
-            for lhs_val, rhs_val in product(lhs_domain, rhs_domain):
-                for lhs, rhs in get_ref_pairs(lhs_val,rhs_val):
-                    print('    EXPECT_TRUE(  %s!=%s );' % (lhs,rhs))
-                    print('    EXPECT_FALSE( %s==%s );' % (lhs,rhs))
-    
-        # endif
-        print("}\n")
-    # endfor
+            #print("TEST_F(MyTest, eq%s%s) {" % (dom_name[lhs_domain[0]], dom_name[rhs_domain[0]]))
+            for lab in labels:
+                v2r=vars2refs[lab]
+                print("TEST_F(MyTest, eq%s%s%s) {" % (dom_name[lhs_domain[0]], dom_name[rhs_domain[0]], lab))
+                for lhs, rhs in product(lhs_domain, rhs_domain):
+                    print('    EXPECT_TRUE(  %s!=%s );' % v2r(lhs,rhs))
+                    print('    EXPECT_FALSE( %s==%s );' % v2r(lhs,rhs))
+                print("}\n")
     return
 
 def generate_obj_equalities():
-    def get_refs(v): return (v, 'cdict_["%s"]'%v)
+    vars2refs={'Left' :lambda lhs,rhs: ('cdict_["%s"]'%lhs, rhs),
+               'Right':lambda lhs,rhs: (lhs, 'cdict_["%s"]'%rhs),
+               'Both' : lambda lhs,rhs: ('cdict_["%s"]'%lhs, 'cdict_["%s"]'%rhs)}
 
-    def get_ref_pairs(lhs,rhs):
-        p=product(get_refs(lhs), get_refs(rhs))
-        p.__next__()
-        return p
-
-    for lhs_type, rhs_type in tri_prod(incompat_types, 2):
-        if lhs_type is rhs_type:
-            print("// Equalities within same type %s" % lhs_type)
-            print("TEST_F(MyTest, eq%s) {" % dom_name[lhs_type])
-            print("    // Same values:")
-            for lhs,rhs in get_ref_pairs(lhs_type,rhs_type):
-                print('    EXPECT_TRUE(  %s==%s );' % (lhs,rhs))
-                print('    EXPECT_FALSE( %s!=%s );' % (lhs,rhs))
+    for lhs, rhs in tri_prod(incompat_types, 2):
+        if lhs is rhs:
+            print("// Equalities within same type %s" % lhs)
+            for lab in labels:
+                v2r=vars2refs[lab]
+                print("TEST_F(MyTest, eq%s%s) {" % (dom_name[lhs],lab))
+                print("    // Same values:")
+                print('    EXPECT_TRUE(  %s==%s );' % v2r(lhs,rhs))
+                print('    EXPECT_FALSE( %s!=%s );' % v2r(lhs,rhs))
     
-            print("    // Different values:")
-            for lhs,rhs in get_ref_pairs(lhs_type,rhs_type+"1"):
-                print('    EXPECT_TRUE(  %s!=%s );' % (lhs,rhs))
-                print('    EXPECT_FALSE( %s==%s );' % (lhs,rhs))
+                print("    // Different values:")
+                print('    EXPECT_TRUE(  %s!=%s );' % v2r(lhs,rhs+'1'))
+                print('    EXPECT_FALSE( %s==%s );' % v2r(lhs,rhs+'1'))
+                print("}\n")
         else:
-            print("// Equalities between different types %s:%s" % (lhs_type,rhs_type))
-            print("TEST_F(MyTest, eq%s%s) {" % (dom_name[lhs_type],dom_name[rhs_type]))
-            for lhs, rhs in get_ref_pairs(lhs_type,rhs_type):
-                print('    EXPECT_TRUE(  %s!=%s );' % (lhs,rhs))
-                print('    EXPECT_FALSE( %s==%s );' % (lhs,rhs))
-            
-
-        print("}\n")
-
+            print("// Equalities between different types %s:%s" % (lhs,rhs))
+            for lab in labels:
+                v2r=vars2refs[lab]
+                print("TEST_F(MyTest, eq%s%s%s) {" % (dom_name[lhs],dom_name[rhs],lab))
+                print('    EXPECT_THROW(  %s!=%s, de::type_mismatch );' % v2r(lhs,rhs))
+                print('    EXPECT_THROW(  %s==%s, de::type_mismatch );' % v2r(lhs,rhs))
+                print("}\n")
 
 generate_num_equalities()
 generate_obj_equalities()
