@@ -285,13 +285,12 @@ namespace alps {
                     const RHS_T& rhs_;
 
                     template <typename A, typename B>
-                    // FIXME!!! DEBUG:
-                    // THIS SHOULD BE USED: static bool cmp_(const A& a, const B& b) { return (a==b)? 0 : (a<b)? -1:1; }
-                    static bool cmp_(const A& a, const B& b) { return (a==b)? 0 : 1; }
+                    static bool cmp_(const A& a, const B& b) { return (a==b)? 0 : (a<b)? -1:1; }
                     
                   public:
                     comparator(const RHS_T& rhs): rhs_(rhs) {}
 
+                    /// Called by apply_visitor when the bound type us the same as RHS_T
                     int operator()(const RHS_T& lhs) const {
                         return cmp_(lhs,rhs_);
                     }
@@ -301,11 +300,6 @@ namespace alps {
                     int operator()(const LHS_T& lhs) const {
                         return apply(lhs,rhs_);
                     }
-
-                    // /// Invoked when the bound type is the same as RHS_T
-                    // int apply(const RHS_T& lhs, const RHS_T& rhs) const {
-                    //     return cmp_(lhs,rhs_);
-                    // }
 
                     /// Invoked when the bound type is `bool` and is compared with another type
                     template <typename LHS_T>
@@ -363,6 +357,7 @@ namespace alps {
                         return cmp_(lhs, rhs);
                     }
 
+                    /// Catch-all for all other conversions
                     template <typename LHS_T>
                     int apply(const LHS_T& lhs, const RHS_T& rhs, typename is_other_cmp<LHS_T,RHS_T>::yes =true) const {
                         std::string lhs_name=boost::typeindex::type_id<LHS_T>().pretty_name();
@@ -375,9 +370,7 @@ namespace alps {
                 /// Visitor to compare 2 value of dict_value type
                 class comparator2 : public boost::static_visitor<int> {
                     template <typename A, typename B>
-                    // FIXME!!! DEBUG:
-                    // THIS SHOULD BE USED: static bool cmp_(const A& a, const B& b) { return (a==b)? 0 : (a<b)? -1:1; }
-                    static bool cmp_(const A& a, const B& b) { return (a==b)? 0 : 1; }
+                    static bool cmp_(const A& a, const B& b) { return (a==b)? 0 : (a<b)? -1:1; }
                     
                   public:
                     /// Called by apply_visitor for bound values of different types
@@ -480,13 +473,24 @@ namespace alps {
             int compare(const T& rhs) const
             {
                 if (this->empty()) throw exception::uninitialized_value(name_,"Attempt to compare uninitialized value");
-                return boost::apply_visitor(detail::visitor::comparator<T>(rhs), val_);
+                try {
+                    return boost::apply_visitor(detail::visitor::comparator<T>(rhs), val_);
+                } catch (exception::exception_base& exc) {
+                    exc.set_name(name_);
+                    throw;
+                }
             }
 
             int compare(const dict_value& rhs) const
             {
                 if (this->empty() || rhs.empty()) throw exception::uninitialized_value(name_+"<=>"+rhs.name_,"Attempt to compare uninitialized value");
-                return boost::apply_visitor(detail::visitor::comparator2(), val_, rhs.val_);
+                
+                try {
+                    return boost::apply_visitor(detail::visitor::comparator2(), val_, rhs.val_);
+                } catch (exception::exception_base& exc) {
+                    exc.set_name(name_+"<=>"+rhs.name_);
+                    throw;
+                } 
             }
         };
 
