@@ -127,6 +127,49 @@ namespace alps {
                                 !is_intgl_to_fp<FROM,TO>::value
                                >
             {};
+
+            // meta-predicate: both types are unsigned
+            template <typename A, typename B>
+            struct is_both_unsigned
+                : public yes_no<is_unsigned<A>::value && is_unsigned<B>::value>
+            {};
+
+            // meta-predicate: both types are signed
+            template <typename A, typename B>
+            struct is_both_signed
+                : public yes_no<is_signed<A>::value && is_signed<B>::value>
+            {};
+
+            // meta-predicate: first type is signed, the other is unsigned
+            template <typename A, typename B>
+            struct is_signed_unsigned
+                : public yes_no<is_signed<A>::value && is_unsigned<B>::value>
+            {};
+
+            // meta-predicate: one of the types, but not the other, is bool
+            template <typename A, typename B>
+            struct is_either_bool
+                : public yes_no< (is_bool<A>::value && !is_bool<B>::value) ||
+                                 (!is_bool<A>::value && is_bool<B>::value) >
+            {};
+
+            // meta-predicate: floating-point conversion between different types
+            template <typename A, typename B>
+            struct is_fp_conv
+                : public yes_no< boost::is_floating_point<A>::value &&
+                                 boost::is_floating_point<B>::value &&
+                                 !boost::is_same<A,B>::value>
+            {};
+            
+            // meta-predicate: other comparison
+            template <typename A, typename B>
+            struct is_other_cmp
+                : public yes_no<!is_either_bool<A,B>::value &&
+                                !is_both_signed<A,B>::value && !is_both_unsigned<A,B>::value &&
+                                !is_signed_unsigned<A,B>::value && !is_signed_unsigned<B,A>::value &&
+                                !is_intgl_to_fp<A,B>::value && !is_intgl_to_fp<B,A>::value &&
+                                !is_fp_conv<A,B>::value>
+            {};
             
             namespace visitor {
                 /// Visitor to get a value (with conversion): returns type LHS_T, converts from the bound type RHS_T
@@ -234,8 +277,139 @@ namespace alps {
                     template <typename T>
                     bool operator()(const T& val) const { return false; }
                 };
+
+
+                /// Visitor to compare a value of type RHS_T with the value of the bound type LHS_T
+                template <typename RHS_T>
+                class comparator : public boost::static_visitor<int> {
+                    const RHS_T& rhs_;
+
+                    template <typename A, typename B>
+                    // FIXME!!! DEBUG:
+                    // THIS SHOULD BE USED: static bool cmp_(const A& a, const B& b) { return (a==b)? 0 : (a<b)? -1:1; }
+                    static bool cmp_(const A& a, const B& b) { return (a==b)? 0 : 1; }
                     
-            }
+                  public:
+                    comparator(const RHS_T& rhs): rhs_(rhs) {}
+
+                    int operator()(const RHS_T& lhs) const {
+                        return cmp_(lhs,rhs_);
+                    }
+                    
+                    /// Called by apply_visitor for the bound value of type LHS_T
+                    template <typename LHS_T>
+                    int operator()(const LHS_T& lhs) const {
+                        return apply(lhs,rhs_);
+                    }
+
+                    // /// Invoked when the bound type is the same as RHS_T
+                    // int apply(const RHS_T& lhs, const RHS_T& rhs) const {
+                    //     return cmp_(lhs,rhs_);
+                    // }
+
+                    /// Invoked when the bound type is `bool` and is compared with another type
+                    template <typename LHS_T>
+                    int apply(const LHS_T& lhs, const RHS_T& rhs,
+                              typename is_either_bool<LHS_T,RHS_T>::yes =true) const {
+                        std::string lhs_name=boost::typeindex::type_id<LHS_T>().pretty_name();
+                        std::string rhs_name=boost::typeindex::type_id<RHS_T>().pretty_name();
+                        throw exception::type_mismatch("","Attempt to compare a boolean value with an incompatible type "+
+                                                       lhs_name + "<=>" + rhs_name);
+                    }
+
+                    /// Invoked when both types are signed
+                    template <typename LHS_T>
+                    int apply(const LHS_T& lhs, const RHS_T& rhs, typename is_both_signed<LHS_T,RHS_T>::yes =true) const {
+                        return cmp_(lhs,rhs);
+                    }
+
+                    /// Invoked when both types are unsigned
+                    template <typename LHS_T>
+                    int apply(const LHS_T& lhs, const RHS_T& rhs, typename is_both_unsigned<LHS_T,RHS_T>::yes =true) const {
+                        return cmp_(lhs,rhs);
+                    }
+
+                    /// Invoked when a signed bound type is compared with an unsigned type
+                    template <typename LHS_T>
+                    int apply(const LHS_T& lhs, const RHS_T& rhs, typename is_signed_unsigned<LHS_T,RHS_T>::yes =true) const {
+                        typedef typename boost::make_unsigned<LHS_T>::type U_LHS_T;
+                        if (lhs<0) return -1;
+                        // lhs is non-negative..
+                        U_LHS_T u_lhs=static_cast<U_LHS_T>(lhs); // always valid for lhs>=0
+                        return cmp_(u_lhs, rhs);
+                    }
+
+                    /// Invoked when an usigned bound type is compared with a signed type
+                    template <typename LHS_T>
+                    int apply(const LHS_T& lhs, const RHS_T& rhs, typename is_signed_unsigned<RHS_T,LHS_T>::yes =true) const {
+                        return -apply(rhs,lhs);
+                    }
+                    
+                    /// Invoked when an integral bound type is compared with a floating-point type
+                    template <typename LHS_T>
+                    int apply(const LHS_T& lhs, const RHS_T& rhs, typename is_intgl_to_fp<LHS_T,RHS_T>::yes =true) const {
+                        return cmp_(lhs, rhs);
+                    }
+
+                    /// Invoked when a floating-point bound type is compared with an integral type
+                    template <typename LHS_T>
+                    int apply(const LHS_T& lhs, const RHS_T& rhs, typename is_intgl_to_fp<RHS_T,LHS_T>::yes =true) const {
+                        return cmp_(lhs, rhs);
+                    }
+
+                    /// Invoked when a floating-point bound type is compared with another floating-point type
+                    template <typename LHS_T>
+                    int apply(const LHS_T& lhs, const RHS_T& rhs, typename is_fp_conv<RHS_T,LHS_T>::yes =true) const {
+                        return cmp_(lhs, rhs);
+                    }
+
+                    template <typename LHS_T>
+                    int apply(const LHS_T& lhs, const RHS_T& rhs, typename is_other_cmp<LHS_T,RHS_T>::yes =true) const {
+                        std::string lhs_name=boost::typeindex::type_id<LHS_T>().pretty_name();
+                        std::string rhs_name=boost::typeindex::type_id<RHS_T>().pretty_name();
+                        throw exception::type_mismatch("","Attempt to compare incompatible types "+
+                                                       lhs_name + "<=>" + rhs_name);
+                    }
+                };
+
+                /// Visitor to compare 2 value of dict_value type
+                class comparator2 : public boost::static_visitor<int> {
+                    template <typename A, typename B>
+                    // FIXME!!! DEBUG:
+                    // THIS SHOULD BE USED: static bool cmp_(const A& a, const B& b) { return (a==b)? 0 : (a<b)? -1:1; }
+                    static bool cmp_(const A& a, const B& b) { return (a==b)? 0 : 1; }
+                    
+                  public:
+                    /// Called by apply_visitor for bound values of different types
+                    template <typename LHS_T, typename RHS_T>
+                    int operator()(const LHS_T& lhs, const RHS_T& rhs) const {
+                        std::string lhs_name=boost::typeindex::type_id<LHS_T>().pretty_name();
+                        std::string rhs_name=boost::typeindex::type_id<RHS_T>().pretty_name();
+                        throw exception::type_mismatch("","Attempt to compare dictionary values containing "
+                                                       "incompatible types "+
+                                                       lhs_name + "<=>" + rhs_name);
+                    }
+
+                    /// Called by apply_visitor for bound values of the same type
+                    template <typename LHS_RHS_T>
+                    int operator()(const LHS_RHS_T& lhs, const LHS_RHS_T& rhs) const {
+                        return cmp_(lhs,rhs);
+                    }
+
+                    /// Called by apply_visitor for bound values both having None type
+                    int operator()(const None& lhs, const None& rhs) const {
+                        return 1;
+                    }
+                        
+
+                    // Same types: compare directly
+                    // Integral types: compare using signs (extract it to a separate namespace/class)
+                    // FP types: compare directly
+                    // Everything else: throw
+                };
+                
+
+            } // ::visitor
             
 
         } //::detail
@@ -250,7 +424,6 @@ namespace alps {
             std::string name_; ///< The option name (FIXME: make it "functionally const")
             value_type val_; ///< Value of the option
 
-            
           public:
 
             /// Constructs the empty value
@@ -298,51 +471,72 @@ namespace alps {
 
             /// Reset to an empty value
             void clear() { val_=None(); }
+
+            /// Comparison
+            /** a.compare(b) returns 0 if a==b, !=0 if a!=b.
+                if well-ordered, returns -1 if a<b, +1 if a>b.
+            */
+            template <typename T>
+            int compare(const T& rhs) const
+            {
+                if (this->empty()) throw exception::uninitialized_value(name_,"Attempt to compare uninitialized value");
+                return boost::apply_visitor(detail::visitor::comparator<T>(rhs), val_);
+            }
+
+            int compare(const dict_value& rhs) const
+            {
+                if (this->empty() || rhs.empty()) throw exception::uninitialized_value(name_+"<=>"+rhs.name_,"Attempt to compare uninitialized value");
+                return boost::apply_visitor(detail::visitor::comparator2(), val_, rhs.val_);
+            }
         };
 
         template <typename T>
-        bool operator==(const T& lhs, const dict_value& rhs) {return false; }
+        inline bool operator==(const T& lhs, const dict_value& rhs) { return rhs.compare(lhs)==0; }
         
         // template <typename T>
-        // bool operator<(const T& lhs, const dict_value& rhs) {return false; }
+        // inline bool operator<(const T& lhs, const dict_value& rhs) {return false; }
         
         // template <typename T>
-        // bool operator>(const T& lhs, const dict_value& rhs) {return false; }
+        // inline bool operator>(const T& lhs, const dict_value& rhs) {return false; }
         
         template <typename T>
-        bool operator!=(const T& lhs, const dict_value& rhs) {return false; }
+        inline bool operator!=(const T& lhs, const dict_value& rhs) { return rhs.compare(lhs)!=0; }
         
         // template <typename T>
-        // bool operator>=(const T& lhs, const dict_value& rhs) {return false; }
+        // inline bool operator>=(const T& lhs, const dict_value& rhs) {return false; }
         
         // template <typename T>
-        // bool operator<=(const T& lhs, const dict_value& rhs) {return false; }
+        // inline bool operator<=(const T& lhs, const dict_value& rhs) {return false; }
         
         template <typename T>
-        bool operator==(const dict_value& lhs, const T& rhs) {return false; }
+        inline bool operator==(const dict_value& lhs, const T& rhs) { return lhs.compare(rhs)==0; }
         
         // template <typename T>
-        // bool operator<(const dict_value& lhs, const T& rhs) {return false; }
+        // inline bool operator<(const dict_value& lhs, const T& rhs) {return false; }
         
         // template <typename T>
-        // bool operator>(const dict_value& lhs, const T& rhs) {return false; }
+        // inline bool operator>(const dict_value& lhs, const T& rhs) {return false; }
         
         template <typename T>
-        bool operator!=(const dict_value& lhs, const T& rhs) {return false; }
+        inline bool operator!=(const dict_value& lhs, const T& rhs) {return lhs.compare(rhs)!=0; }
         
         // template <typename T>
-        // bool operator>=(const dict_value& lhs, const T& rhs) {return false; }
+        // inline bool operator>=(const dict_value& lhs, const T& rhs) {return false; }
         
         // template <typename T>
-        // bool operator<=(const dict_value& lhs, const T& rhs) {return false; }
+        // inline bool operator<=(const dict_value& lhs, const T& rhs) {return false; }
+
+        // // inline bool operator==(const dict_value& lhs, const dict_value& rhs) {
+        // //     void * dummy=detail::yes_no<detail::is_other_cmp<dict_value, dict_value>::value>::no();
+        // // }
         
-        inline bool operator==(const dict_value& lhs, const dict_value& rhs) {return false; }
+        inline bool operator==(const dict_value& lhs, const dict_value& rhs) {return lhs.compare(rhs)==0; }
         
         // inline bool operator<(const dict_value& lhs, const dict_value& rhs) {return false; }
         
         // inline bool operator>(const dict_value& lhs, const dict_value& rhs) {return false; }
         
-        inline bool operator!=(const dict_value& lhs, const dict_value& rhs) {return false; }
+        inline bool operator!=(const dict_value& lhs, const dict_value& rhs) {return lhs.compare(rhs)!=0; }
         
         // inline bool operator>=(const dict_value& lhs, const dict_value& rhs) {return false; }
         
