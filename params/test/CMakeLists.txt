@@ -23,6 +23,7 @@ set (test_src
   params
   params_formats
   dictval_eq  
+  dictionary_eq
   params_eq
   )
 

@@ -9,11 +9,30 @@
 
 #include <alps/params/iniparser_interface.hpp>
 #include <alps/params.hpp>
+#include <algorithm>
 
 #include <boost/foreach.hpp>
 
 namespace alps {
     namespace params_ns {
+
+        namespace {
+            template <typename M>
+            struct compare {
+                typedef typename M::value_type pair_type;
+                bool operator()(const pair_type& lhs, const pair_type& rhs) const
+                {
+                    return (lhs.first==rhs.first) && lhs.second.equals(rhs.second);
+                }
+            };
+        }
+        
+        bool dictionary::equals(const dictionary &rhs) const 
+        {
+            if (this->size()!=rhs.size()) return false;
+            return std::equal(map_.begin(), map_.end(), rhs.map_.begin(), compare<map_type>());
+        }
+
         
         void params::read_ini_file_(const std::string& inifile)
         {
@@ -35,7 +54,11 @@ namespace alps {
         bool params::operator==(const alps::params_ns::params& rhs) const
         {
             const params& lhs=*this;
-            return lhs.raw_kv_content_ == rhs.raw_kv_content_;
+            const dictionary& lhs_dict=*this;
+            const dictionary& rhs_dict=rhs;
+            return
+                (lhs.raw_kv_content_ == rhs.raw_kv_content_) &&
+                (lhs_dict==rhs_dict);
         }
         
     } // ::params_ns

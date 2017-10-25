@@ -84,8 +84,17 @@ namespace alps {
                 return it!=map_.end() && (it->second).isType<T>();
             }
 
+            /// Compare two dictionaries (true if all values are of the same type)
+            bool equals(const dictionary& rhs) const;
         };
 
+        inline bool operator==(const dictionary& lhs, const dictionary& rhs) {
+            return lhs.equals(rhs);
+        }
+
+        inline bool operator!=(const dictionary& lhs, const dictionary& rhs) {
+            return !(lhs==rhs);
+        }
 
         /// Parse sectioned INI file or HDF5 or command line, provide the results as dictionary.
         /**
