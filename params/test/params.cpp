@@ -33,6 +33,9 @@ namespace test_data {
         "# it's a comment\n"
         "duplicate=duplicate1\n"
         "duplicate=duplicate2\n"
+        "empty_quoted_string=\"\"\n"
+        "empty_string=\n"
+        "empty_string_trailing_space= \n"
         "[section1]\n"
         "# it's another comment\n"
         "simple_string=simple1!\n"
@@ -107,6 +110,21 @@ TEST_F(ParamsTest0, sections) {
 TEST_F(ParamsTest0, duplicates) {
     EXPECT_TRUE(par_.define<std::string>("duplicate", "Repeated string").ok());
     EXPECT_EQ(std::string("duplicate2"), cpar_["duplicate"].as<std::string>());
+}
+
+TEST_F(ParamsTest0, emptyQuotedString) {
+    EXPECT_TRUE(par_.define<std::string>("empty_quoted_string", "Empty quoted string").ok());
+    EXPECT_EQ(std::string(), cpar_["empty_quoted_string"].as<std::string>());
+}
+
+TEST_F(ParamsTest0, emptyString) {
+    EXPECT_TRUE(par_.define<std::string>("empty_string", "Empty string").ok());
+    EXPECT_EQ(std::string(), cpar_["empty_string"].as<std::string>());
+}
+
+TEST_F(ParamsTest0, emptyStringTrailingSpace) {
+    EXPECT_TRUE(par_.define<std::string>("empty_string_trailing_space", "Empty string").ok());
+    EXPECT_EQ(std::string(), cpar_["empty_string_trailing_space"].as<std::string>());
 }
 
 /* ***** */
