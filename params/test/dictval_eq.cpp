@@ -142,19 +142,6 @@ class DictionaryTestEq : public ::testing::Test {
     }
 };
 
-// TEST_F(DictionaryTestEq, Test) {
-//     EXPECT_ANY_THROW(cdict_["dummy"]==true);
-//     EXPECT_ANY_THROW(true==cdict_["dummy"]);
-
-//     EXPECT_ANY_THROW(cdict_["dummy"]==int(1));
-//     EXPECT_ANY_THROW(cdict_["dummy"]==long(1));
-//     EXPECT_ANY_THROW(cdict_["dummy"]==1.0f);
-//     EXPECT_ANY_THROW(cdict_["dummy"]==1.0);
-//     EXPECT_ANY_THROW(cdict_["dummy"]==std::string());
-
-    
-// }
-
 TEST_F(DictionaryTestEq, eqNoneLeft) {
     dict_["no_such_name"];
     bool dummy=true;
@@ -179,6 +166,25 @@ TEST_F(DictionaryTestEq, eqNoneBoth) {
     EXPECT_THROW( dummy=(cdict_["no_such_name"]!=cdict_["no_such_other_name"]), de::uninitialized_value );
     EXPECT_TRUE(dummy);
 }
+
+TEST_F(DictionaryTestEq, eqCharPtrLeft) {
+    dict_["some_string"]=std::string("some_string");
+    EXPECT_TRUE(cdict_["some_string"]=="some_string");
+    EXPECT_FALSE(cdict_["some_string"]!="some_string");
+
+    EXPECT_TRUE(cdict_["some_string"]!="another string");
+    EXPECT_FALSE(cdict_["some_string"]=="another string");
+}
+
+TEST_F(DictionaryTestEq, eqCharPtrRight) {
+    dict_["some_string"]=std::string("some_string");
+    EXPECT_TRUE("some_string"==cdict_["some_string"]);
+    EXPECT_FALSE("some_string"!=cdict_["some_string"]);
+
+    EXPECT_TRUE("another string"!=cdict_["some_string"]);
+    EXPECT_FALSE("another string"==cdict_["some_string"]);
+}
+
 
 TEST_F(DictionaryTestEq, EqualsNonempty) {
     dict_["pos_int0"]=+pos_int;

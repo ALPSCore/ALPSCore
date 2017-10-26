@@ -569,10 +569,6 @@ namespace alps {
         // template <typename T>
         // inline bool operator<=(const dict_value& lhs, const T& rhs) {return false; }
 
-        // // inline bool operator==(const dict_value& lhs, const dict_value& rhs) {
-        // //     void * dummy=detail::yes_no<detail::is_other_cmp<dict_value, dict_value>::value>::no();
-        // // }
-        
         inline bool operator==(const dict_value& lhs, const dict_value& rhs) {return lhs.compare(rhs)==0; }
         
         // inline bool operator<(const dict_value& lhs, const dict_value& rhs) {return false; }
@@ -584,6 +580,30 @@ namespace alps {
         // inline bool operator>=(const dict_value& lhs, const dict_value& rhs) {return false; }
         
         // inline bool operator<=(const dict_value& lhs, const dict_value& rhs) {return false; }
+
+        inline bool operator==(const dict_value& lhs, const char* rhs) {return lhs.compare(std::string(rhs))==0; }
+        
+        // inline bool operator<(const dict_value& lhs, const char* rhs) {return false; }
+        
+        // inline bool operator>(const dict_value& lhs, const char* rhs) {return false; }
+        
+        inline bool operator!=(const dict_value& lhs, const char* rhs) {return lhs.compare(std::string(rhs))!=0; }
+        
+        // inline bool operator>=(const dict_value& lhs, const char* rhs) {return false; }
+        
+        // inline bool operator<=(const dict_value& lhs, const char* rhs) {return false; }
+
+        inline bool operator==(const char* lhs, const dict_value& rhs) {return rhs.compare(std::string(lhs))==0; }
+        
+        // inline bool operator<(const char* lhs, const dict_value& rhs) {return false; }
+        
+        // inline bool operator>(const char* lhs, const dict_value& rhs) {return false; }
+        
+        inline bool operator!=(const char* lhs, const dict_value& rhs) {return rhs.compare(std::string(lhs))!=0; }
+        
+        // inline bool operator>=(const char* lhs, const dict_value& rhs) {return false; }
+        
+        // inline bool operator<=(const char* lhs, const dict_value& rhs) {return false; }
         
     } // ::params_ns
 
