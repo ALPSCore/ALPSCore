@@ -10,6 +10,10 @@
 #include <alps/params/iniparser_interface.hpp>
 #include <alps/params.hpp>
 #include <algorithm>
+#include <sstream>
+
+#include <alps/testing/unique_file.hpp> // FIXME!!! Temporary!
+#include <fstream> // FIXME!!! Temporary!
 
 #include <boost/foreach.hpp>
 
@@ -17,6 +21,7 @@ namespace alps {
     namespace params_ns {
 
         namespace {
+            
             template <typename M>
             struct compare {
                 typedef typename M::value_type pair_type;
@@ -25,6 +30,7 @@ namespace alps {
                     return (lhs.first==rhs.first) && lhs.second.equals(rhs.second);
                 }
             };
+
         }
         
         bool dictionary::equals(const dictionary &rhs) const 
@@ -33,6 +39,62 @@ namespace alps {
             return std::equal(map_.begin(), map_.end(), rhs.map_.begin(), compare<map_type>());
         }
 
+        
+        params::params(int argc, const char* const * argv)
+            : dictionary(),
+              raw_kv_content_(),
+              td_map_(),
+              err_status_(),
+              argv0_()
+        {
+            // shortcuts:
+            typedef std::string::size_type size_type;
+            const size_type& npos=std::string::npos;
+            using std::string;
+            
+            if (argc==0) return;
+            argv0_.assign(argv[0]);
+            if (argc<2) return;
+            
+            std::vector<string> all_args(argv+1,argv+argc);
+            std::stringstream cmd_options;
+            bool file_args_mode=false;
+            BOOST_FOREACH(const string& arg, all_args) {
+                if (file_args_mode) {
+                    read_ini_file_(arg);
+                    continue;
+                }
+                size_type key_end=arg.find('=');
+                size_type key_begin=0;
+                if (arg.substr(0,2)=="--") {
+                    if (arg.size()==2) {
+                        file_args_mode=true;
+                        continue;
+                    }
+                    key_begin=2;
+                } else if  (arg.substr(0,1)=="-") {
+                    key_begin=1;
+                }
+                if (0==key_begin && npos==key_end) {
+                    read_ini_file_(arg);
+                    continue;
+                }
+                if (npos==key_end) {
+                    cmd_options << arg.substr(key_begin) << "=true\n";
+                } else {
+                    cmd_options << arg.substr(key_begin) << "\n";
+                }
+            }
+
+            // FIXME!!!
+            // This is very inefficient and is done only for testing.
+            alps::testing::unique_file tmpfile(argv0_+".param.ini", alps::testing::unique_file::KEEP_AFTER);
+            std::ofstream tmpstream(tmpfile.name().c_str());
+            tmpstream << cmd_options.rdbuf();
+            tmpstream.close();
+            read_ini_file_(tmpfile.name());
+            
+        }
         
         void params::read_ini_file_(const std::string& inifile)
         {
@@ -60,7 +122,7 @@ namespace alps {
                 (lhs.raw_kv_content_ == rhs.raw_kv_content_) &&
                 (lhs_dict==rhs_dict);
         }
-        
+
     } // ::params_ns
 }// alps::
             

@@ -68,21 +68,24 @@ TEST_F(ParamsTest, fileInequal) {
     EXPECT_FALSE(cpar_==another);
 }
 
-// TEST_F(ParamsTest, content) {
-//     ParamsAndFile data(::test_data::inifile_content);
-//     params& par2=*data.get_params_ptr();
+TEST_F(ParamsTest, content) {
+    ParamsAndFile data(::test_data::inifile_content);
+    params& par2=*data.get_params_ptr();
 
-//     EXPECT_TRUE(cpar_==par2);
+    EXPECT_TRUE(cpar_==par2);
 
-//     par_["new_int"]=4321;
-//     EXPECT_FALSE(cpar_==par2);
+    par_["new_int"]=4321;
+    EXPECT_FALSE(cpar_==par2);
 
-//     par2["new_int"]=0;
-//     EXPECT_FALSE(cpar_==par2);
+    par2["new_int"]=0;
+    EXPECT_FALSE(cpar_==par2);
 
-//     par2["new_int"]=4321;
-//     EXPECT_TRUE(cpar_==par2);
-// }
-        
-    
-    
+    par2["new_int"]=4321;
+    EXPECT_TRUE(cpar_==par2);
+
+    par_["empty"];
+    EXPECT_FALSE(cpar_==par2);
+
+    par2["empty"];
+    EXPECT_TRUE(cpar_==par2);
+}

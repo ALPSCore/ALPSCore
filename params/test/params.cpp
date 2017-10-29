@@ -36,6 +36,7 @@ namespace test_data {
         "empty_quoted_string=\"\"\n"
         "empty_string=\n"
         "empty_string_trailing_space= \n"
+        "MiXed_CaSe=MiXeD\n"
         "[section1]\n"
         "# it's another comment\n"
         "simple_string=simple1!\n"
@@ -126,6 +127,23 @@ TEST_F(ParamsTest0, emptyStringTrailingSpace) {
     EXPECT_TRUE(par_.define<std::string>("empty_string_trailing_space", "Empty string").ok());
     EXPECT_EQ(std::string(), cpar_["empty_string_trailing_space"].as<std::string>());
 }
+
+TEST_F(ParamsTest0, mixedCaseAsMixed) {
+    ASSERT_TRUE(par_.define<std::string>("MiXed_CaSe", "default", "Mixed-case").ok());
+    EXPECT_EQ("MiXeD", cpar_["MiXed_CaSe"].as<std::string>());
+}
+
+TEST_F(ParamsTest0, mixedCaseAsLowercase) {
+    ASSERT_TRUE(par_.define<std::string>("mixed_case", "default", "Mixed-case").ok());
+    EXPECT_EQ("MiXeD", cpar_["mixed_case"].as<std::string>());
+}
+
+TEST_F(ParamsTest0, mixedCaseAsUppercase) {
+    ASSERT_TRUE(par_.define<std::string>("MIXED_CASE", "default", "Mixed-case").ok());
+    EXPECT_EQ("MiXeD", cpar_["MIXED_CASE"].as<std::string>());
+}
+
+
 
 /* ***** */
 /* The following 54 test cases are pre-generated using the script `params_def_gen_test_helper.sh`

@@ -22,6 +22,7 @@ set (test_src
   dictionary
   params
   params_formats
+  params_cmdline
   dictval_eq  
   dictionary_eq
   params_eq

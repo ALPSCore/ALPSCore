@@ -130,8 +130,8 @@ namespace alps {
             
             strmap raw_kv_content_;
             td_map_type td_map_;
-            
             int err_status_;
+            std::string argv0_;
 
             void read_ini_file_(const std::string& inifile);
 
@@ -144,9 +144,19 @@ namespace alps {
             
           public:
             /// Default ctor
-            params() : dictionary(), raw_kv_content_(), td_map_(), err_status_(0) {}
+            params() : dictionary(), raw_kv_content_(), td_map_(), err_status_(0), argv0_() {}
 
-            params(const std::string& inifile) : dictionary(), raw_kv_content_(), td_map_(), err_status_(0)  { read_ini_file_(inifile); }
+            params(const std::string& inifile)
+                : dictionary(), raw_kv_content_(), td_map_(), err_status_(0), argv0_()
+            {
+                read_ini_file_(inifile);
+            }
+
+            params(int argc, const char* const* argv);
+
+            /// Convenience function: returns the "origin name"
+            /** @Returns (parameter_file_name || restart_file name || program_name || "") **/
+            const std::string& get_origin_name() const { return argv0_; }
 
             /// No-errors status
             bool ok() const { return 0==err_status_; }
