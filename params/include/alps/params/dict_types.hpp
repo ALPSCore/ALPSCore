@@ -9,7 +9,7 @@
 
 #include <vector>
 #include <string>
-#include <boost/mpl/list/list10.hpp>
+#include <boost/mpl/vector/vector10.hpp>
 #include <boost/mpl/transform.hpp>
 #include <boost/mpl/front_inserter.hpp>
 #include <boost/mpl/copy.hpp>
@@ -27,14 +27,14 @@ namespace alps {
             struct None {};
 
             // List of allowed basic scalar types:
-            typedef mpl::list8<bool,
-                               int,
-                               unsigned int,
-                               long int,
-                               unsigned long int,
-                               float,
-                               double,
-                               std::string> dict_scalar_types;
+            typedef mpl::vector8<bool,
+                                 int,
+                                 unsigned int,
+                                 long int,
+                                 unsigned long int,
+                                 float,
+                                 double,
+                                 std::string> dict_scalar_types;
             
             // List of allowed pairs:
             typedef mpl::transform< dict_scalar_types, std::pair<std::string, mplh::_1> >::type dict_pair_types;
@@ -53,6 +53,7 @@ namespace alps {
                              >::type,
                 None
                 >::type dict_all_types;
+
             
         } // ::detail
     } // ::params_ns
