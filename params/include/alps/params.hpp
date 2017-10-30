@@ -128,7 +128,7 @@ namespace alps {
             /// Constructor from command line and a parameter file. The parsing is deferred.
             /** Tries to see if the file is an HDF5, in which case restores the object from the
                 HDF5 file, ignoring the command line.
-                
+
                 @param hdfpath : path to HDF5 dataset containing the saved parameter object
                 (NULL if this functionality is not needed)
             */
@@ -184,7 +184,7 @@ namespace alps {
 
             /** Returns iterator to beyond-the-end of "missing" parameters */
             missing_params_iterator end_missing() const;
-            
+
 
             /// Check if a parameter exists (that is: attempt to read a compatible-typed value from it will not throw)
             bool exists(const std::string& name) const;
@@ -249,6 +249,18 @@ namespace alps {
 
             /// Stream parameters
             friend std::ostream& operator<<(std::ostream& str, params const& x);
+
+            /// Pick parameter by name and apply a generic functor f to it.
+            /// For any allowed parameter type T, f must be callable as
+            /// f(const std::string& name, boost::optional<T> const& val, boost::optional<T> const& defval, const std::string& descr)
+            template <typename F>
+            friend void apply(const params& opts, const std::string& optname, F const& f);
+
+            /// Apply a generic functor f to each defined parameter
+            /// For any allowed parameter type T, f must be callable as
+            /// f(const std::string& name, boost::optional<T> const& val, boost::optional<T> const& defval, const std::string& descr)
+            template <typename F>
+            friend void foreach(const params& opts, F const& f);
         };
 
         // FIXME: we may consider provide template specializations for specific types? To hide templates inside *.cpp?

@@ -49,9 +49,11 @@
 
 namespace alps {
     namespace params_ns {
-        
+
         class option_type {
             public: // FIXME: not everything is public
+
+            template<typename> friend struct params_apply_visitor;
 
             /// "Empty value" type
             typedef detail::None None;
@@ -67,13 +69,13 @@ namespace alps {
                 visitor_type_mismatch(const std::string& a_what)
                     : std::runtime_error(a_what) {}
             };
-            
+
             /// Exception to be thrown by visitor class: empty value used
             struct visitor_none_used: public std::runtime_error {
                 visitor_none_used(const std::string& a_what)
                     : std::runtime_error(a_what) {}
             };
-            
+
             /// General exception (base class)
             class exception_base : public std::runtime_error {
                 const char* const name_; ///< name of the option that caused the error
@@ -85,7 +87,7 @@ namespace alps {
 
                 std::string name() const { return name_; }
             };
-            
+
             /// Exception for mismatching types assignment
             struct type_mismatch : public exception_base {
                 type_mismatch(const std::string& a_name, const std::string& a_reason)
@@ -97,7 +99,7 @@ namespace alps {
                 uninitialized_value (const std::string& a_name, const std::string& a_reason)
                     : exception_base(a_name, a_reason) {};
             };
-            
+
             /// Visitor to assign a value of type RHS_T to a variant containing type optional<LHS_T>
             template <typename RHS_T>
             struct setter_visitor: public boost::static_visitor<>
@@ -168,18 +170,18 @@ namespace alps {
                     return true;
                 }
             };
-            
+
             /// Checks if the option is empty (does not have an assigned value)
             bool isEmpty() const
             {
                 return boost::apply_visitor(isempty_visitor(),val_);
             }
-          
+
             /// Assignment operator: assigns a value of type T
             template <typename T>
             void operator=(const T& rhs)
             {
-                if (isNone()) { 
+                if (isNone()) {
                     val_=boost::optional<T>(rhs);
                     return;
                 }
@@ -217,17 +219,17 @@ namespace alps {
 
                 /// Simplest case: the values are of the same type
                 LHS_T apply(const LHS_T& val) const {
-                    return val; // no conversion 
+                    return val; // no conversion
                 }
-    
+
                 /// Types are convertible (Both are scalar types)
                 template <typename RHS_T>
                 LHS_T apply(const RHS_T& val,
                             typename boost::enable_if< detail::is_convertible<RHS_T,LHS_T> >::type* =0) const {
-                    return val; // invokes implicit conversion 
+                    return val; // invokes implicit conversion
                 }
 
-                /// Types are not convertible 
+                /// Types are not convertible
                 template <typename RHS_T>
                 LHS_T apply(const RHS_T& val,
                             typename boost::disable_if< detail::is_convertible<RHS_T,LHS_T> >::type* =0) const {
@@ -308,8 +310,8 @@ namespace alps {
                 typecheck_visitor<T> visitor;
                 return boost::apply_visitor(visitor, this->val_);
             }
-                    
-            
+
+
             /// Visitor to call alps::utilities::short_print on the type, hidden in boost::variant
             struct ostream_visitor : public boost::static_visitor<> {
             public:
@@ -318,7 +320,7 @@ namespace alps {
                 void operator()(const None&) const {
                         os << "[undefined]"; // FIXME: should it ever appear?
                 }
-                    
+
                 template <typename U>
                 void operator()(const boost::optional<U>& v) const {
                     if (!v) {
@@ -332,13 +334,13 @@ namespace alps {
             };
 
             /// Output an option
-            friend std::ostream& operator<< (std::ostream& out, option_type const& x) 
+            friend std::ostream& operator<< (std::ostream& out, option_type const& x)
             {
                 ostream_visitor visitor(out);
                 boost::apply_visitor(visitor, x.val_);
                 return out;
-            } 
-                
+            }
+
             /// Visitor to archive an option with a proper type
             struct save_visitor : public boost::static_visitor<> {
                 hdf5::archive& ar_;
@@ -415,7 +417,7 @@ namespace alps {
             static option_type get_loaded(hdf5::archive& ar, const std::string& name)
             {
                 reader rd(ar,name);
-                    
+
                 // macro: try reading, return if ok
 #define ALPS_LOCAL_TRY_LOAD(_r_,_d_,_type_)                             \
                 if (rd.can_read((_type_*)0)) return rd.read((_type_*)0);
@@ -423,12 +425,12 @@ namespace alps {
                 // try reading for each defined type
                 BOOST_PP_SEQ_FOR_EACH(ALPS_LOCAL_TRY_LOAD, X, ALPS_PARAMS_DETAIL_VTYPES_SEQ ALPS_PARAMS_DETAIL_STYPES_SEQ);
 #undef ALPS_LOCAL_TRY_LOAD
-                    
+
                 throw std::runtime_error("No matching payload type in the archive "
                                          "for `option_type` for "
                                          "name='" + name + "'");
             }
-                
+
 #ifdef ALPS_HAVE_MPI
             class broadcast_send_visitor : public boost::static_visitor<> {
                 const alps::mpi::communicator& comm_;
@@ -457,7 +459,7 @@ namespace alps {
                 }
             };
 
-            
+
             void broadcast(const alps::mpi::communicator& comm, int root)
             {
                 alps::mpi::broadcast(comm, name_, root);
@@ -483,16 +485,16 @@ namespace alps {
                                 val_=buf;                               \
                             }                                           \
                         } /* end macro */
-                        
+
                         BOOST_PP_SEQ_FOR_EACH(ALPS_LOCAL_TRY_TYPE, X, ALPS_PARAMS_DETAIL_VTYPES_SEQ ALPS_PARAMS_DETAIL_STYPES_SEQ);
 #undef ALPS_LOCAL_TRY_TYPE
                         assert(val_.which()==root_which && "The `which` value must be the same as on root");
-                    } // done with slave rank 
+                    } // done with slave rank
                 }
             }
 #endif /* ALPS_HAVE_MPI */
 
-            
+
             /// Constructor preserving the option name
             option_type(const std::string& a_name):
                 name_(a_name) {}
@@ -528,29 +530,29 @@ namespace alps {
         template <typename T> inline bool operator>(const option_type& lhs, const T& rhs) { return (lhs.as<T>() > rhs); }
         /// Greater-then operator for option_type and a char-string
         inline bool operator>(const option_type& lhs, const char* rhs) { return (lhs.as<std::string>() > rhs); }
-            
+
         /// Equality operator for option_type
         template <typename T> inline bool operator==(const T& lhs, const option_type& rhs) { return (rhs == lhs); }
 
         /// Greater-equal operator for option_type
         template <typename T> inline bool operator>=(const option_type& lhs, const T& rhs) { return !(lhs < rhs); }
-        
+
         /// Greater-equal operator for option_type
         template <typename T> inline bool operator>=(const T& lhs, const option_type& rhs) { return !(lhs < rhs); }
-        
+
         /// Less-equal operator for option_type
         template <typename T> inline bool operator<=(const option_type& lhs, const T& rhs) { return !(lhs > rhs); }
-        
+
         /// Less-equal operator for option_type
         template <typename T> inline bool operator<=(const T& lhs, const option_type& rhs) { return !(lhs > rhs); }
-        
+
         /// Not-equal operator for option_type
         template <typename T> inline bool operator!=(const T& lhs, const option_type& rhs) { return !(lhs == rhs); }
 
         /// Not-equal operator for option_type
         template <typename T> inline bool operator!=(const option_type& lhs, const T& rhs) { return !(lhs == rhs); }
 
-        
+
         /// Class "map of options" (needed to ensure that option is always initialized by the name)
         class options_map_type : public std::map<std::string, option_type> {
         public:
@@ -604,9 +606,9 @@ namespace alps {
                 std::string contains_;
               public:
                 string_container(const std::string& s): contains_(s) {}
-                operator std::string() const { return contains_; } 
+                operator std::string() const { return contains_; }
             };
-            
+
 
             /// Service class calling boost::program_options::add_options(), to work around lack of function template specializations
             /// T is the option type, U is the tag type used to treat parsing of strings and vectors/lists specially
@@ -641,7 +643,7 @@ namespace alps {
                 }
             };
 
-            /// Specialization of the service do_define class to define a vector/list option 
+            /// Specialization of the service do_define class to define a vector/list option
             template <typename T>
             struct do_define< std::vector<T> > {
                 /// Add option with no default value
@@ -658,7 +660,7 @@ namespace alps {
                     throw std::logic_error("Should not happen: setting default value for vector/list parameter");
                 }
             };
-          
+
             /// Specialization of the service do_define class to define a "trigger" (parameterless) option
             template <>
             struct do_define<trigger_tag> {
@@ -689,12 +691,12 @@ namespace alps {
                 }
             };
 
-            
+
 
         } // detail
 
-            
-        
+
+
     } // params_ns
 
 #ifdef ALPS_HAVE_MPI
