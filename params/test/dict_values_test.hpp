@@ -106,7 +106,7 @@ namespace alps {
  
         template <>
         struct data_trait<std::string> : public data_trait_base0<std::string, void, void, int> {
-            static std::string get(bool choice) {return choice?"aaaa":"bbb"; }; 
+            static std::string get(bool choice) {return choice?"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa":"bbb"; }; 
         };
  
         template <typename T>

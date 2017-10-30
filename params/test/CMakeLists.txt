@@ -19,6 +19,7 @@ include(ALPSEnableTests)
 #     )
 
 set (test_src
+  serialize_variant
   dictionary
   params
   params_formats
