@@ -20,95 +20,65 @@
 #include <utility> // for std::pair
 #include <stdexcept>
 #include <string>
+#include <boost/optional.hpp>
 #include <boost/lexical_cast.hpp> // for error messages
 #include <boost/type_index.hpp> // for error messages
 
 namespace alps {
     namespace detail {
 
-        struct mem_view {
-            const void* buf;
-            std::size_t size;
-            mem_view(const void* b, std::size_t s) : buf(b), size(s) {}
-        };
-
-        /// Class to mem-serialize and mem-deserialize type T (generic version for plain types)
-        // FIXME: split in 2 and allow each to be a functor??
-        template <typename T>
-        struct memory_serializer {
-            /// provides a view to the object as mem_view
-            static mem_view to_view(const T& val) { return mem_view(&val, sizeof(val)); }
-
-            /// reconstructs the object from the mem_view
-            static T from_view(const mem_view& view)
-            {
-                // safety check
-                if (sizeof(T)!=view.size) throw std::invalid_argument("Cannot construct type "
-                                                                      + boost::typeindex::type_id<T>().pretty_name()
-                                                                      + " from view: expected size "
-                                                                      + boost::lexical_cast<std::string>(sizeof(T))
-                                                                      + " got "
-                                                                      + boost::lexical_cast<std::string>(view.size));
-                return *static_cast<const T*>(view.buf);
-            }
-        };    
-
-
         /// Class to mem-serialize and mem-deserialize a `boost::variant` over MPL type sequence MPLSEQ
-        template <typename MPLSEQ>
+        template <typename MPLSEQ, typename CONSUMER, typename PRODUCER>
         class variant_serializer {
           public:
             typedef typename boost::make_variant_over<MPLSEQ>::type variant_type;
-
-            /// Mem view of a bound variant value
-            struct variant_mem_view : public mem_view {
-                int which;
-                variant_mem_view(int w, const mem_view& view):  mem_view(view), which(w) {}
-                variant_mem_view(int w, const void* b, std::size_t s): mem_view(b,s), which(w) {}
-            };
+            typedef CONSUMER consumer_type;
+            typedef PRODUCER producer_type;
 
           private:
-            /// Visitor to obtain mem view of a bound value
-            struct view_visitor : public boost::static_visitor<mem_view> {
+            /// Visitor to call consumer on the bound value
+            struct consume_visitor : public boost::static_visitor<> {
+                consumer_type& consumer_;
+
+                consume_visitor(consumer_type& consumer) : consumer_(consumer) {}
+                
                 template <typename T>
-                mem_view operator()(const T& val) const
+                void operator()(const T& val) const
                 {
-                    return memory_serializer<T>::to_view(val);
+                    consumer_(val);
                 }
             };
 
-            /// Functor class to reconstruct object from memory view
+            /// Functor class to reconstruct object via producer
             struct maker {
-                int ncall_;
-                const variant_mem_view& view_;
+                producer_type& producer_;
                 variant_type& var_;
 
-                maker(const variant_mem_view& view, variant_type& var)
-                    : ncall_(0), view_(view), var_(var)
+                maker(producer_type& producer, variant_type& var)
+                    : producer_(producer), var_(var)
                 { }
 
+                // Always assigns --- therefore, applies last successful outcome!
                 template <typename T>
                 void operator()(const T&) {
-                    if (ncall_==view_.which) {
-                        var_ = memory_serializer<T>::from_view(view_);
-                    }
-                    ++ncall_;
+                    boost::optional<T> maybe_val=producer_((T*)0);
+                    if (maybe_val) var_=*maybe_val;
                 }
             };
 
           public:
             
-            /// Dump to memory a `boost::variant` over MPL type sequence MPLSEQ
-            static variant_mem_view to_view(const variant_type& var)
+            /// Send the variant to a consumer
+            static void consume(consumer_type& consumer, const variant_type& var)
             {
-                return variant_mem_view(var.which(), boost::apply_visitor(view_visitor(), var));
+                boost::apply_visitor(consume_visitor(consumer), var);
             }
             
-            /// Reconstruct from memory a `boost::variant` over MPL type sequence MPLSEQ
-            static variant_type from_view(const variant_mem_view& view)
+            /// Receive the variant from a producer
+            static variant_type produce(producer_type& producer)
             {
                 variant_type var;
-                boost::mpl::for_each<MPLSEQ>(maker(view, var));
+                boost::mpl::for_each<MPLSEQ>(maker(producer, var));
                 return var;
             }
         };

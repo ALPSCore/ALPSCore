@@ -15,10 +15,51 @@
 #include <alps/params/dict_types.hpp>
 #include <gtest/gtest.h>
 #include <vector>
+#include <stdexcept>
 
 #include "./dict_values_test.hpp"
 
-typedef alps::detail::variant_serializer<alps::params_ns::detail::dict_all_types> var_serializer;
+/// Consumer class to dump a POD object to memory
+struct pod_mem_consumer {
+    const void* buf;
+    std::size_t size;
+
+    pod_mem_consumer() : buf(), size() {}
+
+    template <typename T>
+    void operator()(const T& val) {
+        buf=&val;
+        size=sizeof(val);
+    }
+};
+
+/// Producer class to recreate a POD object from memory
+struct pod_mem_producer {
+    const void* buf;
+    std::size_t size;
+    int target_which;
+    int which_count;
+
+    pod_mem_producer(const void* b, std::size_t s, int which)
+        : buf(b), size(s), target_which(which), which_count(0)
+    {}
+
+    template <typename T>
+    boost::optional<T> operator()(const T*)
+    {
+        boost::optional<T> ret;
+        if (target_which==which_count) {
+            if (sizeof(T)!=size) throw std::invalid_argument("Size mismatch");
+            ret=*static_cast<const T*>(buf);
+        }
+        ++which_count;
+        return ret;
+    }
+};
+
+
+typedef alps::detail::variant_serializer<alps::params_ns::detail::dict_all_types,
+                                         pod_mem_consumer, pod_mem_producer> var_serializer;
 typedef var_serializer::variant_type variant_type;
 
 namespace aptest=alps::params_ns::testing;
@@ -40,9 +81,12 @@ class VarSerialTest : public ::testing::Test {
     {
         variant_type var1;
         var1=val1_;
-        var_serializer::variant_mem_view view=var_serializer::to_view(var1);
+        pod_mem_consumer consumer;
+        var_serializer::consume(consumer, var1);
+
+        pod_mem_producer producer(consumer.buf, consumer.size, var1.which());
         
-        variant_type var2=var_serializer::from_view(view);
+        variant_type var2=var_serializer::produce(producer);
 
         ASSERT_EQ(var1.which(), var2.which());
         T actual=boost::get<T>(var2);
@@ -62,16 +106,16 @@ class VarSerialTest : public ::testing::Test {
             var1=val1_;
             which1=var1.which();
             
-            var_serializer::variant_mem_view view=var_serializer::to_view(var1);
+            pod_mem_consumer consumer;
+            var_serializer::consume(consumer, var1);
 
             buf.insert(buf.end(),
-                       static_cast<const byte*>(view.buf),
-                       static_cast<const byte*>(view.buf)+view.size);
+                       static_cast<const byte*>(consumer.buf),
+                       static_cast<const byte*>(consumer.buf)+consumer.size);
         }
 
-        var_serializer::variant_mem_view view2(which1, &buf[0], buf.size());
-        
-        variant_type var2=var_serializer::from_view(view2);
+        pod_mem_producer producer(&buf[0], buf.size(), which1);
+        variant_type var2=var_serializer::produce(producer);
 
         ASSERT_EQ(which1, var2.which());
         T actual=boost::get<T>(var2);
