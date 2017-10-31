@@ -90,9 +90,9 @@ struct foreach_test_functor {
         if(name == "help") return;                                                        \
         EXPECT_EQ(NAME, name);                                                            \
         EXPECT_TRUE(HAS_VAL == static_cast<bool>(val));                                   \
-        if(static_cast<bool>(val)) EXPECT_EQ(VAL, val.value());                           \
+        if(static_cast<bool>(val)) EXPECT_EQ(VAL, boost::get(val));                       \
         EXPECT_TRUE(HAS_DEFLT == static_cast<bool>(defval));                              \
-        if(static_cast<bool>(defval)) EXPECT_EQ(DEFLT, defval.value());                   \
+        if(static_cast<bool>(defval)) EXPECT_EQ(DEFLT, boost::get(defval));               \
         EXPECT_EQ(DESCR, descr);                                                          \
     }
 
