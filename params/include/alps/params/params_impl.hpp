@@ -219,6 +219,12 @@ namespace alps {
                 throw option_type::visitor_none_used("Attempt to use uninitialized option value");
             }
 
+            /// Even though this overload must be defined, it should never be called
+            void operator()(const boost::optional<detail::trigger_tag>& val) const
+            {
+                throw std::runtime_error("Internal error");
+            }
+
             /// Triggers are to be treated specially, because T == bool for them,
             /// but opt_descr_.deflt_ contains boost::optional<trigger_tag>
 
