@@ -51,9 +51,9 @@ struct apply_test_functor {
                     const std::string& descr) const {
         EXPECT_EQ(name_, name);
         EXPECT_EQ(has_val_, static_cast<bool>(val));
-        if(static_cast<bool>(val)) EXPECT_EQ(val_, val.value());
+        if(static_cast<bool>(val)) EXPECT_EQ(val_, boost::get(val));
         EXPECT_EQ(has_deflt_, static_cast<bool>(defval));
-        if(static_cast<bool>(defval)) EXPECT_EQ(deflt_, defval.value());
+        if(static_cast<bool>(defval)) EXPECT_EQ(deflt_, boost::get(defval));
         EXPECT_EQ(descr_, descr);
     }
 
