@@ -68,8 +68,8 @@ struct circular_var< std::complex<T> >
  * unaffected) and stores it as `complex_op xerror`.  This is equivalent to
  * defining an error ellipse satisfying:
  *
- *    Q(r, i) = xerror.rere() * r * r + 2 * xerror.reim() * r * i
- *              + xerror.imim() * i * i + xbar.real() * r + xbar.imag() * i,
+ *     Q(r, i) = xerror.rere() * r * r + 2 * xerror.reim() * r * i
+ *               + xerror.imim() * i * i + xbar.real() * r + xbar.imag() * i,
  *
  * where roughly two thirds of the values shall fall into.  The error in the
  * real case is defined in the usual sense.
