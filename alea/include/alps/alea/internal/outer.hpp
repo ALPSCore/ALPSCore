@@ -89,6 +89,10 @@ struct evaluator<outer_expr<Str, Arg1, Arg2> >
     : evaluator_base<outer_expr<Str, Arg1, Arg2> >
 {
     typedef outer_expr<Str, Arg1, Arg2> XprType;
+
+    // determines the true type argument for the evaluated arguments:
+    // nested_eval<...>::type translates to either a temporary or a on-the-fly
+    // evaluated object, while remove_all<...> removes const/ref qualifiers
     typedef typename nested_eval<Arg1, XprType::ColsAtCompileTime>::type Arg1Nested;
     typedef typename nested_eval<Arg2, XprType::ColsAtCompileTime>::type Arg2Nested;
     typedef typename remove_all<Arg1Nested>::type Arg1NestedCleaned;
