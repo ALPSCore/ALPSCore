@@ -8,10 +8,8 @@
 #include <alps/alea/core.hpp>
 #include <alps/utilities/mpi.hpp>     /* provides mpi.h */
 
-namespace alps { namespace alea {
-
 // TODO: merge into MPI
-namespace mpi {
+namespace alps { namespace mpi {
 
 struct failed_operation : std::exception { };
 
@@ -21,31 +19,39 @@ void checked(int retcode)
         throw failed_operation();
 }
 
-bool is_intercomm(const alps::mpi::communicator &comm)
+bool is_intercomm(const communicator &comm)
 {
     int flag;
     checked(MPI_Comm_test_inter(comm, &flag));
     return flag;
 }
 
-}
+}}
 
+namespace alps { namespace alea {
+
+namespace mpi = alps::mpi;
+
+/**
+ * In-place sum-reduction via an MPI communicator.
+ */
 struct mpi_reducer
     : public reducer
 {
-    mpi_reducer(const alps::mpi::communicator &comm, const int root)
-        : comm_(&comm)
+
+    mpi_reducer(const mpi::communicator &comm=mpi::communicator(), int root=0)
+        : comm_(comm)
         , root_(root)
     {
         if (mpi::is_intercomm(comm))
             throw std::runtime_error("Unable to use in-place communication");
     }
 
-    reducer::setup begin()
+    reducer_setup get_setup() const
     {
-        reducer::setup mpi_setup = { (size_t) comm_->rank(),
-                                     (size_t) comm_->size(),
-                                     comm_->rank() == root_ };
+        reducer_setup mpi_setup = { (size_t) comm_.rank(),
+                                    (size_t) comm_.size(),
+                                    am_root() };
         return mpi_setup;
     }
 
@@ -54,6 +60,12 @@ struct mpi_reducer
     void reduce(sink<long> data) { inplace_reduce(data); }
 
     void commit() { }
+
+    const mpi::communicator &comm() const { return comm_; }
+
+    int root() const { return root_; }
+
+    bool am_root() const { return comm_.rank() == root_; }
 
 protected:
     template <typename T>
@@ -65,15 +77,16 @@ protected:
 
         // Extract data type and get on with it
         MPI_Datatype dtype_tag = alps::mpi::get_mpi_datatype(T());
-        mpi::checked(MPI_Reduce(
-                MPI_IN_PLACE, data.data(), data.size(), dtype_tag,
-                MPI_SUM, root_, *comm_));
+
+        // In-place requires special value for sendbuf, but only on root
+        const void *sendbuf = am_root() ? MPI_IN_PLACE : data.data();
+        mpi::checked(MPI_Reduce(sendbuf, data.data(), data.size(), dtype_tag,
+                                MPI_SUM, root_, comm_));
     }
 
 private:
-    const alps::mpi::communicator *comm_;
+    alps::mpi::communicator comm_;
     int root_;
 };
-
 
 }}

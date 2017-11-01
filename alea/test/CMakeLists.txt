@@ -8,8 +8,8 @@ set (test_src
 #add tests for MPI
 if(ALPS_HAVE_MPI)
   set (test_src_mpi
-       # List of files
-  )
+       mpi_twogauss
+       )
 endif()
 
 foreach(test ${test_src})

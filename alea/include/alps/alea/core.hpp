@@ -129,6 +129,21 @@ struct computed
 };
 
 /**
+ * Setup information struct for the reduction
+ */
+struct reducer_setup
+{
+    /** Position of the current instance (thread no./CPU/MPI rank/etc.) */
+    size_t pos;
+
+    /** Total number of instances (thread count/MPI size/etc.) */
+    size_t count;
+
+    /** Reductions will yield valid result on this instance */
+    bool have_result;
+};
+
+/**
  * Perform sum-reduction with data from reducer source.
  *
  * The `reduce` methods take the data sink and add to it the data from the
@@ -141,21 +156,8 @@ struct computed
  */
 struct reducer
 {
-    struct setup
-    {
-        /** Position of the current instance (thread no./CPU/MPI rank/etc.) */
-        size_t pos;
-
-        /** Total number of instances (thread count/MPI size/etc.) */
-        size_t count;
-
-        /** Reductions will yield valid result on this instance (e.g., false
-         *  for MPI_Reduce and true for MPI_AllReduce) */
-        bool have_result;
-    };
-
     /** Set-up reduction operation */
-    virtual setup begin() = 0;
+    virtual reducer_setup get_setup() const = 0;
 
     /** Reduce double data-set into `data` */
     virtual void reduce(sink<double> data) = 0;

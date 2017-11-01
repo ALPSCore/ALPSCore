@@ -9,6 +9,16 @@
 #include <alps/alea/util.hpp>
 #include <alps/alea/computed.hpp>
 
+// Forward declarations
+
+namespace alps { namespace alea {
+    template <typename T> class mean_data;
+    template <typename T> class mean_acc;
+    template <typename T> class mean_result;
+}}
+
+// Actual declarations
+
 namespace alps { namespace alea {
 
 /**
@@ -38,20 +48,16 @@ public:
 
     data_state state() const { return state_; }
 
-    void unlock_mean() const;
+    void unlock_mean();
 
-    void unlock_sum() const;
-
-    void reduce(reducer &);
-
-    void serialize(serializer &) const;
+    void unlock_sum();
 
 protected:
     void state(data_state new_state);
 
 private:
-    mutable column<T> data_;
-    mutable data_state state_;
+    column<T> data_;
+    data_state state_;
     size_t count_;
 };
 
@@ -89,13 +95,17 @@ public:
 
     const column<T> &sum() const { store_.unlock_sum(); return store_.data(); }
 
+    mean_result<T> result() const { return mean_result<T>(*this); }
+
 protected:
     const mean_data<T> &store() const { return store_; }
 
     mean_data<T> &store() { return store_; }
 
 private:
-    mean_data<T> store_;
+    mutable mean_data<T> store_;    // we need to switch between mean/sum
+
+    friend class mean_result<T>;
 };
 
 template <typename T>
@@ -106,5 +116,39 @@ struct traits< mean_acc<T> >
 
 extern template class mean_acc<double>;
 extern template class mean_acc<std::complex<double> >;
+
+// mean_result<T>
+
+/**
+ * Mean result
+ */
+template <typename T>
+class mean_result
+{
+public:
+    mean_result() : store_(0) { }
+
+    mean_result(const mean_acc<T> &acc) : store_(acc.store()) { }
+
+    size_t count() const { return store_.count(); }
+
+    const column<T> &mean() const { store_.unlock_mean(); return store_.data(); }
+
+    const column<T> &sum() const { store_.unlock_sum(); return store_.data(); }
+
+    //void serialize(serializer &s) const;
+
+    void reduce(reducer &r);
+
+    const mean_data<T> &store() const { return store_; }
+
+    mean_data<T> &store() { return store_; }
+
+private:
+    mutable mean_data<T> store_;
+};
+
+extern template class mean_result<double>;
+extern template class mean_result<std::complex<double> >;
 
 }}

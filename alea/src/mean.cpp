@@ -25,7 +25,7 @@ void mean_data<T>::state(data_state new_state)
 }
 
 template <typename T>
-void mean_data<T>::unlock_mean() const
+void mean_data<T>::unlock_mean()
 {
     if (state_ == SUM) {
         data_ /= count_;
@@ -34,7 +34,7 @@ void mean_data<T>::unlock_mean() const
 }
 
 template <typename T>
-void mean_data<T>::unlock_sum() const
+void mean_data<T>::unlock_sum()
 {
     if (state_ == MEAN) {
         data_ *= count_;
@@ -42,29 +42,16 @@ void mean_data<T>::unlock_sum() const
     }
 }
 
-template <typename T>
-void mean_data<T>::reduce(reducer &r)
-{
-    unlock_sum();
-    reducer::setup setup = r.begin();
-    r.reduce(sink<T>(data_.data(), data_.rows()));
-    r.reduce(sink<size_t>(&count_, 1));
-    r.commit();
-
-    if (setup.have_result)
-        unlock_mean();
-}
-
-template <typename T>
-void mean_data<T>::serialize(serializer &s) const
-{
-    computed_adapter<T, column<T> > data_ad(data_);
-    computed_adapter<long, long> count_ad(count_);
-
-    unlock_mean();
-    s.write("mean/data", data_ad);
-    s.write("count", count_ad);
-}
+// template <typename T>
+// void mean_data<T>::serialize(serializer &s) const
+// {
+//     computed_adapter<T, column<T> > data_ad(data_);
+//     computed_adapter<long, long> count_ad(count_);
+//
+//     unlock_mean();
+//     s.write("mean/data", data_ad);
+//     s.write("count", count_ad);
+// }
 
 template class mean_data<double>;
 template class mean_data<std::complex<double> >;
@@ -81,5 +68,23 @@ mean_acc<T> &mean_acc<T>::operator<<(const computed<T> &source)
 
 template class mean_acc<double>;
 template class mean_acc<std::complex<double> >;
+
+
+template <typename T>
+void mean_result<T>::reduce(reducer &r)
+{
+    store_.unlock_sum();
+    reducer_setup setup = r.get_setup();
+    r.reduce(sink<T>(store_.data().data(), store_.data().rows()));
+    r.reduce(sink<size_t>(&store_.count(), 1));
+    r.commit();
+
+    if (setup.have_result)
+        store_.unlock_mean();
+}
+
+template class mean_result<double>;
+template class mean_result<std::complex<double> >;
+
 
 }} /* namespace alps::alea */
