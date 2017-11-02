@@ -542,14 +542,17 @@ namespace alps {
 
             /// Saves the value to an archive
             void save(alps::hdf5::archive& ar) const {
-                ar["name"] << name_;
-                alps::hdf5::write_variant<detail::dict_all_types>(ar, "value", val_);
+                alps::hdf5::write_variant<detail::dict_all_types>(ar, val_);
             }
             
             /// Loads the value from an archive
             void load(alps::hdf5::archive& ar) {
-                ar["name"] >> name_;
-                val_=alps::hdf5::read_variant<detail::dict_all_types>(ar, "value");
+                // ar["name"] >> name_;
+                const std::string context=ar.get_context();
+                std::string::size_type slash_pos=context.find_last_of("/");
+                if (slash_pos==std::string::npos) slash_pos=0; else ++slash_pos;
+                name_=context.substr(slash_pos);
+                val_=alps::hdf5::read_variant<detail::dict_all_types>(ar);
             }
             
 
