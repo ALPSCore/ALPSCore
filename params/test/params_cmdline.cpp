@@ -11,7 +11,7 @@
 
 // #include <boost/foreach.hpp>
 
-// #include "./params_test_support.hpp"
+#include "./params_test_support.hpp"
 
 #include <alps/params.hpp>
 
@@ -27,55 +27,6 @@
 namespace ap=alps::params_ns;
 namespace de=ap::exception;
 using ap::params;
-
-/// Helper class to make `argc` & `argv` from argument strings
-class arg_holder {
-  private:
-    std::vector<std::string> args_;
-    std::vector<const char*> argv_;
-  public:
-    explicit arg_holder(const std::string progname="./program_name") {
-        args_.reserve(0); // DEBUG!!!
-        this->add(progname);
-    }
-    
-    arg_holder& add(const std::string& arg) {
-        args_.push_back(arg);
-        return *this;
-    }
-
-    int argc() const { return args_.size(); }
-
-    /** @warning The returned array may be invalidated after next call to `add()`
-        @warning The returned array is surely invalidated after the next call to `argv()`
-    **/
-    const char* const * argv() {
-        argv_.resize(args_.size());
-        std::transform(args_.begin(), args_.end(), argv_.begin(),
-                       std::const_mem_fun_ref_t<const char*, std::string>(&std::string::c_str));
-        return &argv_.front();
-    }
-};
-
-// Helper class to make INI file
-class ini_maker {
-  private:
-    alps::testing::unique_file file_;
-    std::ofstream fstream_;
-  public:
-    ini_maker(const std::string& prefix, alps::testing::unique_file::action_type action=alps::testing::unique_file::REMOVE_AFTER)
-        : file_(prefix, action), fstream_(file_.name().c_str())
-    {
-        if (!fstream_) throw std::runtime_error("ini_maker: Unable to open "+file_.name());
-    }
-
-    ini_maker& add(const std::string& line) {
-        fstream_ << line << std::endl;
-        return *this;
-    }
-
-    const std::string& name() const { return file_.name(); }
-};
 
 class ParamsTestCmdline : public ::testing::Test {
   protected:

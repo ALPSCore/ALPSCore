@@ -134,7 +134,7 @@ namespace alps {
         const std::string params::get_descr(const std::string& name) const
         {
             td_map_type::const_iterator it=td_map_.find(name);
-            return (td_map_.end()==it)? std::string() : it->second.descr;
+            return (td_map_.end()==it)? std::string() : it->second.descr();
         }
 
         bool params::operator==(const alps::params_ns::params& rhs) const
@@ -148,6 +148,19 @@ namespace alps {
                 (lhs_dict==rhs_dict);
         }
 
+#ifdef ALPS_HAVE_MPI
+        void params::broadcast(const alps::mpi::communicator& comm, int rank) {
+            this->dictionary::broadcast(comm, rank);
+            using alps::mpi::broadcast;
+            broadcast(comm, raw_kv_content_, rank);
+            broadcast(comm, td_map_, rank);
+            broadcast(comm, err_status_, rank);
+            broadcast(comm, argv0_, rank);
+        }
+#endif
+
+
+        
     } // ::params_ns
 }// alps::
             

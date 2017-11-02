@@ -13,7 +13,8 @@
 
 
 #ifdef ALPS_HAVE_MPI
-#include "alps/utilities/mpi.hpp"
+#include <alps/utilities/mpi.hpp>
+#include <alps/utilities/mpi_pair.hpp>
 #endif
 
 #include <map>
@@ -100,6 +101,23 @@ namespace alps {
             return !(lhs==rhs);
         }
 
+
+
+        namespace detail {
+            // FIXME: make it std::pair or, possibly, C++11 tuple?
+            struct td_pair : public std::pair<std::string,std::string> {
+                typedef std::pair<std::string,std::string> super;
+                std::string& typestr() { return this->first; }
+                std::string& descr() { return this->second; }
+                const std::string& typestr() const { return this->first; }
+                const std::string& descr() const { return this->second; }
+                td_pair(const std::string& t, const std::string& d) : super(t,d) {}
+                td_pair() : super() {} // needed for MPI
+                // bool operator==(const td_pair& rhs) const { return typestr==rhs.typestr && descr==rhs.descr; }
+            };
+        } // detail::
+        
+        
         /// Parse sectioned INI file or HDF5 or command line, provide the results as dictionary.
         /**
            1. Default-constructed `params` object cannot be re-associated with a file;
@@ -123,14 +141,9 @@ namespace alps {
           private:
             typedef std::map<std::string,std::string> strmap;
             // typedef std::vector<std::string> strvec;
+
             
-            struct td_pair {
-                std::string typestr;
-                std::string descr;
-                td_pair(const std::string& t, const std::string& d) : typestr(t), descr(d) {}
-                bool operator==(const td_pair& rhs) const { return typestr==rhs.typestr && descr==rhs.descr; }
-            };
-            typedef std::map<std::string, td_pair> td_map_type;
+            typedef std::map<std::string, detail::td_pair> td_map_type;
             
             
             strmap raw_kv_content_;
@@ -189,8 +202,10 @@ namespace alps {
             template <typename A>
             void load(const A&) { throw std::logic_error("params::load() is not yet implemented"); }
 
-            template <typename C>
-            void broadcast(const C& comm, int rank) { throw std::logic_error("params::broadcast() is not yet implemented"); }
+#ifdef ALPS_HAVE_MPI
+            // FIXME: should it be virtual?
+            void broadcast(const alps::mpi::communicator& comm, int rank);
+#endif            
         };
         
     } // params_ns::
@@ -198,8 +213,18 @@ namespace alps {
 
 #ifdef ALPS_HAVE_MPI
     namespace mpi {
+
+        inline void broadcast(const alps::mpi::communicator& comm, alps::params_ns::detail::td_pair& tdp, int root) {
+            broadcast(comm, static_cast<alps::params_ns::detail::td_pair::super&>(tdp), root);
+        }
+            
+        
         inline void broadcast(const alps::mpi::communicator &comm, alps::params_ns::dictionary& dict, int root) {
             dict.broadcast(comm, root);
+        }
+        
+        inline void broadcast(const alps::mpi::communicator &comm, alps::params_ns::params& p, int root) {
+            p.broadcast(comm, root);
         }
     } // mpi::
 #endif
@@ -290,11 +315,11 @@ namespace alps {
             td_map_type::iterator td_it=td_map_.find(name); // FIXME: use lower-bound instead
             if (td_it!=td_map_.end()) {
                 // FIXME: use pretty-typename!
-                if (td_it->second.typestr != typeid(T).name()) throw exception::type_mismatch(name, "Parameter already defined with a different type");
-                td_it->second.descr=descr;
+                if (td_it->second.typestr() != typeid(T).name()) throw exception::type_mismatch(name, "Parameter already defined with a different type");
+                td_it->second.descr()=descr;
                 return true;
             }
-            td_map_.insert(std::make_pair(name, td_pair(typeid(T).name(), descr))); // FIXME: use pretty-typename!
+            td_map_.insert(std::make_pair(name, detail::td_pair(typeid(T).name(), descr))); // FIXME: use pretty-typename!
 
             strmap::const_iterator it=raw_kv_content_.find(name);
             if (it==raw_kv_content_.end()) {
