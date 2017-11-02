@@ -17,9 +17,24 @@
 
 #include <boost/foreach.hpp>
 
+#ifdef ALPS_HAVE_MPI
+#include <alps/utilities/mpi_map.hpp>
+#include <alps/params/mpi_variant.hpp>
+#endif
+
 namespace alps {
     namespace params_ns {
 
+#ifdef ALPS_HAVE_MPI
+        void dict_value::broadcast(const alps::mpi::communicator& comm, int root)
+        {
+            using alps::mpi::broadcast;
+            broadcast(comm, name_, root);
+            broadcast<detail::dict_all_types>(comm, val_, root);
+        }
+#endif
+
+        
         namespace {
             
             template <typename M>
@@ -38,6 +53,15 @@ namespace alps {
             if (this->size()!=rhs.size()) return false;
             return std::equal(map_.begin(), map_.end(), rhs.map_.begin(), compare<map_type>());
         }
+
+#ifdef ALPS_HAVE_MPI
+        // Defined here to avoid including <mpi_map.hpp> inside user header
+        void dictionary::broadcast(const alps::mpi::communicator& comm, int root) { 
+            using alps::mpi::broadcast;
+            broadcast(comm, map_, root);
+        }
+#endif
+
 
         
         params::params(int argc, const char* const * argv)

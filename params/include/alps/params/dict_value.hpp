@@ -66,11 +66,14 @@
 #include "./dict_types.hpp" // Sequences of supported types
 // #include "alps/params/param_types_ranking.hpp" // for detail::is_convertible<F,T>
 
-// #ifdef ALPS_HAVE_MPI
+#ifdef ALPS_HAVE_MPI
+#include <alps/utilities/mpi.hpp>
 // #include <alps/utilities/mpi_map.hpp>
 // #include <alps/utilities/mpi_optional.hpp>
 // #include <alps/utilities/mpi_vector.hpp>
-// #endif
+#endif
+
+
 
 namespace alps {
     namespace params_ns {
@@ -452,6 +455,10 @@ namespace alps {
 
           public:
 
+            /// Constructs the empty nameless value
+            // FIXME: This is used only for MPI and must be changed
+            dict_value(): name_("NO_NAME"), val_() {}
+            
             /// Constructs the empty value
             explicit dict_value(const std::string& name): name_(name), val_() {}
             
@@ -531,6 +538,10 @@ namespace alps {
             {
                 return boost::apply_visitor(detail::visitor::equals2(), val_, rhs.val_);
             }
+
+#ifdef ALPS_HAVE_MPI
+            void broadcast(const alps::mpi::communicator& comm, int root);
+#endif
         };
 
         template <typename T>
@@ -607,17 +618,15 @@ namespace alps {
         
     } // ::params_ns
 
-#if 0
 #ifdef ALPS_HAVE_MPI
     namespace mpi {
         inline
-        void broadcast(const alps::mpi::communicator &comm, alps::params_ns::option_type& val, int root)
+        void broadcast(const alps::mpi::communicator &comm, alps::params_ns::dict_value& val, int root)
         {
             val.broadcast(comm, root);
         }
     }
 #endif
-#endif /* 0 */
     
 } // ::alps
 

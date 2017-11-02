@@ -26,7 +26,7 @@ namespace alps {
         // FIXME!: make a test
         // FIXME: what is exception safety status?
         template <typename T>
-        inline void broadcast(alps::mpi::communicator& comm, std::pair<std::string, T>& val, int root) {
+        inline void broadcast(const alps::mpi::communicator& comm, std::pair<std::string, T>& val, int root) {
             using alps::mpi::broadcast;
             broadcast(comm, val.first, root);
             broadcast(comm, val.second, root);

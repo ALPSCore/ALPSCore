@@ -25,7 +25,6 @@ namespace alps {
     namespace params_ns {
 
         /// Python-like dictionary
-        // FIXME: TODO: rewrite the whole thing using a proxy object 
         class dictionary {
           public:
             typedef dict_value value_type;
@@ -86,6 +85,11 @@ namespace alps {
 
             /// Compare two dictionaries (true if all values are of the same type)
             bool equals(const dictionary& rhs) const;
+
+#ifdef ALPS_HAVE_MPI
+            /// Broadcast the dictionary
+            void broadcast(const alps::mpi::communicator& comm, int root);
+#endif
         };
 
         inline bool operator==(const dictionary& lhs, const dictionary& rhs) {
@@ -191,6 +195,15 @@ namespace alps {
         
     } // params_ns::
     typedef params_ns::params params;
+
+#ifdef ALPS_HAVE_MPI
+    namespace mpi {
+        inline void broadcast(const alps::mpi::communicator &comm, alps::params_ns::dictionary& dict, int root) {
+            dict.broadcast(comm, root);
+        }
+    } // mpi::
+#endif
+
 } // alps::
 
 
