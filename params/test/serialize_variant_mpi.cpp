@@ -20,6 +20,7 @@
 
 #include <alps/utilities/mpi.hpp>
 #include <alps/utilities/mpi_vector.hpp>
+#include <alps/utilities/mpi_pair.hpp>
 #include "./dict_values_test.hpp"
 
 #include <cassert>
@@ -27,13 +28,6 @@
 namespace alps { namespace mpi {
 inline void broadcast(alps::mpi::communicator&, alps::params_ns::detail::None&, int) {
     std::cout << "Broadcasting None is no-op" << std::endl;
-}
-
-template <typename T>
-inline void broadcast(alps::mpi::communicator& comm, std::pair<std::string, T>& val, int root) {
-    using alps::mpi::broadcast;
-    broadcast(comm, val.first, root);
-    broadcast(comm, val.second, root);
 }
 
 }}
