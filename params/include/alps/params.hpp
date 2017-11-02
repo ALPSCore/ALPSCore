@@ -124,6 +124,7 @@ namespace alps {
                 std::string typestr;
                 std::string descr;
                 td_pair(const std::string& t, const std::string& d) : typestr(t), descr(d) {}
+                bool operator==(const td_pair& rhs) const { return typestr==rhs.typestr && descr==rhs.descr; }
             };
             typedef std::map<std::string, td_pair> td_map_type;
             

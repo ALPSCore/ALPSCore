@@ -68,7 +68,7 @@ TEST_F(ParamsTest, fileInequal) {
     EXPECT_FALSE(cpar_==another);
 }
 
-TEST_F(ParamsTest, content) {
+TEST_F(ParamsTest, eqContent) {
     ParamsAndFile data(::test_data::inifile_content);
     params& par2=*data.get_params_ptr();
 
@@ -89,3 +89,39 @@ TEST_F(ParamsTest, content) {
     par2["empty"];
     EXPECT_TRUE(cpar_==par2);
 }
+
+TEST_F(ParamsTest, eqDefinitions) {
+    ParamsAndFile data(::test_data::inifile_content);
+    params& par2=*data.get_params_ptr();
+
+    par_.define<int>("my_int", 0, "int value");
+    EXPECT_FALSE(cpar_==par2);
+
+    par2.define<int>("my_int", 1111, "int value");
+    EXPECT_TRUE(cpar_==par2);
+    
+    par_.define<int>("no_such_int", 0, "int value");
+    EXPECT_FALSE(cpar_==par2);
+
+    par2.define<int>("no_such_int", 1111, "int value");
+    EXPECT_FALSE(cpar_==par2);
+}
+    
+TEST_F(ParamsTest, eqDescriptions) {
+    ParamsAndFile data(::test_data::inifile_content);
+    params& par2=*data.get_params_ptr();
+
+    par_.define<int>("my_int",  "a description");
+    par2.define<int>("my_int",  "different description");
+    EXPECT_FALSE(cpar_==par2);
+}
+
+TEST_F(ParamsTest, eqTypes) {
+    ParamsAndFile data(::test_data::inifile_content);
+    params& par2=*data.get_params_ptr();
+
+    par_.define<int>("my_int",  "a description");
+    par2.define<std::string>("my_int",  "a description");
+    EXPECT_FALSE(cpar_==par2);
+}
+

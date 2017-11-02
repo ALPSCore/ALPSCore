@@ -120,6 +120,7 @@ namespace alps {
             const dictionary& rhs_dict=rhs;
             return
                 (lhs.raw_kv_content_ == rhs.raw_kv_content_) &&
+                (lhs.td_map_ == rhs.td_map_) && 
                 (lhs_dict==rhs_dict);
         }
 
