@@ -48,18 +48,29 @@ TEST_F(ParamsTest, bcast) {
     par_.define<std::string>("my_string", "String param");
 
     if (is_master_) {
-        ASSERT_TRUE(par_==p);
+        ASSERT_TRUE(par_==p) << "Observed on rank " << comm_.rank();
     } else {
-        ASSERT_FALSE(par_==p);
+        ASSERT_FALSE(par_==p) << "Observed on rank " << comm_.rank();
     }
     
     using alps::mpi::broadcast;
     broadcast(comm_, p, root_);
 
-    EXPECT_TRUE(p==par_);
+    EXPECT_TRUE(p==par_) << "Observed on rank " << comm_.rank();
 }
 
+TEST_F(ParamsTest, bcastCtor) {
+    arg_holder args;
+    if (is_master_) {
+        args.add("my_int=1").add("my_string=abc");
+    }
+    params p(args.argc(), args.argv(), comm_, root_);
 
+    ASSERT_TRUE(p.define<int>("my_int", "Integer").ok()) << "Observed on rank " << comm_.rank();
+    ASSERT_TRUE(p.define<std::string>("my_string", "String").ok()) << "Observed on rank " << comm_.rank();
+    EXPECT_EQ(1, p["my_int"].as<int>()) << "Observed on rank " << comm_.rank();
+    EXPECT_EQ("abc", p["my_string"].as<std::string>()) << "Observed on rank " << comm_.rank();
+}
 
 
 int main(int argc, char** argv)

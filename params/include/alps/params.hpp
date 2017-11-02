@@ -152,6 +152,7 @@ namespace alps {
             std::string argv0_;
 
             void read_ini_file_(const std::string& inifile);
+            void initialize_(int argc, const char* const* argv); 
 
             template <typename T>
             bool assign_to_name_(const std::string& name, const std::string& strval);
@@ -170,7 +171,14 @@ namespace alps {
                 read_ini_file_(inifile);
             }
 
-            params(int argc, const char* const* argv);
+            params(int argc, const char* const* argv)
+                : dictionary(),
+                  raw_kv_content_(),
+                  td_map_(),
+                  err_status_(),
+                  argv0_()
+            { initialize_(argc, argv); }
+
 
             /// Convenience function: returns the "origin name"
             /** @Returns (parameter_file_name || restart_file name || program_name || "") **/
@@ -204,7 +212,20 @@ namespace alps {
 
 #ifdef ALPS_HAVE_MPI
             // FIXME: should it be virtual?
-            void broadcast(const alps::mpi::communicator& comm, int rank);
+            void broadcast(const alps::mpi::communicator& comm, int root);
+
+            /// Broadcasting ctor. Reads file/params on root, broadcasts to everyone
+            params(int argc, const char* const* argv, const alps::mpi::communicator& comm, int root)
+                : dictionary(),
+                  raw_kv_content_(),
+                  td_map_(),
+                  err_status_(),
+                  argv0_()
+
+            {
+                initialize_(argc,argv);
+                broadcast(comm, root);
+            }
 #endif            
         };
         

@@ -64,12 +64,7 @@ namespace alps {
 
 
         
-        params::params(int argc, const char* const * argv)
-            : dictionary(),
-              raw_kv_content_(),
-              td_map_(),
-              err_status_(),
-              argv0_()
+        void params::initialize_(int argc, const char* const * argv)
         {
             // shortcuts:
             typedef std::string::size_type size_type;
