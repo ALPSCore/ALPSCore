@@ -14,12 +14,9 @@
 #ifndef ALPS_PARAMS_SERIALIZE_VARIANT_HPP_d116b6a1742b418f851e0dbb87004644
 #define ALPS_PARAMS_SERIALIZE_VARIANT_HPP_d116b6a1742b418f851e0dbb87004644
 
-
 #include <boost/variant.hpp>
 #include <boost/mpl/for_each.hpp>
-#include <utility> // for std::pair
 #include <stdexcept>
-#include <string>
 #include <boost/optional.hpp>
 #include <boost/lexical_cast.hpp> // for error messages
 #include <boost/type_index.hpp> // for error messages
