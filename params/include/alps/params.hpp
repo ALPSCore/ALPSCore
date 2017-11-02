@@ -8,7 +8,7 @@
 #define ALPS_PARAMS_HPP_INCLUDED_00f672a032d949a7aa0e760a6b6f0602
 
 #include "alps/config.hpp"
-// #include "alps/hdf5/archive.hpp"
+#include "alps/hdf5/archive.hpp"
 #include <alps/utilities/deprecated.hpp>
 
 
@@ -84,8 +84,14 @@ namespace alps {
                 return it!=map_.end() && (it->second).isType<T>();
             }
 
-            /// Compare two dictionaries (true if all values are of the same type)
+            /// Compare two dictionaries (true if all entries are of the same type and value)
             bool equals(const dictionary& rhs) const;
+
+            /// Save the dictionary to an archive
+            void save(alps::hdf5::archive& ar) const;
+
+            /// Load the dictionary from an archive
+            void load(alps::hdf5::archive& ar);
 
 #ifdef ALPS_HAVE_MPI
             /// Broadcast the dictionary

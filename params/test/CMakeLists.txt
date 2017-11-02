@@ -27,6 +27,7 @@ set (test_src
   dictval_eq  
   dictionary_eq
   params_eq
+  dictionary_hdf5
   )
 
 foreach(test ${test_src})

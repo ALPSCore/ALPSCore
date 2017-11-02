@@ -9,11 +9,16 @@
 
 #include <vector>
 #include <string>
+#include <stdexcept>
 #include <boost/mpl/vector/vector10.hpp>
 #include <boost/mpl/transform.hpp>
 #include <boost/mpl/front_inserter.hpp>
 #include <boost/mpl/copy.hpp>
 
+// forward declarations
+namespace alps{ namespace hdf5 {
+    class archive;
+}}
 
 namespace alps {
     namespace params_ns {
@@ -24,7 +29,10 @@ namespace alps {
             namespace mplh=::boost::mpl::placeholders;
 
             /// "Empty value" type
-            struct None {};
+            struct None {
+                void save(alps::hdf5::archive&) const { throw std::logic_error("None::save() should never be called"); }
+                void load(alps::hdf5::archive&) { throw std::logic_error("None::load() should never be called"); }
+            };
 
             // List of allowed basic scalar types:
             typedef mpl::vector8<bool,

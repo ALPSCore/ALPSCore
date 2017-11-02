@@ -15,6 +15,8 @@
 #include <alps/testing/unique_file.hpp> // FIXME!!! Temporary!
 #include <fstream> // FIXME!!! Temporary!
 
+#include <alps/hdf5/map.hpp>
+
 #include <boost/foreach.hpp>
 
 #ifdef ALPS_HAVE_MPI
@@ -53,6 +55,20 @@ namespace alps {
             if (this->size()!=rhs.size()) return false;
             return std::equal(map_.begin(), map_.end(), rhs.map_.begin(), compare<map_type>());
         }
+
+
+        void dictionary::save(alps::hdf5::archive& ar) const
+        {
+            ar[""] << map_;
+        }
+
+        void dictionary::load(alps::hdf5::archive& ar)
+        {
+            ar[""] >> map_;
+        }
+
+        
+        
 
 #ifdef ALPS_HAVE_MPI
         // Defined here to avoid including <mpi_map.hpp> inside user header

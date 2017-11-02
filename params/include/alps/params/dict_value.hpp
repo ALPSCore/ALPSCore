@@ -66,14 +66,15 @@
 #include "./dict_types.hpp" // Sequences of supported types
 // #include "alps/params/param_types_ranking.hpp" // for detail::is_convertible<F,T>
 
+// #include <alps/hdf5/archive.hpp>
+#include <alps/params/hdf5_variant.hpp>
+
 #ifdef ALPS_HAVE_MPI
 #include <alps/utilities/mpi.hpp>
 // #include <alps/utilities/mpi_map.hpp>
 // #include <alps/utilities/mpi_optional.hpp>
 // #include <alps/utilities/mpi_vector.hpp>
 #endif
-
-
 
 namespace alps {
     namespace params_ns {
@@ -538,6 +539,19 @@ namespace alps {
             {
                 return boost::apply_visitor(detail::visitor::equals2(), val_, rhs.val_);
             }
+
+            /// Saves the value to an archive
+            void save(alps::hdf5::archive& ar) const {
+                ar["name"] << name_;
+                alps::hdf5::write_variant<detail::dict_all_types>(ar, "value", val_);
+            }
+            
+            /// Loads the value from an archive
+            void load(alps::hdf5::archive& ar) {
+                ar["name"] >> name_;
+                val_=alps::hdf5::read_variant<detail::dict_all_types>(ar, "value");
+            }
+            
 
 #ifdef ALPS_HAVE_MPI
             void broadcast(const alps::mpi::communicator& comm, int root);
