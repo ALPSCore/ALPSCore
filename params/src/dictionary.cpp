@@ -74,7 +74,10 @@ namespace alps {
 
         void dictionary::load(alps::hdf5::archive& ar)
         {
-            ar[""] >> map_;
+            map_type new_map;
+            ar[""] >> new_map;
+            using std::swap;
+            swap(map_,new_map);
         }
 
         

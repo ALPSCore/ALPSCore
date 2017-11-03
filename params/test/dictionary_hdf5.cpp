@@ -97,10 +97,12 @@ TEST_F(DictionaryTestHdf5, testLoad) {
         ar["dict"] << dict1_;
     }
     EXPECT_NE(dict1_,dict2_);
+    dict2_["some_other_int"]=9999;
     {
         alps::hdf5::archive ar(file_.name(), "r");
         ar["dict"] >> dict2_;
     }
+    EXPECT_FALSE(dict2_.exists("some_other_int"));
     EXPECT_EQ(dict1_,dict2_);
 }
 
@@ -115,5 +117,6 @@ TEST_F(DictionaryTestHdf5, testLoadNone) {
         alps::hdf5::archive ar(file_.name(), "r");
         ar["dict"] >> dict2_;
     }
+    dict1_.erase("empty_value");
     EXPECT_EQ(dict1_,dict2_);
 }
