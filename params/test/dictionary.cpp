@@ -89,6 +89,16 @@ TEST_F(DictionaryTest0, exists) {
     EXPECT_TRUE(cdict_.exists("name"));
 }
 
+TEST_F(DictionaryTest0, erase) {
+    dict_["name"];
+    dict_.erase("name");
+    EXPECT_EQ(0ul, dict_.size());
+
+    dict_["name"]=1234;
+    dict_.erase("name");
+    EXPECT_EQ(0ul, dict_.size());
+}
+
 TEST_F(DictionaryTest0, charAssign) {
     dict_["name"]='x';
     EXPECT_EQ(1ul, cdict_.size());

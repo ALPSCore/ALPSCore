@@ -26,20 +26,27 @@ namespace alps {
             public:
             /// Virtual destructor to make dictionary inheritable
             virtual ~dictionary() {}
-            
+
+            /// True if the cdictionary does not contain elements (even empty ones)
             bool empty() const { return map_.empty(); }
+
+            /// Size of the dictionary (including empty elements)
             std::size_t size() const { return map_.size(); }
 
+            /// Erase an element if it exists
+            void erase(const std::string& key) { map_.erase(key); }
+            
             /// Access with intent to assign
             value_type& operator[](const std::string& key);
 
             /// Read-only access
             const value_type& operator[](const std::string& key) const;
 
-            private:
+          private:
             /// Check if the key exists and has a value; return the iterator
             map_type::const_iterator find_nonempty_(const std::string& key) const;
-            public:
+
+          public:
             
             /// Check if a key exists and has a value (without creating the key)
             bool exists(const std::string& key) const {
