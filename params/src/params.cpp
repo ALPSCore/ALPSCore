@@ -21,65 +21,12 @@
 
 #ifdef ALPS_HAVE_MPI
 #include <alps/utilities/mpi_map.hpp>
-#include <alps/params/mpi_variant.hpp>
 #endif
+
 
 namespace alps {
     namespace params_ns {
 
-#ifdef ALPS_HAVE_MPI
-        void dict_value::broadcast(const alps::mpi::communicator& comm, int root)
-        {
-            using alps::mpi::broadcast;
-            broadcast(comm, name_, root);
-            broadcast<detail::dict_all_types>(comm, val_, root);
-        }
-#endif
-
-        
-        namespace {
-            
-            template <typename M>
-            struct compare {
-                typedef typename M::value_type pair_type;
-                bool operator()(const pair_type& lhs, const pair_type& rhs) const
-                {
-                    return (lhs.first==rhs.first) && lhs.second.equals(rhs.second);
-                }
-            };
-
-        }
-        
-        bool dictionary::equals(const dictionary &rhs) const 
-        {
-            if (this->size()!=rhs.size()) return false;
-            return std::equal(map_.begin(), map_.end(), rhs.map_.begin(), compare<map_type>());
-        }
-
-
-        void dictionary::save(alps::hdf5::archive& ar) const
-        {
-            ar[""] << map_;
-        }
-
-        void dictionary::load(alps::hdf5::archive& ar)
-        {
-            ar[""] >> map_;
-        }
-
-        
-        
-
-#ifdef ALPS_HAVE_MPI
-        // Defined here to avoid including <mpi_map.hpp> inside user header
-        void dictionary::broadcast(const alps::mpi::communicator& comm, int root) { 
-            using alps::mpi::broadcast;
-            broadcast(comm, map_, root);
-        }
-#endif
-
-
-        
         void params::initialize_(int argc, const char* const * argv)
         {
             // shortcuts:

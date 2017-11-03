@@ -22,7 +22,7 @@ if (DocumentationOnly)
   return()
 endif()
 
-add_this_package(params iniparser_interface)
+add_this_package(params dict_value dictionary iniparser_interface)
 
 include(ALPSEnableMPI)
 
