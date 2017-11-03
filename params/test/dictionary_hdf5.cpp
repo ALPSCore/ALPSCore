@@ -33,8 +33,7 @@ typedef std::pair<std::string,int> intpair;
 typedef std::pair<std::string,double> dblpair;
 typedef std::pair<std::string,std::string> stringpair;
 
-template <typename T>
-class DictionaryTestBCast : public ::testing::Test {
+class DictionaryTestHdf5 : public ::testing::Test {
   protected:
     dictionary dict1_, dict2_;
     const dictionary& cdict1_;
@@ -43,7 +42,7 @@ class DictionaryTestBCast : public ::testing::Test {
     alps::testing::unique_file file_; 
 
   public:
-    DictionaryTestBCast(): dict1_(),dict2_(), cdict1_(dict1_), cdict2_(dict2_),
+    DictionaryTestHdf5(): dict1_(),dict2_(), cdict1_(dict1_), cdict2_(dict2_),
                            file_("dict_test.h5.", alps::testing::unique_file::KEEP_AFTER)
     {
 
@@ -78,57 +77,43 @@ class DictionaryTestBCast : public ::testing::Test {
         dict2_["my_stringpair"]=apt::data_trait<  stringpair>::get(false);
     }
 
-    void testSave() {
-        alps::hdf5::archive ar(file_.name(), "w");
-        ar["dictionary1"] << dict1_;
-        ar["dictionary2"] << dict2_;
-    }
-
-    void testLoad() {
-        {
-            alps::hdf5::archive ar(file_.name(), "w");
-            ar["dict"] << dict1_;
-        }
-        EXPECT_NE(dict1_,dict2_);
-        {
-            alps::hdf5::archive ar(file_.name(), "r");
-            ar["dict"] >> dict2_;
-        }
-        EXPECT_EQ(dict1_,dict2_);
-    }
 };
 
-typedef ::testing::Types<
-    // bool
-    // ,
-    int
-    // ,
-    // unsigned long
-    // ,
-    // float
-    // ,
-    // double
-    // ,
-    // std::string
-    // ,
-    // boolvec
-    // ,
-    // intvec
-    // ,
-    // dblvec
-    // ,
-    // strvec
-    // ,
-    // boolpair
-    // ,
-    // intpair
-    // ,
-    // dblpair
-    // ,
-    // stringpair
-    > MyTypes;
+TEST_F(DictionaryTestHdf5, testSave) {
+    alps::hdf5::archive ar(file_.name(), "w");
+    ar["dictionary1"] << dict1_;
+    ar["dictionary2"] << dict2_;
+}
 
-TYPED_TEST_CASE(DictionaryTestBCast, MyTypes);
+TEST_F(DictionaryTestHdf5, testSaveNone) {
+    alps::hdf5::archive ar(file_.name(), "w");
+    dict1_["empty_value"];
+    ar["dictionary1"] << dict1_;
+}
 
-TYPED_TEST(DictionaryTestBCast, testSave) { this->testSave(); }
-TYPED_TEST(DictionaryTestBCast, testLoad) { this->testLoad(); }
+TEST_F(DictionaryTestHdf5, testLoad) {
+    {
+        alps::hdf5::archive ar(file_.name(), "w");
+        ar["dict"] << dict1_;
+    }
+    EXPECT_NE(dict1_,dict2_);
+    {
+        alps::hdf5::archive ar(file_.name(), "r");
+        ar["dict"] >> dict2_;
+    }
+    EXPECT_EQ(dict1_,dict2_);
+}
+
+TEST_F(DictionaryTestHdf5, testLoadNone) {
+    dict1_["empty_value"];
+    {
+        alps::hdf5::archive ar(file_.name(), "w");
+        ar["dict"] << dict1_;
+    }
+    EXPECT_NE(dict1_,dict2_);
+    {
+        alps::hdf5::archive ar(file_.name(), "r");
+        ar["dict"] >> dict2_;
+    }
+    EXPECT_EQ(dict1_,dict2_);
+}
