@@ -83,7 +83,7 @@ namespace alps {
 
             td_map_type::iterator td_it=td_map_.find(name); // FIXME: use lower-bound instead
             if (td_it!=td_map_.end()) {
-                if (td_it->second.typestr() != detail::td_pair::make_typestr<T>()) throw exception::type_mismatch(name, "Parameter already defined with a different type");
+                if (td_it->second.typestr() != detail::make_typestr::apply<T>()) throw exception::type_mismatch(name, "Parameter already defined with a different type");
                 td_it->second.descr()=descr;
                 return true;
             }

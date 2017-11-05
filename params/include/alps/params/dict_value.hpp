@@ -115,6 +115,22 @@ namespace alps {
             /// Loads the value from an archive
             void load(alps::hdf5::archive& ar);
 
+            /// Const-access visitor to the bound value
+            /** @param visitor functor should be callable as `R result=visitor(bound_value_const_ref)`
+
+                The functor type `F` must define typename `F::result_type`.
+             */ 
+            template <typename F>
+            typename F::result_type apply_visitor(F& visitor) const;
+            
+            /// Const-access visitor to the bound value
+            /** @param visitor functor should be callable as `R result=visitor(bound_value_const_ref)`
+
+                The functor type `F` must define typename `F::result_type`.
+             */ 
+            template <typename F>
+            typename F::result_type apply_visitor(const F& visitor) const;
+            
             /// Print the value together with type in some human-readable format
             friend 
             std::ostream& operator<<(std::ostream&, const dict_value&);
@@ -124,6 +140,7 @@ namespace alps {
 #endif
         };
 
+        
     } // params_ns::
 } // alps::
 

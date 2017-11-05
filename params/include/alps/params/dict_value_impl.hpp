@@ -398,13 +398,23 @@ namespace alps {
             } // ::visitor
         } //::detail
         
+        template <typename F>
+        typename F::result_type dict_value::apply_visitor(F& visitor) const {
+            return boost::apply_visitor(visitor, val_);
+        }
+        
+        template <typename F>
+        typename F::result_type dict_value::apply_visitor(const F& visitor) const {
+            return boost::apply_visitor(visitor, val_);
+        }
+        
         inline bool dict_value::empty() const {
             return val_.which()==0; // NOTE: relies on `None` being the first type
         } 
 
         template <typename X>
         inline bool dict_value::isType() const {
-            return boost::apply_visitor(detail::visitor::check_type<X>(), val_);
+            return apply_visitor(detail::visitor::check_type<X>());
         }
 
         template <typename T>
@@ -422,7 +432,7 @@ namespace alps {
         inline T dict_value::as() const {
             if (this->empty()) throw exception::uninitialized_value(name_,"Attempt to read uninitialized value");
             try {
-                return boost::apply_visitor(detail::visitor::getter<T>(), val_);
+                return apply_visitor(detail::visitor::getter<T>());
             } catch (exception::exception_base& exc) {
                 exc.set_name(name_);
                 throw;
@@ -441,8 +451,8 @@ namespace alps {
         {
             if (this->empty()) throw exception::uninitialized_value(name_,"Attempt to compare uninitialized value");
             try {
-                return boost::apply_visitor(detail::visitor::comparator<T>(rhs), val_);
-            } catch (exception::exception_base& exc) {
+                return apply_visitor(detail::visitor::comparator<T>(rhs));
+            } catch(exception::exception_base& exc) {
                 exc.set_name(name_);
                 throw;
             }
@@ -453,7 +463,30 @@ namespace alps {
             return boost::apply_visitor(detail::visitor::equals2(), val_, rhs.val_);
         }
 
+        /// Const-access visitor to the bound value
+        /** @param visitor functor should be callable as `R result=visitor(bound_value_const_ref)`
+            @param dv  the dictionary value to access
 
+            The functor type `F` must define typename `F::result_type`.
+        */ 
+        template <typename F>
+        inline typename F::result_type apply_visitor(F& visitor, const dict_value& dv)
+        {
+            return dv.apply_visitor(visitor);
+        }
+        
+        /// Const-access visitor to the bound value
+        /** @param visitor functor should be callable as `R result=visitor(bound_value_const_ref)`
+            @param dv  the dictionary value to access
+
+            The functor type `F` must define typename `F::result_type`.
+        */ 
+        template <typename F>
+        inline typename F::result_type apply_visitor(const F& visitor, const dict_value& dv)
+        {
+            return dv.apply_visitor(visitor);
+        }
+        
         template <typename T>
         inline bool operator==(const T& lhs, const dict_value& rhs) { return rhs.compare(lhs)==0; }
         

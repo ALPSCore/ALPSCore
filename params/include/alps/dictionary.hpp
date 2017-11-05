@@ -23,7 +23,7 @@ namespace alps {
             typedef std::map<std::string, value_type> map_type;
             map_type map_;
 
-          protected:
+          public:
             typedef map_type::const_iterator const_iterator;
             
             /// Const-iterator to the beginning of the contained map
@@ -32,7 +32,6 @@ namespace alps {
             /// Const-iterator to the end of the contained map
             const_iterator end() const { return map_.end(); }
             
-          public:
             /// Virtual destructor to make dictionary inheritable
             virtual ~dictionary() {}
 
@@ -50,6 +49,11 @@ namespace alps {
 
             /// Read-only access
             const value_type& operator[](const std::string& key) const;
+
+            /// Obtain read-only iterator to a name
+            const_iterator find(const std::string& key) const {
+                return map_.find(key);
+            }
 
           private:
             /// Check if the key exists and has a value; return the iterator
@@ -97,6 +101,26 @@ namespace alps {
             return !(lhs==rhs);
         }
 
+        /// Const-access visitor to a value by an iterator
+        /** @param visitor functor should be callable as `R result=visitor(bound_value_const_ref)`
+
+            The functor type `F` must define typename `F::result_type`.
+        */
+        template <typename F>
+        typename F::result_type apply_visitor(F& visitor, dictionary::const_iterator it) {
+            return boost::apply_visitor(visitor, it->second);
+        }
+            
+        /// Const-access visitor to a value by an iterator
+        /** @param visitor functor should be callable as `R result=visitor(bound_value_const_ref)`
+
+            The functor type `F` must define typename `F::result_type`.
+        */
+        template <typename F>
+        typename F::result_type apply_visitor(const F& visitor, dictionary::const_iterator it) {
+            return boost::apply_visitor(visitor, it->second);
+        }
+            
     } // params_ns::
 } // alps::
 

@@ -123,6 +123,8 @@ namespace alps {
             }
             ar[context+"@ini_keys"] << raw_keys;
             ar[context+"@ini_values"] << raw_vals;
+            ar[context+"@status"] << err_status_;
+            ar[context+"@argv0"]  << argv0_;
             
             std::vector<std::string> keys=ar.list_children(context);
             BOOST_FOREACH(const std::string& key, keys) {
@@ -140,6 +142,8 @@ namespace alps {
 
             const std::string context=ar.get_context();
 
+            ar[context+"@status"] >> err_status_;
+            ar[context+"@argv0"]  >> argv0_;
             // Get the vectors of keys, values and convert them back to a map
             {
                 typedef std::vector<std::string> stringvec;
@@ -147,14 +151,14 @@ namespace alps {
                 ar[context+"@ini_keys"] >> raw_keys;
                 ar[context+"@ini_values"] >> raw_vals;
                 if (raw_keys.size()!=raw_vals.size()) {
-                    throw std::invalid_argument("params:load(): invalid ini-file data in HDF5 (size mismatch)");
+                    throw std::invalid_argument("params::load(): invalid ini-file data in HDF5 (size mismatch)");
                 }
                 stringvec::const_iterator key_it=raw_keys.begin();
                 stringvec::const_iterator val_it=raw_vals.begin();
                 for (; key_it!=raw_keys.end(); ++key_it, ++val_it) {
                     strmap::const_iterator insloc=newpar.raw_kv_content_.insert(newpar.raw_kv_content_.end(), std::make_pair(*key_it, *val_it));
                     if (insloc->second!=*val_it) {
-                        throw std::invalid_argument("params:load(): invalid ini-file data in HDF5 (repeated key '"+insloc->first+"')");
+                        throw std::invalid_argument("params::load(): invalid ini-file data in HDF5 (repeated key '"+insloc->first+"')");
                     }
                 }
             }
@@ -164,18 +168,26 @@ namespace alps {
                 if (ar.is_attribute(attr)) {
                     std::string descr;
                     ar[attr] >> descr;
-                    // FIXME:DEBUG: this `int` is wrong and test should fail
-                    newpar.td_map_.insert(std::make_pair(key, detail::td_pair::make_pair<int>(descr)));
-                    // FIXME:DEBUG: this `int` is wrong and test should fail            ^^^^^
+
+                    const_iterator it=newpar.find(key);
+                    if (newpar.end()==it) {
+                        throw std::logic_error("params::load(): loading the dictionary"
+                                               " missed key '"+key+"'??");
+                    }
+                    std::string typestr=apply_visitor(detail::make_typestr(), it);
+                    newpar.td_map_.insert(std::make_pair(key, detail::td_pair(typestr, descr)));
                 }
             }
+            
             using std::swap;
             swap(*this, newpar);
         }
 
 
         std::ostream& operator<<(std::ostream& s, const params& p) {
-            s << "[alps::params] Raw kv:\n";
+            s << "[alps::params]"
+              << " argv0='" << p.argv0_ << "' status=" << p.err_status_
+              << "\nRaw kv:\n";
             BOOST_FOREACH(const params::strmap::value_type& kv, p.raw_kv_content_) {
                 s << kv.first << "=" << kv.second << "\n";
             }
