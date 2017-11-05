@@ -83,12 +83,11 @@ namespace alps {
 
             td_map_type::iterator td_it=td_map_.find(name); // FIXME: use lower-bound instead
             if (td_it!=td_map_.end()) {
-                // FIXME: use pretty-typename!
-                if (td_it->second.typestr() != typeid(T).name()) throw exception::type_mismatch(name, "Parameter already defined with a different type");
+                if (td_it->second.typestr() != detail::td_pair::make_typestr<T>()) throw exception::type_mismatch(name, "Parameter already defined with a different type");
                 td_it->second.descr()=descr;
                 return true;
             }
-            td_map_.insert(std::make_pair(name, detail::td_pair(typeid(T).name(), descr))); // FIXME: use pretty-typename!
+            td_map_.insert(std::make_pair(name, detail::td_pair::make_pair<T>(descr)));
 
             strmap::const_iterator it=raw_kv_content_.find(name);
             if (it==raw_kv_content_.end()) {
@@ -111,13 +110,23 @@ namespace alps {
             return *this;
         }
         
-         template <typename T>
-         params& params::define(const std::string& name, const T& defval, const std::string& descr)
-         {
+        template <typename T>
+        params& params::define(const std::string& name, const T& defval, const std::string& descr)
+        {
             if (!define_<T>(name, descr)) {
                 (*this)[name]=defval;
             }
             return *this;
+        }
+
+        inline void swap(params& p1, params& p2)
+        {
+            using std::swap;
+            swap(static_cast<dictionary&>(p1), static_cast<dictionary&>(p2));
+            swap(p1.raw_kv_content_, p2.raw_kv_content_);
+            swap(p1.td_map_, p2.td_map_);
+            swap(p1.err_status_, p2.err_status_);
+            swap(p1.argv0_, p2.argv0_);
         }
 
     } // params_ns::

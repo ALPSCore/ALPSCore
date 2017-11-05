@@ -16,14 +16,23 @@ namespace alps {
 
         /// Python-like dictionary
         class dictionary {
-            public:
+          public:
             typedef dict_value value_type;
 
-            private:
+          private:
             typedef std::map<std::string, value_type> map_type;
             map_type map_;
+
+          protected:
+            typedef map_type::const_iterator const_iterator;
             
-            public:
+            /// Const-iterator to the beginning of the contained map
+            const_iterator begin() const { return map_.begin(); }
+            
+            /// Const-iterator to the end of the contained map
+            const_iterator end() const { return map_.end(); }
+            
+          public:
             /// Virtual destructor to make dictionary inheritable
             virtual ~dictionary() {}
 
@@ -60,6 +69,9 @@ namespace alps {
                 return it!=map_.end() && (it->second).isType<T>();
             }
 
+            /// Swap the dictionaries
+            friend void swap(dictionary& d1, dictionary& d2) { using std::swap; swap(d1.map_, d2.map_); }
+            
             /// Compare two dictionaries (true if all entries are of the same type and value)
             bool equals(const dictionary& rhs) const;
 
@@ -68,6 +80,8 @@ namespace alps {
 
             /// Load the dictionary from an archive
             void load(alps::hdf5::archive& ar);
+
+            friend std::ostream& operator<<(std::ostream&, const dictionary&);
 
 #ifdef ALPS_HAVE_MPI
             /// Broadcast the dictionary

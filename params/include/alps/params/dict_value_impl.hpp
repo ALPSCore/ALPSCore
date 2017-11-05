@@ -1,3 +1,35 @@
+/**
+   @file dict_value_impl.hpp
+   Contains header-part implementation of dict_value.
+   NOT TO BE INCLUDED DIRECTLY!
+*/
+   
+#include <boost/type_traits/is_integral.hpp>
+#include <boost/type_traits/is_signed.hpp>
+#include <boost/type_traits/is_unsigned.hpp>
+#include <boost/type_traits/is_floating_point.hpp>
+#include <boost/type_traits/make_unsigned.hpp>
+#include <boost/type_traits/make_signed.hpp>
+#include <boost/integer_traits.hpp>
+#include <boost/type_index.hpp> // for pretty-printing exceptions
+
+#include <alps/utilities/short_print.hpp> // for streaming of vectors
+
+namespace std {
+template <typename T>
+inline std::ostream& operator<<(std::ostream& s, const std::pair<std::string,T>& p) {
+    s << "{" << p.first << "," << p.second << "}";
+    return s;
+}
+
+
+template <typename T>
+inline std::ostream& operator<<(std::ostream& s, const std::vector<T>& v) {
+    s << alps::short_print(v);
+    return s;
+}
+}
+
 namespace alps {
     namespace params_ns {
 

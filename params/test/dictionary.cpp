@@ -99,6 +99,51 @@ TEST_F(DictionaryTest0, erase) {
     EXPECT_EQ(0ul, dict_.size());
 }
 
+TEST_F(DictionaryTest0, swapDict) {
+    dict_["some_name"]="some_value";
+    dict_["name2"]="value 2";
+    dictionary dict2;
+    dict2["other_name"]="other_value";
+    dict2["name2"]="other value 2";
+
+    using std::swap;
+    swap(dict_, dict2);
+    
+    EXPECT_EQ(2u, cdict_.size());
+    EXPECT_EQ(2u, dict2.size());
+
+    EXPECT_EQ("other_value", cdict_["other_name"].as<std::string>());
+    EXPECT_EQ("other value 2", cdict_["name2"].as<std::string>());
+    EXPECT_EQ("some_value", dict2["some_name"].as<std::string>());
+    EXPECT_EQ("value 2", dict2["name2"].as<std::string>());
+}
+
+TEST_F(DictionaryTest0, assignDict) {
+    dict_["name"]="value";
+    dict_["int"]=123;
+    
+    dictionary dict2;
+    const dictionary& cdict2=dict2;
+    dict2["other_name"]="other value";
+    dict2["int"]=9999;
+
+    dict2=cdict_;
+    
+    EXPECT_NE(&cdict_, &cdict2);
+    EXPECT_EQ(cdict_, cdict2);
+}
+
+TEST_F(DictionaryTest0, copyCtor) {
+    dict_["name"]="value";
+    dict_["int"]=123;
+    
+    dictionary dict2=dict_;
+    
+    EXPECT_NE(&cdict_, &dict2);
+    EXPECT_EQ(cdict_, dict2);
+}
+
+
 TEST_F(DictionaryTest0, charAssign) {
     dict_["name"]='x';
     EXPECT_EQ(1ul, cdict_.size());

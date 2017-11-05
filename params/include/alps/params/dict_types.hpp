@@ -33,6 +33,8 @@ namespace alps {
                 void save(alps::hdf5::archive&) const { throw std::logic_error("None::save() should never be called"); }
                 void load(alps::hdf5::archive&) { throw std::logic_error("None::load() should never be called"); }
             };
+            template <typename S>
+            inline S& operator<<(S&, const None&) { throw std::logic_error("Generic streaming operator of None should never be called"); }
 
             // List of allowed basic scalar types:
             typedef mpl::vector8<bool,

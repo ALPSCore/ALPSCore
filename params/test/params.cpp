@@ -85,6 +85,40 @@ TEST_F(ParamsTest0, ctor) {
     EXPECT_FALSE(cpar_.exists("simple_string"));
 }
 
+TEST_F(ParamsTest0, copyCtor) {
+    params par2=cpar_;
+    EXPECT_EQ(cpar_, par2);
+}
+
+TEST_F(ParamsTest0, assignParams) {
+    arg_holder args;
+    args.add("one=1").add("two=2");
+    params par2(args.argc(), args.argv());
+    par2.define<int>("one", "One arg");
+    par2["some_string"]="some string value";
+
+    par2=cpar_;
+    EXPECT_EQ(cpar_, par2);
+}
+
+TEST_F(ParamsTest0, swapParams) {
+    arg_holder args;
+    args.add("one=1").add("two=2");
+    params par2(args.argc(), args.argv());
+    par2.define<int>("one", "One arg");
+    par2["some_string"]="some string value";
+
+    params par2_copy=par2;
+    params par1_copy=cpar_;
+
+    using std::swap;
+    swap(par_, par2);
+    
+    EXPECT_EQ(cpar_, par2_copy);
+    EXPECT_EQ(par2, par1_copy);
+}
+
+
 
 TEST_F(ParamsTest0, quotesAndSpaces) {
     const std::string expected="string with spaces";

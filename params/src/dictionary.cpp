@@ -80,8 +80,13 @@ namespace alps {
             swap(map_,new_map);
         }
 
-        
-        
+        std::ostream& operator<<(std::ostream& s, const dictionary& d)
+        {
+            for (dictionary::const_iterator it=d.begin(); it!=d.end(); ++it) {
+                s << it->first << " = " << it->second << "\n";
+            }
+            return s;
+        }
 
 #ifdef ALPS_HAVE_MPI
         // Defined here to avoid including <mpi_map.hpp> inside user header

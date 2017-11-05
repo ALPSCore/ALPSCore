@@ -30,6 +30,7 @@ namespace alps {
         }
 
         void dict_value::save(alps::hdf5::archive& ar) const {
+            if (this->empty()) return;
             alps::hdf5::write_variant<detail::dict_all_types>(ar, val_);
         }
             
@@ -39,6 +40,27 @@ namespace alps {
             if (slash_pos==std::string::npos) slash_pos=0; else ++slash_pos;
             name_=context.substr(slash_pos);
             val_=alps::hdf5::read_variant<detail::dict_all_types>(ar);
+        }
+
+        namespace {
+            struct typestring_visitor : public boost::static_visitor<std::string> {
+                template <typename T>
+                std::string operator()(const T& val) const {
+                    std::string ret=boost::typeindex::type_id<T>().pretty_name();
+                    return ret;
+                }
+            };
+            
+        }
+            
+        std::ostream& operator<<(std::ostream& s, const dict_value& dv) {
+            if (dv.empty()) {
+                s << "[NONE] (type: None)";
+            } else {
+                s << dv.val_ << " (type: " << boost::apply_visitor(typestring_visitor(), dv.val_) << ")";
+            }
+            s << "(name='" << dv.name_ << "')";
+            return s;
         }
 
 #ifdef ALPS_HAVE_MPI

@@ -37,19 +37,10 @@
 #ifndef ALPS_PARAMS_DICT_VALUE_HPP_a8ecbead92aa4a1995f43adfc6d0aae0
 #define ALPS_PARAMS_DICT_VALUE_HPP_a8ecbead92aa4a1995f43adfc6d0aae0
 
-#include <iostream>
+#include <iosfwd>
 #include <stdexcept>
 
 #include <boost/variant/variant.hpp>
-
-#include <boost/type_traits/is_integral.hpp>
-#include <boost/type_traits/is_signed.hpp>
-#include <boost/type_traits/is_unsigned.hpp>
-#include <boost/type_traits/is_floating_point.hpp>
-#include <boost/type_traits/make_unsigned.hpp>
-#include <boost/type_traits/make_signed.hpp>
-#include <boost/integer_traits.hpp>
-#include <boost/type_index.hpp> // for pretty-printing exceptions
 
 #include "./dict_exceptions.hpp"
 #include "./dict_types.hpp" // Sequences of supported types
@@ -123,6 +114,10 @@ namespace alps {
             
             /// Loads the value from an archive
             void load(alps::hdf5::archive& ar);
+
+            /// Print the value together with type in some human-readable format
+            friend 
+            std::ostream& operator<<(std::ostream&, const dict_value&);
             
 #ifdef ALPS_HAVE_MPI
             void broadcast(const alps::mpi::communicator& comm, int root);

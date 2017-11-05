@@ -18,6 +18,7 @@
 #endif
 
 #include <map>
+#include <iosfwd>
 
 #include "./dictionary.hpp"
 
@@ -25,15 +26,28 @@ namespace alps {
     namespace params_ns {
 
         namespace detail {
+            /// Type-description pair
             // FIXME: make it std::pair or, possibly, C++11 tuple?
             struct td_pair : public std::pair<std::string,std::string> {
                 typedef std::pair<std::string,std::string> super;
+                /// Access typestring
                 std::string& typestr() { return this->first; }
-                std::string& descr() { return this->second; }
+                /// Access typestring
                 const std::string& typestr() const { return this->first; }
+                /// Access description
+                std::string& descr() { return this->second; }
+                /// Access description
                 const std::string& descr() const { return this->second; }
+                /// Construct from typestring and description
                 td_pair(const std::string& t, const std::string& d) : super(t,d) {}
-                td_pair() : super() {} // needed for MPI
+                /// Generate a typestring from a type
+                template <typename T>
+                static std::string make_typestr() { return typeid(T).name(); } // FIXME: use pretty-typename instead? 
+                /// Construct from description given a type
+                template <typename T>
+                static td_pair make_pair(const std::string& d) { return td_pair(make_typestr<T>(), d); }
+                /// Empty-pair ctor needed for MPI    
+                td_pair() : super() {}
                 // bool operator==(const td_pair& rhs) const { return typestr==rhs.typestr && descr==rhs.descr; }
             };
         } // detail::
@@ -123,13 +137,20 @@ namespace alps {
             template<typename T>
             params& define(const std::string& name, const T& defval, const std::string& descr);
 
+            /// Returns a string describing the parameter (or an empty string)
             const std::string get_descr(const std::string& name) const;
 
-            template <typename A>
-            void save(const A&) const { throw std::logic_error("params::save() is not yet implemented"); }
-            
-            template <typename A>
-            void load(const A&) { throw std::logic_error("params::load() is not yet implemented"); }
+            friend void swap(params& p1, params& p2);
+
+            /// Saves parameter object to an archive
+            void save(alps::hdf5::archive&) const;
+
+            /// Loads parameter object form an archive
+            void load(alps::hdf5::archive&);
+
+            /// Prints parameters to a stream in an unspecified format
+            friend
+            std::ostream& operator<<(std::ostream&, const params&);
 
 #ifdef ALPS_HAVE_MPI
             // FIXME: should it be virtual?
