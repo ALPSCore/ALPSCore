@@ -2,7 +2,7 @@
 # alps-utilities cmake configuration script.
 # 
 
-cmake_minimum_required (VERSION 2.8.12)
+cmake_minimum_required (VERSION 3.0)
 
 # define project name
 project (alps-utilities CXX)
@@ -14,6 +14,7 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/../common/cmake)
 # add common definitions, if being configured independently
 if (CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   include(ALPSCommonModuleDefinitions)
+  include(ALPSEnableMPI)
 endif()
 
 gen_documentation()
@@ -33,12 +34,9 @@ add_this_package(
     gtest_par_xml_output
 )
 
-include(ALPSEnableMPI)
-
 add_boost()
 
 add_testing()
 CHECK_INCLUDE_FILE(unistd.h ALPS_HAVE_UNISTD_H)
-gen_hpp_config()
 gen_pkg_config()
 gen_cfg_module()

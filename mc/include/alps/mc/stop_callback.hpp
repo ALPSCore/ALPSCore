@@ -10,7 +10,7 @@
 #include <alps/config.hpp>
 #include <alps/utilities/signal.hpp>
 
-#include <ctime>
+#include <alps/mc/check_schedule.hpp>
 
 #ifdef ALPS_HAVE_MPI
 #include <boost/optional.hpp>
@@ -23,6 +23,11 @@ namespace alps {
             when the root process receives a signal or time runs out on the root.
         */
 	class stop_callback {
+                private:
+                    typedef detail::posix_wall_clock clock_type;
+                    typedef clock_type::time_duration_type time_duration_type;
+                    typedef clock_type::time_point_type time_point_type;
+                
 		public:
                     /// Initializes the functor with the desired time duration
                     /** @param timelimit Time limit (seconds); 0 means "indefinitely" */
@@ -37,9 +42,9 @@ namespace alps {
                     /// Returns `true` if it's time to stop (time is up or signal is received)
 		    bool operator()() const;
 		private:
-                    const double limit;  // NOTE: internally, time limit is `double`
+                    const time_duration_type limit;
 		    alps::signal signals;
-		    const std::time_t start;
+		    const time_point_type start;
 #ifdef ALPS_HAVE_MPI
                     boost::optional<alps::mpi::communicator> comm;
 #endif
@@ -50,6 +55,11 @@ namespace alps {
             when times runs out .
         */
 	class simple_time_callback {
+                private:
+                    typedef detail::posix_wall_clock clock_type;
+                    typedef clock_type::time_duration_type time_duration_type;
+                    typedef clock_type::time_point_type time_point_type;
+                
 		public:
                     /// Initializes the functor with the desired time duration
                     /** @param timelimit Time limit (seconds); 0 means "indefinitely" */
@@ -58,8 +68,8 @@ namespace alps {
                     /// Returns `true` if time is up
 		    bool operator()() const;
 		private:
-		    const double limit;
-		    const std::time_t start;
+		    const time_duration_type limit;
+		    const time_point_type start;
 	};
 }
 

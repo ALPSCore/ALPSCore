@@ -3,8 +3,8 @@
 # Several additional options are possible (or even recommended), 
 # this tutorial only illustrates the minimal options
 
-# we need at least cmake version 2.8.12
-cmake_minimum_required(VERSION 2.8.12)
+# we need at least cmake version 3.0
+cmake_minimum_required(VERSION 3.0)
 
 # the project is called 'linking', and it is a C++ project
 project(linking CXX)
@@ -12,7 +12,7 @@ project(linking CXX)
 # the project relies on the ALPSCore package. If ALPSCore is not found
 # automatically, specify its location using:
 # export ALPSCore_DIR=/location/to/ALPSCORE/
-find_package(ALPSCore REQUIRED)
+find_package(ALPSCore 1.0  REQUIRED)
 
 # we only have one cpp file: it's called linking.cpp
 add_executable(${PROJECT_NAME} linking.cpp)

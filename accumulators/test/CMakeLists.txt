@@ -2,6 +2,7 @@ include(ALPSEnableTests)
 
 set (test_src
     testharness
+    acc_check_eigen
     get_results
     add_accumulators
     count
