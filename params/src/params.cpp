@@ -11,6 +11,8 @@
 #include <alps/params.hpp>
 #include <algorithm>
 #include <sstream>
+#include <cstring> // for memcmp()
+#include <boost/optional.hpp>
 
 #include <alps/testing/unique_file.hpp> // FIXME!!! Temporary!
 #include <fstream> // FIXME!!! Temporary!
@@ -28,7 +30,35 @@
 namespace alps {
     namespace params_ns {
 
-        void params::initialize_(int argc, const char* const * argv)
+        namespace {
+            // Helper function to try to open an HDF5 archive, return "none" if it fails
+            boost::optional<alps::hdf5::archive> try_open_ar(const std::string& fname, const char* mode)
+            {
+                try {
+                    //read in hdf5 checksum of file and verify it's a hdf5 file
+                    {
+                        std::ifstream f(fname.c_str(),std::ios::binary);
+                        if(!f.good()) return boost::none;
+                        static const char hdf5_checksum[]={char(137),72,68,70,13,10,26,10};
+                        char firstbytes[sizeof(hdf5_checksum)];
+                        f.read(firstbytes, sizeof(firstbytes));
+                        if(!f.good() || memcmp(hdf5_checksum, firstbytes, sizeof(firstbytes))!=0) return boost::none;
+                    }
+                    return alps::hdf5::archive(fname, mode);
+                } catch (alps::hdf5::archive_error& ) {
+                    return boost::none;
+                }
+            };
+        }
+
+        std::string params::get_archive_name() const
+        {
+            // FIXME? Should it actually throw [like the old version], or simply return empty string?
+            if (!this->is_restored()) throw std::runtime_error("The parameters object is not restored from an archive");
+            return archive_name_;
+        }
+        
+        void params::initialize_(int argc, const char* const * argv, const char* hdf5_path)
         {
             // shortcuts:
             typedef std::string::size_type size_type;
@@ -42,6 +72,7 @@ namespace alps {
             std::vector<string> all_args(argv+1,argv+argc);
             std::stringstream cmd_options;
             bool file_args_mode=false;
+            boost::optional<alps::hdf5::archive> maybe_ar=boost::none;
             BOOST_FOREACH(const string& arg, all_args) {
                 if (file_args_mode) {
                     read_ini_file_(arg);
@@ -59,6 +90,8 @@ namespace alps {
                     key_begin=1;
                 }
                 if (0==key_begin && npos==key_end) {
+                    if (hdf5_path) maybe_ar=try_open_ar(arg, "r");
+                    if (maybe_ar) break;
                     read_ini_file_(arg);
                     continue;
                 }
@@ -68,7 +101,13 @@ namespace alps {
                     cmd_options << arg.substr(key_begin) << "\n";
                 }
             }
-
+            if (hdf5_path && maybe_ar) {
+                if (all_args.size()!=1) throw std::invalid_argument("HDF5 arhive must be the only argument");
+                maybe_ar->set_context(hdf5_path);
+                this->load(*maybe_ar);
+                archive_name_=all_args[0];
+                return;
+            }
             // FIXME!!!
             // This is very inefficient and is done only for testing.
             alps::testing::unique_file tmpfile(argv0_+".param.ini", alps::testing::unique_file::KEEP_AFTER);

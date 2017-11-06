@@ -76,6 +76,7 @@ namespace alps {
         {
             map_type new_map;
             ar[""] >> new_map;
+            
             using std::swap;
             swap(map_,new_map);
         }

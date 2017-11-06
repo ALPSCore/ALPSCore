@@ -90,9 +90,10 @@ namespace alps {
             td_map_type td_map_;
             int err_status_;
             std::string argv0_;
+            std::string archive_name_;
 
             void read_ini_file_(const std::string& inifile);
-            void initialize_(int argc, const char* const* argv);
+            void initialize_(int argc, const char* const* argv, const char* hdf5_path);
 
             template <typename T>
             bool assign_to_name_(const std::string& name, const std::string& strval);
@@ -103,27 +104,34 @@ namespace alps {
 
           public:
             /// Default ctor
-            params() : dictionary(), raw_kv_content_(), td_map_(), err_status_(0), argv0_() {}
+            params() : dictionary(), raw_kv_content_(), td_map_(), err_status_(0), argv0_(), archive_name_() {}
 
             params(const std::string& inifile)
-                : dictionary(), raw_kv_content_(), td_map_(), err_status_(0), argv0_()
+                : dictionary(), raw_kv_content_(), td_map_(), err_status_(0), argv0_(), archive_name_()
             {
                 read_ini_file_(inifile);
             }
 
-            params(int argc, const char* const* argv)
+            params(int argc, const char* const* argv, const char* hdf5_path="/parameters")
                 : dictionary(),
                   raw_kv_content_(),
                   td_map_(),
                   err_status_(),
-                  argv0_()
-            { initialize_(argc, argv); }
+                  argv0_(),
+                  archive_name_()
+            { initialize_(argc, argv, hdf5_path); }
 
 
-            /// Convenience function: returns the "origin name"
+            /// Convenience method: returns the "origin name"
             /** @Returns (parameter_file_name || restart_file name || program_name || "") **/
-            const std::string& get_origin_name() const { return argv0_; }
+            std::string get_origin_name() const { return argv0_; }
 
+            /// Conveninece method: true if the object was restored from an archive
+            bool is_restored() const { return !archive_name_.empty(); }
+            
+            /// Convenience method: returns the archive name the object has been restored from, or throws
+            std::string get_archive_name() const;
+            
             /// No-errors status
             bool ok() const { return 0==err_status_; }
 
@@ -162,7 +170,7 @@ namespace alps {
             void broadcast(const alps::mpi::communicator& comm, int root);
 
             /// Broadcasting ctor. Reads file/params on root, broadcasts to everyone
-            params(int argc, const char* const* argv, const alps::mpi::communicator& comm, int root)
+            params(int argc, const char* const* argv, const alps::mpi::communicator& comm, int root, const char* hdf5_path="/parameters")
                 : dictionary(),
                   raw_kv_content_(),
                   td_map_(),
@@ -170,7 +178,7 @@ namespace alps {
                   argv0_()
 
             {
-                initialize_(argc,argv);
+                initialize_(argc,argv,hdf5_path);
                 broadcast(comm, root);
             }
 #endif

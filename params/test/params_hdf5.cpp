@@ -14,6 +14,7 @@
 #include <iostream>
 
 using alps::params;
+namespace ah5=alps::hdf5;
 
 namespace test_data {
     static const char inifile_content[]=
@@ -48,12 +49,12 @@ TEST_F(ParamsTest, saveLoad) {
     par_.define<double>("my_double", 0.00, "Double param");
 
     {
-        alps::hdf5::archive ar(file_.name(), "w");
+        ah5::archive ar(file_.name(), "w");
         ar["params"] << par_;
     }
 
     {
-        alps::hdf5::archive ar(file_.name(), "r");
+        ah5::archive ar(file_.name(), "r");
         ar["params"] >> p_other;
     }
 
@@ -62,4 +63,48 @@ TEST_F(ParamsTest, saveLoad) {
 
     EXPECT_TRUE(p_other.define<std::string>("my_string", "", "String param").ok());
     EXPECT_EQ("ABC", p_other["my_string"].as<std::string>());
+
+    EXPECT_FALSE(p_other.is_restored());
 }
+
+TEST_F(ParamsTest, h5Ctor) {
+    {
+        ah5::archive ar(file_.name(), "w");
+        ar["/parameters"] << par_;
+    }
+    arg_holder args;
+    args.add(file_.name());
+    
+    params p_new(args.argc(), args.argv());
+
+    EXPECT_EQ(par_, p_new);
+
+    EXPECT_FALSE(par_.is_restored());
+    EXPECT_ANY_THROW(par_.get_archive_name());
+
+    EXPECT_TRUE(p_new.is_restored());
+    EXPECT_EQ(file_.name(), p_new.get_archive_name());
+}
+
+TEST_F(ParamsTest, h5CtorExtraArgs) {
+    {
+        ah5::archive ar(file_.name(), "w");
+        ar["/parameters"] << par_;
+    }
+    arg_holder args;
+    args.add(file_.name()).add("some=something");
+    
+    EXPECT_ANY_THROW(params p_new(args.argc(), args.argv()));
+}
+
+TEST_F(ParamsTest, h5CtorNotFirstArgument) {
+    {
+        ah5::archive ar(file_.name(), "w");
+        ar["/parameters"] << par_;
+    }
+    arg_holder args;
+    args.add("some=something").add(file_.name());
+    
+    EXPECT_ANY_THROW(params p_new(args.argc(), args.argv()));
+}
+
