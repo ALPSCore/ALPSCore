@@ -122,7 +122,7 @@ function(add_eigen)
     target_include_directories(${PROJECT_NAME} PUBLIC
       $<BUILD_INTERFACE:${EIGEN3_INCLUDE_DIR}>
       $<INSTALL_INTERFACE:${eigen_install_dir_}>)
-    install(DIRECTORY "${eigen_dir}/Eigen" "${eigen_dir}/unsupported" DESTINATION ${eigen_install_dir_})
+    install(DIRECTORY "${EIGEN3_INCLUDE_DIR}/Eigen" "${EIGEN3_INCLUDE_DIR}/unsupported" DESTINATION ${eigen_install_dir_})
     
   endif(NOT ALPS_INSTALL_EIGEN)
 
