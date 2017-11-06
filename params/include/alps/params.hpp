@@ -80,7 +80,7 @@ namespace alps {
         class params : public dictionary {
           private:
             typedef std::map<std::string,std::string> strmap;
-            // typedef std::vector<std::string> strvec;
+            typedef std::vector<std::string> strvec;
 
 
             typedef std::map<std::string, detail::td_pair> td_map_type;
@@ -88,9 +88,10 @@ namespace alps {
 
             strmap raw_kv_content_;
             td_map_type td_map_;
-            int err_status_;
+            strvec err_status_;
             std::string argv0_;
             std::string archive_name_;
+            std::string help_header_;
 
             void read_ini_file_(const std::string& inifile);
             void initialize_(int argc, const char* const* argv, const char* hdf5_path);
@@ -104,10 +105,11 @@ namespace alps {
 
           public:
             /// Default ctor
-            params() : dictionary(), raw_kv_content_(), td_map_(), err_status_(0), argv0_(), archive_name_() {}
+            params() : dictionary(), raw_kv_content_(), td_map_(), err_status_(0), argv0_(),
+                       archive_name_(), help_header_() {}
 
             params(const std::string& inifile)
-                : dictionary(), raw_kv_content_(), td_map_(), err_status_(0), argv0_(), archive_name_()
+                : dictionary(), raw_kv_content_(), td_map_(), err_status_(0), argv0_(), archive_name_(), help_header_()
             {
                 read_ini_file_(inifile);
             }
@@ -118,7 +120,8 @@ namespace alps {
                   td_map_(),
                   err_status_(),
                   argv0_(),
-                  archive_name_()
+                  archive_name_(),
+                  help_header_()
             { initialize_(argc, argv, hdf5_path); }
 
 
@@ -133,7 +136,19 @@ namespace alps {
             std::string get_archive_name() const;
             
             /// No-errors status
-            bool ok() const { return 0==err_status_; }
+            bool ok() const { return err_status_.empty(); }
+
+            /// True if there are missing or wrong-type parameters
+            bool has_missing() const { return !ok(); }
+
+            /// True if there are missing or wrong-type parameters; prints the message to that effect
+            bool has_missing(std::ostream& out) const;
+
+            /// True if user requested help
+            bool help_requested() const { return !help_header_.empty() && (*this)["help"].as<bool>(); }
+
+            /// True if user requested help; print it to the supplied stream
+            bool help_requested(std::ostream&) const;
 
             /// Returns true if the objects are identical
             bool operator==(const params& rhs) const;
@@ -155,6 +170,9 @@ namespace alps {
                 return define<bool>(name, false, descr);
             }
 
+            /// Sets a description for the help message and introduces "--help" flag
+            params& description(const std::string& message);
+            
             /// Returns a string describing the parameter (or an empty string)
             const std::string get_descr(const std::string& name) const;
 

@@ -191,6 +191,64 @@ TEST_F(ParamsTest0, flags) {
     EXPECT_FALSE(p["other_flag"].as<bool>());
 }
 
+TEST_F(ParamsTest0, hasMissingRequired) {
+    EXPECT_FALSE(par_.define<int>("no_such_int", "whole-number").ok());
+    EXPECT_FALSE(par_.define<double>("no_such_double", "floating-point").ok());
+    EXPECT_TRUE(par_.has_missing());
+    std::ostringstream ostr;
+    EXPECT_TRUE(par_.has_missing(ostr));
+    EXPECT_TRUE(ostr.str().find("no_such_int")!=std::string::npos);
+    // EXPECT_TRUE(ostr.str().find("whole-number")!=std::string::npos);
+    EXPECT_TRUE(ostr.str().find("no_such_double")!=std::string::npos);
+    // EXPECT_TRUE(ostr.str().find("floating-point")!=std::string::npos);
+    EXPECT_TRUE(ostr.str().find("missing")!=std::string::npos);
+    // std::cout << ostr.str(); // DEBUG
+}
+
+TEST_F(ParamsTest0, hasMissingParsing) {
+    EXPECT_FALSE(par_.define<int>("simple_string", "wrong-number").ok());
+    EXPECT_TRUE(par_.has_missing());
+    std::ostringstream ostr;
+    EXPECT_TRUE(par_.has_missing(ostr));
+    EXPECT_TRUE(ostr.str().find("simple_string")!=std::string::npos);
+    // EXPECT_TRUE(ostr.str().find("wrong-number")!=std::string::npos);
+    EXPECT_TRUE(ostr.str().find(" parse ")!=std::string::npos);
+    // std::cout << ostr.str(); // DEBUG
+}
+
+TEST_F(ParamsTest0, helpNotRequested) {
+    EXPECT_FALSE(par_.help_requested());
+    EXPECT_FALSE(par_.exists("help"));
+
+    par_.description("This is a test message");
+    EXPECT_TRUE(par_.exists("help"));
+    EXPECT_FALSE(par_.help_requested());
+    std::ostringstream ostr;
+    EXPECT_FALSE(par_.help_requested(ostr));
+    EXPECT_TRUE(ostr.str().empty());
+}
+
+TEST_F(ParamsTest0, helpRequested) {
+    arg_holder args;
+    args.add("--help");
+    params p(args.argc(), args.argv());
+
+    p.
+        description("This is a test message").
+        define<int>("whole_num", "My-integer").
+        define<double>("fp_num", 1.25, "My-fp");
+        
+    EXPECT_TRUE(p.help_requested());
+    std::ostringstream ostr;
+    EXPECT_TRUE(p.help_requested(ostr));
+    EXPECT_TRUE(ostr.str().find("This is a test message")!=std::string::npos);
+    EXPECT_TRUE(ostr.str().find("whole_num")!=std::string::npos);
+    EXPECT_TRUE(ostr.str().find("My-integer")!=std::string::npos);
+    EXPECT_TRUE(ostr.str().find("fp_num")!=std::string::npos);
+    EXPECT_TRUE(ostr.str().find("My-fp")!=std::string::npos);
+    EXPECT_TRUE(ostr.str().find("1.25")!=std::string::npos);
+    std::cout << ostr.str(); /// DEBUG
+}
 
 /* ***** */
 /* The following 54 test cases are pre-generated using the script `params_def_gen_test_helper.sh`

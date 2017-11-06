@@ -2,6 +2,7 @@
 
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
+#include <boost/type_index.hpp> // for help messages
 namespace alps {
     namespace params_ns {
 
@@ -95,7 +96,7 @@ namespace alps {
                 return false; // need to decide whether the default available
             }
             if (!assign_to_name_<T>(name, it->second)) {
-                ++err_status_; // FIXME: record the problem: cannot parse
+                err_status_.push_back("Cannot parse parameter '"+name+"' as the requested type");
                 (*this)[name].clear();
             }
             return true;
@@ -105,7 +106,7 @@ namespace alps {
         params& params::define(const std::string& name, const std::string& descr)
         {
             if (!define_<T>(name, descr)) {
-                if (!this->exists<T>(name)) ++err_status_; // FIXME: record the problem: missing required param
+                if (!this->exists<T>(name)) err_status_.push_back("Required parameter '"+name+"' is missing"); 
             }
             return *this;
         }

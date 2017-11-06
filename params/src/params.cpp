@@ -11,6 +11,7 @@
 #include <alps/params.hpp>
 #include <algorithm>
 #include <sstream>
+#include <iterator> // for ostream_iterator
 #include <cstring> // for memcmp()
 #include <boost/optional.hpp>
 
@@ -18,12 +19,13 @@
 #include <fstream> // FIXME!!! Temporary!
 
 #include <alps/hdf5/map.hpp>
-#include <alps/hdf5/vector.hpp> // DEBUG! 
+#include <alps/hdf5/vector.hpp>
 
 #include <boost/foreach.hpp>
 
 #ifdef ALPS_HAVE_MPI
 #include <alps/utilities/mpi_map.hpp>
+#include <alps/utilities/mpi_vector.hpp>
 #endif
 
 
@@ -57,7 +59,42 @@ namespace alps {
             if (!this->is_restored()) throw std::runtime_error("The parameters object is not restored from an archive");
             return archive_name_;
         }
+
+
+        params& params::description(const std::string &message)
+        {
+            this->define("help", "Print help message");
+            help_header_=message;
+            return *this;
+        }
+
+
+        bool params::help_requested(std::ostream& out) const
+        {
+            if (!this->help_requested()) return false;
+            // FIXME: the format is now ugly and should be improved
+            // FIXME: the types in td_map should be made pretty
+            out << help_header_ << "\nAvailable options:\n";
+            BOOST_FOREACH(const td_map_type::value_type& tdp, td_map_) {
+                out << tdp.first << " (" << tdp.second.typestr() << "):     "
+                    << tdp.second.descr();
+                if (this->exists(tdp.first)) {
+                    // FIXME: default value is printed with name and type.
+                    out << " (default value: " << (*this)[tdp.first] << ")";
+                }
+                out << "\n";
+            }
+            return true;
+        }
+
         
+        bool params::has_missing(std::ostream& out) const
+        {
+            if (this->ok()) return false;
+            std::copy(err_status_.begin(), err_status_.end(), std::ostream_iterator<std::string>(out,"\n"));
+            return true;
+        }
+
         void params::initialize_(int argc, const char* const * argv, const char* hdf5_path)
         {
             // shortcuts:
@@ -144,6 +181,7 @@ namespace alps {
                 (lhs.raw_kv_content_ == rhs.raw_kv_content_) &&
                 (lhs.td_map_ == rhs.td_map_) &&
                 (lhs.err_status_ == rhs.err_status_) &&
+                (lhs.help_header_ == rhs.help_header_) &&
                 (lhs.argv0_ == rhs.argv0_) &&
                 (lhs_dict==rhs_dict);
         }
@@ -164,6 +202,7 @@ namespace alps {
             ar[context+"@ini_values"] << raw_vals;
             ar[context+"@status"] << err_status_;
             ar[context+"@argv0"]  << argv0_;
+            ar[context+"@help_header"]  << help_header_;
             
             std::vector<std::string> keys=ar.list_children(context);
             BOOST_FOREACH(const std::string& key, keys) {
@@ -181,8 +220,10 @@ namespace alps {
 
             const std::string context=ar.get_context();
 
-            ar[context+"@status"] >> err_status_;
-            ar[context+"@argv0"]  >> argv0_;
+            ar[context+"@status"] >> newpar.err_status_;
+            ar[context+"@argv0"]  >> newpar.argv0_;
+            ar[context+"@help_header"]  >> newpar.help_header_;
+            
             // Get the vectors of keys, values and convert them back to a map
             {
                 typedef std::vector<std::string> stringvec;
@@ -225,7 +266,7 @@ namespace alps {
 
         std::ostream& operator<<(std::ostream& s, const params& p) {
             s << "[alps::params]"
-              << " argv0='" << p.argv0_ << "' status=" << p.err_status_
+              << " argv0='" << p.argv0_ << "' status=" << alps::short_print(p.err_status_)
               << "\nRaw kv:\n";
             BOOST_FOREACH(const params::strmap::value_type& kv, p.raw_kv_content_) {
                 s << kv.first << "=" << kv.second << "\n";
