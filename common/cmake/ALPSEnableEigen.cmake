@@ -22,7 +22,7 @@ function(add_eigen)
 
   if (NOT ALPS_INSTALL_EIGEN)
     find_package(Eigen3 ${ALPS_EIGEN_MIN_VERSION})
-    if (NOT Eigen3_FOUND)
+    if (NOT EIGEN3_FOUND) # CMake 3.3+ would use Eigen3_FOUND
       message(FATAL_ERROR
 " 
  The required library Eigen3 has not been found on your system.
@@ -110,7 +110,7 @@ function(add_eigen)
     # Here EIGEN3_INCLUDE_DIR is set, find_package() will only check the version 
     message(STATUS "Searching for Eigen3 in ${EIGEN3_INCLUDE_DIR}")
     find_package(Eigen3 ${ALPS_EIGEN_MIN_VERSION})
-    if (NOT Eigen3_FOUND)
+    if (NOT EIGEN3_FOUND) # CMake 3.3+ would use Eigen3_FOUND
       message(FATAL_ERROR
         "\nCannot find suitable Eigen3 in ${EIGEN3_INCLUDE_DIR}."
         " Make sure that Eigen3 is indeed at the specified location, "
@@ -127,9 +127,9 @@ function(add_eigen)
   endif(NOT ALPS_INSTALL_EIGEN)
 
   # assertion
-  if (NOT Eigen3_FOUND OR NOT EIGEN3_VERSION)
+  if (NOT EIGEN3_FOUND OR NOT EIGEN3_VERSION) # CMake 3.3+ would use Eigen3_FOUND
     message(FATAL_ERROR "Assertion error: Eigen3 must have been found and versioned. "
-      "\nEigen3_FOUND=${Eigen3_FOUND}"
+      "\nEIGEN3_FOUND=${EIGEN3_FOUND}"
       "\nEIGEN3_VERSION=${EIGEN3_VERSION}"
       "\nPlease report this to ALPSCore developers.")
   endif()
