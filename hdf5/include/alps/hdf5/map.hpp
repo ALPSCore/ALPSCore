@@ -25,6 +25,7 @@ namespace alps {
         ) {
             if (ar.is_group(path))
                 ar.delete_group(path);
+            ar.create_group(path);
             for(typename std::map<K, T, C, A>::const_iterator it = value.begin(); it != value.end(); ++it)
                 save(ar, ar.complete_path(path) + "/" + ar.encode_segment(cast<std::string>(it->first)), it->second);
         }
