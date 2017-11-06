@@ -85,10 +85,29 @@ TEST_F(DictionaryTestHdf5, testSave) {
     ar["dictionary2"] << dict2_;
 }
 
+TEST_F(DictionaryTestHdf5, testSaveEmptyDict) {
+    alps::hdf5::archive ar(file_.name(), "w");
+    dictionary empty_dict;
+    ar["dictionary"] << empty_dict;
+}
+
 TEST_F(DictionaryTestHdf5, testSaveNone) {
     alps::hdf5::archive ar(file_.name(), "w");
     dict1_["empty_value"];
     ar["dictionary1"] << dict1_;
+}
+
+TEST_F(DictionaryTestHdf5, testLoadEmptyDict) {
+    {
+        alps::hdf5::archive ar(file_.name(), "w");
+        dictionary empty_dict;
+        ar["dict"] << empty_dict;
+    }
+    {
+        alps::hdf5::archive ar(file_.name(), "r");
+        ar["dict"] >> dict2_;
+    }
+    EXPECT_EQ(0u, dict2_.size());
 }
 
 TEST_F(DictionaryTestHdf5, testLoad) {
