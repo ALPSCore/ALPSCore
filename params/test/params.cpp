@@ -180,6 +180,17 @@ TEST_F(ParamsTest0, mixedCaseAsUppercase) {
 }
 
 
+TEST_F(ParamsTest0, flags) {
+    arg_holder args;
+    args.add("--flag");
+    params p(args.argc(), args.argv());
+    ASSERT_TRUE(p.define("flag", "A flag option").ok());
+    ASSERT_TRUE(p.define("other_flag", "Another flag option").ok());
+    
+    EXPECT_TRUE(p["flag"].as<bool>());
+    EXPECT_FALSE(p["other_flag"].as<bool>());
+}
+
 
 /* ***** */
 /* The following 54 test cases are pre-generated using the script `params_def_gen_test_helper.sh`

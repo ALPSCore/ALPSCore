@@ -150,6 +150,11 @@ namespace alps {
             template<typename T>
             params& define(const std::string& name, const T& defval, const std::string& descr);
 
+            /// Defines a flag (boolean option with default of `false`)
+            params& define(const std::string& name, const std::string& descr) {
+                return define<bool>(name, false, descr);
+            }
+
             /// Returns a string describing the parameter (or an empty string)
             const std::string get_descr(const std::string& name) const;
 
