@@ -34,7 +34,7 @@ class ParamsTest : public ::testing::Test {
   public:
     ParamsTest() : params_and_file_(::test_data::inifile_content),
                    par_(*params_and_file_.get_params_ptr()),
-                   file_("params_hdf5_test.h5.", alps::testing::unique_file::KEEP_AFTER)
+                   file_("params_hdf5_test.h5.", alps::testing::unique_file::REMOVE_AFTER)
                    
     {   }
 };
