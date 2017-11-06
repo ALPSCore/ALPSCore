@@ -147,7 +147,7 @@ namespace alps {
             }
             // FIXME!!!
             // This is very inefficient and is done only for testing.
-            alps::testing::unique_file tmpfile(argv0_+".param.ini", alps::testing::unique_file::KEEP_AFTER);
+            alps::testing::unique_file tmpfile(argv0_+".param.ini", alps::testing::unique_file::REMOVE_AFTER);
             std::ofstream tmpstream(tmpfile.name().c_str());
             tmpstream << cmd_options.rdbuf();
             tmpstream.close();
