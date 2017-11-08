@@ -4,6 +4,7 @@
    @file    iniparser.c
    @author  N. Devillard
    @brief   Parser for ini files.
+   @note    Modified for ALPSCore by Alexander Gaenko
 */
 /*--------------------------------------------------------------------------*/
 /*---------------------------- Includes ------------------------------------*/
@@ -32,27 +33,29 @@ typedef enum _line_status_ {
 
 /*-------------------------------------------------------------------------*/
 /**
-  @brief    Convert a string to lowercase.
-  @param    in   String to convert.
+  @brief    Copy a string to the new buffer
+  @param    in   String to copy.
   @param    out Output buffer.
   @param    len Size of the out buffer.
   @return   ptr to the out buffer or NULL if an error occured.
 
-  This function convert a string into lowercase.
-  At most len - 1 elements of the input string will be converted.
+  This function copies a string into the given buffer.
+  The input string and the output buffer must not overlap.
+  At most len - 1 elements of the input string will be copied.
+  The string in the destination buffer will be 0-terminated.
+
+  @note This is a drop-in replacement for `strlwc()` that used to copy
+  the string lowercasing all characters.
  */
 /*--------------------------------------------------------------------------*/
-static const char * strlwc(const char * in, char *out, unsigned len)
+static const char * strcopy_n(const char * in, char *out, unsigned len)
 {
     unsigned i ;
 
     if (in==NULL || out == NULL || len==0) return NULL ;
-    i=0 ;
-    while (in[i] != '\0' && i < len-1) {
-        out[i] = (char)tolower((int)in[i]);
-        i++ ;
-    }
-    out[i] = '\0';
+    if (in == out) return out; /* full overlap: gratuitously allow it as a special case */
+    strncpy(out, in, len-1);
+    out[len-1] = '\0';
     return out ;
 }
 
@@ -339,7 +342,7 @@ int iniparser_getsecnkeys(const dictionary * d, const char * s)
     if (s[0]!='\0' && ! iniparser_find_entry(d, s)) return nkeys;
 
     seclen  = (int)strlen(s);
-    strlwc(s, keym, sizeof(keym));
+    strcopy_n(s, keym, sizeof(keym));
     keym[seclen] = '.';
 
     for (j=0 ; j<d->size ; j++) {
@@ -378,7 +381,7 @@ const char ** iniparser_getseckeys(const dictionary * d, const char * s, const c
     if (s[0]!='\0' && ! iniparser_find_entry(d, s)) return NULL;
 
     seclen  = (int)strlen(s);
-    strlwc(s, keym, sizeof(keym));
+    strcopy_n(s, keym, sizeof(keym));
     keym[seclen] = '.';
 
     i = 0;
@@ -419,7 +422,7 @@ const char * iniparser_getstring(const dictionary * d, const char * key, const c
     if (d==NULL || key==NULL)
         return def ;
 
-    lc_key = strlwc(key, tmp_str, sizeof(tmp_str));
+    lc_key = strcopy_n(key, tmp_str, sizeof(tmp_str));
     sval = dictionary_get(d, lc_key, def);
     return sval ;
 }
@@ -601,7 +604,7 @@ int iniparser_find_entry(const dictionary * ini, const char * entry)
 int iniparser_set(dictionary * ini, const char * entry, const char * val)
 {
     char tmp_str[ASCIILINESZ+1];
-    return dictionary_set(ini, strlwc(entry, tmp_str, sizeof(tmp_str)), val) ;
+    return dictionary_set(ini, strcopy_n(entry, tmp_str, sizeof(tmp_str)), val) ;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -617,7 +620,7 @@ int iniparser_set(dictionary * ini, const char * entry, const char * val)
 void iniparser_unset(dictionary * ini, const char * entry)
 {
     char tmp_str[ASCIILINESZ+1];
-    dictionary_unset(ini, strlwc(entry, tmp_str, sizeof(tmp_str)));
+    dictionary_unset(ini, strcopy_n(entry, tmp_str, sizeof(tmp_str)));
 }
 
 /*-------------------------------------------------------------------------*/
@@ -654,19 +657,19 @@ static line_status iniparser_line(
         /* Section name */
         sscanf(line, "[%[^]]", section);
         strstrip(section);
-        strlwc(section, section, len);
+        /* strcopy_n(section, section, len); */
         sta = LINE_SECTION ;
     } else if (sscanf (line, "%[^=] = \"%[^\"]\"", key, value) == 2
            ||  sscanf (line, "%[^=] = '%[^\']'",   key, value) == 2) {
         /* Usual key=value with quotes, with or without comments */
         strstrip(key);
-        strlwc(key, key, len);
+        /* strcopy_n(key, key, len); */
         /* Don't strip spaces from values surrounded with quotes */
         sta = LINE_VALUE ;
     } else if (sscanf (line, "%[^=] = %[^;#]", key, value) == 2) {
         /* Usual key=value without quotes, with or without comments */
         strstrip(key);
-        strlwc(key, key, len);
+        /* strcopy_n(key, key, len); */
         strstrip(value);
         /*
          * sscanf cannot handle '' or "" as empty values
@@ -685,7 +688,7 @@ static line_status iniparser_line(
          * key=#
          */
         strstrip(key);
-        strlwc(key, key, len);
+        /* strcopy_n(key, key, len); */
         value[0]=0 ;
         sta = LINE_VALUE ;
     } else {

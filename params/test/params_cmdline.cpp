@@ -166,8 +166,6 @@ TEST_F(ParamsTestCmdline, filenamesAndKeys) {
     EXPECT_EQ(4, p["four"]) << "option from file2";
 }
 
-static inline char to_lower(char c) { return std::tolower(c, std::locale()); }
-
 TEST_F(ParamsTestCmdline, doubleDash) {
     ini_maker ini1("--file1"), ini2("--file2");
     ini1.add("one=1");
@@ -182,9 +180,6 @@ TEST_F(ParamsTestCmdline, doubleDash) {
 
     std::string ini1_as_key=ini1.name().substr(2);
     std::string ini2_as_key=ini2.name().substr(2);
-    // convert to lowercase, assuming ASCII
-    std::transform(ini1_as_key.begin(), ini1_as_key.end(),  ini1_as_key.begin(), to_lower);
-    std::transform(ini2_as_key.begin(), ini2_as_key.end(),  ini2_as_key.begin(), to_lower);
     
     ASSERT_TRUE(p
                 .define<int>("one", 0, "Option 1")
