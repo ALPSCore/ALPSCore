@@ -161,7 +161,7 @@ namespace alps {
             BOOST_FOREACH(const detail::iniparser::kv_pair& kv, parser()) {
                 // FIXME!!! Check for duplicates and optionally warn!
                 std::string key=kv.first;
-                if (!key.empty() && key[0]==':') key.erase(0,1);
+                if (!key.empty() && key[0]=='.') key.erase(0,1);
                 raw_kv_content_[key]=kv.second;
             }
         }

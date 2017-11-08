@@ -152,7 +152,7 @@ void iniparser_set_error_callback(int (*errback)(const char *, ...))
   This function returns the number of sections found in a dictionary.
   The test to recognize sections is done on the string stored in the
   dictionary: a section name is given as "section" whereas a key is
-  stored as "section:key", thus the test looks for entries that do not
+  stored as "section.key", thus the test looks for entries that do not
   contain a colon.
 
   This clearly fails in the case a section name contains a colon, but
@@ -171,7 +171,7 @@ int iniparser_getnsec(const dictionary * d)
     for (i=0 ; i<d->size ; i++) {
         if (d->key[i]==NULL)
             continue ;
-        if (strchr(d->key[i], ':')==NULL) {
+        if (strchr(d->key[i], '.')==NULL) {
             nsec ++ ;
         }
     }
@@ -202,7 +202,7 @@ const char * iniparser_getsecname(const dictionary * d, int n)
     for (i=0 ; i<d->size ; i++) {
         if (d->key[i]==NULL)
             continue ;
-        if (strchr(d->key[i], ':')==NULL) {
+        if (strchr(d->key[i], '.')==NULL) {
             foundsec++ ;
             if (foundsec>n)
                 break ;
@@ -304,7 +304,7 @@ void iniparser_dumpsection_ini(const dictionary * d, const char * s, FILE * f)
 
     seclen  = (int)strlen(s);
     fprintf(f, "\n[%s]\n", s);
-    sprintf(keym, "%s:", s);
+    sprintf(keym, "%s.", s);
     for (j=0 ; j<d->size ; j++) {
         if (d->key[j]==NULL)
             continue ;
@@ -340,7 +340,7 @@ int iniparser_getsecnkeys(const dictionary * d, const char * s)
 
     seclen  = (int)strlen(s);
     strlwc(s, keym, sizeof(keym));
-    keym[seclen] = ':';
+    keym[seclen] = '.';
 
     for (j=0 ; j<d->size ; j++) {
         if (d->key[j]==NULL)
@@ -379,7 +379,7 @@ const char ** iniparser_getseckeys(const dictionary * d, const char * s, const c
 
     seclen  = (int)strlen(s);
     strlwc(s, keym, sizeof(keym));
-    keym[seclen] = ':';
+    keym[seclen] = '.';
 
     i = 0;
 
@@ -404,7 +404,7 @@ const char ** iniparser_getseckeys(const dictionary * d, const char * s, const c
   @return   pointer to statically allocated character string
 
   This function queries a dictionary for a key. A key as read from an
-  ini file is given as "section:key". If the key cannot be found,
+  ini file is given as "section.key". If the key cannot be found,
   the pointer passed as 'def' is returned.
   The returned char pointer is pointing to a string allocated in
   the dictionary, do not free or modify it.
@@ -433,7 +433,7 @@ const char * iniparser_getstring(const dictionary * d, const char * key, const c
   @return   long integer
 
   This function queries a dictionary for a key. A key as read from an
-  ini file is given as "section:key". If the key cannot be found,
+  ini file is given as "section.key". If the key cannot be found,
   the notfound value is returned.
 
   Supported values for integers include the usual C notation
@@ -470,7 +470,7 @@ long int iniparser_getlongint(const dictionary * d, const char * key, long int n
   @return   integer
 
   This function queries a dictionary for a key. A key as read from an
-  ini file is given as "section:key". If the key cannot be found,
+  ini file is given as "section.key". If the key cannot be found,
   the notfound value is returned.
 
   Supported values for integers include the usual C notation
@@ -502,7 +502,7 @@ int iniparser_getint(const dictionary * d, const char * key, int notfound)
   @return   double
 
   This function queries a dictionary for a key. A key as read from an
-  ini file is given as "section:key". If the key cannot be found,
+  ini file is given as "section.key". If the key cannot be found,
   the notfound value is returned.
  */
 /*--------------------------------------------------------------------------*/
@@ -524,7 +524,7 @@ double iniparser_getdouble(const dictionary * d, const char * key, double notfou
   @return   integer
 
   This function queries a dictionary for a key. A key as read from an
-  ini file is given as "section:key". If the key cannot be found,
+  ini file is given as "section.key". If the key cannot be found,
   the notfound value is returned.
 
   A true boolean is found if one of the following is matched:
@@ -788,7 +788,7 @@ dictionary * iniparser_load(const char * ininame)
             break ;
 
             case LINE_VALUE:
-            sprintf(tmp, "%s:%s", section, key);
+            sprintf(tmp, "%s.%s", section, key);
             mem_err = dictionary_set(dict, tmp, val);
             break ;
 

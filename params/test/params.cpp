@@ -138,8 +138,8 @@ TEST_F(ParamsTest0, numbersWithQuotes) {
 }
 
 TEST_F(ParamsTest0, sections) {
-    EXPECT_TRUE(par_.define<std::string>("section1:simple_string", "String in sec 1").ok());
-    EXPECT_EQ(std::string("simple1!"), cpar_["section1:simple_string"].as<std::string>());
+    EXPECT_TRUE(par_.define<std::string>("section1.simple_string", "String in sec 1").ok());
+    EXPECT_EQ(std::string("simple1!"), cpar_["section1.simple_string"].as<std::string>());
 }
 
 TEST_F(ParamsTest0, duplicates) {
