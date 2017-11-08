@@ -22,7 +22,7 @@ function(add_eigen)
 
   if (NOT ALPS_INSTALL_EIGEN)
     find_package(Eigen3 ${ALPS_EIGEN_MIN_VERSION})
-    if (NOT Eigen3_FOUND)
+    if (NOT EIGEN3_FOUND) # CMake 3.3+ would use Eigen3_FOUND
       message(FATAL_ERROR
 " 
  The required library Eigen3 has not been found on your system.
@@ -62,10 +62,10 @@ function(add_eigen)
     if (NOT EIGEN3_INCLUDE_DIR)
       message(STATUS "Trying to download and unpack Eigen3")
       if (NOT EXISTS "${ALPS_EIGEN_TGZ_FILE}")
-        message(STATUS "Downloading Eigen3, timeout 30 sec")
+        message(STATUS "Downloading Eigen3, timeout 600 sec")
         file(DOWNLOAD ${ALPS_EIGEN_DOWNLOAD_LOCATION} ${ALPS_EIGEN_TGZ_FILE}
-          INACTIVITY_TIMEOUT 30
-          TIMEOUT 30
+          INACTIVITY_TIMEOUT 60
+          TIMEOUT 600
           STATUS status_
           SHOW_PROGRESS)
         if (status_ EQUAL 0)
@@ -110,7 +110,7 @@ function(add_eigen)
     # Here EIGEN3_INCLUDE_DIR is set, find_package() will only check the version 
     message(STATUS "Searching for Eigen3 in ${EIGEN3_INCLUDE_DIR}")
     find_package(Eigen3 ${ALPS_EIGEN_MIN_VERSION})
-    if (NOT Eigen3_FOUND)
+    if (NOT EIGEN3_FOUND) # CMake 3.3+ would use Eigen3_FOUND
       message(FATAL_ERROR
         "\nCannot find suitable Eigen3 in ${EIGEN3_INCLUDE_DIR}."
         " Make sure that Eigen3 is indeed at the specified location, "
@@ -122,14 +122,14 @@ function(add_eigen)
     target_include_directories(${PROJECT_NAME} PUBLIC
       $<BUILD_INTERFACE:${EIGEN3_INCLUDE_DIR}>
       $<INSTALL_INTERFACE:${eigen_install_dir_}>)
-    install(DIRECTORY "${eigen_dir}/Eigen" "${eigen_dir}/unsupported" DESTINATION ${eigen_install_dir_})
+    install(DIRECTORY "${EIGEN3_INCLUDE_DIR}/Eigen" "${EIGEN3_INCLUDE_DIR}/unsupported" DESTINATION ${eigen_install_dir_})
     
   endif(NOT ALPS_INSTALL_EIGEN)
 
   # assertion
-  if (NOT Eigen3_FOUND OR NOT EIGEN3_VERSION)
+  if (NOT EIGEN3_FOUND OR NOT EIGEN3_VERSION) # CMake 3.3+ would use Eigen3_FOUND
     message(FATAL_ERROR "Assertion error: Eigen3 must have been found and versioned. "
-      "\nEigen3_FOUND=${Eigen3_FOUND}"
+      "\nEIGEN3_FOUND=${EIGEN3_FOUND}"
       "\nEIGEN3_VERSION=${EIGEN3_VERSION}"
       "\nPlease report this to ALPSCore developers.")
   endif()
