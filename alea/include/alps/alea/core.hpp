@@ -15,7 +15,8 @@
 
 #include <alps/alea/complex_op.hpp>
 
-/**
+/** @namespace alps::alea
+ *
  * Accumulators and results
  * ------------------------
  * Most accumulators (`mean_acc`) have a matching result class (`mean_res`). To
@@ -26,7 +27,8 @@
  *     accumulator untouched and thus must involve a copy of the data, while
  *
  *  2. the `finalize()` method invalidates the accumulator and thus allows to
- *     repurpose its data as the simulation result.
+ *     repurpose its data as the simulation result.  The reset method then
+ *     re-creates an empty accumulator with the same size.
  *
  * This can be represented by the following finite state machine:
  *
@@ -39,7 +41,7 @@
  *      |    |               |--->---+ +---<---|                |
  *      +----|  accumulating |                 |     invalid    |
  *           |_______________|---------------->|________________|
- *
+ *                                finalize
  */
 namespace alps { namespace alea {
 
