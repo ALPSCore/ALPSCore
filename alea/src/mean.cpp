@@ -63,18 +63,23 @@ void mean_acc<T>::reset()
         store_.reset(new mean_data<T>(size_));
 }
 
-
 template class mean_acc<double>;
 template class mean_acc<std::complex<double> >;
+
 
 template <typename T>
 void mean_result<T>::reduce(reducer &r)
 {
     store_->convert_to_sum();
+    reducer_setup setup = r.get_setup();
     r.reduce(sink<T>(store_->data().data(), store_->data().rows()));
     r.reduce(sink<size_t>(&store_->count(), 1));
     r.commit();
-    store_->convert_to_mean();
+
+    if (setup.have_result)
+        store_->convert_to_mean();
+    else
+        store_.reset();   // free data
 }
 
 template class mean_result<double>;
