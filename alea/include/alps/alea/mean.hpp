@@ -9,6 +9,8 @@
 #include <alps/alea/util.hpp>
 #include <alps/alea/computed.hpp>
 
+#include <memory>
+
 // Forward declarations
 
 namespace alps { namespace alea {
@@ -46,18 +48,12 @@ public:
 
     column<T> &data() { return data_; }
 
-    data_state state() const { return state_; }
+    void convert_to_mean();
 
-    void unlock_mean();
-
-    void unlock_sum();
-
-protected:
-    void state(data_state new_state);
+    void convert_to_sum();
 
 private:
     column<T> data_;
-    data_state state_;
     size_t count_;
 };
 
@@ -78,7 +74,19 @@ template <typename T>
 class mean_acc
 {
 public:
-    mean_acc(size_t size=0) : store_(size) { }
+    mean_acc() : store_(), size_(-1) { }
+
+    mean_acc(size_t size) : store_(new mean_data<T>(size)), size_(size) { }
+
+    mean_acc(const mean_acc &other);
+
+    mean_acc &operator=(const mean_acc &other);
+
+    void reset();
+
+    bool valid() const { return (bool)store_; }
+
+    size_t size() const { return size_; }
 
     template <typename S>
     mean_acc &operator<<(const S &obj)
@@ -89,23 +97,21 @@ public:
 
     mean_acc &operator<<(const computed<T> &source);
 
-    size_t count() const { return store_.count(); }
+    mean_result<T> result() const { return mean_result<T>(*store_); }
 
-    const column<T> &mean() const { store_.unlock_mean(); return store_.data(); }
+    mean_result<T> finalize() { return mean_result<T>(store_); }
 
-    const column<T> &sum() const { store_.unlock_sum(); return store_.data(); }
+    size_t count() const { return store_->count(); }
 
-    mean_result<T> result() const { return mean_result<T>(*this); }
+    const column<T> &sum() const { return store_->data(); }
 
-protected:
-    const mean_data<T> &store() const { return store_; }
+    column<T> mean() const { return result().mean(); }
 
-    mean_data<T> &store() { return store_; }
+    const mean_data<T> &store() const { return *store_; }
 
 private:
-    mutable mean_data<T> store_;    // we need to switch between mean/sum
-
-    friend class mean_result<T>;
+    std::unique_ptr< mean_data<T> > store_;
+    size_t size_;
 };
 
 template <typename T>
@@ -114,10 +120,10 @@ struct traits< mean_acc<T> >
     typedef T value_type;
 };
 
+
 extern template class mean_acc<double>;
 extern template class mean_acc<std::complex<double> >;
 
-// mean_result<T>
 
 /**
  * Mean result
@@ -126,26 +132,36 @@ template <typename T>
 class mean_result
 {
 public:
-    mean_result() : store_(0) { }
+    mean_result() { }
 
-    mean_result(const mean_acc<T> &acc) : store_(acc.store()) { }
+    mean_result(const mean_data<T> &d)
+        : store_(new mean_data<T>(d))
+    {
+        store_->convert_to_mean();
+    }
 
-    size_t count() const { return store_.count(); }
+    mean_result(std::unique_ptr< mean_data<T> > &d)
+        : store_(std::move(d))
+    {
+        store_->convert_to_mean();
+    }
 
-    const column<T> &mean() const { store_.unlock_mean(); return store_.data(); }
+    bool valid() const { return (bool)store_; }
 
-    const column<T> &sum() const { store_.unlock_sum(); return store_.data(); }
+    size_t size() const { return store_->size(); }
 
-    //void serialize(serializer &s) const;
+    size_t count() const { return store_->count(); }
 
-    void reduce(reducer &r);
+    const column<T> &mean() const { return store_->data(); }
 
-    const mean_data<T> &store() const { return store_; }
+    const mean_data<T> &store() const { return *store_; }
 
-    mean_data<T> &store() { return store_; }
+    void reduce(reducer &);
+
+    void serialize(serializer &);
 
 private:
-    mutable mean_data<T> store_;
+    std::unique_ptr< mean_data<T> > store_;
 };
 
 extern template class mean_result<double>;

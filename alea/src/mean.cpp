@@ -9,78 +9,72 @@ void mean_data<T>::reset()
 {
     data_.fill(0);
     count_ = 0;
-    state_ = SUM;
 }
 
 template <typename T>
-void mean_data<T>::state(data_state new_state)
+void mean_data<T>::convert_to_mean()
 {
-    if (new_state == state_)
-        return;
-    if (new_state == SUM)
-        data_ *= count_;
-    else // if (state_ == SUM)
-        data_ /= count_;
-    state_ = new_state;
+    data_ /= count_;
 }
 
 template <typename T>
-void mean_data<T>::unlock_mean()
+void mean_data<T>::convert_to_sum()
 {
-    if (state_ == SUM) {
-        data_ /= count_;
-        state_ = MEAN;
-    }
+    data_ *= count_;
 }
-
-template <typename T>
-void mean_data<T>::unlock_sum()
-{
-    if (state_ == MEAN) {
-        data_ *= count_;
-        state_ = SUM;
-    }
-}
-
-// template <typename T>
-// void mean_data<T>::serialize(serializer &s) const
-// {
-//     computed_adapter<T, column<T> > data_ad(data_);
-//     computed_adapter<long, long> count_ad(count_);
-//
-//     unlock_mean();
-//     s.write("mean/data", data_ad);
-//     s.write("count", count_ad);
-// }
 
 template class mean_data<double>;
 template class mean_data<std::complex<double> >;
 
+// We need an explicit copy constructor, as we need to copy the data
+template <typename T>
+mean_acc<T>::mean_acc(const mean_acc &other)
+    : store_(other.store_ ? new mean_data<T>(*other.store_) : NULL)
+    , size_(other.size_)
+{ }
+
+template <typename T>
+mean_acc<T> &mean_acc<T>::operator=(const mean_acc &other)
+{
+    store_.reset(other.store_ ? new mean_data<T>(*other.store_) : NULL);
+    size_ = other.size_;
+}
 
 template <typename T>
 mean_acc<T> &mean_acc<T>::operator<<(const computed<T> &source)
 {
-    store_.unlock_sum();
-    source.add_to(sink<T>(store_.data().data(), store_.size()));
-    store_.count() += 1.0;
+    if (!valid())
+        throw std::runtime_error("Invalid accumulator");
+
+    source.add_to(sink<T>(store_->data().data(), size()));
+    store_->count() += 1.0;
     return *this;
 }
+
+template <typename T>
+void mean_acc<T>::reset()
+{
+    if (size_ == -1)
+        throw std::runtime_error("Uninitialized (default ctr'ed) accumulator");
+
+    if (valid())
+        store_->reset();
+    else
+        store_.reset(new mean_data<T>(size_));
+}
+
 
 template class mean_acc<double>;
 template class mean_acc<std::complex<double> >;
 
-
 template <typename T>
 void mean_result<T>::reduce(reducer &r)
 {
-    store_.unlock_sum();
-    reducer_setup setup = r.get_setup();
-    r.reduce(sink<T>(store_.data().data(), store_.data().rows()));
-    r.reduce(sink<size_t>(&store_.count(), 1));
+    store_->convert_to_sum();
+    r.reduce(sink<T>(store_->data().data(), store_->data().rows()));
+    r.reduce(sink<size_t>(&store_->count(), 1));
     r.commit();
-
-    if (setup.have_result)
-        store_.unlock_mean();
+    store_->convert_to_mean();
 }
 
 template class mean_result<double>;

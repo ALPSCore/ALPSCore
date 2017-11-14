@@ -41,10 +41,10 @@ public:
 
     void test_mean()
     {
-        alps::alea::mean_result<value_type> res = acc_;
-        res.reduce(red_);
+        alps::alea::mean_result<value_type> result = acc_.result();
+        result.reduce(red_);
         if (red_.get_setup().have_result) {
-            std::vector<value_type> obs_mean = res.mean();
+            std::vector<value_type> obs_mean = result.mean();
             EXPECT_NEAR(obs_mean[0], twogauss_mean[0], 1e-6);
             EXPECT_NEAR(obs_mean[1], twogauss_mean[1], 1e-6);
         }
