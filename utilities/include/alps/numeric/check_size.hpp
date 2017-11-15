@@ -41,7 +41,7 @@ namespace alps {
         }
 
         template<typename T, typename U>
-        inline void check_size(T & a, U const & b) {}
+        inline void check_size(T & /*a*/, U const & /*b*/) {}
 
         template<typename T, typename U>
         inline void check_size(std::vector<T> & a, std::vector<U> const & b) {
