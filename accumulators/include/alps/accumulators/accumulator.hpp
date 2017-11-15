@@ -871,10 +871,11 @@ namespace alps {
             public:
                 inline void collective_merge(alps::mpi::communicator const & comm, int root) {
                     boost::apply_visitor(collective_merge_visitor(comm, root), m_variant);
+                    if (comm.rank()!=root) this->reset();
                 }
-                inline void collective_merge(alps::mpi::communicator const & comm, int root) const {
-                    boost::apply_visitor(collective_merge_visitor(comm, root), m_variant);
-                }
+                // inline void collective_merge(alps::mpi::communicator const & comm, int root) const {
+                //     boost::apply_visitor(collective_merge_visitor(comm, root), m_variant);
+                // }
 #endif
 
             private:
