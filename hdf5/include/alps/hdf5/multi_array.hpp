@@ -74,7 +74,7 @@ namespace alps {
                     template<std::size_t M> static void gen_extent(boost::multi_array<T, N, A> & value, boost::detail::multi_array::extent_gen<M> extents, std::vector<std::size_t> const & size) {
                         gen_extent(value, extents[size.front()], std::vector<std::size_t>(size.begin() + 1, size.end()));
                     }
-                    static void gen_extent(boost::multi_array<T, N, A> & value, typename boost::detail::multi_array::extent_gen<N> extents, std::vector<std::size_t> const & size) {
+                    static void gen_extent(boost::multi_array<T, N, A> & value, typename boost::detail::multi_array::extent_gen<N> extents, std::vector<std::size_t> const & /*size*/) {
                         value.resize(extents);
                     }
             };

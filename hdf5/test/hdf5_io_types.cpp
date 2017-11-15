@@ -332,9 +332,9 @@ namespace alps {
               alps::hdf5::archive & ar
             , std::string const & path
             , enum_type const & value
-            , std::vector<std::size_t> size = std::vector<std::size_t>()
-            , std::vector<std::size_t> chunk = std::vector<std::size_t>()
-            , std::vector<std::size_t> offset = std::vector<std::size_t>()
+            , std::vector<std::size_t> /*size*/ = std::vector<std::size_t>()
+            , std::vector<std::size_t> /*chunk*/ = std::vector<std::size_t>()
+            , std::vector<std::size_t> /*offset*/ = std::vector<std::size_t>()
         ) {
             switch (value) {
                 case PLUS: ar << alps::make_pvp(path, std::string("plus")); break;
@@ -345,8 +345,8 @@ namespace alps {
               alps::hdf5::archive & ar
             , std::string const & path
             , enum_type & value
-            , std::vector<std::size_t> chunk = std::vector<std::size_t>()
-            , std::vector<std::size_t> offset = std::vector<std::size_t>()
+            , std::vector<std::size_t> /*chunk*/ = std::vector<std::size_t>()
+            , std::vector<std::size_t> /*offset*/ = std::vector<std::size_t>()
         ) {
             std::string s;
             ar >> alps::make_pvp(path, s);
@@ -364,7 +364,7 @@ namespace alps {
         namespace detail {
 
             template<> struct get_extent<enum_vec_type> {
-                static std::vector<std::size_t> apply(enum_vec_type const & value) {
+                static std::vector<std::size_t> apply(enum_vec_type const & /*value*/) {
                     return std::vector<std::size_t>();
                 }
             };
@@ -374,7 +374,7 @@ namespace alps {
             };
 
             template<> struct is_vectorizable<enum_vec_type> {
-                static bool apply(enum_vec_type const & value) {
+                static bool apply(enum_vec_type const & /*value*/) {
                     return true;
                 }
             };
@@ -439,7 +439,7 @@ template<typename T> struct creator {
     template<typename X> static base_type special(X const &) { return base_type(); }
 };
 template<typename T> struct destructor {
-    static void apply(T & value) {}
+    static void apply(T & /*value*/) {}
 };
 template<typename T> bool equal(T const & a, T const & b) {
     return a == b;
