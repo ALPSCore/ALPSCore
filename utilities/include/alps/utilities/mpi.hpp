@@ -276,7 +276,7 @@ namespace alps {
         
         /// Returns MPI datatype for the value of type `T`
         template <typename T>
-        MPI_Datatype get_mpi_datatype(const T& val) {
+        MPI_Datatype get_mpi_datatype(const T&) {
             return detail::mpi_type<T>();
         }
 
