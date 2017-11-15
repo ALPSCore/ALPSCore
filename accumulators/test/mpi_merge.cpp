@@ -22,7 +22,7 @@
 // Name for the observable
 #define OBSNAME "value"
 // Size for the observable vector
-#define VECSIZE (3)
+#define VECSIZE (3u)
 
 
 // Service function: scalar data of value val
@@ -60,7 +60,7 @@ class AccumulatorTest : public ::testing::Test {
     {
         EXPECT_EQ(VECSIZE, val.size()) << "Vector " << msg
                                        << "size is incorrect in MPI rank " << rank;
-        for (int i=0; i<VECSIZE; ++i) {
+        for (unsigned int i=0; i<VECSIZE; ++i) {
             EXPECT_NEAR(expected, val[i], 1.E-3) << "Vector " << msg
                                                  << " element #" << i
                                                  << " is incorrect in MPI rank " << rank;
@@ -76,30 +76,26 @@ class AccumulatorTest : public ::testing::Test {
         alps::accumulators::accumulator_wrapper& acc=measurements[OBSNAME];
         const unsigned ns=nsamples[comm.rank()];
         srand48(43);
-        for (int i=0; i<ns; ++i) {
+        for (unsigned int i=0; i<ns; ++i) {
             acc << get_data(drand48(), VECSIZE, (value_type*)0);
         }
 
         // merge data
         acc.collective_merge(comm, 0);
 
-        // extract results
-        alps::accumulators::result_set results(measurements);
-        const alps::accumulators::result_wrapper& res=results[OBSNAME];
+        if (comm.rank()==0) { // the accumulator is valid only on master
+            // extract results
+            alps::accumulators::result_set results(measurements);
+            const alps::accumulators::result_wrapper& res=results[OBSNAME];
 
-        // test results
-        int ntot=std::accumulate(nsamples.begin(), nsamples.end(), 0);
-        const double expected_mean=0.5;
-        const double expected_err=1./(12*sqrt(ntot-1.0));
+            // test results
+            int ntot=std::accumulate(nsamples.begin(), nsamples.end(), 0);
+            const double expected_mean=0.5;
+            const double expected_err=1./(12*sqrt(ntot-1.0));
 
-        // Each rank does tests in turn
-        for (int talking_rank=0; talking_rank<comm.size(); ++talking_rank) {
-            if (comm.rank()==talking_rank) {
-                // FIXME (issue #178): compare_values(ntot, res.count(), "count", comm.rank());
-                compare_values(expected_mean, res.mean<value_type>(), "mean", comm.rank());
-                compare_values(expected_err, res.error<value_type>(), "error", comm.rank());
-            }
-            comm.barrier();
+            compare_values(ntot, res.count(), "count", comm.rank());
+            compare_values(expected_mean, res.mean<value_type>(), "mean", comm.rank());
+            compare_values(expected_err, res.error<value_type>(), "error", comm.rank());
         }
     }
   
@@ -110,29 +106,24 @@ class AccumulatorTest : public ::testing::Test {
         A acc(OBSNAME);
         const unsigned ns=nsamples[comm.rank()];
         srand48(43);
-        for (int i=0; i<ns; ++i) {
+        for (unsigned int i=0; i<ns; ++i) {
             acc << get_data(drand48(), VECSIZE, (value_type*)0);
         }
 
         // merge data
         acc.collective_merge(comm, 0);
 
-        // extract results
-        const boost::shared_ptr<alps::accumulators::result_wrapper> resptr=acc.result();
+        if (comm.rank()==0) { // the accumulator is valid only on master
+            // extract results
+            const boost::shared_ptr<alps::accumulators::result_wrapper> resptr=acc.result();
 
-        // test results
-        int ntot=std::accumulate(nsamples.begin(), nsamples.end(), 0);
-        const double expected_mean=0.5;
-        const double expected_err=1./(12*sqrt(ntot-1.0));
-
-        // Each rank does tests in turn
-        for (int talking_rank=0; talking_rank<comm.size(); ++talking_rank) {
-            if (comm.rank()==talking_rank) {
-                // FIXME (issue #178): compare_values(ntot, resptr->count(), "count", comm.rank());
-                compare_values(expected_mean, resptr->mean<value_type>(), "mean", comm.rank());
-                compare_values(expected_err, resptr->error<value_type>(), "error", comm.rank());
-            }
-            comm.barrier();
+            // test results
+            int ntot=std::accumulate(nsamples.begin(), nsamples.end(), 0);
+            const double expected_mean=0.5;
+            const double expected_err=1./(12*sqrt(ntot-1.0));
+            compare_values(ntot, resptr->count(), "count", comm.rank());
+            compare_values(expected_mean, resptr->mean<value_type>(), "mean", comm.rank());
+            compare_values(expected_err, resptr->error<value_type>(), "error", comm.rank());
         }
     }
 };
@@ -178,7 +169,7 @@ TYPED_TEST(AccumulatorTest, SingleCollectResults)
 
 int main(int argc, char** argv)
 {
-   alps::mpi::environment env(argc, argv, false);
+   alps::mpi::environment env(argc, argv);
    alps::gtest_par_xml_output tweak;
    tweak(alps::mpi::communicator().rank(), argc, argv);
    ::testing::InitGoogleTest(&argc, argv);
