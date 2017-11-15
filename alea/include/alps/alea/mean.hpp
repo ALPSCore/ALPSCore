@@ -93,6 +93,8 @@ public:
 
     void reset();
 
+    bool initialized() const { return size_ != (size_t)-1; }
+
     bool valid() const { return (bool)store_; }
 
     size_t size() const { return size_; }
@@ -106,13 +108,14 @@ public:
 
     mean_acc &operator<<(const computed<T> &source);
 
-    mean_result<T> result() const;
-
-    mean_result<T> finalize();
+    // TODO remove
+    column<T> mean() const { return result().mean(); }
 
     size_t count() const { return store_->count(); }
 
-    column<T> mean() const { return result().mean(); }
+    mean_result<T> result() const;
+
+    mean_result<T> finalize();
 
     const mean_data<T> &store() const { return *store_; }
 
@@ -144,6 +147,8 @@ public:
     mean_result(const mean_data<T> &acc_data)
         : store_(new mean_data<T>(acc_data))
     { }
+
+    bool initialized() const { return true; }
 
     bool valid() const { return (bool)store_; }
 

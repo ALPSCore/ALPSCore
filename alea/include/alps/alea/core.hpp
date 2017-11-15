@@ -19,8 +19,8 @@
  *
  * Accumulators and results
  * ------------------------
- * Most accumulators (`mean_acc`) have a matching result class (`mean_res`). To
- * obtain a result from an accumulator, the accumulators provide both a
+ * Most accumulators (`mean_acc`) have a matching result class (`mean_result`).
+ * To obtain a result from an accumulator, the accumulators provide both a
  * `result()` and a `finalize()` method, where
  *
  *  1. the `result()` method creates an intermediate result, which leaves the

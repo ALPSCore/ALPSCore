@@ -14,8 +14,8 @@ TEST(reducer, setup)
     alps::alea::reducer_setup setup = red.get_setup();
 
     // check consistency between reducer and setup
-    EXPECT_EQ(comm.rank(), setup.pos);
-    EXPECT_EQ(comm.size(), setup.count);
+    EXPECT_EQ(comm.rank(), (int)setup.pos);
+    EXPECT_EQ(comm.size(), (int)setup.count);
     EXPECT_EQ(comm.rank() == 0, setup.have_result);
 }
 

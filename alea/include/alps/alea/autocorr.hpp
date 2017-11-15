@@ -78,19 +78,17 @@ public:
 
     size_t batch_size(size_t level) const;
 
-    const column<value_type> &mean() const;
+    column<value_type> mean() const;
 
-    const column<var_type> &var() const;
+    column<var_type> var() const;
 
-    eresult stderr() { return eresult(*this, &autocorr_acc::get_stderr, size()); }
+    column<var_type> stderror() const;
 
     eresult tau() { return eresult(*this, &autocorr_acc::get_tau, size()); }
 
     size_t nextlevel() const { return nextlevel_; }
 
 protected:
-    void get_stderr(sink<var_type> out) const;
-
     void get_tau(sink<var_type> out) const;
 
     void add_level();

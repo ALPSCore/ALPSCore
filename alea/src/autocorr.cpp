@@ -58,21 +58,21 @@ size_t autocorr_acc<T>::batch_size(size_t level) const
 }
 
 template <typename T>
-const column<T> &autocorr_acc<T>::mean() const
+column<T> autocorr_acc<T>::mean() const
 {
-    return level_[0].mean();
+    return level_[0].result().mean();
 }
 
 template <typename T>
-const column<typename autocorr_acc<T>::var_type> &autocorr_acc<T>::var() const
+column<typename autocorr_acc<T>::var_type> autocorr_acc<T>::var() const
 {
-    return level_[find_level(256)].var();
+    return level_[find_level(256)].result().var();
 }
 
 template <typename T>
-void autocorr_acc<T>::get_stderr(sink<var_type> out) const
+column<typename autocorr_acc<T>::var_type> autocorr_acc<T>::stderror() const
 {
-    level_[find_level(256)].stderr().fast_add_to(out);
+    return level_[find_level(256)].result().stderror();
 }
 
 template <typename T>
@@ -80,8 +80,8 @@ void autocorr_acc<T>::get_tau(sink<var_type> out) const
 {
     size_t lvl = find_level(256);
 
-    const column<var_type> &var0 = level_[0].var();
-    const column<var_type> &varn = level_[lvl].var();
+    const column<var_type> &var0 = level_[0].result().var();
+    const column<var_type> &varn = level_[lvl].result().var();
 
     // The factor `n` comes from the fact that the variance of an n-element mean
     // estimator has tighter variance by the CLT; it can be dropped if one

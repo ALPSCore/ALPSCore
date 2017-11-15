@@ -15,7 +15,7 @@ namespace alps { namespace alea { namespace internal {
 template <typename Acc>
 inline void check_init(const Acc &acc)
 {
-    if (acc.size() == (size_t)-1)
+    if (!acc.initialized())
         throw alps::alea::uninitialized_accumulator();
 }
 
