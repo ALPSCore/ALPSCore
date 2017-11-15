@@ -130,7 +130,7 @@ namespace alps {
             // get
             private:
                 template<typename T> struct get_visitor: public boost::static_visitor<> {
-                    template<typename X> void operator()(X const & arg) {
+                    template<typename X> void operator()(X const & /*arg*/) {
                         throw std::runtime_error(std::string("Canot cast observable") + typeid(X).name() + " to base type: " + typeid(T).name() + ALPS_STACKTRACE);
                     }
                     void operator()(typename detail::add_base_wrapper_pointer<T>::type const & arg) { value = arg; }
@@ -218,7 +218,7 @@ namespace alps {
                         }                                                                                           \
                         template<typename X> T apply(typename boost::disable_if<                                    \
                             typename detail::is_valid_argument<typename TYPE <X>::type, T>::type, X const &         \
-                        >::type arg) const {                                                                        \
+                        >::type /*arg*/) const {                                                                        \
                             throw std::logic_error(std::string("cannot convert: ")                                  \
                                 + typeid(typename TYPE <X>::type).name() + " to "                                   \
                                 + typeid(T).name() + ALPS_STACKTRACE);                                              \
@@ -285,7 +285,7 @@ namespace alps {
                     }
                     template<typename X> void apply(typename boost::disable_if<
                         typename detail::is_valid_argument<T, typename value_type<X>::type>::type, X &
-                    >::type arg) const {
+                    >::type /*arg*/) const {
                         throw std::logic_error(std::string("cannot convert: ") + typeid(T).name() + " to " + typeid(typename value_type<X>::type).name() + ALPS_STACKTRACE);
                     }
                     template<typename X> void operator()(X & arg) const {
@@ -603,7 +603,7 @@ namespace alps {
                     }
                     template<typename X> void apply(typename boost::disable_if<
                         typename detail::is_valid_argument<T, typename value_type<X>::type>::type, X &
-                    >::type arg) const {
+                    >::type /*arg*/) const {
                         throw std::logic_error(std::string("cannot convert: ") + typeid(T).name() + " to " + typeid(typename value_type<X>::type).name() + ALPS_STACKTRACE);
                     }
                     template<typename X> void operator()(X & arg) const {
@@ -729,7 +729,7 @@ namespace alps {
             // get
             private:
                 template<typename T> struct get_visitor: public boost::static_visitor<> {
-                    template<typename X> void operator()(X const & arg) {
+                    template<typename X> void operator()(X const & /*arg*/) {
                         throw std::runtime_error(std::string("Canot cast observable") + typeid(X).name() + " to base type: " + typeid(T).name() + ALPS_STACKTRACE);
                     }
                     void operator()(typename detail::add_base_wrapper_pointer<T>::type const & arg) { value = arg; }
@@ -776,7 +776,7 @@ namespace alps {
                         }                                                                                           \
                         template<typename X> T apply(typename boost::disable_if<                                    \
                             typename detail::is_valid_argument<typename TYPE <X>::type, T>::type, X const &         \
-                        >::type arg) const {                                                                        \
+                        >::type /*arg*/) const {                                                                        \
                             throw std::logic_error(std::string("cannot convert: ")                                  \
                                 + typeid(typename TYPE <X>::type).name() + " to "                                   \
                                 + typeid(T).name() + ALPS_STACKTRACE);                                              \

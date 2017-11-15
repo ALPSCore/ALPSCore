@@ -101,7 +101,7 @@ namespace alps {
             template<typename A> typename boost::disable_if<
                   typename has_feature<A, binning_analysis_tag>::type
                 , typename autocorrelation_type<A>::type
-            >::type autocorrelation_impl(A const & acc) {
+            >::type autocorrelation_impl(A const & /*acc*/) {
                 throw std::runtime_error(std::string(typeid(A).name()) + " has no autocorrelation-method" + ALPS_STACKTRACE);
                 return *static_cast<typename autocorrelation_type<A>::type *>(NULL);
             }
@@ -688,7 +688,7 @@ namespace alps {
                         for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
                             *it = *it + dynamic_cast<scalar_result_type const &>(arg).error(it - m_ac_errors.begin());
                     }
-                    template<typename U> void augaddsub (U const & arg, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {}
+                    template<typename U> void augaddsub (U const & /*arg*/, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {}
 
                     template<typename U> void augmul (U const & arg, typename boost::enable_if<is_rel_type<U>, int>::type = 0) {
                         using alps::numeric::operator*;

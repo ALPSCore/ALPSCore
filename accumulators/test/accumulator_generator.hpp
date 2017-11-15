@@ -57,7 +57,7 @@ namespace alps {
                 double operator()() const { return drand48(); }
 
                 /// Expected mean of first n members
-                double mean(std::size_t n) const { return 0.5; }
+                double mean(std::size_t /*n*/) const { return 0.5; }
 
                 /// Expected error bar of first n members
                 double error(std::size_t n) const { return 1./(12*std::sqrt(n-1.)); }
@@ -70,10 +70,10 @@ namespace alps {
                 double operator()() const { return ini_; }
 
                 /// Expected mean of first n members
-                double mean(std::size_t n) const { return ini_; }
+                double mean(std::size_t /*n*/) const { return ini_; }
 
                 /// Expected error bar of first n members
-                double error(std::size_t n) const { return 0; }
+                double error(std::size_t /*n*/) const { return 0; }
             };
                 
             /// Functor class generating alternating data (0.5 +/- initialized; initialized=0.5 by default)
