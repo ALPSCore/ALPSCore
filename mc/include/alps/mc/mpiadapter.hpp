@@ -72,7 +72,7 @@ namespace alps {
                             alps::mpi::all_reduce(communicator,
                                                   has_count,
                                                   std::plus<size_t>());
-                    if (sum_counts == communicator.size()) {
+                    if ((int)sum_counts == communicator.size()) {
                         if (communicator.rank() == 0) {
                             typename Base::observable_collection_type::value_type merged = this->measurements[*it];
                             merged.collective_merge(communicator, 0);
@@ -80,7 +80,7 @@ namespace alps {
                         } else {
                             this->measurements[*it].collective_merge(communicator, 0);
                         }
-                    } else if (sum_counts > 0 && sum_counts < communicator.size()) {
+                    } else if (sum_counts > 0 && (int)sum_counts < communicator.size()) {
                         throw std::runtime_error(*it + " was measured on only some of the MPI processes.");
                     }
                 }
