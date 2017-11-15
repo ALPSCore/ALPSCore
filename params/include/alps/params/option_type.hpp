@@ -125,7 +125,7 @@ namespace alps {
 
                 /// Called when the contained type LHS_T and rhs type RHS_T are distinct, non-convertible types
                 template <typename LHS_T>
-                void apply(boost::optional<LHS_T>& lhs,
+                void apply(boost::optional<LHS_T>& /*lhs*/,
                            typename boost::disable_if< detail::is_convertible<RHS_T,LHS_T> >::type* =0) const
                 {
                     throw visitor_type_mismatch(
@@ -231,7 +231,7 @@ namespace alps {
 
                 /// Types are not convertible
                 template <typename RHS_T>
-                LHS_T apply(const RHS_T& val,
+                LHS_T apply(const RHS_T& /*val*/,
                             typename boost::disable_if< detail::is_convertible<RHS_T,LHS_T> >::type* =0) const {
                     throw visitor_type_mismatch(
                         std::string("Attempt to assign an option_type object containing a value of type \"")
@@ -287,7 +287,7 @@ namespace alps {
                 }
 
                 /// Called by apply_visitor() for a bound type None
-                bool operator()(const None& val) const
+                bool operator()(const None& /*val*/) const
                 {
                     throw std::logic_error("Checking convertibility of type None --- should not be needed?"); // FIXME???
                 }
@@ -378,7 +378,7 @@ namespace alps {
                 { }
 
                 template <typename T>
-                bool can_read(const T* dummy)
+                bool can_read(const T* /*dummy*/)
                 {
                     bool ok=ar_.is_datatype<T>(name_);
                     ok &= ar_.is_scalar(name_);
@@ -386,7 +386,7 @@ namespace alps {
                 }
 
                 template <typename T>
-                bool can_read(const std::vector<T>* dummy)
+                bool can_read(const std::vector<T>* /*dummy*/)
                 {
                     bool ok=ar_.is_datatype<T>(name_);
                     ok &= !ar_.is_scalar(name_);
@@ -394,7 +394,7 @@ namespace alps {
                 }
 
                 template <typename T>
-                option_type read(const T* dummy)
+                option_type read(const T* /*dummy*/)
                 {
                     T val;
                     ar_[name_] >> val;
@@ -654,8 +654,8 @@ namespace alps {
                 }
 
                 /// Add option with default value: should never be called (a plug to keep boost::variant happy)
-                static void add_option(boost::program_options::options_description& a_opt_descr,
-                                       const std::string& optname, const std::vector<T>& defval, const std::string& a_descr)
+                static void add_option(boost::program_options::options_description& /*a_opt_descr*/,
+                                       const std::string& /*optname*/, const std::vector<T>& /*defval*/, const std::string& /*a_descr*/)
                 {
                     throw std::logic_error("Should not happen: setting default value for vector/list parameter");
                 }

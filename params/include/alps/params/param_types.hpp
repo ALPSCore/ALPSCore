@@ -60,7 +60,7 @@ namespace alps {
             struct None {};
 
             /// Output operator for the "empty value" (@throws runtime_error always)
-            inline std::ostream& operator<<(std::ostream& s, const None&)
+            inline std::ostream& operator<<(std::ostream& /*s*/, const None&)
             {
                 throw std::runtime_error("Attempt to print uninitialized option value");
             }

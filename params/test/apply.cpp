@@ -59,10 +59,10 @@ struct apply_test_functor {
 
     /// Unexpected option type
     template <typename T>
-    void operator()(const std::string& name,
-                    boost::optional<T> const& val,
-                    boost::optional<T> const& defval,
-                    const std::string& descr) const {
+    void operator()(const std::string& /*name*/,
+                    boost::optional<T> const& /*val*/,
+                    boost::optional<T> const& /*defval*/,
+                    const std::string& /*descr*/) const {
         FAIL();
     }
 };
@@ -104,8 +104,8 @@ struct foreach_test_functor {
 
     /// Unexpected option type
     template <typename T>
-    void operator()(const std::string& name, boost::optional<T> const& val, \
-                    boost::optional<T> const& defval, const std::string& descr) const {
+    void operator()(const std::string& /*name*/, boost::optional<T> const& /*val*/, \
+                    boost::optional<T> const& /*defval*/, const std::string& /*descr*/) const {
         FAIL();
     }
 };
