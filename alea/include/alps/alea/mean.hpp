@@ -55,8 +55,10 @@ public:
     /** Returns data vector (either mean or sum) */
     column<T> &data() { return data_; }
 
+    /** Re-interprets data that was a sum as mean */
     void convert_to_mean();
 
+    /** Re-interprets data that was a mean as sum */
     void convert_to_sum();
 
 private:
@@ -110,8 +112,6 @@ public:
 
     size_t count() const { return store_->count(); }
 
-    const column<T> &sum() const { return store_->data(); }
-
     column<T> mean() const { return result().mean(); }
 
     const mean_data<T> &store() const { return *store_; }
@@ -133,7 +133,7 @@ extern template class mean_acc<std::complex<double> >;
 
 
 /**
- * Mean result
+ * Result of a mean accumulation
  */
 template <typename T>
 class mean_result

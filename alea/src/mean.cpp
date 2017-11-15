@@ -2,7 +2,7 @@
 #include <alps/alea/util.hpp>
 #include <alps/alea/computed.hpp>
 
-#include <iostream> // FIXME
+#include <alps/alea/internal/util.hpp>
 
 namespace alps { namespace alea {
 
@@ -47,9 +47,7 @@ mean_acc<T> &mean_acc<T>::operator=(const mean_acc &other)
 template <typename T>
 mean_acc<T> &mean_acc<T>::operator<<(const computed<T> &source)
 {
-    if (!valid())
-        throw std::runtime_error("Invalid accumulator");
-
+    internal::check_valid(*this);
     source.add_to(sink<T>(store_->data().data(), size()));
     store_->count() += 1.0;
     return *this;
@@ -58,9 +56,7 @@ mean_acc<T> &mean_acc<T>::operator<<(const computed<T> &source)
 template <typename T>
 void mean_acc<T>::reset()
 {
-    if (size_ == size_t(-1))
-        throw std::runtime_error("Uninitialized (default ctr'ed) accumulator");
-
+    internal::check_init(*this);
     if (valid())
         store_->reset();
     else
@@ -70,6 +66,7 @@ void mean_acc<T>::reset()
 template <typename T>
 mean_result<T> mean_acc<T>::result() const
 {
+    internal::check_valid(*this);
     mean_result<T> result(*store_);
     result.store_->convert_to_mean();
     return result;
@@ -78,6 +75,7 @@ mean_result<T> mean_acc<T>::result() const
 template <typename T>
 mean_result<T> mean_acc<T>::finalize()
 {
+    internal::check_valid(*this);
     mean_result<T> result(*store_);
     result.store_.swap(store_);
     result.store_->convert_to_mean();
@@ -91,6 +89,7 @@ template class mean_acc<std::complex<double> >;
 template <typename T>
 void mean_result<T>::reduce(reducer &r)
 {
+    internal::check_valid(*this);
     store_->convert_to_sum();
     reducer_setup setup = r.get_setup();
     r.reduce(sink<T>(store_->data().data(), store_->data().rows()));
