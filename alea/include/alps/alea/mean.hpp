@@ -27,25 +27,32 @@ namespace alps { namespace alea {
  * Data which tracks only the mean/sum and the count.
  *
  * Mean data may be particularly memory-constrained, therefore mean_acc is a
- * "tagged union"-like structure, which either represents the sum (in the case
- * of accumulating) or the mean (in the case of working with the mean).
+ * "union"-like structure, which usually represents the sum (in the case of
+ * accumulating) or the mean (in the case of working with the mean).
  */
 template <typename T>
 class mean_data
 {
 public:
+    /** Constructs new data with size elements */
     mean_data(size_t size) : data_(size) { reset(); }
 
+    /** Resets all data to zeros */
     void reset();
 
+    /** Returns the size of the result vector */
     size_t size() const { return data_.rows(); }
 
+    /** Returns number of accumulated data points */
     const size_t &count() const { return count_; }
 
+    /** Returns number of accumulated data points */
     size_t &count() { return count_; }
 
+    /** Returns data vector (either mean or sum) */
     const column<T> &data() const { return data_; }
 
+    /** Returns data vector (either mean or sum) */
     column<T> &data() { return data_; }
 
     void convert_to_mean();
@@ -97,9 +104,9 @@ public:
 
     mean_acc &operator<<(const computed<T> &source);
 
-    mean_result<T> result() const { return mean_result<T>(*store_); }
+    mean_result<T> result() const;
 
-    mean_result<T> finalize() { return mean_result<T>(store_); }
+    mean_result<T> finalize();
 
     size_t count() const { return store_->count(); }
 
@@ -118,8 +125,8 @@ template <typename T>
 struct traits< mean_acc<T> >
 {
     typedef T value_type;
+    typedef mean_result<T> result_type;
 };
-
 
 extern template class mean_acc<double>;
 extern template class mean_acc<std::complex<double> >;
@@ -134,17 +141,9 @@ class mean_result
 public:
     mean_result() { }
 
-    mean_result(const mean_data<T> &d)
-        : store_(new mean_data<T>(d))
-    {
-        store_->convert_to_mean();
-    }
-
-    mean_result(std::unique_ptr< mean_data<T> > &d)
-        : store_(std::move(d))
-    {
-        store_->convert_to_mean();
-    }
+    mean_result(const mean_data<T> &acc_data)
+        : store_(new mean_data<T>(acc_data))
+    { }
 
     bool valid() const { return (bool)store_; }
 
@@ -156,12 +155,22 @@ public:
 
     const mean_data<T> &store() const { return *store_; }
 
+    mean_data<T> &store() { return *store_; }
+
     void reduce(reducer &);
 
     void serialize(serializer &);
 
 private:
     std::unique_ptr< mean_data<T> > store_;
+
+    friend class mean_acc<T>;
+};
+
+template <typename T>
+struct traits< mean_result<T> >
+{
+    typedef T value_type;
 };
 
 extern template class mean_result<double>;

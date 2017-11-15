@@ -2,6 +2,8 @@
 #include <alps/alea/util.hpp>
 #include <alps/alea/computed.hpp>
 
+#include <iostream> // FIXME
+
 namespace alps { namespace alea {
 
 template <typename T>
@@ -26,6 +28,7 @@ void mean_data<T>::convert_to_sum()
 template class mean_data<double>;
 template class mean_data<std::complex<double> >;
 
+
 // We need an explicit copy constructor, as we need to copy the data
 template <typename T>
 mean_acc<T>::mean_acc(const mean_acc &other)
@@ -38,6 +41,7 @@ mean_acc<T> &mean_acc<T>::operator=(const mean_acc &other)
 {
     store_.reset(other.store_ ? new mean_data<T>(*other.store_) : NULL);
     size_ = other.size_;
+    return *this;
 }
 
 template <typename T>
@@ -54,13 +58,30 @@ mean_acc<T> &mean_acc<T>::operator<<(const computed<T> &source)
 template <typename T>
 void mean_acc<T>::reset()
 {
-    if (size_ == -1)
+    if (size_ == size_t(-1))
         throw std::runtime_error("Uninitialized (default ctr'ed) accumulator");
 
     if (valid())
         store_->reset();
     else
         store_.reset(new mean_data<T>(size_));
+}
+
+template <typename T>
+mean_result<T> mean_acc<T>::result() const
+{
+    mean_result<T> result(*store_);
+    result.store_->convert_to_mean();
+    return result;
+}
+
+template <typename T>
+mean_result<T> mean_acc<T>::finalize()
+{
+    mean_result<T> result(*store_);
+    result.store_.swap(store_);
+    result.store_->convert_to_mean();
+    return result;
 }
 
 template class mean_acc<double>;
