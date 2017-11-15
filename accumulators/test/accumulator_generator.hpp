@@ -39,7 +39,7 @@ namespace alps {
             inline void compare_near(const std::vector<T>& expected, const std::vector<T>& actual, double tol, const std::string& descr)
             {
                 EXPECT_EQ(expected.size(), actual.size()) << "Sizes of "+descr+" differ";
-                for (int i=0; i<expected.size(); ++i) {
+                for (size_t i=0; i<expected.size(); ++i) {
                     EXPECT_NEAR(expected.at(i), actual.at(i), tol) << "Element #"+boost::lexical_cast<std::string>(i)+" of "+descr+" differs";
                 }
             }
@@ -444,7 +444,7 @@ namespace alps {
                     alps::accumulators::accumulator_set& m=*measurements_ptr_;
                     m << acc_type(acc_name);
 
-                    for (int i=0; i<NPOINTS; ++i) {
+                    for (size_t i=0; i<NPOINTS; ++i) {
                         data_type sample=gen_data<data_type>(number_generator(), VSIZE);
                         m[acc_name]  << sample;
                     }

@@ -74,7 +74,7 @@ namespace alps {
                         return os;
                     }
                     os << m_num_elements << " elements per bin, bins are:\n";
-                    for (int i=0; i<m_bins.size(); ++i) {
+                    for (size_t i=0; i<m_bins.size(); ++i) {
                         os << "#" << (i+1) << ": " << alps::short_print(m_bins[i],4) << "\n";
                     }
                     return os;
