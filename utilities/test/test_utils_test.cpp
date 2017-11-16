@@ -45,11 +45,11 @@ class TestUtilsTest : public ::testing::Test {
         const unsigned int nvals=range<value_type>::VALUE;
         std::vector<value_type> vals(nvals);
 
-        for (int i=0; i<(int)nvals; ++i) {
+        for (int i=0; i<static_cast<int>(nvals); ++i) {
             vals[i]=alps::testing::datapoint<value_type>::get(i);
         }
-        for (int i=0; i<(int)nvals; ++i) {
-            for (int j=i+1; j<(int)nvals; ++j) {
+        for (int i=0; i<static_cast<int>(nvals); ++i) {
+            for (int j=i+1; j<static_cast<int>(nvals); ++j) {
                 ASSERT_NE(vals[i], vals[j]) << "Value clash at i=" << i << ", j=" << j;
             }
         }
@@ -75,11 +75,11 @@ class TestUtilsTest : public ::testing::Test {
         const unsigned int nvals=range<value_type>::VALUE;
         std::vector<value_type> vals(nvals);
 
-        for (int i=0; i<(int)nvals; ++i) {
+        for (int i=0; i<static_cast<int>(nvals); ++i) {
             vals[i]=alps::testing::datapoint<value_type>::get(i,10);
         }
-        for (int i=0; i<(int)nvals; ++i) {
-            for (int j=i+1; j<(int)nvals; ++j) {
+        for (int i=0; i<static_cast<int>(nvals); ++i) {
+            for (int j=i+1; j<static_cast<int>(nvals); ++j) {
                 ASSERT_NE(vals[i], vals[j]) << "Value clash at i=" << i << ", j=" << j;
             }
         }
@@ -105,11 +105,11 @@ class TestUtilsTest : public ::testing::Test {
         const unsigned int nvals=range<value_type>::VALUE;
         std::vector<vector_type> vals(nvals);
 
-        for (int i=0; i<(int)nvals; ++i) {
+        for (int i=0; i<static_cast<int>(nvals); ++i) {
             vals[i]=alps::testing::datapoint<vector_type>::get(i);
         }
-        for (int i=0; i<(int)nvals; ++i) {
-            for (int j=i+1; j<(int)nvals; ++j) {
+        for (int i=0; i<static_cast<int>(nvals); ++i) {
+            for (int j=i+1; j<static_cast<int>(nvals); ++j) {
                 ASSERT_NE(vals[i], vals[j]) << "Value clash at i=" << i << ", j=" << j;
             }
         }
@@ -137,11 +137,11 @@ class TestUtilsTest : public ::testing::Test {
         const unsigned int nvals=range<value_type>::VALUE;
         std::vector<vector_type> vals(nvals);
 
-        for (int i=0; i<(int)nvals; ++i) {
+        for (int i=0; i<static_cast<int>(nvals); ++i) {
             vals[i]=alps::testing::datapoint<vector_type>::get(i,sz);
         }
-        for (int i=0; i<(int)nvals; ++i) {
-            for (int j=i+1; j<(int)nvals; ++j) {
+        for (int i=0; i<static_cast<int>(nvals); ++i) {
+            for (int j=i+1; j<static_cast<int>(nvals); ++j) {
                 ASSERT_NE(vals[i], vals[j]) << "Value clash at i=" << i << ", j=" << j;
             }
         }
@@ -206,11 +206,11 @@ TYPED_TEST(TestUtilsStringTest, StringWithSize) {
     const unsigned int nvals=range<value_type>::VALUE;
     std::vector<value_type> vals(nvals);
     
-    for (int i=0; i<(int)nvals; ++i) {
+    for (int i=0; i<static_cast<int>(nvals); ++i) {
         vals[i]=alps::testing::datapoint<value_type>::get(i,sz);
     }
-    for (int i=0; i<(int)nvals; ++i) {
-        for (int j=i+1; j<(int)nvals; ++j) {
+    for (int i=0; i<static_cast<int>(nvals); ++i) {
+        for (int j=i+1; j<static_cast<int>(nvals); ++j) {
             ASSERT_NE(vals[i], vals[j]) << "Value clash at i=" << i << ", j=" << j;
         }
     }

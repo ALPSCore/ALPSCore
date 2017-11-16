@@ -255,7 +255,7 @@ namespace alps {
                         using alps::numeric::check_size;
 
                         B::operator()(val);
-                        if(static_cast<size_t>(B::count()) == (1UL << m_ac_sum2.size())) {
+                        if(B::count() == (1UL << m_ac_sum2.size())) {
                             m_ac_sum2.push_back(T());
                             check_size(m_ac_sum2.back(), val);
                             m_ac_sum.push_back(T());
