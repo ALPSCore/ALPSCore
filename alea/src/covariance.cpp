@@ -24,7 +24,7 @@ template <typename T, typename Str>
 void cov_data<T,Str>::convert_to_mean()
 {
     data_ /= count_;
-    data2_ -= internal::outer<Str>(data_, data_);
+    data2_ -= count_ * internal::outer<Str>(data_, data_);
     data2_ /= count_ - 1;
 }
 
@@ -32,7 +32,7 @@ template <typename T, typename Str>
 void cov_data<T,Str>::convert_to_sum()
 {
     data2_ *= count_ - 1;
-    data2_ += internal::outer<Str>(data_, data_);
+    data2_ += count_ * internal::outer<Str>(data_, data_);
     data_ *= count_;
 }
 
