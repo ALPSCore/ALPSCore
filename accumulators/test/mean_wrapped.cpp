@@ -40,7 +40,7 @@ template<typename A, typename T> void mean_test_body_vector() {
 		measurements["obs2"] << std::vector<T>(L, T(i));
 		std::vector<T> mean_vec_1=measurements["obs1"].mean<std::vector<T> >();
 		std::vector<T> mean_vec_2=measurements["obs2"].mean<std::vector<T> >();
-		for(int j=0;j<mean_vec_1.size();++j){
+		for(size_t j=0;j<mean_vec_1.size();++j){
 			EXPECT_NEAR(mean_vec_1[j] , T(1.) , prec);
 			EXPECT_NEAR(mean_vec_2[j] , T(i + 1) / 2 , prec);
 		}
@@ -51,7 +51,7 @@ template<typename A, typename T> void mean_test_body_vector() {
 		std::vector<T> mean_vec_2=results["obs2"].mean<std::vector<T> >();
                 EXPECT_EQ(mean_vec_1.size(), L);
                 EXPECT_EQ(mean_vec_2.size(), L);
-		for(int i=0;i<mean_vec_1.size();++i){
+		for(size_t i=0;i<mean_vec_1.size();++i){
 	  		EXPECT_NEAR(mean_vec_1[i] , T(1.) , prec);
 			EXPECT_NEAR(mean_vec_2[i] , T(500.) , prec);
 	}

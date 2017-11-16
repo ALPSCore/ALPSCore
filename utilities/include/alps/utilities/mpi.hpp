@@ -276,7 +276,7 @@ namespace alps {
         
         /// Returns MPI datatype for the value of type `T`
         template <typename T>
-        MPI_Datatype get_mpi_datatype(const T& val) {
+        MPI_Datatype get_mpi_datatype(const T&) {
             return detail::mpi_type<T>();
         }
 
@@ -324,7 +324,7 @@ namespace alps {
         /// Performs MPI_Allreduce for array of a primitive type, T[n]
         template <typename T, typename OP>
         void all_reduce(const alps::mpi::communicator& comm, const T* val, int n,
-                        T* out_val, const OP& op)
+                        T* out_val, const OP& /*op*/)
         {
             if (n<=0) {
                 throw std::invalid_argument("Non-positive array size in mpi::all_reduce()");

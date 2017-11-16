@@ -16,6 +16,7 @@ set (test_src
      param_ostream
      common_param_tests
      disappearing_ini
+     apply
     )
 
 

@@ -11,7 +11,7 @@
 // Intercept MPI_Abort to verify it was indeed called
 static int Mpi_abort_called=0;
 /// This function detects MPI_Abort() call
-extern "C" int MPI_Abort(MPI_Comm comm, int rc)
+extern "C" int MPI_Abort(MPI_Comm /*comm*/, int /*rc*/)
 {
     ++Mpi_abort_called;
     return 0;

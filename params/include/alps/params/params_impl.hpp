@@ -202,6 +202,76 @@ namespace alps {
             return *this;
         }
 
+        /// Used in apply() and foreach()
+        template <typename F>
+        struct params_apply_visitor : public boost::static_visitor<>
+        {
+            const std::string& name_;
+            const detail::option_description_type& opt_descr_;
+            const F& f_;
+
+            params_apply_visitor(const std::string& name, const detail::option_description_type& opt_descr, const F& f) :
+                name_(name), opt_descr_(opt_descr), f_(f) {}
+
+            /// Applying to a None type --- always fails
+            void operator()(const detail::None&) const
+            {
+                throw option_type::visitor_none_used("Attempt to use uninitialized option value");
+            }
+
+            /// Even though this overload must be defined, it should never be called
+            void operator()(const boost::optional<detail::trigger_tag>& /*val*/) const
+            {
+                throw std::runtime_error("Internal error");
+            }
+
+            /// Triggers are to be treated specially, because T == bool for them,
+            /// but opt_descr_.deflt_ contains boost::optional<trigger_tag>
+
+            /// Called by apply_visitor()
+            void operator()(const boost::optional<bool>& val) const
+            {
+                if(opt_descr_.is_trigger())
+                    f_(name_, val, boost::optional<bool>(boost::none), opt_descr_.descr_);
+                else
+                    f_(name_, val, boost::get<boost::optional<bool> >(opt_descr_.deflt_), opt_descr_.descr_);
+            }
+
+            /// Called by apply_visitor()
+            template <typename T>
+            void operator()(const boost::optional<T>& val) const
+            {
+                f_(name_, val, boost::get<boost::optional<T> >(opt_descr_.deflt_), opt_descr_.descr_);
+            }
+        };
+
+        template <typename F>
+        inline void apply(const params& opts, const std::string& optname, F const& f)
+        {
+            opts.possibly_parse();
+
+            // opts.optmap_ is mutable, so we have to use const_cast to make compiler choose the right overload of operator[]
+            const options_map_type::mapped_type& o = const_cast<options_map_type const&>(opts.optmap_)[optname];
+            // There is no const operator[] in description_map_type
+            detail::description_map_type::const_iterator d_it = opts.descr_map_.find(optname);
+
+            params_apply_visitor<F> v(optname, d_it->second, f);
+            boost::apply_visitor(v, o.val_);
+        }
+
+        template <typename F>
+        inline void foreach(const params& opts, F const& f)
+        {
+            opts.possibly_parse();
+
+            for(options_map_type::const_iterator o_it = opts.optmap_.begin(); o_it != opts.optmap_.end(); o_it++)
+            {
+                detail::description_map_type::const_iterator d_it = opts.descr_map_.find(o_it->first);
+                params_apply_visitor<F> v(o_it->first, d_it->second, f);
+                boost::apply_visitor(v, o_it->second.val_);
+            }
+        }
+
     } // params_ns::
 } // alps::
 

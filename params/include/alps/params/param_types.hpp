@@ -35,7 +35,7 @@
 namespace alps {
     namespace params_ns {
         namespace detail {
-            
+
 	    // Allowed basic numerical types.
 	    // NOTE 1: do not forget to change "8" to the correct number if editing!
 	    // NOTE 2: currently, not more than (20-1)/2 = 9 types are supported
@@ -60,7 +60,7 @@ namespace alps {
             struct None {};
 
             /// Output operator for the "empty value" (@throws runtime_error always)
-            inline std::ostream& operator<<(std::ostream& s, const None&)
+            inline std::ostream& operator<<(std::ostream& /*s*/, const None&)
             {
                 throw std::runtime_error("Attempt to print uninitialized option value");
             }
@@ -82,7 +82,7 @@ namespace alps {
             {
                 throw std::logic_error("Attempt to use undefined operator<< for trigger_tag");
             }
-          
+
              // Sequence of trigger type, scalar and vector types
 #define     ALPS_PARAMS_DETAIL_ALLTYPES_SEQ ALPS_PARAMS_DETAIL_STYPES_SEQ(trigger_tag)ALPS_PARAMS_DETAIL_VTYPES_SEQ
 
@@ -95,7 +95,7 @@ namespace alps {
             ALPS_PARAMS_DETAIL_TYPID_NAME(const char *);
             // ALPS_PARAMS_DETAIL_TYPID_NAME(unsigned int);
             // ALPS_PARAMS_DETAIL_TYPID_NAME(unsigned long);
-          
+
             // Sequence of `boost::optional<T>` types for all supported types
 #define     ALPS_PARAMS_DETAIL_OTYPES_SEQ BOOST_PP_SEQ_TRANSFORM(ALPS_PARAMS_DETAIL_MAKE_TYPE, boost::optional, ALPS_PARAMS_DETAIL_ALLTYPES_SEQ)
 
@@ -124,7 +124,7 @@ namespace alps {
 // #undef  ALPS_PARAMS_DETAIL_ALLTYPES_SEQ
 // #undef  ALPS_PARAMS_DETAIL_GEN_TYPID
 // #undef  ALPS_PARAMS_DETAIL_OTYPES_SEQ
-	
+
     } // params_ns
 }// alps
 

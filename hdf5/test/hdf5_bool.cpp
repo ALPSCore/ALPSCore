@@ -20,9 +20,9 @@ void save(
       alps::hdf5::archive & ar
     , std::string const & path
     , E const & value
-    , std::vector<std::size_t> size = std::vector<std::size_t>()
-    , std::vector<std::size_t> chunk = std::vector<std::size_t>()
-    , std::vector<std::size_t> offset = std::vector<std::size_t>()
+    , std::vector<std::size_t> /*size*/ = std::vector<std::size_t>()
+    , std::vector<std::size_t> /*chunk*/ = std::vector<std::size_t>()
+    , std::vector<std::size_t> /*offset*/ = std::vector<std::size_t>()
 )
 {
     if( value == E1 )     ar << alps::make_pvp(path, "E1");
@@ -32,8 +32,8 @@ void load(
       alps::hdf5::archive & ar
     , std::string const & path
     , E & value
-    , std::vector<std::size_t> chunk = std::vector<std::size_t>()
-    , std::vector<std::size_t> offset = std::vector<std::size_t>()
+    , std::vector<std::size_t> /*chunk*/ = std::vector<std::size_t>()
+    , std::vector<std::size_t> /*offset*/ = std::vector<std::size_t>()
 )
 {
     std::string s;

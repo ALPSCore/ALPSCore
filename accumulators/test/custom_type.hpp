@@ -367,7 +367,7 @@ namespace alps {
             
             /// Specialization of get_extent<custom_type>
             template<typename T> struct get_extent< my_custom_type<T> > {
-                static std::vector<std::size_t> apply(const my_custom_type<T>& x) {
+                static std::vector<std::size_t> apply(const my_custom_type<T>& /*x*/) {
                     using alps::hdf5::get_extent;
                     std::vector<std::size_t> ext(1,1); // 1D object of size 1
                     return ext;
@@ -376,7 +376,7 @@ namespace alps {
             
             /// Specialization of set_extent<custom_type>
             template<typename T> struct set_extent< my_custom_type<T> > {
-                static void apply(const my_custom_type<T>& x, const std::vector<std::size_t>& ext) {
+                static void apply(const my_custom_type<T>& /*x*/, const std::vector<std::size_t>& ext) {
                     using alps::hdf5::set_extent;
                     if (ext.size()!=1 || ext[0]!=1) { // expecting 1D object of size 1
                         throw std::runtime_error("Unexpected extent values");
@@ -386,7 +386,7 @@ namespace alps {
 
             /// Specialization of is_vectorizable<custom_type>
             template<typename T> struct is_vectorizable< my_custom_type<T> > {
-                static bool apply(const my_custom_type<T>& x) {
+                static bool apply(const my_custom_type<T>& /*x*/) {
                     // return false;
                     return true;
                 }

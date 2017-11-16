@@ -87,7 +87,7 @@ namespace alps {
                         throw std::runtime_error("No values can be added to a result" + ALPS_STACKTRACE);
                     }
 
-                    template<typename S> void print(S & os, bool terse=false) const {
+                    template<typename S> void print(S & os, bool /*terse*/=false) const {
                         os << " #" << alps::short_print(count());
                     }
 
@@ -186,7 +186,7 @@ namespace alps {
 
                     Accumulator(Accumulator const & arg): m_count(arg.m_count) {}
 
-                    template<typename ArgumentPack> Accumulator(ArgumentPack const & args, typename boost::disable_if<is_accumulator<ArgumentPack>, int>::type = 0)
+                    template<typename ArgumentPack> Accumulator(ArgumentPack const & /*args*/, typename boost::disable_if<is_accumulator<ArgumentPack>, int>::type = 0)
                         : m_count(count_type())
                     {}
 
@@ -201,7 +201,7 @@ namespace alps {
                         throw std::runtime_error("Observable has no binary call operator" + ALPS_STACKTRACE);
                     }
 
-                    template<typename S> void print(S & os, bool terse=false) const {
+                    template<typename S> void print(S & os, bool /*terse*/=false) const {
                         os << " #" << alps::short_print(count());
                     }
 
