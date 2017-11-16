@@ -110,6 +110,8 @@ batch_acc<T>::batch_acc(size_t size, size_t num_batches, size_t base_size)
         throw std::runtime_error("Number of batches must be even to allow "
                                  "for rebatching.");
     }
+    for (size_t i = 0; i != data_.num_batches(); ++i)
+        offset_[i] = i * base_size_;
 }
 
 template <typename T>
