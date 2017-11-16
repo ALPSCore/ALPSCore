@@ -145,7 +145,24 @@ template class var_acc<std::complex<double>, elliptic_var<std::complex<double> >
 template <typename T, typename Str>
 column<typename var_result<T,Str>::var_type> var_result<T,Str>::stderror() const
 {
-    throw invalid_accumulator();
+    throw invalid_accumulator();   // FIXME
+}
+
+template <typename T, typename Str>
+void var_result<T,Str>::reduce(reducer &r)
+{
+    internal::check_valid(*this);
+    store_->convert_to_sum();
+    reducer_setup setup = r.get_setup();
+    r.reduce(sink<T>(store_->data().data(), store_->data().rows()));
+    r.reduce(sink<var_type>(store_->data2().data(), store_->data2().rows()));
+    r.reduce(sink<size_t>(&store_->count(), 1));
+    r.commit();
+
+    if (setup.have_result)
+        store_->convert_to_mean();
+    else
+        store_.reset();   // free data
 }
 
 template class var_result<double>;

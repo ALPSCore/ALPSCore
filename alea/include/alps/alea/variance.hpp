@@ -13,7 +13,7 @@
 #include <alps/alea/var_strategy.hpp>
 
 #include <memory>
-#include <cstdio>
+
 // Forward declarations
 
 namespace alps { namespace alea {

@@ -210,6 +210,9 @@ struct reducer
     void reduce(sink<std::complex<double> > data) {
         reduce(sink<double>((double *)data.data(), 2 * data.size()));
     }
+    void reduce(sink<complex_op<double> > data) {
+        reduce(sink<double>((double *)data.data(), 4 * data.size()));
+    }
     void reduce(sink<unsigned long> data) {
         reduce(sink<long>((long *)data.data(), data.size()));
     }
