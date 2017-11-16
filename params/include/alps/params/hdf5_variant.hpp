@@ -29,39 +29,53 @@ namespace alps {
             /// Consumer class to save an object to archive
             struct to_archive {
                 alps::hdf5::archive& ar_;
-                int which_;
+                std::string context_;
 
-                to_archive(alps::hdf5::archive& ar, int which) : ar_(ar), which_(which) {}
+                to_archive(alps::hdf5::archive& ar) : ar_(ar), context_(ar.get_context()) {}
 
                 template <typename T>
                 void operator()(const T& val) {
-                    ar_[""] << val;
-                    ar_["@which"] << which_; // FIXME!!!! This is proof-of-concept! This is a bad format for long-term archiving!
+                    ar_[context_] << val;
                 }
             };
-
+            
             /// Producer class to load an object from an archive
             struct from_archive {
-                int which_count_;
                 alps::hdf5::archive& ar_;
+                std::string context_;
 
+                /// Convenience predicate: can we read it as type T?
+                template <typename T>
+                inline bool can_read(const T*)
+                {
+                    return is_native_type<T>::value
+                        && ar_.is_datatype<T>(context_)
+                        && ar_.is_scalar(context_);
+                }
+
+                /// Convenience predicate: can we read it as a vector of T?
+                template <typename T>
+                bool can_read(const std::vector<T>*)
+                {
+                    return is_native_type<T>::value
+                        && ar_.is_datatype<T>(context_)
+                        && !ar_.is_scalar(context_);
+                }
+                
                 from_archive(alps::hdf5::archive& ar)
-                    : which_count_(0), ar_(ar)
+                    : ar_(ar), context_(ar.get_context())
                 {}
 
                 template <typename T>
                 boost::optional<T> operator()(const T*)
                 {
-                    boost::optional<T> ret;
-                    int target_which;
-                    ar_["@which"] >> target_which; // FIXME!!!! This is proof-of-concept! This is a bad format for long-term archiving!
-                    if (target_which==which_count_) {
+                    boost::optional<T> maybe_val;
+                    if (can_read((T*)0)) {
                         T val;
-                        ar_[""] >> val;
-                        ret=val;
+                        ar_[context_] >> val;
+                        maybe_val=val;
                     }
-                    ++which_count_;
-                    return ret;
+                    return maybe_val;
                 }
             };
 
@@ -75,8 +89,7 @@ namespace alps {
         template <typename MPLSEQ>
         inline void write_variant(alps::hdf5::archive& ar, const typename boost::make_variant_over<MPLSEQ>::type& var)
         {
-            int which=var.which();
-            detail::to_archive consumer(ar, which);
+            detail::to_archive consumer(ar);
             detail::var_serializer::consume(consumer, var);
         }
 

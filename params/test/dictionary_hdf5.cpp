@@ -43,7 +43,7 @@ class DictionaryTestHdf5 : public ::testing::Test {
 
   public:
     DictionaryTestHdf5(): dict1_(),dict2_(), cdict1_(dict1_), cdict2_(dict2_),
-                           file_("dict_test.h5.", alps::testing::unique_file::REMOVE_AFTER)
+                          file_("dict_test.h5.", alps::testing::unique_file::REMOVE_AFTER/*KEEP_AFTER*/)
     {
 
         dict1_["my_bool"]=apt::data_trait<bool>::get(true);
