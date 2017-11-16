@@ -145,7 +145,8 @@ template class var_acc<std::complex<double>, elliptic_var<std::complex<double> >
 template <typename T, typename Str>
 column<typename var_result<T,Str>::var_type> var_result<T,Str>::stderror() const
 {
-    throw invalid_accumulator();   // FIXME
+    internal::check_valid(*this);
+    return (store_->data2() / store_->count()).cwiseSqrt();
 }
 
 template <typename T, typename Str>
