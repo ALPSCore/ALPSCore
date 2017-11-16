@@ -19,6 +19,7 @@
 
 #include <boost/mpl/and.hpp>
 #include <boost/utility/enable_if.hpp>
+#include <boost/type_traits/integral_constant.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/type_traits/is_array.hpp>
 #include <boost/type_traits/remove_all_extents.hpp>
@@ -54,6 +55,15 @@
 
 namespace alps {
     namespace hdf5 {
+
+        /// Inherits from `true_type` if `T` is a native type, from `false_type` otherwise
+        template <typename T>
+        struct is_native_type : public boost::false_type {};
+#define ALPS_HDF5_IS_NATIVE_TYPE_CALLER(__type__)    \
+        template <> struct is_native_type<__type__> : public boost::true_type {};
+        ALPS_FOREACH_NATIVE_HDF5_TYPE(ALPS_HDF5_IS_NATIVE_TYPE_CALLER)
+#undef ALPS_HDF5_IS_NATIVE_TYPE_CALLER
+
 
         namespace detail {
             struct archivecontext;
