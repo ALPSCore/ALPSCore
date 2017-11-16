@@ -30,10 +30,10 @@ typedef std::vector<int> intvec;
 typedef std::vector<double> dblvec;
 typedef std::vector<std::string> strvec;
 
-typedef std::pair<std::string,bool> boolpair;
-typedef std::pair<std::string,int> intpair;
-typedef std::pair<std::string,double> dblpair;
-typedef std::pair<std::string,std::string> stringpair;
+// typedef std::pair<std::string,bool> boolpair;
+// typedef std::pair<std::string,int> intpair;
+// typedef std::pair<std::string,double> dblpair;
+// typedef std::pair<std::string,std::string> stringpair;
 
 template <typename T>
 class DictionaryTestBCast : public ::testing::Test {
@@ -57,10 +57,10 @@ class DictionaryTestBCast : public ::testing::Test {
         dict1_["my_intvec"]=apt::data_trait<  intvec>::get(true);
         dict1_["my_dblvec"]=apt::data_trait<  dblvec>::get(true);
         dict1_["my_strvec"]=apt::data_trait<  strvec>::get(true);
-        dict1_["my_boolpair"]=apt::data_trait<  boolpair>::get(true);
-        dict1_["my_intpair"]=apt::data_trait<  intpair>::get(true);
-        dict1_["my_dblpair"]=apt::data_trait<  dblpair>::get(true);
-        dict1_["my_stringpair"]=apt::data_trait<  stringpair>::get(true);
+        // dict1_["my_boolpair"]=apt::data_trait<  boolpair>::get(true);
+        // dict1_["my_intpair"]=apt::data_trait<  intpair>::get(true);
+        // dict1_["my_dblpair"]=apt::data_trait<  dblpair>::get(true);
+        // dict1_["my_stringpair"]=apt::data_trait<  stringpair>::get(true);
 
         dict2_["my_bool"]=apt::data_trait<bool>::get(false);
         dict2_["my_int"]=apt::data_trait<  int>::get(false);
@@ -72,10 +72,10 @@ class DictionaryTestBCast : public ::testing::Test {
         dict2_["my_intvec"]=apt::data_trait<  intvec>::get(false);
         dict2_["my_dblvec"]=apt::data_trait<  dblvec>::get(false);
         dict2_["my_strvec"]=apt::data_trait<  strvec>::get(false);
-        dict2_["my_boolpair"]=apt::data_trait<  boolpair>::get(false);
-        dict2_["my_intpair"]=apt::data_trait<  intpair>::get(false);
-        dict2_["my_dblpair"]=apt::data_trait<  dblpair>::get(false);
-        dict2_["my_stringpair"]=apt::data_trait<  stringpair>::get(false);
+        // dict2_["my_boolpair"]=apt::data_trait<  boolpair>::get(false);
+        // dict2_["my_intpair"]=apt::data_trait<  intpair>::get(false);
+        // dict2_["my_dblpair"]=apt::data_trait<  dblpair>::get(false);
+        // dict2_["my_stringpair"]=apt::data_trait<  stringpair>::get(false);
     }
 
     void testBCast() {
@@ -116,14 +116,14 @@ typedef ::testing::Types<
     dblvec
     ,
     strvec
-    ,
-    boolpair
-    ,
-    intpair
-    ,
-    dblpair
-    ,
-    stringpair
+    // ,
+    // boolpair
+    // ,
+    // intpair
+    // ,
+    // dblpair
+    // ,
+    // stringpair
     > MyTypes;
 
 TYPED_TEST_CASE(DictionaryTestBCast, MyTypes);

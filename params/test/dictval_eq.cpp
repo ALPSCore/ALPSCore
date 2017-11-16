@@ -70,7 +70,7 @@ class DictionaryTestEq : public ::testing::Test {
     double my_double, my_double1;
     std::string my_string, my_string1;
     std::vector<int> my_vec, my_vec1;
-    std::pair<std::string, int> my_pair, my_pair1;
+    // std::pair<std::string, int> my_pair, my_pair1;
     
     public:
     DictionaryTestEq(): dict_(), cdict_(dict_) {
@@ -125,10 +125,10 @@ class DictionaryTestEq : public ::testing::Test {
         dict_["my_vec"]=my_vec;
         my_vec1=apt::data_trait< std::vector<int> >::get(false);
         dict_["my_vec1"]=my_vec1;
-        my_pair=apt::data_trait< std::pair<std::string, int> >::get(true);
-        dict_["my_pair"]=my_pair;
-        my_pair1=apt::data_trait< std::pair<std::string, int> >::get(false);
-        dict_["my_pair1"]=my_pair1;
+        // my_pair=apt::data_trait< std::pair<std::string, int> >::get(true);
+        // dict_["my_pair"]=my_pair;
+        // my_pair1=apt::data_trait< std::pair<std::string, int> >::get(false);
+        // dict_["my_pair1"]=my_pair1;
 
         // Special test case: float and double same value as int
         my_float=my_int;
@@ -1145,27 +1145,27 @@ TEST_F(DictionaryTestEq, eqBoolVecBoth) {
     EXPECT_TRUE(dummy); // to prevent "unused variable" warning
 }
 
-// Equalities between different types my_bool:my_pair
-TEST_F(DictionaryTestEq, eqBoolPairLeft) {
-    bool dummy=true; // to prevent "unused comparison" warning
-    EXPECT_THROW(  dummy=(cdict_["my_bool"]!=my_pair), de::type_mismatch );
-    EXPECT_THROW(  dummy=(cdict_["my_bool"]==my_pair), de::type_mismatch );
-    EXPECT_TRUE(dummy); // to prevent "unused variable" warning
-}
+// // Equalities between different types my_bool:my_pair
+// TEST_F(DictionaryTestEq, eqBoolPairLeft) {
+//     bool dummy=true; // to prevent "unused comparison" warning
+//     EXPECT_THROW(  dummy=(cdict_["my_bool"]!=my_pair), de::type_mismatch );
+//     EXPECT_THROW(  dummy=(cdict_["my_bool"]==my_pair), de::type_mismatch );
+//     EXPECT_TRUE(dummy); // to prevent "unused variable" warning
+// }
 
-TEST_F(DictionaryTestEq, eqBoolPairRight) {
-    bool dummy=true; // to prevent "unused comparison" warning
-    EXPECT_THROW(  dummy=(my_bool!=cdict_["my_pair"]), de::type_mismatch );
-    EXPECT_THROW(  dummy=(my_bool==cdict_["my_pair"]), de::type_mismatch );
-    EXPECT_TRUE(dummy); // to prevent "unused variable" warning
-}
+// TEST_F(DictionaryTestEq, eqBoolPairRight) {
+//     bool dummy=true; // to prevent "unused comparison" warning
+//     EXPECT_THROW(  dummy=(my_bool!=cdict_["my_pair"]), de::type_mismatch );
+//     EXPECT_THROW(  dummy=(my_bool==cdict_["my_pair"]), de::type_mismatch );
+//     EXPECT_TRUE(dummy); // to prevent "unused variable" warning
+// }
 
-TEST_F(DictionaryTestEq, eqBoolPairBoth) {
-    bool dummy=true; // to prevent "unused comparison" warning
-    EXPECT_THROW(  dummy=(cdict_["my_bool"]!=cdict_["my_pair"]), de::type_mismatch );
-    EXPECT_THROW(  dummy=(cdict_["my_bool"]==cdict_["my_pair"]), de::type_mismatch );
-    EXPECT_TRUE(dummy); // to prevent "unused variable" warning
-}
+// TEST_F(DictionaryTestEq, eqBoolPairBoth) {
+//     bool dummy=true; // to prevent "unused comparison" warning
+//     EXPECT_THROW(  dummy=(cdict_["my_bool"]!=cdict_["my_pair"]), de::type_mismatch );
+//     EXPECT_THROW(  dummy=(cdict_["my_bool"]==cdict_["my_pair"]), de::type_mismatch );
+//     EXPECT_TRUE(dummy); // to prevent "unused variable" warning
+// }
 
 // Equalities within same type my_int
 TEST_F(DictionaryTestEq, eqIntLeft) {
@@ -1239,27 +1239,27 @@ TEST_F(DictionaryTestEq, eqIntVecBoth) {
     EXPECT_TRUE(dummy); // to prevent "unused variable" warning
 }
 
-// Equalities between different types my_int:my_pair
-TEST_F(DictionaryTestEq, eqIntPairLeft) {
-    bool dummy=true; // to prevent "unused comparison" warning
-    EXPECT_THROW(  dummy=(cdict_["my_int"]!=my_pair), de::type_mismatch );
-    EXPECT_THROW(  dummy=(cdict_["my_int"]==my_pair), de::type_mismatch );
-    EXPECT_TRUE(dummy); // to prevent "unused variable" warning
-}
+// // Equalities between different types my_int:my_pair
+// TEST_F(DictionaryTestEq, eqIntPairLeft) {
+//     bool dummy=true; // to prevent "unused comparison" warning
+//     EXPECT_THROW(  dummy=(cdict_["my_int"]!=my_pair), de::type_mismatch );
+//     EXPECT_THROW(  dummy=(cdict_["my_int"]==my_pair), de::type_mismatch );
+//     EXPECT_TRUE(dummy); // to prevent "unused variable" warning
+// }
 
-TEST_F(DictionaryTestEq, eqIntPairRight) {
-    bool dummy=true; // to prevent "unused comparison" warning
-    EXPECT_THROW(  dummy=(my_int!=cdict_["my_pair"]), de::type_mismatch );
-    EXPECT_THROW(  dummy=(my_int==cdict_["my_pair"]), de::type_mismatch );
-    EXPECT_TRUE(dummy); // to prevent "unused variable" warning
-}
+// TEST_F(DictionaryTestEq, eqIntPairRight) {
+//     bool dummy=true; // to prevent "unused comparison" warning
+//     EXPECT_THROW(  dummy=(my_int!=cdict_["my_pair"]), de::type_mismatch );
+//     EXPECT_THROW(  dummy=(my_int==cdict_["my_pair"]), de::type_mismatch );
+//     EXPECT_TRUE(dummy); // to prevent "unused variable" warning
+// }
 
-TEST_F(DictionaryTestEq, eqIntPairBoth) {
-    bool dummy=true; // to prevent "unused comparison" warning
-    EXPECT_THROW(  dummy=(cdict_["my_int"]!=cdict_["my_pair"]), de::type_mismatch );
-    EXPECT_THROW(  dummy=(cdict_["my_int"]==cdict_["my_pair"]), de::type_mismatch );
-    EXPECT_TRUE(dummy); // to prevent "unused variable" warning
-}
+// TEST_F(DictionaryTestEq, eqIntPairBoth) {
+//     bool dummy=true; // to prevent "unused comparison" warning
+//     EXPECT_THROW(  dummy=(cdict_["my_int"]!=cdict_["my_pair"]), de::type_mismatch );
+//     EXPECT_THROW(  dummy=(cdict_["my_int"]==cdict_["my_pair"]), de::type_mismatch );
+//     EXPECT_TRUE(dummy); // to prevent "unused variable" warning
+// }
 
 // Equalities within same type my_string
 TEST_F(DictionaryTestEq, eqStringLeft) {
@@ -1311,27 +1311,27 @@ TEST_F(DictionaryTestEq, eqStringVecBoth) {
     EXPECT_TRUE(dummy); // to prevent "unused variable" warning
 }
 
-// Equalities between different types my_string:my_pair
-TEST_F(DictionaryTestEq, eqStringPairLeft) {
-    bool dummy=true; // to prevent "unused comparison" warning
-    EXPECT_THROW(  dummy=(cdict_["my_string"]!=my_pair), de::type_mismatch );
-    EXPECT_THROW(  dummy=(cdict_["my_string"]==my_pair), de::type_mismatch );
-    EXPECT_TRUE(dummy); // to prevent "unused variable" warning
-}
+// // Equalities between different types my_string:my_pair
+// TEST_F(DictionaryTestEq, eqStringPairLeft) {
+//     bool dummy=true; // to prevent "unused comparison" warning
+//     EXPECT_THROW(  dummy=(cdict_["my_string"]!=my_pair), de::type_mismatch );
+//     EXPECT_THROW(  dummy=(cdict_["my_string"]==my_pair), de::type_mismatch );
+//     EXPECT_TRUE(dummy); // to prevent "unused variable" warning
+// }
 
-TEST_F(DictionaryTestEq, eqStringPairRight) {
-    bool dummy=true; // to prevent "unused comparison" warning
-    EXPECT_THROW(  dummy=(my_string!=cdict_["my_pair"]), de::type_mismatch );
-    EXPECT_THROW(  dummy=(my_string==cdict_["my_pair"]), de::type_mismatch );
-    EXPECT_TRUE(dummy); // to prevent "unused variable" warning
-}
+// TEST_F(DictionaryTestEq, eqStringPairRight) {
+//     bool dummy=true; // to prevent "unused comparison" warning
+//     EXPECT_THROW(  dummy=(my_string!=cdict_["my_pair"]), de::type_mismatch );
+//     EXPECT_THROW(  dummy=(my_string==cdict_["my_pair"]), de::type_mismatch );
+//     EXPECT_TRUE(dummy); // to prevent "unused variable" warning
+// }
 
-TEST_F(DictionaryTestEq, eqStringPairBoth) {
-    bool dummy=true; // to prevent "unused comparison" warning
-    EXPECT_THROW(  dummy=(cdict_["my_string"]!=cdict_["my_pair"]), de::type_mismatch );
-    EXPECT_THROW(  dummy=(cdict_["my_string"]==cdict_["my_pair"]), de::type_mismatch );
-    EXPECT_TRUE(dummy); // to prevent "unused variable" warning
-}
+// TEST_F(DictionaryTestEq, eqStringPairBoth) {
+//     bool dummy=true; // to prevent "unused comparison" warning
+//     EXPECT_THROW(  dummy=(cdict_["my_string"]!=cdict_["my_pair"]), de::type_mismatch );
+//     EXPECT_THROW(  dummy=(cdict_["my_string"]==cdict_["my_pair"]), de::type_mismatch );
+//     EXPECT_TRUE(dummy); // to prevent "unused variable" warning
+// }
 
 // Equalities within same type my_vec
 TEST_F(DictionaryTestEq, eqVecLeft) {
@@ -1361,55 +1361,55 @@ TEST_F(DictionaryTestEq, eqVecBoth) {
     EXPECT_FALSE( cdict_["my_vec"]==cdict_["my_vec1"] );
 }
 
-// Equalities between different types my_vec:my_pair
-TEST_F(DictionaryTestEq, eqVecPairLeft) {
-    bool dummy=true; // to prevent "unused comparison" warning
-    EXPECT_THROW(  dummy=(cdict_["my_vec"]!=my_pair), de::type_mismatch );
-    EXPECT_THROW(  dummy=(cdict_["my_vec"]==my_pair), de::type_mismatch );
-    EXPECT_TRUE(dummy); // to prevent "unused variable" warning
-}
+// // Equalities between different types my_vec:my_pair
+// TEST_F(DictionaryTestEq, eqVecPairLeft) {
+//     bool dummy=true; // to prevent "unused comparison" warning
+//     EXPECT_THROW(  dummy=(cdict_["my_vec"]!=my_pair), de::type_mismatch );
+//     EXPECT_THROW(  dummy=(cdict_["my_vec"]==my_pair), de::type_mismatch );
+//     EXPECT_TRUE(dummy); // to prevent "unused variable" warning
+// }
 
-TEST_F(DictionaryTestEq, eqVecPairRight) {
-    bool dummy=true; // to prevent "unused comparison" warning
-    EXPECT_THROW(  dummy=(my_vec!=cdict_["my_pair"]), de::type_mismatch );
-    EXPECT_THROW(  dummy=(my_vec==cdict_["my_pair"]), de::type_mismatch );
-    EXPECT_TRUE(dummy); // to prevent "unused variable" warning
-}
+// TEST_F(DictionaryTestEq, eqVecPairRight) {
+//     bool dummy=true; // to prevent "unused comparison" warning
+//     EXPECT_THROW(  dummy=(my_vec!=cdict_["my_pair"]), de::type_mismatch );
+//     EXPECT_THROW(  dummy=(my_vec==cdict_["my_pair"]), de::type_mismatch );
+//     EXPECT_TRUE(dummy); // to prevent "unused variable" warning
+// }
 
-TEST_F(DictionaryTestEq, eqVecPairBoth) {
-    bool dummy=true; // to prevent "unused comparison" warning
-    EXPECT_THROW(  dummy=(cdict_["my_vec"]!=cdict_["my_pair"]), de::type_mismatch );
-    EXPECT_THROW(  dummy=(cdict_["my_vec"]==cdict_["my_pair"]), de::type_mismatch );
-    EXPECT_TRUE(dummy); // to prevent "unused variable" warning
-}
+// TEST_F(DictionaryTestEq, eqVecPairBoth) {
+//     bool dummy=true; // to prevent "unused comparison" warning
+//     EXPECT_THROW(  dummy=(cdict_["my_vec"]!=cdict_["my_pair"]), de::type_mismatch );
+//     EXPECT_THROW(  dummy=(cdict_["my_vec"]==cdict_["my_pair"]), de::type_mismatch );
+//     EXPECT_TRUE(dummy); // to prevent "unused variable" warning
+// }
 
-// Equalities within same type my_pair
-TEST_F(DictionaryTestEq, eqPairLeft) {
-    // Same values:
-    EXPECT_TRUE(  cdict_["my_pair"]==my_pair );
-    EXPECT_FALSE( cdict_["my_pair"]!=my_pair );
-    // Different values:
-    EXPECT_TRUE(  cdict_["my_pair"]!=my_pair1 );
-    EXPECT_FALSE( cdict_["my_pair"]==my_pair1 );
-}
+// // Equalities within same type my_pair
+// TEST_F(DictionaryTestEq, eqPairLeft) {
+//     // Same values:
+//     EXPECT_TRUE(  cdict_["my_pair"]==my_pair );
+//     EXPECT_FALSE( cdict_["my_pair"]!=my_pair );
+//     // Different values:
+//     EXPECT_TRUE(  cdict_["my_pair"]!=my_pair1 );
+//     EXPECT_FALSE( cdict_["my_pair"]==my_pair1 );
+// }
 
-TEST_F(DictionaryTestEq, eqPairRight) {
-    // Same values:
-    EXPECT_TRUE(  my_pair==cdict_["my_pair"] );
-    EXPECT_FALSE( my_pair!=cdict_["my_pair"] );
-    // Different values:
-    EXPECT_TRUE(  my_pair!=cdict_["my_pair1"] );
-    EXPECT_FALSE( my_pair==cdict_["my_pair1"] );
-}
+// TEST_F(DictionaryTestEq, eqPairRight) {
+//     // Same values:
+//     EXPECT_TRUE(  my_pair==cdict_["my_pair"] );
+//     EXPECT_FALSE( my_pair!=cdict_["my_pair"] );
+//     // Different values:
+//     EXPECT_TRUE(  my_pair!=cdict_["my_pair1"] );
+//     EXPECT_FALSE( my_pair==cdict_["my_pair1"] );
+// }
 
-TEST_F(DictionaryTestEq, eqPairBoth) {
-    // Same values:
-    EXPECT_TRUE(  cdict_["my_pair"]==cdict_["my_pair"] );
-    EXPECT_FALSE( cdict_["my_pair"]!=cdict_["my_pair"] );
-    // Different values:
-    EXPECT_TRUE(  cdict_["my_pair"]!=cdict_["my_pair1"] );
-    EXPECT_FALSE( cdict_["my_pair"]==cdict_["my_pair1"] );
-}
+// TEST_F(DictionaryTestEq, eqPairBoth) {
+//     // Same values:
+//     EXPECT_TRUE(  cdict_["my_pair"]==cdict_["my_pair"] );
+//     EXPECT_FALSE( cdict_["my_pair"]!=cdict_["my_pair"] );
+//     // Different values:
+//     EXPECT_TRUE(  cdict_["my_pair"]!=cdict_["my_pair1"] );
+//     EXPECT_FALSE( cdict_["my_pair"]==cdict_["my_pair1"] );
+// }
 
 // Equalities between different types my_int:my_float
 TEST_F(DictionaryTestEq, eqIntFloatLeft) {

@@ -142,8 +142,8 @@ typedef ::testing::Types<
     std::vector<bool>
     ,
     std::vector<std::string>
-    ,
-    std::pair<std::string, int>
+    // ,
+    // std::pair<std::string, int>
     > MyTypes;
 
 TYPED_TEST_CASE(VarSerialTest, MyTypes);

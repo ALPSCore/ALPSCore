@@ -46,8 +46,8 @@ namespace alps {
                                  double,
                                  std::string> dict_scalar_types;
             
-            // List of allowed pairs:
-            typedef mpl::transform< dict_scalar_types, std::pair<std::string, mplh::_1> >::type dict_pair_types;
+            // // List of allowed pairs:  (removed until clarification)
+            // typedef mpl::transform< dict_scalar_types, std::pair<std::string, mplh::_1> >::type dict_pair_types;
 
             // List of allowed vectors:
             typedef mpl::transform< dict_scalar_types, std::vector<mplh::_1> >::type dict_vector_types;
@@ -56,13 +56,18 @@ namespace alps {
             template <typename FS, typename TS>
             struct copy_to_front : public mpl::reverse_copy< FS, mpl::front_inserter<TS> > {};
 
-            // List of allowed types, `None` being the first
             typedef mpl::push_front<
-                copy_to_front<dict_scalar_types, 
-                              copy_to_front<dict_vector_types, dict_pair_types>::type
-                             >::type,
+                copy_to_front<dict_scalar_types, dict_vector_types>::type,
                 None
                 >::type dict_all_types;
+            // This list includes std::pair, removed until clarification
+            // typedef mpl::push_front<
+            //     copy_to_front<dict_scalar_types, 
+            //                   copy_to_front<dict_vector_types, dict_pair_types>::type
+            //                  >::type,
+            //     None
+            //     >::type dict_all_types;
+            // List of allowed types, `None` being the first
 
             
         } // ::detail
