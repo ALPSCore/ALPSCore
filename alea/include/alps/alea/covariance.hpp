@@ -12,19 +12,27 @@
 #include <alps/alea/computed.hpp>
 #include <alps/alea/var_strategy.hpp>
 
+#include <memory>
+
+// Forward declarations
+
+namespace alps { namespace alea {
+    template <typename T, typename Str> class cov_data;
+    template <typename T, typename Str> class cov_acc;
+    template <typename T, typename Str> class cov_result;
+}}
+
+// Actual declarations
+
 namespace alps { namespace alea {
 
 /**
  * Data for covariance accumulation.
  *
- * As with `mean_acc`, this class is basically a "tagged union"-like structure,
+ * As with `mean_acc`, this class is basically a "union"-like structure,
  * which for a data series `(X[0], ... X[count_-1])` either represents the sum
  * of X[i] and the sum of X[i]*X[j] (sum state) or the sample mean and sample
  * covariance of X (mean state).
- *
- * This is "switch" is useful for result handling, both in intermediate steps
- * of the calculation, where it avoids temporaries; and for reduction over the
- * network.
  */
 template <typename T, typename Strategy=circular_var<T> >
 class cov_data
@@ -53,19 +61,13 @@ public:
 
     cov_matrix_type &data2() { return data2_; }
 
-    size_t state() const { return state_; }
+    void convert_to_mean();
 
-    void unlock_mean() const;
-
-    void unlock_sum() const;
-
-protected:
-    void state(data_state new_state) const { state_ = new_state; }
+    void convert_to_sum();
 
 private:
-    mutable column<T> data_;
-    mutable cov_matrix_type data2_;
-    mutable data_state state_;
+    column<T> data_;
+    cov_matrix_type data2_;
     size_t count_;
 };
 
@@ -81,6 +83,7 @@ extern template class cov_data<double>;
 extern template class cov_data<std::complex<double> >;
 extern template class cov_data<std::complex<double>, elliptic_var<std::complex<double> > >;
 
+
 /**
  * Accumulator which tracks the mean and a naive covariance estimate.
  */
@@ -93,52 +96,55 @@ public:
     typedef typename Strategy::cov_type cov_type;
     typedef typename eigen<cov_type>::matrix cov_matrix_type;
 
-    typedef computed_cmember<T, cov_acc> result;
-    typedef computed_cmember<var_type, cov_acc> vresult;
-
 public:
-    cov_acc(size_t size=0, size_t bundle_size=1);
+    cov_acc();
 
-    size_t size() const { return store_.size(); }
+    cov_acc(size_t size, size_t bundle_size=1);
+
+    cov_acc(const cov_acc &other);
+
+    cov_acc &operator=(const cov_acc &other);
+
+    void reset();
+
+    bool initialized() const { return initialized_; }
+
+    bool valid() const { return (bool)store_; }
+
+    size_t size() const { return current_.size(); }
 
     template <typename S>
     cov_acc &operator<<(const S &obj)
     {
-        computed_adapter<T, S> source(obj);
-        return *this << (const computed<T> &) source;
+        computed_adapter<value_type, S> source(obj);
+        return *this << (const computed<value_type> &) source;
     }
 
-    cov_acc &operator<<(const computed<T> &source);
+    cov_acc &operator<<(const computed<value_type> &source);
 
-    void reset();
+    size_t count() const { return store_->count(); }
 
-    size_t count() const { return store_.count(); }
+    // TODO remove
+    column<T> mean() const { return result().mean(); }
 
-    const column<value_type> &mean() const { store_.unlock_mean(); return store_.data(); }
+    cov_result<T,Strategy> result() const;
 
-    const cov_matrix_type &cov() const { store_.unlock_mean(); return store_.data2(); }
-
-    vresult var() const { return vresult(*this, &cov_acc::get_var, size()); }
-
-    vresult stderr() const { return vresult(*this, &cov_acc::get_stderr, size()); }
-
-    void uplevel(cov_acc &new_uplevel) { uplevel_ = &new_uplevel; }
+    cov_result<T,Strategy> finalize();
 
     const bundle<value_type> &current() const { return current_; }
 
-    const cov_data<value_type, Strategy> &store() const { return store_; }
+    const cov_data<T,Strategy> &store() const { return *store_; }
+
+    void uplevel(cov_acc &new_uplevel) { uplevel_ = &new_uplevel; }
 
 protected:
-    void get_var(sink<var_type> out) const;
-
-    void get_stderr(sink<var_type> out) const;
-
     void add_bundle();
 
 private:
+    std::unique_ptr<cov_data<T,Strategy> > store_;
     bundle<value_type> current_;
-    cov_data<value_type, Strategy> store_;
     cov_acc *uplevel_;
+    bool initialized_;
 };
 
 template <typename T, typename Strategy>
@@ -147,11 +153,72 @@ struct traits< cov_acc<T,Strategy> >
     typedef typename Strategy::value_type value_type;
     typedef typename Strategy::var_type var_type;
     typedef typename Strategy::cov_type cov_type;
+    typedef cov_result<T,Strategy> result_type;
 };
 
 extern template class cov_acc<double>;
 extern template class cov_acc<std::complex<double> >;
 extern template class cov_acc<std::complex<double>, elliptic_var<std::complex<double> > >;
+
+
+/**
+ * Accumulator which tracks the mean and a naive variance estimate.
+ */
+template <typename T, typename Strategy=circular_var<T> >
+class cov_result
+{
+public:
+    typedef typename Strategy::value_type value_type;
+    typedef typename Strategy::var_type var_type;
+    typedef typename Strategy::cov_type cov_type;
+
+public:
+    cov_result() { }
+
+    cov_result(const cov_data<T,Strategy> &acc_data)
+        : store_(new cov_data<T,Strategy>(acc_data))
+    { }
+
+    bool initialized() const { return true; }
+
+    bool valid() const { return (bool)store_; }
+
+    size_t size() const { return store_->size(); }
+
+    size_t count() const { return store_->count(); }
+
+    const column<T> &mean() const { return store_->data(); }
+
+    column<var_type> var() const { return store_->data2().diagonal().real(); }
+
+    const typename eigen<cov_type>::matrix &cov() const { return store_->data2(); }
+
+    column<var_type> stderror() const;
+
+    const cov_data<T,Strategy> &store() const { return *store_; }
+
+    cov_data<T,Strategy> &store() { return *store_; }
+
+    void reduce(reducer &);
+
+    void serialize(serializer &);
+
+private:
+    std::unique_ptr<cov_data<T,Strategy> > store_;
+
+    friend class cov_acc<T,Strategy>;
+};
+
+template <typename T, typename Strategy>
+struct traits< cov_result<T,Strategy> >
+{
+    typedef typename Strategy::value_type value_type;
+    typedef typename Strategy::var_type var_type;
+};
+
+extern template class cov_result<double>;
+extern template class cov_result<std::complex<double> >;
+extern template class cov_result<std::complex<double>, elliptic_var<std::complex<double> > >;
 
 
 }}
