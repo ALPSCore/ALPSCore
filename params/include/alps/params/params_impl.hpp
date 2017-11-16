@@ -220,7 +220,7 @@ namespace alps {
             }
 
             /// Even though this overload must be defined, it should never be called
-            void operator()(const boost::optional<detail::trigger_tag>& val) const
+            void operator()(const boost::optional<detail::trigger_tag>& /*val*/) const
             {
                 throw std::runtime_error("Internal error");
             }

@@ -415,7 +415,7 @@ namespace alps{
         namespace detail {
             // Validator for strings
             void validate(boost::any& outval, const std::vector<std::string>& strvalues,
-                          string_container* target_type, int)
+                          string_container* /*target_type*/, int)
             {
                 namespace po=boost::program_options;
                 namespace pov=po::validators;

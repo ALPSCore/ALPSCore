@@ -72,7 +72,7 @@ namespace alps {
                     }
 
                     /// Called by apply_visitor(), for a trigger_tag type
-                    void operator()(const boost::optional<trigger_tag>& a_val) const
+                    void operator()(const boost::optional<trigger_tag>& /*a_val*/) const
                     {
                         do_define<trigger_tag>::add_option(odesc_, name_, strdesc_);
                     }
@@ -95,7 +95,7 @@ namespace alps {
 
                     /// Called by apply_visitor(), for a optional<T> bound type
                     template <typename T>
-                    void operator()(const boost::optional<T>& a_val) const
+                    void operator()(const boost::optional<T>& /*a_val*/) const
                     {
                         if (anyval_.empty()) {
                             opt_.reset<T>();
@@ -105,7 +105,7 @@ namespace alps {
                     }
 
                     /// Called by apply_visitor(), for a optional<std::string> bound type
-                    void operator()(const boost::optional<std::string>& a_val) const
+                    void operator()(const boost::optional<std::string>& /*a_val*/) const
                     {
                         if (anyval_.empty()) {
                             opt_.reset<std::string>();
@@ -155,7 +155,7 @@ namespace alps {
                    }
 
                     /// Called when the variant contains optional<trigger_tag>
-                    void operator()(const boost::optional<trigger_tag>& val) const
+                    void operator()(const boost::optional<trigger_tag>& /*val*/) const
                     {
                         // trigger options do not have defaults
                         ar_[name_] << false;

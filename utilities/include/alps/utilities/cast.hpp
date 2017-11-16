@@ -39,7 +39,7 @@ namespace alps {
 
         template<
             typename U, typename T, typename X
-        > inline U cast_generic(T arg, X) {
+        > inline U cast_generic(T /*arg*/, X) {
             throw bad_cast(
                   std::string("cannot cast from ") 
                 + typeid(T).name() 

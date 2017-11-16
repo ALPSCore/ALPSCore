@@ -56,7 +56,7 @@ class AccumulatorVSBinaryOpTest : public ::testing::Test {
         const vector_data_type vs_mean=res_vs.mean<vector_data_type>();                             \
                                                                                                     \
         ASSERT_EQ(vv_mean.size(),vs_mean.size()) << "Vector means sizes differ!";                   \
-        for (int i=0; i<vv_mean.size(); ++i) {                                                      \
+        for (size_t i=0; i<vv_mean.size(); ++i) {                                                      \
             EXPECT_NEAR(vv_mean[i], vs_mean[i], 1E-8) << "Vector means differ at element " << i;    \
         }                                                                                           \
                                                                                                     \
@@ -67,7 +67,7 @@ class AccumulatorVSBinaryOpTest : public ::testing::Test {
         const vector_data_type vs_err=res_vs.error<vector_data_type>();                             \
                                                                                                     \
         ASSERT_EQ(vv_err.size(),vs_err.size()) << "Vector errors sizes differ!";                    \
-        for (int i=0; i<vv_err.size(); ++i) {                                                       \
+        for (size_t i=0; i<vv_err.size(); ++i) {                                                       \
             EXPECT_NEAR(vv_err[i], vs_err[i], 1E-8) << "Vector errors differ at element " << i;     \
         }                                                                                           \
     }

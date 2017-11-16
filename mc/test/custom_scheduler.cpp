@@ -33,7 +33,7 @@ class my_schecker_type {
     my_schecker_type() {}
     my_schecker_type(const alps::params&) {};
     bool pending() { return true; }
-    void update(double f) {}
+    void update(double /*f*/) {}
 };
 
 static bool stop_callback() { return false; }

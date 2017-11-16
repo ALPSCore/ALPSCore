@@ -62,7 +62,7 @@ namespace alps {
             template<typename A> typename boost::disable_if<
                   typename has_feature<A, error_tag>::type
                 , typename error_type<A>::type
-            >::type error_impl(A const & acc) {
+            >::type error_impl(A const & /*acc*/) {
                 throw std::runtime_error(std::string(typeid(A).name()) + " has no error-method" + ALPS_STACKTRACE);
                 return typename error_type<A>::type();
             }
@@ -316,7 +316,7 @@ namespace alps {
                         using alps::numeric::operator+;
                         m_error = m_error + arg.error();
                     }
-                    template<typename U> void augaddsub (U const & arg, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {}
+                    template<typename U> void augaddsub (U const & /*arg*/, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {}
 
                     template<typename U> void augmul (U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {
                         using alps::numeric::operator*;

@@ -32,7 +32,7 @@ namespace alps {
                 bool can_load(hdf5::archive & ar) const {
                     return A::can_load(ar);
                 }
-                T * create(hdf5::archive & ar) const {
+                T * create(hdf5::archive & /*ar*/) const {
                     return new T(A());
                 }
             };

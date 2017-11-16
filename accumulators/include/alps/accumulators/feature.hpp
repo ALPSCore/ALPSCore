@@ -84,14 +84,14 @@ namespace alps {
 
                 /// Dummy function for merging results (always throws an exception)
                 template <typename A>
-                void merge(const A& rhs) {
+                void merge(const A& /*rhs*/) {
                      throw std::runtime_error("A result cannot be merged " + ALPS_STACKTRACE);
                 }
               
 #ifdef ALPS_HAVE_MPI
                 inline void collective_merge(
-                      alps::mpi::communicator const & comm
-                    , int root
+                      alps::mpi::communicator const & /*comm*/
+                    , int /*root*/
                 ) const {
                     throw std::logic_error("A result cannot be merged " + ALPS_STACKTRACE);
                 }

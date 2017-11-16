@@ -141,7 +141,7 @@
                     return offset;
                 }
 
-                template<typename T, typename Op, typename C> void reduce_impl(const alps::mpi::communicator & comm, T const & in_values, Op op, int root, boost::true_type, C) {
+                template<typename T, typename Op, typename C> void reduce_impl(const alps::mpi::communicator & comm, T const & in_values, Op /*op*/, int root, boost::true_type, C) {
                     // using alps::mpi::reduce;
                     // reduce(comm, in_values, op, root);
                     using alps::mpi::get_mpi_datatype;                    
@@ -153,7 +153,7 @@
                     
                 }
 
-                template<typename T, typename Op> void reduce_impl(const alps::mpi::communicator & comm, T const & in_values, Op op, int root, boost::false_type, boost::true_type) {
+                template<typename T, typename Op> void reduce_impl(const alps::mpi::communicator & comm, T const & in_values, Op /*op*/, int root, boost::false_type, boost::true_type) {
                     typedef typename alps::hdf5::scalar_type<T>::type scalar_type;
                     using alps::hdf5::get_extent;
                     std::vector<std::size_t> extent(get_extent(in_values));
@@ -168,7 +168,7 @@
                                        get_mpi_datatype(scalar_type()), alps::mpi::is_mpi_op<Op, scalar_type>::op(), root, comm);
                 }
 
-                template<typename T, typename Op, typename C> void reduce_impl(const alps::mpi::communicator & comm, T const & in_values, T & out_values, Op op, int root, boost::true_type, C) {
+                template<typename T, typename Op, typename C> void reduce_impl(const alps::mpi::communicator & comm, T const & in_values, T & out_values, Op /*op*/, int root, boost::true_type, C) {
                     using alps::mpi::reduce;
                     // using boost::mpi::reduce;
                     // reduce(comm, (T)in_values, out_values, op, root); // TODO: WTF? - why does boost not define unsigned long long as native datatype
@@ -186,7 +186,7 @@
                                        alps::mpi::is_mpi_op<Op, T>::op(), root, comm);
                 }
 
-                template<typename T, typename Op> void reduce_impl(const alps::mpi::communicator & comm, T const & in_values, T & out_values, Op op, int root, boost::false_type, boost::true_type) {
+                template<typename T, typename Op> void reduce_impl(const alps::mpi::communicator & comm, T const & in_values, T & out_values, Op /*op*/, int root, boost::false_type, boost::true_type) {
                     typedef typename alps::hdf5::scalar_type<T>::type scalar_type;
                     using alps::hdf5::get_extent;
                     std::vector<std::size_t> extent(get_extent(in_values));
@@ -203,7 +203,7 @@
                                get_mpi_datatype(scalar_type()), alps::mpi::is_mpi_op<Op, scalar_type>::op(), root, comm);
                 }
 
-                template<typename T, typename Op> void reduce_impl(const alps::mpi::communicator & comm, T const & in_values, Op op, int root, boost::false_type, boost::false_type) {
+                template<typename T, typename Op> void reduce_impl(const alps::mpi::communicator & comm, T const & in_values, Op /*op*/, int root, boost::false_type, boost::false_type) {
                     using alps::hdf5::is_vectorizable;
                     if (is_vectorizable(in_values)) {
                         using alps::hdf5::get_extent;
@@ -224,7 +224,7 @@
                         throw std::logic_error("No alps::mpi::reduce available for this type " + std::string(typeid(T).name()) + ALPS_STACKTRACE);
                 }
 
-                template<typename T, typename Op> void reduce_impl(const alps::mpi::communicator & comm, T const & in_values, T & out_values, Op op, int root, boost::false_type, boost::false_type) {
+                template<typename T, typename Op> void reduce_impl(const alps::mpi::communicator & comm, T const & in_values, T & out_values, Op /*op*/, int root, boost::false_type, boost::false_type) {
                     using alps::hdf5::is_vectorizable;
                     if (is_vectorizable(in_values)) {
                         using alps::hdf5::get_extent;

@@ -32,22 +32,22 @@ namespace alps {
         namespace detail {
 
             template<typename T> struct get_extent<std::complex<T> > {
-                static std::vector<std::size_t> apply(std::complex<T> const & value) {
+                static std::vector<std::size_t> apply(std::complex<T> const & /*value*/) {
                     return std::vector<std::size_t>(1, 2);
                 }
             };
 
             template<typename T> struct set_extent<std::complex<T> > {
-                static void apply(std::complex<T> & value, std::vector<std::size_t> const & extent) {}
+                static void apply(std::complex<T> & /*value*/, std::vector<std::size_t> const & /*extent*/) {}
             };
 
             template<typename T> struct is_vectorizable<std::complex<T> > {
-                static bool apply(std::complex<T> const & value) {
+                static bool apply(std::complex<T> const & /*value*/) {
                     return true;
                 }
             };
             template<typename T> struct is_vectorizable<std::complex<T> const> {
-                static bool apply(std::complex<T> const & value) {
+                static bool apply(std::complex<T> const & /*value*/) {
                     return true;
                 }
             };

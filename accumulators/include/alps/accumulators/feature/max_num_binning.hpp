@@ -74,7 +74,7 @@ namespace alps {
                         return os;
                     }
                     os << m_num_elements << " elements per bin, bins are:\n";
-                    for (int i=0; i<m_bins.size(); ++i) {
+                    for (size_t i=0; i<m_bins.size(); ++i) {
                         os << "#" << (i+1) << ": " << alps::short_print(m_bins[i],4) << "\n";
                     }
                     return os;
@@ -122,7 +122,7 @@ namespace alps {
             template<typename A> typename boost::disable_if<
                   typename has_feature<A, max_num_binning_tag>::type
                 , typename max_num_binning_type<A>::type
-            >::type max_num_binning_impl(A const & acc) {
+            >::type max_num_binning_impl(A const & /*acc*/) {
                 throw std::runtime_error(std::string(typeid(A).name()) + " has no max_num_binning-method" + ALPS_STACKTRACE);
                 return *static_cast<typename max_num_binning_type<A>::type *>(NULL);
             }
@@ -135,8 +135,8 @@ namespace alps {
                 acc.transform(op);
             }
             template<typename A, typename OP> void transform_impl(
-                  A & acc
-                , OP op
+                  A & /*acc*/
+                , OP /*op*/
                 , typename boost::disable_if<typename has_feature<A, max_num_binning_tag>::type, int>::type = 0
             ) {
                 throw std::runtime_error(std::string(typeid(A).name()) + " has no transform-method" + ALPS_STACKTRACE);
@@ -345,7 +345,7 @@ namespace alps {
                 void partition_bins(alps::mpi::communicator const & comm,
                                     std::vector<typename mean_type<B>::type> & local_bins,
                                     std::vector<typename mean_type<B>::type> & merged_bins,
-                                    int root) const
+                                    int /*root*/) const
                 {
                     using alps::numeric::operator+;
                     using alps::numeric::operator/;
