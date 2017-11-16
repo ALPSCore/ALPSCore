@@ -90,6 +90,9 @@ namespace alps {
         }
 
         class archive {
+            private:
+               /// Assignment operator is deleted
+               archive& operator=(const archive&); /* not implemented*/ // FIXME:TODO:C++11 `=delete` or implement via `swap()`
             // FIXME: MAKE private:
             public:
                 typedef enum {
