@@ -125,7 +125,7 @@ namespace alps {
             return raw_kv_content_.count(name);
         }
         
-        bool params::defaulted(const std::string& name) const
+        inline bool params::defaulted(const std::string& name) const
         {
             return exists(name) && !supplied(name);
         }
