@@ -12,7 +12,7 @@ void test_galois(size_t n, size_t steps)
 {
     std::vector< std::pair<size_t, size_t> > intv(n);
 
-    galois_hopper hop(n);
+    internal::galois_hopper hop(n);
     for (size_t i = 0; i != steps; ++i, ++hop) {
         if (hop.merge_mode()) {
             EXPECT_LT(hop.merge_into(), n);

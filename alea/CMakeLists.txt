@@ -24,7 +24,15 @@ if (DocumentationOnly)
   return()
 endif()
 
-add_this_package(autocorr batch covariance jackknife mean variance)
+add_this_package(
+        autocorr
+        batch
+        covariance
+        galois
+        jackknife
+        mean
+        variance
+        )
 
 add_boost()
 add_hdf5()
