@@ -1,4 +1,5 @@
 #include <alps/alea/batch.hpp>
+#include <alps/alea/internal/util.hpp>
 
 #include <numeric>
 #include <iostream>
@@ -25,41 +26,83 @@ template class batch_data<std::complex<double> >;
 
 
 template <typename T>
+batch_acc<T>::batch_acc()
+    : size_(-1)
+    , num_batches_(0)
+    , base_size_(0)
+    , store_()
+    , cursor_(0)
+    , offset_()
+{ }
+
+
+template <typename T>
 batch_acc<T>::batch_acc(size_t size, size_t num_batches, size_t base_size)
-    : base_size_(base_size)
+    : size_(size)
+    , num_batches_(num_batches)
+    , base_size_(base_size)
+    , store_(new batch_data<T>(size, num_batches))
     , cursor_(num_batches)
-    , data_(size, num_batches)
     , offset_(num_batches)
 {
     if (num_batches % 2 != 0) {
         throw std::runtime_error("Number of batches must be even to allow "
                                  "for rebatching.");
     }
-    for (size_t i = 0; i != data_.num_batches(); ++i)
+    for (size_t i = 0; i != num_batches; ++i)
         offset_[i] = i * base_size_;
+}
+
+template <typename T>
+batch_acc<T>::batch_acc(const batch_acc &other)
+    : size_(other.size_)
+    , num_batches_(other.num_batches_)
+    , base_size_(other.base_size_)
+    , store_(other.store_ ? new batch_data<T>(*other.store_) : NULL)
+    , cursor_(other.cursor_)
+    , offset_(other.offset_)
+{ }
+
+template <typename T>
+batch_acc<T> &batch_acc<T>::operator=(const batch_acc &other)
+{
+    size_ = other.size_;
+    num_batches_ = other.num_batches_;
+    base_size_ = other.base_size_;
+    store_.reset(other.store_ ? new batch_data<T>(*other.store_) : NULL);
+    cursor_ = other.cursor_;
+    offset_ = other.offset_;
+    return *this;
 }
 
 template <typename T>
 void batch_acc<T>::reset()
 {
-    data_.reset();
-    cursor_.reset();
+    internal::check_init(*this);
 
-    for (size_t i = 0; i != data_.num_batches(); ++i)
+    cursor_.reset();
+    for (size_t i = 0; i != num_batches_; ++i)
         offset_[i] = i * base_size_;
+
+    if (valid())
+        store_->reset();
+    else
+        store_.reset(new batch_data<T>(size_, num_batches_));
 }
 
 template <typename T>
 batch_acc<T> &batch_acc<T>::operator<<(const computed<T> &source)
 {
+    internal::check_valid(*this);
+
     // batch is full, move the cursor.
     // Doing this before the addition ensures no empty batches.
-    if (data_.count()(cursor_.current()) == current_batch_size())
+    if (store_->count()(cursor_.current()) == current_batch_size())
         next_batch();
 
     // Since Eigen matrix are column-major, we can just pass the pointer
-    source.add_to(sink<T>(data_.batch().col(cursor_.current()).data(), size()));
-    data_.count()(cursor_.current()) += 1;
+    source.add_to(sink<T>(store_->batch().col(cursor_.current()).data(), size()));
+    store_->count()(cursor_.current()) += 1;
 
     return *this;
 }
@@ -70,13 +113,13 @@ void batch_acc<T>::next_batch()
     ++cursor_;
     if (cursor_.merge_mode()) {
         // merge counts
-        data_.count()(cursor_.merge_into()) += data_.count()(cursor_.current());
-        data_.count()(cursor_.current()) = 0;
+        store_->count()(cursor_.merge_into()) += store_->count()(cursor_.current());
+        store_->count()(cursor_.current()) = 0;
 
         // merge batches
-        data_.batch().col(cursor_.merge_into()) +=
-                                        data_.batch().col(cursor_.current());
-        data_.batch().col(cursor_.current()).fill(0);
+        store_->batch().col(cursor_.merge_into()) +=
+                                        store_->batch().col(cursor_.current());
+        store_->batch().col(cursor_.current()).fill(0);
 
         // merge offsets
         offset_(cursor_.merge_into()) = std::min(offset_(cursor_.merge_into()),
@@ -86,20 +129,51 @@ void batch_acc<T>::next_batch()
 }
 
 template <typename T>
-void batch_acc<T>::get_mean(sink<T> out) const
+batch_result<T> batch_acc<T>::result() const
 {
-    typename eigen<T>::col_map out_map(out.data(), out.size());
-    out_map += data_.batch().rowwise().sum() / count();
+    internal::check_valid(*this);
+    batch_result<T> result(*store_);
+    return result;
 }
 
+template <typename T>
+batch_result<T> batch_acc<T>::finalize()
+{
+    batch_result<T> result;
+    finalize_to(result);
+    return result;
+}
+
+template <typename T>
+void batch_acc<T>::finalize_to(batch_result<T> &result)
+{
+    internal::check_valid(*this);
+    if (result.valid())
+        throw std::runtime_error("Can only finalize to uninitialized result");
+
+    result.store_.swap(store_);
+}
+
+template class batch_acc<double>;
+template class batch_acc<std::complex<double> >;
+
+
+template <typename T>
+column<T> batch_result<T>::mean() const
+{
+    return store_->batch().rowwise().sum() / count();
+}
+
+/*
 template <typename T>
 void batch_acc<T>::get_var(sink<error_type> out) const
 {
     typename eigen<error_type>::col_map out_map(out.data(), out.size());
     //out_map += batch_.rowwise().sum() / count();
-}
+}*/
 
-template class batch_acc<double>;
-//template class batch_acc<std::complex<double> >;
+template class batch_result<double>;
+template class batch_result<std::complex<double> >;
+
 
 }}

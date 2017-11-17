@@ -20,9 +20,9 @@ void test_galois(size_t n, size_t steps)
             std::pair<size_t, size_t> curr = intv[hop.current()];
             std::pair<size_t, size_t> oldnext = intv[hop.merge_into()];
 
-//             std::cerr << "MERGE [" << curr.first << "," << curr.second
-//                       << ") INTO [" << oldnext.first
-//                       << "," << oldnext.second << ")" << std::endl;
+            std::cerr << (i % (n/2) == 0 ? "\n" : "; ")
+                      << "[" << curr.first << "," << curr.second << ") -> "
+                      << "[" << oldnext.first << "," << oldnext.second << ")";
 
             EXPECT_EQ(curr.second, oldnext.first);
             EXPECT_LT(curr.first, oldnext.second);
@@ -33,6 +33,7 @@ void test_galois(size_t n, size_t steps)
         EXPECT_LT(hop.current(), n);
         intv[hop.current()] = std::make_pair(i, i + 1);
     }
+    std::cerr << std::endl << std::endl;
 }
 
 TEST(galois_hop, testwork0) { test_galois(4, 4); }
@@ -64,9 +65,9 @@ TEST_F(galois_case, correct_order)
 {
     EXPECT_EQ(acc_.count(), twogauss_count);
 
-    for (size_t i = 0; i != acc_.data().num_batches(); ++i) {
+    for (size_t i = 0; i != acc_.store().num_batches(); ++i) {
         size_t offset = acc_.offset()[i];
-        size_t size = acc_.data().count()[i];
+        size_t size = acc_.store().count()[i];
         EXPECT_LE(offset + size, twogauss_count);
 
         std::vector<double> expect(2, 0.0);
@@ -75,8 +76,8 @@ TEST_F(galois_case, correct_order)
             expect[1] += twogauss_data[j][1];
         }
 
-        EXPECT_NEAR(acc_.data().batch()(0, i), expect[0], 1e-5);
-        EXPECT_NEAR(acc_.data().batch()(1, i), expect[1], 1e-5);
+        EXPECT_NEAR(acc_.store().batch()(0, i), expect[0], 1e-5);
+        EXPECT_NEAR(acc_.store().batch()(1, i), expect[1], 1e-5);
     }
 }
 

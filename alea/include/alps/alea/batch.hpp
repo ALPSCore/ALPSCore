@@ -8,8 +8,19 @@
 #include <alps/alea/core.hpp>
 #include <alps/alea/computed.hpp>
 #include <alps/alea/util.hpp>
-
 #include <alps/alea/internal/galois.hpp>
+
+#include <memory>
+
+// Forward declarations
+
+namespace alps { namespace alea {
+    template <typename T> class batch_acc;
+    template <typename T> class batch_data;
+    template <typename T> class batch_result;
+}}
+
+// Actual declarations
 
 namespace alps { namespace alea {
 
@@ -57,52 +68,60 @@ template <typename T>
 class batch_acc
 {
 public:
-    typedef typename make_real<T>::type error_type;
-    typedef computed_cmember<T, batch_acc> result;
-    typedef computed_cmember<error_type, batch_acc> eresult;
+    typedef T value_type;
 
 public:
+    batch_acc();
+
     batch_acc(size_t size=0, size_t num_batches=256, size_t base_size=1);
+
+    batch_acc(const batch_acc &other);
+
+    batch_acc &operator=(const batch_acc &other);
 
     void reset();
 
-    size_t size() const { return data_.size(); }
+    bool initialized() const { return size_ != (size_t)-1; }
+
+    bool valid() const { return (bool)store_; }
+
+    size_t size() const { return size_; }
 
     template <typename S>
     batch_acc &operator<<(const S &obj)
     {
-        computed_adapter<T, S> source(obj);
-        return *this << (const computed<T> &) source;
+        computed_adapter<value_type, S> source(obj);
+        return *this << (const computed<value_type> &) source;
     }
 
-    batch_acc &operator<<(const computed<T> &source);
+    batch_acc &operator<<(const computed<value_type> &source);
+
+    size_t count() const { return store_->count().sum(); }
+
+    // TODO remove
+    column<T> mean() const { return result().mean(); }
+
+    batch_result<T> result() const;
+
+    batch_result<T> finalize();
+
+    const batch_data<T> &store() const { return *store_; }
 
     const internal::galois_hopper &cursor() const { return cursor_; }
-
-    const batch_data<T> &data() const { return data_; }
 
     const typename eigen<size_t>::row &offset() const { return offset_; }
 
     size_t current_batch_size() const { return base_size_ * cursor_.factor(); }
 
-    size_t count() const { return data_.count().sum(); }
-
-    result mean() const { return result(*this, &batch_acc::get_mean, size()); }
-
-    eresult var() const { return eresult(*this, &batch_acc::get_var, size()); }
-
-protected:
-    void get_mean(sink<T> out) const;
-
-    void get_var(sink<error_type> out) const;
-
 protected:
     void next_batch();
 
+    void finalize_to(batch_result<T> &result);
+
 private:
-    size_t base_size_;
+    size_t size_, num_batches_, base_size_;
+    std::unique_ptr< batch_data<value_type> > store_;
     internal::galois_hopper cursor_;
-    batch_data<T> data_;
     typename eigen<size_t>::row offset_;
 };
 
@@ -110,9 +129,60 @@ template <typename T>
 struct traits< batch_acc<T> >
 {
     typedef T value_type;
+    typedef batch_result<T> result_type;
 };
 
 extern template class batch_acc<double>;
-//extern template class batch_acc<std::complex<double> >;
+extern template class batch_acc<std::complex<double> >;
+
+
+/**
+ * Result which contains mean and a naive variance estimate.
+ */
+template <typename T>
+class batch_result
+{
+public:
+    typedef T value_type;
+
+public:
+    batch_result() { }
+
+    batch_result(const batch_data<T> &acc_data)
+        : store_(new batch_data<T>(acc_data))
+    { }
+
+    bool initialized() const { return true; }
+
+    bool valid() const { return (bool)store_; }
+
+    size_t size() const { return store_->size(); }
+
+    size_t count() const { return store_->count().sum(); }
+
+    column<T> mean() const;
+
+    const batch_data<T> &store() const { return *store_; }
+
+    batch_data<T> &store() { return *store_; }
+
+    void reduce(reducer &);
+
+    void serialize(serializer &);
+
+private:
+    std::unique_ptr< batch_data<value_type> > store_;
+
+    friend class batch_acc<T>;
+};
+
+template <typename T>
+struct traits< batch_result<T> >
+{
+    typedef T value_type;
+};
+
+extern template class batch_result<double>;
+extern template class batch_result<std::complex<double> >;
 
 }}
