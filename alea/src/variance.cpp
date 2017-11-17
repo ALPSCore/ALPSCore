@@ -121,7 +121,7 @@ template <typename T, typename Str>
 void var_acc<T,Str>::finalize_to(var_result<T,Str> &result)
 {
     internal::check_valid(*this);
-    if (result.initialized())
+    if (result.valid())
         throw std::runtime_error("Can only finalize to uninitialized result");
 
     result.store_.swap(store_);
