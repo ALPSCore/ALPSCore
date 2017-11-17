@@ -11,6 +11,15 @@
 
 #include <vector>
 
+// Forward declarations
+
+namespace alps { namespace alea {
+    template <typename T> class autocorr_acc;
+    template <typename T> class autocorr_result;
+}}
+
+// Actual declarations
+
 namespace alps { namespace alea {
 
 /**
@@ -47,67 +56,127 @@ class autocorr_acc
 {
 public:
     typedef T value_type;
-    typedef typename make_real<T>::type var_type;
-
-    typedef computed_cmember<value_type, autocorr_acc> result;
-    typedef computed_cmember<var_type, autocorr_acc> eresult;
+    typedef typename circular_var<T>::var_type var_type;
+    typedef var_acc<T, circular_var<T> > level_acc_type;
 
 public:
+    autocorr_acc();
+
     autocorr_acc(size_t size=0, size_t batch_size=1, size_t granularity=2);
 
-    size_t size() const { return level_.begin()->size(); }
+    void reset();
+
+    bool initialized() const { return size_ != (size_t)-1; }
+
+    bool valid() const { return !level_.empty(); }
+
+    size_t size() const { return size_; }
 
     template <typename S>
     autocorr_acc &operator<<(const S &obj)
     {
-        computed_adapter<T, S> source(obj);
-        return *this << (const computed<T> &) source;
+        computed_adapter<value_type, S> source(obj);
+        return *this << (const computed<value_type> &) source;
     }
 
-    autocorr_acc &operator<<(const computed<T> &source);
+    autocorr_acc &operator<<(const computed<value_type> &source);
 
-    void reset();
+    size_t count() const { return count_; }
 
-    size_t count() const { return level_[0].count(); }
+    // TODO remove
+    column<T> mean() const { return result().mean(); }
 
-    size_t num_level() const { return level_.size(); }
+    autocorr_result<T> result() const;
 
-    const var_acc<T> &level(size_t i) const { return level_[i]; }
+    autocorr_result<T> finalize();
 
-    size_t find_level(size_t min_samples) const;
+    size_t nlevel() const { return level_.size(); }
 
-    size_t batch_size(size_t level) const;
-
-    column<value_type> mean() const;
-
-    column<var_type> var() const;
-
-    column<var_type> stderror() const;
-
-    eresult tau() { return eresult(*this, &autocorr_acc::get_tau, size()); }
-
-    size_t nextlevel() const { return nextlevel_; }
+    const level_acc_type &level(size_t i) const { return level_[i]; }
 
 protected:
-    void get_tau(sink<var_type> out) const;
-
     void add_level();
 
-private:
-    size_t count_, nextlevel_, granularity_;
-    std::vector< var_acc<T> > level_;    // dangerous, but convenient ...
-};
+    void finalize_to(autocorr_result<T> &result);
 
+private:
+    size_t size_, batch_size_, count_, nextlevel_, granularity_;
+    std::vector<level_acc_type> level_;
+};
 
 template <typename T>
 struct traits< autocorr_acc<T> >
 {
     typedef T value_type;
-    typedef typename make_real<T>::type var_type;
-    typedef T cov_type;
+    typedef typename circular_var<T>::var_type var_type;
+    typedef typename circular_var<T>::cov_type cov_type;
+    typedef autocorr_result<T> result_type;
 };
 
 extern template class autocorr_acc<double>;
 extern template class autocorr_acc<std::complex<double> >;
+
+
+/**
+ * Result for the integrated autocorrelation time.
+ *
+ * @see alps::alea::autocorr_acc
+ */
+template <typename T>
+class autocorr_result
+{
+public:
+    typedef T value_type;
+    typedef typename circular_var<T>::var_type var_type;
+    typedef var_result<T, circular_var<T> > level_result_type;
+
+public:
+    autocorr_result() { }
+
+    bool initialized() const { return true; }
+
+    bool valid() const { return !level_.empty(); }
+
+    size_t size() const { return level_[0].size(); }
+
+    size_t count() const { return level_[0].count(); }
+
+    const column<T> &mean() const { return level_[0].mean(); }
+
+    column<var_type> var() const;
+
+    column<var_type> stderror() const;
+
+    column<var_type> tau() const;
+
+    void reduce(reducer &);
+
+    void serialize(serializer &);
+
+    size_t find_level(size_t min_samples) const;
+
+    size_t batch_size(size_t level) const;
+
+    size_t nlevel() const { return level_.size(); }
+
+    const level_result_type &level(size_t i) const { return level_[i]; }
+
+private:
+    const static size_t default_min_samples = 256;
+    std::vector<level_result_type> level_;
+
+    friend class autocorr_acc<T>;
+};
+
+template <typename T>
+struct traits< autocorr_result<T> >
+{
+    typedef T value_type;
+    typedef typename circular_var<T>::var_type var_type;
+    typedef typename circular_var<T>::cov_type cov_type;
+};
+
+extern template class autocorr_result<double>;
+extern template class autocorr_result<std::complex<double> >;
 
 }}
