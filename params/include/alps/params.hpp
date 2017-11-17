@@ -99,6 +99,8 @@ namespace alps {
             template <typename T>
             bool assign_to_name_(const std::string& name, const std::string& strval);
 
+            bool has_unused_(std::ostream& out, const std::string* prefix_ptr) const;
+
             /// Does the job of define(), returns false if the name is missing in raw_argsand default must be checked
             template <typename T>
             bool define_(const std::string& name, const std::string& descr);
@@ -146,6 +148,16 @@ namespace alps {
 
             /// True if the parameter is supplied via file or cmdline
             bool supplied(const std::string& name) const;
+
+            /// True if there are parameters supplied but not defined; prints them out
+            bool has_unused(std::ostream& out) const;
+
+            /// True if there are parameters supplied but not defined in a subsection; prints them out
+            /**
+               @param subsection The subsection to look into; empty
+               string means "top level" (or "anonymous") subsection.
+             */
+            bool has_unused(std::ostream& out, const std::string& subsection) const;
 
             /// True if there are missing or wrong-type parameters; prints the message to that effect
             bool has_missing(std::ostream& out) const;

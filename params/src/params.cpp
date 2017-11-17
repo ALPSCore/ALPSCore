@@ -68,6 +68,33 @@ namespace alps {
             return *this;
         }
 
+        bool params::has_unused_(std::ostream& out, const std::string* prefix_ptr) const
+        {
+            strvec unused;
+            BOOST_FOREACH(const strmap::value_type& kv, raw_kv_content_) {
+                bool relevant = !prefix_ptr  // no specific prefix?
+                                || (prefix_ptr->empty() ? kv.first.find('.')==std::string::npos // top-level section?
+                                                        : kv.first.find(*prefix_ptr+".")==0);   // starts with sec name?
+                if (relevant && !this->exists(kv.first)) {
+                    unused.push_back(kv.first+" = "+kv.second);
+                }
+            }
+            if (!unused.empty()) {
+                out << "The following arguments are supplied, but never referenced:\n";
+                std::copy(unused.begin(), unused.end(), std::ostream_iterator<std::string>(out,"\n"));
+            }
+            return !unused.empty();
+        }
+        
+        bool params::has_unused(std::ostream& out, const std::string& subsection) const
+        {
+            return has_unused_(out, &subsection);
+        }
+
+        bool params::has_unused(std::ostream& out) const
+        {
+            return has_unused_(out, 0);
+        }
 
         bool params::help_requested(std::ostream& out) const
         {
