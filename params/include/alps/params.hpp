@@ -141,6 +141,12 @@ namespace alps {
             /// True if there are missing or wrong-type parameters
             bool has_missing() const { return !ok(); }
 
+            /// True if the parameter acquired its value by default
+            bool defaulted(const std::string& name) const;
+
+            /// True if the parameter is supplied via file or cmdline
+            bool supplied(const std::string& name) const;
+
             /// True if there are missing or wrong-type parameters; prints the message to that effect
             bool has_missing(std::ostream& out) const;
 

@@ -120,6 +120,16 @@ namespace alps {
             return *this;
         }
 
+        inline bool params::supplied(const std::string &name) const
+        {
+            return raw_kv_content_.count(name);
+        }
+        
+        bool params::defaulted(const std::string& name) const
+        {
+            return exists(name) && !supplied(name);
+        }
+        
         inline void swap(params& p1, params& p2)
         {
             using std::swap;
