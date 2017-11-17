@@ -111,11 +111,20 @@ cov_result<T,Str> cov_acc<T,Str>::result() const
 template <typename T, typename Str>
 cov_result<T,Str> cov_acc<T,Str>::finalize()
 {
+    cov_result<T,Str> result;
+    finalize_to(result);
+    return result;
+}
+
+template <typename T, typename Str>
+void cov_acc<T,Str>::finalize_to(cov_result<T,Str> &result)
+{
     internal::check_valid(*this);
-    cov_result<T,Str> result(*store_);
+    if (result.initialized())
+        throw std::runtime_error("Can only finalize to uninitialized result");
+
     result.store_.swap(store_);
     result.store_->convert_to_mean();
-    return result;
 }
 
 template <typename T, typename Str>

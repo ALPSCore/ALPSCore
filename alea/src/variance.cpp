@@ -112,11 +112,20 @@ var_result<T,Str> var_acc<T,Str>::result() const
 template <typename T, typename Str>
 var_result<T,Str> var_acc<T,Str>::finalize()
 {
+    var_result<T,Str> result;
+    finalize_to(result);
+    return result;
+}
+
+template <typename T, typename Str>
+void var_acc<T,Str>::finalize_to(var_result<T,Str> &result)
+{
     internal::check_valid(*this);
-    var_result<T,Str> result(*store_);
+    if (result.initialized())
+        throw std::runtime_error("Can only finalize to uninitialized result");
+
     result.store_.swap(store_);
     result.store_->convert_to_mean();
-    return result;
 }
 
 template <typename T, typename Str>

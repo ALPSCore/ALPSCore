@@ -20,6 +20,9 @@ namespace alps { namespace alea {
     template <typename T, typename Str> class var_data;
     template <typename T, typename Str> class var_acc;
     template <typename T, typename Str> class var_result;
+
+    template <typename T> class autocorr_acc;
+    template <typename T> class autocorr_result;
 }}
 
 // Actual declarations
@@ -130,16 +133,20 @@ public:
 
     const var_data<T,Strategy> &store() const { return *store_; }
 
-    void uplevel(var_acc &new_uplevel) { uplevel_ = &new_uplevel; }
-
 protected:
     void add_bundle();
+
+    void uplevel(var_acc &new_uplevel) { uplevel_ = &new_uplevel; }
+
+    void finalize_to(var_result<T,Strategy> &result);
 
 private:
     std::unique_ptr< var_data<value_type, Strategy> > store_;
     bundle<value_type> current_;
     var_acc *uplevel_;
     bool initialized_;
+
+    friend class autocorr_acc<T>;
 };
 
 template <typename T, typename Strategy>
@@ -155,7 +162,7 @@ extern template class var_acc<std::complex<double> >;
 extern template class var_acc<std::complex<double>, elliptic_var<std::complex<double> > >;
 
 /**
- * Accumulator which tracks the mean and a naive variance estimate.
+ * Result which contains mean and a naive variance estimate.
  */
 template <typename T, typename Strategy=circular_var<T> >
 class var_result
@@ -197,6 +204,7 @@ private:
     std::unique_ptr< var_data<T,Strategy> > store_;
 
     friend class var_acc<T,Strategy>;
+    friend class autocorr_result<T>;
 };
 
 template <typename T, typename Strategy>

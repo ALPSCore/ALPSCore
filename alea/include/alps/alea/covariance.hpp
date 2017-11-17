@@ -135,10 +135,12 @@ public:
 
     const cov_data<T,Strategy> &store() const { return *store_; }
 
-    void uplevel(cov_acc &new_uplevel) { uplevel_ = &new_uplevel; }
-
 protected:
     void add_bundle();
+
+    void uplevel(cov_acc &new_uplevel) { uplevel_ = &new_uplevel; }
+
+    void finalize_to(cov_result<T,Strategy> &result);
 
 private:
     std::unique_ptr<cov_data<T,Strategy> > store_;
