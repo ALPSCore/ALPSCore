@@ -172,8 +172,8 @@ namespace alps {
             bool operator==(const params& rhs) const;
 
             /// Check whether a parameter was ever defined
-            // FIXME: we don't really need it, must be removed from client code
-            bool defined(const std::string& name) const ALPS_DEPRECATED { return td_map_.count(name)!=0 || exists(name); }
+            /** That is, calling `define()` is unnecessary and will throw if type does not match. */
+            bool defined(const std::string& name) const;
 
             /// Defines a parameter; returns false on error, and records the error in the object
             template<typename T>

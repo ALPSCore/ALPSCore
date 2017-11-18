@@ -130,6 +130,11 @@ namespace alps {
             return exists(name) && !supplied(name);
         }
         
+        inline bool params::defined(const std::string& name) const
+        {
+            return td_map_.count(name)!=0 || exists(name);
+        }
+        
         inline void swap(params& p1, params& p2)
         {
             using std::swap;
