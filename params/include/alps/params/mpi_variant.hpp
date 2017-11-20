@@ -25,7 +25,7 @@ namespace alps {
     namespace mpi {
 
         inline void broadcast(const alps::mpi::communicator&, alps::params_ns::detail::None&, int) {
-            std::cout << "DEBUG: Broadcasting None is no-op" << std::endl;
+            //std::cout << "DEBUG: Broadcasting None is no-op" << std::endl;
         }
         
         namespace detail {
