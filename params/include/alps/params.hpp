@@ -32,7 +32,7 @@ namespace alps {
                 std::string operator()(const T&) const { return apply<T>(); }
 
                 template <typename T>
-                static std::string apply() { return typeid(T).name(); } // FIXME: use pretty-typename instead?
+                static std::string apply() { return detail::type_info<T>::pretty_name(); }
             };
 
             /// Type-description pair (essentially, an std::pair with named fields)

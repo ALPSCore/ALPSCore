@@ -2,7 +2,6 @@
 
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
-#include <boost/type_index.hpp> // for help messages
 namespace alps {
     namespace params_ns {
 

@@ -11,9 +11,9 @@
 #include <boost/type_traits/make_unsigned.hpp>
 #include <boost/type_traits/make_signed.hpp>
 #include <boost/integer_traits.hpp>
-#include <boost/type_index.hpp> // for pretty-printing exceptions
 
 #include <alps/utilities/short_print.hpp> // for streaming of vectors
+#include <boost/type_index.hpp> // for pretty-printing user types in error messages
 
 namespace std {
 template <typename T>
@@ -130,6 +130,17 @@ namespace alps {
                                 !is_intgl_to_fp<A,B>::value && !is_intgl_to_fp<B,A>::value &&
                                 !is_fp_conv<A,B>::value>
             {};
+
+
+            // catch-all definition of pretty-printing for unknown types
+            // FIXME: better design may be to define a separate class for it,
+            //        in order to catch unintentional use of type_info<T> on unsupported types?
+            template <typename T>
+            struct type_info {
+                static std::string pretty_name() {
+                    return boost::typeindex::type_id<T>().pretty_name();
+                }
+            };
             
             namespace visitor {
                 /// Visitor to get a value (with conversion): returns type LHS_T, converts from the bound type RHS_T
@@ -189,8 +200,8 @@ namespace alps {
                     /// Placeholder: extracting any other type
                     template <typename RHS_T>
                     LHS_T apply(const RHS_T& val, typename is_other_conversion<RHS_T,LHS_T>::yes =true) const {
-                        std::string rhs_name=boost::typeindex::type_id<RHS_T>().pretty_name();
-                        std::string lhs_name=boost::typeindex::type_id<LHS_T>().pretty_name();
+                        std::string rhs_name=detail::type_info<RHS_T>::pretty_name();
+                        std::string lhs_name=detail::type_info<LHS_T>::pretty_name();
                         throw exception::type_mismatch("","Types do not match;"
                                                        " conversion " + rhs_name + " --> " + lhs_name);
                     }
@@ -215,7 +226,7 @@ namespace alps {
                     /// Extracting any other type
                     template <typename RHS_T>
                     bool apply(const RHS_T& val) const {
-                        std::string rhs_name=boost::typeindex::type_id<RHS_T>().pretty_name();
+                        std::string rhs_name=detail::type_info<RHS_T>::pretty_name();
                         throw exception::type_mismatch("","Cannot convert non-bool type "+rhs_name+" to bool");
                     }
 
@@ -265,8 +276,8 @@ namespace alps {
                     template <typename LHS_T>
                     int apply(const LHS_T& lhs, const RHS_T& rhs,
                               typename is_either_bool<LHS_T,RHS_T>::yes =true) const {
-                        std::string lhs_name=boost::typeindex::type_id<LHS_T>().pretty_name();
-                        std::string rhs_name=boost::typeindex::type_id<RHS_T>().pretty_name();
+                        std::string lhs_name=detail::type_info<LHS_T>::pretty_name();
+                        std::string rhs_name=detail::type_info<RHS_T>::pretty_name();
                         throw exception::type_mismatch("","Attempt to compare a boolean value with an incompatible type "+
                                                        lhs_name + "<=>" + rhs_name);
                     }
@@ -320,8 +331,8 @@ namespace alps {
                     /// Catch-all for all other conversions
                     template <typename LHS_T>
                     int apply(const LHS_T& lhs, const RHS_T& rhs, typename is_other_cmp<LHS_T,RHS_T>::yes =true) const {
-                        std::string lhs_name=boost::typeindex::type_id<LHS_T>().pretty_name();
-                        std::string rhs_name=boost::typeindex::type_id<RHS_T>().pretty_name();
+                        std::string lhs_name=detail::type_info<LHS_T>::pretty_name();
+                        std::string rhs_name=detail::type_info<RHS_T>::pretty_name();
                         throw exception::type_mismatch("","Attempt to compare incompatible types "+
                                                        lhs_name + "<=>" + rhs_name);
                     }
@@ -336,8 +347,8 @@ namespace alps {
                     /// Called by apply_visitor for bound values of different types
                     template <typename LHS_T, typename RHS_T>
                     int operator()(const LHS_T& lhs, const RHS_T& rhs) const {
-                        std::string lhs_name=boost::typeindex::type_id<LHS_T>().pretty_name();
-                        std::string rhs_name=boost::typeindex::type_id<RHS_T>().pretty_name();
+                        std::string lhs_name=detail::type_info<LHS_T>::pretty_name();
+                        std::string rhs_name=detail::type_info<RHS_T>::pretty_name();
                         throw exception::type_mismatch("","Attempt to compare dictionary values containing "
                                                        "incompatible types "+
                                                        lhs_name + "<=>" + rhs_name);

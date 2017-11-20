@@ -19,7 +19,6 @@
 #include <stdexcept>
 #include <boost/optional.hpp>
 #include <boost/lexical_cast.hpp> // for error messages
-#include <boost/type_index.hpp> // for error messages
 
 namespace alps {
     namespace detail {

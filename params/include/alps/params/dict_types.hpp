@@ -69,6 +69,25 @@ namespace alps {
             //     >::type dict_all_types;
             // List of allowed types, `None` being the first
 
+            /** Unique pretty-printable names for all supported types */
+
+            template <typename T>
+            struct type_info; /* intentionally not defined for types that are not supported */
+
+            template <> struct type_info<None> { static std::string pretty_name() { return "None"; } };
+            template <> struct type_info<bool> { static std::string pretty_name() { return "bool"; } };
+            template <> struct type_info<int> { static std::string pretty_name() { return "int"; } };
+            template <> struct type_info<unsigned int> { static std::string pretty_name() { return "unsigned int"; } };
+            template <> struct type_info<long int> { static std::string pretty_name() { return "long int"; } };
+            template <> struct type_info<unsigned long int> { static std::string pretty_name() { return "unsigned long int"; } };
+            template <> struct type_info<float> { static std::string pretty_name() { return "float"; } };
+            template <> struct type_info<double> { static std::string pretty_name() { return "double"; } };
+            template <> struct type_info<std::string> { static std::string pretty_name() { return "std::string"; } };
+
+            template <typename T>
+            struct type_info< std::vector<T> > {
+                static std::string pretty_name() { return "std::vector<"+type_info<T>::pretty_name()+">"; }
+            };
             
         } // ::detail
     } // ::params_ns

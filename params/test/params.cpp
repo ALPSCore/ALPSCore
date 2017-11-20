@@ -234,7 +234,10 @@ TEST_F(ParamsTest0, helpRequested) {
     p.
         description("This is a test message").
         define<int>("whole_num", "My-integer").
-        define<double>("fp_num", 1.25, "My-fp");
+        define<double>("fp_num", 1.25, "My-fp").
+        define<std::string>("solver.name", "Solver name").
+        define<double>("solver.precision", 1E-5, "Solver precision").
+        define< std::vector<int> >("solver.parameters", "Solver internal parameters"); 
         
     EXPECT_TRUE(p.help_requested());
     std::ostringstream ostr;

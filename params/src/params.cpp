@@ -11,6 +11,7 @@
 #include <alps/params.hpp>
 #include <algorithm>
 #include <sstream>
+#include <iomanip> // for help pretty-printing
 #include <iterator> // for ostream_iterator
 #include <cstring> // for memcmp()
 #include <boost/optional.hpp>
@@ -100,17 +101,39 @@ namespace alps {
         {
             if (!this->help_requested()) return false;
             // FIXME: the format is now ugly and should be improved
-            // FIXME: the types in td_map should be made pretty
+            // FIXME: the help option should be without "default" and possibly first.
             out << help_header_ << "\nAvailable options:\n";
+
+            typedef std::pair<std::string, std::string> nd_pair; // name and description
+            typedef std::vector<nd_pair> nd_vector;
+            nd_vector name_and_description;
+            name_and_description.reserve(td_map_.size());
+            std::string::size_type names_column_width=0;
+
+            // prepare 2 columns: parameters and their description
             BOOST_FOREACH(const td_map_type::value_type& tdp, td_map_) {
-                out << tdp.first << " (" << tdp.second.typestr() << "):     "
-                    << tdp.second.descr();
-                if (this->exists(tdp.first)) {
-                    // FIXME: default value is printed with name and type.
-                    out << " (default value: " << (*this)[tdp.first] << ")";
+                const std::string name_and_type=tdp.first + " (" +  tdp.second.typestr() + "):";
+                if (names_column_width<name_and_type.size()) names_column_width=name_and_type.size();
+
+                std::ostringstream ostr;
+                ostr << tdp.second.descr();
+                if (this->exists(tdp.first) && tdp.first!="help") {
+                    ostr << " (default value: ";
+                    print(ostr, (*this)[tdp.first], true) << ")";
                 }
-                out << "\n";
+
+                name_and_description.push_back(std::make_pair(name_and_type, ostr.str()));
             }
+
+            // print the columns
+            std::ostream::fmtflags oldfmt=out.flags();
+            left(out);
+            names_column_width += 4;
+            BOOST_FOREACH(const nd_pair& ndp, name_and_description) {
+                out << std::left << std::setw(names_column_width) << ndp.first << ndp.second << "\n";
+            }
+            out.flags(oldfmt);
+
             return true;
         }
 

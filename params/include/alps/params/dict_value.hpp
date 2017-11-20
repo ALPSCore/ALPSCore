@@ -131,15 +131,19 @@ namespace alps {
             template <typename F>
             typename F::result_type apply_visitor(const F& visitor) const;
             
-            /// Print the value together with type in some human-readable format
+            /// Print the value, possibly together with type, in a human-readable format
             friend 
-            std::ostream& operator<<(std::ostream&, const dict_value&);
-            
+            std::ostream& print(std::ostream&, const dict_value&, bool terse);
+
 #ifdef ALPS_HAVE_MPI
             void broadcast(const alps::mpi::communicator& comm, int root);
 #endif
         };
 
+        /// Print the value together with type in some human-readable format
+        inline std::ostream& operator<<(std::ostream& os, const dict_value& dv) {
+            return print(os, dv, false);
+        }
         
     } // params_ns::
 } // alps::
