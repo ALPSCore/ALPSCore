@@ -87,12 +87,12 @@ namespace alps {
                 td_it->second.descr()=descr;
                 return true;
             }
-            td_map_.insert(std::make_pair(name, detail::td_pair::make_pair<T>(descr)));
+            td_map_.insert(std::make_pair(name, detail::td_type::make_pair<T>(descr, td_map_.size())));
 
             strmap::const_iterator it=raw_kv_content_.find(name);
             if (it==raw_kv_content_.end()) {
                 if (this->exists(name)) return true;
-                return false; // need to decide whether the default available
+                return false; // caller needs to decide whether the default is available
             }
             if (!assign_to_name_<T>(name, it->second)) {
                 err_status_.push_back("Cannot parse parameter '"+name+"' as the requested type");

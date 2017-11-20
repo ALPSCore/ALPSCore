@@ -35,32 +35,36 @@ namespace alps {
                 static std::string apply() { return detail::type_info<T>::pretty_name(); }
             };
 
-            /// Type-description pair (essentially, an std::pair with named fields)
-            struct td_pair {
-                std::pair<std::string,std::string> super_;
+            /// Param_type with description 
+            struct td_type {
+                std::string typestr_;
+                std::string descr_;
+                int defnumber_;
                 /// Access typestring
-                std::string& typestr() { return super_.first; }
+                std::string& typestr() { return typestr_; }
                 /// Access typestring
-                const std::string& typestr() const { return super_.first; }
+                const std::string& typestr() const { return typestr_; }
                 /// Access description
-                std::string& descr() { return super_.second; }
+                std::string& descr() { return descr_; }
                 /// Access description
-                const std::string& descr() const { return super_.second; }
-                /// Construct from typestring and description
-                td_pair(const std::string& t, const std::string& d) : super_(t,d) {}
-                /// Construct from description given a type
+                const std::string& descr() const { return descr_; }
+                /// Access defnumber
+                int defnumber() const { return defnumber_; }
+                /// Access defnumber
+                int& defnumber() { return defnumber_; }
+                /// Construct from typestring, description and number
+                td_type(const std::string& t, const std::string& d, int n) : typestr_(t), descr_(d), defnumber_(n) {}
+                /// Construct from description given a type and a number
                 template <typename T>
-                static td_pair make_pair(const std::string& d) { return td_pair(make_typestr::apply<T>(), d); }
+                static td_type make_pair(const std::string& d, int n) { return td_type(make_typestr::apply<T>(), d, n); }
                 /// Empty-pair ctor needed for MPI
-                td_pair() : super_() {}
+                td_type() : typestr_(), descr_(), defnumber_(-1) {}
                 /// Comparison
-                bool operator==(const td_pair& rhs) const { return this->super_ == rhs.super_; }
-// #ifdef ALPS_HAVE_MPI
-//                 /// Broadcast
-//                 friend void broadcast(const alps& comm, td_pair& val, int root) {
-//                     broadcast(comm, val.super_, root);
-//                 }
-// #endif
+                bool operator==(const td_type& rhs) const {
+                    return typestr_==rhs.typestr_ &&
+                           descr_==rhs.descr_ &&
+                           defnumber_==rhs.defnumber_;
+                }
             };
         } // detail::
 
@@ -83,7 +87,7 @@ namespace alps {
             typedef std::vector<std::string> strvec;
 
 
-            typedef std::map<std::string, detail::td_pair> td_map_type;
+            typedef std::map<std::string, detail::td_type> td_map_type;
 
 
             strmap raw_kv_content_;
@@ -231,8 +235,10 @@ namespace alps {
 #ifdef ALPS_HAVE_MPI
     namespace mpi {
 
-        inline void broadcast(const alps::mpi::communicator& comm, alps::params_ns::detail::td_pair& tdp, int root) {
-            broadcast(comm, tdp.super_, root);
+        inline void broadcast(const alps::mpi::communicator& comm, alps::params_ns::detail::td_type& td, int root) {
+            broadcast(comm, td.typestr_, root);
+            broadcast(comm, td.descr_, root);
+            broadcast(comm, td.defnumber_, root);
         }
 
         inline void broadcast(const alps::mpi::communicator &comm, alps::params_ns::dictionary& dict, int root) {

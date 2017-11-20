@@ -100,14 +100,12 @@ namespace alps {
         bool params::help_requested(std::ostream& out) const
         {
             if (!this->help_requested()) return false;
-            // FIXME: the format is now ugly and should be improved
-            // FIXME: the help option should be without "default" and possibly first.
             out << help_header_ << "\nAvailable options:\n";
 
             typedef std::pair<std::string, std::string> nd_pair; // name and description
             typedef std::vector<nd_pair> nd_vector;
             nd_vector name_and_description;
-            name_and_description.reserve(td_map_.size());
+            name_and_description.resize(td_map_.size());
             std::string::size_type names_column_width=0;
 
             // prepare 2 columns: parameters and their description
@@ -121,8 +119,16 @@ namespace alps {
                     ostr << " (default value: ";
                     print(ostr, (*this)[tdp.first], true) << ")";
                 }
-
-                name_and_description.push_back(std::make_pair(name_and_type, ostr.str()));
+                // place the output on the line corresponding to definiton order
+                int defnum=tdp.second.defnumber();
+                if (defnum<0 || static_cast<unsigned int>(defnum)>=name_and_description.size()) {
+                    std::ostringstream errmsg;
+                    errmsg << "Invalid entry in parameters object.\n"
+                           << "name='" << tdp.first
+                           << "' defnumber=" << defnum;
+                    throw std::logic_error(errmsg.str());
+                }
+                name_and_description[defnum]=std::make_pair(name_and_type, ostr.str());
             }
 
             // print the columns
@@ -260,6 +266,7 @@ namespace alps {
                 
                 if (it!=td_map_.end()) {
                     ar[key+"@description"] << it->second.descr();
+                    ar[key+"@defnumber"] << it->second.defnumber();
                 }
             }
         }
@@ -294,10 +301,19 @@ namespace alps {
             }
             std::vector<std::string> keys=ar.list_children(context);
             BOOST_FOREACH(const std::string& key, keys) {
-                const std::string attr=key+"@description";
-                if (ar.is_attribute(attr)) {
+                const std::string d_attr=key+"@description";
+                const std::string num_attr=key+"@defnumber";
+                if (ar.is_attribute(d_attr)) {
                     std::string descr;
-                    ar[attr] >> descr;
+                    ar[d_attr] >> descr;
+
+                    int dn=-1;
+                    if (ar.is_attribute(num_attr)) {
+                        ar[num_attr] >> dn;
+                    } else {
+                         // FIXME? Issue a warning instead? How?
+                        throw std::runtime_error("Invalid HDF5 format: missing attribute "+ num_attr);
+                    }
 
                     const_iterator it=newpar.find(key);
                     if (newpar.end()==it) {
@@ -305,7 +321,7 @@ namespace alps {
                                                " missed key '"+key+"'??");
                     }
                     std::string typestr=apply_visitor(detail::make_typestr(), it);
-                    newpar.td_map_.insert(std::make_pair(key, detail::td_pair(typestr, descr)));
+                    newpar.td_map_.insert(std::make_pair(key, detail::td_type(typestr, descr, dn)));
                 }
             }
             
@@ -329,7 +345,8 @@ namespace alps {
                 params::td_map_type::const_iterator tdit = p.td_map_.find(key);
                 if (tdit!=p.td_map_.end()) {
                     s << " descr='" << tdit->second.descr()
-                      << "' typestring='" << tdit->second.typestr() << "'";
+                      << "' typestring='" << tdit->second.typestr() << "'"
+                      << "' defnum=" << tdit->second.defnumber();
                 }
                 s << std::endl;
             }
