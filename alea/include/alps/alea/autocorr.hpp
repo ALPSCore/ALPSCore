@@ -83,9 +83,6 @@ public:
 
     size_t count() const { return count_; }
 
-    // TODO remove
-    column<T> mean() const { return result().mean(); }
-
     autocorr_result<T> result() const;
 
     autocorr_result<T> finalize();

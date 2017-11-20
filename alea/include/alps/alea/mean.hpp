@@ -108,9 +108,6 @@ public:
 
     mean_acc &operator<<(const computed<T> &source);
 
-    // TODO remove
-    column<T> mean() const { return result().mean(); }
-
     size_t count() const { return store_->count(); }
 
     mean_result<T> result() const;
@@ -118,6 +115,9 @@ public:
     mean_result<T> finalize();
 
     const mean_data<T> &store() const { return *store_; }
+
+protected:
+    void finalize_to(mean_result<T> &result);
 
 private:
     std::unique_ptr< mean_data<T> > store_;

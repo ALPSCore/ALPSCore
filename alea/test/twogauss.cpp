@@ -48,12 +48,22 @@ public:
 
     twogauss_mean_case() : twogauss_setup<Acc>() { }
 
-    void test()
+    void test_result()
     {
-        std::vector<value_type> obs_mean = this->acc().mean();
+        std::vector<value_type> obs_mean = this->acc().result().mean();
+        EXPECT_TRUE(this->acc().valid());
         EXPECT_NEAR(obs_mean[0], twogauss_mean[0], 1e-6);
         EXPECT_NEAR(obs_mean[1], twogauss_mean[1], 1e-6);
     }
+
+    void test_finalize()
+    {
+        std::vector<value_type> obs_mean = this->acc().finalize().mean();
+        EXPECT_FALSE(this->acc().valid());
+        EXPECT_NEAR(obs_mean[0], twogauss_mean[0], 1e-6);
+        EXPECT_NEAR(obs_mean[1], twogauss_mean[1], 1e-6);
+    }
+
 };
 
 typedef ::testing::Types<
@@ -65,8 +75,10 @@ typedef ::testing::Types<
     > has_mean;
 
 TYPED_TEST_CASE(twogauss_mean_case, has_mean);
-TYPED_TEST(twogauss_mean_case, test) { this->test(); }
 
+TYPED_TEST(twogauss_mean_case, test_result) { this->test_result(); }
+
+TYPED_TEST(twogauss_mean_case, test_finalize) { this->test_finalize(); }
 
 // VARIANCE
 

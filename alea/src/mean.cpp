@@ -75,11 +75,20 @@ mean_result<T> mean_acc<T>::result() const
 template <typename T>
 mean_result<T> mean_acc<T>::finalize()
 {
+    mean_result<T> result;
+    finalize_to(result);
+    return result;
+}
+
+template <typename T>
+void mean_acc<T>::finalize_to(mean_result<T> &result)
+{
     internal::check_valid(*this);
-    mean_result<T> result(*store_);
+    if (result.valid())
+        throw std::runtime_error("Can only finalize to invalid result");
+
     result.store_.swap(store_);
     result.store_->convert_to_mean();
-    return result;
 }
 
 template class mean_acc<double>;

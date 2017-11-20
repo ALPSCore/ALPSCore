@@ -124,9 +124,6 @@ public:
 
     size_t count() const { return store_->count(); }
 
-    // TODO remove
-    column<T> mean() const { return result().mean(); }
-
     cov_result<T,Strategy> result() const;
 
     cov_result<T,Strategy> finalize();

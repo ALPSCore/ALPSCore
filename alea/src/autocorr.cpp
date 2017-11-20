@@ -92,6 +92,8 @@ void autocorr_acc<T>::finalize_to(autocorr_result<T> &result)
     result.level_.resize(level_.size());
     for (size_t i = 0; i != level_.size(); ++i)
         level_[i].finalize_to(result.level_[i]);
+
+    level_.clear();     // signal invalidity
 }
 
 template class autocorr_acc<double>;

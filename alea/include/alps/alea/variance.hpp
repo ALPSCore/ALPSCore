@@ -122,9 +122,6 @@ public:
 
     size_t count() const { return store_->count(); }
 
-    // TODO remove
-    column<T> mean() const { return result().mean(); }
-
     var_result<T,Strategy> result() const;
 
     var_result<T,Strategy> finalize();

@@ -98,9 +98,6 @@ public:
 
     size_t count() const { return store_->count().sum(); }
 
-    // TODO remove
-    column<T> mean() const { return result().mean(); }
-
     batch_result<T> result() const;
 
     batch_result<T> finalize();
