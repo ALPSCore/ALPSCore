@@ -20,6 +20,11 @@ public:
     twogauss_setup()
         : acc_(2)
     {
+        fill();
+    }
+
+    void fill()
+    {
         std::vector<value_type> curr(2);
         for (size_t i = 0; i != twogauss_count; ++i) {
             std::copy(twogauss_data[i], twogauss_data[i+1], curr.begin());
@@ -45,6 +50,7 @@ class twogauss_mean_case
 {
 public:
     typedef typename alps::alea::traits<Acc>::value_type value_type;
+    typedef typename alps::alea::traits<Acc>::result_type result_type;
 
     twogauss_mean_case() : twogauss_setup<Acc>() { }
 
@@ -52,18 +58,32 @@ public:
     {
         std::vector<value_type> obs_mean = this->acc().result().mean();
         EXPECT_TRUE(this->acc().valid());
-        EXPECT_NEAR(obs_mean[0], twogauss_mean[0], 1e-6);
-        EXPECT_NEAR(obs_mean[1], twogauss_mean[1], 1e-6);
+        EXPECT_NEAR(twogauss_mean[0], obs_mean[0], 1e-6);
+        EXPECT_NEAR(twogauss_mean[1], obs_mean[1], 1e-6);
     }
 
     void test_finalize()
     {
         std::vector<value_type> obs_mean = this->acc().finalize().mean();
         EXPECT_FALSE(this->acc().valid());
-        EXPECT_NEAR(obs_mean[0], twogauss_mean[0], 1e-6);
-        EXPECT_NEAR(obs_mean[1], twogauss_mean[1], 1e-6);
+        EXPECT_NEAR(twogauss_mean[0], obs_mean[0], 1e-6);
+        EXPECT_NEAR(twogauss_mean[1], obs_mean[1], 1e-6);
     }
 
+    void test_lifecycle()
+    {
+        this->acc().finalize();
+        EXPECT_FALSE(this->acc().valid());
+        EXPECT_THROW(this->acc() << 13.0, alps::alea::invalid_accumulator);
+
+        this->acc().reset();
+        this->fill();
+        test_result();    // keeps accumulator valid!
+        test_result();    // should still work!
+
+        this->fill();
+        test_result();    // keeps mean constant
+    }
 };
 
 typedef ::testing::Types<
@@ -79,6 +99,8 @@ TYPED_TEST_CASE(twogauss_mean_case, has_mean);
 TYPED_TEST(twogauss_mean_case, test_result) { this->test_result(); }
 
 TYPED_TEST(twogauss_mean_case, test_finalize) { this->test_finalize(); }
+
+TYPED_TEST(twogauss_mean_case, test_lifecycle) { this->test_lifecycle(); }
 
 // VARIANCE
 
