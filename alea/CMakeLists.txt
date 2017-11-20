@@ -31,6 +31,7 @@ add_this_package(
         galois
         jackknife
         mean
+        result
         variance
         )
 
