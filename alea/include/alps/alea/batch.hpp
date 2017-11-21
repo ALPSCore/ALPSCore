@@ -9,6 +9,7 @@
 #include <alps/alea/computed.hpp>
 #include <alps/alea/util.hpp>
 #include <alps/alea/internal/galois.hpp>
+#include <alps/alea/var_strategy.hpp>
 
 #include <memory>
 
@@ -158,6 +159,12 @@ public:
     size_t count() const { return store_->count().sum(); }
 
     column<T> mean() const;
+
+    template <typename Strategy=circular_var<T> >
+    column<typename Strategy::var_type> var() const;
+
+    template <typename Strategy=circular_var<T> >
+    column<typename Strategy::cov_type> cov() const;
 
     const batch_data<T> &store() const { return *store_; }
 

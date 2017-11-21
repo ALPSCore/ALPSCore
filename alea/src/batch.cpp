@@ -1,4 +1,6 @@
 #include <alps/alea/batch.hpp>
+#include <alps/alea/variance.hpp>
+#include <alps/alea/covariance.hpp>
 #include <alps/alea/internal/util.hpp>
 
 #include <numeric>
@@ -164,16 +166,41 @@ column<T> batch_result<T>::mean() const
     return store_->batch().rowwise().sum() / count();
 }
 
-/*
 template <typename T>
-void batch_acc<T>::get_var(sink<error_type> out) const
+template <typename Str>
+column<typename Str::var_type> batch_result<T>::var() const
 {
-    typename eigen<error_type>::col_map out_map(out.data(), out.size());
-    //out_map += batch_.rowwise().sum() / count();
-}*/
+    var_acc<T, Str> aux_acc(store_->size());
+
+    // FIXME count
+    for (size_t i = 0; i != store_->num_batches(); ++i)
+        aux_acc << column<T>(store_->batch().col(i));
+
+    return aux_acc.finalize().var();
+}
+
+template <typename T>
+template <typename Str>
+column<typename Str::cov_type> batch_result<T>::cov() const
+{
+    cov_acc<T, Str> aux_acc(store_->size());
+
+    // FIXME count
+    for (size_t i = 0; i != store_->num_batches(); ++i)
+        aux_acc << column<T>(store_->batch().col(i));
+
+    return aux_acc.finalize().cov();
+}
+
+template column<double> batch_result<double>::var< circular_var<double> >() const;
+template column<double> batch_result<std::complex<double> >::var< circular_var<std::complex<double> > >() const;
+template column<complex_op<double> > batch_result<std::complex<double> >::var< elliptic_var<std::complex<double> > >() const;
+
+template column<double> batch_result<double>::cov< circular_var<double> >() const;
+template column<std::complex<double> > batch_result<std::complex<double> >::cov< circular_var<std::complex<double> > >() const;
+template column<complex_op<double> > batch_result<std::complex<double> >::cov< elliptic_var<std::complex<double> > >() const;
 
 template class batch_result<double>;
 template class batch_result<std::complex<double> >;
-
 
 }}
