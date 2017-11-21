@@ -37,12 +37,12 @@ namespace alps { namespace alea {
  * of X[i] and the sum of X[i]*X[i] (sum state) or the sample mean and sample
  * variance of X (mean state).
  */
-template <typename T, typename Strategy=circular_var<T> >
+template <typename T, typename Strategy=circular_var>
 class var_data
 {
 public:
-    typedef typename Strategy::value_type value_type;
-    typedef typename Strategy::var_type var_type;
+    typedef typename bind<Strategy, T>::value_type value_type;
+    typedef typename bind<Strategy, T>::var_type var_type;
 
 public:
     var_data(size_t size);
@@ -76,23 +76,23 @@ private:
 template <typename T, typename Strategy>
 struct traits< var_data<T,Strategy> >
 {
-    typedef typename Strategy::value_type value_type;
-    typedef typename Strategy::var_type var_type;
+    typedef typename bind<Strategy, T>::value_type value_type;
+    typedef typename bind<Strategy, T>::var_type var_type;
 };
 
 extern template class var_data<double>;
-extern template class var_data<std::complex<double> >;
-extern template class var_data<std::complex<double>, elliptic_var<std::complex<double> > >;
+extern template class var_data<std::complex<double>, circular_var>;
+extern template class var_data<std::complex<double>, elliptic_var>;
 
 /**
  * Accumulator which tracks the mean and a naive variance estimate.
  */
-template <typename T, typename Strategy=circular_var<T> >
+template <typename T, typename Strategy=circular_var>
 class var_acc
 {
 public:
-    typedef typename Strategy::value_type value_type;
-    typedef typename Strategy::var_type var_type;
+    typedef typename bind<Strategy, T>::value_type value_type;
+    typedef typename bind<Strategy, T>::var_type var_type;
 
 public:
     var_acc();
@@ -149,24 +149,24 @@ private:
 template <typename T, typename Strategy>
 struct traits< var_acc<T,Strategy> >
 {
-    typedef typename Strategy::value_type value_type;
-    typedef typename Strategy::var_type var_type;
+    typedef typename bind<Strategy, T>::value_type value_type;
+    typedef typename bind<Strategy, T>::var_type var_type;
     typedef var_result<T,Strategy> result_type;
 };
 
 extern template class var_acc<double>;
-extern template class var_acc<std::complex<double> >;
-extern template class var_acc<std::complex<double>, elliptic_var<std::complex<double> > >;
+extern template class var_acc<std::complex<double>, circular_var>;
+extern template class var_acc<std::complex<double>, elliptic_var>;
 
 /**
  * Result which contains mean and a naive variance estimate.
  */
-template <typename T, typename Strategy=circular_var<T> >
+template <typename T, typename Strategy=circular_var>
 class var_result
 {
 public:
-    typedef typename Strategy::value_type value_type;
-    typedef typename Strategy::var_type var_type;
+    typedef typename bind<Strategy, T>::value_type value_type;
+    typedef typename bind<Strategy, T>::var_type var_type;
 
 public:
     var_result() { }
@@ -207,14 +207,12 @@ private:
 template <typename T, typename Strategy>
 struct traits< var_result<T,Strategy> >
 {
-    typedef typename Strategy::value_type value_type;
-    typedef typename Strategy::var_type var_type;
+    typedef typename bind<Strategy, T>::value_type value_type;
+    typedef typename bind<Strategy, T>::var_type var_type;
 };
 
 extern template class var_result<double>;
-extern template class var_result<std::complex<double> >;
-extern template class var_result<std::complex<double>, elliptic_var<std::complex<double> > >;
-
-
+extern template class var_result<std::complex<double>, circular_var>;
+extern template class var_result<std::complex<double>, elliptic_var>;
 
 }} /* namespace alps::alea */

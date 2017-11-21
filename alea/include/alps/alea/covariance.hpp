@@ -34,12 +34,12 @@ namespace alps { namespace alea {
  * of X[i] and the sum of X[i]*X[j] (sum state) or the sample mean and sample
  * covariance of X (mean state).
  */
-template <typename T, typename Strategy=circular_var<T> >
+template <typename T, typename Strategy=circular_var>
 class cov_data
 {
 public:
-    typedef typename Strategy::value_type value_type;
-    typedef typename Strategy::cov_type cov_type;
+    typedef typename bind<Strategy, T>::value_type value_type;
+    typedef typename bind<Strategy, T>::cov_type cov_type;
     typedef typename eigen<cov_type>::matrix cov_matrix_type;
 
 public:
@@ -74,26 +74,26 @@ private:
 template <typename T, typename Strategy>
 struct traits< cov_data<T,Strategy> >
 {
-    typedef typename Strategy::value_type value_type;
-    typedef typename Strategy::var_type var_type;
-    typedef typename Strategy::cov_type cov_type;
+    typedef typename bind<Strategy, T>::value_type value_type;
+    typedef typename bind<Strategy, T>::var_type var_type;
+    typedef typename bind<Strategy, T>::cov_type cov_type;
 };
 
 extern template class cov_data<double>;
-extern template class cov_data<std::complex<double> >;
-extern template class cov_data<std::complex<double>, elliptic_var<std::complex<double> > >;
+extern template class cov_data<std::complex<double>, circular_var>;
+extern template class cov_data<std::complex<double>, elliptic_var>;
 
 
 /**
  * Accumulator which tracks the mean and a naive covariance estimate.
  */
-template <typename T, typename Strategy=circular_var<T> >
+template <typename T, typename Strategy=circular_var>
 class cov_acc
 {
 public:
     typedef T value_type;
-    typedef typename Strategy::var_type var_type;
-    typedef typename Strategy::cov_type cov_type;
+    typedef typename bind<Strategy, T>::var_type var_type;
+    typedef typename bind<Strategy, T>::cov_type cov_type;
     typedef typename eigen<cov_type>::matrix cov_matrix_type;
 
 public:
@@ -149,27 +149,27 @@ private:
 template <typename T, typename Strategy>
 struct traits< cov_acc<T,Strategy> >
 {
-    typedef typename Strategy::value_type value_type;
-    typedef typename Strategy::var_type var_type;
-    typedef typename Strategy::cov_type cov_type;
+    typedef typename bind<Strategy, T>::value_type value_type;
+    typedef typename bind<Strategy, T>::var_type var_type;
+    typedef typename bind<Strategy, T>::cov_type cov_type;
     typedef cov_result<T,Strategy> result_type;
 };
 
 extern template class cov_acc<double>;
-extern template class cov_acc<std::complex<double> >;
-extern template class cov_acc<std::complex<double>, elliptic_var<std::complex<double> > >;
+extern template class cov_acc<std::complex<double>, circular_var>;
+extern template class cov_acc<std::complex<double>, elliptic_var>;
 
 
 /**
  * Accumulator which tracks the mean and a naive variance estimate.
  */
-template <typename T, typename Strategy=circular_var<T> >
+template <typename T, typename Strategy=circular_var>
 class cov_result
 {
 public:
-    typedef typename Strategy::value_type value_type;
-    typedef typename Strategy::var_type var_type;
-    typedef typename Strategy::cov_type cov_type;
+    typedef typename bind<Strategy, T>::value_type value_type;
+    typedef typename bind<Strategy, T>::var_type var_type;
+    typedef typename bind<Strategy, T>::cov_type cov_type;
 
 public:
     cov_result() { }
@@ -211,13 +211,13 @@ private:
 template <typename T, typename Strategy>
 struct traits< cov_result<T,Strategy> >
 {
-    typedef typename Strategy::value_type value_type;
-    typedef typename Strategy::var_type var_type;
+    typedef typename bind<Strategy, T>::value_type value_type;
+    typedef typename bind<Strategy, T>::var_type var_type;
 };
 
 extern template class cov_result<double>;
-extern template class cov_result<std::complex<double> >;
-extern template class cov_result<std::complex<double>, elliptic_var<std::complex<double> > >;
+extern template class cov_result<std::complex<double>, circular_var>;
+extern template class cov_result<std::complex<double>, elliptic_var>;
 
 
 }}

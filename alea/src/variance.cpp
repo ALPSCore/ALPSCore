@@ -38,8 +38,8 @@ void var_data<T,Str>::convert_to_sum()
 }
 
 template class var_data<double>;
-template class var_data<std::complex<double> >;
-template class var_data<std::complex<double>, elliptic_var<std::complex<double> > >;
+template class var_data<std::complex<double>, circular_var>;
+template class var_data<std::complex<double>, elliptic_var>;
 
 
 template <typename T, typename Str>
@@ -131,7 +131,7 @@ void var_acc<T,Str>::finalize_to(var_result<T,Str> &result)
 template <typename T, typename Str>
 void var_acc<T,Str>::add_bundle()
 {
-    typename Str::abs2_op abs2;
+    typename bind<Str, T>::abs2_op abs2;
 
     // add batch to average and squared
     current_.sum() /= current_.count();
@@ -147,8 +147,8 @@ void var_acc<T,Str>::add_bundle()
 }
 
 template class var_acc<double>;
-template class var_acc<std::complex<double> >;
-template class var_acc<std::complex<double>, elliptic_var<std::complex<double> > >;
+template class var_acc<std::complex<double>, circular_var>;
+template class var_acc<std::complex<double>, elliptic_var>;
 
 
 template <typename T, typename Str>
@@ -176,7 +176,7 @@ void var_result<T,Str>::reduce(reducer &r)
 }
 
 template class var_result<double>;
-template class var_result<std::complex<double> >;
-template class var_result<std::complex<double>, elliptic_var<std::complex<double> > >;
+template class var_result<std::complex<double>, circular_var>;
+template class var_result<std::complex<double>, elliptic_var>;
 
 }}

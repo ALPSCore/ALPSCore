@@ -168,7 +168,7 @@ column<T> batch_result<T>::mean() const
 
 template <typename T>
 template <typename Str>
-column<typename Str::var_type> batch_result<T>::var() const
+column<typename bind<Str,T>::var_type> batch_result<T>::var() const
 {
     var_acc<T, Str> aux_acc(store_->size());
 
@@ -181,7 +181,7 @@ column<typename Str::var_type> batch_result<T>::var() const
 
 template <typename T>
 template <typename Str>
-column<typename Str::cov_type> batch_result<T>::cov() const
+column<typename bind<Str,T>::cov_type> batch_result<T>::cov() const
 {
     cov_acc<T, Str> aux_acc(store_->size());
 
@@ -192,13 +192,13 @@ column<typename Str::cov_type> batch_result<T>::cov() const
     return aux_acc.finalize().cov();
 }
 
-template column<double> batch_result<double>::var< circular_var<double> >() const;
-template column<double> batch_result<std::complex<double> >::var< circular_var<std::complex<double> > >() const;
-template column<complex_op<double> > batch_result<std::complex<double> >::var< elliptic_var<std::complex<double> > >() const;
+template column<double> batch_result<double>::var<circular_var>() const;
+template column<double> batch_result<std::complex<double> >::var<circular_var>() const;
+template column<complex_op<double> > batch_result<std::complex<double> >::var<elliptic_var>() const;
 
-template column<double> batch_result<double>::cov< circular_var<double> >() const;
-template column<std::complex<double> > batch_result<std::complex<double> >::cov< circular_var<std::complex<double> > >() const;
-template column<complex_op<double> > batch_result<std::complex<double> >::cov< elliptic_var<std::complex<double> > >() const;
+template column<double> batch_result<double>::cov< circular_var>() const;
+template column<std::complex<double> > batch_result<std::complex<double> >::cov<circular_var>() const;
+template column<complex_op<double> > batch_result<std::complex<double> >::cov<elliptic_var>() const;
 
 template class batch_result<double>;
 template class batch_result<std::complex<double> >;

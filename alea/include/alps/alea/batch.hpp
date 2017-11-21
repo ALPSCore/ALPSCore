@@ -160,11 +160,11 @@ public:
 
     column<T> mean() const;
 
-    template <typename Strategy=circular_var<T> >
-    column<typename Strategy::var_type> var() const;
+    template <typename Strategy=circular_var>
+    column<typename bind<Strategy,T>::var_type> var() const;
 
-    template <typename Strategy=circular_var<T> >
-    column<typename Strategy::cov_type> cov() const;
+    template <typename Strategy=circular_var>
+    column<typename bind<Strategy,T>::cov_type> cov() const;
 
     const batch_data<T> &store() const { return *store_; }
 

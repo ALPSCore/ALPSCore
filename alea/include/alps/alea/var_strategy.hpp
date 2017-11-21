@@ -11,8 +11,9 @@
 
 // Forward declarations
 namespace alps { namespace alea {
-    template <typename T> struct circular_var;
-    template <typename T> struct elliptic_var;
+    struct circular_var;
+    struct elliptic_var;
+    template <typename Strategy, typename T> struct bind;
 }}
 
 // Actual declarations
@@ -34,31 +35,7 @@ namespace alps { namespace alea {
  * However, plotting real or imaginary part with the circular error can be
  * misleading.  In this case, one should use `elliptic_var`.
  */
-template <typename T>
-struct circular_var
-{
-    typedef T value_type;
-    typedef T var_type;
-    typedef T cov_type;
-
-    typedef Eigen::internal::scalar_abs2_op<T> abs2_op;
-
-    static cov_type outer(T x, T y) { return x * y; }
-};
-
-template <typename T>
-struct circular_var< std::complex<T> >
-{
-    typedef std::complex<T> value_type;
-    typedef T var_type;
-    typedef std::complex<T> cov_type;
-
-    typedef Eigen::internal::scalar_abs2_op<std::complex<T> > abs2_op;
-
-    static cov_type outer(std::complex<T> x, std::complex<T> y)
-    { return x * std::conj(y); }
-};
-
+struct circular_var { };
 
 /**
  * Error ellipse in the complex plane.
@@ -78,8 +55,48 @@ struct circular_var< std::complex<T> >
  * part seperately.  However, care has to be taken not to throw away errors
  * "hidden" in the cross-correlation between real and imaginary part.
  */
+struct elliptic_var { };
+
+
 template <typename T>
-struct elliptic_var< std::complex<T> >
+struct bind<circular_var, T>
+{
+    typedef T value_type;
+    typedef T var_type;
+    typedef T cov_type;
+
+    typedef Eigen::internal::scalar_abs2_op<T> abs2_op;
+
+    static cov_type outer(T x, T y) { return x * y; }
+};
+
+template <typename T>
+struct bind<circular_var, std::complex<T> >
+{
+    typedef std::complex<T> value_type;
+    typedef T var_type;
+    typedef std::complex<T> cov_type;
+
+    typedef Eigen::internal::scalar_abs2_op<std::complex<T> > abs2_op;
+
+    static cov_type outer(std::complex<T> x, std::complex<T> y)
+    { return x * std::conj(y); }
+};
+
+template <typename T>
+struct bind<elliptic_var, T>
+{
+    typedef T value_type;
+    typedef T var_type;
+    typedef T cov_type;
+
+    typedef Eigen::internal::scalar_abs2_op<T> abs2_op;
+
+    static cov_type outer(T x, T y) { return x * y; }
+};
+
+template <typename T>
+struct bind<elliptic_var, std::complex<T> >
 {
     typedef std::complex<T> value_type;
     typedef complex_op<T> var_type;
@@ -96,17 +113,6 @@ struct elliptic_var< std::complex<T> >
     { return complex_op<T>::outer(x, y); }
 };
 
-template <typename T>
-struct elliptic_var
-{
-    typedef T value_type;
-    typedef T var_type;
-    typedef T cov_type;
-
-    typedef Eigen::internal::scalar_abs2_op<T> abs2_op;
-
-    static cov_type outer(T x, T y) { return x * y; }
-};
 
 }} /* namespace alps::alea */
 

@@ -56,8 +56,8 @@ class autocorr_acc
 {
 public:
     typedef T value_type;
-    typedef typename circular_var<T>::var_type var_type;
-    typedef var_acc<T, circular_var<T> > level_acc_type;
+    typedef typename bind<circular_var, T>::var_type var_type;
+    typedef var_acc<T, circular_var> level_acc_type;
 
 public:
     autocorr_acc();
@@ -105,8 +105,8 @@ template <typename T>
 struct traits< autocorr_acc<T> >
 {
     typedef T value_type;
-    typedef typename circular_var<T>::var_type var_type;
-    typedef typename circular_var<T>::cov_type cov_type;
+    typedef typename bind<circular_var, T>::var_type var_type;
+    typedef typename bind<circular_var, T>::cov_type cov_type;
     typedef autocorr_result<T> result_type;
 };
 
@@ -124,8 +124,8 @@ class autocorr_result
 {
 public:
     typedef T value_type;
-    typedef typename circular_var<T>::var_type var_type;
-    typedef var_result<T, circular_var<T> > level_result_type;
+    typedef typename bind<circular_var, T>::var_type var_type;
+    typedef var_result<T, circular_var> level_result_type;
 
 public:
     autocorr_result() { }
@@ -169,8 +169,8 @@ template <typename T>
 struct traits< autocorr_result<T> >
 {
     typedef T value_type;
-    typedef typename circular_var<T>::var_type var_type;
-    typedef typename circular_var<T>::cov_type cov_type;
+    typedef typename bind<circular_var, T>::var_type var_type;
+    typedef typename bind<circular_var, T>::cov_type cov_type;
 };
 
 extern template class autocorr_result<double>;

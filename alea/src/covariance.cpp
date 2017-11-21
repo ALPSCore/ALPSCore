@@ -24,7 +24,7 @@ template <typename T, typename Str>
 void cov_data<T,Str>::convert_to_mean()
 {
     data_ /= count_;
-    data2_ -= count_ * internal::outer<Str>(data_, data_);
+    data2_ -= count_ * internal::outer<bind<Str, T> >(data_, data_);
     data2_ /= count_ - 1;
 }
 
@@ -32,13 +32,13 @@ template <typename T, typename Str>
 void cov_data<T,Str>::convert_to_sum()
 {
     data2_ *= count_ - 1;
-    data2_ += count_ * internal::outer<Str>(data_, data_);
+    data2_ += count_ * internal::outer<bind<Str, T> >(data_, data_);
     data_ *= count_;
 }
 
 template class cov_data<double>;
-template class cov_data<std::complex<double> >;
-template class cov_data<std::complex<double>, elliptic_var<std::complex<double> > >;
+template class cov_data<std::complex<double>, circular_var>;
+template class cov_data<std::complex<double>, elliptic_var>;
 
 
 template <typename T, typename Str>
@@ -133,7 +133,8 @@ void cov_acc<T,Str>::add_bundle()
     // add batch to average and squared
     current_.sum() /= current_.count();
     store_->data().noalias() += current_.sum();
-    store_->data2().noalias() += internal::outer<Str>(current_.sum(), current_.sum());
+    store_->data2().noalias() +=
+                internal::outer<bind<Str, T> >(current_.sum(), current_.sum());
     store_->count() += 1;
 
     // add batch mean also to uplevel
@@ -144,8 +145,8 @@ void cov_acc<T,Str>::add_bundle()
 }
 
 template class cov_acc<double>;
-template class cov_acc<std::complex<double> >;
-template class cov_acc<std::complex<double>, elliptic_var<std::complex<double> > >;
+template class cov_acc<std::complex<double>, circular_var>;
+template class cov_acc<std::complex<double>, elliptic_var>;
 
 
 template <typename T, typename Str>
@@ -173,7 +174,7 @@ void cov_result<T,Str>::reduce(reducer &r)
 }
 
 template class cov_result<double>;
-template class cov_result<std::complex<double> >;
-template class cov_result<std::complex<double>, elliptic_var<std::complex<double> > >;
+template class cov_result<std::complex<double>, circular_var>;
+template class cov_result<std::complex<double>, elliptic_var>;
 
 }}

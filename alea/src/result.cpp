@@ -43,7 +43,7 @@ struct mean_visitor
 template <typename T, typename Str>          // T = double or std::complex<double>
 struct var_visitor
 {
-    typedef column<typename Str::var_type> result_type;
+    typedef column<typename bind<Str,T>::var_type> result_type;
 
     result_type operator() (const mean_result<T> &) const { throw estimate_unavailable(); }
     result_type operator() (const var_result<T,Str> &r) const { return r.var(); }
@@ -59,10 +59,10 @@ struct var_visitor
 };
 
 template <typename T>          // T = double or std::complex<double>
-struct var_visitor<T, circular_var<T> >
+struct var_visitor<T, circular_var>
 {
-    typedef circular_var<T> Str;
-    typedef column<typename Str::var_type> result_type;
+    typedef circular_var Str;
+    typedef column<typename bind<circular_var,T>::var_type> result_type;
 
     result_type operator() (const mean_result<T> &) const { throw estimate_unavailable(); }
     result_type operator() (const var_result<T,Str> &r) const { return r.var(); }
@@ -80,7 +80,7 @@ struct var_visitor<T, circular_var<T> >
 template <typename T, typename Str>          // T = double or std::complex<double>
 struct cov_visitor
 {
-    typedef typename eigen<typename Str::cov_type>::matrix result_type;
+    typedef typename eigen<typename bind<Str,T>::cov_type>::matrix result_type;
 
     result_type operator() (const mean_result<T> &) const { throw estimate_unavailable(); }
     result_type operator() (const var_result<T,Str> &) const { throw estimate_unavailable(); }

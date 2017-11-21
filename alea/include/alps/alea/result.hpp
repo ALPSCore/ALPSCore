@@ -46,10 +46,10 @@ public:
     template <typename T>
     column<T> mean() const;
 
-    template <typename T, typename Str=circular_var<T> >
+    template <typename T, typename Str=circular_var>
     column<typename Str::var_type> var() const;
 
-    template <typename T, typename Str=circular_var<T> >
+    template <typename T, typename Str=circular_var>
     typename eigen<typename Str::cov_type>::matrix cov() const;
 
 private:
@@ -58,10 +58,10 @@ private:
         , mean_result<std::complex<double> >
         , var_result<double>
         , var_result<std::complex<double> >
-        , var_result<std::complex<double>, elliptic_var<std::complex<double> > >
+        , var_result<std::complex<double>, elliptic_var>
         , cov_result<double>
         , cov_result<std::complex<double> >
-        , cov_result<std::complex<double>, elliptic_var<std::complex<double> > >
+        , cov_result<std::complex<double>, elliptic_var>
         , autocorr_result<double>
         , autocorr_result<std::complex<double> >
         , batch_result<double>
