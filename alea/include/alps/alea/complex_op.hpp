@@ -221,11 +221,12 @@ private:
     T vals_[2][2];
 };
 
-// Fail-safe to avoid stupid nesting mistakes
-template <typename T> class complex_op< std::complex<T> > {};
-
-//template class complex_op<float>;
-//template class complex_op<double>;
+template <typename T>
+class complex_op< std::complex<T> >
+{
+    // will result in compiler error in case of instantiation
+    char INVALID_COMPLEX_OP_TYPE_MUST_BE_SCALAR[-1 * int(sizeof(T))];
+};
 
 }} /* namespace alps::alea */
 

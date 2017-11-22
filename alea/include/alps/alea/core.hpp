@@ -15,34 +15,7 @@
 
 #include <alps/alea/complex_op.hpp>
 
-/** @namespace alps::alea
- *
- * Accumulators and results
- * ------------------------
- * Most accumulators (`mean_acc`) have a matching result class (`mean_result`).
- * To obtain a result from an accumulator, the accumulators provide both a
- * `result()` and a `finalize()` method, where
- *
- *  1. the `result()` method creates an intermediate result, which leaves the
- *     accumulator untouched and thus must involve a copy of the data, while
- *
- *  2. the `finalize()` method invalidates the accumulator and thus allows to
- *     repurpose its data as the simulation result.  The reset method then
- *     re-creates an empty accumulator with the same size.
- *
- * This can be represented by the following finite state machine:
- *
- *                     c'tor   _______________      _______________
- *                    ------->|               |    |               |  default
- *     result, <<        <<   |     empty     |    | uninitialized |   c'tor
- *      +-------+       +-----|_______________|    |_______________|<<-------
- *      |       |       |            | |
- *      |     __V_______V____  reset | | reset  ________________
- *      |    |               |--->---+ +---<---|                |
- *      +----|  accumulating |                 |     invalid    |
- *           |_______________|---------------->|________________|
- *                                finalize
- */
+
 namespace alps { namespace alea {
 
 using std::size_t;
