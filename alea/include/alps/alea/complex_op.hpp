@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <functional>
 #include <cmath>
+#include <type_traits>
 
 #include <iosfwd>
 #include <Eigen/Core>
@@ -45,6 +46,9 @@ template <typename T>
 class complex_op
 {
 public:
+    static_assert(std::is_floating_point<T>::value,
+                  "T argument of complex_op<T> must be real scalar type");
+
     static complex_op outer(std::complex<T> a, std::complex<T> b)
     {
         return complex_op(a.real() * b.real(), a.real() * b.imag(),
@@ -219,13 +223,6 @@ public:
 
 private:
     T vals_[2][2];
-};
-
-template <typename T>
-class complex_op< std::complex<T> >
-{
-    // will result in compiler error in case of instantiation
-    char INVALID_COMPLEX_OP_TYPE_MUST_BE_SCALAR[-1 * int(sizeof(T))];
 };
 
 }} /* namespace alps::alea */
