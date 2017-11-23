@@ -338,40 +338,40 @@ namespace alps {
                     }
                 };
 
-                /// Visitor to compare 2 value of dict_value type
-                class comparator2 : public boost::static_visitor<int> {
-                    template <typename A, typename B>
-                    static bool cmp_(const A& a, const B& b) { return (a==b)? 0 : (a<b)? -1:1; }
+                // /// Visitor to compare 2 value of dict_value type
+                // class comparator2 : public boost::static_visitor<int> {
+                //     template <typename A, typename B>
+                //     static bool cmp_(const A& a, const B& b) { return (a==b)? 0 : (a<b)? -1:1; }
                     
-                  public:
-                    /// Called by apply_visitor for bound values of different types
-                    template <typename LHS_T, typename RHS_T>
-                    int operator()(const LHS_T& lhs, const RHS_T& rhs) const {
-                        std::string lhs_name=detail::type_info<LHS_T>::pretty_name();
-                        std::string rhs_name=detail::type_info<RHS_T>::pretty_name();
-                        throw exception::type_mismatch("","Attempt to compare dictionary values containing "
-                                                       "incompatible types "+
-                                                       lhs_name + "<=>" + rhs_name);
-                    }
+                //   public:
+                //     /// Called by apply_visitor for bound values of different types
+                //     template <typename LHS_T, typename RHS_T>
+                //     int operator()(const LHS_T& lhs, const RHS_T& rhs) const {
+                //         std::string lhs_name=detail::type_info<LHS_T>::pretty_name();
+                //         std::string rhs_name=detail::type_info<RHS_T>::pretty_name();
+                //         throw exception::type_mismatch("","Attempt to compare dictionary values containing "
+                //                                        "incompatible types "+
+                //                                        lhs_name + "<=>" + rhs_name);
+                //     }
 
-                    /// Called by apply_visitor for bound values of the same type
-                    template <typename LHS_RHS_T>
-                    int operator()(const LHS_RHS_T& lhs, const LHS_RHS_T& rhs) const {
-                        return cmp_(lhs,rhs);
-                    }
+                //     /// Called by apply_visitor for bound values of the same type
+                //     template <typename LHS_RHS_T>
+                //     int operator()(const LHS_RHS_T& lhs, const LHS_RHS_T& rhs) const {
+                //         return cmp_(lhs,rhs);
+                //     }
 
-                    /// Called by apply_visitor for bound values both having None type
-                    int operator()(const dict_value::None& lhs, const dict_value::None& rhs) const {
-                        return 1;
-                    }
+                //     /// Called by apply_visitor for bound values both having None type
+                //     int operator()(const dict_value::None& lhs, const dict_value::None& rhs) const {
+                //         return 1;
+                //     }
                         
 
-                    // FIXME:TODO:
-                    // Same types: compare directly
-                    // Integral types: compare using signs (extract it to a separate namespace/class)
-                    // FP types: compare directly
-                    // Everything else: throw
-                };
+                //     // FIXME:TODO:
+                //     // Same types: compare directly
+                //     // Integral types: compare using signs (extract it to a separate namespace/class)
+                //     // FP types: compare directly
+                //     // Everything else: throw
+                // };
 
                 /// Visitor to test for exact equality (name and value)
                 class equals2 : public boost::static_visitor<bool> {

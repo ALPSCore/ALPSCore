@@ -104,7 +104,7 @@ namespace alps {
             template <typename T>
             int compare(const T& rhs) const;
 
-            int compare(const dict_value& rhs) const;
+            // int compare(const dict_value& rhs) const;
 
             /// Returns true if the objects hold the same type and value, false otherwise
             bool equals(const dict_value& rhs) const;

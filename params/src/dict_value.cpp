@@ -17,17 +17,17 @@
 namespace alps {
     namespace params_ns {
         
-        int dict_value::compare(const dict_value& rhs) const
-        {
-            if (this->empty() || rhs.empty()) throw exception::uninitialized_value(name_+"<=>"+rhs.name_,"Attempt to compare uninitialized value");
+        // int dict_value::compare(const dict_value& rhs) const
+        // {
+        //     if (this->empty() || rhs.empty()) throw exception::uninitialized_value(name_+"<=>"+rhs.name_,"Attempt to compare uninitialized value");
                 
-            try {
-                return boost::apply_visitor(detail::visitor::comparator2(), val_, rhs.val_);
-            } catch (exception::exception_base& exc) {
-                exc.set_name(name_+"<=>"+rhs.name_);
-                throw;
-            } 
-        }
+        //     try {
+        //         return boost::apply_visitor(detail::visitor::comparator2(), val_, rhs.val_);
+        //     } catch (exception::exception_base& exc) {
+        //         exc.set_name(name_+"<=>"+rhs.name_);
+        //         throw;
+        //     } 
+        // }
 
         void dict_value::save(alps::hdf5::archive& ar) const {
             if (this->empty()) return;

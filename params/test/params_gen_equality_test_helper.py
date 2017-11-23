@@ -13,7 +13,7 @@ num_domains=(('neg_long',),
              ('pos_long', 'ulong_ls'),
              ('pos_ulong',))
 
-incompat_types=('my_bool', 'my_int', 'my_string', 'my_vec', 'my_pair')
+incompat_types=('my_bool', 'my_int', 'my_string', 'my_vec')
 
 fp_types=('my_float', 'my_double')
 
@@ -26,14 +26,15 @@ dom_name={
     'pos_long' : 'PosLong',
     'pos_ulong' : 'ULong',
     'my_int' : 'Int',
+    'my_intf' : 'Int',
     'my_string' : 'String',
     'my_bool'  : 'Bool',
     'my_vec' : 'Vec',
-    'my_pair' : 'Pair',
     'my_float' : 'Float',
     'my_double' : 'Double'}
 
-labels=('Left','Right','Both')
+# labels=('Left','Right','Both')
+labels=('Left','Right')
 
 def generate_num_equalities():
     vars2refs={'Left' :lambda lhs,rhs: ('cdict_["%s"]'%lhs, "+"+rhs),
@@ -43,7 +44,6 @@ def generate_num_equalities():
     for lhs_domain, rhs_domain in tri_prod(num_domains, 2):
         if lhs_domain is rhs_domain:
             print("// Equalities within domain %s" % lhs_domain[0])
-            # print("TEST_F(MyTest, eq%s) {" % dom_name[lhs_domain[0]])
             
             for lab in labels:
                 v2r=vars2refs[lab]
@@ -59,7 +59,6 @@ def generate_num_equalities():
                 print("}\n")
         else:
             print("// Equalities between domains %s:%s" % (lhs_domain[0],rhs_domain[0]))
-            #print("TEST_F(MyTest, eq%s%s) {" % (dom_name[lhs_domain[0]], dom_name[rhs_domain[0]]))
             for lab in labels:
                 v2r=vars2refs[lab]
                 print("TEST_F(MyTest, eq%s%s%s) {" % (dom_name[lhs_domain[0]], dom_name[rhs_domain[0]], lab))
@@ -105,10 +104,10 @@ def generate_fp_equalities():
                'Right':lambda lhs,rhs: (lhs, 'cdict_["%s"]'%rhs),
                'Both' : lambda lhs,rhs: ('cdict_["%s"]'%lhs, 'cdict_["%s"]'%rhs)}
 
-    types=product(chain(('my_int',),fp_types), repeat=2)
+    types=product(chain(('my_intf',),fp_types), repeat=2)
     next(types)
     
-    for lhs, rhs in types: #product(fp_types, fp_types):
+    for lhs, rhs in types:
         if lhs is rhs:
             print("// Equalities within same type %s" % lhs)
             for lab in labels:
