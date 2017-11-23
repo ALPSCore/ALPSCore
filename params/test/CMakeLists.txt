@@ -30,7 +30,8 @@ set (test_src
   dictionary_eq
   params_eq
   dictionary_hdf5
-  params_hdf5  
+  params_hdf5
+  foreach_params
   )
 
 foreach(test ${test_src})
