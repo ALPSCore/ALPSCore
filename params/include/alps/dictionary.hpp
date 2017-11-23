@@ -107,7 +107,7 @@ namespace alps {
             The functor type `F` must define typename `F::result_type`.
         */
         template <typename F>
-        typename F::result_type apply_visitor(F& visitor, dictionary::const_iterator it) {
+        inline typename F::result_type apply_visitor(F& visitor, dictionary::const_iterator it) {
             return boost::apply_visitor(visitor, it->second);
         }
             
@@ -117,7 +117,7 @@ namespace alps {
             The functor type `F` must define typename `F::result_type`.
         */
         template <typename F>
-        typename F::result_type apply_visitor(const F& visitor, dictionary::const_iterator it) {
+        inline typename F::result_type apply_visitor(const F& visitor, dictionary::const_iterator it) {
             return boost::apply_visitor(visitor, it->second);
         }
             
