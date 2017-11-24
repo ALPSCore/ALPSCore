@@ -14,8 +14,4 @@
 #define ALPS_DEPRECATED
 #endif
 
-#define ALPS_STRINGIFY(arg) ALPS_STRINGIFY_HELPER(arg)
-
-#define ALPS_STRINGIFY_HELPER(arg) #arg
-
 #endif /* ALPS_UTILITIES_DEPRECATED_HPP */

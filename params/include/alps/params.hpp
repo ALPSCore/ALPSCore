@@ -4,268 +4,256 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_PARAMS_HPP_INCLUDED_8fd4d6abf4b6438cb3406e5a2d328d35
-#define ALPS_PARAMS_HPP_INCLUDED_8fd4d6abf4b6438cb3406e5a2d328d35
+#ifndef ALPS_PARAMS_HPP_INCLUDED_00f672a032d949a7aa0e760a6b6f0602
+#define ALPS_PARAMS_HPP_INCLUDED_00f672a032d949a7aa0e760a6b6f0602
 
 #include "alps/config.hpp"
 #include "alps/hdf5/archive.hpp"
+#include <alps/utilities/deprecated.hpp>
+
 
 #ifdef ALPS_HAVE_MPI
-#include "alps/utilities/mpi.hpp"
+#include <alps/utilities/mpi.hpp>
+#include <alps/utilities/mpi_pair.hpp>
 #endif
 
-#include "boost/program_options.hpp"
-#include "boost/any.hpp"
-#include "boost/tokenizer.hpp"
-
 #include <map>
-#include <vector>
-#include <string>
-#include <algorithm>
+#include <iosfwd>
 
-#include "./params/option_type.hpp"
-#include "./params/option_description_type.hpp"
-#include "./params/param_iterators.hpp"
+#include "./dictionary.hpp"
 
 namespace alps {
     namespace params_ns {
 
-        class params {
+        namespace detail {
+            /// Type-description functor: returns a "typestring" given a type
+            struct make_typestr : public boost::static_visitor<std::string> {
+                template <typename T>
+                std::string operator()(const T&) const { return apply<T>(); }
+
+                template <typename T>
+                static std::string apply() { return detail::type_info<T>::pretty_name(); }
+            };
+
+            /// Param_type with description 
+            struct td_type {
+                std::string typestr_;
+                std::string descr_;
+                int defnumber_;
+                /// Access typestring
+                std::string& typestr() { return typestr_; }
+                /// Access typestring
+                const std::string& typestr() const { return typestr_; }
+                /// Access description
+                std::string& descr() { return descr_; }
+                /// Access description
+                const std::string& descr() const { return descr_; }
+                /// Access defnumber
+                int defnumber() const { return defnumber_; }
+                /// Access defnumber
+                int& defnumber() { return defnumber_; }
+                /// Construct from typestring, description and number
+                td_type(const std::string& t, const std::string& d, int n) : typestr_(t), descr_(d), defnumber_(n) {}
+                /// Construct from description given a type and a number
+                template <typename T>
+                static td_type make_pair(const std::string& d, int n) { return td_type(make_typestr::apply<T>(), d, n); }
+                /// Empty-pair ctor needed for MPI
+                td_type() : typestr_(), descr_(), defnumber_(-1) {}
+                /// Comparison
+                bool operator==(const td_type& rhs) const {
+                    return typestr_==rhs.typestr_ &&
+                           descr_==rhs.descr_ &&
+                           defnumber_==rhs.defnumber_;
+                }
+            };
+        } // detail::
+
+
+        /// Parse sectioned INI file or HDF5 or command line, provide the results as dictionary.
+        /**
+           1. Default-constructed `params` object cannot be re-associated with a file;
+              therefore, is 100% equivalent to `dictionary` ("is-a" dictionary).
+
+           2. Lexing of the file and of the command line occurs at construction.
+              Command line overrides the file. INI file name is taken from the command line.
+
+           3. Parsing of a specific parameter occurs at the time of its type definition.
+              There is no way for parameters to appear after the file and cmdline are read.
+
+         */
+        class params : public dictionary {
           private:
-            /// Type for the set of key names. Used in recording defaulted options
-            // (FIXME: think of a better solution)
-            typedef std::set<std::string> keys_set_type;
+            typedef std::map<std::string,std::string> strmap;
+            typedef std::vector<std::string> strvec;
 
-            /// True if there are no new define<>()-ed parameters since last parsing. Mutated by deferred parsing: certainly_parse()
-            mutable bool is_valid_;
-            /// Options (parameters). Mutated by deferred parsing: certainly_parse()
-            mutable options_map_type optmap_;
 
-            /// Set of options having their default value. Mutated by deferred parsing: certainly_parse()
-            // FIXME: it is a quick hack. Should be merged with descr_map_ below.
-            mutable keys_set_type defaulted_options_;
+            typedef std::map<std::string, detail::td_type> td_map_type;
 
-            /// Map (option names --> definition). Filled by define<T>() method.
-            detail::description_map_type descr_map_;
 
-            std::string helpmsg_;                 ///< Help message
-            std::vector<std::string> argvec_;     ///< Command line arguments
-            std::string file_content_;              ///< Content of INI file
-            std::string infile_;                  ///< File name to read from (if not empty)
-            std::string argv0_;                   ///< 0-th argument (program name)
-            boost::optional<std::string> archname_; ///< Archive name (if restored from archive)
+            strmap raw_kv_content_;
+            td_map_type td_map_;
+            strvec err_status_;
+            std::string argv0_;
+            std::string archive_name_;
+            std::string help_header_;
 
-            /// Parses the parameter file, filling the option map, and using the provided options_description instance
-            void certainly_parse(boost::program_options::options_description&, bool reassign=false) const;
+            void read_ini_file_(const std::string& inifile);
+            void initialize_(int argc, const char* const* argv, const char* hdf5_path);
 
-            /// Parses the parameter file, filling the option map.
-            void certainly_parse(bool reassign=false) const;
+            template <typename T>
+            bool assign_to_name_(const std::string& name, const std::string& strval);
 
-            /// Parses the parameters if not already parsed.
-            void possibly_parse() const;
+            bool has_unused_(std::ostream& out, const std::string* prefix_ptr) const;
 
-            /// Invalidates the option map
-            void invalidate();
-
-            /// Reads and pre-parses the INI file
-            void preparse_ini();
-
-            /// Initialization code common for all constructors
-            void init();
-
-            /// Initialization code used in constructors
-            void init(unsigned int argc, const char* const* argv, const char* hdfpath);
-
-            /// Function to check for validity/redefinition of an option (throws!)
-            void check_validity(const std::string& optname) const;
+            /// Does the job of define(), returns false if the name is missing in raw_argsand default must be checked
+            template <typename T>
+            bool define_(const std::string& name, const std::string& descr);
 
           public:
+            /// Default ctor
+            params() : dictionary(), raw_kv_content_(), td_map_(), err_status_(0), argv0_(),
+                       archive_name_(), help_header_() {}
 
-            typedef options_map_type::iterator iterator;
-            typedef options_map_type::const_iterator const_iterator;
-            typedef options_map_type::value_type value_type;
-            typedef options_map_type::mapped_type mapped_type;
+            params(const std::string& inifile)
+                : dictionary(), raw_kv_content_(), td_map_(), err_status_(0), argv0_(), archive_name_(), help_header_()
+            {
+                read_ini_file_(inifile);
+            }
 
-            /// Iterator over names of "missing" options
-            typedef detail::iterators::missing_params_iterator missing_params_iterator;
+            params(int argc, const char* const* argv, const char* hdf5_path="/parameters")
+                : dictionary(),
+                  raw_kv_content_(),
+                  td_map_(),
+                  err_status_(),
+                  argv0_(),
+                  archive_name_(),
+                  help_header_()
+            { initialize_(argc, argv, hdf5_path); }
 
-            // Some more convenience typedefs (exception types)
-            /// Exception type: mismatched parameter types
-            typedef option_type::type_mismatch type_mismatch;
-            /// Exception type: attempt to use uninitialized option
-            typedef option_type::uninitialized_value uninitialized_value;
 
-            /// Exception type: attempt to redefine a parameter
-            struct double_definition : public option_type::exception_base {
-                double_definition(const std::string& a_name, const std::string& a_what)
-                    : option_type::exception_base(a_name, a_what) {}
-            };
+            /// Convenience method: returns the "origin name"
+            /** @Returns (parameter_file_name || restart_file name || program_name || "") **/
+            std::string get_origin_name() const { return argv0_; }
 
-            /// Exception type: attempt to define explicitly assigned parameter
-            struct extra_definition : public option_type::exception_base {
-                extra_definition(const std::string& a_name, const std::string& a_what)
-                    : option_type::exception_base(a_name, a_what) {}
-            };
-
-            /// Exception type: incorrect parameter name
-            struct invalid_name : public option_type::exception_base {
-                invalid_name(const std::string& a_name, const std::string& a_what)
-                    : option_type::exception_base(a_name, a_what) {}
-            };
-
-            /// Exception type: the object was not restored from archive
-            struct not_restored : public std::runtime_error {
-                not_restored(const std::string& a_what)
-                    : std::runtime_error(a_what) {}
-            };
-
-            /** Default constructor */
-            params();
-
-            /** Constructor from HDF5 archive. */
-            params(hdf5::archive ar, std::string const & path = "/parameters");
-
-            /// Constructor from command line and a parameter file. The parsing is deferred.
-            /** Tries to see if the file is an HDF5, in which case restores the object from the
-                HDF5 file, ignoring the command line.
-                
-                @param hdfpath : path to HDF5 dataset containing the saved parameter object
-                (NULL if this functionality is not needed)
-            */
-            params(unsigned int argc, const char* const* argv, const char* hdfpath = "/parameters");
-
-#if defined(ALPS_HAVE_MPI)
-            /// Collective constructor from command line and a parameter file. The parsing is deferred.
-            /** Reads and parses the command line on the root process,
-                broadcasts to other processes. Tries to see if the
-                file is an HDF5, in which case restores the object
-                from the HDF5 file, ignoring the command line.
-
-                @param comm : Communicator to use for broadcast
-                @param root : Root process to broadcast from
-                @param hdfpath : path to HDF5 dataset containing the
-                                 saved parameter object
-                                 (NULL if this functionality is not needed)
-            */
-            params(unsigned int argc, const char* const* argv, const alps::mpi::communicator& comm,
-                   int root=0, const char* hdfpath = "/parameters");
-#endif
-
-            /// Constructor from INI file (without command line)
-            params(const std::string& inifile);
-
-            /// Returns whether the parameters are restored from archive by the constructor
-            bool is_restored() const;
-
-            /// Returns the name of the archive the parameters were restarted from (or throw)
-            std::string get_archive_name() const;
-
-            /// @brief Convenience function: returns the "origin name"
-            /// @Returns (parameter_file_name || restart_file name || program_name || "")
-            std::string get_origin_name() const;
-
-            /** Returns number of parameters (size of the map) */
-            std::size_t size() const;
-
-            /** Access a parameter: read-only */
-            const mapped_type& operator[](const std::string& k) const;
-
-            /** Access a parameter: possibly for assignment */
-            mapped_type& operator[](const std::string& k);
-
-            /** Returns iterator to the beginning of the option map */
-            const_iterator begin() const;
-
-            /** Iterator to the beyond-the-end of the option map */
-            const_iterator end() const;
-
-            /** Returns iterator over "missing" parameters */
-            missing_params_iterator begin_missing() const;
-
-            /** Returns iterator to beyond-the-end of "missing" parameters */
-            missing_params_iterator end_missing() const;
+            /// Conveninece method: true if the object was restored from an archive
+            bool is_restored() const { return !archive_name_.empty(); }
             
+            /// Convenience method: returns the archive name the object has been restored from, or throws
+            std::string get_archive_name() const;
+            
+            /// No-errors status
+            bool ok() const { return err_status_.empty(); }
 
-            /// Check if a parameter exists (that is: attempt to read a compatible-typed value from it will not throw)
-            bool exists(const std::string& name) const;
+            /// True if there are missing or wrong-type parameters
+            bool has_missing() const { return !ok(); }
 
-            /// Check if a parameter exists and is convertible to type T (that is: attempt to read T from it will not throw)
-            template <typename T>
-            bool exists(const std::string& name) const;
-
-            /// @brief Check if parameter has default value (because it's not present in the command line).
-            /// @details Returns false for unknown and missing parameters
-            /// @remark Undefined (currently: false) for implicitly defined (by assignment) parameters
-            // FIXME: what if it does not exist? what if it was explicitly assigned?
+            /// True if the parameter acquired its value by default
             bool defaulted(const std::string& name) const;
 
-            /// Check if the parameter was ever `define()`-d or has a pre-assigned value (attempt to define() will throw)
+            /// True if the parameter is supplied via file or cmdline
+            bool supplied(const std::string& name) const;
+
+            /// True if there are parameters supplied but not defined; prints them out
+            bool has_unused(std::ostream& out) const;
+
+            /// True if there are parameters supplied but not defined in a subsection; prints them out
+            /**
+               @param subsection The subsection to look into; empty
+               string means "top level" (or "anonymous") subsection.
+             */
+            bool has_unused(std::ostream& out, const std::string& subsection) const;
+
+            /// True if there are missing or wrong-type parameters; prints the message to that effect
+            bool has_missing(std::ostream& out) const;
+
+            /// True if user requested help
+            bool help_requested() const { return !help_header_.empty() && (*this)["help"].as<bool>(); }
+
+            /// True if user requested help; print it to the supplied stream
+            bool help_requested(std::ostream&) const;
+
+            /// Returns true if the objects are identical
+            bool operator==(const params& rhs) const;
+
+            /// Check whether a parameter was ever defined
+            /** That is, calling `define()` is unnecessary and will throw if type does not match. */
             bool defined(const std::string& name) const;
 
-            /// Save parameters to HDF5 archive
-            void save(hdf5::archive &) const;
+            /// Defines a parameter; returns false on error, and records the error in the object
+            template<typename T>
+            params& define(const std::string& name, const std::string& descr);
 
-            /// Save parameters to HDF5 archive to a given path
-            void save(hdf5::archive &, const std::string&) const;
+            /// Defines a parameter with a default; returns false on error, and records the error in the object
+            template<typename T>
+            params& define(const std::string& name, const T& defval, const std::string& descr);
 
-            /// Load parameters from HDF5 archive (overwriting the object)
-            void load(hdf5::archive &);
+            /// Defines a flag (boolean option with default of `false`)
+            params& define(const std::string& name, const std::string& descr) {
+                return define<bool>(name, false, descr);
+            }
 
-            /// Load parameters from HDF5 archive (overwriting the object) from a given path
-            void load(hdf5::archive &, const std::string&);
+            /// Sets a description for the help message and introduces "--help" flag
+            params& description(const std::string& message);
+            
+            /// Returns a string describing the parameter (or an empty string)
+            const std::string get_descr(const std::string& name) const;
+
+            friend void swap(params& p1, params& p2);
+
+            /// Saves parameter object to an archive
+            void save(alps::hdf5::archive&) const;
+
+            /// Loads parameter object form an archive
+            void load(alps::hdf5::archive&);
+
+            /// Prints parameters to a stream in an unspecified format
+            friend
+            std::ostream& operator<<(std::ostream&, const params&);
 
 #ifdef ALPS_HAVE_MPI
-            /// Broadcast the parameters to all processes (FIXME: does not have a test yet)
-            void broadcast(alps::mpi::communicator const &, int = 0);
+            // FIXME: should it be virtual?
+            void broadcast(const alps::mpi::communicator& comm, int root);
+
+            /// Broadcasting ctor. Reads file/params on root, broadcasts to everyone
+            params(int argc, const char* const* argv, const alps::mpi::communicator& comm, int root, const char* hdf5_path="/parameters")
+                : dictionary(),
+                  raw_kv_content_(),
+                  td_map_(),
+                  err_status_(),
+                  argv0_()
+
+            {
+                initialize_(argc,argv,hdf5_path);
+                broadcast(comm, root);
+            }
 #endif
-
-            // -- now for the defining the options ---
-
-            /// Set the help text for '--help' option
-            params& description(const std::string& helpline);
-
-            /// Define an option of type T with an optional value
-            template <typename T>
-            params& define(const std::string& optname, T defval, const std::string& descr);
-
-            /// Define an option of type T with a required value
-            template <typename T>
-            params& define(const std::string& optname, const std::string& descr);
-
-            /// Define a "trigger" command-line option (like "--help")
-            params& define(const std::string& optname, const std::string& a_descr);
-
-            /// Output the help message, if requested. @param ostrm: Output stream @returns true if help was indeed requested.
-            bool help_requested(std::ostream& ostrm) const;
-
-            /// Check if help requested. @returns true if help was requested.
-            bool help_requested() const;
-
-            /// Output the help message. @param ostrm: Output stream
-            void print_help(std::ostream& ostrm) const;
-
-            /// Output the list of missing parameters, if any. @param ostrm: Output stream @returns true if there are missing parameters
-            bool has_missing(std::ostream& ostrm) const;
-
-            /// Stream parameters
-            friend std::ostream& operator<<(std::ostream& str, params const& x);
         };
 
-        // FIXME: we may consider provide template specializations for specific types? To hide templates inside *.cpp?
     } // params_ns::
+    typedef params_ns::params params;
+
+#ifdef ALPS_HAVE_MPI
+    namespace mpi {
+
+        inline void broadcast(const alps::mpi::communicator& comm, alps::params_ns::detail::td_type& td, int root) {
+            broadcast(comm, td.typestr_, root);
+            broadcast(comm, td.descr_, root);
+            broadcast(comm, td.defnumber_, root);
+        }
+
+        inline void broadcast(const alps::mpi::communicator &comm, alps::params_ns::dictionary& dict, int root) {
+            dict.broadcast(comm, root);
+        }
+
+        inline void broadcast(const alps::mpi::communicator &comm, alps::params_ns::params& p, int root) {
+            p.broadcast(comm, root);
+        }
+    } // mpi::
+#endif
+
 } // alps::
 
-// Inline member functions:
 #include "./params/params_impl.hpp"
 
-// Other implementation details
-# include "./params/params_detail.hpp"
 
-namespace alps {
-    // Elevate relevant class to the alps NS:
-    using params_ns::params;
-
-} // alps::
-
-
-#endif /* ALPS_PARAMS_HPP_INCLUDED_8fd4d6abf4b6438cb3406e5a2d328d35 */
+#endif /* ALPS_PARAMS_HPP_INCLUDED_00f672a032d949a7aa0e760a6b6f0602 */

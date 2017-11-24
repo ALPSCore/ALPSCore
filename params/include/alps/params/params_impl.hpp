@@ -1,208 +1,148 @@
-/*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
- * All rights reserved. Use is subject to license terms. See LICENSE.TXT
- * For use in publications, see ACKNOWLEDGE.TXT
- */
+// ** Implementation of alps::params
 
-/** @file params_impl.hpp Contains implementations of inline and template functions for alps::params class */
-
-#ifndef ALPS_PARAMS_PARAMS_IMPL_HPP_8243f4d88828473688ec07edbb7a9f76
-#define ALPS_PARAMS_PARAMS_IMPL_HPP_8243f4d88828473688ec07edbb7a9f76
-
+#include <boost/lexical_cast.hpp>
+#include <boost/optional.hpp>
 namespace alps {
     namespace params_ns {
 
-        inline void params::certainly_parse(bool reassign) const
-        {
-            boost::program_options::options_description odescr;
-            certainly_parse(odescr,reassign);
-        }
+        namespace detail {
 
-        inline void params::possibly_parse() const
-        {
-            if (!is_valid_) certainly_parse();
-        }
+            
+            template <typename T>
+            struct parse_string {
+                static boost::optional<T> apply(const std::string& in) {
+                    T conv_result;
+                    boost::optional<T> result;
+                    if (boost::conversion::try_lexical_convert(in, conv_result)) {
+                        result=conv_result;
+                    }
+                    return result;
+                }
+            };
 
-        inline void params::invalidate() {
-            is_valid_=false;
-        }
+            template <>
+            struct parse_string<std::string> {
+                static boost::optional<std::string> apply(const std::string& in) {
+                    return in;
+                }
+            };
 
-        inline void params::init()
-        {
-            is_valid_=false;
-            this->define("help", "Provides help message");
-        }
+            template <>
+            struct parse_string<bool> {
+                static boost::optional<bool> apply(const std::string& in) {
+                    // FIXME: use C_locale and lowercase the string
+                    boost::optional<bool> result;
+                    if (in=="true") result=true;
+                    if (in=="false") result=false;
+                    return result;
+                }
+            };
 
-        inline params::params()
-        {
-            init();
-        }
+            template <typename T>
+            struct parse_string< std::vector<T> > {
+                static boost::optional< std::vector<T> > apply(const std::string& in) {
+                    typedef std::vector<T> value_type;
+                    typedef boost::optional<value_type> result_type;
+                    typedef boost::optional<T> optional_el_type;
+                    typedef std::string::const_iterator sit_type;
+                    value_type result_vec;
+                    result_type result;
+                    sit_type it1=in.begin();
+                    while (it1!=in.end()) {
+                        sit_type it2=find(it1, in.end(), ',');
+                        optional_el_type elem=parse_string<T>::apply(std::string(it1,it2));
+                        if (!elem) return result;
+                        result_vec.push_back(*elem);
+                        if (it2!=in.end()) ++it2;
+                        it1=it2;
+                    }
+                    result=result_vec;
+                    return result;
+                }
+            };
 
-        inline params::params(unsigned int argc, const char* const* argv, const char* hdfpath)
-        {
-          init(argc,argv,hdfpath);
-        }
+        } // ::detail
 
-        inline params::params(hdf5::archive ar, std::string const & path)
+        template <typename T>
+        bool params::assign_to_name_(const std::string& name, const std::string& strval)
         {
-            this->load(ar, path);
+            boost::optional<T> result=detail::parse_string<T>::apply(strval);
+            if (result) {
+                (*this)[name]=*result;
+                return true;
+            } else {
+                return false;
+            }
         }
-
-      inline params::params(const std::string& inifile) : infile_(inifile)
+        
+        template <typename T>
+        bool params::define_(const std::string& name, const std::string& descr)
         {
-            preparse_ini();
-            init();
-        }
+            if (this->exists(name) && !this->exists<T>(name))
+                throw exception::type_mismatch(name, "Parameter already in dictionary with a different type");
 
-        inline bool params::is_restored() const
-        {
-            return bool(archname_);
-        }
+            td_map_type::iterator td_it=td_map_.find(name); // FIXME: use lower-bound instead
+            if (td_it!=td_map_.end()) {
+                if (td_it->second.typestr() != detail::make_typestr::apply<T>()) throw exception::type_mismatch(name, "Parameter already defined with a different type");
+                td_it->second.descr()=descr;
+                return true;
+            }
+            td_map_.insert(std::make_pair(name, detail::td_type::make_pair<T>(descr, td_map_.size())));
 
-        inline std::string params::get_archive_name() const
-        {
-            if (archname_) return *archname_;
-            throw not_restored("This instance of parameters was not restored from an archive");
-        }
-
-        inline std::size_t params::size() const
-        {
-            possibly_parse(); return optmap_.size();
-        }
-
-        inline const params::mapped_type& params::operator[](const std::string& k) const
-        {
-            possibly_parse();
-            return const_cast<const options_map_type&>(optmap_)[k];
-        }
-
-        inline params::mapped_type& params::operator[](const std::string& k)
-        {
-            possibly_parse();
-            return optmap_[k];
-        }
-
-        inline params::const_iterator params::begin() const
-        {
-            possibly_parse();
-            return optmap_.begin();
-        }
-
-        inline params::const_iterator params::end() const
-        {
-            possibly_parse();
-            return optmap_.end();
-        }
-
-        inline params::missing_params_iterator params::begin_missing() const
-        {
-            return detail::iterators::make_missing_params_iterator(this->begin(), this->end());
-        }
-
-        inline params::missing_params_iterator params::end_missing() const
-        {
-            return detail::iterators::make_missing_params_iterator(this->end(), this->end());
-        }
-
-        inline bool params::exists(const std::string& name) const
-        {
-            possibly_parse();
-            options_map_type::const_iterator it=optmap_.find(name);
-            return (it!=optmap_.end()) && !detail::is_option_missing(it->second);
+            strmap::const_iterator it=raw_kv_content_.find(name);
+            if (it==raw_kv_content_.end()) {
+                if (this->exists(name)) return true;
+                return false; // caller needs to decide whether the default is available
+            }
+            if (!assign_to_name_<T>(name, it->second)) {
+                err_status_.push_back("Cannot parse parameter '"+name+"' as the requested type");
+                (*this)[name].clear();
+            }
+            return true;
         }
 
         template <typename T>
-        inline bool params::exists(const std::string& name) const
+        params& params::define(const std::string& name, const std::string& descr)
         {
-            possibly_parse();
-            options_map_type::const_iterator it=optmap_.find(name);
-            return (it!=optmap_.end()) && (it->second).is_convertible<T>();
+            if (!define_<T>(name, descr)) {
+                if (!this->exists<T>(name)) err_status_.push_back("Required parameter '"+name+"' is missing"); 
+            }
+            return *this;
+        }
+        
+        template <typename T>
+        params& params::define(const std::string& name, const T& defval, const std::string& descr)
+        {
+            if (!define_<T>(name, descr)) {
+                (*this)[name]=defval;
+            }
+            return *this;
         }
 
+        inline bool params::supplied(const std::string &name) const
+        {
+            return raw_kv_content_.count(name);
+        }
+        
         inline bool params::defaulted(const std::string& name) const
         {
-            possibly_parse();
-            // FIXME: the implementation via set is a quick hack
-            return exists(name) && defaulted_options_.count(name)!=0;
+            return exists(name) && !supplied(name);
         }
-
+        
         inline bool params::defined(const std::string& name) const
         {
-            possibly_parse(); // it fills optmap_ (FIXME: may not be needed actually?)
-            return optmap_.count(name)!=0 || descr_map_.count(name)!=0;
+            return td_map_.count(name)!=0 || exists(name);
         }
-
-        inline params& params::description(const std::string& helpline)
+        
+        inline void swap(params& p1, params& p2)
         {
-            invalidate();
-            helpmsg_=helpline;
-            return *this;
-        }
-
-        inline bool params::help_requested() const
-        {
-            possibly_parse();
-            return optmap_["help"];
-        }
-
-        template <typename T>
-        inline params& params::define(const std::string& optname, T defval, const std::string& a_descr)
-        {
-            check_validity(optname);
-            invalidate();
-            typedef detail::description_map_type::value_type value_type;
-#ifndef NDEBUG
-            bool result=
-#endif
-                descr_map_.insert(value_type(optname, detail::option_description_type(a_descr,defval)))
-#ifndef NDEBUG
-                .second;
-            assert(result && "The inserted element is always new");
-#else
-            ;
-#endif
-            return *this;
-        }
-
-        template <typename T>
-        inline params& params::define(const std::string& optname, const std::string& a_descr)
-        {
-            check_validity(optname);
-            invalidate();
-            typedef detail::description_map_type::value_type value_type;
-#ifndef NDEBUG
-            bool result=
-#endif
-                descr_map_.insert(value_type(optname, detail::option_description_type(a_descr, (T*)0)))
-#ifndef NDEBUG
-                .second;
-            assert(result && "The inserted element is always new");
-#else
-            ;
-#endif
-            return *this;
-        }
-
-/// Define a "trigger" option
-        inline params& params::define(const std::string& optname, const std::string& a_descr)
-        {
-            check_validity(optname);
-            invalidate();
-            typedef detail::description_map_type::value_type value_type;
-#ifndef NDEBUG
-            bool result=
-#endif
-                descr_map_.insert(value_type(optname, detail::option_description_type(a_descr)))
-#ifndef NDEBUG
-                .second;
-            assert(result && "The inserted element is always new");
-#else
-            ;
-#endif
-            return *this;
+            using std::swap;
+            swap(static_cast<dictionary&>(p1), static_cast<dictionary&>(p2));
+            swap(p1.raw_kv_content_, p2.raw_kv_content_);
+            swap(p1.td_map_, p2.td_map_);
+            swap(p1.err_status_, p2.err_status_);
+            swap(p1.argv0_, p2.argv0_);
         }
 
     } // params_ns::
 } // alps::
-
-#endif /* ALPS_PARAMS_PARAMS_IMPL_HPP_8243f4d88828473688ec07edbb7a9f76 */

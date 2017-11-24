@@ -4,437 +4,369 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#include <iostream>
-#include <sstream>
-#include <stdexcept>
-#include <string.h>
-#include <fstream>
-#include <cassert>
-//#include <vector>
-//#include <algorithm>
-//#include <iterator>
-#include "boost/foreach.hpp"
-// #include "boost/preprocessor.hpp"
-#include "boost/algorithm/string/trim.hpp"
-#include "boost/algorithm/string/erase.hpp"
-#include "boost/algorithm/string/classification.hpp"
-#include "boost/algorithm/string/predicate.hpp"
+/** @file params.cpp
+    Contains implementation of alps::params */
 
-#include "boost/optional.hpp"
-
-// #include <alps/hdf5/archive.hpp>
-#include <alps/hdf5.hpp>
-
+#include <alps/params/iniparser_interface.hpp>
 #include <alps/params.hpp>
+#include <algorithm>
+#include <sstream>
+#include <iomanip> // for help pretty-printing
+#include <iterator> // for ostream_iterator
+#include <cstring> // for memcmp()
+#include <boost/optional.hpp>
+
+#include <alps/testing/unique_file.hpp> // FIXME!!! Temporary!
+#include <fstream> // FIXME!!! Temporary!
+
+#include <alps/hdf5/map.hpp>
+#include <alps/hdf5/vector.hpp>
+
+#include <boost/foreach.hpp>
 
 #ifdef ALPS_HAVE_MPI
-#include <alps/utilities/mpi.hpp>
+#include <alps/utilities/mpi_map.hpp>
 #include <alps/utilities/mpi_vector.hpp>
-#include <alps/utilities/mpi_optional.hpp>
 #endif
 
 
-// Anonymous namespace for service functions & classes
-namespace {
-    // Service functor class to convert C-string pointer to an std::string
-    struct cstr2string {
-        std::string operator()(const char* cstr)
-        {
-            return std::string(cstr);
-        }
-    };
-
-    // Service function to try to open an HDF5 archive, return "none" if it fails
-    boost::optional<alps::hdf5::archive> try_open_ar(const std::string& fname, const char* mode)
-    {
-        try {
-            //read in hdf5 checksum of file and verify it's a hdf5 file
-            {
-              std::ifstream f(fname.c_str(),std::ios::binary);
-              if(!f.good()) return boost::none;
-              char hdf5_checksum[]={(char)137,72,68,70,13,10,26,10};
-              char firstbytes[8]; 
-              f.read(firstbytes, 8);
-              if(!f.good() || strncmp(hdf5_checksum,firstbytes,8)!=0) return boost::none;
-            }
-            return alps::hdf5::archive(fname, mode);
-        } catch (alps::hdf5::archive_error& ) {
-            return boost::none;
-        }
-    };
-}
-
-namespace alps{ 
+namespace alps {
     namespace params_ns {
-  
-        namespace po=boost::program_options;
 
-        void params::preparse_ini()
-        {
-            po::parsed_options parsed=po::parse_config_file<char>(infile_.c_str(),po::options_description(),true);
-            BOOST_FOREACH(const po::option& opt, parsed.options) {
-                assert(opt.unregistered && "boost::program_options should mark all opts as unregistered!");
-                if (opt.value.size()!=1) {
-                    throw std::logic_error("params::ctor: Unexpected value size from boost::program_options:"
-                                           " key='" + boost::lexical_cast<std::string>(opt.string_key)
-                                           + " ' size=" + boost::lexical_cast<std::string>(opt.value.size())
-                                           + ALPS_STACKTRACE);
-                }
-                file_content_.append(opt.string_key + "=" + opt.value[0] + "\n");
-            }
-        }
-    
-        void params::init(unsigned int argc, const char* const* argv, const char* hdfpath)
-        {
-            if (argc>0) argv0_=argv[0];
-            if (argc>1) {
-                if (std::string(argv[1]).substr(0,2)!="--") {
-                    // first argument exists and is not an option
-                    infile_=argv[1];
-                    boost::optional<alps::hdf5::archive> ar=try_open_ar(infile_, "r");
-                    if (ar) { // valid HDF5!
-                        if (hdfpath) { // and we want it!
-                            this->load(*ar, hdfpath);
-                            archname_=argv[1]; 
-                            infile_.clear();
-                            argvec_.clear();
-                            argv0_=argv[0];
-                        }
-                    } else {
-                        // it's presumably an INI: pre-parse and remember
-                        preparse_ini();
+        namespace {
+            // Helper function to try to open an HDF5 archive, return "none" if it fails
+            boost::optional<alps::hdf5::archive> try_open_ar(const std::string& fname, const char* mode)
+            {
+                try {
+                    //read in hdf5 checksum of file and verify it's a hdf5 file
+                    {
+                        std::ifstream f(fname.c_str(),std::ios::binary);
+                        if(!f.good()) return boost::none;
+                        static const char hdf5_checksum[]={char(137),72,68,70,13,10,26,10};
+                        char firstbytes[sizeof(hdf5_checksum)];
+                        f.read(firstbytes, sizeof(firstbytes));
+                        if(!f.good() || memcmp(hdf5_checksum, firstbytes, sizeof(firstbytes))!=0) return boost::none;
                     }
-                    
-                    // skip the first argument
-                    --argc;
-                    ++argv;
+                    return alps::hdf5::archive(fname, mode);
+                } catch (alps::hdf5::archive_error& ) {
+                    return boost::none;
                 }
-                // save the command line
-                std::transform(argv+1,argv+argc, std::back_inserter(argvec_), cstr2string());
-            }
-            if (is_restored()) {
-                // re-parse the command line (overriding values)
-                // and skip default initialization
-                certainly_parse(true);
-            } else {
-                // no use to parse command line, default init is needed
-                init();
-            }
+            };
         }
 
-#ifdef ALPS_HAVE_MPI      
-        params::params(unsigned int argc, const char* const* argv, const alps::mpi::communicator& comm,
-                                   int root, const char* hdfpath)
+        std::string params::get_archive_name() const
         {
-            if (comm.rank()==root) {
-                init(argc, argv, hdfpath);
-            }
-            this->broadcast(comm,root);
-        }
-#endif
-            
-        /// @brief Convenience function: returns the "origin name"
-        /// @Returns (parameter_file_name || restart_file name || program_name || "")
-        // Rationale: the "origin name" is a useful info, otherwise
-        // inaccessible. But it is a caller's responsibility to make
-        // sense of it.
-        std::string params::get_origin_name() const
-        {
-            if (!infile_.empty()) return infile_;
-            if (archname_) return *archname_;
-            return argv0_;
+            // FIXME? Should it actually throw [like the old version], or simply return empty string?
+            if (!this->is_restored()) throw std::runtime_error("The parameters object is not restored from an archive");
+            return archive_name_;
         }
 
-        /// Function to check for validity/redefinition of an option (throws!)
-        void params::check_validity(const std::string& optname) const
+
+        params& params::description(const std::string &message)
         {
-            if ( ! (boost::all(optname, boost::is_alnum()||boost::is_any_of("_.-"))
-                    && boost::all(optname.substr(0,1), boost::is_alnum()) ))  {
-                // The name is not alphanum-underscore-dot-dash, or does not start with alnum
-                throw invalid_name(optname, "Invalid parameter name");
+            this->define("help", "Print help message");
+            help_header_=message;
+            return *this;
+        }
+
+        bool params::has_unused_(std::ostream& out, const std::string* prefix_ptr) const
+        {
+            strvec unused;
+            BOOST_FOREACH(const strmap::value_type& kv, raw_kv_content_) {
+                bool relevant = !prefix_ptr  // no specific prefix?
+                                || (prefix_ptr->empty() ? kv.first.find('.')==std::string::npos // top-level section?
+                                                        : kv.first.find(*prefix_ptr+".")==0);   // starts with sec name?
+                if (relevant && !this->exists(kv.first)) {
+                    unused.push_back(kv.first+" = "+kv.second);
+                }
             }
-            if (descr_map_.count(optname)) {
-                // The option was already defined
-                throw double_definition(optname,"Attempt to define already defined parameter");
+            if (!unused.empty()) {
+                out << "The following arguments are supplied, but never referenced:\n";
+                std::copy(unused.begin(), unused.end(), std::ostream_iterator<std::string>(out,"\n"));
             }
-            if (optmap_.count(optname)) {
-                // The option was already explicitly assigned or defined
-                throw extra_definition(optname, "Attempt to define explicitly assigned parameter");
-            }
+            return !unused.empty();
         }
         
-        
-        void params::certainly_parse(po::options_description& odescr, bool reassign) const
+        bool params::has_unused(std::ostream& out, const std::string& subsection) const
         {
-            // First, create program_options::options_description from the description map
-            BOOST_FOREACH(const detail::description_map_type::value_type& kv, descr_map_)
-            {
-                kv.second.add_option(odescr, kv.first);
-            }
+            return has_unused_(out, &subsection);
+        }
 
-            // Second, parse the parameters according to the description into the variables_map
-            po::variables_map vm;
+        bool params::has_unused(std::ostream& out) const
+        {
+            return has_unused_(out, 0);
+        }
 
-            // Parse even if the commandline is empty, to set default values.
-            {
-                po::parsed_options cmdline_opts=
-                    po::command_line_parser(argvec_).
-                    allow_unregistered().
-                    options(odescr).
-                    run();
+        bool params::help_requested(std::ostream& out) const
+        {
+            if (!this->help_requested()) return false;
+            out << help_header_ << "\nAvailable options:\n";
 
-                po::store(cmdline_opts,vm);
-            }
+            typedef std::pair<std::string, std::string> nd_pair; // name and description
+            typedef std::vector<nd_pair> nd_vector;
+            nd_vector name_and_description;
+            name_and_description.resize(td_map_.size());
+            std::string::size_type names_column_width=0;
 
-             if (!file_content_.empty()) {
-                 std::istringstream istr(file_content_);
-                // parse the file, allow unregistered options
-                 po::parsed_options cfgfile_opts=po::parse_config_file(istr,odescr,true);
+            // prepare 2 columns: parameters and their description
+            BOOST_FOREACH(const td_map_type::value_type& tdp, td_map_) {
+                const std::string name_and_type=tdp.first + " (" +  tdp.second.typestr() + "):";
+                if (names_column_width<name_and_type.size()) names_column_width=name_and_type.size();
 
-                 po::store(cfgfile_opts,vm);
-             }
-
-            // Now for each defined option, copy the corresponding parsed option to the this's option map
-
-            // NOTE#1: Only options that are not yet in optmap_ are
-            //         affected here, to avoid overwriting an option
-            //         that was assigned earlier) --- unless 
-            //         `reassign` is set to true, indicating that the
-            //         command line options take precedence.
-            // NOTE#2:
-            //         The loop is over the content of the define()'d
-            //         options (descr_map_) so that options that are
-            //         defined but are not in the command line and are
-            //         without default will be set: it is needed for
-            //         "trigger" options. It may also be an
-            //         opportunity to distinguish between options that
-            //         are define()'d but are missing and those which
-            //         were never even define()'d.
-
-            defaulted_options_.clear(); // FIXME!!! can we avoid this lengthy operation?
-            BOOST_FOREACH(const detail::description_map_type::value_type& slot, descr_map_) {
-                const std::string& k=slot.first;
-                const detail::description_map_type::mapped_type& dscval=slot.second;
-                const po::variables_map::mapped_type& cmdline_var=vm[k];
-                
-                // Mark the options that have default values (not in command line)
-                if (cmdline_var.defaulted()) defaulted_options_.insert(k); // FIXME: it's a temporary hack
-                  
-                if (reassign) {
-                    // options in the command line must override stored options
-                    if (cmdline_var.empty() || cmdline_var.defaulted()) continue; // skip options missing from cmdline
-                } else {
-                    // no override, stored options take precedence
-                    if (optmap_.count(k)) continue; // skip the keys that are already stored and have value assigned
+                std::ostringstream ostr;
+                ostr << tdp.second.descr();
+                if (this->exists(tdp.first) && tdp.first!="help") {
+                    ostr << " (default value: ";
+                    print(ostr, (*this)[tdp.first], true) << ")";
                 }
-                dscval.set_option(optmap_[k], cmdline_var.value());
-            }
-            is_valid_=true;
-        }        
-
-        /// @todo: FIXME: only weak exception guarantee
-        void params::save(hdf5::archive& ar) const
-        {
-            possibly_parse();
-            const std::string context=ar.get_context();
-            const std::string dict_group=context+"/dictionary";
-            const std::string def_group=context+"/definitions";
-            const std::string state_group=context+"/object_state";
-
-            if (ar.is_group(context)) {
-                ar.delete_group(context);
-                ar.create_group(context);
-                ar.set_context(context);
-            }
-            
-            ar.create_group(dict_group);
-            ar.set_context(dict_group);
-            BOOST_FOREACH(const options_map_type::value_type& slot, optmap_)
-            {
-                slot.second.save(ar);
-            }
-
-            ar.create_group(def_group);
-            ar.set_context(def_group);
-            BOOST_FOREACH(const detail::description_map_type::value_type& slot, descr_map_) {
-                const detail::option_description_type& opt=slot.second;
-                const std::string& key=slot.first;
-                opt.save(ar,key);
-            }
-            
-            ar.create_group(state_group);
-            ar.set_context(state_group);
-
-            ar["help"] << helpmsg_;
-            ar["argv"] << argvec_;
-            ar["inifile"] << file_content_;
-            ar["ininame"] << infile_;
-            ar["argv0"] << argv0_;
-            if (archname_) ar["archname"] << *archname_;
-            
-            ar.set_context(context);
-        }
-
-        void params::save(hdf5::archive& ar, const std::string& path) const
-        {
-            std::string context = ar.get_context();
-            ar.set_context(path);
-            save(ar);
-            ar.set_context(context);
-        }
-
-        /// @todo: FIXME: only weak exception guarantee
-        void params::load(hdf5::archive& ar)
-        {
-            // FXIME: implement and use swap() here
-            const std::string context=ar.get_context();
-            const std::string dict_group=context+"/dictionary";
-            const std::string def_group=context+"/definitions";
-            const std::string state_group=context+"/object_state";
-
-            ar.set_context(dict_group);
-            std::vector<std::string> dict_names=ar.list_children(".");
-            optmap_.clear();
-            BOOST_FOREACH(const std::string& key, dict_names) {
-                if (ar.is_group(key)) continue;
-                optmap_.insert(options_map_type::value_type(key, option_type::get_loaded(ar,key)));
-            }
-            
-            ar.set_context(def_group);
-            std::vector<std::string> def_names=ar.list_children(".");
-            descr_map_.clear();
-            BOOST_FOREACH(const std::string& key, def_names) {
-                descr_map_.insert(detail::description_map_type::value_type(key, detail::option_description_type::get_loaded(ar,key)));
-            }
-
-            // FIXME: once swap() is implemented and used, we don't need `else ...clear()`
-            if (ar.is_group(state_group)) {
-                ar.set_context(state_group);
-                if (ar.is_data("help")) ar["help"] >> helpmsg_; else helpmsg_.clear();
-                if (ar.is_data("argv")) ar["argv"] >> argvec_; else argvec_.clear();
-                if (ar.is_data("inifile")) ar["inifile"] >> file_content_; else file_content_.clear();
-                if (ar.is_data("ininame")) ar["ininame"] >> infile_; else infile_.clear();
-                if (ar.is_data("argv0")) ar["argv0"] >> argv0_; else argv0_.clear();
-                if (ar.is_data("archname")) {
-                    std::string archname;
-                    ar["archname"] >> archname;
-                    archname_=archname;
-                } else {
-                    archname_=boost::none;
+                // place the output on the line corresponding to definiton order
+                int defnum=tdp.second.defnumber();
+                if (defnum<0 || static_cast<unsigned int>(defnum)>=name_and_description.size()) {
+                    std::ostringstream errmsg;
+                    errmsg << "Invalid entry in parameters object.\n"
+                           << "name='" << tdp.first
+                           << "' defnumber=" << defnum;
+                    throw std::logic_error(errmsg.str());
                 }
-            } else {
-                // FIXME: once swap() is implemented and used, we don't need this
-                helpmsg_.clear();
-                argvec_.clear();
-                file_content_.clear();
-                infile_.clear();
-                argv0_.clear();
-                archname_=boost::none;
+                name_and_description[defnum]=std::make_pair(name_and_type, ostr.str());
             }
-             
-            ar.set_context(context);
-            certainly_parse();
-        }
 
-        void params::load(hdf5::archive& ar, const std::string& path)
-        {
-            std::string context = ar.get_context();
-            ar.set_context(path);
-            load(ar);
-            ar.set_context(context);
-        }
-
-        bool params::help_requested(std::ostream& ostrm) const
-        {
-            if (help_requested()) { 
-                print_help(ostrm);
-                return true;
+            // print the columns
+            std::ostream::fmtflags oldfmt=out.flags();
+            left(out);
+            names_column_width += 4;
+            BOOST_FOREACH(const nd_pair& ndp, name_and_description) {
+                out << std::left << std::setw(names_column_width) << ndp.first << ndp.second << "\n";
             }
-            return false;
-        }
-        
-        void params::print_help(std::ostream& ostrm) const
-        {
-            po::options_description odescr;
-            certainly_parse(odescr);
-            ostrm << helpmsg_ << std::endl;
-            ostrm << odescr;
-        }        
+            out.flags(oldfmt);
 
-        bool params::has_missing(std::ostream& ostrm) const
-        {
-            missing_params_iterator it=begin_missing();
-            missing_params_iterator end=end_missing();
-            if (it==end) return false;
-            ostrm << "The following mandatory arguments are missing:\n";
-            for (; it!=end; ++it) {
-                ostrm << "\"" << *it << "\"\n";
-            }
-            ostrm << "Use \"" << argv0_ << " --help\" to see the list of options.\n";
             return true;
         }
-            
-      
-#ifdef ALPS_HAVE_MPI
-        void params::broadcast(alps::mpi::communicator const & comm, int root)
+
+        
+        bool params::has_missing(std::ostream& out) const
         {
-            // FIXME: correct implementation would use swap()
+            if (this->ok()) return false;
+            std::copy(err_status_.begin(), err_status_.end(), std::ostream_iterator<std::string>(out,"\n"));
+            return true;
+        }
 
-            using alps::mpi::broadcast;
-            
-            possibly_parse();
-
-            broadcast(comm, helpmsg_,root);
-            broadcast(comm, file_content_, root);
-            broadcast(comm, infile_, root);
-            broadcast(comm, argv0_, root);
-
-            broadcast(comm, argvec_, root);
-
-            broadcast(comm, archname_, root);
-
-            optmap_.broadcast(comm, root);
-
-            broadcast(comm, descr_map_, root);
-
-            certainly_parse();
-         }
-#endif
-
-        std::ostream& operator<<(std::ostream& str, params const& x) 
+        void params::initialize_(int argc, const char* const * argv, const char* hdf5_path)
         {
-            for (params::const_iterator it = x.begin(); it != x.end(); ++it) { 
-                if (!(it->second).isNone()) {
-                    str << it->first << " : " << it->second << std::endl;
+            // shortcuts:
+            typedef std::string::size_type size_type;
+            const size_type& npos=std::string::npos;
+            using std::string;
+            
+            if (argc==0) return;
+            argv0_.assign(argv[0]);
+            if (argc<2) return;
+            
+            std::vector<string> all_args(argv+1,argv+argc);
+            std::stringstream cmd_options;
+            bool file_args_mode=false;
+            boost::optional<alps::hdf5::archive> maybe_ar=boost::none;
+            BOOST_FOREACH(const string& arg, all_args) {
+                if (file_args_mode) {
+                    read_ini_file_(arg);
+                    continue;
                 }
-            } 
-            return str;
+                size_type key_end=arg.find('=');
+                size_type key_begin=0;
+                if (arg.substr(0,2)=="--") {
+                    if (arg.size()==2) {
+                        file_args_mode=true;
+                        continue;
+                    }
+                    key_begin=2;
+                } else if  (arg.substr(0,1)=="-") {
+                    key_begin=1;
+                }
+                if (0==key_begin && npos==key_end) {
+                    if (hdf5_path) maybe_ar=try_open_ar(arg, "r");
+                    if (maybe_ar) break;
+                    read_ini_file_(arg);
+                    continue;
+                }
+                if (npos==key_end) {
+                    cmd_options << arg.substr(key_begin) << "=true\n";
+                } else {
+                    cmd_options << arg.substr(key_begin) << "\n";
+                }
+            }
+            if (hdf5_path && maybe_ar) {
+                if (all_args.size()!=1) throw std::invalid_argument("HDF5 arhive must be the only argument");
+                maybe_ar->set_context(hdf5_path);
+                this->load(*maybe_ar);
+                archive_name_=all_args[0];
+                return;
+            }
+            // FIXME!!!
+            // This is very inefficient and is done only for testing.
+            alps::testing::unique_file tmpfile(argv0_+".param.ini", alps::testing::unique_file::REMOVE_AFTER);
+            std::ofstream tmpstream(tmpfile.name().c_str());
+            tmpstream << cmd_options.rdbuf();
+            tmpstream.close();
+            read_ini_file_(tmpfile.name());
+            
+        }
+        
+        void params::read_ini_file_(const std::string& inifile)
+        {
+            detail::iniparser parser(inifile);
+            BOOST_FOREACH(const detail::iniparser::kv_pair& kv, parser()) {
+                // FIXME!!! Check for duplicates and optionally warn!
+                std::string key=kv.first;
+                if (!key.empty() && key[0]=='.') key.erase(0,1);
+                raw_kv_content_[key]=kv.second;
+            }
+        }
+
+        const std::string params::get_descr(const std::string& name) const
+        {
+            td_map_type::const_iterator it=td_map_.find(name);
+            return (td_map_.end()==it)? std::string() : it->second.descr();
+        }
+
+        bool params::operator==(const alps::params_ns::params& rhs) const
+        {
+            const params& lhs=*this;
+            const dictionary& lhs_dict=*this;
+            const dictionary& rhs_dict=rhs;
+            return
+                (lhs.raw_kv_content_ == rhs.raw_kv_content_) &&
+                (lhs.td_map_ == rhs.td_map_) &&
+                (lhs.err_status_ == rhs.err_status_) &&
+                (lhs.help_header_ == rhs.help_header_) &&
+                (lhs.argv0_ == rhs.argv0_) &&
+                (lhs_dict==rhs_dict);
         }
 
 
-        namespace detail {
-            // Validator for strings
-            void validate(boost::any& outval, const std::vector<std::string>& strvalues,
-                          string_container* target_type, int)
-            {
-                namespace po=boost::program_options;
-                namespace pov=po::validators;
-                namespace alg=boost::algorithm;
-        
-                pov::check_first_occurrence(outval); // check that this option has not yet been assigned
-                std::string in_str=pov::get_single_string(strvalues); // check that this option is passed a single value
-
-                // Now, do parsing:
-                alg::trim(in_str); // Strip trailing and leading blanks
-                if (in_str[0]=='"' && in_str[in_str.size()-1]=='"') { // Check if it is a "quoted string"
-                    // Strip surrounding quotes:
-                    alg::erase_tail(in_str,1);
-                    alg::erase_head(in_str,1);
-                }
-                outval=boost::any(in_str);
-                // std::cerr << "***DEBUG: returning from validate(...std::string*...) ***" << std::endl;
+        void params::save(alps::hdf5::archive& ar) const {
+            dictionary::save(ar);
+            const std::string context=ar.get_context();
+            // Convert the inifile map to vectors of keys, values
+            std::vector<std::string> raw_keys, raw_vals;
+            raw_keys.reserve(raw_kv_content_.size());
+            raw_vals.reserve(raw_kv_content_.size());
+            BOOST_FOREACH(const strmap::value_type& kv, raw_kv_content_) {
+                raw_keys.push_back(kv.first);
+                raw_vals.push_back(kv.second);
             }
-        } // detail
-    } // params_ns
-} // alps
+            ar[context+"@ini_keys"] << raw_keys;
+            ar[context+"@ini_values"] << raw_vals;
+            ar[context+"@status"] << err_status_;
+            ar[context+"@argv0"]  << argv0_;
+            ar[context+"@help_header"]  << help_header_;
+            
+            std::vector<std::string> keys=ar.list_children(context);
+            BOOST_FOREACH(const std::string& key, keys) {
+                td_map_type::const_iterator it=td_map_.find(key);
+                
+                if (it!=td_map_.end()) {
+                    ar[key+"@description"] << it->second.descr();
+                    ar[key+"@defnumber"] << it->second.defnumber();
+                }
+            }
+        }
+        
+        void params::load(alps::hdf5::archive& ar) {
+            params newpar;
+            newpar.dictionary::load(ar);
 
+            const std::string context=ar.get_context();
+
+            ar[context+"@status"] >> newpar.err_status_;
+            ar[context+"@argv0"]  >> newpar.argv0_;
+            ar[context+"@help_header"]  >> newpar.help_header_;
+            
+            // Get the vectors of keys, values and convert them back to a map
+            {
+                typedef std::vector<std::string> stringvec;
+                stringvec raw_keys, raw_vals;
+                ar[context+"@ini_keys"] >> raw_keys;
+                ar[context+"@ini_values"] >> raw_vals;
+                if (raw_keys.size()!=raw_vals.size()) {
+                    throw std::invalid_argument("params::load(): invalid ini-file data in HDF5 (size mismatch)");
+                }
+                stringvec::const_iterator key_it=raw_keys.begin();
+                stringvec::const_iterator val_it=raw_vals.begin();
+                for (; key_it!=raw_keys.end(); ++key_it, ++val_it) {
+                    strmap::const_iterator insloc=newpar.raw_kv_content_.insert(newpar.raw_kv_content_.end(), std::make_pair(*key_it, *val_it));
+                    if (insloc->second!=*val_it) {
+                        throw std::invalid_argument("params::load(): invalid ini-file data in HDF5 (repeated key '"+insloc->first+"')");
+                    }
+                }
+            }
+            std::vector<std::string> keys=ar.list_children(context);
+            BOOST_FOREACH(const std::string& key, keys) {
+                const std::string d_attr=key+"@description";
+                const std::string num_attr=key+"@defnumber";
+                if (ar.is_attribute(d_attr)) {
+                    std::string descr;
+                    ar[d_attr] >> descr;
+
+                    int dn=-1;
+                    if (ar.is_attribute(num_attr)) {
+                        ar[num_attr] >> dn;
+                    } else {
+                         // FIXME? Issue a warning instead? How?
+                        throw std::runtime_error("Invalid HDF5 format: missing attribute "+ num_attr);
+                    }
+
+                    const_iterator it=newpar.find(key);
+                    if (newpar.end()==it) {
+                        throw std::logic_error("params::load(): loading the dictionary"
+                                               " missed key '"+key+"'??");
+                    }
+                    std::string typestr=apply_visitor(detail::make_typestr(), it);
+                    newpar.td_map_.insert(std::make_pair(key, detail::td_type(typestr, descr, dn)));
+                }
+            }
+            
+            using std::swap;
+            swap(*this, newpar);
+        }
+
+
+        std::ostream& operator<<(std::ostream& s, const params& p) {
+            s << "[alps::params]"
+              << " argv0='" << p.argv0_ << "' status=" << alps::short_print(p.err_status_)
+              << "\nRaw kv:\n";
+            BOOST_FOREACH(const params::strmap::value_type& kv, p.raw_kv_content_) {
+                s << kv.first << "=" << kv.second << "\n";
+            }
+            s << "[alps::params] Dictionary:\n";
+            for (params::const_iterator it=p.begin(); it!=p.end(); ++it) {
+                const std::string& key=it->first;
+                const dict_value& val=it->second;
+                s << key << " = " << val;
+                params::td_map_type::const_iterator tdit = p.td_map_.find(key);
+                if (tdit!=p.td_map_.end()) {
+                    s << " descr='" << tdit->second.descr()
+                      << "' typestring='" << tdit->second.typestr() << "'"
+                      << "' defnum=" << tdit->second.defnumber();
+                }
+                s << std::endl;
+            }
+            return s;
+        }
+
+
+#ifdef ALPS_HAVE_MPI
+        void params::broadcast(const alps::mpi::communicator& comm, int rank) {
+            this->dictionary::broadcast(comm, rank);
+            using alps::mpi::broadcast;
+            broadcast(comm, raw_kv_content_, rank);
+            broadcast(comm, td_map_, rank);
+            broadcast(comm, err_status_, rank);
+            broadcast(comm, argv0_, rank);
+        }
+#endif
+
+
+        
+    } // ::params_ns
+}// alps::
+            
