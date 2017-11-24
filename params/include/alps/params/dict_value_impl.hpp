@@ -15,6 +15,8 @@
 #include <alps/utilities/short_print.hpp> // for streaming of vectors
 #include <boost/type_index.hpp> // for pretty-printing user types in error messages
 
+#include <boost/static_assert.hpp> // FIXME:C++11 replace by std feature
+
 namespace std {
 template <typename T>
 inline std::ostream& operator<<(std::ostream& s, const std::pair<std::string,T>& p) {
@@ -45,6 +47,16 @@ namespace alps {
             // bool type is NOT integral for the purposes of this code
             template <typename T>
             struct is_integral : public yes_no<boost::is_integral<T>::value && !is_bool<T>::value> {};
+
+            // type is allowed: bool, integral, char* or other supported
+            // FIXME: should use `is_convertible`. Postponed till simplification refactoring
+            template <typename T>
+            struct is_allowed : public yes_no<
+                is_bool<T>::value
+                || boost::is_same<char*, T>::value
+                || boost::is_same<const char*, T>::value
+                || is_integral<T>::value
+                || is_supported<T>::value> {};
 
             // signed value: integral and signed
             template <typename T>
@@ -338,74 +350,6 @@ namespace alps {
                     }
                 };
 
-                // /// Visitor to compare 2 value of dict_value type
-                // class comparator2 : public boost::static_visitor<int> {
-                //     template <typename A, typename B>
-                //     static bool cmp_(const A& a, const B& b) { return (a==b)? 0 : (a<b)? -1:1; }
-                    
-                //   public:
-                //     /// Called by apply_visitor for bound values of different types
-                //     template <typename LHS_T, typename RHS_T>
-                //     int operator()(const LHS_T& lhs, const RHS_T& rhs) const {
-                //         std::string lhs_name=detail::type_info<LHS_T>::pretty_name();
-                //         std::string rhs_name=detail::type_info<RHS_T>::pretty_name();
-                //         throw exception::type_mismatch("","Attempt to compare dictionary values containing "
-                //                                        "incompatible types "+
-                //                                        lhs_name + "<=>" + rhs_name);
-                //     }
-
-                //     /// Called by apply_visitor for bound values of the same type
-                //     template <typename LHS_RHS_T>
-                //     int operator()(const LHS_RHS_T& lhs, const LHS_RHS_T& rhs) const {
-                //         return cmp_(lhs,rhs);
-                //     }
-
-                //     /// Called by apply_visitor for bound values both having None type
-                //     int operator()(const dict_value::None& lhs, const dict_value::None& rhs) const {
-                //         return 1;
-                //     }
-                        
-
-                //     // FIXME:TODO:
-                //     // Same types: compare directly
-                //     // Integral types: compare using signs (extract it to a separate namespace/class)
-                //     // FP types: compare directly
-                //     // Everything else: throw
-                // };
-
-                /// Visitor to test for exact equality (name and value)
-                class equals2 : public boost::static_visitor<bool> {
-                  public:
-                    /// Called when bound values have the same type
-                    template <typename LHS_RHS_T>
-                    bool operator()(const LHS_RHS_T& lhs, const LHS_RHS_T& rhs) const {
-                        return lhs==rhs;
-                    }
-
-                    /// Called when bound types are different
-                    template <typename LHS_T, typename RHS_T>
-                    bool operator()(const LHS_T& lhs, const RHS_T& rhs) const{
-                        return false;
-                    }
-
-                    /// Called when LHS is None
-                    template <typename RHS_T>
-                    bool operator()(const dict_value::None&, const RHS_T&) const {
-                        return false;
-                    }
-                    
-                    /// Called when RHS is None
-                    template <typename LHS_T>
-                    bool operator()(const LHS_T&, const dict_value::None&) const {
-                        return false;
-                    }
-                    
-                    /// Called when both are None
-                    bool operator()(const dict_value::None&, const dict_value::None&) const {
-                        return true;
-                    }
-                };
-
             } // ::visitor
         } //::detail
         
@@ -441,6 +385,7 @@ namespace alps {
             
         template <typename T>
         inline T dict_value::as() const {
+            BOOST_STATIC_ASSERT_MSG(detail::is_allowed<T>::value, "The type is not supported by dictionary");
             if (this->empty()) throw exception::uninitialized_value(name_,"Attempt to read uninitialized value");
             try {
                 return apply_visitor(detail::visitor::getter<T>());
@@ -460,6 +405,7 @@ namespace alps {
         template <typename T>
         inline int dict_value::compare(const T& rhs) const
         {
+            BOOST_STATIC_ASSERT_MSG(detail::is_allowed<T>::value, "The type is not supported by dictionary");
             if (this->empty()) throw exception::uninitialized_value(name_,"Attempt to compare uninitialized value");
             try {
                 return apply_visitor(detail::visitor::comparator<T>(rhs));
@@ -467,11 +413,6 @@ namespace alps {
                 exc.set_name(name_);
                 throw;
             }
-        }
-
-        inline bool dict_value::equals(const dict_value& rhs) const
-        {
-            return boost::apply_visitor(detail::visitor::equals2(), val_, rhs.val_);
         }
 
         /// Const-access visitor to the bound value

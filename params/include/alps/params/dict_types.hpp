@@ -14,6 +14,7 @@
 #include <boost/mpl/transform.hpp>
 #include <boost/mpl/front_inserter.hpp>
 #include <boost/mpl/copy.hpp>
+#include <boost/mpl/contains.hpp>
 
 // forward declarations
 namespace alps{ namespace hdf5 {
@@ -56,6 +57,7 @@ namespace alps {
             template <typename FS, typename TS>
             struct copy_to_front : public mpl::reverse_copy< FS, mpl::front_inserter<TS> > {};
 
+            // List of allowed types, `None` being the first
             typedef mpl::push_front<
                 copy_to_front<dict_scalar_types, dict_vector_types>::type,
                 None
@@ -67,8 +69,13 @@ namespace alps {
             //                  >::type,
             //     None
             //     >::type dict_all_types;
-            // List of allowed types, `None` being the first
 
+
+            // Meta-predicate: is type supported
+            // (FIXME?: this is linear compile-time complexity; we can use per-type traits instead)
+            template <typename T>
+            struct is_supported : public boost::mpl::contains<dict_all_types, T> {};
+            
             /** Unique pretty-printable names for all supported types */
 
             template <typename T>

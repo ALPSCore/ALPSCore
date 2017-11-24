@@ -187,6 +187,30 @@ TEST_F(DictionaryTestEq, eqCharPtrRight) {
     EXPECT_FALSE("another string"==cdict_["some_string"]);
 }
 
+TEST_F(DictionaryTestEq, eqBothDictVals) {
+    EXPECT_TRUE(cdict_["my_int"] == cdict_["my_int"]);
+    EXPECT_TRUE(cdict_["my_int"] != cdict_["my_int1"]);
+}
+
+TEST_F(DictionaryTestEq, eqOtherNumType) {
+    unsigned char my_char=23;
+    dict_["my_intc"]=int(my_char);
+    EXPECT_TRUE(cdict_["my_intc"] == my_char);
+    EXPECT_FALSE(cdict_["my_intc"] != my_char);
+}
+
+
+#if 0 /*  the following does not compile, as expected */
+struct NumLikeType {
+    operator int() { return 1; }
+};
+
+TEST_F(DictionaryTestEq, eqNumLikeType) {
+    dict_["one"]=1;
+    EXPECT_TRUE(cdict_["one"] == NumLikeType());
+}
+#endif /* end of non-compiling code */
+
 
 TEST_F(DictionaryTestEq, EqualsNonempty) {
     dict_["pos_int0"]=+pos_int;
