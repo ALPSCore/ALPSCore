@@ -57,6 +57,12 @@ TEST_F(ParamsTest, bcast) {
     broadcast(comm_, p, root_);
 
     EXPECT_TRUE(p==par_) << "Observed on rank " << comm_.rank();
+
+    EXPECT_EQ(par_.get_argv0(), p.get_argv0()) << "Observed on rank " << comm_.rank();
+    EXPECT_EQ(par_.get_ini_name_count(), p.get_ini_name_count()) << "Observed on rank " << comm_.rank();
+    for (int i=0; i<par_.get_ini_name_count(); ++i) {
+        EXPECT_EQ(par_.get_ini_name(i), p.get_ini_name(i)) << "Observed on rank " << comm_.rank();
+    }
 }
 
 TEST_F(ParamsTest, bcastCtor) {

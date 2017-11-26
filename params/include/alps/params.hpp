@@ -86,15 +86,30 @@ namespace alps {
             typedef std::map<std::string,std::string> strmap;
             typedef std::vector<std::string> strvec;
 
+            // Small inner class to keep "origins" together
+            struct origins_type {
+                enum {
+                    ARGV0=0,
+                    ARCHNAME=1,
+                    INIFILES=2
+                };
 
+                strvec data_;
+                origins_type(): data_(INIFILES) {}
+                strvec& data() { return data_; }
+                const strvec& data() const { return data_; }
+                void check() {
+                    if (data_.size()<INIFILES)
+                        throw std::logic_error("params::origins_type invariants violation");
+                }
+            };            
+            
             typedef std::map<std::string, detail::td_type> td_map_type;
-
 
             strmap raw_kv_content_;
             td_map_type td_map_;
             strvec err_status_;
-            std::string argv0_;
-            std::string archive_name_;
+            origins_type origins_; 
             std::string help_header_;
 
             void read_ini_file_(const std::string& inifile);
@@ -111,11 +126,10 @@ namespace alps {
 
           public:
             /// Default ctor
-            params() : dictionary(), raw_kv_content_(), td_map_(), err_status_(0), argv0_(),
-                       archive_name_(), help_header_() {}
+            params() : dictionary(), raw_kv_content_(), td_map_(), err_status_(), origins_(), help_header_() {}
 
             params(const std::string& inifile)
-                : dictionary(), raw_kv_content_(), td_map_(), err_status_(0), argv0_(), archive_name_(), help_header_()
+                : dictionary(), raw_kv_content_(), td_map_(), err_status_(), origins_(), help_header_()
             {
                 read_ini_file_(inifile);
             }
@@ -125,18 +139,27 @@ namespace alps {
                   raw_kv_content_(),
                   td_map_(),
                   err_status_(),
-                  argv0_(),
-                  archive_name_(),
+                  origins_(),
                   help_header_()
             { initialize_(argc, argv, hdf5_path); }
 
 
-            /// Convenience method: returns the "origin name"
-            /** @Returns (parameter_file_name || restart_file name || program_name || "") **/
-            std::string get_origin_name() const { return argv0_; }
+            /// Access to argv[0] (returns emty string if unknown)
+            std::string get_argv0() const;
+
+            /// Access to ini file names (if any); returns empty string if out of range
+            std::string get_ini_name(int n) const;
+
+            /// Returns the number of ini file names
+            int get_ini_name_count() const;
+            
+            
+            // /// Convenience method: returns the "origin name"
+            // /** @returns (parameter_file_name || restart_file name || program_name || "") **/
+            // std::string get_origin_name() const ALPS_DEPRECATED;
 
             /// Conveninece method: true if the object was restored from an archive
-            bool is_restored() const { return !archive_name_.empty(); }
+            bool is_restored() const { return !origins_.data()[origins_type::ARCHNAME].empty(); }
             
             /// Convenience method: returns the archive name the object has been restored from, or throws
             std::string get_archive_name() const;
@@ -215,12 +238,13 @@ namespace alps {
             void broadcast(const alps::mpi::communicator& comm, int root);
 
             /// Broadcasting ctor. Reads file/params on root, broadcasts to everyone
-            params(int argc, const char* const* argv, const alps::mpi::communicator& comm, int root, const char* hdf5_path="/parameters")
+            params(int argc, const char* const* argv, const alps::mpi::communicator& comm, int root=0, const char* hdf5_path="/parameters")
                 : dictionary(),
                   raw_kv_content_(),
                   td_map_(),
                   err_status_(),
-                  argv0_()
+                  origins_(),
+                  help_header_()
 
             {
                 initialize_(argc,argv,hdf5_path);

@@ -65,6 +65,13 @@ TEST_F(ParamsTest, saveLoad) {
     EXPECT_EQ("ABC", p_other["my_string"].as<std::string>());
 
     EXPECT_FALSE(p_other.is_restored());
+    EXPECT_ANY_THROW(p_other.get_archive_name());
+
+    EXPECT_EQ(par_.get_argv0(), p_other.get_argv0());
+    EXPECT_EQ(par_.get_ini_name_count(), p_other.get_ini_name_count());
+    for (int i=0; i<par_.get_ini_name_count(); ++i) {
+        EXPECT_EQ(par_.get_ini_name(i), p_other.get_ini_name(i));
+    }
 }
 
 TEST_F(ParamsTest, h5Ctor) {

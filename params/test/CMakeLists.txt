@@ -26,6 +26,8 @@ set (test_src
   params_cmdline
   params_defaulted
   params_has_unused  
+  params_origins
+  convenience_params
   dictval_eq  
   dictionary_eq
   params_eq

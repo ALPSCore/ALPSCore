@@ -14,15 +14,20 @@ namespace alps {
     /// @brief Defines a number of frequently-used parameters.
     /// Defines `size_t timelimt`, `string outputfile`, `string checkpoint`.
     inline params& define_convenience_parameters(params & parameters) {
-        std::string basename=alps::fs::remove_extensions(alps::fs::get_basename(parameters.get_origin_name()));
+        std::string origin;
+        if (parameters.is_restored()) origin=parameters.get_archive_name();
+        else if (parameters.get_ini_name_count()>0) origin=parameters.get_ini_name(0);
+        else origin=parameters.get_argv0();
+        
+        const std::string basename=alps::fs::remove_extensions(alps::fs::get_basename(origin));
         parameters
             .define<std::size_t>("timelimit", 0, "time limit for the simulation")
             .define<std::string>("outputfile", basename+".out.h5", "name of the output file")
-            .define<std::string>("checkpoint", basename+".clone.h5", "name of the checkpoint file to save to")
         ;
-        // FIXME: we might want to base checkpoint name on the output file name rather than origin name
-        //        (especially if there is no origin name: e.g. everything is passed via the command line
-        //         and argv[0] is wrong/unavailable)
+        const std::string base_outname=alps::fs::remove_extensions(alps::fs::get_basename(parameters["outputfile"]));
+        parameters
+            .define<std::string>("checkpoint", base_outname+".clone.h5", "name of the checkpoint file to save to")
+        ;
         return parameters;
     }
 } // end of namespace alps

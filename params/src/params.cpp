@@ -16,6 +16,8 @@
 #include <cstring> // for memcmp()
 #include <boost/optional.hpp>
 
+#include <alps/testing/fp_compare.hpp>
+
 #include <alps/testing/unique_file.hpp> // FIXME!!! Temporary!
 #include <fstream> // FIXME!!! Temporary!
 
@@ -54,13 +56,27 @@ namespace alps {
             };
         }
 
-        std::string params::get_archive_name() const
+        int params::get_ini_name_count() const
         {
-            // FIXME? Should it actually throw [like the old version], or simply return empty string?
-            if (!this->is_restored()) throw std::runtime_error("The parameters object is not restored from an archive");
-            return archive_name_;
+            return origins_.data().size()-origins_type::INIFILES;
+        }
+        
+        std::string params::get_ini_name(int n) const
+        {
+            if (n<0 || n>=get_ini_name_count()) return std::string();
+            return origins_.data()[origins_type::INIFILES+n];
         }
 
+        std::string params::get_argv0() const
+        {
+            return origins_.data()[origins_type::ARGV0];
+        }
+
+        std::string params::get_archive_name() const
+        {
+            if (!this->is_restored()) throw std::runtime_error("The parameters object is not restored from an archive");
+            return origins_.data()[origins_type::ARCHNAME];
+        }
 
         params& params::description(const std::string &message)
         {
@@ -159,7 +175,7 @@ namespace alps {
             using std::string;
             
             if (argc==0) return;
-            argv0_.assign(argv[0]);
+            origins_.data()[origins_type::ARGV0].assign(argv[0]);
             if (argc<2) return;
             
             std::vector<string> all_args(argv+1,argv+argc);
@@ -198,17 +214,17 @@ namespace alps {
                 if (all_args.size()!=1) throw std::invalid_argument("HDF5 arhive must be the only argument");
                 maybe_ar->set_context(hdf5_path);
                 this->load(*maybe_ar);
-                archive_name_=all_args[0];
+                origins_.data()[origins_type::ARCHNAME]=all_args[0];
                 return;
             }
             // FIXME!!!
             // This is very inefficient and is done only for testing.
-            alps::testing::unique_file tmpfile(argv0_+".param.ini", alps::testing::unique_file::REMOVE_AFTER);
+            alps::testing::unique_file tmpfile(origins_.data()[origins_type::ARGV0]+".param.ini", alps::testing::unique_file::REMOVE_AFTER);
             std::ofstream tmpstream(tmpfile.name().c_str());
             tmpstream << cmd_options.rdbuf();
             tmpstream.close();
             read_ini_file_(tmpfile.name());
-            
+            origins_.data().pop_back(); // remove the "invisible" ini file
         }
         
         void params::read_ini_file_(const std::string& inifile)
@@ -220,6 +236,7 @@ namespace alps {
                 if (!key.empty() && key[0]=='.') key.erase(0,1);
                 raw_kv_content_[key]=kv.second;
             }
+            origins_.data().push_back(inifile);
         }
 
         const std::string params::get_descr(const std::string& name) const
@@ -238,8 +255,8 @@ namespace alps {
                 (lhs.td_map_ == rhs.td_map_) &&
                 (lhs.err_status_ == rhs.err_status_) &&
                 (lhs.help_header_ == rhs.help_header_) &&
-                (lhs.argv0_ == rhs.argv0_) &&
                 (lhs_dict==rhs_dict);
+                /* origins_ is excluded from comparison */
         }
 
 
@@ -257,7 +274,7 @@ namespace alps {
             ar[context+"@ini_keys"] << raw_keys;
             ar[context+"@ini_values"] << raw_vals;
             ar[context+"@status"] << err_status_;
-            ar[context+"@argv0"]  << argv0_;
+            ar[context+"@origins"]  << origins_.data();
             ar[context+"@help_header"]  << help_header_;
             
             std::vector<std::string> keys=ar.list_children(context);
@@ -278,7 +295,8 @@ namespace alps {
             const std::string context=ar.get_context();
 
             ar[context+"@status"] >> newpar.err_status_;
-            ar[context+"@argv0"]  >> newpar.argv0_;
+            ar[context+"@origins"]  >> newpar.origins_.data();
+            newpar.origins_.check();
             ar[context+"@help_header"]  >> newpar.help_header_;
             
             // Get the vectors of keys, values and convert them back to a map
@@ -332,7 +350,7 @@ namespace alps {
 
         std::ostream& operator<<(std::ostream& s, const params& p) {
             s << "[alps::params]"
-              << " argv0='" << p.argv0_ << "' status=" << alps::short_print(p.err_status_)
+              << " origins=" << p.origins_.data() << " status=" << p.err_status_
               << "\nRaw kv:\n";
             BOOST_FOREACH(const params::strmap::value_type& kv, p.raw_kv_content_) {
                 s << kv.first << "=" << kv.second << "\n";
@@ -361,7 +379,8 @@ namespace alps {
             broadcast(comm, raw_kv_content_, rank);
             broadcast(comm, td_map_, rank);
             broadcast(comm, err_status_, rank);
-            broadcast(comm, argv0_, rank);
+            broadcast(comm, origins_.data(), rank);
+            origins_.check();
         }
 #endif
 

@@ -141,7 +141,7 @@ namespace alps {
             swap(p1.raw_kv_content_, p2.raw_kv_content_);
             swap(p1.td_map_, p2.td_map_);
             swap(p1.err_status_, p2.err_status_);
-            swap(p1.argv0_, p2.argv0_);
+            swap(p1.origins_.data(), p2.origins_.data());
         }
 
     } // params_ns::

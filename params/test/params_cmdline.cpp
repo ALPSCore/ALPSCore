@@ -57,19 +57,19 @@ TEST_F(ParamsTestCmdline, iniMaker) {
     EXPECT_EQ(std::string("line1\nline2\n"), ostr.str());
 }
 
-TEST_F(ParamsTestCmdline, originName) {
-    params p0;
-    const params& cp0=p0;
-    EXPECT_EQ("",cp0.get_origin_name());
+// TEST_F(ParamsTestCmdline, originName) {
+//     params p0;
+//     const params& cp0=p0;
+//     EXPECT_EQ("",cp0.get_origin_name());
 
-    char** argv=0;
-    int argc=0;
-    params p1(argc, argv);
-    EXPECT_EQ("", p1.get_origin_name());
+//     char** argv=0;
+//     int argc=0;
+//     params p1(argc, argv);
+//     EXPECT_EQ("", p1.get_origin_name());
 
-    params p2(args_.argc(), args_.argv());
-    EXPECT_EQ("./program_name", p2.get_origin_name());
-}
+//     params p2(args_.argc(), args_.argv());
+//     EXPECT_EQ("./program_name", p2.get_origin_name());
+// }
 
 
 TEST_F(ParamsTestCmdline, filenameArgs) {

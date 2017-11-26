@@ -18,18 +18,28 @@
 #include <boost/static_assert.hpp> // FIXME:C++11 replace by std feature
 
 namespace std {
-template <typename T>
-inline std::ostream& operator<<(std::ostream& s, const std::pair<std::string,T>& p) {
-    s << "{" << p.first << "," << p.second << "}";
-    return s;
-}
+    // Printing of a vector
+    // FIXME: pollutes std:: namespace and is a bad practice, what if user has one's own vector printer???
+    template <typename T>
+    std::ostream& operator<<(std::ostream& strm, const std::vector<T>& vec)
+    {
+        typedef std::vector<T> vtype;
+        typedef typename vtype::const_iterator itype;
 
+        strm << "[";
+        itype it=vec.begin();
+        const itype end=vec.end();
 
-template <typename T>
-inline std::ostream& operator<<(std::ostream& s, const std::vector<T>& v) {
-    s << alps::short_print(v);
-    return s;
-}
+        if (end!=it) {
+            strm << *it;
+            for (++it; end!=it; ++it) {
+                strm << ", " << *it;
+            }
+        }
+        strm << "]";
+
+        return strm;
+    }
 }
 
 namespace alps {
