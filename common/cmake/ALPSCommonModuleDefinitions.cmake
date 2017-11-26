@@ -3,7 +3,7 @@
 #
 
 # Do not forget to adjust as needed!
-set(ALPSCORE_VERSION "1.0.0.1")
+set(ALPSCORE_VERSION "1.1.0.0")
 
 # Disable in-source builds
 if (${CMAKE_BINARY_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
