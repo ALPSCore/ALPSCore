@@ -23,20 +23,20 @@ class jackknife_result
     : public batch_data<T>
 {
 public:
-    template <typename InT>
-    jackknife_result(const batch_data<InT> &in, transform<InT, T> &tf)
-        : batch_data<T>(in.num_batches(), tf.out_size(in.size()))
+    jackknife_result(const batch_data<T> &in, transform<T> &tf)
+        : batch_data<T>(in.num_batches(), tf.out_size())
     {
+/*
         // compute batch sums
-        column<InT> sum_batch = in.batch_value().rowwise().sum;
+        column<T> sum_batch = in.batch_value().rowwise().sum;
         ptrdiff_t sum_count = in.batch_count().sum();
 
         // compute leave-one-out statistics and transforms
-        column<InT> leaveout(in.size());
+        column<T> leaveout(in.size());
         for (size_t i = 0; i != in.num_batches(); ++i) {
             leaveout = (sum_batch - in.batch_value().col(i))
                                         / (sum_count - in.batch_count()(i));
-            tf(sink<const InT>(leaveout.data(), leaveout.rows()),
+            tf(sink<const T>(leaveout.data(), leaveout.rows()),
             sink<T>(this->batch_value().col(i).data(), this->batch_value().rows()));
         }
         this->batch_value().colwise() *=
@@ -45,11 +45,12 @@ public:
         // compute transform of mean
         column<T> mean_result(this->batch_value().rows());
         sum_batch /= sum_count;
-        tf(sink<const InT>(sum_batch.data(), sum_batch.rows()),
+        tf(sink<const T>(sum_batch.data(), sum_batch.rows()),
            sink<T>(mean_result.data(), mean_result.rows()));
         this->batch_value().rowwise() += mean_result * sum_count;
 
         this->batch_count() = in.batch_count();
+*/
     }
 };
 

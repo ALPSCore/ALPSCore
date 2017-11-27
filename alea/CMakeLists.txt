@@ -32,6 +32,7 @@ add_this_package(
         jackknife
         mean
         result
+        transform
         variance
         )
 
