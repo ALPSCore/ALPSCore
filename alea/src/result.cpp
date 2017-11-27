@@ -49,9 +49,7 @@ struct var_visitor
     result_type operator() (const var_result<T,Str> &r) const { return r.var(); }
     result_type operator() (const cov_result<T,Str> &r) const { return r.var(); }
     result_type operator() (const autocorr_result<T> &) const { throw estimate_type_mismatch(); }
-
-    //FIXME
-    result_type operator() (const batch_result<T> &) const { throw estimate_unavailable(); }
+    result_type operator() (const batch_result<T> &r) const { return r.template var<Str>(); }
 
     // default case
     template <typename Res>
@@ -68,9 +66,7 @@ struct var_visitor<T, circular_var>
     result_type operator() (const var_result<T,Str> &r) const { return r.var(); }
     result_type operator() (const cov_result<T,Str> &r) const { return r.var(); }
     result_type operator() (const autocorr_result<T> &r) const { return r.var(); }
-
-    //FIXME
-    result_type operator() (const batch_result<T> &) const { throw estimate_unavailable(); }
+    result_type operator() (const batch_result<T> &r) const { return r.var(); }
 
     // default case
     template <typename Res>
@@ -86,9 +82,7 @@ struct cov_visitor
     result_type operator() (const var_result<T,Str> &) const { throw estimate_unavailable(); }
     result_type operator() (const cov_result<T,Str> &r) const { return r.cov(); }
     result_type operator() (const autocorr_result<T> &) const { throw estimate_unavailable(); }
-
-    //FIXME
-    result_type operator() (const batch_result<T> &) const { throw estimate_unavailable(); }
+    result_type operator() (const batch_result<T> &r) const { r.template cov<Str>(); }
 
     // default case
     template <typename Res>
