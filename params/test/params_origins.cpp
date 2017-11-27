@@ -21,6 +21,7 @@ TEST(ParamsTestOrigins, simple) {
     EXPECT_EQ(0, p.get_ini_name_count());
     ASSERT_NO_THROW(p.get_ini_name(0));
     EXPECT_TRUE(p.get_ini_name(0).empty());
+    EXPECT_TRUE(origin_name(p).empty());
 }
 
 TEST(ParamsTestOrigins, cmdlineOnly) {
@@ -31,6 +32,7 @@ TEST(ParamsTestOrigins, cmdlineOnly) {
     EXPECT_EQ(0, p.get_ini_name_count());
     ASSERT_NO_THROW(p.get_ini_name(0));
     EXPECT_TRUE(p.get_ini_name(0).empty());
+    EXPECT_EQ("./progname",origin_name(p));
 }
 
 TEST(ParamsTestOrigins, inifileOnly) {
@@ -43,6 +45,7 @@ TEST(ParamsTestOrigins, inifileOnly) {
     EXPECT_EQ(ini.name(), p.get_ini_name(0));
     ASSERT_NO_THROW(p.get_ini_name(1));
     EXPECT_TRUE(p.get_ini_name(1).empty());
+    EXPECT_EQ(ini.name(), origin_name(p));
 }
 
 TEST(ParamsTestOrigins, inifileInCmdline) {
@@ -68,5 +71,6 @@ TEST(ParamsTestOrigins, inifileInCmdline) {
     
     ASSERT_NO_THROW(p.get_ini_name(2));
     EXPECT_TRUE(p.get_ini_name(2).empty());
-}
 
+    EXPECT_EQ(ini1.name(), origin_name(p));
+}

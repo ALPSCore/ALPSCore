@@ -162,15 +162,19 @@ namespace alps {
             int get_ini_name_count() const;
             
             
-            // /// Convenience method: returns the "origin name"
-            // /** @returns (parameter_file_name || restart_file name || program_name || "") **/
-            // std::string get_origin_name() const ALPS_DEPRECATED;
+            /// Convenience method: returns the "origin name"
+            /** @returns (parameter_file_name || restart_file name || program_name || "")
 
-            // /// Exception type: the object was not restored from archive
-            // struct not_restored : public std::runtime_error {
-            //     not_restored(const std::string& a_what)
-            //         : std::runtime_error(a_what) {}
-            // };
+                @warning Deprecated. Use `alps::params_ns::get_origin(const params&)` instead,
+                also available as `alps::get_origin(const params&)`.
+             **/
+            std::string get_origin_name() const ALPS_DEPRECATED;
+
+            /// Exception type: the object was not restored from archive
+            struct not_restored : public std::runtime_error {
+                not_restored(const std::string& a_what)
+                    : std::runtime_error(a_what) {}
+            };
 
             /// Conveninece method: true if the object was restored from an archive
             bool is_restored() const { return !origins_.data()[origins_type::ARCHNAME].empty(); }
