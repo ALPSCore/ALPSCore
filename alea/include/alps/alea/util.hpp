@@ -54,43 +54,6 @@ template <typename T>
 struct make_real< std::complex<T> > { typedef T type; };
 
 
-template <typename T>
-class column
-    : public Eigen::Matrix<T, Eigen::Dynamic, 1>
-{
-public:
-    column() : Eigen::Matrix<T, Eigen::Dynamic, 1>() {}
-
-    column(size_t size) : Eigen::Matrix<T, Eigen::Dynamic, 1>(size) {}
-
-    template <typename OtherDerived>
-    column(const Eigen::MatrixBase<OtherDerived>& other)
-        : Eigen::Matrix<T, Eigen::Dynamic, 1>(other) { }
-
-    template<typename OtherDerived>
-    column& operator=(const Eigen::MatrixBase <OtherDerived>& other)
-    {
-        this->Eigen::VectorXd::operator=(other);
-        return *this;
-    }
-
-    // Methods for convenience and backwards compatibility
-
-    size_t size() const { return this->rows(); }
-
-    operator T() const
-    {
-        if (this->rows() != 1)
-            throw size_mismatch();
-        return (*this)(0);
-    }
-
-    operator std::vector<T>() const
-    {
-        return std::vector<T>(this->data(), this->data() + this->rows());
-    }
-};
-
 
 template <typename T>
 struct eigen

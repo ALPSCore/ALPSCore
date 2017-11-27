@@ -136,6 +136,46 @@ struct computed
 };
 
 /**
+ * Shorthand for Eigen column vector
+ */
+template <typename T>
+class column
+    : public Eigen::Matrix<T, Eigen::Dynamic, 1>
+{
+public:
+    column() : Eigen::Matrix<T, Eigen::Dynamic, 1>() {}
+
+    column(size_t size) : Eigen::Matrix<T, Eigen::Dynamic, 1>(size) {}
+
+    template <typename OtherDerived>
+    column(const Eigen::MatrixBase<OtherDerived>& other)
+        : Eigen::Matrix<T, Eigen::Dynamic, 1>(other) { }
+
+    template<typename OtherDerived>
+    column& operator=(const Eigen::MatrixBase <OtherDerived>& other)
+    {
+        this->Eigen::VectorXd::operator=(other);
+        return *this;
+    }
+
+    // Methods for convenience and backwards compatibility
+
+    size_t size() const { return this->rows(); }
+
+    operator T() const
+    {
+        if (this->rows() != 1)
+            throw size_mismatch();
+        return (*this)(0);
+    }
+
+    operator std::vector<T>() const
+    {
+        return std::vector<T>(this->data(), this->data() + this->rows());
+    }
+};
+
+/**
  * Setup information struct for the reduction
  */
 struct reducer_setup
@@ -207,17 +247,20 @@ struct serializer
     virtual ~serializer() { }
 };
 
-// TODO: refactor
-template <typename InT, typename OutT>
+/**
+ * Transformer method
+ */
+template <typename T>
 struct transform
 {
-    virtual void operator() (sink<const InT> in, sink<OutT> out) = 0;
-    virtual size_t out_size(size_t in_size) const = 0;
+    virtual column<T> operator() (const column<T> &in) const = 0;
+
+    virtual size_t in_size() const = 0;
+
+    virtual size_t out_size() const = 0;
+
     virtual bool is_linear() const { return false; }
 };
-
-/** State flag for switching accumulator storages */
-enum data_state { SUM, MEAN };
 
 
 }}
