@@ -181,7 +181,6 @@ namespace alps {
             std::vector<string> all_args(argv+1,argv+argc);
             std::stringstream cmd_options;
             bool file_args_mode=false;
-            boost::optional<alps::hdf5::archive> maybe_ar=boost::none;
             BOOST_FOREACH(const string& arg, all_args) {
                 if (file_args_mode) {
                     read_ini_file_(arg);
@@ -199,8 +198,16 @@ namespace alps {
                     key_begin=1;
                 }
                 if (0==key_begin && npos==key_end) {
-                    if (hdf5_path) maybe_ar=try_open_ar(arg, "r");
-                    if (maybe_ar) break;
+                    if (hdf5_path) {
+                        boost::optional<alps::hdf5::archive> maybe_ar=try_open_ar(arg, "r");
+                        if (maybe_ar) {
+                            if (all_args.size()!=1) throw std::invalid_argument("HDF5 arhive must be the only argument");
+                            maybe_ar->set_context(hdf5_path);
+                            this->load(*maybe_ar);
+                            origins_.data()[origins_type::ARCHNAME]=all_args[0];
+                            return;
+                        }
+                    }
                     read_ini_file_(arg);
                     continue;
                 }
@@ -209,13 +216,6 @@ namespace alps {
                 } else {
                     cmd_options << arg.substr(key_begin) << "\n";
                 }
-            }
-            if (hdf5_path && maybe_ar) {
-                if (all_args.size()!=1) throw std::invalid_argument("HDF5 arhive must be the only argument");
-                maybe_ar->set_context(hdf5_path);
-                this->load(*maybe_ar);
-                origins_.data()[origins_type::ARCHNAME]=all_args[0];
-                return;
             }
             // FIXME!!!
             // This is very inefficient and is done only for testing.
