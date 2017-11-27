@@ -100,6 +100,9 @@ namespace alps {
         }
 
         class archive {
+            private:
+               /// Assignment operator is deleted
+               archive& operator=(const archive&); /* not implemented*/ // FIXME:TODO:C++11 `=delete` or implement via `swap()`
             // FIXME: MAKE private:
             public:
                 typedef enum {
@@ -246,7 +249,7 @@ namespace alps {
         namespace detail {
 
              template<typename T> struct get_extent {
-                static std::vector<std::size_t> apply(T const & value) {
+                static std::vector<std::size_t> apply(T const & /*value*/) {
                     return std::vector<std::size_t>();
                 }
             };
@@ -309,10 +312,11 @@ namespace alps {
                archive & ar
              , std::string const & path
              , T const & value
-             , std::vector<std::size_t> size = std::vector<std::size_t>()
+             , std::vector<std::size_t> /*size*/ = std::vector<std::size_t>()
              , std::vector<std::size_t> chunk = std::vector<std::size_t>()
-             , std::vector<std::size_t> offset = std::vector<std::size_t>()
+             , std::vector<std::size_t> /*offset*/ = std::vector<std::size_t>()
         ) {
+            // FIXME: size and offset are unused -- we should at least check for this
             if (chunk.size())
                 throw std::logic_error("user defined objects needs to be written continously" + ALPS_STACKTRACE);
             std::string context = ar.get_context();
@@ -326,7 +330,7 @@ namespace alps {
              , std::string const & path
              , T & value
              , std::vector<std::size_t> chunk = std::vector<std::size_t>()
-             , std::vector<std::size_t> offset = std::vector<std::size_t>()
+             , std::vector<std::size_t> /*offset*/ = std::vector<std::size_t>()
         ) {
             if (chunk.size())
                 throw std::logic_error("user defined objects needs to be written continously" + ALPS_STACKTRACE);

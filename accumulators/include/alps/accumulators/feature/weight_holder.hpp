@@ -69,7 +69,7 @@ namespace alps {
                           typename boost::is_scalar<typename value_type<weight_type>::type>::type
                         , typename boost::is_convertible<X, typename value_type<weight_type>::type>::type
                         , typename boost::is_same<X, typename value_type<weight_type>::type>::type
-                    >::type>::type operator()(T const & val, X const & weight) {
+                    >::type>::type operator()(T const & /*val*/, X const & /*weight*/) {
                         throw std::runtime_error("Invalid type for binary call operator" + ALPS_STACKTRACE);
                     }
 
@@ -107,7 +107,7 @@ namespace alps {
 
                    /// Merge placeholder \remark FIXME: always throws
                     template <typename A>
-                    void merge(const A& rhs)
+                    void merge(const A& /*rhs*/)
                     {
                       throw std::logic_error("Merging weight_holder accumulators is not yet implemented"
                                              +ALPS_STACKTRACE);

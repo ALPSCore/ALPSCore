@@ -65,7 +65,7 @@ namespace alps {
             template<typename A> typename boost::disable_if<
                   typename has_feature<A, weight_tag>::type
                 , base_wrapper<typename value_type<A>::type> const *
-            >::type weight_impl(A const & acc) {
+            >::type weight_impl(A const &) {
                 throw std::runtime_error(std::string(typeid(A).name()) + " has no weight-method" + ALPS_STACKTRACE);
                 return NULL;
             }

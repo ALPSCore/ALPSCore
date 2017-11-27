@@ -134,6 +134,14 @@ namespace alps {
                 read_ini_file_(inifile);
             }
 
+
+            /// Constructor from command line and parameter files.
+            /** Tries to see if the file is an HDF5, in which case restores the object from the
+                HDF5 file, ignoring the command line.
+
+                @param hdf5_path : path to HDF5 dataset containing the saved parameter object
+                (NULL if this functionality is not needed)
+            */
             params(int argc, const char* const* argv, const char* hdf5_path="/parameters")
                 : dictionary(),
                   raw_kv_content_(),
@@ -157,6 +165,12 @@ namespace alps {
             // /// Convenience method: returns the "origin name"
             // /** @returns (parameter_file_name || restart_file name || program_name || "") **/
             // std::string get_origin_name() const ALPS_DEPRECATED;
+
+            // /// Exception type: the object was not restored from archive
+            // struct not_restored : public std::runtime_error {
+            //     not_restored(const std::string& a_what)
+            //         : std::runtime_error(a_what) {}
+            // };
 
             /// Conveninece method: true if the object was restored from an archive
             bool is_restored() const { return !origins_.data()[origins_type::ARCHNAME].empty(); }
@@ -237,7 +251,18 @@ namespace alps {
             // FIXME: should it be virtual?
             void broadcast(const alps::mpi::communicator& comm, int root);
 
-            /// Broadcasting ctor. Reads file/params on root, broadcasts to everyone
+            /// Collective (broadcasting) constructor from command line and parameter files.
+            /** Reads and parses the command line on the root process,
+                broadcasts to other processes. Tries to see if the
+                file is an HDF5, in which case restores the object
+                from the HDF5 file, ignoring the command line.
+
+                @param comm : Communicator to use for broadcast
+                @param root : Root process to broadcast from
+                @param hdf5_path : path to HDF5 dataset containing the
+                                 saved parameter object
+                                 (NULL if this functionality is not needed)
+            */
             params(int argc, const char* const* argv, const alps::mpi::communicator& comm, int root=0, const char* hdf5_path="/parameters")
                 : dictionary(),
                   raw_kv_content_(),

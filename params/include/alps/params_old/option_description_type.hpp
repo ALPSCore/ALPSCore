@@ -9,15 +9,40 @@
 
 namespace alps {
     namespace params_ns {
+
+        template <typename> struct params_apply_visitor;
+
         namespace detail {
 
             /// Option (parameter) description class. Used to interface with boost::program_options
             class option_description_type {
               private:
                 typedef boost::program_options::options_description po_descr;
-                
+
+                template <typename> friend struct alps::params_ns::params_apply_visitor;
+
                 std::string descr_; ///< Parameter description
                 variant_all_type deflt_; ///< To keep type and defaults(if any)
+
+                /// Visitor class to check for option being a trigger
+                struct is_trigger_visitor : public boost::static_visitor<bool>
+                {
+                    bool operator()(const None&) const
+                    {
+                        throw std::logic_error("is_trigger_visitor is called for an object containing None: should not happen!");
+                    }
+
+                    bool operator()(const boost::optional<trigger_tag>&) const
+                    {
+                        return true;
+                    }
+
+                    template <typename T>
+                    bool operator()(const boost::optional<T>&) const
+                    {
+                        return false;
+                    }
+                };
 
                 /// Visitor class to add the stored description to boost::program_options
                 struct add_option_visitor: public boost::static_visitor<> {
@@ -32,7 +57,7 @@ namespace alps {
                     {
                         throw std::logic_error("add_option_visitor is called for an object containing None: should not happen!");
                     }
-                    
+
                     /// Called by apply_visitor(), for a optional<T> bound type
                     template <typename T>
                     void operator()(const boost::optional<T>& a_val) const
@@ -47,12 +72,12 @@ namespace alps {
                     }
 
                     /// Called by apply_visitor(), for a trigger_tag type
-                    void operator()(const boost::optional<trigger_tag>& a_val) const
+                    void operator()(const boost::optional<trigger_tag>& /*a_val*/) const
                     {
                         do_define<trigger_tag>::add_option(odesc_, name_, strdesc_);
                     }
                 };
-                    
+
 
                 /// Visitor class to set option_type instance from boost::any; visitor is used ONLY to extract type information
                 struct set_option_visitor: public boost::static_visitor<> {
@@ -67,10 +92,10 @@ namespace alps {
                     {
                         throw std::logic_error("set_option_visitor is called for an object containing None: should not happen!");
                     }
-                    
+
                     /// Called by apply_visitor(), for a optional<T> bound type
                     template <typename T>
-                    void operator()(const boost::optional<T>& a_val) const
+                    void operator()(const boost::optional<T>& /*a_val*/) const
                     {
                         if (anyval_.empty()) {
                             opt_.reset<T>();
@@ -80,7 +105,7 @@ namespace alps {
                     }
 
                     /// Called by apply_visitor(), for a optional<std::string> bound type
-                    void operator()(const boost::optional<std::string>& a_val) const
+                    void operator()(const boost::optional<std::string>& /*a_val*/) const
                     {
                         if (anyval_.empty()) {
                             opt_.reset<std::string>();
@@ -125,12 +150,12 @@ namespace alps {
                         } else {
                             ar_[name_] << T();
                             ar_[name_+"@has_default"] << false;
-                        } 
+                        }
                         ar_[name_+"@is_trigger"] << false;
                    }
 
                     /// Called when the variant contains optional<trigger_tag>
-                    void operator()(const boost::optional<trigger_tag>& val) const
+                    void operator()(const boost::optional<trigger_tag>& /*val*/) const
                     {
                         // trigger options do not have defaults
                         ar_[name_] << false;
@@ -164,7 +189,7 @@ namespace alps {
                           is_trigger_(false),
                           has_default_(false)
                     {
-                        const std::string trigger_attr=path+"@is_trigger";  
+                        const std::string trigger_attr=path+"@is_trigger";
                         const std::string deflt_attr=path+"@has_default";
                         const std::string descr_attr=path+"@description";
 
@@ -258,11 +283,11 @@ namespace alps {
 
                 /// Constructor for description with default
                 template <typename T>
-                option_description_type(const std::string& a_descr, T a_deflt): descr_(a_descr), deflt_(boost::optional<T>(a_deflt)) 
+                option_description_type(const std::string& a_descr, T a_deflt): descr_(a_descr), deflt_(boost::optional<T>(a_deflt))
                 { }
 
                 /// Constructor for a trigger option
-                option_description_type(const std::string& a_descr): descr_(a_descr), deflt_(boost::optional<trigger_tag>(trigger_tag())) 
+                option_description_type(const std::string& a_descr): descr_(a_descr), deflt_(boost::optional<trigger_tag>(trigger_tag()))
                 { }
 
                 /// Factory method for loading from archive
@@ -270,7 +295,7 @@ namespace alps {
                 static option_description_type get_loaded(alps::hdf5::archive& ar, const std::string& key)
                 {
                     reader rd(ar,key);
-                    
+
                     // macro: try reading, return if ok
 #define ALPS_LOCAL_TRY_LOAD(_r_,_d_,_type_)                           \
                     if (rd.can_read((_type_*)0)) return rd.read((_type_*)0);
@@ -278,10 +303,16 @@ namespace alps {
                     // try reading for each defined type
                      BOOST_PP_SEQ_FOR_EACH(ALPS_LOCAL_TRY_LOAD, X, ALPS_PARAMS_DETAIL_ALLTYPES_SEQ);
 #undef ALPS_LOCAL_TRY_LOAD
-                    
+
                     throw std::runtime_error("No matching payload type in the archive "
                                              "for `option_description_type` for "
                                              "path='" + key + "'");
+                }
+
+                /// Is this option a trigger?
+                bool is_trigger() const
+                {
+                    return boost::apply_visitor(is_trigger_visitor(), deflt_);
                 }
 
                 /// Adds to program_options options_description
@@ -294,7 +325,7 @@ namespace alps {
                 void set_option(option_type& opt, const boost::any& a_val) const
                 {
                     boost::apply_visitor(set_option_visitor(opt, a_val), deflt_);
-                }                
+                }
 
                 // Note the signature is different from a regular save()
                 void save(hdf5::archive& ar, const std::string& name) const
@@ -307,7 +338,7 @@ namespace alps {
                 /// Default ctor for internal use (in factory methods)
                 // FIXME: had to make it public for map broadcast
                 option_description_type() {}
-                
+
 #ifdef ALPS_HAVE_MPI
                 // FIXME: copy&paste from option_type. Generalize and factor out!
                 void broadcast(const alps::mpi::communicator& comm, int root)
@@ -334,15 +365,15 @@ namespace alps {
                                     deflt_=buf;                         \
                                 }                                       \
                             } /* end macro */
-                        
+
                             BOOST_PP_SEQ_FOR_EACH(ALPS_LOCAL_TRY_TYPE, X, ALPS_PARAMS_DETAIL_ALLTYPES_SEQ);
 #undef ALPS_LOCAL_TRY_TYPE
                             assert(deflt_.which()==root_which && "The `which` value must be the same as on root");
-                        } // done with slave rank 
+                        } // done with slave rank
                     }
                 }
 #endif
-                
+
             };
 
             typedef std::map<std::string, option_description_type> description_map_type;
@@ -360,7 +391,7 @@ namespace alps {
     }
 #endif
 
-    
+
 } // alps::
 
 #endif /* ALPS_PARAMS_OPTION_DESCRIPTION_TYPE_27836b27fafb4e60a89a59b80016bebc */

@@ -43,7 +43,7 @@ struct AccumulatorTest : public testing::Test {
 
     /// Save accumulator
     void TestSaveAccumulator() {
-        const std::string fname="save_acc.h5";
+        const std::string fname="sl_save_acc.h5";
         std::remove(fname.c_str());
         const alps::accumulators::accumulator_set& m=acc_gen.accumulators();
         alps::hdf5::archive ar(fname,"w");
@@ -52,7 +52,7 @@ struct AccumulatorTest : public testing::Test {
 
     /// Save result set
     void TestSaveResult() {
-        const std::string fname="save_res.h5";
+        const std::string fname="sl_save_res.h5";
         std::remove(fname.c_str());
         const alps::accumulators::result_set& res=acc_gen.results();
         alps::hdf5::archive ar(fname,"w");
@@ -61,7 +61,7 @@ struct AccumulatorTest : public testing::Test {
 
     /// Save and load accumulator set, check results
     void TestSaveLoadAccumulator() {
-        const std::string fname="saveload_acc.h5";
+        const std::string fname="sl_saveload_acc.h5";
         std::remove(fname.c_str());
         const alps::accumulators::accumulator_set& m=acc_gen.accumulators();
         {
@@ -90,7 +90,7 @@ struct AccumulatorTest : public testing::Test {
 
     /// Save and load result set, check results
     void TestSaveLoadResult() {
-        const std::string fname="saveload_res.h5";
+        const std::string fname="sl_saveload_res.h5";
         std::remove(fname.c_str());
         const alps::accumulators::result_set& r=acc_gen.results();
         {

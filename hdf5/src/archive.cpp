@@ -1211,10 +1211,10 @@ namespace alps {
                     return &value;                                                                                                                                      \
                 }                                                                                                                                                       \
                                                                                                                                                                         \
-                bool is_vectorizable< T >::apply(T const & value) {                                                                                                     \
+                bool is_vectorizable< T >::apply(T const &) {                                                                                                     \
                     return true;                                                                                                                                        \
                 }                                                                                                                                                       \
-                bool is_vectorizable< T const >::apply(T & value) {                                                                                                     \
+                bool is_vectorizable< T const >::apply(T &) {                                                                                                     \
                     return true;                                                                                                                                        \
                 }                                                                                                                                                       \
             }                                                                                                                                                           \

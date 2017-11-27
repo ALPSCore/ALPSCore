@@ -383,9 +383,6 @@ namespace alps {
             origins_.check();
         }
 #endif
-
-
-        
     } // ::params_ns
 }// alps::
             

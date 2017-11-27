@@ -66,7 +66,7 @@ class AccumulatorMixedBinaryTest : public ::testing::Test {
         aset_ << left_acc_type("left")
             << right_acc_type("right");
         
-        for (int i=0; i<NPOINTS; ++i) {
+        for (size_t i=0; i<NPOINTS; ++i) {
             double v=scalar_gen_(); // both accs have the same sequence of values (FIXME?)
             aset_["left"] << aat::gen_data<value_type>(v).value();
             aset_["right"] << aat::gen_data<value_type>(v).value();
