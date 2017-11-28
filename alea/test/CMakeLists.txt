@@ -3,6 +3,7 @@ include(ALPSEnableTests)
 set (test_src
      twogauss
      galois
+     transform
     )
 
 #add tests for MPI
