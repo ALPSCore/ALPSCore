@@ -55,6 +55,12 @@ int main(int argc, char** argv)
         std::cout << "You must provide the name of the de-construction algorithm" << std::endl;
         par["help"] = true;
     }
+    // This will validate that count and val have been given the proper datatype
+    else if (par.has_missing(std::cout)) {
+        par["help"] = true;
+        par.help_requested(std::cout);
+        return 1;
+    }
     // The "count" parameter must be greater than zero
     if (par["count"].as<int>() <= 0) {
         std::cout << "The number of interconnected elements must be positive" << std::endl;
