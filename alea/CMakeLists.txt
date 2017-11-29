@@ -29,8 +29,8 @@ add_this_package(
         batch
         covariance
         galois
-        jackknife
         mean
+        propagation
         result
         transform
         variance

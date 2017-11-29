@@ -1,4 +1,5 @@
 #include <alps/alea/transform.hpp>
+#include <alps/alea/propagation.hpp>
 
 #include "gtest/gtest.h"
 #include "gtest_util.hpp"

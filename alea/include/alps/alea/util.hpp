@@ -62,7 +62,7 @@ struct eigen
     typedef typename Eigen::Map<col, Eigen::Unaligned> col_map;
     typedef typename Eigen::Map<const col, Eigen::Unaligned> const_col_map;
 
-    typedef typename Eigen::Matrix<T, Eigen::Dynamic, 1> row;
+    typedef typename Eigen::Matrix<T, 1, Eigen::Dynamic> row;
     typedef typename Eigen::Map<row, Eigen::Unaligned> row_map;
     typedef typename Eigen::Map<const row, Eigen::Unaligned> const_row_map;
 

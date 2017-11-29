@@ -154,7 +154,7 @@ public:
     template<typename OtherDerived>
     column& operator=(const Eigen::MatrixBase <OtherDerived>& other)
     {
-        this->Eigen::VectorXd::operator=(other);
+        this->Eigen::Matrix<T, Eigen::Dynamic, 1>::operator=(other);
         return *this;
     }
 
@@ -261,6 +261,7 @@ struct transform
 
     virtual bool is_linear() const { return false; }
 };
+
 
 
 }}
