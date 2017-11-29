@@ -53,9 +53,12 @@ function(add_eigen)
     elseif(NOT EIGEN3_FOUND AND DEFINED EIGEN3_VERSION_OK)
        message(FATAL_ERROR
 " 
- The required library Eigen3 has been found at ${EIGEN3_INCLUDE_DIR} on your system.
- We require ${ALPS_EIGEN_MIN_VERSION} > ${EIGEN3_VERSION}
- Please try upgrading or using the following options to use a different installation:${eigen_install_options_msg}")
+ The Eigen3 library has been found at ${EIGEN3_INCLUDE_DIR} on your system;
+ HOWEVER, your version is ${EIGEN3_VERSION} 
+ which is less than the required version ${ALPS_EIGEN_MIN_VERSION}.
+ Please try upgrading your installation of the Eigen3 library
+ or use a different installation; in the latter case, the following
+ options are available: ${eigen_install_options_msg}")
     endif()
 
     target_include_directories(${PROJECT_NAME} PUBLIC ${EIGEN3_INCLUDE_DIR})
