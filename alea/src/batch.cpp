@@ -161,6 +161,18 @@ template class batch_acc<std::complex<double> >;
 
 
 template <typename T>
+batch_result<T>::batch_result(const batch_result &other)
+    : store_(other.store_ ? new batch_data<T>(*other.store_) : NULL)
+{ }
+
+template <typename T>
+batch_result<T> &batch_result<T>::operator=(const batch_result &other)
+{
+    store_.reset(other.store_ ? new batch_data<T>(*other.store_) : NULL);
+    return *this;
+}
+
+template <typename T>
 column<T> batch_result<T>::mean() const
 {
     return store_->batch().rowwise().sum() / count();

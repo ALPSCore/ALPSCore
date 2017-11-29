@@ -175,6 +175,10 @@ public:
         : store_(new var_data<T,Strategy>(acc_data))
     { }
 
+    var_result(const var_result &other);
+
+    var_result &operator=(const var_result &other);
+
     bool initialized() const { return true; }
 
     bool valid() const { return (bool)store_; }

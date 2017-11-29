@@ -149,6 +149,19 @@ template class cov_acc<std::complex<double>, circular_var>;
 template class cov_acc<std::complex<double>, elliptic_var>;
 
 
+// We need an explicit copy constructor, as we need to copy the data
+template <typename T, typename Str>
+cov_result<T,Str>::cov_result(const cov_result &other)
+    : store_(other.store_ ? new cov_data<T,Str>(*other.store_) : NULL)
+{ }
+
+template <typename T, typename Str>
+cov_result<T,Str> &cov_result<T,Str>::operator=(const cov_result &other)
+{
+    store_.reset(other.store_ ? new cov_data<T,Str>(*other.store_) : NULL);
+    return *this;
+}
+
 template <typename T, typename Str>
 column<typename cov_result<T,Str>::var_type> cov_result<T,Str>::stderror() const
 {

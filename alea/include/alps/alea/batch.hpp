@@ -150,6 +150,10 @@ public:
         : store_(new batch_data<T>(acc_data))
     { }
 
+    batch_result(const batch_result &other);
+
+    batch_result &operator=(const batch_result &other);
+
     bool initialized() const { return true; }
 
     bool valid() const { return (bool)store_; }

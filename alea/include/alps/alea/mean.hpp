@@ -148,6 +148,10 @@ public:
         : store_(new mean_data<T>(acc_data))
     { }
 
+    mean_result(const mean_result &other);
+
+    mean_result &operator=(const mean_result &other);
+
     bool initialized() const { return true; }
 
     bool valid() const { return (bool)store_; }
@@ -165,6 +169,8 @@ public:
     void reduce(reducer &);
 
     void serialize(serializer &);
+
+    void transform(const transform<T> &);
 
 private:
     std::unique_ptr< mean_data<T> > store_;

@@ -178,6 +178,10 @@ public:
         : store_(new cov_data<T,Strategy>(acc_data))
     { }
 
+    cov_result(const cov_result &other);
+
+    cov_result &operator=(const cov_result &other);
+
     bool initialized() const { return true; }
 
     bool valid() const { return (bool)store_; }

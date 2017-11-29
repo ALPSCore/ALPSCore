@@ -150,6 +150,18 @@ template class var_acc<double>;
 template class var_acc<std::complex<double>, circular_var>;
 template class var_acc<std::complex<double>, elliptic_var>;
 
+// We need an explicit copy constructor, as we need to copy the data
+template <typename T, typename Str>
+var_result<T,Str>::var_result(const var_result &other)
+    : store_(other.store_ ? new var_data<T,Str>(*other.store_) : NULL)
+{ }
+
+template <typename T, typename Str>
+var_result<T,Str> &var_result<T,Str>::operator=(const var_result &other)
+{
+    store_.reset(other.store_ ? new var_data<T,Str>(*other.store_) : NULL);
+    return *this;
+}
 
 template <typename T, typename Str>
 column<typename var_result<T,Str>::var_type> var_result<T,Str>::stderror() const

@@ -95,6 +95,19 @@ template class mean_acc<double>;
 template class mean_acc<std::complex<double> >;
 
 
+// We need an explicit copy constructor, as we need to copy the data
+template <typename T>
+mean_result<T>::mean_result(const mean_result &other)
+    : store_(other.store_ ? new mean_data<T>(*other.store_) : NULL)
+{ }
+
+template <typename T>
+mean_result<T> &mean_result<T>::operator=(const mean_result &other)
+{
+    store_.reset(other.store_ ? new mean_data<T>(*other.store_) : NULL);
+    return *this;
+}
+
 template <typename T>
 void mean_result<T>::reduce(reducer &r)
 {
