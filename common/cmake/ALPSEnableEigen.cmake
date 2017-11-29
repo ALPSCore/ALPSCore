@@ -20,61 +20,42 @@ function(add_eigen)
     set(ALPS_EIGEN_TGZ_FILE "${ALPS_EIGEN_UNPACK_DIR}/eigen.tgz")
   endif()
 
+  # CAUTION, the message contains significant spaces in seemingly-empty lines.
+  set(eigen_install_options_msg "
+ 1. Set environment variable Eigen3_DIR
+    to point to the root of your CMake-based Eigen3 installation.
+ 2. Rerun CMake with option:
+     -DEIGEN3_INCLUDE_DIR=<path to your Eigen3 directory> 
+    to point to the location of Eigen3 headers.
+ 3. Rerun CMake with option:
+     -DALPS_INSTALL_EIGEN=true 
+    to request the installation script to attempt to download Eigen3
+    and co-install it with ALPSCore.
+ 
+    In the latter case, you may optionally also set:
+     -DALPS_EIGEN_UNPACK_DIR=<path to directory to unpack Eigen> 
+     (currently set to ${ALPS_EIGEN_UNPACK_DIR})
+ 
+     -DALPS_EIGEN_TGZ_FILE=<path to Eigen3 archive file>
+     (currently set to ${ALPS_EIGEN_TGZ_FILE})
+ 
+     -DEIGEN3_INSTALL_DIR=<path to unpacked Eigen3>
+     (if you want to co-install a specific version of Eigen)
+")
+  
   if (NOT ALPS_INSTALL_EIGEN)
     find_package(Eigen3 ${ALPS_EIGEN_MIN_VERSION})
     if (NOT EIGEN3_FOUND AND NOT DEFINED EIGEN3_VERSION_OK) # CMake 3.3+ would use Eigen3_FOUND
       message(FATAL_ERROR
 " 
  The required library Eigen3 has not been found on your system.
- Your could try the following options:
- 1. Set environment variable Eigen3_DIR
-    to point to the root of your CMake-based Eigen3 installation.
- 2. Rerun CMake with option:
-     -DEIGEN3_INCLUDE_DIR=<path to your Eigen3 directory> 
-    to point to the location of Eigen3 headers.
- 3. Rerun CMake with option:
-     -DALPS_INSTALL_EIGEN=true 
-    to request the installation script to attempt to download Eigen3
-    and co-install it with ALPSCore.
-
-    In the latter case, you may optionally also set:
-     -DALPS_EIGEN_UNPACK_DIR=<path to directory to unpack Eigen> 
-     (currently set to ${ALPS_EIGEN_UNPACK_DIR})
-
-     -DALPS_EIGEN_TGZ_FILE=<path to Eigen3 archive file>
-     (currently set to ${ALPS_EIGEN_TGZ_FILE})
-
-     -DEIGEN3_INSTALL_DIR=<path to unpacked Eigen3>
-     (if you want to co-install a specific version of Eigen)
-
-")
-  elseif(NOT EIGEN3_FOUND AND DEFINED EIGEN3_VERSION_OK)
-    message(FATAL_ERROR
+ Your could try the following options:${eigen_install_options_msg}")
+    elseif(NOT EIGEN3_FOUND AND DEFINED EIGEN3_VERSION_OK)
+       message(FATAL_ERROR
 " 
  The required library Eigen3 has been found at ${EIGEN3_INCLUDE_DIR} on your system.
  We require ${ALPS_EIGEN_MIN_VERSION} > ${EIGEN3_VERSION}
- Please try upgrading or using the following options to use a different installation:
- 1. Set environment variable Eigen3_DIR
-    to point to the root of your CMake-based Eigen3 installation.
- 2. Rerun CMake with option:
-     -DEIGEN3_INCLUDE_DIR=<path to your Eigen3 directory> 
-    to point to the location of Eigen3 headers.
- 3. Rerun CMake with option:
-     -DALPS_INSTALL_EIGEN=true 
-    to request the installation script to attempt to download Eigen3
-    and co-install it with ALPSCore.
-
-    In the latter case, you may optionally also set:
-     -DALPS_EIGEN_UNPACK_DIR=<path to directory to unpack Eigen> 
-     (currently set to ${ALPS_EIGEN_UNPACK_DIR})
-
-     -DALPS_EIGEN_TGZ_FILE=<path to Eigen3 archive file>
-     (currently set to ${ALPS_EIGEN_TGZ_FILE})
-
-     -DEIGEN3_INSTALL_DIR=<path to unpacked Eigen3>
-     (if you want to co-install a specific version of Eigen)
-
-")
+ Please try upgrading or using the following options to use a different installation:${eigen_install_options_msg}")
     endif()
 
     target_include_directories(${PROJECT_NAME} PUBLIC ${EIGEN3_INCLUDE_DIR})
