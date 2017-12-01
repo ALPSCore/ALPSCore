@@ -23,10 +23,18 @@ if (DocumentationOnly)
   return()
 endif()
 
-add_this_package(params)
+add_this_package(params dict_value dictionary iniparser_interface)
 
-add_boost(program_options)
+add_boost()
 add_hdf5()
+
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../common/deps/iniparser" "./iniparser")
+if (ALPS_BUILD_SHARED OR ALPS_BUILD_PIC)
+  # FIXME: is it necessary or CMake can figure it out?
+  set_target_properties(libiniparser PROPERTIES POSITION_INDEPENDENT_CODE ON)
+endif()
+
+target_link_libraries(${PROJECT_NAME} PRIVATE libiniparser)
 
 add_alps_package(alps-utilities alps-hdf5)
 

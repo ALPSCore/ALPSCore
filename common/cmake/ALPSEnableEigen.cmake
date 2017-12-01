@@ -20,13 +20,8 @@ function(add_eigen)
     set(ALPS_EIGEN_TGZ_FILE "${ALPS_EIGEN_UNPACK_DIR}/eigen.tgz")
   endif()
 
-  if (NOT ALPS_INSTALL_EIGEN)
-    find_package(Eigen3 ${ALPS_EIGEN_MIN_VERSION})
-    if (NOT Eigen3_FOUND)
-      message(FATAL_ERROR
-" 
- The required library Eigen3 has not been found on your system.
- Your could try the following options:
+  # CAUTION, the message contains significant spaces in seemingly-empty lines.
+  set(eigen_install_options_msg "
  1. Set environment variable Eigen3_DIR
     to point to the root of your CMake-based Eigen3 installation.
  2. Rerun CMake with option:
@@ -36,18 +31,34 @@ function(add_eigen)
      -DALPS_INSTALL_EIGEN=true 
     to request the installation script to attempt to download Eigen3
     and co-install it with ALPSCore.
-
+ 
     In the latter case, you may optionally also set:
      -DALPS_EIGEN_UNPACK_DIR=<path to directory to unpack Eigen> 
      (currently set to ${ALPS_EIGEN_UNPACK_DIR})
-
+ 
      -DALPS_EIGEN_TGZ_FILE=<path to Eigen3 archive file>
      (currently set to ${ALPS_EIGEN_TGZ_FILE})
-
+ 
      -DEIGEN3_INSTALL_DIR=<path to unpacked Eigen3>
      (if you want to co-install a specific version of Eigen)
-
 ")
+  
+  if (NOT ALPS_INSTALL_EIGEN)
+    find_package(Eigen3 ${ALPS_EIGEN_MIN_VERSION})
+    if (NOT EIGEN3_FOUND AND NOT DEFINED EIGEN3_VERSION_OK) # CMake 3.3+ would use Eigen3_FOUND
+      message(FATAL_ERROR
+" 
+ The required library Eigen3 has not been found on your system.
+ Your could try the following options:${eigen_install_options_msg}")
+    elseif(NOT EIGEN3_FOUND AND DEFINED EIGEN3_VERSION_OK)
+       message(FATAL_ERROR
+" 
+ The Eigen3 library has been found at ${EIGEN3_INCLUDE_DIR} on your system;
+ HOWEVER, your version is ${EIGEN3_VERSION} 
+ which is less than the required version ${ALPS_EIGEN_MIN_VERSION}.
+ Please try upgrading your installation of the Eigen3 library
+ or use a different installation; in the latter case, the following
+ options are available: ${eigen_install_options_msg}")
     endif()
 
     target_include_directories(${PROJECT_NAME} PUBLIC ${EIGEN3_INCLUDE_DIR})
@@ -62,10 +73,10 @@ function(add_eigen)
     if (NOT EIGEN3_INCLUDE_DIR)
       message(STATUS "Trying to download and unpack Eigen3")
       if (NOT EXISTS "${ALPS_EIGEN_TGZ_FILE}")
-        message(STATUS "Downloading Eigen3, timeout 30 sec")
+        message(STATUS "Downloading Eigen3, timeout 600 sec")
         file(DOWNLOAD ${ALPS_EIGEN_DOWNLOAD_LOCATION} ${ALPS_EIGEN_TGZ_FILE}
-          INACTIVITY_TIMEOUT 30
-          TIMEOUT 30
+          INACTIVITY_TIMEOUT 60
+          TIMEOUT 600
           STATUS status_
           SHOW_PROGRESS)
         if (status_ EQUAL 0)
@@ -110,7 +121,7 @@ function(add_eigen)
     # Here EIGEN3_INCLUDE_DIR is set, find_package() will only check the version 
     message(STATUS "Searching for Eigen3 in ${EIGEN3_INCLUDE_DIR}")
     find_package(Eigen3 ${ALPS_EIGEN_MIN_VERSION})
-    if (NOT Eigen3_FOUND)
+    if (NOT EIGEN3_FOUND) # CMake 3.3+ would use Eigen3_FOUND
       message(FATAL_ERROR
         "\nCannot find suitable Eigen3 in ${EIGEN3_INCLUDE_DIR}."
         " Make sure that Eigen3 is indeed at the specified location, "
@@ -122,14 +133,14 @@ function(add_eigen)
     target_include_directories(${PROJECT_NAME} PUBLIC
       $<BUILD_INTERFACE:${EIGEN3_INCLUDE_DIR}>
       $<INSTALL_INTERFACE:${eigen_install_dir_}>)
-    install(DIRECTORY "${eigen_dir}/Eigen" "${eigen_dir}/unsupported" DESTINATION ${eigen_install_dir_})
+    install(DIRECTORY "${EIGEN3_INCLUDE_DIR}/Eigen" "${EIGEN3_INCLUDE_DIR}/unsupported" DESTINATION ${eigen_install_dir_})
     
   endif(NOT ALPS_INSTALL_EIGEN)
 
   # assertion
-  if (NOT Eigen3_FOUND OR NOT EIGEN3_VERSION)
+  if (NOT EIGEN3_FOUND OR NOT EIGEN3_VERSION) # CMake 3.3+ would use Eigen3_FOUND
     message(FATAL_ERROR "Assertion error: Eigen3 must have been found and versioned. "
-      "\nEigen3_FOUND=${Eigen3_FOUND}"
+      "\nEIGEN3_FOUND=${EIGEN3_FOUND}"
       "\nEIGEN3_VERSION=${EIGEN3_VERSION}"
       "\nPlease report this to ALPSCore developers.")
   endif()

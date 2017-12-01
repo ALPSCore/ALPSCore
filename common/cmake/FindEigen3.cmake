@@ -95,4 +95,4 @@ else (EIGEN3_INCLUDE_DIR)
 endif(EIGEN3_INCLUDE_DIR)
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(Eigen3 DEFAULT_MSG EIGEN3_INCLUDE_DIR EIGEN3_VERSION_OK)
+find_package_handle_standard_args(Eigen3 REQUIRED_VARS EIGEN3_INCLUDE_DIR EIGEN3_VERSION_OK)

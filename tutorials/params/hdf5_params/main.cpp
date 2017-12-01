@@ -10,8 +10,8 @@
 /**
  * This example shows how to read/write parameters from/to an .hdf5 file.
  * This format is meant to save/restore computation, and not for long
- * term storage. That is: the format is tied to the internal strucure of the
- * code, and is not forward/backward compatible.
+ * term storage. That is: the format may change with the version of ALPSCore,
+ * and may not be forward/backward compatible.
  * 
  * @param argc the number of arguments
  * @param argv the argument array
@@ -43,7 +43,7 @@ int main(int argc, char** argv)
     std::cout << "Writing parameters to parameters.h5..." << std::endl;
     std::string filename("parameters.h5");
     alps::hdf5::archive oar(filename, "w");
-    par.save(oar);
+    oar["params"] << par;
     oar.close();
 
     // Loading parameters from the hdf5 file.
@@ -52,7 +52,7 @@ int main(int argc, char** argv)
     // are reading.
     alps::params par2;
     alps::hdf5::archive iar(filename, "r");
-    par2.load(iar);
+    iar["params"] >> par2;
     iar.close();
     
     // Printing loaded parameters to standard output.
