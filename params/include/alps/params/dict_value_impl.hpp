@@ -18,30 +18,30 @@
 #include <boost/static_assert.hpp> // FIXME:C++11 replace by std feature
 #include <boost/core/enable_if.hpp> // FIXME:C++11 replace by std feature
 
-namespace std {
-    // Printing of a vector
-    // FIXME: pollutes std:: namespace and is a bad practice, what if user has one's own vector printer???
-    template <typename T>
-    inline std::ostream& operator<<(std::ostream& strm, const std::vector<T>& vec)
-    {
-        typedef std::vector<T> vtype;
-        typedef typename vtype::const_iterator itype;
+// namespace std {
+//     // Printing of a vector
+//     // FIXME: pollutes std:: namespace and is a bad practice, what if user has one's own vector printer???
+//     template <typename T>
+//     inline std::ostream& operator<<(std::ostream& strm, const std::vector<T>& vec)
+//     {
+//         typedef std::vector<T> vtype;
+//         typedef typename vtype::const_iterator itype;
 
-        strm << "[";
-        itype it=vec.begin();
-        const itype end=vec.end();
+//         strm << "[";
+//         itype it=vec.begin();
+//         const itype end=vec.end();
 
-        if (end!=it) {
-            strm << *it;
-            for (++it; end!=it; ++it) {
-                strm << ", " << *it;
-            }
-        }
-        strm << "]";
+//         if (end!=it) {
+//             strm << *it;
+//             for (++it; end!=it; ++it) {
+//                 strm << ", " << *it;
+//             }
+//         }
+//         strm << "]";
 
-        return strm;
-    }
-}
+//         return strm;
+//     }
+// }
 
 namespace alps {
     namespace params_ns {

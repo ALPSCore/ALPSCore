@@ -347,6 +347,30 @@ namespace alps {
             swap(*this, newpar);
         }
 
+        namespace {
+            // Printing of a vector
+            // FIXME!!! Consolidate with other definitions and move to alps::utilities
+            template <typename T>
+            inline std::ostream& operator<<(std::ostream& strm, const std::vector<T>& vec)
+            {
+                typedef std::vector<T> vtype;
+                typedef typename vtype::const_iterator itype;
+
+                strm << "[";
+                itype it=vec.begin();
+                const itype end=vec.end();
+
+                if (end!=it) {
+                    strm << *it;
+                    for (++it; end!=it; ++it) {
+                        strm << ", " << *it;
+                    }
+                }
+                strm << "]";
+
+                return strm;
+            }
+        }
 
         std::ostream& operator<<(std::ostream& s, const params& p) {
             s << "[alps::params]"
