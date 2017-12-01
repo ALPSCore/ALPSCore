@@ -16,6 +16,7 @@
 #include <boost/type_index.hpp> // for pretty-printing user types in error messages
 
 #include <boost/static_assert.hpp> // FIXME:C++11 replace by std feature
+#include <boost/core/enable_if.hpp> // FIXME:C++11 replace by std feature
 
 namespace std {
     // Printing of a vector
@@ -405,10 +406,12 @@ namespace alps {
             }
         }
             
-        template <typename T>
-        inline dict_value::operator T() const {
-            return as<T>();
-        }
+        // template <typename T,
+        //           typename boost::enable_if<detail::is_allowed<T>, int> =0>
+        // inline dict_value::operator T() const {
+        //     // BOOST_STATIC_ASSERT_MSG(detail::is_allowed<T>::value, "The type is not supported by the dictionary");
+        //     return as<T>();
+        // }
 
         inline void dict_value::clear() { val_=None(); }
 

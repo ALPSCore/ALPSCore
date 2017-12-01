@@ -53,6 +53,11 @@
 
 namespace alps {
     namespace params_ns {
+
+        namespace detail {
+            template <typename> struct is_allowed;
+        }
+        
         class dict_value {
           public:
 
@@ -91,8 +96,18 @@ namespace alps {
             T as() const;
             
             /// Conversion to a target type, explicit or implicit
-            template <typename T>
-            operator T() const;
+            template <typename T
+#ifndef BOOST_NO_CXX11_FUNCTION_TEMPLATE_DEFAULT_ARGS
+                      ,typename boost::enable_if<detail::is_allowed<T>, int>::type =0
+#endif                      
+                      >
+            inline operator T() const {
+                // BOOST_STATIC_ASSERT_MSG(detail::is_allowed<T>::value, "The type is not supported by the dictionary");
+                return as<T>();
+            }
+
+            // template <typename T, int>
+            // operator T() const;
 
             /// Reset to an empty value
             void clear();
