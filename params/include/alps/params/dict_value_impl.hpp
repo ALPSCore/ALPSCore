@@ -22,7 +22,7 @@ namespace std {
     // Printing of a vector
     // FIXME: pollutes std:: namespace and is a bad practice, what if user has one's own vector printer???
     template <typename T>
-    std::ostream& operator<<(std::ostream& strm, const std::vector<T>& vec)
+    inline std::ostream& operator<<(std::ostream& strm, const std::vector<T>& vec)
     {
         typedef std::vector<T> vtype;
         typedef typename vtype::const_iterator itype;
