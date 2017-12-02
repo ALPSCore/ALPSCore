@@ -192,7 +192,8 @@ TEST_F(DictionaryTest0, storeStringGetCharPtr) {
     EXPECT_THROW(actual=cdict_["name"], de::type_mismatch);
     EXPECT_EQ(0, actual);
 
-    actual=cdict_["name"].as<std::string>().c_str();
+    const std::string actual_string=cdict_["name"].as<std::string>();
+    actual=actual_string.c_str();
     EXPECT_EQ(expected, std::string(actual));
 }
 
