@@ -48,7 +48,7 @@ public:
 
 public:
     /** Construct view on nothing */
-    sink() : data_(NULL), size_(0) { }
+    sink() : data_(nullptr), size_(0) { }
 
     /** Construct view on data area with size */
     sink(T *data, size_t size) : data_(data), size_(size) { }

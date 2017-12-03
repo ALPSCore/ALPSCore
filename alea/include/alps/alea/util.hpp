@@ -19,7 +19,7 @@
     #define DATA(vec) ((vec).data())
     #define STATIC_ASSERT(X, MSG) static_assert(X, MSG)
 #else
-    #define DATA(vec) ((vec).size() != 0 ? &vec[0] : NULL)
+    #define DATA(vec) ((vec).size() != 0 ? &vec[0] : nullptr)
     #define STATIC_ASSERT(EXPR, MSG) \
                 do { \
                     char STATIC_ASSERT_FAILED[(EXPR) ? 1 : -1]; \

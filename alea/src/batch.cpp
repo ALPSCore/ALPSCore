@@ -49,7 +49,7 @@ batch_acc<T>::batch_acc(const batch_acc &other)
     : size_(other.size_)
     , num_batches_(other.num_batches_)
     , base_size_(other.base_size_)
-    , store_(other.store_ ? new batch_data<T>(*other.store_) : NULL)
+    , store_(other.store_ ? new batch_data<T>(*other.store_) : nullptr)
     , cursor_(other.cursor_)
     , offset_(other.offset_)
 { }
@@ -60,7 +60,7 @@ batch_acc<T> &batch_acc<T>::operator=(const batch_acc &other)
     size_ = other.size_;
     num_batches_ = other.num_batches_;
     base_size_ = other.base_size_;
-    store_.reset(other.store_ ? new batch_data<T>(*other.store_) : NULL);
+    store_.reset(other.store_ ? new batch_data<T>(*other.store_) : nullptr);
     cursor_ = other.cursor_;
     offset_ = other.offset_;
     return *this;
@@ -147,13 +147,13 @@ template class batch_acc<std::complex<double> >;
 
 template <typename T>
 batch_result<T>::batch_result(const batch_result &other)
-    : store_(other.store_ ? new batch_data<T>(*other.store_) : NULL)
+    : store_(other.store_ ? new batch_data<T>(*other.store_) : nullptr)
 { }
 
 template <typename T>
 batch_result<T> &batch_result<T>::operator=(const batch_result &other)
 {
-    store_.reset(other.store_ ? new batch_data<T>(*other.store_) : NULL);
+    store_.reset(other.store_ ? new batch_data<T>(*other.store_) : nullptr);
     return *this;
 }
 
