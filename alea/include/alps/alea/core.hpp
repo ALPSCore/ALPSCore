@@ -188,15 +188,26 @@ struct reducer_setup
 };
 
 /**
- * Perform sum-reduction with data from reducer source.
+ * Interface to performing sum-reduction with data from reducer source.
+ *
+ * Applications will typically start by checking  `get_setup()` to find out
+ * whether this core/thread will get a copy of the result, but this is not
+ * required
  *
  * The `reduce` methods take the data sink and add to it the data from the
  * reducers source (possibly by performing an MPI/OpenMP reduction or
  * gathering data from files, etc.).
  *
+ * Reducers need not perform the reductions immediately (they are allowed to
+ * group them for increased performance.)  A call to `commit()` marks a
+ * synchronization point, after which the sum-reduced data must be available
+ * on all instances which have `reducer_setup.have_result` set.
+ *
  * This facade allows us to abstract away the type of reduction, but most
  * importantly does not pull in a mandatory MPI dependency for the use of
  * the accumulators.
+ *
+ * @see alps::alea::mpi_reducer
  */
 struct reducer
 {
