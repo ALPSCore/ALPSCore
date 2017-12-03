@@ -95,17 +95,13 @@ public:
     typedef typename bind<Strategy, T>::var_type var_type;
 
 public:
-    var_acc();
-
-    var_acc(size_t size, size_t bundle_size=1);
+    var_acc(size_t size=1, size_t bundle_size=1);
 
     var_acc(const var_acc &other);
 
     var_acc &operator=(const var_acc &other);
 
     void reset();
-
-    bool initialized() const { return initialized_; }
 
     bool valid() const { return (bool)store_; }
 
@@ -141,7 +137,6 @@ private:
     std::unique_ptr< var_data<value_type, Strategy> > store_;
     bundle<value_type> current_;
     var_acc *uplevel_;
-    bool initialized_;
 
     friend class autocorr_acc<T>;
 };
@@ -178,8 +173,6 @@ public:
     var_result(const var_result &other);
 
     var_result &operator=(const var_result &other);
-
-    bool initialized() const { return true; }
 
     bool valid() const { return (bool)store_; }
 

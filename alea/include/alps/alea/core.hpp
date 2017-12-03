@@ -28,10 +28,7 @@ struct size_mismatch : public std::exception { };
 struct unsupported_operation : public std::exception { };
 
 /** Accumulator has lost its data */
-struct invalid_accumulator : public std::exception { };
-
-/** Accumulator has lost its data */
-struct uninitialized_accumulator : public std::exception { };
+struct finalized_accumulator : public std::exception { };
 
 template <typename T>
 struct traits;

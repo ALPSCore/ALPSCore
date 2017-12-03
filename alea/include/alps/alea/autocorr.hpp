@@ -60,13 +60,9 @@ public:
     typedef var_acc<T, circular_var> level_acc_type;
 
 public:
-    autocorr_acc();
-
-    autocorr_acc(size_t size=0, size_t batch_size=1, size_t granularity=2);
+    autocorr_acc(size_t size=1, size_t batch_size=1, size_t granularity=2);
 
     void reset();
-
-    bool initialized() const { return size_ != (size_t)-1; }
 
     bool valid() const { return !level_.empty(); }
 
@@ -129,8 +125,6 @@ public:
 
 public:
     autocorr_result() { }
-
-    bool initialized() const { return true; }
 
     bool valid() const { return !level_.empty(); }
 

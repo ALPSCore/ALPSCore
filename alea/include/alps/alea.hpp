@@ -28,10 +28,10 @@
  *
  * This can be represented by the following finite state machine:
  *
- *                     c'tor   _______________      _______________
- *                    ------->|               |    |               |  default
- *     result, <<        <<   |     empty     |    | uninitialized |   c'tor
- *      +-------+       +-----|_______________|    |_______________|<<-------
+ *                     c'tor   _______________
+ *                    ------->|               |
+ *     result, <<        <<   |     empty     |
+ *      +-------+       +-----|_______________|
  *      |       |       |            | |
  *      |     __V_______V____  reset | | reset  ________________
  *      |    |               |--->---+ +---<---|                |

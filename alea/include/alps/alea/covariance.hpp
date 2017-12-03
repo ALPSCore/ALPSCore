@@ -97,17 +97,13 @@ public:
     typedef typename eigen<cov_type>::matrix cov_matrix_type;
 
 public:
-    cov_acc();
-
-    cov_acc(size_t size, size_t bundle_size=1);
+    cov_acc(size_t size=1, size_t bundle_size=1);
 
     cov_acc(const cov_acc &other);
 
     cov_acc &operator=(const cov_acc &other);
 
     void reset();
-
-    bool initialized() const { return initialized_; }
 
     bool valid() const { return (bool)store_; }
 
@@ -143,7 +139,6 @@ private:
     std::unique_ptr<cov_data<T,Strategy> > store_;
     bundle<value_type> current_;
     cov_acc *uplevel_;
-    bool initialized_;
 };
 
 template <typename T, typename Strategy>
@@ -181,8 +176,6 @@ public:
     cov_result(const cov_result &other);
 
     cov_result &operator=(const cov_result &other);
-
-    bool initialized() const { return true; }
 
     bool valid() const { return (bool)store_; }
 

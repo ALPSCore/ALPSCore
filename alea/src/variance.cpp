@@ -43,19 +43,10 @@ template class var_data<std::complex<double>, elliptic_var>;
 
 
 template <typename T, typename Str>
-var_acc<T,Str>::var_acc()
-    : store_()
-    , current_(0, 1)
-    , uplevel_(NULL)
-    , initialized_(false)
-{ }
-
-template <typename T, typename Str>
 var_acc<T,Str>::var_acc(size_t size, size_t bundle_size)
     : store_(new var_data<T,Str>(size))
     , current_(size, bundle_size)
     , uplevel_(NULL)
-    , initialized_(true)
 { }
 
 // We need an explicit copy constructor, as we need to copy the data
@@ -64,7 +55,6 @@ var_acc<T,Str>::var_acc(const var_acc &other)
     : store_(other.store_ ? new var_data<T,Str>(*other.store_) : NULL)
     , current_(other.current_)
     , uplevel_(other.uplevel_)
-    , initialized_(other.initialized_)
 { }
 
 template <typename T, typename Str>
@@ -73,14 +63,12 @@ var_acc<T,Str> &var_acc<T,Str>::operator=(const var_acc &other)
     store_.reset(other.store_ ? new var_data<T,Str>(*other.store_) : NULL);
     current_ = other.current_;
     uplevel_ = other.uplevel_;
-    initialized_ = other.initialized_;
     return *this;
 }
 
 template <typename T, typename Str>
 void var_acc<T,Str>::reset()
 {
-    internal::check_init(*this);
     current_.reset();
     if (valid())
         store_->reset();
@@ -121,9 +109,7 @@ template <typename T, typename Str>
 void var_acc<T,Str>::finalize_to(var_result<T,Str> &result)
 {
     internal::check_valid(*this);
-    if (result.valid())
-        throw std::runtime_error("Can only finalize to uninitialized result");
-
+    result.store_.reset();
     result.store_.swap(store_);
     result.store_->convert_to_mean();
 }

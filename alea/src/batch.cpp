@@ -28,17 +28,6 @@ template class batch_data<std::complex<double> >;
 
 
 template <typename T>
-batch_acc<T>::batch_acc()
-    : size_(-1)
-    , num_batches_(0)
-    , base_size_(0)
-    , store_()
-    , cursor_(0)
-    , offset_()
-{ }
-
-
-template <typename T>
 batch_acc<T>::batch_acc(size_t size, size_t num_batches, size_t base_size)
     : size_(size)
     , num_batches_(num_batches)
@@ -80,8 +69,6 @@ batch_acc<T> &batch_acc<T>::operator=(const batch_acc &other)
 template <typename T>
 void batch_acc<T>::reset()
 {
-    internal::check_init(*this);
-
     cursor_.reset();
     for (size_t i = 0; i != num_batches_; ++i)
         offset_[i] = i * base_size_;
@@ -150,9 +137,7 @@ template <typename T>
 void batch_acc<T>::finalize_to(batch_result<T> &result)
 {
     internal::check_valid(*this);
-    if (result.valid())
-        throw std::runtime_error("Can only finalize to uninitialized result");
-
+    result.store_.reset();
     result.store_.swap(store_);
 }
 

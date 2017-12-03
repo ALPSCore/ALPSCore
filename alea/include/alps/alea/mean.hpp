@@ -83,17 +83,13 @@ template <typename T>
 class mean_acc
 {
 public:
-    mean_acc() : store_(), size_(-1) { }
-
-    mean_acc(size_t size) : store_(new mean_data<T>(size)), size_(size) { }
+    mean_acc(size_t size=1) : store_(new mean_data<T>(size)), size_(size) { }
 
     mean_acc(const mean_acc &other);
 
     mean_acc &operator=(const mean_acc &other);
 
     void reset();
-
-    bool initialized() const { return size_ != (size_t)-1; }
 
     bool valid() const { return (bool)store_; }
 
@@ -151,8 +147,6 @@ public:
     mean_result(const mean_result &other);
 
     mean_result &operator=(const mean_result &other);
-
-    bool initialized() const { return true; }
 
     bool valid() const { return (bool)store_; }
 

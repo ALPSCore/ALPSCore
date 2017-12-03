@@ -72,17 +72,13 @@ public:
     typedef T value_type;
 
 public:
-    batch_acc();
-
-    batch_acc(size_t size=0, size_t num_batches=256, size_t base_size=1);
+    batch_acc(size_t size=1, size_t num_batches=256, size_t base_size=1);
 
     batch_acc(const batch_acc &other);
 
     batch_acc &operator=(const batch_acc &other);
 
     void reset();
-
-    bool initialized() const { return size_ != (size_t)-1; }
 
     bool valid() const { return (bool)store_; }
 
@@ -153,8 +149,6 @@ public:
     batch_result(const batch_result &other);
 
     batch_result &operator=(const batch_result &other);
-
-    bool initialized() const { return true; }
 
     bool valid() const { return (bool)store_; }
 

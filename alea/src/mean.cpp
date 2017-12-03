@@ -56,7 +56,6 @@ mean_acc<T> &mean_acc<T>::operator<<(const computed<T> &source)
 template <typename T>
 void mean_acc<T>::reset()
 {
-    internal::check_init(*this);
     if (valid())
         store_->reset();
     else
@@ -84,9 +83,7 @@ template <typename T>
 void mean_acc<T>::finalize_to(mean_result<T> &result)
 {
     internal::check_valid(*this);
-    if (result.valid())
-        throw std::runtime_error("Can only finalize to invalid result");
-
+    result.store_.reset();
     result.store_.swap(store_);
     result.store_->convert_to_mean();
 }
