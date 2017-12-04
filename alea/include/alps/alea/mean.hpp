@@ -44,7 +44,7 @@ public:
     size_t size() const { return data_.rows(); }
 
     /** Returns number of accumulated data points */
-    const size_t &count() const { return count_; }
+    size_t count() const { return count_; }
 
     /** Returns number of accumulated data points */
     size_t &count() { return count_; }
