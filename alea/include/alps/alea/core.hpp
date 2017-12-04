@@ -194,8 +194,8 @@ struct reducer_setup
  * whether this core/thread will get a copy of the result, but this is not
  * required
  *
- * The `reduce` methods take the data sink and add to it the data from the
- * reducers source (possibly by performing an MPI/OpenMP reduction or
+ * The `reduce()` family of methods take the data sink and add to it the data
+ * from the reducers source (possibly by performing an MPI/OpenMP reduction or
  * gathering data from files, etc.).
  *
  * Reducers need not perform the reductions immediately (they are allowed to
