@@ -89,8 +89,6 @@ struct cov_visitor
     result_type operator() (const Res &) const { throw estimate_type_mismatch(); }
 };
 
-// #include <alps/alea/visitor.hpp>
-
 bool result::valid() const
 {
     return boost::apply_visitor(valid_visitor(), res_);
