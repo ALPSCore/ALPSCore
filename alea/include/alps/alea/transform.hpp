@@ -10,6 +10,7 @@
 
 #include <alps/alea/mean.hpp>
 #include <alps/alea/propagation.hpp>
+#include <alps/alea/convert.hpp>
 
 #include <random>
 
@@ -48,6 +49,7 @@ private:
 
 template <typename T>
 struct scalar_unary_transform
+    : public transform<T>
 {
 public:
     scalar_unary_transform(const std::function<T(T)> &fn) : fn_(fn) { }
@@ -72,6 +74,7 @@ private:
 
 template <typename T>
 struct scalar_binary_transform
+    : public transform<T>
 {
 public:
     scalar_binary_transform(const std::function<T(T,T)> &fn) : fn_(fn) { }
@@ -106,12 +109,16 @@ scalar_unary_transform<T> make_scalar_transform(const std::function<T(T,T)> &fn)
     return scalar_binary_transform<T>(fn);
 }
 
-template <typename Result, typename Str=no_propagation>
-typename bind<Str,Result>::out_result_type do_transform(
-                            const typename bind<Str,Result>::transform_type &t,
-                            const typename bind<Str,Result>::in_result_type &in)
-{
-    return bind<Str,Result>(t, in);
-}
+// template <typename T, typename Result, typename Str=no_propagation>
+// typename bind<
+//
+//
+// template <typename Result, typename Str=no_propagation>
+// typename bind<Str,Result>::out_result_type do_transform(
+//                             const typename bind<Str,Result>::transform_type &t,
+//                             const Result &in)
+// {
+//     return bind<Str,Result>(t, in);
+// }
 
 }}

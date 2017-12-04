@@ -6,52 +6,60 @@
 #pragma once
 
 #include <alps/alea/core.hpp>
-#include <alps/alea/mean.hpp>
-#include <alps/alea/variance.hpp>
-#include <alps/alea/covariance.hpp>
-#include <alps/alea/autocorr.hpp>
-#include <alps/alea/batch.hpp>
 
 #include <alps/alea/internal/util.hpp>
+#include <alps/alea/internal/joined.hpp>
 
 namespace alps { namespace alea {
 
-// TODO: refactor this
-
 /**
- * Stores if downgrade is valid.
+ * Joins two statistical results together, assuming their mutual independence.
+ *
+ * Returns a result of the random vector which is the concatenation of the
+ * random vectors corresponding to the arguments `first`, `second`, i.e., of
+ * size ` first.size() + second.size()`.   Assumes that `first` and `second`
+ * are uncorrelated (their covariance is zero).
+ *
+ * One can combine results of different type; in this case, `Result` is
+ * inferred in such a way that as much information as possible is preserved
+ * from the constituent accumulators.
  */
-template <typename T, typename U>
-struct can_downgrade : std::false_type { };
+template <typename R1, typename R2,
+          typename Result=typename internal::joined<R1, R2>::result_type>
+Result join(const R1 &first, const R2 &second);
 
-template <typename T>
-struct can_downgrade<mean_data<T>, var_data<T> > : std::true_type { };
-
-
-/**
- * Downgrades one type of data/result to another one.
- */
-template <typename T, typename U>
-T downgrade(const U &obj);
-
-template <typename T, typename Str>
-mean_data<T> downgrade(const var_data<T,Str> &obj)
+template <typename R1, typename R2, typename T>
+mean_result<T> join(const R1 &first, const R2 &second)
 {
-    internal::check_valid(obj);
-
-    mean_data<T> res(obj.size());
-    res.data() = obj.data();
-    res.count() = obj.count();
+    mean_data<T> res(first.size() + second.size());
+    res.store().data().topRows(first.size()) = first.store().data();
+    res.store().data().bottomRows(second.size()) = second.store().data();
+    res.store().count() = 1;   // TODO: does this make sense?
     return res;
 }
 
-template <typename T, typename Str>
-mean_result<T> downgrade(const var_result<T,Str> &obj)
+template <typename R1, typename R2, typename T, typename Str>
+var_result<T,Str> join(const R1 &first, const R2 &second)
 {
-    return mean_result<T>(downgrade(obj.data()));
+    throw std::runtime_error("Not implemented");   // FIXME
 }
 
+template <typename R1, typename R2, typename T, typename Str>
+cov_result<T,Str> join(const R1 &first, const R2 &second)
+{
+    throw std::runtime_error("Not implemented");   // FIXME
+}
 
+template <typename R1, typename R2, typename T, typename Str>
+autocorr_result<T> join(const R1 &first, const R2 &second)
+{
+    throw std::runtime_error("Not implemented");   // FIXME
+}
 
+template <typename R1, typename R2, typename T, typename Str>
+batch_result<T> join(const R1 &first, const R2 &second)
+{
+    throw std::runtime_error("Not implemented");   // FIXME
+}
 
 }}
