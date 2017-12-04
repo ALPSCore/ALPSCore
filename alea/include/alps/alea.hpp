@@ -52,8 +52,12 @@
 
 // Plugins
 #include <alps/alea/hdf5.hpp>
-#include <alps/alea/mpi.hpp>
+#ifdef ALPS_HAVE_MPI
+    #include <alps/alea/mpi.hpp>
+#endif
 
 // Variant types
 #include <alps/alea/result.hpp>
 
+// Transforms
+#include <alps/alea/transform.hpp>
