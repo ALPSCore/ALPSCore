@@ -3,7 +3,7 @@
 #
 
 # Do not forget to adjust as needed!
-set(ALPSCORE_VERSION "1.0.0.1")
+set(ALPSCORE_VERSION "2.0.0-rc1")
 
 # Disable in-source builds
 if (${CMAKE_BINARY_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
@@ -108,7 +108,7 @@ macro(add_boost) # usage: add_boost(component1 component2...)
   if (ALPS_BUILD_SHARED)
     set(Boost_USE_STATIC_LIBS        OFF)
   endif()
-  find_package (Boost 1.54.0 COMPONENTS ${ARGV} REQUIRED)
+  find_package (Boost 1.56.0 COMPONENTS ${ARGV} REQUIRED)
   message(STATUS "Boost includes: ${Boost_INCLUDE_DIRS}" )
   message(STATUS "Boost libs: ${Boost_LIBRARIES}" )
   target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${Boost_INCLUDE_DIRS})

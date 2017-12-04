@@ -68,8 +68,8 @@ int main(int argc, char** argv)
     }
 
     // We can also check if there are any parameters that do not have
-    // a value assigned; if so, a short message will be printed to the
-    // given stream.
+    // a value assigned or were given as an invalid format; if so, a short message will 
+    // be printed to the given stream.
     if (par.has_missing(std::cout)) {
         return 1;
     }

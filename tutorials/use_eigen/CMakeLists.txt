@@ -10,7 +10,7 @@ project(use_eigen CXX)
 # the project relies on the ALPSCore package. If ALPSCore is not found
 # automatically, specify its location using:
 # export ALPSCore_DIR=/location/to/ALPSCORE/
-find_package(ALPSCore 1.0  REQUIRED)
+find_package(ALPSCore 2.0  REQUIRED)
 
 # check if Eigen is present:
 if (ALPSCore_HAS_EIGEN_VERSION)

@@ -40,7 +40,7 @@ namespace alps {
             } else {
                 map_type new_map;
                 while (root_sz--) {
-                    std::pair<K,V> pair;
+                    std::pair<K,V> pair; // FIXME! this requires default ctor
                     broadcast(comm, pair.first, root);
                     broadcast(comm, pair.second, root);
                     new_map.insert(pair);

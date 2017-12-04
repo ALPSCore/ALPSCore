@@ -10,7 +10,7 @@ add_executable(${PROJECT_NAME}_mpi main_mpi.cpp ising.cpp)
 # or somewhere in your PATH. 
 # Otherwise, point ALPSCore_DIR environment variable
 # to the ALPScore installation tree.
-find_package(ALPSCore 1.0 REQUIRED)
+find_package(ALPSCore 2.0 REQUIRED)
 
 # Use ALPSCore_LIBRARIES variable to link to ALPSCore 
 target_link_libraries(${PROJECT_NAME} ${ALPSCore_LIBRARIES})
