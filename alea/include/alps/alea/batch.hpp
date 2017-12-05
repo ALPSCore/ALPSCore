@@ -123,6 +123,7 @@ template <typename T>
 struct traits< batch_acc<T> >
 {
     typedef T value_type;
+    typedef circular_var strategy_type;
     typedef batch_result<T> result_type;
 };
 
@@ -182,6 +183,13 @@ template <typename T>
 struct traits< batch_result<T> >
 {
     typedef T value_type;
+    typedef circular_var strategy_type;
+
+    const static bool HAVE_MEAN  = true;
+    const static bool HAVE_VAR   = true;
+    const static bool HAVE_COV   = true;
+    const static bool HAVE_TAU   = false;
+    const static bool HAVE_BATCH = true;
 };
 
 extern template class batch_result<double>;

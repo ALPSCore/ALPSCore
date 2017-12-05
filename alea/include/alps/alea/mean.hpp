@@ -176,6 +176,12 @@ template <typename T>
 struct traits< mean_result<T> >
 {
     typedef T value_type;
+
+    const static bool HAVE_MEAN  = true;
+    const static bool HAVE_VAR   = false;
+    const static bool HAVE_COV   = false;
+    const static bool HAVE_TAU   = false;
+    const static bool HAVE_BATCH = false;
 };
 
 extern template class mean_result<double>;

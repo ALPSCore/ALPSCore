@@ -101,6 +101,7 @@ template <typename T>
 struct traits< autocorr_acc<T> >
 {
     typedef T value_type;
+    typedef circular_var strategy_type;
     typedef typename bind<circular_var, T>::var_type var_type;
     typedef typename bind<circular_var, T>::cov_type cov_type;
     typedef autocorr_result<T> result_type;
@@ -163,8 +164,15 @@ template <typename T>
 struct traits< autocorr_result<T> >
 {
     typedef T value_type;
+    typedef circular_var strategy_type;
     typedef typename bind<circular_var, T>::var_type var_type;
     typedef typename bind<circular_var, T>::cov_type cov_type;
+
+    const static bool HAVE_MEAN  = true;
+    const static bool HAVE_VAR   = true;
+    const static bool HAVE_COV   = false;
+    const static bool HAVE_TAU   = true;
+    const static bool HAVE_BATCH = false;
 };
 
 extern template class autocorr_result<double>;

@@ -74,6 +74,7 @@ private:
 template <typename T, typename Strategy>
 struct traits< cov_data<T,Strategy> >
 {
+    typedef Strategy strategy_type;
     typedef typename bind<Strategy, T>::value_type value_type;
     typedef typename bind<Strategy, T>::var_type var_type;
     typedef typename bind<Strategy, T>::cov_type cov_type;
@@ -144,6 +145,7 @@ private:
 template <typename T, typename Strategy>
 struct traits< cov_acc<T,Strategy> >
 {
+    typedef Strategy strategy_type;
     typedef typename bind<Strategy, T>::value_type value_type;
     typedef typename bind<Strategy, T>::var_type var_type;
     typedef typename bind<Strategy, T>::cov_type cov_type;
@@ -208,8 +210,15 @@ private:
 template <typename T, typename Strategy>
 struct traits< cov_result<T,Strategy> >
 {
+    typedef Strategy strategy_type;
     typedef typename bind<Strategy, T>::value_type value_type;
     typedef typename bind<Strategy, T>::var_type var_type;
+
+    const static bool HAVE_MEAN  = true;
+    const static bool HAVE_VAR   = true;
+    const static bool HAVE_COV   = true;
+    const static bool HAVE_TAU   = false;
+    const static bool HAVE_BATCH = false;
 };
 
 extern template class cov_result<double>;
