@@ -10,6 +10,14 @@
 #include <alps/alea/internal/util.hpp>
 #include <alps/alea/internal/joined.hpp>
 
+// Forward
+
+namespace alps { namespace alea {
+    template <typename Result> struct joiner;
+}}
+
+// Actual
+
 namespace alps { namespace alea {
 
 /**
@@ -26,40 +34,69 @@ namespace alps { namespace alea {
  */
 template <typename R1, typename R2,
           typename Result=typename internal::joined<R1, R2>::result_type>
-Result join(const R1 &first, const R2 &second);
-
-template <typename R1, typename R2, typename T>
-mean_result<T> join(const R1 &first, const R2 &second)
+Result join(const R1 &first, const R2 &second)
 {
-    mean_data<T> res(first.size() + second.size());
-    res.store().data().topRows(first.size()) = first.store().data();
-    res.store().data().bottomRows(second.size()) = second.store().data();
-    res.store().count() = 1;   // TODO: does this make sense?
-    return res;
+    return joiner<Result>()(first, second);
 }
 
-template <typename R1, typename R2, typename T, typename Str>
-var_result<T,Str> join(const R1 &first, const R2 &second)
-{
-    throw std::runtime_error("Not implemented");   // FIXME
-}
+/** Helper class for joining results together */
+template <typename Result>
+struct joiner;
 
-template <typename R1, typename R2, typename T, typename Str>
-cov_result<T,Str> join(const R1 &first, const R2 &second)
+template <typename T>
+struct joiner<mean_result<T> >
 {
-    throw std::runtime_error("Not implemented");   // FIXME
-}
+    template <typename R1, typename R2>
+    mean_result<T> operator()(const R1 &first, const R2 &second)
+    {
+        mean_result<T> res(first.size() + second.size());
+        res.store().data().topRows(first.size()) = first.store().data();
+        res.store().data().bottomRows(second.size()) = second.store().data();
+        res.store().count() = 1;   // TODO: does this make sense?
+        return res;
+    }
+};
 
-template <typename R1, typename R2, typename T, typename Str>
-autocorr_result<T> join(const R1 &first, const R2 &second)
+template <typename T>
+struct joiner<var_result<T> >
 {
-    throw std::runtime_error("Not implemented");   // FIXME
-}
+    template <typename R1, typename R2>
+    var_result<T> operator()(const R1 &first, const R2 &second)
+    {
+        throw std::runtime_error("NOT IMPLEMENTED");   // FIXME
+    }
+};
 
-template <typename R1, typename R2, typename T, typename Str>
-batch_result<T> join(const R1 &first, const R2 &second)
+template <typename T>
+struct joiner<cov_result<T> >
 {
-    throw std::runtime_error("Not implemented");   // FIXME
-}
+    template <typename R1, typename R2>
+    cov_result<T> operator()(const R1 &first, const R2 &second)
+    {
+        throw std::runtime_error("NOT IMPLEMENTED");   // FIXME
+    }
+};
+
+template <typename T>
+struct joiner<autocorr_result<T> >
+{
+    template <typename R1, typename R2>
+    autocorr_result<T> operator()(const R1 &first, const R2 &second)
+    {
+        throw std::runtime_error("NOT IMPLEMENTED");   // FIXME
+    }
+};
+
+template <typename T>
+struct joiner<batch_result<T> >
+{
+    template <typename R1, typename R2>
+    batch_result<T> operator()(const R1 &first, const R2 &second)
+    {
+        throw std::runtime_error("NOT IMPLEMENTED");   // FIXME
+    }
+};
+
+
 
 }}

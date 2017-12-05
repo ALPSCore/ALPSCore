@@ -24,126 +24,88 @@ namespace alps { namespace alea {
 
 namespace alps { namespace alea { namespace internal {
 
+// Predicates
+
+template <typename T1, typename T2>
+constexpr bool joins_batch()
+{
+    return std::is_same<typename T1::value_type, typename T2::value_type>::value
+        && T1::HAVE_BATCH && T2::HAVE_BATCH;
+}
+
+template <typename T1, typename T2>
+constexpr bool joins_autocorr()
+{
+    return std::is_same<typename T1::value_type, typename T2::value_type>::value
+        && T1::HAVE_TAU && T2::HAVE_TAU;
+}
+
+template <typename T1, typename T2>
+constexpr bool joins_cov()
+{
+    return std::is_same<typename T1::value_type, typename T2::value_type>::value
+           && T1::HAVE_COV && T2::HAVE_COV
+           && !(T1::HAVE_BATCH && T2::HAVE_BATCH);
+}
+
+template <typename T1, typename T2>
+constexpr bool joins_var()
+{
+    return std::is_same<typename T1::value_type, typename T2::value_type>::value
+           && (T1::HAVE_VAR && T2::HAVE_VAR)
+           && !(T1::HAVE_COV && T2::HAVE_COV)
+           && !(T1::HAVE_BATCH && T2::HAVE_BATCH);
+}
+
+template <typename T1, typename T2>
+constexpr bool joins_mean()
+{
+    return std::is_same<typename T1::value_type, typename T2::value_type>::value
+           && T1::HAVE_MEAN && T2::HAVE_MEAN
+           && !(T1::HAVE_VAR && T2::HAVE_VAR);
+}
+
 /**
  * Determines the "greatest common denominator" type when combining results.
  */
-template <typename R1, typename R2>
+template <typename R1, typename R2, typename Enabler=void>
 struct joined;
 
-// batch_result
-
-template <typename T>
-struct joined<batch_result<T>, batch_result<T> >
+template <typename R1, typename R2>
+struct joined<R1, R2,
+        typename std::enable_if<joins_batch<traits<R1>, traits<R2> >()>::type>
 {
-    typedef batch_result<T> result_type;
+    typedef batch_result<typename traits<R1>::value_type> result_type;
 };
 
-// autocorr_result
-
-template <typename T>
-struct joined<autocorr_result<T>, autocorr_result<T> >
+template <typename R1, typename R2>
+struct joined<R1, R2,
+        typename std::enable_if<joins_autocorr<traits<R1>, traits<R2> >()>::type>
 {
-    typedef autocorr_result<T> result_type;
+    typedef autocorr_result<typename traits<R1>::value_type> result_type;
 };
 
-// cov_result
-
-template <typename T>
-struct joined<cov_result<T, circular_var>, batch_result<T> >
+template <typename R1, typename R2>
+struct joined<R1, R2,
+        typename std::enable_if<joins_cov<traits<R1>, traits<R2> >()>::type>
 {
-    typedef cov_result<T, circular_var> result_type;
+    typedef cov_result<typename traits<R1>::value_type,
+                       typename traits<R1>::strategy_type> result_type;
 };
 
-template <typename T>
-struct joined<batch_result<T>, cov_result<T, circular_var> >
+template <typename R1, typename R2>
+struct joined<R1, R2,
+        typename std::enable_if<joins_var<traits<R1>, traits<R2> >()>::type>
 {
-    typedef cov_result<T, circular_var> result_type;
+    typedef var_result<typename traits<R1>::value_type,
+                       typename traits<R1>::strategy_type> result_type;
 };
 
-template <typename T, typename Str>
-struct joined<cov_result<T, Str>, cov_result<T, Str> >
+template <typename R1, typename R2>
+struct joined<R1, R2,
+        typename std::enable_if<joins_mean<traits<R1>, traits<R2> >()>::type>
 {
-    typedef cov_result<T, Str> result_type;
-};
-
-// var_result
-
-template <typename T, typename circular_var>
-struct joined<var_result<T, circular_var>, autocorr_result<T> >
-{
-    typedef var_result<T, circular_var> result_type;
-};
-
-template <typename T, typename circular_var>
-struct joined<autocorr_result<T>, var_result<T, circular_var>  >
-{
-    typedef var_result<T, circular_var> result_type;
-};
-
-template <typename T, typename Str>
-struct joined<var_result<T, Str>, cov_result<T, Str> >
-{
-    typedef var_result<T, Str> result_type;
-};
-
-template <typename T, typename Str>
-struct joined<cov_result<T, Str>, var_result<T, Str>  >
-{
-    typedef var_result<T, Str> result_type;
-};
-
-template <typename T, typename Str>
-struct joined<var_result<T, Str>, var_result<T, Str> >
-{
-    typedef var_result<T, Str> result_type;
-};
-
-template <typename T, typename Str, typename R>
-struct joined<var_result<T, Str>, R>
-{
-    // Propagate through cov
-    typedef typename joined<cov_result<T, Str>, R>::result_type result_type;
-};
-
-template <typename T, typename Str, typename R>
-struct joined<R, var_result<T, Str> >
-{
-    // Propagate through cov
-    typedef typename joined<cov_result<T, Str>, R>::result_type result_type;
-};
-
-// mean_result
-
-template <typename T, typename Str>
-struct joined<mean_result<T>, var_result<T, Str> >
-{
-    typedef mean_result<T> result_type;
-};
-
-template <typename T, typename Str>
-struct joined<var_result<T, Str>, mean_result<T> >
-{
-    typedef mean_result<T> result_type;
-};
-
-template <typename T>
-struct joined<mean_result<T>, mean_result<T> >
-{
-    typedef mean_result<T> result_type;
-};
-
-template <typename T, typename R>
-struct joined<mean_result<T>, R>
-{
-    // Propagate through var
-    typedef typename joined<var_result<T, circular_var>, R>::result_type result_type;
-};
-
-template <typename T, typename R>
-struct joined<R, mean_result<T> >
-{
-    // Flip arguments
-    typedef typename joined<var_result<T, circular_var>, R>::result_type result_type;
+    typedef mean_result<typename traits<R1>::value_type> result_type;
 };
 
 }}}   /* namespace alps::alea::internal */
