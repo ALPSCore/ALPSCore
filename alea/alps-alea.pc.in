@@ -1,0 +1,6 @@
+Name: @PROJECT_NAME@
+Description: @PROJECT_NAME@ 
+Requires: alps-utilities
+Version: 
+Libs: -L@CMAKE_INSTALL_PREFIX@/lib
+Cflags: -I@CMAKE_INSTALL_PREFIX@/include

@@ -50,6 +50,7 @@ if (Testing AND NOT DocumentationOnly)
 endif(Testing AND NOT DocumentationOnly)
 
 # each module is defined as a cmake project in a subdirectory
+# also add in alpscore_config_main_() at common/cmake/ALPSCoreConfig.cmake.in
 add_subdirectory(utilities)
 alps_add_module(alps-utilities utilities)
 add_subdirectory(hdf5)
@@ -62,6 +63,8 @@ add_subdirectory(mc)
 alps_add_module(alps-mc mc)
 add_subdirectory(gf)
 alps_add_module(alps-gf gf)
+add_subdirectory(alea)
+alps_add_module(alps-alea alea)
 
 #Doxygen building is a function to prevent namespace damage
 function(build_documentation_)
