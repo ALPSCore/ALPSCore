@@ -5,8 +5,8 @@
 #include <alps/alea/transform.hpp>
 #include <alps/alea/propagation.hpp>
 
+#include <alps/testing/near.hpp>
 #include "gtest/gtest.h"
-#include "gtest_util.hpp"
 #include "dataset.hpp"
 
 #include <iterator>
