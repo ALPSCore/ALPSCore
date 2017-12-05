@@ -14,7 +14,7 @@
 #   ALPSCore_<c>_LIBRARIES (for each component <c>) 
 function(alpscore_config_main_)
     # Create a list of known components
-    set(known_components_ utilities hdf5 accumulators params mc gf)
+    set(known_components_ utilities hdf5 accumulators params mc gf alea)
 
     # if no components required - search for everything
     if (NOT ALPSCore_FIND_COMPONENTS)
