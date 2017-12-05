@@ -132,6 +132,44 @@ namespace alps {
                 }
             };
             
+            // Printing of a vector
+            // FIXME!!! Consolidate with other definitions and move to alps::utilities
+            template <typename T>
+            inline std::ostream& operator<<(std::ostream& strm, const std::vector<T>& vec)
+            {
+                typedef std::vector<T> vtype;
+                typedef typename vtype::const_iterator itype;
+
+                strm << "[";
+                itype it=vec.begin();
+                const itype end=vec.end();
+
+                if (end!=it) {
+                    strm << *it;
+                    for (++it; end!=it; ++it) {
+                        strm << ", " << *it;
+                    }
+                }
+                strm << "]";
+
+                return strm;
+            }
+
+            struct print_visitor : public boost::static_visitor<std::ostream&> {
+                std::ostream& os_;
+
+                print_visitor(std::ostream& os) : os_(os) {}
+                
+                template <typename T>
+                std::ostream& operator()(const T& val) const {
+                    return os_ << val;
+                }
+
+                std::ostream& operator()(const dict_value::None&) const {
+                    throw std::logic_error("print_visitor: This is not expected to be called");
+                }
+            };
+
         }
             
         std::ostream& print(std::ostream& s, const dict_value& dv, bool terse) {
@@ -139,7 +177,8 @@ namespace alps {
                 s << "[NONE]";
                 if (!terse) s << " (type: None)";
             } else {
-                s << dv.val_;
+                // s << dv.val_;
+                boost::apply_visitor(print_visitor(s), dv.val_);
                 if (!terse) s << " (type: " << boost::apply_visitor(typestring_visitor(), dv.val_) << ")";
             }
             if (!terse) s << " (name='" << dv.name_ << "')";

@@ -9,9 +9,35 @@
  * @namespace alps::alea
  * @brief Set of accumulators and statistical pre-/post-processing operations.
  *
- * Overview
- * --------
- * TODO
+ * Types of accumulators
+ * ---------------------
+ * `alps::alea` defines a number of accumulators, which differ in the stored
+ * statistical estimates and associated runtime and memory cost:
+ *
+ *   | Accumulator    | Runtime    | Memory     | mean | var | cov | tau |
+ *   | -------------- | ---------- | ---------- | :--: | :-: | :-: | :-: |
+ *   | `mean_acc`     | `N`        | `k`        |  X   |     |     |     |
+ *   | `var_acc`      | `N`        | `k`        |  X   |  X  |     |     |
+ *   | `cov_acc`      | `N`        | `k`        |  X   |  X  |  X  |     |
+ *   | `autocorr_acc` | `a N`      | `k log(N)` |  X   |  X  |  X  |  X  |
+ *   | `batch_acc`    | `a N`      | `k b`      |  X   |  X  |  X  | (X) |
+ *
+ * where in the complexity we defined the following terms:
+ *
+ *   - `N`: number of samples or calls to `operator<<`, i.e., final `count()`
+ *   - `k`: components of the result vector, i.e., `size()`
+ *   - `b`: number of batches, i.e., `num_batches()`
+ *   - `a`: granularity factor (usually 2)
+ *
+ * and the following statistcal estimates:
+ *
+ *   - `mean`: sample mean
+ *   - `count`: number of samples (whenever `mean` is available)
+ *   - `var`: bias-corrected sample variance
+ *   - `stderror`: standard error of the mean (whenever `var` is available)
+ *   - `cov`: bias-corrected sample variance--covariance matrix
+ *   - `tau`: integrated autocorrelation time
+ *
  *
  * Accumulators and results
  * ------------------------
@@ -23,21 +49,32 @@
  *     accumulator untouched and thus must involve a copy of the data, while
  *
  *  2. the `finalize()` method invalidates the accumulator and thus allows to
- *     repurpose its data as the simulation result.  The reset method then
+ *     repurpose its data as the simulation result.  The `reset()` method then
  *     re-creates an empty accumulator with the same size.
  *
  * This can be represented by the following finite state machine:
  *
- *                     c'tor   _______________      _______________
- *                    ------->|               |    |               |  default
- *     result, <<        <<   |     empty     |    | uninitialized |   c'tor
- *      +-------+       +-----|_______________|    |_______________|<<-------
+ *                     c'tor   _______________
+ *                    ------->|               |
+ *     result, <<        <<   |     empty     |
+ *      +-------+       +-----|_______________|
  *      |       |       |            | |
  *      |     __V_______V____  reset | | reset  ________________
  *      |    |               |--->---+ +---<---|                |
  *      +----|  accumulating |                 |     invalid    |
  *           |_______________|---------------->|________________|
  *                                finalize
+ *
+ *
+ * Transforms
+ * ----------
+ * TODO
+ *
+ *
+ * Reduction and serialization
+ * ---------------------------
+ * TODO
+ *
  */
 
 // Base
@@ -52,8 +89,12 @@
 
 // Plugins
 #include <alps/alea/hdf5.hpp>
-#include <alps/alea/mpi.hpp>
+#ifdef ALPS_HAVE_MPI
+    #include <alps/alea/mpi.hpp>
+#endif
 
 // Variant types
 #include <alps/alea/result.hpp>
 
+// Transforms
+#include <alps/alea/transform.hpp>

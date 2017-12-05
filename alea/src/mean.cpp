@@ -32,14 +32,14 @@ template class mean_data<std::complex<double> >;
 // We need an explicit copy constructor, as we need to copy the data
 template <typename T>
 mean_acc<T>::mean_acc(const mean_acc &other)
-    : store_(other.store_ ? new mean_data<T>(*other.store_) : NULL)
+    : store_(other.store_ ? new mean_data<T>(*other.store_) : nullptr)
     , size_(other.size_)
 { }
 
 template <typename T>
 mean_acc<T> &mean_acc<T>::operator=(const mean_acc &other)
 {
-    store_.reset(other.store_ ? new mean_data<T>(*other.store_) : NULL);
+    store_.reset(other.store_ ? new mean_data<T>(*other.store_) : nullptr);
     size_ = other.size_;
     return *this;
 }
@@ -56,7 +56,6 @@ mean_acc<T> &mean_acc<T>::operator<<(const computed<T> &source)
 template <typename T>
 void mean_acc<T>::reset()
 {
-    internal::check_init(*this);
     if (valid())
         store_->reset();
     else
@@ -84,9 +83,7 @@ template <typename T>
 void mean_acc<T>::finalize_to(mean_result<T> &result)
 {
     internal::check_valid(*this);
-    if (result.valid())
-        throw std::runtime_error("Can only finalize to invalid result");
-
+    result.store_.reset();
     result.store_.swap(store_);
     result.store_->convert_to_mean();
 }
@@ -98,13 +95,13 @@ template class mean_acc<std::complex<double> >;
 // We need an explicit copy constructor, as we need to copy the data
 template <typename T>
 mean_result<T>::mean_result(const mean_result &other)
-    : store_(other.store_ ? new mean_data<T>(*other.store_) : NULL)
+    : store_(other.store_ ? new mean_data<T>(*other.store_) : nullptr)
 { }
 
 template <typename T>
 mean_result<T> &mean_result<T>::operator=(const mean_result &other)
 {
-    store_.reset(other.store_ ? new mean_data<T>(*other.store_) : NULL);
+    store_.reset(other.store_ ? new mean_data<T>(*other.store_) : nullptr);
     return *this;
 }
 

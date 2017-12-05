@@ -74,7 +74,7 @@ public:
     {
         this->acc().finalize();
         EXPECT_FALSE(this->acc().valid());
-        EXPECT_THROW(this->acc() << 13.0, alps::alea::invalid_accumulator);
+        EXPECT_THROW(this->acc() << 13.0, alps::alea::finalized_accumulator);
 
         this->acc().reset();
         this->fill();

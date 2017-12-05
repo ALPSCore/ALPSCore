@@ -72,17 +72,13 @@ public:
     typedef T value_type;
 
 public:
-    batch_acc();
-
-    batch_acc(size_t size=0, size_t num_batches=256, size_t base_size=1);
+    batch_acc(size_t size=1, size_t num_batches=256, size_t base_size=1);
 
     batch_acc(const batch_acc &other);
 
     batch_acc &operator=(const batch_acc &other);
 
     void reset();
-
-    bool initialized() const { return size_ != (size_t)-1; }
 
     bool valid() const { return (bool)store_; }
 
@@ -127,6 +123,7 @@ template <typename T>
 struct traits< batch_acc<T> >
 {
     typedef T value_type;
+    typedef circular_var strategy_type;
     typedef batch_result<T> result_type;
 };
 
@@ -153,8 +150,6 @@ public:
     batch_result(const batch_result &other);
 
     batch_result &operator=(const batch_result &other);
-
-    bool initialized() const { return true; }
 
     bool valid() const { return (bool)store_; }
 
@@ -188,6 +183,13 @@ template <typename T>
 struct traits< batch_result<T> >
 {
     typedef T value_type;
+    typedef circular_var strategy_type;
+
+    const static bool HAVE_MEAN  = true;
+    const static bool HAVE_VAR   = true;
+    const static bool HAVE_COV   = true;
+    const static bool HAVE_TAU   = false;
+    const static bool HAVE_BATCH = true;
 };
 
 extern template class batch_result<double>;

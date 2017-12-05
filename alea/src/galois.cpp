@@ -63,7 +63,7 @@ void galois_hopper::advance_galois()
     if (level_pos_ == size_/2) {
         ++level_;
         level_pos_ = 0;
-        factor_ *= 2.;
+        factor_ *= 2;
         skip_ *= 2;
     }
     current_ = (current_ + 2 * skip_) % (size_ + 1);

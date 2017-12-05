@@ -11,24 +11,11 @@
 
 namespace alps { namespace alea { namespace internal {
 
-/** Ensures that the accumulator is initialized before doing stuff */
-template <typename Acc>
-inline void check_init(const Acc &acc)
-{
-    if (!acc.initialized())
-        throw alps::alea::uninitialized_accumulator();
-}
-
 template <typename Acc>
 inline void check_valid(const Acc &acc)
 {
-    if (!acc.valid()) {
-        // First check if initialized
-        check_init(acc);
-
-        // If not, at least it is not valid
-        throw alps::alea::invalid_accumulator();
-    }
+    if (!acc.valid())
+        throw alps::alea::finalized_accumulator();
 }
 
 }}}

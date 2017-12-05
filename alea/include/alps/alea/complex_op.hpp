@@ -63,16 +63,13 @@ public:
     static complex_op diag(T a) { return complex_op(a, 0, 0, a); }
 
 public:
+    /** Default constructed (uninitialized) */
     complex_op() { }
 
-    complex_op(double x)
-    {
-        vals_[0][0] = x;
-        vals_[0][1] = 0;
-        vals_[1][0] = 0;
-        vals_[1][1] = x;
-    }
+    /** Scaling transformation */
+    complex_op(double x) : complex_op(x, 0, 0, x) { }
 
+    /** Construct new operation */
     complex_op(T rere, T reim, T imre, T imim)
     {
         vals_[0][0] = rere;

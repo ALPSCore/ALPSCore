@@ -49,7 +49,7 @@ public:
 
     size_t size() const { return data_.rows(); }
 
-    const size_t &count() const { return count_; }
+    size_t count() const { return count_; }
 
     size_t &count() { return count_; }
 
@@ -74,6 +74,7 @@ private:
 template <typename T, typename Strategy>
 struct traits< cov_data<T,Strategy> >
 {
+    typedef Strategy strategy_type;
     typedef typename bind<Strategy, T>::value_type value_type;
     typedef typename bind<Strategy, T>::var_type var_type;
     typedef typename bind<Strategy, T>::cov_type cov_type;
@@ -97,17 +98,13 @@ public:
     typedef typename eigen<cov_type>::matrix cov_matrix_type;
 
 public:
-    cov_acc();
-
-    cov_acc(size_t size, size_t bundle_size=1);
+    cov_acc(size_t size=1, size_t bundle_size=1);
 
     cov_acc(const cov_acc &other);
 
     cov_acc &operator=(const cov_acc &other);
 
     void reset();
-
-    bool initialized() const { return initialized_; }
 
     bool valid() const { return (bool)store_; }
 
@@ -143,12 +140,12 @@ private:
     std::unique_ptr<cov_data<T,Strategy> > store_;
     bundle<value_type> current_;
     cov_acc *uplevel_;
-    bool initialized_;
 };
 
 template <typename T, typename Strategy>
 struct traits< cov_acc<T,Strategy> >
 {
+    typedef Strategy strategy_type;
     typedef typename bind<Strategy, T>::value_type value_type;
     typedef typename bind<Strategy, T>::var_type var_type;
     typedef typename bind<Strategy, T>::cov_type cov_type;
@@ -182,8 +179,6 @@ public:
 
     cov_result &operator=(const cov_result &other);
 
-    bool initialized() const { return true; }
-
     bool valid() const { return (bool)store_; }
 
     size_t size() const { return store_->size(); }
@@ -215,8 +210,15 @@ private:
 template <typename T, typename Strategy>
 struct traits< cov_result<T,Strategy> >
 {
+    typedef Strategy strategy_type;
     typedef typename bind<Strategy, T>::value_type value_type;
     typedef typename bind<Strategy, T>::var_type var_type;
+
+    const static bool HAVE_MEAN  = true;
+    const static bool HAVE_VAR   = true;
+    const static bool HAVE_COV   = true;
+    const static bool HAVE_TAU   = false;
+    const static bool HAVE_BATCH = false;
 };
 
 extern template class cov_result<double>;

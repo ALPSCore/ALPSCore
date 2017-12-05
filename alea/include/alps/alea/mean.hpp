@@ -44,7 +44,7 @@ public:
     size_t size() const { return data_.rows(); }
 
     /** Returns number of accumulated data points */
-    const size_t &count() const { return count_; }
+    size_t count() const { return count_; }
 
     /** Returns number of accumulated data points */
     size_t &count() { return count_; }
@@ -83,17 +83,13 @@ template <typename T>
 class mean_acc
 {
 public:
-    mean_acc() : store_(), size_(-1) { }
-
-    mean_acc(size_t size) : store_(new mean_data<T>(size)), size_(size) { }
+    mean_acc(size_t size=1) : store_(new mean_data<T>(size)), size_(size) { }
 
     mean_acc(const mean_acc &other);
 
     mean_acc &operator=(const mean_acc &other);
 
     void reset();
-
-    bool initialized() const { return size_ != (size_t)-1; }
 
     bool valid() const { return (bool)store_; }
 
@@ -152,8 +148,6 @@ public:
 
     mean_result &operator=(const mean_result &other);
 
-    bool initialized() const { return true; }
-
     bool valid() const { return (bool)store_; }
 
     size_t size() const { return store_->size(); }
@@ -182,6 +176,12 @@ template <typename T>
 struct traits< mean_result<T> >
 {
     typedef T value_type;
+
+    const static bool HAVE_MEAN  = true;
+    const static bool HAVE_VAR   = false;
+    const static bool HAVE_COV   = false;
+    const static bool HAVE_TAU   = false;
+    const static bool HAVE_BATCH = false;
 };
 
 extern template class mean_result<double>;

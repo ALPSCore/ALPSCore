@@ -5,16 +5,6 @@
 namespace alps { namespace alea {
 
 template <typename T>
-autocorr_acc<T>::autocorr_acc()
-    : size_(-1)
-    , batch_size_(0)
-    , count_(0)
-    , nextlevel_(0)
-    , granularity_(0)
-    , level_()
-{ }
-
-template <typename T>
 autocorr_acc<T>::autocorr_acc(size_t size, size_t batch_size, size_t granularity)
     : size_(size)
     , batch_size_(batch_size)
@@ -29,7 +19,6 @@ autocorr_acc<T>::autocorr_acc(size_t size, size_t batch_size, size_t granularity
 template <typename T>
 void autocorr_acc<T>::reset()
 {
-    internal::check_init(*this);
     count_ = 0;
     nextlevel_ = batch_size_;
     level_.clear();
@@ -86,9 +75,6 @@ template <typename T>
 void autocorr_acc<T>::finalize_to(autocorr_result<T> &result)
 {
     internal::check_valid(*this);
-    if (result.valid())
-        throw std::runtime_error("Can only finalize to invalid result");
-
     result.level_.resize(level_.size());
     for (size_t i = 0; i != level_.size(); ++i)
         level_[i].finalize_to(result.level_[i]);
