@@ -29,7 +29,7 @@ template eigen< std::complex<double> >::matrix jacobian(
 
 
 template <typename T>
-batch_data<T> jackknife(const batch_data<T> &in, transformer<T> &tf)
+batch_data<T> jackknife(const batch_data<T> &in, const transformer<T> &tf)
 {
     // compute batch sums
     if (tf.in_size() != in.size())
@@ -60,9 +60,11 @@ batch_data<T> jackknife(const batch_data<T> &in, transformer<T> &tf)
     return res;
 }
 
-template batch_data<double> jackknife(const batch_data<double> &in, transformer<double> &tf);
-template batch_data<std::complex<double> > jackknife(const batch_data<std::complex<double> > &in,
-                                                     transformer<std::complex<double> > &tf);
+template batch_data<double> jackknife(const batch_data<double> &in,
+                                      const transformer<double> &tf);
+template batch_data<std::complex<double> > jackknife(
+                                const batch_data<std::complex<double> > &in,
+                                const transformer<std::complex<double> > &tf);
 
 }}
 

@@ -19,12 +19,26 @@
 namespace alps { namespace alea {
 
 /**
- * Do not perform error propagation
+ * Do not perform error propagation.
+ *
+ * Given a transformation `f` and random sample `X`, just trasform the sample
+ * mean `f(Mean[X])` and discard any error information.
  */
 struct no_prop { };
 
 /**
- * Perform linar error propagation by estimating the jacobian
+ * Perform linaralized error propagation by estimating the Jacobian.
+ *
+ * Given a transformation `f` and a random sample `X`, estimate the propagated
+ * uncertainties by performing a Taylor series and keeping the linear term:
+ *
+ *     Cov[f(X)] = df/dX Cov[X] (df/dX)^T + O(d^2f/dx^2)
+ *
+ * where `df/dX` is the Jacobian of `f` at `X`, as estimated by finite
+ * differences of `dx`.  This procedure is exact for linear transformations;
+ * for non-linear transformation, it will introduce bias.
+ *
+ * @see alps::alea::jacobian
  */
 struct linear_prop
 {
@@ -39,7 +53,9 @@ private:
 };
 
 /**
- * Not implemented
+ * Estimate propagated variance by sampling the prior.
+ *
+ * @warning Not implemented
  */
 struct sampling_prop
 {
@@ -52,12 +68,20 @@ private:
 };
 
 /**
- * Not implemented
+ * Perform Jackknife rebatching.
+ *
+ * Jackknife is a rebatching method, which can operate on any distribution and
+ * exactly removes the bias in the transformed uncertainties up to order `1/N`,
+ * where `N` is the sample size.
+ *
+ * @see alps::alea::jackknife
  */
 struct jackknife_prop { };
 
 /**
- * Not implemented
+ * Perform non-parametric bootstrap rebatching.
+ *
+ * @warning Not implemented
  */
 struct bootstrap_prop
 {
@@ -83,10 +107,11 @@ private:
 template <typename T>
 typename eigen<T>::matrix jacobian(const transformer<T> &f, column<T> x, double dx);
 
+
 /**
  * Perform Jackknife transformation to pseudovalues
  */
 template <typename T>
-batch_data<T> jackknife(const batch_data<T> &in, transformer<T> &tf);
+batch_data<T> jackknife(const batch_data<T> &in, const transformer<T> &tf);
 
 }}
