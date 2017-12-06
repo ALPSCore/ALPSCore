@@ -26,7 +26,6 @@ struct no_prop { };
 /**
  * Perform linar error propagation by estimating the jacobian
  */
-template <bool Covariance=true>
 struct linear_prop
 {
     linear_prop() : dx_(0) { }
@@ -42,7 +41,6 @@ private:
 /**
  * Not implemented
  */
-template <bool Covariance=true>
 struct sampling_prop
 {
     sampling_prop(size_t nsamples=1024) : nsamples_(nsamples) { }
@@ -61,7 +59,6 @@ struct jackknife_prop { };
 /**
  * Not implemented
  */
-template <bool Covariance=true>
 struct bootstrap_prop
 {
     bootstrap_prop(size_t nsamples=1024) : nsamples_(nsamples) { }

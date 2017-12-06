@@ -116,3 +116,31 @@ typedef ::testing::Types<
 TYPED_TEST_CASE(twogauss_join_case, joinable);
 TYPED_TEST(twogauss_join_case, test_result) { this->test_result(); }
 
+TEST(twogauss, rotate)
+{
+    Eigen::Matrix2d rot;
+    rot << 1, 2, 3, 4;
+
+    alps::alea::cov_acc<double> norm_acc(2);
+    alps::alea::cov_acc<double> rot_acc(2);
+    for (size_t i = 0; i != twogauss_count; ++i) {
+        Eigen::Map<Eigen::Vector2d> dat((double *)twogauss_data[i], 2);
+
+        // TODO make this nicer
+        norm_acc << alps::alea::column<double>(dat);
+        rot_acc << alps::alea::column<double>(rot * dat);
+    }
+
+    alps::alea::linear_transformer<double> tf(rot);
+    alps::alea::cov_result<double> norm_res = norm_acc.finalize();
+    alps::alea::cov_result<double> rot_res = rot_acc.finalize();
+    alps::alea::cov_result<double> norm_res_ret =
+                alps::alea::transform(alps::alea::linear_prop(), tf, norm_res);
+
+    // check if mean is commutative
+    EXPECT_NEAR(norm_res_ret.mean()[0], rot_res.mean()[0], 1e-6);
+    EXPECT_NEAR(norm_res_ret.mean()[1], rot_res.mean()[1], 1e-6);
+
+    // check if covariance is commutative
+    ALPS_EXPECT_NEAR(norm_res_ret.cov(), rot_res.cov(), 1e-6);
+}
