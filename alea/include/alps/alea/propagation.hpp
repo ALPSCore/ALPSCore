@@ -21,28 +21,56 @@ namespace alps { namespace alea {
 /**
  * Do not perform error propagation
  */
-struct no_propagation { };
+struct no_prop { };
 
 /**
  * Perform linar error propagation by estimating the jacobian
  */
-struct linear_var_propagation { };
+template <bool Covariance=true>
+struct linear_prop
+{
+    linear_prop() : dx_(0) { }
 
-/**
- * Perform linar error propagation by estimating the jacobian
- */
-struct linear_propagation { };  // TODO
+    linear_prop(double dx) : dx_(dx) { assert(dx >= 0); }
+
+    double dx() const { return dx_; }
+
+private:
+    double dx_;
+};
 
 /**
  * Not implemented
  */
-struct jackknife_propagation { };  // TODO
+template <bool Covariance=true>
+struct sampling_prop
+{
+    sampling_prop(size_t nsamples=1024) : nsamples_(nsamples) { }
+
+    size_t nsamples() const { return nsamples_; }
+
+private:
+    size_t nsamples_;
+};
 
 /**
  * Not implemented
  */
-struct sampling_propagation { };   // TODO
+struct jackknife_prop { };
 
+/**
+ * Not implemented
+ */
+template <bool Covariance=true>
+struct bootstrap_prop
+{
+    bootstrap_prop(size_t nsamples=1024) : nsamples_(nsamples) { }
+
+    size_t nsamples() const { return nsamples_; }
+
+private:
+    size_t nsamples_;
+};
 
 /**
  * Given a function `f`, estimate its Jacobian `J[i,j] = df[i]/dx[j]`.
@@ -56,34 +84,12 @@ struct sampling_propagation { };   // TODO
  * linear transformations and biased otherwise.
  */
 template <typename T>
-typename eigen<T>::matrix jacobian(const transform<T> &f, column<T> x, double dx);
+typename eigen<T>::matrix jacobian(const transformer<T> &f, column<T> x, double dx);
 
 /**
  * Perform Jackknife transformation to pseudovalues
  */
 template <typename T>
-batch_data<T> jackknife(const batch_data<T> &in, transform<T> &tf);
-
-
-template <typename InResult>
-struct bind<no_propagation, InResult>
-{
-    typedef typename traits<InResult>::value_type value_type;
-
-    typedef InResult in_result_type;
-    typedef mean_result<value_type> out_result_type;
-    typedef transform<value_type> transform_type;
-
-    out_result_type operator() (const transform_type &tf, const in_result_type &in)
-    {
-        if (tf.in_size() != in.size())
-            throw size_mismatch();
-
-        out_result_type res(tf.out_size());
-        res.store().data() = tf(in.mean());
-        res.store().count() = in.count();
-        return res;
-    }
-};
+batch_data<T> jackknife(const batch_data<T> &in, transformer<T> &tf);
 
 }}

@@ -38,7 +38,6 @@
  *   - `cov`: bias-corrected sample variance--covariance matrix
  *   - `tau`: integrated autocorrelation time
  *
- *
  * Accumulators and results
  * ------------------------
  * Most accumulators (`mean_acc`) have a matching result class (`mean_result`).
@@ -65,10 +64,31 @@
  *           |_______________|---------------->|________________|
  *                                finalize
  *
+ * @see alps::alea::mean_acc<T>::result(), alps::alea::mean_acc<T>::finalize()
  *
- * Transforms
- * ----------
- * TODO
+ * Transformation and propagation of uncertainty
+ * ---------------------------------------------
+ * Transformations on results can be mediated using the `transform` method,
+ * which takes a `transformer` instance.  Schematically:
+ * ```
+ *    OutResult transform(Transformer t, InResult in, PropagationStrategy str);
+ * ```
+ *
+ * Care has to be taken to correctly propagate the uncertainties. `alps::alea`
+ * provides the following strategies, which differ in demand on the results,
+ * complexity, and quality of bias correction:
+ *
+ *   | Strategy         | Prior | Bias   | Requires  | Invoc. |
+ *   | -----------------|-------|--------|-----------|--------|
+ *   | `no_prop`        | any   | -      | `mean()`  | 1      |
+ *   | `linear_prop`    | Gauss | 1      | `var()`   | k      |
+ *   | `sampling_prop`  | Gauss | 1/S    | `var()`   | S      |
+ *   | `jackknife_prop` | any   | 1/b    | `batch()` | b      |
+ *   | `bootstrap_prop` | any   | 1/S    | `batch()` | S      |
+ *
+ * Transformations must have one argument; functions of multiple random
+ * variables (X,Y) can be realized by grouping the arguments together using
+ * `alps::alea::join` and then applying the transform on the combined result.
  *
  *
  * Reduction and serialization

@@ -31,6 +31,8 @@ namespace alps { namespace alea {
  * One can combine results of different type; in this case, `Result` is
  * inferred in such a way that as much information as possible is preserved
  * from the constituent accumulators.
+ *
+ * @see alps::alea::internal::joined
  */
 template <typename R1, typename R2,
           typename Result=typename internal::joined<R1, R2>::result_type>

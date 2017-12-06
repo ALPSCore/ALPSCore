@@ -256,20 +256,28 @@ struct serializer
 };
 
 /**
- * Transformer method
+ * Transformer instance.
+ *
+ * Note that multi-argument transformations are not supported.  Such
+ * transformations must be implemented by first homogenizing the type and then
+ * concatenating the argument vectors to a single argument.
+ *
+ * @see alps::alea::transform, alps::alea::join
  */
 template <typename T>
-struct transform
+struct transformer
 {
+    /** apply transformation */
     virtual column<T> operator() (const column<T> &in) const = 0;
 
+    /** expected number of components of the input vector */
     virtual size_t in_size() const = 0;
 
+    /** number of components of the returned vector */
     virtual size_t out_size() const = 0;
 
+    /** Guarantee transformation to be linear (allows certain optimizations) */
     virtual bool is_linear() const { return false; }
 };
-
-
 
 }}

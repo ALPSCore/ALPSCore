@@ -3,6 +3,7 @@
 #include <alps/alea/covariance.hpp>
 #include <alps/alea/convert.hpp>
 #include <alps/alea/transform.hpp>
+#include <alps/alea/transformer.hpp>
 #include <alps/alea/propagation.hpp>
 
 #include <alps/testing/near.hpp>
@@ -15,7 +16,7 @@
 TEST(jacobian, linear)
 {
     Eigen::MatrixXd tfmat = Eigen::MatrixXd::Random(3, 3);
-    alps::alea::linear_transform<double> tf = tfmat;
+    alps::alea::linear_transformer<double> tf = tfmat;
 
     // The Jacobian is now constant
     Eigen::VectorXd x = Eigen::VectorXd::Zero(3);

@@ -164,8 +164,6 @@ public:
 
     void serialize(serializer &);
 
-    void transform(const transform<T> &);
-
 private:
     std::unique_ptr< mean_data<T> > store_;
 
