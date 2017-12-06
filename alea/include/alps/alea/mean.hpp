@@ -89,10 +89,13 @@ public:
 
     mean_acc &operator=(const mean_acc &other);
 
+    /** Re-allocate and thus clear all accumulated data */
     void reset();
 
+    /** Returns `false` if `finalize()` has been called, `true` otherwise */
     bool valid() const { return (bool)store_; }
 
+    /** Number of components of the random vector (e.g., size of mean) */
     size_t size() const { return size_; }
 
     template <typename S>
@@ -104,12 +107,16 @@ public:
 
     mean_acc &operator<<(const computed<T> &source);
 
+    /** Returns sample size, i.e., number of accumulated data points */
     size_t count() const { return store_->count(); }
 
+    /** Returns result corresponding to current state of accumulator */
     mean_result<T> result() const;
 
+    /** Frees data associated with accumulator and return result */
     mean_result<T> finalize();
 
+    /** Return backend object used for storing estimands */
     const mean_data<T> &store() const { return *store_; }
 
 protected:
@@ -148,20 +155,28 @@ public:
 
     mean_result &operator=(const mean_result &other);
 
+    /** Returns `false` if `finalize()` has been called, `true` otherwise */
     bool valid() const { return (bool)store_; }
 
+    /** Number of components of the random vector (e.g., size of mean) */
     size_t size() const { return store_->size(); }
 
+    /** Returns sample size, i.e., number of accumulated data points */
     size_t count() const { return store_->count(); }
 
+    /** Returns sample mean */
     const column<T> &mean() const { return store_->data(); }
 
+    /** Return backend object used for storing estimands */
     const mean_data<T> &store() const { return *store_; }
 
+    /** Return backend object used for storing estimands */
     mean_data<T> &store() { return *store_; }
 
+    /** Collect measurements from different instances using sum-reducer */
     void reduce(reducer &);
 
+    /** Convert result to a permanent format (write to disk etc.) */
     void serialize(serializer &);
 
 private:

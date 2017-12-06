@@ -34,18 +34,22 @@ class batch_data
 public:
     batch_data(size_t size, size_t num_batches=256);
 
+    /** Re-allocate and thus clear all accumulated data */
     void reset();
 
     size_t num_batches() const { return batch_.cols(); }
 
+    /** Number of components of the random vector (e.g., size of mean) */
     size_t size() const { return batch_.rows(); }
 
     typename eigen<T>::matrix &batch() { return batch_; }
 
     const typename eigen<T>::matrix &batch() const { return batch_; }
 
+    /** Returns sample size (number of accumulated points) for each batch */
     typename eigen<size_t>::row &count() { return count_; }
 
+    /** Returns sample size (number of accumulated points) for each batch */
     const typename eigen<size_t>::row &count() const { return count_; }
 
 private:
@@ -78,10 +82,13 @@ public:
 
     batch_acc &operator=(const batch_acc &other);
 
+    /** Re-allocate and thus clear all accumulated data */
     void reset();
 
+    /** Returns `false` if `finalize()` has been called, `true` otherwise */
     bool valid() const { return (bool)store_; }
 
+    /** Number of components of the random vector (e.g., size of mean) */
     size_t size() const { return size_; }
 
     template <typename S>
@@ -93,12 +100,16 @@ public:
 
     batch_acc &operator<<(const computed<value_type> &source);
 
+    /** Returns sample size, i.e., total number of accumulated data points */
     size_t count() const { return store_->count().sum(); }
 
+    /** Returns result corresponding to current state of accumulator */
     batch_result<T> result() const;
 
+    /** Frees data associated with accumulator and return result */
     batch_result<T> finalize();
 
+    /** Return backend object used for storing estimands */
     const batch_data<T> &store() const { return *store_; }
 
     const internal::galois_hopper &cursor() const { return cursor_; }
@@ -151,26 +162,36 @@ public:
 
     batch_result &operator=(const batch_result &other);
 
+    /** Returns `false` if `finalize()` has been called, `true` otherwise */
     bool valid() const { return (bool)store_; }
 
+    /** Number of components of the random vector (e.g., size of mean) */
     size_t size() const { return store_->size(); }
 
+    /** Returns sample size, i.e., total number of accumulated data points */
     size_t count() const { return store_->count().sum(); }
 
+    /** Returns sample mean */
     column<T> mean() const;
 
+    /** Returns bias-corrected sample variance for given strategy */
     template <typename Strategy=circular_var>
     column<typename bind<Strategy,T>::var_type> var() const;
 
+    /** Returns bias-corrected sample covariance matrix for given strategy */
     template <typename Strategy=circular_var>
     column<typename bind<Strategy,T>::cov_type> cov() const;
 
+    /** Return backend object used for storing estimands */
     const batch_data<T> &store() const { return *store_; }
 
+    /** Return backend object used for storing estimands */
     batch_data<T> &store() { return *store_; }
 
+    /** Collect measurements from different instances using sum-reducer */
     void reduce(reducer &);
 
+    /** Convert result to a permanent format (write to disk etc.) */
     void serialize(serializer &);
 
 private:

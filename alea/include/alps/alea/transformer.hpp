@@ -31,7 +31,7 @@ scalar_unary_transformer<T> make_transformer(const std::function<T(T)> &fn)
 }
 
 template <typename T>
-scalar_unary_transformer<T> make_transformer(const std::function<T(T,T)> &fn)
+scalar_binary_transformer<T> make_transformer(const std::function<T(T,T)> &fn)
 {
     return scalar_binary_transformer<T>(fn);
 }

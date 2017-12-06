@@ -47,12 +47,16 @@ public:
 public:
     var_data(size_t size);
 
+    /** Re-allocate and thus clear all accumulated data */
     void reset();
 
+    /** Number of components of the random vector (e.g., size of mean) */
     size_t size() const { return data_.rows(); }
 
+    /** Returns sample size, i.e., number of accumulated data points */
     size_t count() const { return count_; }
 
+    /** Returns sample size, i.e., number of accumulated data points */
     size_t &count() { return count_; }
 
     const column<value_type> &data() const { return data_; }
@@ -102,10 +106,13 @@ public:
 
     var_acc &operator=(const var_acc &other);
 
+    /** Re-allocate and thus clear all accumulated data */
     void reset();
 
+    /** Returns `false` if `finalize()` has been called, `true` otherwise */
     bool valid() const { return (bool)store_; }
 
+    /** Number of components of the random vector (e.g., size of mean) */
     size_t size() const { return current_.size(); }
 
     template <typename S>
@@ -117,14 +124,18 @@ public:
 
     var_acc &operator<<(const computed<value_type> &source);
 
+    /** Returns sample size, i.e., number of accumulated data points */
     size_t count() const { return store_->count(); }
 
+    /** Returns result corresponding to current state of accumulator */
     var_result<T,Strategy> result() const;
 
+    /** Frees data associated with accumulator and return result */
     var_result<T,Strategy> finalize();
 
     const bundle<value_type> &current() const { return current_; }
 
+    /** Return backend object used for storing estimands */
     const var_data<T,Strategy> &store() const { return *store_; }
 
 protected:
@@ -176,24 +187,34 @@ public:
 
     var_result &operator=(const var_result &other);
 
+    /** Returns `false` if `finalize()` has been called, `true` otherwise */
     bool valid() const { return (bool)store_; }
 
+    /** Number of components of the random vector (e.g., size of mean) */
     size_t size() const { return store_->size(); }
 
+    /** Returns sample size, i.e., number of accumulated data points */
     size_t count() const { return store_->count(); }
 
+    /** Returns sample mean */
     const column<T> &mean() const { return store_->data(); }
 
+    /** Returns bias-corrected sample variance */
     const column<var_type> &var() const { return store_->data2(); }
 
+    /** Returns bias-corrected standard error of the mean */
     column<var_type> stderror() const;
 
+    /** Return backend object used for storing estimands */
     const var_data<T,Strategy> &store() const { return *store_; }
 
+    /** Return backend object used for storing estimands */
     var_data<T,Strategy> &store() { return *store_; }
 
+    /** Collect measurements from different instances using sum-reducer */
     void reduce(reducer &);
 
+    /** Convert result to a permanent format (write to disk etc.) */
     void serialize(serializer &);
 
 private:

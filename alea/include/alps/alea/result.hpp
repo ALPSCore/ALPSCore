@@ -39,16 +39,21 @@ public:
     template <typename T>
     result(const batch_result<T> &res) : res_(res) { }
 
+    /** Returns `false` if `finalize()` has been called, `true` otherwise */
     bool valid() const;
 
+    /** Number of components of the random vector (e.g., size of mean) */
     size_t count() const;
 
+    /** Returns sample mean */
     template <typename T>
     column<T> mean() const;
 
+    /** Returns bias-corrected sample variance for given strategy */
     template <typename T, typename Str=circular_var>
     column<typename Str::var_type> var() const;
 
+    /** Returns bias-corrected sample covariance matrix for given strategy */
     template <typename T, typename Str=circular_var>
     typename eigen<typename Str::cov_type>::matrix cov() const;
 
