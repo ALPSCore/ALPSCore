@@ -54,6 +54,7 @@ constexpr bool joins_var()
     return std::is_same<typename T1::value_type, typename T2::value_type>::value
            && (T1::HAVE_VAR && T2::HAVE_VAR)
            && !(T1::HAVE_COV && T2::HAVE_COV)
+           && !(T1::HAVE_TAU && T2::HAVE_TAU)
            && !(T1::HAVE_BATCH && T2::HAVE_BATCH);
 }
 

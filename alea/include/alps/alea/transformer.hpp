@@ -65,26 +65,6 @@ private:
     typename eigen<T>::matrix mat_;
 };
 
-// TODO: make this more general, maybe using something like this:
-//
-// template <typename T, typename... Args>
-// T call_vargs(std::function<T(Args...)> func, const T *args);
-//
-// template <typename T>
-// T call_vargs(std::function<T()> func, const T *args)
-// {
-//     return func();
-// }
-//
-// template <typename T, typename... Args>
-// T call_vargs(std::function<T(T, Args...)> func, const T *args)
-// {
-//     // use currying to transform multi-argument function to hierarchy
-//     const T head = args[0];
-//     std::function<T(Args...)> closure =
-//                 ([=](Args... tail) -> T { return func(head, tail...)});
-//     return call_vargs(closure, args + 1);
-// }
 
 template <typename T>
 struct scalar_unary_transformer

@@ -30,6 +30,9 @@ struct unsupported_operation : public std::exception { };
 /** Accumulator has lost its data */
 struct finalized_accumulator : public std::exception { };
 
+/** Accumulator has lost its data */
+struct weight_mismatch : public std::exception { };
+
 template <typename T>
 struct traits;
 

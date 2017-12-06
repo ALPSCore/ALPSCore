@@ -125,7 +125,7 @@ public:
     typedef var_result<T, circular_var> level_result_type;
 
 public:
-    autocorr_result() { }
+    autocorr_result(size_t nlevel=0) : level_(nlevel) { }
 
     bool valid() const { return !level_.empty(); }
 
@@ -152,6 +152,8 @@ public:
     size_t nlevel() const { return level_.size(); }
 
     const level_result_type &level(size_t i) const { return level_[i]; }
+
+    level_result_type &level(size_t i) { return level_[i]; }
 
 private:
     const static size_t default_min_samples = 256;

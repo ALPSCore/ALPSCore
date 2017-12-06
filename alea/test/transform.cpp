@@ -76,3 +76,43 @@ TEST(twogauss, join)
     EXPECT_NEAR(twogauss_mean[0], joined_mean[0], 1e-6);
     EXPECT_NEAR(twogauss_mean[1], joined_mean[1], 1e-6);
 }
+
+template <typename Acc>
+class twogauss_join_case
+    : public ::testing::Test
+{
+public:
+    typedef typename alps::alea::traits<Acc>::value_type value_type;
+    typedef typename alps::alea::traits<Acc>::result_type result_type;
+
+    twogauss_join_case() { }
+
+    void test_result()
+    {
+        Acc acc1;
+        for (size_t i = 0; i != twogauss_count; ++i)
+            acc1 << twogauss_data[i][0];
+
+        Acc acc2;
+        for (size_t i = 0; i != twogauss_count; ++i)
+            acc2 << twogauss_data[i][1];
+
+        std::vector<double> joined_mean =
+                        alps::alea::join(acc1.result(), acc2.result()).mean();
+        EXPECT_EQ(2U, joined_mean.size());
+        EXPECT_NEAR(twogauss_mean[0], joined_mean[0], 1e-6);
+        EXPECT_NEAR(twogauss_mean[1], joined_mean[1], 1e-6);
+    }
+};
+
+typedef ::testing::Types<
+      alps::alea::mean_acc<double>
+    , alps::alea::var_acc<double>
+    , alps::alea::cov_acc<double>
+    , alps::alea::autocorr_acc<double>
+    , alps::alea::batch_acc<double>
+    > joinable;
+
+TYPED_TEST_CASE(twogauss_join_case, joinable);
+TYPED_TEST(twogauss_join_case, test_result) { this->test_result(); }
+
