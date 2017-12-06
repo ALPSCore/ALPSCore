@@ -26,43 +26,49 @@ namespace test_data {
 
 class ParamsTest : public ::testing::Test {
   protected:
-    ParamsAndFile params_and_file_;
-    params& par_;
     const alps::mpi::communicator comm_;
     int root_;
     bool is_master_;
   public:
-    ParamsTest() : params_and_file_(::test_data::inifile_content),
-                   par_(*params_and_file_.get_params_ptr()),
-                   comm_(), root_(0),
-                   is_master_(comm_.rank()==root_)
+    ParamsTest(): comm_(), root_(0),
+                  is_master_(comm_.rank()==root_)
                    
-    {   }
+    { }
 };
 
+
 TEST_F(ParamsTest, bcast) {
-    params p_empty;
-    params& p = *(is_master_ ? &par_ : &p_empty);
+    using alps::mpi::broadcast;
 
-    par_.define<int>("my_int", "Integer param");
-    par_.define<std::string>("my_string", "String param");
+    ini_maker ini("params_bcast_mpi.ini.");
+    ini.add(test_data::inifile_content);
+    
+    params p_as_on_root(ini.name());
 
+    std::string root_ini_name=ini.name();
+    broadcast(comm_, root_ini_name, root_);
+
+    params p_slave;
+
+    params& p=*(is_master_ ? &p_as_on_root : &p_slave);
+    
+    p_as_on_root.define<int>("my_int", "Integer param");
+    p_as_on_root.define<std::string>("my_string", "String param");
+
+    // Sanity check
     if (is_master_) {
-        ASSERT_TRUE(par_==p) << "Observed on rank " << comm_.rank();
+        ASSERT_TRUE(p_as_on_root==p) << "Observed on rank " << comm_.rank();
     } else {
-        ASSERT_FALSE(par_==p) << "Observed on rank " << comm_.rank();
+        ASSERT_TRUE(p_slave==p) << "Observed on rank " << comm_.rank();
     }
     
-    using alps::mpi::broadcast;
     broadcast(comm_, p, root_);
 
-    EXPECT_TRUE(p==par_) << "Observed on rank " << comm_.rank();
+    EXPECT_TRUE(p==p_as_on_root) << "Observed on rank " << comm_.rank();
 
-    EXPECT_EQ(par_.get_argv0(), p.get_argv0()) << "Observed on rank " << comm_.rank();
-    EXPECT_EQ(par_.get_ini_name_count(), p.get_ini_name_count()) << "Observed on rank " << comm_.rank();
-    for (int i=0; i<par_.get_ini_name_count(); ++i) {
-        EXPECT_EQ(par_.get_ini_name(i), p.get_ini_name(i)) << "Observed on rank " << comm_.rank();
-    }
+    EXPECT_EQ(p_as_on_root.get_argv0(), p.get_argv0()) << "Observed on rank " << comm_.rank();
+    EXPECT_EQ(1, p.get_ini_name_count()) << "Observed on rank " << comm_.rank();
+    EXPECT_EQ(root_ini_name, p.get_ini_name(0)) << "Observed on rank " << comm_.rank();
 }
 
 TEST_F(ParamsTest, bcastCtor) {
