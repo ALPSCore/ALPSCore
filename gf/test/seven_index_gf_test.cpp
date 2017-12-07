@@ -5,6 +5,7 @@
  */
 
 #include "gtest/gtest.h"
+#include "alps/gf_new/gf_base.h"
 #include "alps/gf/gf.hpp"
 #include "alps/gf/tail.hpp"
 #include "gf_test.hpp"
@@ -14,7 +15,8 @@ class SevenIndexGFTest : public ::testing::Test
   public:
     const int nindex;
 
-    typedef alps::gf::seven_index_gf<std::complex<double>, alps::gf::index_mesh,alps::gf::index_mesh, alps::gf::index_mesh,alps::gf::index_mesh,alps::gf::index_mesh,alps::gf::index_mesh,alps::gf::index_mesh>  gf_type;
+    //typedef alps::gf::seven_index_gf<std::complex<double>, alps::gf::index_mesh,alps::gf::index_mesh, alps::gf::index_mesh,alps::gf::index_mesh,alps::gf::index_mesh,alps::gf::index_mesh,alps::gf::index_mesh>  gf_type;
+    typedef alps::gf::greenf<std::complex<double>, alps::gf::index_mesh,alps::gf::index_mesh, alps::gf::index_mesh,alps::gf::index_mesh,alps::gf::index_mesh,alps::gf::index_mesh,alps::gf::index_mesh>  gf_type;
     gf_type gf;
     gf_type gf2;
 
