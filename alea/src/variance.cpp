@@ -157,21 +157,28 @@ column<typename var_result<T,Str>::var_type> var_result<T,Str>::stderror() const
 }
 
 template <typename T, typename Str>
-void var_result<T,Str>::reduce(reducer &r)
+void var_result<T,Str>::reduce(reducer &r, bool pre_commit, bool post_commit)
 {
     internal::check_valid(*this);
-    store_->convert_to_sum();
-    reducer_setup setup = r.get_setup();
-    r.reduce(sink<T>(store_->data().data(), store_->data().rows()));
-    r.reduce(sink<var_type>(store_->data2().data(), store_->data2().rows()));
-    r.reduce(sink<size_t>(&store_->count(), 1));
-    r.commit();
 
-    if (setup.have_result)
-        store_->convert_to_mean();
-    else
-        store_.reset();   // free data
+    if (pre_commit) {
+        store_->convert_to_sum();
+        r.reduce(sink<T>(store_->data().data(), store_->data().rows()));
+        r.reduce(sink<var_type>(store_->data2().data(), store_->data2().rows()));
+        r.reduce(sink<size_t>(&store_->count(), 1));
+    }
+    if (pre_commit && post_commit) {
+        r.commit();
+    }
+    if (post_commit) {
+        reducer_setup setup = r.get_setup();
+        if (setup.have_result)
+            store_->convert_to_mean();
+        else
+            store_.reset();   // free data
+    }
 }
+
 
 template class var_result<double>;
 template class var_result<std::complex<double>, circular_var>;

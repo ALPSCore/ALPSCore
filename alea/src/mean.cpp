@@ -106,19 +106,25 @@ mean_result<T> &mean_result<T>::operator=(const mean_result &other)
 }
 
 template <typename T>
-void mean_result<T>::reduce(reducer &r)
+void mean_result<T>::reduce(reducer &r, bool pre_commit, bool post_commit)
 {
     internal::check_valid(*this);
-    store_->convert_to_sum();
-    reducer_setup setup = r.get_setup();
-    r.reduce(sink<T>(store_->data().data(), store_->data().rows()));
-    r.reduce(sink<size_t>(&store_->count(), 1));
-    r.commit();
 
-    if (setup.have_result)
-        store_->convert_to_mean();
-    else
-        store_.reset();   // free data
+    if (pre_commit) {
+        store_->convert_to_sum();
+        r.reduce(sink<T>(store_->data().data(), store_->data().rows()));
+        r.reduce(sink<size_t>(&store_->count(), 1));
+    }
+    if (pre_commit && post_commit) {
+        r.commit();
+    }
+    if (post_commit) {
+        reducer_setup setup = r.get_setup();
+        if (setup.have_result)
+            store_->convert_to_mean();
+        else
+            store_.reset();   // free data
+    }
 }
 
 template class mean_result<double>;

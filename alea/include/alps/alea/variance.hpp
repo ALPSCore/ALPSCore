@@ -212,10 +212,13 @@ public:
     var_data<T,Strategy> &store() { return *store_; }
 
     /** Collect measurements from different instances using sum-reducer */
-    void reduce(reducer &);
+    void reduce(reducer &r) { reduce(r, true, true); }
 
     /** Convert result to a permanent format (write to disk etc.) */
     void serialize(serializer &);
+
+protected:
+    void reduce(reducer &, bool do_pre_commit, bool do_post_commit);
 
 private:
     std::unique_ptr< var_data<T,Strategy> > store_;

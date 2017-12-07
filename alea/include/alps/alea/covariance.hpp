@@ -208,6 +208,7 @@ public:
     /** Returns bias-corrected sample covariance matrix  */
     const typename eigen<cov_type>::matrix &cov() const { return store_->data2(); }
 
+    /** Returns bias-corrected standard error of the mean */
     column<var_type> stderror() const;
 
     /** Return backend object used for storing estimands */
@@ -217,10 +218,13 @@ public:
     cov_data<T,Strategy> &store() { return *store_; }
 
     /** Collect measurements from different instances using sum-reducer */
-    void reduce(reducer &);
+    void reduce(reducer &r) { reduce(r, true, true); }
 
     /** Convert result to a permanent format (write to disk etc.) */
     void serialize(serializer &);
+
+protected:
+    void reduce(reducer &, bool do_pre_commit, bool do_post_commit);
 
 private:
     std::unique_ptr<cov_data<T,Strategy> > store_;

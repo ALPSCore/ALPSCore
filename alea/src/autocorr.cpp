@@ -138,6 +138,31 @@ column<typename autocorr_result<T>::var_type> autocorr_result<T>::tau() const
     return (fact * varn.array()/ var0.array() - 0.5).matrix();
 }
 
+template <typename T>
+void autocorr_result<T>::reduce(reducer &r, bool pre_commit, bool post_commit)
+{
+    internal::check_valid(*this);
+
+    if (pre_commit) {
+        // initialize reduction
+        // TODO: figure out if this is statistically sound
+        for (size_t i = 0; i != nlevel(); ++i)
+            level_[i].reduce(r, true, false);
+    }
+    if (pre_commit && post_commit) {
+        // perform commit
+        r.commit();
+    }
+    if (post_commit) {
+        // cleanups
+        reducer_setup setup = r.get_setup();
+        for (size_t i = 0; i != nlevel(); ++i)
+            level_[i].reduce(r, false, true);
+        if (!setup.have_result)
+            level_.clear();         // invalidate
+    }
+}
+
 template class autocorr_result<double>;
 template class autocorr_result<std::complex<double> >;
 
