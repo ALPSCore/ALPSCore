@@ -320,6 +320,12 @@ TYPED_TEST_CASE(CustomTypeAccumulatorTest, MyTypes);
         this->TestFixture::_name_();                                    \
     }
 
+#define MAKE_DISABLED_TEST(_name_)                                               \
+    TYPED_TEST(CustomTypeAccumulatorTest, DISABLED_ ## _name_)  {                    \
+        RETURN_UNLESS_MASTER;                                           \
+        this->TestFixture::_name_();                                    \
+    }
+
 
 MAKE_TEST(TestH5ScalarType)
 MAKE_TEST(TestNumScalarType)
@@ -338,14 +344,25 @@ MAKE_TEST(TestAddEqConst)
 MAKE_TEST(TestAddEq)
 MAKE_TEST(TestAddEqScalar)
 
+#ifdef ALPS_HDF5_1_8
 MAKE_TEST(TestSaveAccumulator)
 MAKE_TEST(TestSaveLoadAccumulator)
 MAKE_TEST(TestSaveResult)
 MAKE_TEST(TestSaveLoadResult)
+#else
+MAKE_DISABLED_TEST(TestSaveAccumulator)
+MAKE_DISABLED_TEST(TestSaveLoadAccumulator)
+MAKE_DISABLED_TEST(TestSaveResult)
+MAKE_DISABLED_TEST(TestSaveLoadResult)
+#endif
 
 MAKE_MPI_TEST(TestMpiMerge)
 
+#ifdef ALPS_HDF5_1_8
 TEST(CustomTypeAccumulatorTest,saveArray) {
+#else
+TEST(CustomTypeAccumulatorTest,DISABLED_saveArray) {
+#endif
     RETURN_UNLESS_MASTER;
     dbl_custom_type x=gen_data<dbl_custom_type>(1.25);
     std::vector<dbl_custom_type> vx;

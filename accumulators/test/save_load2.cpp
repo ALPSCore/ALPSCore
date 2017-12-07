@@ -147,11 +147,12 @@ typedef ::testing::Types<
     ,AccumulatorTypeGenerator<alps::accumulators::NoBinningAccumulator,  vdouble>
     ,AccumulatorTypeGenerator<alps::accumulators::MeanAccumulator,       vdouble>
 
+#ifdef ALPS_HDF5_1_8 /* these tests fail with HDF5 1.10+ */
     ,AccumulatorTypeGenerator<alps::accumulators::FullBinningAccumulator,vldouble>
     ,AccumulatorTypeGenerator<alps::accumulators::LogBinningAccumulator, vldouble>
     ,AccumulatorTypeGenerator<alps::accumulators::NoBinningAccumulator,  vldouble>
     ,AccumulatorTypeGenerator<alps::accumulators::MeanAccumulator,       vldouble>
-
+#endif
     > MyTypes;
 
 TYPED_TEST_CASE(AccumulatorTest, MyTypes);
