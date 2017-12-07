@@ -2,7 +2,6 @@ include(ALPSEnableTests)
 
 set (test_srcs
   gf_check_eigen
-  gf_new_test
   index_test 
   mesh_test
   one_index_gf_test
@@ -14,7 +13,6 @@ set (test_srcs
   seven_index_gf_test
   itime_gf_test
   fourier_test
-  tensor_test
   grid_test
   piecewise_polynomial_test
     )
