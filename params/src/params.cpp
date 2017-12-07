@@ -113,9 +113,8 @@ namespace alps {
             return has_unused_(out, 0);
         }
 
-        bool params::help_requested(std::ostream& out) const
+        std::ostream& params::print_help(std::ostream& out) const 
         {
-            if (!this->help_requested()) return false;
             out << help_header_ << "\nAvailable options:\n";
 
             typedef std::pair<std::string, std::string> nd_pair; // name and description
@@ -156,9 +155,20 @@ namespace alps {
             }
             out.flags(oldfmt);
 
-            return true;
+            return out;
         }
 
+        bool params::help_requested() const
+        {
+            return this->exists<bool>("help") && (*this)["help"].as<bool>();
+        }
+        
+        bool params::help_requested(std::ostream& out) const
+        {
+            if (!this->help_requested()) return false;
+            print_help(out);
+            return true;
+        }
         
         bool params::has_missing(std::ostream& out) const
         {

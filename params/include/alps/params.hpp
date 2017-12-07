@@ -208,10 +208,13 @@ namespace alps {
             bool has_missing(std::ostream& out) const;
 
             /// True if user requested help
-            bool help_requested() const { return !help_header_.empty() && (*this)["help"].as<bool>(); }
+            bool help_requested() const;
 
             /// True if user requested help; print it to the supplied stream
             bool help_requested(std::ostream&) const;
+
+            /// Print help to the given stream. @returns the stream
+            std::ostream& print_help(std::ostream&) const;
 
             /// Returns true if the objects are identical
             bool operator==(const params& rhs) const;
