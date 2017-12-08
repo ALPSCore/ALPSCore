@@ -25,8 +25,10 @@ namespace alps {
       class DataView {
       public:
         /// Construct view of the whole DataStorage
+        DataView(DataStorage<T> & storage) : _data_slice(storage), _offset(0), _size(storage.size()) {}
         DataView(const DataStorage<T> & storage) : _data_slice(storage), _offset(0), _size(storage.size()) {}
         /// Construct subview of specified size for DataStorage starting from offset point
+        DataView(DataStorage<T> & storage, size_t size, size_t offset = 0) : _data_slice(storage), _offset(offset), _size(size) {}
         DataView(const DataStorage<T> & storage, size_t size, size_t offset = 0) : _data_slice(storage), _offset(offset), _size(size) {}
         /// Move-construction of subview of specified size for another View starting from offset point
         DataView(DataView<T> && storage, size_t size, size_t offset) : _data_slice(storage._data_slice), _offset(offset + storage._offset), _size(size) {}

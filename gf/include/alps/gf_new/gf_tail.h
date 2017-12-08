@@ -17,7 +17,9 @@ namespace alps {
       class gf_tail_base;
     }
     template<typename VTYPE, typename ...Meshes>
-    using gf_tail = detail::gf_tail_base<VTYPE, detail::Tensor<VTYPE, sizeof...(Meshes)>, Meshes...>;
+    using gf_tail      = detail::gf_tail_base<VTYPE, detail::Tensor<VTYPE, sizeof...(Meshes)>, Meshes...>;
+    template<typename VTYPE, typename ...Meshes>
+    using gf_tail_view = detail::gf_tail_base<VTYPE, detail::TensorView<VTYPE, sizeof...(Meshes)>, Meshes...>;
 
     namespace detail {
       /**
@@ -30,11 +32,12 @@ namespace alps {
        */
       template<typename VTYPE, typename Storage, typename Mesh1, typename ...Meshes>
       class gf_tail_base : public gf_base < VTYPE, Storage, Mesh1, Meshes... > {
+        using gf_base < VTYPE, Storage, Mesh1, Meshes... >::meshes;
       public:
         /// green's function type
         typedef gf_base < VTYPE, Storage, Mesh1, Meshes... > gf_type;
         /// tail type
-        typedef gf_base < VTYPE, Storage, Meshes... > tail_type;
+        typedef gf_base < VTYPE, detail::Tensor<VTYPE, sizeof...(Meshes)>, Meshes... > tail_type;
         /// type of the current GF object
         typedef gf_tail_base< VTYPE, Storage, Mesh1, Meshes... > gf_type_with_tail;
       private:
@@ -82,7 +85,7 @@ namespace alps {
 
           int tail_size=tails_.size();
           if(order>=tail_size){
-            tails_.resize(order+1, tail_type(this->mesh2()));
+            tails_.resize(order+1, tail_type ( subtuple<1>(meshes())));
             for(int i=tail_size;i<=order;++i) tails_[i].initialize();
           }
           tails_[order]=tail;
