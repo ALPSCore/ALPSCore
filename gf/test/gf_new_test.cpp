@@ -15,6 +15,15 @@ TEST(GreensFunction, InitializationTest){
 
 }
 
+TEST(GreensFunction, AsignmentTest){
+  alps::gf::matsubara_positive_mesh x(100, 10);
+  alps::gf::index_mesh y(10);
+  greenf<std::complex<double>, alps::gf::matsubara_positive_mesh, alps::gf::index_mesh> g1(x,y);
+  greenf_view<std::complex<double>, alps::gf::matsubara_positive_mesh, alps::gf::index_mesh> g2(g1);
+  greenf<std::complex<double>, alps::gf::matsubara_positive_mesh, alps::gf::index_mesh> g3(g2);
+  ASSERT_EQ(g1,g2);
+}
+
 
 TEST(GreensFunction, MeshAccess) {
   greenf<double, alps::gf::matsubara_positive_mesh, alps::gf::index_mesh, alps::gf::itime_mesh, alps::gf::legendre_mesh> g;
@@ -161,6 +170,27 @@ TEST(GreensFunction, TestSlices) {
     }
   }
 
+}
 
-
+TEST(GreensFunction, TestMultidimensionalSlices) {
+  alps::gf::matsubara_positive_mesh x(100, 10);
+  alps::gf::index_mesh y(10);
+  alps::gf::itime_mesh z(100, 10);
+  greenf<double, alps::gf::matsubara_positive_mesh, alps::gf::index_mesh, alps::gf::itime_mesh> g(x,y,z);
+  for(alps::gf::matsubara_positive_mesh::index_type w(0); w<x.extent(); ++w) {
+    for(alps::gf::index_mesh::index_type i(0); i<y.extent(); ++i) {
+      greenf_view < double, alps::gf::itime_mesh > g3 = g(w,i);
+      for(alps::gf::itime_mesh::index_type t(0); t<z.extent(); ++t) {
+        g3(t) = w()*x.extent() + i() * y.extent() + t();
+      }
+    }
+    greenf_view < double, alps::gf::index_mesh, alps::gf::itime_mesh > g2 = g(w);
+  }
+  for(alps::gf::matsubara_positive_mesh::index_type w(0); w<x.extent(); ++w) {
+    for (alps::gf::index_mesh::index_type i(0); i < y.extent(); ++i) {
+      for (alps::gf::itime_mesh::index_type t(0); t < z.extent(); ++t) {
+        ASSERT_EQ(g(w,i,t), w()*x.extent() + i() * y.extent() + t());
+      }
+    }
+  }
 }
