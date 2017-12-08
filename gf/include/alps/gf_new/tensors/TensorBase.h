@@ -137,9 +137,9 @@ namespace alps {
 
         /// Move assignment
         TensorBase < T, D, C > &operator=(TensorBase < T, D, C > &&rhs) noexcept {
-          _data = std::move(rhs._data);
-          _sizes = std::move(rhs._sizes);
-          _acc_sizes = std::move(rhs._acc_sizes);
+          _data = rhs._data;
+          _sizes = rhs._sizes;
+          _acc_sizes = rhs._acc_sizes;
           return *this;
         }
 
@@ -201,7 +201,7 @@ namespace alps {
         typename std::enable_if < !std::is_same < S, tensorType >::value && std::is_scalar < S >::value, tensorType >::type operator*(S scalar) {
           tensorType x(*this);
           x *= T(scalar);
-          return std::move(x);
+          return x;
         };
 
         /**
@@ -219,7 +219,7 @@ namespace alps {
           Eigen::Map < Eigen::Matrix < S, 1, Eigen::Dynamic, Eigen::RowMajor > > M2(&x.data().data(0), _data.size());
           M2 = M1;
           x *= scalar;
-          return std::move(x);
+          return x;
         };
 
         /**
@@ -259,7 +259,7 @@ namespace alps {
         typename std::enable_if < !std::is_same < S, tensorType >::value && std::is_scalar < S >::value, tensorType >::type operator/(S scalar) {
           tensorType x(*this);
           x /= T(scalar);
-          return std::move(x);
+          return x;
         };
 
         /**
@@ -272,7 +272,7 @@ namespace alps {
           Eigen::Map < Eigen::Matrix < S, 1, Eigen::Dynamic, Eigen::RowMajor > > M2(&x.data().data(0), _data.size());
           M2 = M1;
           x /= scalar;
-          return std::move(x);
+          return x;
         };
 
         /**
@@ -305,7 +305,7 @@ namespace alps {
           tensorType x(*this);
           Eigen::Map < Eigen::Matrix < T, Eigen::Dynamic, Eigen::Dynamic > > Mt(&(x.data().data(0)), _sizes[0], _sizes[1]);
           Mt = Mt.inverse();
-          return std::move(x);
+          return x;
         };
 
         /**
@@ -322,7 +322,7 @@ namespace alps {
         operator+(const TensorBase < S, D, Ct > &y) {
           tensorType x(*this);
           x += y;
-          return std::move(x);
+          return x;
         };
 
         /**
@@ -339,7 +339,7 @@ namespace alps {
         operator+(const TensorBase < S, D, Ct > &y) {
           Tensor < S, D > x(y);
           x += *this;
-          return std::move(x);
+          return x;
         };
 
         /**
@@ -349,7 +349,7 @@ namespace alps {
         typename std::enable_if < std::is_same < S, tensorType >::value || std::is_same < S, tensorViewType >::value, tensorType >::type operator-(const S &y) {
           tensorType x(*this);
           x -= y;
-          return std::move(x);
+          return x;
         };
 
         /**
@@ -361,7 +361,7 @@ namespace alps {
         operator-(const TensorBase < S, D, Ct > &y) {
           Tensor < S, D > x(y);
           x -= *this;
-          return std::move(x);
+          return x;
         };
 
         /**
@@ -401,7 +401,7 @@ namespace alps {
           MatrixMap < T > M1(&x.data().data(0), _sizes[0], _sizes[1]);
           Eigen::Map < const Eigen::Matrix < T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor > > M2(&y.data().data(0), _sizes[0], _sizes[1]);
           M1 *= M2;
-          return std::move(x);
+          return x;
         };
 
         /**
