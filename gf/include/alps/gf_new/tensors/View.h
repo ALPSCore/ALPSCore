@@ -28,7 +28,8 @@ namespace alps {
         /**
          * Construct view on DataStorage object
          */
-        View(const DataStorage<T>&storage) : _data(const_cast<T*>(storage.data().data())), _size(storage.data().size())  {}
+        View(const DataStorage<T>&storage) : _data(storage.data().data()), _size(storage.data().size())  {}
+        View(DataStorage<T>&storage) : _data((storage.data().data())), _size(storage.data().size())  {}
         /// Copy constructor
         View(const View & view) : _data(view._data), _size(view._size) {}
         /// Move constructor

@@ -118,8 +118,10 @@ namespace alps {
         gf_base(const _mesh_types &meshes) : data_(get_sizes(meshes)), meshes_(meshes), empty_(false) {}
 
         /// construct new GF object by copy data from another GF object defined with different storage type
-        template<typename St, typename = std::enable_if<!std::is_same<St, Storage>::value > >
-        gf_base(const gf_base<VTYPE, St, MESHES...> &g) : data_(g.data()), meshes_(g.meshes()), empty_(g.is_empty()) {}
+        template<typename St, typename = std::enable_if<!std::is_same<St, Storage>::value && std::is_same<St, data_view>::value > >
+        gf_base(const gf_base<VTYPE, data_view, MESHES...> &g) : data_(g.data()), meshes_(g.meshes()), empty_(g.is_empty()) {}
+        template<typename St, typename = std::enable_if<!std::is_same<St, Storage>::value && std::is_same<St, data_storage>::value > >
+        gf_base(gf_base<VTYPE, St, MESHES...> &g) : data_(g.data()), meshes_(g.meshes()), empty_(g.is_empty()) {}
 
         /// construct new green's function from index slice of GF with higher dimension
         template<typename St, typename...OLDMESHES, typename ...Indices>
@@ -176,7 +178,7 @@ namespace alps {
         auto operator()(typename std::enable_if<(sizeof...(Indices)+1 < _N), typename std::tuple_element<0,_mesh_types>::type::index_type >::type ind,
                     Indices...inds) -> decltype(subpack<VTYPE, _N - sizeof...(Indices) - 1>(VTYPE(0), meshes_)) {
           // get new mesh tuple
-          auto t = subtuple<sizeof...(Indices) + 1/*, _N - sizeof...(Indices) - 1*/>(meshes_);
+          auto t = subtuple<sizeof...(Indices) + 1>(meshes_);
           // return new GF view
           return std::move(decltype(subpack<VTYPE, _N - sizeof...(Indices) - 1>(VTYPE(0), meshes_))(*this, meshes_, t, ind, std::forward<Indices>(inds)...));
         }
@@ -626,7 +628,7 @@ namespace alps {
          */
         #define MESH_FUNCTION(z, num, c) \
         template<typename = typename std::enable_if< (_N >= num)> >\
-        typename args<num>::type mesh##num() {\
+        const typename args<num>::type mesh##num() const {\
           return std::get<int(num-1)>(meshes_); \
         }
 

@@ -60,8 +60,11 @@ namespace alps {
         static int constexpr dim = D;
         typedef DataView < T > viewType;
         typedef DataStorage < T > storageType;
+        /// current Tensor type
         typedef TensorBase < T, D, C > tType;
+        /// Tensor type with storage
         typedef Tensor < T, D > tensorType;
+        /// view Tensor type
         typedef TensorView < T, D > tensorViewType;
         template<typename St>
         using   genericTensor = TensorBase < T, D, St >;
@@ -112,6 +115,10 @@ namespace alps {
 
         /// copy constructor
         TensorBase(const tensorType& rhs) : _data(rhs.data()), _sizes(rhs.sizes()), _acc_sizes(rhs.acc_sizes()) {}
+
+        template<typename St = C>
+        TensorBase(typename std::enable_if<std::is_same<St, viewType>::value, tensorType>::type& rhs) :
+          _data(rhs.data()), _sizes(rhs.sizes()), _acc_sizes(rhs.acc_sizes()) {}
         /// move constructor
         TensorBase(tensorType &&rhs) : _data(rhs.data()), _sizes(rhs.sizes()), _acc_sizes(rhs.acc_sizes()) {}
         /// copy constructor
@@ -134,6 +141,10 @@ namespace alps {
           _sizes = std::move(rhs._sizes);
           _acc_sizes = std::move(rhs._acc_sizes);
           return *this;
+        }
+
+        bool operator==(const tType& rhs) const {
+          return std::equal(_sizes.begin(), _sizes.end(), rhs._sizes.begin()) && _data == rhs._data;
         }
 
         /**
