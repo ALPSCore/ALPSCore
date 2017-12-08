@@ -179,8 +179,7 @@ namespace alps {
                     Indices...inds) -> decltype(subpack<VTYPE, _N - sizeof...(Indices) - 1>(VTYPE(0), meshes_)) {
           // get new mesh tuple
           auto t = subtuple<sizeof...(Indices) + 1>(meshes_);
-          // return new GF view
-          return std::move(decltype(subpack<VTYPE, _N - sizeof...(Indices) - 1>(VTYPE(0), meshes_))(*this, meshes_, t, ind, std::forward<Indices>(inds)...));
+          return decltype(subpack<VTYPE, _N - sizeof...(Indices) - 1>(VTYPE(0), meshes_))(*this, meshes_, t, ind, std::forward<Indices>(inds)...);
         }
 
 
@@ -200,7 +199,7 @@ namespace alps {
         operator+(const RHS_GF &rhs) const {
           throw_if_empty();
           gf_type res(*this);
-          return std::move(res += rhs);
+          return res += rhs;
         }
 
         /**
@@ -230,7 +229,7 @@ namespace alps {
         operator-(const RHS_GF &rhs) const {
           throw_if_empty();
           gf_type res(*this);
-          return std::move(res -= rhs);
+          return res -= rhs;
         }
 
         /**
@@ -269,7 +268,7 @@ namespace alps {
         typename std::enable_if < std::is_scalar < RHS >::value || std::is_same < VTYPE, RHS >::value, gf_type >::type operator*(RHS rhs) const {
           throw_if_empty();
           gf_type res(*this);
-          return std::move(res *= rhs);
+          return res *= rhs;
         }
 
         /**
@@ -285,7 +284,7 @@ namespace alps {
           throw_if_empty();
           gf_base < RHS, Tensor<RHS, _N>, MESHES... > res(meshes_);
           res.data() += this->data();
-          return std::move(res *= rhs);
+          return res *= rhs;
         }
 
         /**
@@ -314,7 +313,7 @@ namespace alps {
         typename std::enable_if < std::is_scalar < RHS >::value || std::is_same < VTYPE, RHS >::value, gf_type >::type operator/(RHS rhs) const {
           throw_if_empty();
           gf_type res(meshes_);
-          return std::move(res /= rhs);
+          return res /= rhs;
         }
 
         /**
@@ -329,7 +328,7 @@ namespace alps {
           throw_if_empty();
           gf_base < RHS, Tensor<RHS, _N>, MESHES... > res(*this);
           res.data_ = this->data_;
-          return std::move(res /= rhs);
+          return res /= rhs;
         }
 
         /**
@@ -337,7 +336,7 @@ namespace alps {
          */
         gf_base < VTYPE, Tensor<VTYPE, _N>, MESHES... > operator-() const {
           throw_if_empty();
-          return std::move( (*this)*(VTYPE(-1.0)) );
+          return (*this)*(VTYPE(-1.0));
         }
 
         /**
@@ -421,7 +420,7 @@ namespace alps {
          * @return true if GF object was initilized as empty
          */
         bool is_empty() const {
-          return  empty_;
+          return empty_;
         }
 
         /**
