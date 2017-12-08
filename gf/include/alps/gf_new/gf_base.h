@@ -69,22 +69,26 @@ namespace alps {
         /// storage types
         using data_storage = Tensor < VTYPE, sizeof...(MESHES) >;
         using data_view    = TensorView < VTYPE, sizeof...(MESHES) >;
-        /// Generic GF
+        /// Generic GF type
         template<typename St>
         using generic_gf   = gf_base < VTYPE, St, MESHES... >;
 
+        // this is a helper function that should never be called. It used to get compile time type declaration.
+        // using the index_sequence we create the proper set of meshes by unrolling tuple into parameter pack with
+        // the following template code: "typename std::tuple_element<sizeof...(Ti) - Trim + I, _mesh_types >::type..."
         template <typename S, int Trim, typename... Ti, std::size_t... I>
-        gf_base<S, TensorView < VTYPE, sizeof...(Ti) - Trim>,
-          typename std::tuple_element<sizeof...(Ti) - I - 1, _mesh_types >::type...>
-        subpack_(S x, const std::tuple<Ti...>& t, index_sequence<I...>)
-        {
-          return std::make_tuple(std::get<sizeof...(Ti) - I - 1>(t)...);
+        gf_base<S, TensorView < VTYPE, Trim>,
+          typename std::tuple_element<sizeof...(Ti) - Trim + I, _mesh_types >::type...>
+        subpack_(S x, const std::tuple<Ti...>& t, index_sequence<I...>) {
+          throw std::runtime_error("This function is not intended to be called. The only purpose of this function is to get type declaration.");
         }
 
+        // this is a helper function that should never be called. It used to get compile time type declaration
+        // Using the size of current GF mesh and number of indices in new GF we create an index sequence and
+        // evaluate the return type of %subpack_% method.
         template <typename S, int Trim, typename... T>
-        auto subpack(S x, const std::tuple<T...>& t) -> decltype(subpack_<S, Trim, T...>(x, t, make_index_sequence<sizeof...(T) - Trim>()))
-        {
-          return subpack_<S, Trim, T...>(x, t, make_index_sequence<sizeof...(T) - Trim>());
+        auto subpack(S x, const std::tuple<T...>& t) -> decltype(subpack_<S, Trim, T...>(x, t, make_index_sequence<Trim>())) {
+          throw std::runtime_error("This function is not intended to be called. The only purpose of this function is to get type declaration.");
         }
 
       public:
@@ -94,7 +98,6 @@ namespace alps {
          * @param g - GF to copy from
          */
         gf_base(const gf_type &g) : data_(g.data_), meshes_(g.meshes_), empty_(g.empty_) {}
-//        gf_base(gf_type &g) : data_(g.data_), meshes_(g.meshes_), empty_(g.empty_) {}
 
         /**
          * Move-constructor
@@ -111,17 +114,19 @@ namespace alps {
          * @param meshes - list of meshes
          */
         gf_base(MESHES...meshes) : gf_base(std::forward_as_tuple(meshes...)) {}
-
-
+        /// tuple version of the previous function
         gf_base(const _mesh_types &meshes) : data_(get_sizes(meshes)), meshes_(meshes), empty_(false) {}
 
-        template<typename St>
-        gf_base(gf_base<VTYPE, St, MESHES...>  &g) : data_(g.data_), meshes_(g.meshes_), empty_(g.empty_) {}
+        /// construct new GF object by copy data from another GF object defined with different storage type
+        template<typename St, typename = std::enable_if<!std::is_same<St, Storage>::value > >
+        gf_base(const gf_base<VTYPE, St, MESHES...> &g) : data_(g.data()), meshes_(g.meshes()), empty_(g.is_empty()) {}
 
+        /// construct new green's function from index slice of GF with higher dimension
         template<typename St, typename...OLDMESHES, typename ...Indices>
         gf_base(gf_base<VTYPE, TensorBase < VTYPE, sizeof...(OLDMESHES), St >, OLDMESHES...> & g, std::tuple<OLDMESHES...>& oldmesh, const _mesh_types &meshes, const Indices... idx) :
           data_(g.data()(idx()...)), meshes_(meshes), empty_(false) {}
 
+        /// copy assignment
         gf_type& operator=(const gf_type & rhs) {
           data_   = rhs.data_;
           meshes_ = rhs.meshes_;
@@ -129,6 +134,7 @@ namespace alps {
           return *this;
         }
 
+        /// initialize with zeros
         void initialize() {
           data_ *= VTYPE(0);
         }
@@ -137,9 +143,9 @@ namespace alps {
          * Data access operations
          */
         /**
-         * Return value at specific position
          * @tparam Indices - types of indices
          * @param inds     - indices
+         * @return value at the specific position
          */
         template<class...Indices>
         typename std::enable_if < (sizeof...(Indices) == sizeof...(MESHES)), VTYPE >::type
@@ -149,7 +155,7 @@ namespace alps {
           return value(std::forward < Indices >(inds)...);
         }
 
-        /// return reference to the specific value in the GF object
+        /// @return reference to the specific value in the GF object
         template<class...Indices>
         typename std::enable_if < (sizeof...(Indices) == sizeof...(MESHES)), VTYPE & >::type
         operator()(Indices...inds) {
@@ -158,12 +164,20 @@ namespace alps {
           return value(std::forward < Indices >(inds)...);
         }
 
-        // Slices
+        /**
+         * Create GF view for the first indices (ind, inds...), e.g., for the fixed indices (x,y)
+         * we get the view object G(:) = G(x, y, :)
+         *
+         * @param ind  - first index
+         * @param inds - other indices
+         * @return GF view object
+         */
         template<class...Indices>
         auto operator()(typename std::enable_if<(sizeof...(Indices)+1 < _N), typename std::tuple_element<0,_mesh_types>::type::index_type >::type ind,
                     Indices...inds) -> decltype(subpack<VTYPE, _N - sizeof...(Indices) - 1>(VTYPE(0), meshes_)) {
           // get new mesh tuple
-          auto t = subtuple<_N - sizeof...(Indices) - 1>(meshes_);
+          auto t = subtuple<sizeof...(Indices) + 1/*, _N - sizeof...(Indices) - 1*/>(meshes_);
+          // return new GF view
           return std::move(decltype(subpack<VTYPE, _N - sizeof...(Indices) - 1>(VTYPE(0), meshes_))(*this, meshes_, t, ind, std::forward<Indices>(inds)...));
         }
 
@@ -317,11 +331,16 @@ namespace alps {
         }
 
         /**
-         * Comparison. GF are the same if
+         * Comparison. GFs that are defined on the same MESH and have the value return type will be equal if they are:
+         *  A. Both empty
+         *    or
+         *  B.1. Have the same size
+         *  B.2. And have the same values
          */
-        template<typename LHS_GF>
-        typename std::enable_if < std::is_same < LHS_GF, generic_gf<data_storage> >::value || std::is_same < LHS_GF, generic_gf<data_view> >::value, bool >::type operator==(const LHS_GF &lhs) {
-          return (empty_ && lhs.is_empty()) || (data_.sizes() == lhs.data().sizes() && data_.data() == lhs.data().data() );
+        template<typename RHS_GF>
+        typename std::enable_if < std::is_same < RHS_GF, generic_gf<data_storage> >::value || std::is_same < RHS_GF, generic_gf<data_view> >::value, bool >::type
+        operator==(const RHS_GF &rhs) const {
+          return (empty_ && rhs.is_empty()) || (data_.sizes() == rhs.data().sizes() && data_.data() == rhs.data().data() );
         }
 
         /**
@@ -382,11 +401,11 @@ namespace alps {
         /**
          * @return const reference to the storage object
          */
-        const Tensor < VTYPE, _N > &data() const { return data_; };
+        const Storage &data() const { return data_; };
         /**
          * @return reference to the storage object
          */
-        Tensor < VTYPE, _N > &data() { return data_; };
+        Storage &data() { return data_; };
 
         /**
          * @return true if GF object was initilized as empty
@@ -395,18 +414,31 @@ namespace alps {
           return  empty_;
         }
 
+        /**
+         * @return const-reference to the GF meshes tuple
+         */
+        const _mesh_types& meshes() const {return meshes_;}
+
         /*
          *  MPI routines
          */
 #ifdef ALPS_HAVE_MPI
+        /**
+         * Broadcast GF object
+         *
+         * @param comm - MPI communicator
+         * @param root - root process number for broadcast
+         */
         void broadcast(const alps::mpi::communicator& comm, int root) {
+          // check that root GF has been initilized
+          if(comm.rank() == root) throw_if_empty();
           // broadcast grid meshes
           broadcast_mesh(comm, root);
           size_t root_sz=data_.size();
           alps::mpi::broadcast(comm, root_sz, root);
           // as long as all grids have been broadcasted we can define tensor object
           if(comm.rank() != root) data_ = Tensor < VTYPE, _N >(get_sizes(meshes_));
-          alps::mpi::broadcast(comm, &data_.data().data(), root_sz, root);
+          alps::mpi::broadcast(comm, &data_.data().data(0), root_sz, root);
         }
 #endif
 
@@ -416,17 +448,21 @@ namespace alps {
          *  MPI routines
          */
 #ifdef ALPS_HAVE_MPI
+        /**
+         * Perform recursive call for mesh broadcasting
+         */
         void broadcast_mesh(const alps::mpi::communicator& comm, int root) {
-          bcast_mesh<0>(comm, root, std::integral_constant < int, 0 >());
+          // start from the zeroth mesh
+          bcast_mesh(comm, root, std::integral_constant < int, 0 >());
         }
-        template<int N>
-        void bcast_mesh(const alps::mpi::communicator& comm, int root, std::integral_constant < int, N > i) {
-          std::get<N>(meshes_).broadcast(comm, root);
-          bcast_mesh<N+1>(comm, root, std::integral_constant < int, N+1 >());
+        template<int M>
+        void bcast_mesh(const alps::mpi::communicator& comm, int root, std::integral_constant < int, M > i) {
+          std::get<M>(meshes_).broadcast(comm, root);
+          bcast_mesh(comm, root, std::integral_constant < int, M+1 >());
         }
-
-        void bcast_mesh(const alps::mpi::communicator& comm, int root, std::integral_constant < int, _N> i) {
-          std::get<_N>(meshes_).broadcast(comm, root);
+        // Until we reach the last mesh object
+        void bcast_mesh(const alps::mpi::communicator& comm, int root, std::integral_constant < int, _N - 1> i) {
+          std::get<_N - 1>(meshes_).broadcast(comm, root);
         }
 #endif
 
@@ -588,15 +624,15 @@ namespace alps {
         /**
          * Create MESH<N>() functions for compatibility with old interface
          */
-#define MESH_FUNCTION(z, num, c) \
-  template<typename = typename std::enable_if< (_N >= num)> >\
-  typename args<num>::type mesh##num() {\
-    return std::get<int(num-1)>(meshes_); \
-  }
+        #define MESH_FUNCTION(z, num, c) \
+        template<typename = typename std::enable_if< (_N >= num)> >\
+        typename args<num>::type mesh##num() {\
+          return std::get<int(num-1)>(meshes_); \
+        }
 
-/**
- * I guess 10 functions would be enough
- */
+        /*
+         * I guess 10 functions would be enough
+         */
         BOOST_PP_REPEAT_FROM_TO (1, 11, MESH_FUNCTION, int)
 
       };

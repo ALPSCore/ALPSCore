@@ -10,6 +10,31 @@
 using namespace alps::gf::detail;
 
 
+TEST(TensorTest, StoragesComparison) {
+  size_t N = 100;
+  DataStorage<double> s(N);
+  DataView<double> v(s);
+  // copy constructed
+  DataView<double> v1(v);
+  // duplicated
+  DataView<double> v2(s);
+  for(int i=0; i<N; ++i) {
+    s.data(i) = i;
+  }
+  // self-comparison
+  ASSERT_EQ(s, s);
+  ASSERT_EQ(v, v);
+  // left comparison;
+  ASSERT_EQ(v, s);
+  // right comparison;
+  ASSERT_EQ(s, v);
+  // comparison with views
+  ASSERT_EQ(v1, v);
+  ASSERT_EQ(v2, v);
+
+}
+
+
 TEST(TensorTest, TestInitialization) {
   Tensor<std::complex<double>, 3> X(std::array<size_t, 3>{{1,2,3}});
   ASSERT_EQ(X.size(), 1*2*3);

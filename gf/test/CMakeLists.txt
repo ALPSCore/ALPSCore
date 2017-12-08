@@ -3,7 +3,7 @@ include(ALPSEnableTests)
 set (test_srcs
   gf_check_eigen
   gf_new_test
-  index_test 
+  index_test
   mesh_test
   one_index_gf_test
   gf1_print_test
@@ -30,7 +30,8 @@ set (mpi_test_srcs
     four_index_gf_test_mismatched_mpi
     four_index_gf_test_mismatched-tail_mpi
     multiarray_bcast_mpi 
-    mesh_test_mpi)
+    mesh_test_mpi
+    gf_new_test_mpi)
 
 if (ALPS_HAVE_MPI) 
     foreach(test ${mpi_test_srcs})

@@ -156,7 +156,7 @@ namespace alps {
             void broadcast(const alps::mpi::communicator& comm, int root)
             {
                 using alps::mpi::broadcast;
-                throw_if_empty();
+                if(comm.rank() == root) throw_if_empty();
                 int size = extent();
                 broadcast(comm, size, root);
                 /// since real frequency mesh can be generated differently we should broadcast points
@@ -212,7 +212,7 @@ namespace alps {
             /// Comparison operators
             bool operator==(const matsubara_mesh &mesh) const {
                 throw_if_empty();
-                return beta_==mesh.beta_ && nfreq_==mesh.nfreq_ && statistics_==mesh.statistics_;
+                return beta_==mesh.beta_ && nfreq_==mesh.nfreq_ && statistics_==mesh.statistics_ && offset_ == mesh.offset_;
             }
 
             /// Comparison operators
@@ -268,6 +268,7 @@ namespace alps {
                 };
                 beta_=beta;
                 nfreq_=nfr;
+                offset_ = ((PTYPE==mesh::POSITIVE_ONLY)?0:nfr);
                 check_range();
                 compute_points();
             }
@@ -288,15 +289,25 @@ namespace alps {
           void broadcast(const alps::mpi::communicator& comm, int root)
             {
                 using alps::mpi::broadcast;
-                throw_if_empty();
+                int wrank=alps::mpi::communicator().rank();
+                if(wrank == root) throw_if_empty();
                 // FIXME: introduce (debug-only?) consistency check, like type checking? akin to load()?
                 broadcast(comm, beta_, root);
                 broadcast(comm, nfreq_, root);
+                int stat = int(statistics_);
+                broadcast(comm, stat, root);
+                statistics_ = statistics::statistics_type(stat);
+                int pos = int(positivity_);
+                broadcast(comm, pos, root);
+                if (mesh::frequency_positivity_type(pos)!=positivity_) {
+                  throw std::invalid_argument("Attempt to broadcast Matsubara mesh with the wrong positivity type "+boost::lexical_cast<std::string>(pos) ); // FIXME: specific exception? Verbose positivity?
+                };
+                offset_ = ((PTYPE==mesh::POSITIVE_ONLY)?0:nfreq_);
+
                 try {
                     check_range();
                 } catch (const std::exception& exc) {
                     // FIXME? Try to communiucate the error with all ranks, at least in debug mode?
-                    int wrank=alps::mpi::communicator().rank();
                     std::cerr << "matsubara_mesh<>::broadcast() exception at WORLD rank=" << wrank << std::endl
                               << exc.what()
                               << "\nAborting." << std::endl;
@@ -438,7 +449,7 @@ namespace alps {
           void broadcast(const alps::mpi::communicator& comm, int root)
             {
                 using alps::mpi::broadcast;
-                throw_if_empty();
+                if(alps::mpi::communicator().rank() == root) throw_if_empty();
                 // FIXME: introduce (debug-only?) consistency check, like type checking? akin to load()?
                 broadcast(comm, beta_, root);
                 broadcast(comm, ntau_, root);
@@ -577,7 +588,7 @@ namespace alps {
           void broadcast(const alps::mpi::communicator& comm, int root)
             {
                 using alps::mpi::broadcast;
-                throw_if_empty();
+                if(alps::mpi::communicator().rank() == root) throw_if_empty();
                 // FIXME: introduce (debug-only?) consistency check, like type checking? akin to load()?
                 broadcast(comm, beta_, root);
                 broadcast(comm, ntau_, root);
@@ -716,6 +727,9 @@ namespace alps {
                   throw_if_empty();
                 }
                 // FIXME: introduce (debug-only?) consistency check, like type checking? akin to load()?
+                std::array<size_t, 2> sizes{{points_.shape()[0], points_.shape()[1]}};
+                alps::mpi::broadcast(comm, &sizes[0], 2, root);
+                if (comm.rank()!=root) points_.resize(boost::extents[sizes[0]][sizes[1]]);
                 detail::broadcast(comm, points_, root);
                 broadcast(comm, kind_, root);
             }
@@ -839,8 +853,9 @@ namespace alps {
           void broadcast(const alps::mpi::communicator& comm, int root)
             {
                 using alps::mpi::broadcast;
-                throw_if_empty();
+                if(alps::mpi::communicator().rank() == root) throw_if_empty();
                 broadcast(comm, npoints_, root);
+                compute_points();
             }
 #endif
         };
@@ -952,7 +967,7 @@ namespace alps {
             void broadcast(const alps::mpi::communicator& comm, int root)
             {
                 using alps::mpi::broadcast;
-                throw_if_empty();
+                if(alps::mpi::communicator().rank() == root) throw_if_empty();
                 broadcast(comm, beta_, root);
                 broadcast(comm, n_max_, root);
                 {
@@ -1117,7 +1132,6 @@ namespace alps {
                 if (valid_ && stat != statistics_) {
                     throw std::runtime_error("Attemp to load data with different statistics!");
                 }
-                statistics_ = static_cast<statistics::statistics_type>(stat);
 
                 ar[path+"/beta"] >> beta;
                 basis_functions_.resize(dim);
@@ -1125,7 +1139,7 @@ namespace alps {
                     basis_functions_[l].load(ar, path+"/basis_functions"+boost::lexical_cast<std::string>(l));
                 }
 
-                statistics_=statistics::statistics_type(stat);
+                statistics_ = static_cast<statistics::statistics_type>(stat);
                 beta_=beta;
                 dim_=dim;
                 set_validity();
@@ -1148,7 +1162,7 @@ namespace alps {
             void broadcast(const alps::mpi::communicator& comm, int root)
             {
                 using alps::mpi::broadcast;
-                check_validity();
+                if(comm.rank() == root) check_validity();
 
                 broadcast(comm, beta_, root);
                 broadcast(comm, dim_, root);
