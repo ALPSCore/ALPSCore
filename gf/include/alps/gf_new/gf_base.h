@@ -266,7 +266,7 @@ namespace alps {
          * @return new scaled Green's function
          */
         template<typename RHS>
-        typename std::enable_if < std::is_scalar < RHS >::value || std::is_same < VTYPE, RHS >::value, gf_type >::type operator*(RHS rhs) {
+        typename std::enable_if < std::is_scalar < RHS >::value || std::is_same < VTYPE, RHS >::value, gf_type >::type operator*(RHS rhs) const {
           throw_if_empty();
           gf_type res(*this);
           return std::move(res *= rhs);
@@ -281,7 +281,7 @@ namespace alps {
          * @return scaled Green's function
          */
         template<typename RHS>
-        typename std::enable_if < is_complex < RHS >::value && !std::is_same < VTYPE, RHS >::value, gf_base < RHS, Tensor<RHS, _N>, MESHES... > >::type operator*(RHS rhs) {
+        typename std::enable_if < is_complex < RHS >::value && !std::is_same < VTYPE, RHS >::value, gf_base < RHS, Tensor<RHS, _N>, MESHES... > >::type operator*(RHS rhs) const {
           throw_if_empty();
           gf_base < RHS, Tensor<RHS, _N>, MESHES... > res(meshes_);
           res.data() += this->data();
@@ -311,7 +311,7 @@ namespace alps {
         * @return scaled Green's function
         */
         template<typename RHS>
-        typename std::enable_if < std::is_scalar < RHS >::value || std::is_same < VTYPE, RHS >::value, gf_type >::type operator/(RHS rhs) {
+        typename std::enable_if < std::is_scalar < RHS >::value || std::is_same < VTYPE, RHS >::value, gf_type >::type operator/(RHS rhs) const {
           throw_if_empty();
           gf_type res(meshes_);
           return std::move(res /= rhs);
@@ -325,11 +325,19 @@ namespace alps {
         * @return scaled Green's function
         */
         template<typename RHS>
-        typename std::enable_if < is_complex < RHS >::value && !std::is_same < VTYPE, RHS >::value, gf_base < RHS, Tensor<RHS, _N>, MESHES... > >::type operator/(RHS rhs) {
+        typename std::enable_if < is_complex < RHS >::value && !std::is_same < VTYPE, RHS >::value, gf_base < RHS, Tensor<RHS, _N>, MESHES... > >::type operator/(RHS rhs) const {
           throw_if_empty();
           gf_base < RHS, Tensor<RHS, _N>, MESHES... > res(*this);
           res.data_ = this->data_;
           return std::move(res /= rhs);
+        }
+
+        /**
+         * @returns Negated Green's Function (a new copy).
+         */
+        gf_base < VTYPE, Tensor<VTYPE, _N>, MESHES... > operator-() const {
+          throw_if_empty();
+          return std::move( (*this)*(VTYPE(-1.0)) );
         }
 
         /**
