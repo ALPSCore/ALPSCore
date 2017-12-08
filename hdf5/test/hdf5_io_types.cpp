@@ -293,12 +293,6 @@ HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(std::deque, std::vector)
 HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(std::vector, std::deque)
 HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(std::deque, std::valarray)
 HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(std::valarray, std::deque)
-// HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(std::valarray, boost::numeric::ublas::vector)
-// HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(boost::numeric::ublas::vector, std::valarray)
-// HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(boost::numeric::ublas::vector, std::vector)
-// HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(std::vector, boost::numeric::ublas::vector)
-// HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(std::deque, boost::numeric::ublas::vector)
-// HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(boost::numeric::ublas::vector, std::deque)
 
 #undef HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE
 
@@ -616,7 +610,6 @@ HDF5_DEFINE_MULTI_ARRAY_TYPE(alps, C)*/
 HDF5_DEFINE_VECTOR_TYPE(std::vector)
 HDF5_DEFINE_VECTOR_TYPE(std::valarray)
 HDF5_DEFINE_VECTOR_TYPE(std::deque)
-// HDF5_DEFINE_VECTOR_TYPE(boost::numeric::ublas::vector)
 #undef HDF5_DEFINE_VECTOR_TYPE
 #undef HDF5_DEFINE_MULTI_ARRAY_TYPE
 
@@ -828,31 +821,6 @@ template<typename T, typename U> bool equal(std::pair<T *, std::vector<U> > cons
 HDF5_DEFINE_MULTI_ARRAY_TYPE(boost)
 // HDF5_DEFINE_MULTI_ARRAY_TYPE(alps)
 
-// template<typename T> struct creator<boost::numeric::ublas::matrix<T, boost::numeric::ublas::column_major> > {
-//     typedef boost::numeric::ublas::matrix<T, boost::numeric::ublas::column_major> base_type;
-//     static base_type random() {
-//         base_type value (MATRIX_SIZE, MATRIX_SIZE);
-//         for (std::size_t i = 0; i < MATRIX_SIZE; ++i)
-//             for (std::size_t j = 0; j < MATRIX_SIZE; ++j)
-//                 if (boost::is_scalar<T>::value)
-//                     initialize(value(i, j));
-//                 else
-//                     value(i, j) = creator<T>::random();
-//         return value;
-//     }
-//     static base_type empty() { return base_type(MATRIX_SIZE, MATRIX_SIZE); }
-//     static base_type special() { return base_type(MATRIX_SIZE, MATRIX_SIZE); }
-//     template<typename X> static base_type random(X const &) { return base_type(MATRIX_SIZE, MATRIX_SIZE); }
-//     template<typename X> static base_type empty(X const &) { return base_type(MATRIX_SIZE, MATRIX_SIZE); }
-//     template<typename X> static base_type special(X const &) { return base_type(MATRIX_SIZE, MATRIX_SIZE); }
-// };
-// template<typename T> bool equal(boost::numeric::ublas::matrix<T, boost::numeric::ublas::column_major> const & a, boost::numeric::ublas::matrix<T, boost::numeric::ublas::column_major> const & b) {
-//     for (std::size_t i = 0; i < MATRIX_SIZE; ++i)
-//         for (std::size_t j = 0; j < MATRIX_SIZE; ++j)
-//             if (!equal(a(i, j), b(i, j)))
-//                 return false;
-//     return true;
-// }
 
 // template<typename T> struct creator<alps::numeric::matrix<T> > {
 //     typedef alps::numeric::matrix<T> base_type;
@@ -916,18 +884,11 @@ HDF5_DEFINE_VECTOR_VECTOR_TYPE(std::vector, std::vector)
 HDF5_DEFINE_VECTOR_VECTOR_TYPE(std::valarray, std::vector)
 HDF5_DEFINE_VECTOR_VECTOR_TYPE(std::vector, std::valarray)
 HDF5_DEFINE_VECTOR_VECTOR_TYPE(std::valarray, std::valarray)
-// HDF5_DEFINE_VECTOR_VECTOR_TYPE(std::valarray, boost::numeric::ublas::vector)
-// HDF5_DEFINE_VECTOR_VECTOR_TYPE(boost::numeric::ublas::vector, std::valarray)
-// HDF5_DEFINE_VECTOR_VECTOR_TYPE(boost::numeric::ublas::vector, boost::numeric::ublas::vector)
-// HDF5_DEFINE_VECTOR_VECTOR_TYPE(boost::numeric::ublas::vector, std::vector)
-// HDF5_DEFINE_VECTOR_VECTOR_TYPE(std::vector, boost::numeric::ublas::vector)
 HDF5_DEFINE_VECTOR_VECTOR_TYPE(std::deque, std::deque)
 HDF5_DEFINE_VECTOR_VECTOR_TYPE(std::deque, std::vector)
 HDF5_DEFINE_VECTOR_VECTOR_TYPE(std::vector, std::deque)
 HDF5_DEFINE_VECTOR_VECTOR_TYPE(std::valarray, std::deque)
 HDF5_DEFINE_VECTOR_VECTOR_TYPE(std::deque, std::valarray)
-// HDF5_DEFINE_VECTOR_VECTOR_TYPE(boost::numeric::ublas::vector, std::deque)
-// HDF5_DEFINE_VECTOR_VECTOR_TYPE(std::deque, boost::numeric::ublas::vector)
 #undef HDF5_DEFINE_VECTOR_VECTOR_TYPE
 
 #define HDF5_DEFINE_VECTOR_VECTOR_VECTOR_TYPE(C, D, E)                                                    \
@@ -1166,11 +1127,6 @@ template<typename T> struct skip_attribute<std::vector<std::vector<T> > >: publi
 template<typename T> struct skip_attribute<std::valarray<std::vector<T> > >: public boost::mpl::true_ {}; 
 template<typename T> struct skip_attribute<std::vector<std::valarray<T> > >: public boost::mpl::true_ {}; 
 template<typename T> struct skip_attribute<std::valarray<std::valarray<T> > >: public boost::mpl::true_ {};
-// template<typename T> struct skip_attribute<boost::numeric::ublas::vector<boost::numeric::ublas::vector<T> > >: public boost::mpl::true_ {};
-// template<typename T> struct skip_attribute<std::valarray<boost::numeric::ublas::vector<T> > >: public boost::mpl::true_ {};
-// template<typename T> struct skip_attribute<std::vector<boost::numeric::ublas::vector<T> > >: public boost::mpl::true_ {};
-// template<typename T> struct skip_attribute<boost::numeric::ublas::vector<std::vector<T> > >: public boost::mpl::true_ {};
-// template<typename T> struct skip_attribute<boost::numeric::ublas::vector<std::valarray<T> > >: public boost::mpl::true_ {};
 
 template<typename T, std::size_t N> struct skip_attribute<boost::array<std::vector<T>, N> >: public boost::mpl::true_ {};
 
@@ -1335,36 +1291,6 @@ enum_type *,enum_vec_type *,userdefined_class<double> *,cast_type<int, double> *
 
 typedef ::testing::Types<
 boost::shared_array<int>,boost::shared_array<short>,boost::shared_array<long>,boost::shared_array<float>,boost::shared_array<double>, boost::shared_array<std::size_t>,boost::shared_array<std::string>,boost::shared_array<std::complex<double> >,boost::shared_array<enum_type>,boost::shared_array<enum_vec_type>,boost::shared_array<userdefined_class<double> >,boost::shared_array<cast_type<int, double> >,boost::shared_array<cast_type<int, std::string> >,cast_type<std::vector<int>, std::valarray<int> >,std::pair<double, int>,std::pair<double, std::complex<double> >,std::pair<cast_type<int, std::string>, enum_type>,std::pair<enum_type, cast_type<int, double> >,std::pair<std::vector<cast_type<int, std::string> >, std::pair<double, int> >,std::pair<std::pair<std::vector<enum_type> *, std::vector<std::size_t> >, enum_type>,cast_type<std::valarray<int>, std::vector<int> >,cast_type<std::pair<int *, std::vector<std::size_t> >, std::vector<std::vector<std::vector<int> > > >,cast_type<std::pair<int *, std::vector<std::size_t> >, std::vector<std::vector<std::vector<double> > > >,std::pair<cast_type<std::vector<int>, std::valarray<long> > *, std::vector<std::size_t> >,cast_type<std::vector<int>, std::valarray<double> >,std::vector<std::size_t, std::allocator<std::size_t> >,std::vector<short, std::allocator<short> >,std::vector<int, std::allocator<int> >,std::vector<long, std::allocator<long> >,std::vector<float, std::allocator<float> >,std::vector<double, std::allocator<double> >,std::vector<std::complex<double>, std::allocator<std::complex<double> > >,std::vector<std::string, std::allocator<std::string> >,std::vector<std::vector<int, std::allocator<int> > >,std::vector<std::vector<double>, std::allocator<std::vector<double> > >,std::vector<std::vector<std::complex<double>, std::allocator<std::complex<double> > >, std::allocator<std::vector<std::complex<double>, std::allocator<std::complex<double> > > > >,std::vector<std::vector<std::string, std::allocator<std::string> >, std::allocator<std::vector<std::string, std::allocator<std::string> > > >,boost::array<int, 20>,boost::array<long double, 20>,boost::array<float, 20>,boost::array<unsigned long long, 20>,boost::array<boost::array<std::complex<double>, 20>, 20>,std::vector<boost::array<int, 4> >,boost::array<std::vector<int>, 4>,std::vector<boost::array<std::vector<int>, 4> >,boost::tuple<int, double, float, std::complex<double> >,std::vector<boost::tuple<char, bool, long long> > > hdf5RemainingTypes;
-
-/*#    "std::vector<std::vector<bool> >"
-#    "boost::numeric::ublas::vector<bool>"
-#    boost::numeric::ublas::vector<int> boost::numeric::ublas::vector<double> "boost::numeric::ublas::vector<std::complex<double> >"
-#    "std::vector<boost::numeric::ublas::vector<std::complex<double> > >"
-#    "boost::numeric::ublas::matrix<double, boost::numeric::ublas::column_major>" "boost::numeric::ublas::matrix<std::complex<double>, boost::numeric::ublas::column_major>"
-#    "cast_type<std::vector<int>, boost::numeric::ublas::vector<int> >"
-#    "cast_type<std::valarray<int>, boost::numeric::ublas::vector<int> >"
-#    "cast_type<boost::numeric::ublas::vector<int>, std::vector<int> >" "cast_type<boost::numeric::ublas::vector<int>, std::valarray<int> >"
-#    "cast_type<std::vector<int>, boost::numeric::ublas::vector<double> >"
-#    "std::vector<cast_type<std::vector<int>, boost::numeric::ublas::vector<double> > >"
-#    "alps::numeric::matrix<unsigned int>" alps::numeric::matrix<float> alps::numeric::matrix<double> "alps::numeric::matrix<std::complex<float> >" "alps::numeric::matrix<std::complex<double> >"
-#    "std::vector<alps::numeric::matrix<unsigned int> >" "std::vector<alps::numeric::matrix<float> >" "std::vector<alps::numeric::matrix<double> >"
-#    "std::vector<alps::numeric::matrix<std::complex<float> > >" "std::vector<alps::numeric::matrix<std::complex<double> > >"
-#    "alps::numeric::matrix<std::vector<double> >" "alps::numeric::matrix<std::vector<std::complex<float> > >" "alps::numeric::matrix<alps::numeric::matrix<int> >"
-#    "alps::numeric::matrix<alps::numeric::matrix<double> >" "alps::numeric::matrix<alps::numeric::matrix<std::complex<double> > >"
-#    "boost::multi_array<double, 1>" "boost::multi_array<int, 1>" "boost::multi_array<std::complex<double>, 1>" "boost::multi_array<std::string, 1>"
-#    "boost::multi_array<double, 2>" "boost::multi_array<int, 2>" "boost::multi_array<std::complex<double>, 2>" "boost::multi_array<std::string, 2>"
-#    "boost::multi_array<double, 3>" "boost::multi_array<int, 3>" "boost::multi_array<std::complex<double>, 3>" "boost::multi_array<std::string, 3>"
-#    "std::vector<boost::multi_array<double, 2> >" "std::vector<boost::multi_array<double, 3> >" "std::vector<boost::multi_array<double, 4> >"
-#    "std::pair<boost::multi_array<std::complex<double>, 3> *, std::vector<std::size_t> >" "boost::multi_array<std::complex<double>, 1> *"
-#    "alps::multi_array<double, 1>" "alps::multi_array<int, 1>" "alps::multi_array<std::complex<double>, 1>" "alps::multi_array<std::string, 1>"
-#    "alps::multi_array<double, 2>" "alps::multi_array<int, 2>" "alps::multi_array<std::complex<double>, 2>" "alps::multi_array<std::string, 2>"
-#    "alps::multi_array<double, 3>" "alps::multi_array<int, 3>" "alps::multi_array<std::complex<double>, 3>" "alps::multi_array<std::string, 3>"
-#    "std::vector<alps::multi_array<double, 2> >" "std::vector<alps::multi_array<double, 3> >" "std::vector<alps::multi_array<double, 4> >"
-#    "std::pair<alps::multi_array<std::complex<double>, 3> *, std::vector<std::size_t> >" "alps::multi_array<std::complex<double>, 1> *"
-
-
-double, int, unsigned int*/
-//> hdf5Types;
 
 TYPED_TEST_CASE(ScalarTypedTestEncapsulation, hdf5ScalarTypes);
 TYPED_TEST(ScalarTypedTestEncapsulation, TestTypes) {
