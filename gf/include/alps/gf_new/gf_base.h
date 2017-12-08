@@ -105,7 +105,7 @@ namespace alps {
         gf_base(gf_type &&g) : data_(g.data_), meshes_(g.meshes_), empty_(g.empty_) {}
 
         /**
-         * Empty constructor. Create uninitilized GF
+         * Default constructor. Create uninitilized GF
          */
         gf_base() : data_(std::array < size_t, _N >{{0}}), empty_(true) {}
 

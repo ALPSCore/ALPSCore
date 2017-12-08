@@ -3,6 +3,7 @@ include(ALPSEnableTests)
 set (test_srcs
   gf_check_eigen
   gf_new_test
+  gf_new_tail_test
   index_test
   mesh_test
   one_index_gf_test
