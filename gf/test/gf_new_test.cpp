@@ -194,3 +194,21 @@ TEST(GreensFunction, TestMultidimensionalSlices) {
     }
   }
 }
+
+
+TEST(GreensFunction, NegateGF) {
+  alps::gf::matsubara_positive_mesh x(100, 10);
+  alps::gf::index_mesh y(10);
+  greenf<double, alps::gf::matsubara_positive_mesh, alps::gf::index_mesh > g(x, y);
+  for (alps::gf::matsubara_positive_mesh::index_type w(0); w < x.extent(); ++w) {
+    for (alps::gf::index_mesh::index_type i(0); i < y.extent(); ++i) {
+      g(w, i) = 3.0 * i() + w();
+    }
+  }
+  greenf<double, alps::gf::matsubara_positive_mesh, alps::gf::index_mesh > g2 = -g;
+  for (alps::gf::matsubara_positive_mesh::index_type w(0); w < x.extent(); ++w) {
+    for (alps::gf::index_mesh::index_type i(0); i < y.extent(); ++i) {
+      ASSERT_DOUBLE_EQ(g(w, i), -g2(w, i));
+    }
+  }
+}
