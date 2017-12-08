@@ -77,7 +77,7 @@ namespace alps {
         // using the index_sequence we create the proper set of meshes by unrolling tuple into parameter pack with
         // the following template code: "typename std::tuple_element<sizeof...(Ti) - Trim + I, _mesh_types >::type..."
         template <typename S, int Trim, typename... Ti, std::size_t... I>
-        gf_base<S, TensorView < VTYPE, Trim>,
+        gf_base<S, TensorView < S, Trim>,
           typename std::tuple_element<sizeof...(Ti) - Trim + I, _mesh_types >::type...>
         subpack_(S x, const std::tuple<Ti...>& t, index_sequence<I...>) {
           throw std::runtime_error("This function is not intended to be called. The only purpose of this function is to get type declaration.");
