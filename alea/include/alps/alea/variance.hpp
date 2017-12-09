@@ -115,14 +115,19 @@ public:
     /** Number of components of the random vector (e.g., size of mean) */
     size_t size() const { return current_.size(); }
 
-    template <typename S>
-    var_acc &operator<<(const S &obj)
-    {
-        computed_adapter<value_type, S> source(obj);
-        return *this << (const computed<value_type> &) source;
-    }
-
+    /** Add computed vector to the accumulator */
     var_acc &operator<<(const computed<value_type> &source);
+
+    /** Add Eigen vector-valued expression to accumulator */
+    template <typename Derived>
+    var_acc &operator<<(const Eigen::DenseBase<Derived> &o)
+    { return *this << eigen_adapter<T,Derived>(o); }
+
+    /** Add `std::vector` to accumulator */
+    var_acc &operator<<(const std::vector<T> &o) { return *this << vector_adapter<T>(o); }
+
+    /** Add scalar value to accumulator */
+    var_acc &operator<<(T o) { return *this << value_adapter<T>(o); }
 
     /** Returns sample size, i.e., number of accumulated data points */
     size_t count() const { return store_->count(); }

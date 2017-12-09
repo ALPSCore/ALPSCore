@@ -160,7 +160,6 @@ template <typename T, typename Str>
 void var_result<T,Str>::reduce(reducer &r, bool pre_commit, bool post_commit)
 {
     internal::check_valid(*this);
-
     if (pre_commit) {
         store_->convert_to_sum();
         r.reduce(sink<T>(store_->data().data(), store_->data().rows()));
