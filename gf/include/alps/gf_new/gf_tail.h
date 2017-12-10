@@ -13,13 +13,35 @@ namespace alps {
 
     // forward declarations
     namespace detail {
-      template<typename VTYPE, typename Storage, typename Mesh1, typename ...Meshes>
+      template<typename HEADGF, typename TAILGF>
       class gf_tail_base;
+
+#ifdef ALPS_HAVE_MPI
+      template <typename TAILT>
+      void broadcast_tail(const alps::mpi::communicator& comm,
+                          int& min_order, int& max_order,
+                          std::vector<TAILT>& tails,
+                          const TAILT& tail_init,
+                          int root)
+      {
+        using alps::mpi::broadcast;
+        broadcast(comm, min_order, root);
+        broadcast(comm, max_order, root);
+
+        if (min_order==TAIL_NOT_SET) return;
+        if (comm.rank()!=root) {
+          tails.resize(max_order+1, tail_init);
+        }
+        for (int i=min_order; i<=max_order; ++i) {
+          tails[i].broadcast(comm,root);
+        }
+      }
+#endif
     }
-    template<typename VTYPE, typename ...Meshes>
-    using gf_tail      = detail::gf_tail_base<VTYPE, detail::Tensor<VTYPE, sizeof...(Meshes)>, Meshes...>;
-    template<typename VTYPE, typename ...Meshes>
-    using gf_tail_view = detail::gf_tail_base<VTYPE, detail::TensorView<VTYPE, sizeof...(Meshes)>, Meshes...>;
+    template<typename HEADGF, typename TAILGF>
+    using gf_tail      = detail::gf_tail_base<HEADGF, TAILGF>;
+//    template<typename VTYPE, typename ...Meshes>
+//    using gf_tail_view = detail::gf_tail_base<VTYPE, detail::TensorView<VTYPE, sizeof...(Meshes)>, Meshes...>;
 
     namespace detail {
       /**
@@ -30,16 +52,19 @@ namespace alps {
        *
        * @author iskakoff
        */
-      template<typename VTYPE, typename Storage, typename Mesh1, typename ...Meshes>
-      class gf_tail_base : public gf_base < VTYPE, Storage, Mesh1, Meshes... > {
-        using gf_base < VTYPE, Storage, Mesh1, Meshes... >::meshes;
+      template<typename HEADGF, typename TAILGF>
+      class gf_tail_base : public HEADGF {
+        using HEADGF::meshes;
       public:
-        /// green's function type
-        typedef gf_base < VTYPE, Storage, Mesh1, Meshes... > gf_type;
-        /// tail type
-        typedef gf_base < VTYPE, detail::Tensor<VTYPE, sizeof...(Meshes)>, Meshes... > tail_type;
+        using Storage = typename HEADGF::storage_type;
+        using VTYPE = typename HEADGF::value_type;
+        using mesh_tuple = typename HEADGF::_mesh_types;
+//        /// green's function type
+        typedef HEADGF gf_type;
+//        /// tail type
+        typedef TAILGF tail_type;
         /// type of the current GF object
-        typedef gf_tail_base< VTYPE, Storage, Mesh1, Meshes... > gf_type_with_tail;
+        typedef gf_tail_base< HEADGF, TAILGF > gf_type_with_tail;
       private:
         std::vector<tail_type> tails_;
         int min_tail_order_;
@@ -73,6 +98,16 @@ namespace alps {
           return tails_;
         }
 
+        bool operator==(const gf_tail_base<HEADGF, TAILGF> &rhs) const {
+          bool tail_eq = (min_tail_order_ == rhs.min_tail_order_) && (max_tail_order_ == rhs.max_tail_order_);
+          if(min_tail_order_!=TAIL_NOT_SET) {
+            for (int i = min_tail_order_; i <= max_tail_order_; ++i) {
+              tail_eq &= (tails_[i] == rhs.tails_[i]);
+            }
+          }
+          return tail_eq && HEADGF::operator==(HEADGF(rhs));
+        }
+
         /**
          * Set new tail of high-frequency order = %order%
          * @param order - tail order
@@ -80,8 +115,7 @@ namespace alps {
          * @return      - return current GF with new tail of order %order% set
          */
         gf_type_with_tail& set_tail(int order, const tail_type &tail){
-          if(this->mesh2()!=tail.mesh1())
-            throw std::runtime_error("invalid mesh type in tail assignment");
+          static_assert(std::is_same<typename tail_type::_mesh_types, decltype(subtuple<1>(HEADGF::meshes())) >::value, "Incorrect tail mesh types" );
 
           int tail_size=tails_.size();
           if(order>=tail_size){
@@ -95,6 +129,67 @@ namespace alps {
           if(max_tail_order_==TAIL_NOT_SET || max_tail_order_<=order) max_tail_order_=order;
           return *this;
         }
+
+        /// Save the GF with tail to HDF5
+        void save(alps::hdf5::archive& ar, const std::string& path) const
+        {
+          gf_type::save(ar,path);
+          ar[path+"/tail/descriptor"]="INFINITY_TAIL";
+          ar[path+"/tail/min_tail_order"]=min_tail_order_;
+          ar[path+"/tail/max_tail_order"]=max_tail_order_;
+          if(min_tail_order_==TAIL_NOT_SET) return;
+          for (int i=min_tail_order_; i<=max_tail_order_; ++i) {
+            ar[path+"/tail/"+boost::lexical_cast<std::string>(i)] << tails_[i].data().data().data();
+          }
+        }
+
+        /// Load the GF with tail from HDF5
+        void load(alps::hdf5::archive& ar, const std::string& path)
+        {
+          gf_type::load(ar,path);
+          std::string descr; ar[path+"/tail/descriptor"] >> descr;
+          if (descr!="INFINITY_TAIL") throw std::runtime_error("Wrong tail format '"+descr+"', expected INFINITY_TAIL");
+
+          // FIXME!FIXME! Rewrite using clone-swap for exception safety.
+          ar[path+"/tail/min_tail_order"] >> min_tail_order_;
+          ar[path+"/tail/max_tail_order"] >> max_tail_order_;
+
+          tails_.clear();
+          if(min_tail_order_==TAIL_NOT_SET) return;
+
+          if(min_tail_order_>0) tails_.resize(min_tail_order_, tail_type ( subtuple<1>(meshes())));
+
+          std::vector<typename TAILGF::value_type> buffer;
+          for (int i=min_tail_order_; i<=max_tail_order_; ++i) {
+            ar[path+"/tail/"+boost::lexical_cast<std::string>(i)] >> buffer;
+            tails_.push_back(tail_type(buffer.data(), subtuple<1>(meshes())));
+          }
+        }
+
+        /// Save the GF to HDF5
+        void save(alps::hdf5::archive& ar) const
+        {
+          save(ar, ar.get_context());
+        }
+
+        /// Load the GF from HDF5
+        void load(alps::hdf5::archive& ar)
+        {
+          load(ar, ar.get_context());
+        }
+
+#ifdef ALPS_HAVE_MPI
+        /// Broadcast the tail and the GF
+        void broadcast(const alps::mpi::communicator& comm, int root)
+        {
+          // FIXME: use clone-swap?
+          gf_type::broadcast(comm,root);
+          detail::broadcast_tail(comm,
+                                 min_tail_order_, max_tail_order_,
+                                 tails_, tail_type(subtuple<1>(meshes())),
+                                 root);
+        }
+#endif
       };
     }
   }
