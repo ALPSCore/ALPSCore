@@ -50,6 +50,15 @@ namespace alps {
        */
       template<class VTYPE, class Storage, class ...MESHES>
       class gf_base {
+      public:
+        // Current GF types
+        /// Value type
+        using value_type   = VTYPE;
+        /// Storage type
+        using storage_type = Storage;
+        /// mesh types tuple
+        using _mesh_types = std::tuple < MESHES... >;
+
       private:
         /// GF version
         static const int minor_version = 1;
@@ -62,8 +71,6 @@ namespace alps {
         std::tuple < MESHES... > meshes_;
         /// unitialized state flag
         bool empty_;
-        /// mesh types tuple
-        using _mesh_types = std::tuple < MESHES... >;
         /// current GF type
         using gf_type   = gf_base < VTYPE, Storage, MESHES... >;
         /// storage types
@@ -116,6 +123,8 @@ namespace alps {
         gf_base(MESHES...meshes) : gf_base(std::forward_as_tuple(meshes...)) {}
         /// tuple version of the previous function
         gf_base(const _mesh_types &meshes) : data_(get_sizes(meshes)), meshes_(meshes), empty_(false) {}
+        ///
+        gf_base(VTYPE* data, const _mesh_types &meshes) : data_(data, get_sizes(meshes)), meshes_(meshes), empty_(false) {}
 
         /// construct new GF object by copy data from another GF object defined with different storage type
         template<typename St, typename = std::enable_if<!std::is_same<St, Storage>::value && std::is_same<St, data_view>::value > >
@@ -350,6 +359,13 @@ namespace alps {
         typename std::enable_if < std::is_same < RHS_GF, generic_gf<data_storage> >::value || std::is_same < RHS_GF, generic_gf<data_view> >::value, bool >::type
         operator==(const RHS_GF &rhs) const {
           return (empty_ && rhs.is_empty()) || (data_.sizes() == rhs.data().sizes() && data_.data() == rhs.data().data() );
+        }
+
+        /*
+         *
+         */
+        double norm() const {
+          return *std::max_element(&data_.data().data(0), data_.data().size() + &data_.data().data(0), [](VTYPE a, VTYPE b) {return std::abs(a) < std::abs(b);} );
         }
 
         /**

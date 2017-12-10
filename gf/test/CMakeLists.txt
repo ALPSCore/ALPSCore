@@ -32,7 +32,8 @@ set (mpi_test_srcs
     four_index_gf_test_mismatched-tail_mpi
     multiarray_bcast_mpi 
     mesh_test_mpi
-    gf_new_test_mpi)
+    gf_new_test_mpi
+    gf_new_tail_test_mpi)
 
 if (ALPS_HAVE_MPI) 
     foreach(test ${mpi_test_srcs})
