@@ -12,18 +12,27 @@
 #include <alps/type_traits/average_type.hpp>
 #include <alps/type_traits/element_type.hpp>
 #include <alps/type_traits/is_sequence.hpp>
-#include <boost/numeric/ublas/matrix.hpp>
 #include <boost/mpl/if.hpp>
 
 
 namespace alps {
 
+    namespace detail {
+        template <typename T>
+        struct matrix_covariance_type {
+            matrix_covariance_type() {
+                throw std::logic_error("Matrix covariance type is not implemented."
+                                       " Use ALEA if you need covariance between vectors!");
+            }
+        };
+    }
+    
 template <class T>
 struct covariance_type
 {
  typedef typename boost::mpl::if_<
      is_sequence<T>,
-     typename boost::numeric::ublas::matrix<
+     detail::matrix_covariance_type<
        typename average_type<typename element_type<T>::type>::type
      >,
      typename average_type<T>::type
