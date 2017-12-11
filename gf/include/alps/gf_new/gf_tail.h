@@ -56,12 +56,14 @@ namespace alps {
       class gf_tail_base : public HEADGF {
         using HEADGF::meshes;
       public:
+        /// GF storage type
         using Storage = typename HEADGF::storage_type;
+        /// GF value type
         using VTYPE = typename HEADGF::value_type;
         using mesh_tuple = typename HEADGF::_mesh_types;
-//        /// green's function type
+        /// green's function type
         typedef HEADGF gf_type;
-//        /// tail type
+        /// tail type
         typedef TAILGF tail_type;
         /// type of the current GF object
         typedef gf_tail_base< HEADGF, TAILGF > gf_type_with_tail;
@@ -98,14 +100,23 @@ namespace alps {
           return tails_;
         }
 
-        bool operator==(const gf_tail_base<HEADGF, TAILGF> &rhs) const {
+        /**
+         * Check for equality. Two GF with tails defined on the same meshes are the same if:
+         * 1. They both have the same tail or they both do not have tail.
+         * 2. The 'head' Green's functions are equal to each other.
+         *
+         *
+         * @param rhs - GF to compare with
+         * @return
+         */
+        bool operator==(const gf_type_with_tail &rhs) const {
           bool tail_eq = (min_tail_order_ == rhs.min_tail_order_) && (max_tail_order_ == rhs.max_tail_order_);
           if(min_tail_order_!=TAIL_NOT_SET) {
             for (int i = min_tail_order_; i <= max_tail_order_; ++i) {
               tail_eq &= (tails_[i] == rhs.tails_[i]);
             }
           }
-          return tail_eq && HEADGF::operator==(HEADGF(rhs));
+          return tail_eq && HEADGF::operator==(static_cast<HEADGF>(rhs));
         }
 
         /**
