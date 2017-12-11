@@ -365,7 +365,7 @@ namespace alps {
          *
          */
         double norm() const {
-          return *std::max_element(&data_.data().data(0), data_.data().size() + &data_.data().data(0), [](VTYPE a, VTYPE b) {return std::abs(a) < std::abs(b);} );
+          return std::abs(*std::max_element(&data_.data().data(0), data_.data().size() + &data_.data().data(0), [](VTYPE a, VTYPE b) {return std::abs(a) < std::abs(b);} ) );
         }
 
         /**
