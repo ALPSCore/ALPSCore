@@ -160,7 +160,7 @@ public:
     column<var_type> tau() const;
 
     /** Collect measurements from different instances using sum-reducer */
-    void reduce(reducer &r) { reduce(r, true, true); }
+    void reduce(const reducer &r) { reduce(r, true, true); }
 
     /** Convert result to a permanent format (write to disk etc.) */
     void serialize(serializer &);
@@ -176,7 +176,7 @@ public:
     level_result_type &level(size_t i) { return level_[i]; }
 
 protected:
-    void reduce(reducer &r, bool do_pre_commit, bool do_post_commit);
+    void reduce(const reducer &r, bool do_pre_commit, bool do_post_commit);
 
 private:
     const static size_t default_min_samples = 256;

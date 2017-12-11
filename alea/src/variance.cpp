@@ -157,7 +157,7 @@ column<typename var_result<T,Str>::var_type> var_result<T,Str>::stderror() const
 }
 
 template <typename T, typename Str>
-void var_result<T,Str>::reduce(reducer &r, bool pre_commit, bool post_commit)
+void var_result<T,Str>::reduce(const reducer &r, bool pre_commit, bool post_commit)
 {
     internal::check_valid(*this);
     if (pre_commit) {

@@ -190,7 +190,7 @@ column<typename bind<Str,T>::cov_type> batch_result<T>::cov() const
 }
 
 template <typename T>
-void batch_result<T>::reduce(reducer &r, bool pre_commit, bool post_commit)
+void batch_result<T>::reduce(const reducer &r, bool pre_commit, bool post_commit)
 {
     // FIXME this is bad since it mixes bins
     internal::check_valid(*this);

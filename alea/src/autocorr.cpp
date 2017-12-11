@@ -139,7 +139,7 @@ column<typename autocorr_result<T>::var_type> autocorr_result<T>::tau() const
 }
 
 template <typename T>
-void autocorr_result<T>::reduce(reducer &r, bool pre_commit, bool post_commit)
+void autocorr_result<T>::reduce(const reducer &r, bool pre_commit, bool post_commit)
 {
     internal::check_valid(*this);
 

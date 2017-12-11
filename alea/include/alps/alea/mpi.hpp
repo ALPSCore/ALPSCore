@@ -55,11 +55,11 @@ struct mpi_reducer
         return mpi_setup;
     }
 
-    void reduce(sink<double> data) { inplace_reduce(data); }
+    void reduce(sink<double> data) const { inplace_reduce(data); }
 
-    void reduce(sink<long> data) { inplace_reduce(data); }
+    void reduce(sink<long> data) const { inplace_reduce(data); }
 
-    void commit() { }
+    void commit() const { }
 
     const mpi::communicator &comm() const { return comm_; }
 
@@ -69,7 +69,7 @@ struct mpi_reducer
 
 protected:
     template <typename T>
-    void inplace_reduce(sink<T> data)
+    void inplace_reduce(sink<T> data) const
     {
         // NO-OP in the case of empty data (strange though)
         if (data.size() == 0)

@@ -106,7 +106,7 @@ mean_result<T> &mean_result<T>::operator=(const mean_result &other)
 }
 
 template <typename T>
-void mean_result<T>::reduce(reducer &r, bool pre_commit, bool post_commit)
+void mean_result<T>::reduce(const reducer &r, bool pre_commit, bool post_commit)
 {
     internal::check_valid(*this);
     if (pre_commit) {

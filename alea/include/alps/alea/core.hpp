@@ -218,26 +218,26 @@ struct reducer
     virtual reducer_setup get_setup() const = 0;
 
     /** Reduce double data-set into `data` */
-    virtual void reduce(sink<double> data) = 0;
+    virtual void reduce(sink<double> data) const = 0;
 
     /** Reduce long data-set into `data` */
-    virtual void reduce(sink<long> data) = 0;
+    virtual void reduce(sink<long> data) const = 0;
 
     /** Finish reduction of all data if deferred */
-    virtual void commit() = 0;
+    virtual void commit() const = 0;
 
     /** Destructor */
     virtual ~reducer() { }
 
     // Convenience functions
 
-    void reduce(sink<std::complex<double> > data) {
+    void reduce(sink<std::complex<double> > data) const {
         reduce(sink<double>((double *)data.data(), 2 * data.size()));
     }
-    void reduce(sink<complex_op<double> > data) {
+    void reduce(sink<complex_op<double> > data) const {
         reduce(sink<double>((double *)data.data(), 4 * data.size()));
     }
-    void reduce(sink<unsigned long> data) {
+    void reduce(sink<unsigned long> data) const {
         reduce(sink<long>((long *)data.data(), data.size()));
     }
 };
