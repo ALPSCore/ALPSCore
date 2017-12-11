@@ -361,10 +361,14 @@ namespace alps {
           return (empty_ && rhs.is_empty()) || (data_.sizes() == rhs.data().sizes() && data_.data() == rhs.data().data() );
         }
 
-        /*
+        /**
          *
+         * FIXME: It is a very strange definition of norm
+         *
+         * @return norm of the Green's function
          */
         double norm() const {
+          throw_if_empty();
           return std::abs(*std::max_element(&data_.data().data(0), data_.data().size() + &data_.data().data(0), [](VTYPE a, VTYPE b) {return std::abs(a) < std::abs(b);} ) );
         }
 

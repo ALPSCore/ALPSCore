@@ -45,8 +45,18 @@ TEST_F(GreensFunctionTailTest, AssignTest){
   typedef g::greenf<double, alps::gf::matsubara_positive_mesh, alps::gf::index_mesh, alps::gf::itime_mesh> head;
   typedef g::greenf<double, alps::gf::index_mesh, alps::gf::itime_mesh> tail;
   g::greenf<double, alps::gf::matsubara_positive_mesh, alps::gf::index_mesh, alps::gf::itime_mesh> g(x,y,z);
+  g(alps::gf::matsubara_positive_mesh::index_type(0), alps::gf::index_mesh::index_type(0), alps::gf::itime_mesh::index_type(0)) = 10.0;
   g::gf_tail<head, tail> g2(g);
+  g::gf_tail<head, tail> g3(g);
   ASSERT_EQ(g.data(), g2.data());
+  ASSERT_EQ(g2, g3);
+  tail t1(y,z);
+  tail t2(y,z);
+  t1(alps::gf::index_mesh::index_type(0), alps::gf::itime_mesh::index_type(3)) = 1.0;
+  t2(alps::gf::index_mesh::index_type(0), alps::gf::itime_mesh::index_type(3)) = 1.0;
+  g2.set_tail(0, t1);
+  g3.set_tail(0, t2);
+  ASSERT_EQ(g2, g3);
 }
 
 TEST_F(GreensFunctionTailTest, SetTail){

@@ -289,8 +289,7 @@ namespace alps {
           void broadcast(const alps::mpi::communicator& comm, int root)
             {
                 using alps::mpi::broadcast;
-                int wrank=alps::mpi::communicator().rank();
-                if(wrank == root) throw_if_empty();
+                if(comm.rank() == root) throw_if_empty();
                 // FIXME: introduce (debug-only?) consistency check, like type checking? akin to load()?
                 broadcast(comm, beta_, root);
                 broadcast(comm, nfreq_, root);
@@ -307,6 +306,7 @@ namespace alps {
                 try {
                     check_range();
                 } catch (const std::exception& exc) {
+                    int wrank=alps::mpi::communicator().rank();
                     // FIXME? Try to communiucate the error with all ranks, at least in debug mode?
                     std::cerr << "matsubara_mesh<>::broadcast() exception at WORLD rank=" << wrank << std::endl
                               << exc.what()
@@ -449,7 +449,7 @@ namespace alps {
           void broadcast(const alps::mpi::communicator& comm, int root)
             {
                 using alps::mpi::broadcast;
-                if(alps::mpi::communicator().rank() == root) throw_if_empty();
+                if(comm.rank() == root) throw_if_empty();
                 // FIXME: introduce (debug-only?) consistency check, like type checking? akin to load()?
                 broadcast(comm, beta_, root);
                 broadcast(comm, ntau_, root);
@@ -588,7 +588,7 @@ namespace alps {
           void broadcast(const alps::mpi::communicator& comm, int root)
             {
                 using alps::mpi::broadcast;
-                if(alps::mpi::communicator().rank() == root) throw_if_empty();
+                if(comm.rank() == root) throw_if_empty();
                 // FIXME: introduce (debug-only?) consistency check, like type checking? akin to load()?
                 broadcast(comm, beta_, root);
                 broadcast(comm, ntau_, root);
@@ -729,7 +729,7 @@ namespace alps {
                 // FIXME: introduce (debug-only?) consistency check, like type checking? akin to load()?
                 std::array<size_t, 2> sizes{{points_.shape()[0], points_.shape()[1]}};
                 alps::mpi::broadcast(comm, &sizes[0], 2, root);
-                if (comm.rank()!=root) points_.resize(boost::extents[sizes[0]][sizes[1]]);
+                if (comm.rank()!=root) points_.resize(sizes);
                 detail::broadcast(comm, points_, root);
                 broadcast(comm, kind_, root);
             }
@@ -853,7 +853,7 @@ namespace alps {
           void broadcast(const alps::mpi::communicator& comm, int root)
             {
                 using alps::mpi::broadcast;
-                if(alps::mpi::communicator().rank() == root) throw_if_empty();
+                if(comm.rank() == root) throw_if_empty();
                 broadcast(comm, npoints_, root);
                 compute_points();
             }
@@ -967,7 +967,7 @@ namespace alps {
             void broadcast(const alps::mpi::communicator& comm, int root)
             {
                 using alps::mpi::broadcast;
-                if(alps::mpi::communicator().rank() == root) throw_if_empty();
+                if(comm.rank() == root) throw_if_empty();
                 broadcast(comm, beta_, root);
                 broadcast(comm, n_max_, root);
                 {
