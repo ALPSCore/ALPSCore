@@ -10,11 +10,14 @@
 #include <vector>
 #include <string>
 #include <stdexcept>
-#include <boost/mpl/vector/vector10.hpp>
+#include <boost/mpl/list/list10.hpp>
 #include <boost/mpl/transform.hpp>
 #include <boost/mpl/front_inserter.hpp>
+#include <boost/mpl/push_front.hpp>
 #include <boost/mpl/copy.hpp>
 #include <boost/mpl/contains.hpp>
+
+
 
 // forward declarations
 namespace alps{ namespace hdf5 {
@@ -38,7 +41,7 @@ namespace alps {
             inline S& operator<<(S&, const None&) { throw std::logic_error("Generic streaming operator of None should never be called"); }
 
             // List of allowed basic scalar types:
-            typedef mpl::vector8<bool,
+            typedef mpl::list8<bool,
                                  int,
                                  unsigned int,
                                  long int,
