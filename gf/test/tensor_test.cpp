@@ -1,23 +1,25 @@
-//
-// Created by iskakoff on 26/10/17.
-//
+/*
+ * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * All rights reserved. Use is subject to license terms. See LICENSE.TXT
+ * For use in publications, see ACKNOWLEDGE.TXT
+ */
 
 #include <gtest/gtest.h>
 #include <complex>
 
-#include "alps/gf_new/tensors/TensorBase.h"
+#include "alps/gf_new/tensors/tensor_base.h"
 
 using namespace alps::gf::detail;
 
 
 TEST(TensorTest, StoragesComparison) {
   size_t N = 100;
-  DataStorage<double> s(N);
-  DataView<double> v(s);
+  data_storage<double> s(N);
+  data_view<double> v(s);
   // copy constructed
-  DataView<double> v1(v);
+  data_view<double> v1(v);
   // duplicated
-  DataView<double> v2(s);
+  data_view<double> v2(s);
   for(int i=0; i<N; ++i) {
     s.data(i) = i;
   }
@@ -36,19 +38,19 @@ TEST(TensorTest, StoragesComparison) {
 
 
 TEST(TensorTest, TestInitialization) {
-  Tensor<std::complex<double>, 3> X(std::array<size_t, 3>{{1,2,3}});
+  tensor<std::complex<double>, 3> X(std::array<size_t, 3>{{1,2,3}});
   ASSERT_EQ(X.size(), 1*2*3);
-  Tensor<double, 1> U( 50 );
+  tensor<double, 1> U( 50 );
   ASSERT_EQ(U.size(), 50);
 }
 
 TEST(TensorTest, TestAssignments) {
-  Tensor<std::complex<double>, 3> X(std::array<size_t, 3>{{1,2,3}});
+  tensor<std::complex<double>, 3> X(std::array<size_t, 3>{{1,2,3}});
   X( 0,0,0 ) = 10.0;
   ASSERT_DOUBLE_EQ(X(0,0,0).real(), 10.0);
   ASSERT_DOUBLE_EQ(X(0,0,0).imag(), 0.0);
 
-  Tensor<double, 1> U(50);
+  tensor<double, 1> U(50);
   U(3) = 555.0;
   ASSERT_DOUBLE_EQ(U(3), 555.0);
   ASSERT_DOUBLE_EQ(U(0), 0.0);
@@ -56,15 +58,15 @@ TEST(TensorTest, TestAssignments) {
 
 
 TEST(TensorTest, TestSlices) {
-  Tensor<std::complex<double>, 3> X(std::array<size_t, 3>{{1,2,3}});
+  tensor<std::complex<double>, 3> X(std::array<size_t, 3>{{1,2,3}});
 
-  TensorView<std::complex<double>, 1> slice1 = X(0, 1);
+  tensor_view<std::complex<double>, 1> slice1 = X(0, 1);
   ASSERT_EQ(slice1.dimension(), 1);
 
   ASSERT_EQ(slice1.sizes()[0], 3);
 
   for (int i = 0; i<X.sizes()[0]; ++i) {
-    TensorView<std::complex<double>, 2> slice2 = X(i);
+    tensor_view<std::complex<double>, 2> slice2 = X(i);
     ASSERT_EQ(X.index(std::integral_constant<int, 0>(), i), 6*i);
     ASSERT_EQ(slice2.dimension(), 2);
     ASSERT_EQ(slice2.sizes()[0], 2);
@@ -82,11 +84,11 @@ TEST(TensorTest, TestSlices) {
 
 
 TEST(TensorTest, TestSubSlices) {
-  Tensor<double, 4> X({{3,4,5,6}});
+  tensor<double, 4> X({{3,4,5,6}});
   for (int i = 0; i<X.sizes()[0]; ++i) {
-    TensorView<double, 3> Y = X(i);
+    tensor_view<double, 3> Y = X(i);
     for (int j = 0; j < X.sizes()[1]; ++j) {
-      TensorView<double, 2> Z = Y (j);
+      tensor_view<double, 2> Z = Y (j);
       ASSERT_EQ(Z.data().offset(), (i*X.sizes()[1]+ j)*X.sizes()[2]*X.sizes()[3]);
       std::vector<double> XX(X.sizes()[2]*X.sizes()[3], 0.0);
       for (int k = 0; k < X.sizes()[2]; ++k) {
@@ -109,7 +111,7 @@ TEST(TensorTest, TestSubSlices) {
 }
 
 TEST(TensorTest, TestMultByScalar) {
-  Tensor<double, 2> XX({{3, 4}});
+  tensor<double, 2> XX({{3, 4}});
   for (int i = 0; i < XX.sizes()[0]; ++i) {
     for (int j = 0; j < XX.sizes()[1]; ++j) {
       double value = i * XX.sizes()[0] + j;
@@ -117,7 +119,7 @@ TEST(TensorTest, TestMultByScalar) {
     }
   }
   double mult = 12;
-  Tensor<double, 2> X = XX * mult;
+  tensor<double, 2> X = XX * mult;
   for (int i = 0; i < XX.sizes()[0]; ++i) {
     for (int j = 0; j < XX.sizes()[1]; ++j) {
       double value = i * XX.sizes()[0] + j;
@@ -139,8 +141,8 @@ TEST(TensorTest, TestMultByScalar) {
 TEST(TensorTest, RemoteDataRef) {
   size_t n = 256;
   std::vector<double> X(n, 0.0);
-  TensorView<double, 1> Y(X.data(), {{X.size()}});
-  TensorView<double, 2> Z(X.data(), {{16, 16}});
+  tensor_view<double, 1> Y(X.data(), {{X.size()}});
+  tensor_view<double, 2> Z(X.data(), {{16, 16}});
   for(int i = 0; i< X.size(); ++i) {
     X[i] = i*0.5;
   }
@@ -148,7 +150,7 @@ TEST(TensorTest, RemoteDataRef) {
     ASSERT_DOUBLE_EQ(X[i], Y(i));
   }
   for(int i = 0; i<Z.sizes()[0]; ++i) {
-    TensorView<double, 1> W = Z(i);
+    tensor_view<double, 1> W = Z(i);
     for (int j = 0; j < Z.sizes()[1]; ++j) {
       W(j) += 10;
       ASSERT_DOUBLE_EQ(X[i*Z.sizes()[1] + j], Z(i, j));
@@ -164,7 +166,7 @@ TEST(TensorTest, Inversion) {
 
   M(0, n - 1) = 1.0;
   M(n - 1, 0) = -1.0;
-  Tensor<double, 2> X({{n, n}});
+  tensor<double, 2> X({{n, n}});
   for(int i = 0; i< n; ++i){
     for (int j = 0; j < n; ++j) {
       X(i, j) = M(i, j);
@@ -177,13 +179,13 @@ TEST(TensorTest, Inversion) {
       ASSERT_DOUBLE_EQ(X(i, j), M(i, j));
     }
   }
-  Tensor<double, 2> Z = X.dot(X.inverse());
+  tensor<double, 2> Z = X.dot(X.inverse());
   for(int i = 0; i< n; ++i){
     for (int j = 0; j < n; ++j) {
       ASSERT_DOUBLE_EQ(Z(i, j), i==j? 1.0 : 0.0);
     }
   }
-  Tensor<double, 2> Y = X.inverse();
+  tensor<double, 2> Y = X.inverse();
   ASSERT_DOUBLE_EQ(Y(n-1, 0), -1.0);
   ASSERT_DOUBLE_EQ(Y(0, n-1), 1.0);
 }
@@ -191,7 +193,7 @@ TEST(TensorTest, Inversion) {
 TEST(TensorTest, SliceInversion) {
   size_t N = 40;
   size_t K = 10;
-  Tensor<double, 3> X({{K, N, N}});
+  tensor<double, 3> X({{K, N, N}});
 
   for(int k = 0; k < K; ++k) {
     Eigen::MatrixXd M(N,N);
@@ -199,7 +201,7 @@ TEST(TensorTest, SliceInversion) {
     M *= (k+1);
     M(0, N - 1) = 1.0;
     M(N - 1, 0) = -1.0;
-    Tensor<double, 2> Z = X(k);
+    tensor<double, 2> Z = X(k);
     for(int i = 0; i< N; ++i){
       for (int j = 0; j < N; ++j) {
         Z(i, j) = M(i, j);
@@ -219,8 +221,8 @@ TEST(TensorTest, BasicArithmetics) {
   size_t N = 10;
   Eigen::MatrixXd M1 = Eigen::MatrixXd::Random(N, N);
   Eigen::MatrixXd M2 = Eigen::MatrixXd::Random(N, N);
-  Tensor<double, 2> X({{N, N}});
-  Tensor<double, 2> Z({{N, N}});
+  tensor<double, 2> X({{N, N}});
+  tensor<double, 2> Z({{N, N}});
   for(int i = 0; i< N; ++i) {
     for (int j = 0; j < N; ++j) {
       X(i,j) = M1(i,j);
@@ -244,13 +246,13 @@ TEST(TensorTest, BasicArithmetics) {
 
 TEST(TensorTest, BasicArithmeticsView) {
   size_t N = 10;
-  Tensor<double, 3> W({{N,N,N}});
+  tensor<double, 3> W({{N,N,N}});
   W *= 0.0;
   for (int k = 0; k < N; ++k) {
     Eigen::MatrixXd M1 = Eigen::MatrixXd::Random(N, N);
     Eigen::MatrixXd M2 = Eigen::MatrixXd::Random(N, N);
-    TensorView<double, 2> X = W(k);
-    Tensor<double, 2> Z({{N, N}});
+    tensor_view<double, 2> X = W(k);
+    tensor<double, 2> Z({{N, N}});
     for (int i = 0; i < N; ++i) {
       for (int j = 0; j < N; ++j) {
         X(i, j) = M1(i, j);
@@ -258,7 +260,7 @@ TEST(TensorTest, BasicArithmeticsView) {
       }
     }
     auto M3 = M1 + M2;
-    Tensor<double, 2> Y = X + Z;
+    tensor<double, 2> Y = X + Z;
     for (int i = 0; i < N; ++i) {
       for (int j = 0; j < N; ++j) {
         ASSERT_DOUBLE_EQ(Y(i, j), M3(i, j));
@@ -279,7 +281,7 @@ TEST(TensorTest, DoubleScaleByComplex) {
   size_t N = 10;
   Eigen::MatrixXd M1 = Eigen::MatrixXd::Random(N, N);
   std::complex<double> x = 5.0;
-  Tensor<double, 2> X({{N, N}});
+  tensor<double, 2> X({{N, N}});
   for(int i = 0; i< N; ++i) {
     for (int j = 0; j < N; ++j) {
       X(i,j) = M1(i,j);
@@ -299,7 +301,7 @@ TEST(TensorTest, DoubleScaleByComplexView) {
   size_t N = 10;
   size_t M = 10;
   std::complex<double> x = 5.0;
-  Tensor<double, 3> Z({{M, N, N}});
+  tensor<double, 3> Z({{M, N, N}});
   for(int k = 0; k< M; ++k) {
     Eigen::MatrixXd M1 = Eigen::MatrixXd::Random(N, N);
     auto X =  Z(k);
@@ -324,8 +326,8 @@ TEST(TensorTest, DoublePlusComplex) {
   size_t N = 10;
   Eigen::MatrixXd M1 = Eigen::MatrixXd::Random(N, N);
   Eigen::MatrixXcd M2 = Eigen::MatrixXcd::Random(N, N);
-  Tensor<double, 2> X({{N, N}});
-  Tensor<std::complex<double>, 2> Z({{N, N}});
+  tensor<double, 2> X({{N, N}});
+  tensor<std::complex<double>, 2> Z({{N, N}});
   for(int i = 0; i< N; ++i) {
     for (int j = 0; j < N; ++j) {
       X(i,j) = M1(i,j);
