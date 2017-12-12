@@ -1,11 +1,13 @@
-//
-// Created by iskakoff on 08/12/17.
-//
+/*
+ * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * All rights reserved. Use is subject to license terms. See LICENSE.TXT
+ * For use in publications, see ACKNOWLEDGE.TXT
+ */
 
 #ifndef ALPSCORE_GF_TAIL_H
 #define ALPSCORE_GF_TAIL_H
 
-#include "gf_base.h"
+#include <alps/gf_new/gf_base.h>
 
 namespace alps {
   namespace gf {
@@ -41,7 +43,7 @@ namespace alps {
     template<typename HEADGF, typename TAILGF>
     using gf_tail      = detail::gf_tail_base<HEADGF, TAILGF>;
 //    template<typename VTYPE, typename ...Meshes>
-//    using gf_tail_view = detail::gf_tail_base<VTYPE, detail::TensorView<VTYPE, sizeof...(Meshes)>, Meshes...>;
+//    using gf_tail_view = detail::gf_tail_base<VTYPE, detail::tensor_view<VTYPE, sizeof...(Meshes)>, Meshes...>;
 
     namespace detail {
       /**
@@ -54,13 +56,15 @@ namespace alps {
        */
       template<typename HEADGF, typename TAILGF>
       class gf_tail_base : public HEADGF {
+        // parent class method using
         using HEADGF::meshes;
       public:
+        // types definition
         /// GF storage type
         using Storage = typename HEADGF::storage_type;
         /// GF value type
         using VTYPE = typename HEADGF::value_type;
-        using mesh_tuple = typename HEADGF::_mesh_types;
+        using mesh_tuple = typename HEADGF::mesh_types;
         /// green's function type
         typedef HEADGF gf_type;
         /// tail type
@@ -68,6 +72,7 @@ namespace alps {
         /// type of the current GF object
         typedef gf_tail_base< HEADGF, TAILGF > gf_type_with_tail;
       private:
+        // fields definition
         std::vector<tail_type> tails_;
         int min_tail_order_;
         int max_tail_order_;
@@ -126,7 +131,7 @@ namespace alps {
          * @return      - return current GF with new tail of order %order% set
          */
         gf_type_with_tail& set_tail(int order, const tail_type &tail){
-          static_assert(std::is_same<typename tail_type::_mesh_types, decltype(subtuple<1>(HEADGF::meshes())) >::value, "Incorrect tail mesh types" );
+          static_assert(std::is_same<typename tail_type::mesh_types, decltype(subtuple<1>(HEADGF::meshes())) >::value, "Incorrect tail mesh types" );
 
           int tail_size=tails_.size();
           if(order>=tail_size){

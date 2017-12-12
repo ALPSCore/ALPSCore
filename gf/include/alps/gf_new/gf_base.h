@@ -1,6 +1,8 @@
-//
-// Created by iskakoff on 08/10/17.
-//
+/*
+ * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * All rights reserved. Use is subject to license terms. See LICENSE.TXT
+ * For use in publications, see ACKNOWLEDGE.TXT
+ */
 
 #ifndef GREENSFUNCTIONS_GF_H
 #define GREENSFUNCTIONS_GF_H
@@ -17,15 +19,15 @@
 #include <alps/utilities/mpi.hpp>
 #endif
 
-#include "tensors/TensorBase.h"
-#include "type_traits.h"
+#include <alps/gf_new/tensors/tensor_base.h>
+#include <alps/gf_new/type_traits.h>
 
 
 namespace alps {
   namespace gf {
     namespace detail {
       /**
-       * Definition of base GF
+       * Definition of base GF container
        */
       template<class VTYPE, class Storage, class ...MESHES>
       class gf_base;
@@ -35,21 +37,20 @@ namespace alps {
      * Definition of regular GF with dedicated storage
      */
     template<class VTYPE, class ...MESHES>
-    using greenf = detail::gf_base<VTYPE, detail::Tensor<VTYPE, sizeof...(MESHES)>, MESHES...>;
+    using greenf = detail::gf_base<VTYPE, detail::tensor<VTYPE, sizeof...(MESHES)>, MESHES...>;
     /**
      * Definition of GF as view of existent data array
      */
     template<class VTYPE, class ...MESHES>
-    using greenf_view = detail::gf_base<VTYPE, detail::TensorView<VTYPE, sizeof...(MESHES)>, MESHES...>;
+    using greenf_view = detail::gf_base<VTYPE, detail::tensor_view<VTYPE, sizeof...(MESHES)>, MESHES...>;
 
     namespace detail {
       /**
-       * @brief gf class
-       *
-       * @author iskakoff
+       * @brief This class implements general container for Green's functions storage
        */
       template<class VTYPE, class Storage, class ...MESHES>
       class gf_base {
+        // types definition
       public:
         // Current GF types
         /// Value type
@@ -57,35 +58,39 @@ namespace alps {
         /// Storage type
         using storage_type = Storage;
         /// mesh types tuple
-        using _mesh_types = std::tuple < MESHES... >;
+        using mesh_types = std::tuple < MESHES... >;
+      private:
+        /// current GF type
+        using gf_type   = gf_base < VTYPE, Storage, MESHES... >;
+        /// storage types
+        using data_storage = tensor < VTYPE, sizeof...(MESHES) >;
+        using data_view    = tensor_view < VTYPE, sizeof...(MESHES) >;
+        /// Generic GF type
+        template<typename St>
+        using generic_gf   = gf_base < VTYPE, St, MESHES... >;
 
+        // fields definition
       private:
         /// GF version
         static const int minor_version = 1;
         static const int major_version = 0;
         /// Dimension of grid
-        static constexpr int _N = sizeof...(MESHES);
+        static constexpr int N_ = sizeof...(MESHES);
         /// data_storage
         Storage data_;
         /// stored meshes
         std::tuple < MESHES... > meshes_;
         /// unitialized state flag
         bool empty_;
-        /// current GF type
-        using gf_type   = gf_base < VTYPE, Storage, MESHES... >;
-        /// storage types
-        using data_storage = Tensor < VTYPE, sizeof...(MESHES) >;
-        using data_view    = TensorView < VTYPE, sizeof...(MESHES) >;
-        /// Generic GF type
-        template<typename St>
-        using generic_gf   = gf_base < VTYPE, St, MESHES... >;
+
+        // template hacks
 
         // this is a helper function that should never be called. It used to get compile time type declaration.
         // using the index_sequence we create the proper set of meshes by unrolling tuple into parameter pack with
         // the following template code: "typename std::tuple_element<sizeof...(Ti) - Trim + I, _mesh_types >::type..."
         template <typename S, int Trim, typename... Ti, std::size_t... I>
-        gf_base<S, TensorView < S, Trim>,
-          typename std::tuple_element<sizeof...(Ti) - Trim + I, _mesh_types >::type...>
+        gf_base<S, tensor_view < S, Trim>,
+          typename std::tuple_element<sizeof...(Ti) - Trim + I, mesh_types >::type...>
         subpack_(S x, const std::tuple<Ti...>& t, index_sequence<I...>) {
           throw std::runtime_error("This function is not intended to be called. The only purpose of this function is to get type declaration.");
         }
@@ -114,7 +119,7 @@ namespace alps {
         /**
          * Default constructor. Create uninitilized GF
          */
-        gf_base() : data_(std::array < size_t, _N >{{0}}), empty_(true) {}
+        gf_base() : data_(std::array < size_t, N_ >{{0}}), empty_(true) {}
 
         /**
          * Create Green's function object with given meshes
@@ -122,9 +127,9 @@ namespace alps {
          */
         gf_base(MESHES...meshes) : gf_base(std::forward_as_tuple(meshes...)) {}
         /// tuple version of the previous function
-        gf_base(const _mesh_types &meshes) : data_(get_sizes(meshes)), meshes_(meshes), empty_(false) {}
-        ///
-        gf_base(VTYPE* data, const _mesh_types &meshes) : data_(data, get_sizes(meshes)), meshes_(meshes), empty_(false) {}
+        gf_base(const mesh_types &meshes) : data_(get_sizes(meshes)), meshes_(meshes), empty_(false) {}
+        /// Create GF with the provided data
+        gf_base(VTYPE* data, const mesh_types &meshes) : data_(data, get_sizes(meshes)), meshes_(meshes), empty_(false) {}
 
         /// construct new GF object by copy data from another GF object defined with different storage type
         template<typename St, typename = std::enable_if<!std::is_same<St, Storage>::value && std::is_same<St, data_view>::value > >
@@ -134,7 +139,7 @@ namespace alps {
 
         /// construct new green's function from index slice of GF with higher dimension
         template<typename St, typename...OLDMESHES, typename ...Indices>
-        gf_base(gf_base<VTYPE, TensorBase < VTYPE, sizeof...(OLDMESHES), St >, OLDMESHES...> & g, std::tuple<OLDMESHES...>& oldmesh, const _mesh_types &meshes, const Indices... idx) :
+        gf_base(gf_base<VTYPE, tensor_base < VTYPE, sizeof...(OLDMESHES), St >, OLDMESHES...> & g, std::tuple<OLDMESHES...>& oldmesh, const mesh_types &meshes, const Indices... idx) :
           data_(g.data()(idx()...)), meshes_(meshes), empty_(false) {}
 
         /// copy assignment
@@ -184,11 +189,11 @@ namespace alps {
          * @return GF view object
          */
         template<class...Indices>
-        auto operator()(typename std::enable_if<(sizeof...(Indices)+1 < _N), typename std::tuple_element<0,_mesh_types>::type::index_type >::type ind,
-                    Indices...inds) -> decltype(subpack<VTYPE, _N - sizeof...(Indices) - 1>(VTYPE(0), meshes_)) {
+        auto operator()(typename std::enable_if<(sizeof...(Indices)+1 < N_), typename std::tuple_element<0,mesh_types>::type::index_type >::type ind,
+                    Indices...inds) -> decltype(subpack<VTYPE, N_ - sizeof...(Indices) - 1>(VTYPE(0), meshes_)) {
           // get new mesh tuple
           auto t = subtuple<sizeof...(Indices) + 1>(meshes_);
-          return decltype(subpack<VTYPE, _N - sizeof...(Indices) - 1>(VTYPE(0), meshes_))(*this, meshes_, t, ind, std::forward<Indices>(inds)...);
+          return decltype(subpack<VTYPE, N_ - sizeof...(Indices) - 1>(VTYPE(0), meshes_))(*this, meshes_, t, ind, std::forward<Indices>(inds)...);
         }
 
 
@@ -289,9 +294,9 @@ namespace alps {
          * @return scaled Green's function
          */
         template<typename RHS>
-        typename std::enable_if < is_complex < RHS >::value && !std::is_same < VTYPE, RHS >::value, gf_base < RHS, Tensor<RHS, _N>, MESHES... > >::type operator*(RHS rhs) const {
+        typename std::enable_if < is_complex < RHS >::value && !std::is_same < VTYPE, RHS >::value, gf_base < RHS, tensor<RHS, N_>, MESHES... > >::type operator*(RHS rhs) const {
           throw_if_empty();
-          gf_base < RHS, Tensor<RHS, _N>, MESHES... > res(meshes_);
+          gf_base < RHS, tensor<RHS, N_>, MESHES... > res(meshes_);
           res.data() += this->data();
           return res *= rhs;
         }
@@ -333,9 +338,9 @@ namespace alps {
         * @return scaled Green's function
         */
         template<typename RHS>
-        typename std::enable_if < is_complex < RHS >::value && !std::is_same < VTYPE, RHS >::value, gf_base < RHS, Tensor<RHS, _N>, MESHES... > >::type operator/(RHS rhs) const {
+        typename std::enable_if < is_complex < RHS >::value && !std::is_same < VTYPE, RHS >::value, gf_base < RHS, tensor<RHS, N_>, MESHES... > >::type operator/(RHS rhs) const {
           throw_if_empty();
-          gf_base < RHS, Tensor<RHS, _N>, MESHES... > res(*this);
+          gf_base < RHS, tensor<RHS, N_>, MESHES... > res(*this);
           res.data_ = this->data_;
           return res /= rhs;
         }
@@ -343,7 +348,7 @@ namespace alps {
         /**
          * @returns Negated Green's Function (a new copy).
          */
-        gf_base < VTYPE, Tensor<VTYPE, _N>, MESHES... > operator-() const {
+        gf_base < VTYPE, tensor<VTYPE, N_>, MESHES... > operator-() const {
           throw_if_empty();
           return (*this)*(VTYPE(-1.0));
         }
@@ -391,7 +396,7 @@ namespace alps {
           throw_if_empty();
           save_version(ar, path);
           ar[path + "/data"] << data_.data().data();
-          ar[path + "/mesh/N"] << int(_N);
+          ar[path + "/mesh/N"] << int(N_);
           save_meshes(ar, path, std::integral_constant < int, 0 >());
         }
 
@@ -401,9 +406,9 @@ namespace alps {
           empty_ = false;
           int ndim;
           ar[path + "/mesh/N"] >> ndim;
-          if (ndim != _N) throw std::runtime_error("Wrong number of dimension reading Matsubara GF, ndim=" + boost::lexical_cast < std::string >(ndim));
+          if (ndim != N_) throw std::runtime_error("Wrong number of dimension reading Matsubara GF, ndim=" + boost::lexical_cast < std::string >(ndim));
           load_meshes(ar, path, std::integral_constant < int, 0 >());
-          data_ = Tensor < VTYPE, _N >(get_sizes(meshes_));
+          data_ = tensor < VTYPE, N_ >(get_sizes(meshes_));
           ar[path + "/data"] >> data_.data().data();
         }
 
@@ -446,7 +451,7 @@ namespace alps {
         /**
          * @return const-reference to the GF meshes tuple
          */
-        const _mesh_types& meshes() const {return meshes_;}
+        const mesh_types& meshes() const {return meshes_;}
 
         /*
          *  MPI routines
@@ -466,7 +471,7 @@ namespace alps {
           size_t root_sz=data_.size();
           alps::mpi::broadcast(comm, root_sz, root);
           // as long as all grids have been broadcasted we can define tensor object
-          if(comm.rank() != root) data_ = Tensor < VTYPE, _N >(get_sizes(meshes_));
+          if(comm.rank() != root) data_ = tensor < VTYPE, N_ >(get_sizes(meshes_));
           alps::mpi::broadcast(comm, &data_.data().data(0), root_sz, root);
         }
 #endif
@@ -490,8 +495,8 @@ namespace alps {
           bcast_mesh(comm, root, std::integral_constant < int, M+1 >());
         }
         // Until we reach the last mesh object
-        void bcast_mesh(const alps::mpi::communicator& comm, int root, std::integral_constant < int, _N - 1> i) {
-          std::get<_N - 1>(meshes_).broadcast(comm, root);
+        void bcast_mesh(const alps::mpi::communicator& comm, int root, std::integral_constant < int, N_ - 1> i) {
+          std::get<N_ - 1>(meshes_).broadcast(comm, root);
         }
 #endif
 
@@ -527,7 +532,7 @@ namespace alps {
          * @param meshes - meshes to get sizes
          * @return sizes for each grid mesh
          */
-        std::array < size_t, _N > get_sizes(MESHES...meshes) {
+        std::array < size_t, N_ > get_sizes(MESHES...meshes) {
           return get_sizes(std::forward_as_tuple(meshes...));
         };
 
@@ -537,8 +542,8 @@ namespace alps {
          * @param meshes - tuple of meshes
          * @return array that contains the size of each grid
          */
-        std::array < size_t, _N > get_sizes(const _mesh_types &meshes) {
-          std::array < size_t, _N > sizes;
+        std::array < size_t, N_ > get_sizes(const mesh_types &meshes) {
+          std::array < size_t, N_ > sizes;
           fill_sizes(sizes, std::integral_constant < int, 0 >(), meshes);
           return sizes;
         };
@@ -555,13 +560,13 @@ namespace alps {
          * @param grids  - tail grids
          */
         template<int M>
-        void fill_sizes(std::array < size_t, _N > &sizes, std::integral_constant < int, M > index, const _mesh_types &grids) {
+        void fill_sizes(std::array < size_t, N_ > &sizes, std::integral_constant < int, M > index, const mesh_types &grids) {
           sizes[index.value] = std::get < M >(grids).extent();
           fill_sizes(sizes, std::integral_constant < int, M + 1 >(), grids);
         };
 
-        void fill_sizes(std::array < size_t, _N > &sizes, std::integral_constant < int, _N - 1 > index, const _mesh_types &grids) {
-          sizes[index.value] = std::get < _N - 1 >(grids).extent();
+        void fill_sizes(std::array < size_t, N_ > &sizes, std::integral_constant < int, N_ - 1 > index, const mesh_types &grids) {
+          sizes[index.value] = std::get < N_ - 1 >(grids).extent();
         };
 
         /**
@@ -577,13 +582,13 @@ namespace alps {
          */
         template<int M, class Index, class...Indices>
         void check(std::integral_constant < int, M > i, const Index &id, const Indices &...inds) const {
-          static_assert(std::is_same < Index, typename std::tuple_element < i.value, _mesh_types >::type::index_type >::value, "Index type is inconsistent with mesh index type.");
+          static_assert(std::is_same < Index, typename std::tuple_element < i.value, mesh_types >::type::index_type >::value, "Index type is inconsistent with mesh index type.");
           check(std::integral_constant < int, M + 1 >(), std::forward < const Indices & >(inds)...);
         }
 
         template<class Index>
-        void check(std::integral_constant < int, _N - 1 > i, const Index &id) const {
-          static_assert(std::is_same < Index, typename std::tuple_element < i.value, _mesh_types >::type::index_type >::value, "Index type is inconsistent with mesh index type.");
+        void check(std::integral_constant < int, N_ - 1 > i, const Index &id) const {
+          static_assert(std::is_same < Index, typename std::tuple_element < i.value, mesh_types >::type::index_type >::value, "Index type is inconsistent with mesh index type.");
         }
 
         /**
@@ -603,7 +608,7 @@ namespace alps {
         /**
          * Save the last mesh into hdf5
          */
-        void save_meshes(alps::hdf5::archive &ar, const std::string &path, std::integral_constant < int, _N - 1 > i) const {
+        void save_meshes(alps::hdf5::archive &ar, const std::string &path, std::integral_constant < int, N_ - 1 > i) const {
           ar[path + "/mesh/" + boost::lexical_cast < std::string >(i.value)] << std::get < i.value >(meshes_);
         }
 
@@ -624,7 +629,7 @@ namespace alps {
         /**
          * Load the last mesh from hdf5
          */
-        void load_meshes(alps::hdf5::archive &ar, const std::string &path, std::integral_constant < int, _N - 1 > i) {
+        void load_meshes(alps::hdf5::archive &ar, const std::string &path, std::integral_constant < int, N_ - 1 > i) {
           ar[path + "/mesh/" + boost::lexical_cast < std::string >(i.value)] >> std::get < i.value >(meshes_);
         }
 
@@ -643,8 +648,8 @@ namespace alps {
         template<size_t i>
         struct args {
           using type
-          = typename std::conditional < (i <= _N),
-            std::tuple_element < i - 1, _mesh_types >,
+          = typename std::conditional < (i <= N_),
+            std::tuple_element < i - 1, mesh_types >,
             void_type >::type::type;
         };
 
@@ -654,7 +659,7 @@ namespace alps {
          * Create MESH<N>() functions for compatibility with old interface
          */
         #define MESH_FUNCTION(z, num, c) \
-        template<typename = typename std::enable_if< (_N >= num)> >\
+        template<typename = typename std::enable_if< (N_ >= num)> >\
         const typename args<num>::type mesh##num() const {\
           return std::get<int(num-1)>(meshes_); \
         }
