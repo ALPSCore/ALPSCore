@@ -60,7 +60,6 @@ namespace alps {
       class tensor_base {
         // types definitions
         typedef T prec;
-        static int constexpr dim = D;
         typedef data_view < T > viewType;
         typedef data_storage < T > storageType;
         /// current Tensor type
@@ -75,6 +74,8 @@ namespace alps {
 
       private:
         // fields definitions
+        /// tensor dimension
+        static int constexpr dim = D;
         /// data storage object
         C data_;
         /// stored sizes for each dimensions
