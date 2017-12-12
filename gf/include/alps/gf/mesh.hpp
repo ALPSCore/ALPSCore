@@ -67,8 +67,6 @@ namespace alps {
             }
 #endif
         };
-
-        //    template <typename T> bool operator==(int q, const generic_index<T> &p){ return p.operator==(q);}
         namespace mesh {
             enum frequency_positivity_type {
                 POSITIVE_NEGATIVE=0,
@@ -670,7 +668,7 @@ namespace alps {
             }
 
             public:
-            // Returns the number of points
+            /// Returns the number of points
             int extent() const { return points_.shape()[0];}
             ///returns the spatial dimension
             int dimension() const { return points_.shape()[1];}
@@ -1191,10 +1189,6 @@ namespace alps {
                 compute_points(); // recompute points rather than sending them over MPI
             }
 #endif
-
-            //void check_range(){
-                //if(statistics_!=statistics::FERMIONIC && statistics_!=statistics::BOSONIC) throw std::invalid_argument("statistics should be bosonic or fermionic");
-            //}
 
             void compute_points(){
                 _points().resize(extent());
