@@ -4,8 +4,8 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef GF2_VIEW_H
-#define GF2_VIEW_H
+#ifndef ALPSCORE_GF_VIEW_H
+#define ALPSCORE_GF_VIEW_H
 
 
 #include <alps/gf_new/tensors/data_storage.h>
@@ -36,7 +36,7 @@ namespace alps {
          * Construct view on DataStorage object
          */
         view(const data_storage<T>&storage) : data_(storage.data().data()), size_(storage.data().size())  {}
-        view(data_storage<T>&storage) : data_((storage.data().data())), size_(storage.data().size())  {}
+        view(data_storage<T>&storage) : data_(storage.data().data()), size_(storage.data().size())  {}
         /// Copy constructor
         view(const view & view) : data_(view.data_), size_(view.size_) {}
         /// Move constructor
@@ -61,7 +61,7 @@ namespace alps {
         /// @return const reference to the data at i-th point
         inline const T& data(size_t i) const {return data_[i];};
         /// @return size of the raw buffer
-        virtual size_t size() const {return size_;}
+        size_t size() const {return size_;}
         /// @return raw buffer pointer
         inline T* data() {return data_;};
         /// @return const raw buffer pointer
@@ -71,4 +71,4 @@ namespace alps {
   }
 }
 
-#endif //GF2_VIEW_H
+#endif //ALPSCORE_GF_VIEW_H

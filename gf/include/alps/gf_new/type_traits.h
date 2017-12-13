@@ -4,8 +4,8 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef GREENSFUNCTIONS_TYPE_TRAITS_H
-#define GREENSFUNCTIONS_TYPE_TRAITS_H
+#ifndef ALPSCORE_TYPE_TRAITS_H
+#define ALPSCORE_TYPE_TRAITS_H
 
 #include <complex>
 #include <tuple>
@@ -87,4 +87,4 @@ namespace alps {
   }
 }
 
-#endif //GREENSFUNCTIONS_TYPE_TRAITS_H
+#endif //ALPSCORE_TYPE_TRAITS_H

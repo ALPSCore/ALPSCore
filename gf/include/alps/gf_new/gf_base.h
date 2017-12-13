@@ -4,8 +4,8 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef GREENSFUNCTIONS_GF_H
-#define GREENSFUNCTIONS_GF_H
+#ifndef ALPSCORE_GF_H
+#define ALPSCORE_GF_H
 
 
 #include <vector>
@@ -68,6 +68,9 @@ namespace alps {
         /// Generic GF type
         template<typename St>
         using generic_gf   = gf_base < VTYPE, St, MESHES... >;
+        /// Greens function return type for arithmetic operations with different type
+        template<typename RHS_VTYPE>
+        using gf_op_type   = gf_base < decltype(RHS_VTYPE{} + VTYPE{}), tensor<decltype(RHS_VTYPE{} + VTYPE{}), sizeof...(MESHES)>, MESHES... >;
 
         // fields definition
       private:
@@ -109,12 +112,12 @@ namespace alps {
          * Copy-constructor
          * @param g - GF to copy from
          */
-        gf_base(const gf_type &g) : data_(g.data_), meshes_(g.meshes_), empty_(g.empty_) {}
+        gf_base(const gf_type &g) = default;
 
         /**
          * Move-constructor
          */
-        gf_base(gf_type &&g) : data_(g.data_), meshes_(g.meshes_), empty_(g.empty_) {}
+        gf_base(gf_type &&g) = default;
 
         /**
          * Default constructor. Create uninitilized GF
@@ -137,18 +140,26 @@ namespace alps {
         template<typename St, typename = std::enable_if<!std::is_same<St, Storage>::value && std::is_same<St, data_storage>::value > >
         gf_base(gf_base<VTYPE, St, MESHES...> &g) : data_(g.data()), meshes_(g.meshes()), empty_(g.is_empty()) {}
 
+        /// construct new GF by copy/move of GF with a different type
+        template<typename RHS_VTYPE, typename St, typename = std::enable_if<std::is_same<data_storage, Storage>::value> >
+        gf_base(const gf_base<RHS_VTYPE, St, MESHES...> &g) : data_(g.data()), meshes_(g.meshes()), empty_(g.is_empty()) {
+          static_assert(std::is_convertible<RHS_VTYPE, VTYPE>::value, "Right-hand side data type is not convertible into left-hand side.");
+        }
+        template<typename RHS_VTYPE, typename St, typename = std::enable_if<std::is_same<data_storage, Storage>::value>>
+        gf_base(gf_base<RHS_VTYPE, St, MESHES...> &&g) : data_(g.data()), meshes_(g.meshes()), empty_(g.is_empty()) {
+          static_assert(std::is_convertible<RHS_VTYPE, VTYPE>::value, "Right-hand side data type is not convertible into left-hand side.");
+        }
+
         /// construct new green's function from index slice of GF with higher dimension
         template<typename St, typename...OLDMESHES, typename ...Indices>
-        gf_base(gf_base<VTYPE, tensor_base < VTYPE, sizeof...(OLDMESHES), St >, OLDMESHES...> & g, std::tuple<OLDMESHES...>& oldmesh, const mesh_types &meshes, const Indices... idx) :
+        gf_base(gf_base<VTYPE, tensor_base < VTYPE, sizeof...(OLDMESHES), St >, OLDMESHES...> & g, std::tuple<OLDMESHES...>& oldmesh,
+                const mesh_types &meshes, const Indices... idx) :
           data_(g.data()(idx()...)), meshes_(meshes), empty_(false) {}
 
         /// copy assignment
-        gf_type& operator=(const gf_type & rhs) {
-          data_   = rhs.data_;
-          meshes_ = rhs.meshes_;
-          empty_  = rhs.empty_;
-          return *this;
-        }
+        gf_type& operator=(const gf_type & rhs) = default;
+        /// move assignment
+        gf_type& operator=(gf_type && rhs) = default;
 
         /// initialize with zeros
         void initialize() {
@@ -191,9 +202,8 @@ namespace alps {
         template<class...Indices>
         auto operator()(typename std::enable_if<(sizeof...(Indices)+1 < N_), typename std::tuple_element<0,mesh_types>::type::index_type >::type ind,
                     Indices...inds) -> decltype(subpack<VTYPE, N_ - sizeof...(Indices) - 1>(VTYPE(0), meshes_)) {
-          // get new mesh tuple
-          auto t = subtuple<sizeof...(Indices) + 1>(meshes_);
-          return decltype(subpack<VTYPE, N_ - sizeof...(Indices) - 1>(VTYPE(0), meshes_))(*this, meshes_, t, ind, std::forward<Indices>(inds)...);
+          return decltype(subpack<VTYPE, N_ - sizeof...(Indices) - 1>(VTYPE(0), meshes_))
+                          (*this, meshes_, subtuple<sizeof...(Indices) + 1>(meshes_), ind, std::forward<Indices>(inds)...);
         }
 
 
@@ -208,11 +218,10 @@ namespace alps {
          * @param  rhs    - GF object to sum with the current GF
          * @return new GF object equals to sum of this and rhs
          */
-        template<typename RHS_GF>
-        typename std::enable_if < std::is_same < RHS_GF, generic_gf<data_storage> >::value || std::is_same < RHS_GF, generic_gf<data_view> >::value, gf_type >::type
-        operator+(const RHS_GF &rhs) const {
+        template<typename RHS_VTYPE, typename RHS_STORAGE>
+        gf_op_type<RHS_VTYPE> operator+(const gf_base<RHS_VTYPE, RHS_STORAGE, MESHES...> &rhs) const {
           throw_if_empty();
-          gf_type res(*this);
+          gf_op_type<RHS_VTYPE> res(*this);
           return res += rhs;
         }
 
@@ -238,11 +247,10 @@ namespace alps {
          * @param  rhs    - GF object to sum with the current GF
          * @return new GF object equals to sum of this and rhs
          */
-        template<typename RHS_GF>
-        typename std::enable_if < std::is_same < RHS_GF, generic_gf<data_storage> >::value || std::is_same < RHS_GF, generic_gf<data_view> >::value, gf_type >::type
-        operator-(const RHS_GF &rhs) const {
+        template<typename RHS_VTYPE, typename RHS_STORAGE>
+        gf_op_type<RHS_VTYPE> operator-(const gf_base<RHS_VTYPE, RHS_STORAGE, MESHES...> &rhs) const {
           throw_if_empty();
-          gf_type res(*this);
+          gf_op_type<RHS_VTYPE> res(*this);
           return res -= rhs;
         }
 
@@ -279,25 +287,9 @@ namespace alps {
          * @return new scaled Green's function
          */
         template<typename RHS>
-        typename std::enable_if < std::is_scalar < RHS >::value || std::is_same < VTYPE, RHS >::value, gf_type >::type operator*(RHS rhs) const {
+        gf_op_type<RHS> operator*(RHS rhs) const {
           throw_if_empty();
-          gf_type res(*this);
-          return res *= rhs;
-        }
-
-        /**
-         * Scaling real GF by complex scalar. This method will create new complex-valued GF object defined on the same mesh
-         * and fill it with current GF scaled by complex scalar
-         *
-         * @tparam RHS - type of the scalar
-         * @param rhs - scaling factor
-         * @return scaled Green's function
-         */
-        template<typename RHS>
-        typename std::enable_if < is_complex < RHS >::value && !std::is_same < VTYPE, RHS >::value, gf_base < RHS, tensor<RHS, N_>, MESHES... > >::type operator*(RHS rhs) const {
-          throw_if_empty();
-          gf_base < RHS, tensor<RHS, N_>, MESHES... > res(meshes_);
-          res.data() += this->data();
+          gf_op_type<RHS> res(*this);
           return res *= rhs;
         }
 
@@ -324,24 +316,9 @@ namespace alps {
         * @return scaled Green's function
         */
         template<typename RHS>
-        typename std::enable_if < std::is_scalar < RHS >::value || std::is_same < VTYPE, RHS >::value, gf_type >::type operator/(RHS rhs) const {
+        gf_op_type<RHS> operator/(RHS rhs) const {
           throw_if_empty();
-          gf_type res(meshes_);
-          return res /= rhs;
-        }
-
-        /**
-        * Inversed scaling of real GF by complex value
-        *
-        * @tparam RHS - type of the scalar
-        * @param rhs - scaling factor
-        * @return scaled Green's function
-        */
-        template<typename RHS>
-        typename std::enable_if < is_complex < RHS >::value && !std::is_same < VTYPE, RHS >::value, gf_base < RHS, tensor<RHS, N_>, MESHES... > >::type operator/(RHS rhs) const {
-          throw_if_empty();
-          gf_base < RHS, tensor<RHS, N_>, MESHES... > res(*this);
-          res.data_ = this->data_;
+          gf_op_type<RHS> res(meshes_);
           return res /= rhs;
         }
 
@@ -361,9 +338,9 @@ namespace alps {
          *  B.2. And have the same values
          */
         template<typename RHS_GF>
-        typename std::enable_if < std::is_same < RHS_GF, generic_gf<data_storage> >::value || std::is_same < RHS_GF, generic_gf<data_view> >::value, bool >::type
+        typename std::enable_if < std::is_base_of< generic_gf<data_storage>, RHS_GF >::value || std::is_base_of < generic_gf<data_view>, RHS_GF >::value, bool >::type
         operator==(const RHS_GF &rhs) const {
-          return (empty_ && rhs.is_empty()) || (data_.sizes() == rhs.data().sizes() && data_.data() == rhs.data().data() );
+          return (empty_ && rhs.is_empty()) || (data_.shape() == rhs.data().shape() && data_.data() == rhs.data().data() );
         }
 
         /**
@@ -504,9 +481,11 @@ namespace alps {
          * Throw an exception if the GF object is empty
          */
         inline void throw_if_empty() const {
+#ifndef NDEBUG
           if (empty_) {
             throw std::runtime_error("gf is empty");
           }
+#endif
         }
 
         /**
@@ -675,4 +654,4 @@ namespace alps {
   }
 }
 
-#endif //GREENSFUNCTIONS_GF_H
+#endif //ALPSCORE_GF_H

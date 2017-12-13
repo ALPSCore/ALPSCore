@@ -80,6 +80,27 @@ TEST(GreensFunction, BasicArithmetics2D) {
   }
 }
 
+TEST(GreensFunction, BasicArithmetics2DMixedTypes) {
+  alps::gf::matsubara_positive_mesh x(100, 10);
+  alps::gf::index_mesh y(10);
+  greenf < double, alps::gf::matsubara_positive_mesh, alps::gf::index_mesh > g(x, y);
+  greenf < std::complex < double >, alps::gf::matsubara_positive_mesh, alps::gf::index_mesh > g2(x, y);
+  for (alps::gf::index_mesh::index_type i(0); i < y.extent(); ++i) {
+    for (alps::gf::matsubara_positive_mesh::index_type w(0); w < x.extent(); ++w) {
+      g(w, i) = 1.0 * i();
+      g2(w, i) = 2.0 * i();
+    }
+  }
+  greenf<std::complex<double>, alps::gf::matsubara_positive_mesh, alps::gf::index_mesh> g3 = g + g2;
+  for(alps::gf::index_mesh::index_type i(0); i<y.extent(); ++i) {
+    for(alps::gf::matsubara_positive_mesh::index_type w(0); w<x.extent(); ++w) {
+      ASSERT_DOUBLE_EQ(g3(w,i).real(), 3.0 * i());
+      ASSERT_DOUBLE_EQ(g3(w,i).imag(), 0.0);
+    }
+  }
+}
+
+
 TEST(GreensFunction, BasicArithmetics2DScaling) {
   alps::gf::matsubara_positive_mesh x(100, 10);
   alps::gf::index_mesh y(10);

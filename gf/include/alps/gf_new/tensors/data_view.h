@@ -4,8 +4,8 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef GF2_TENSORVIEW_H
-#define GF2_TENSORVIEW_H
+#ifndef ALPSCORE_GF_TENSORVIEW_H
+#define ALPSCORE_GF_TENSORVIEW_H
 
 
 
@@ -20,6 +20,8 @@ namespace alps {
 
        /**
         * @brief TensorView class. Provide interface for tensor to operate with raw data
+        *
+        * @tparam T - stored data type
         */
       template<typename T>
       class data_view {
@@ -33,7 +35,7 @@ namespace alps {
       public:
         /// Construct view of the whole DataStorage
         data_view(data_storage<T> & storage) : data_slice_(storage), offset_(0), size_(storage.size()) {}
-        data_view(const data_storage<T> & storage) : data_slice_(storage), offset_(0), size_(storage.size()) {}
+//        data_view(const data_storage<T> & storage) : data_slice_(storage), offset_(0), size_(storage.size()) {}
         /// Construct subview of specified size for DataStorage starting from offset point
         data_view(data_storage<T> & storage, size_t size, size_t offset = 0) : data_slice_(storage), offset_(offset), size_(size) {}
         data_view(const data_storage<T> & storage, size_t size, size_t offset = 0) : data_slice_(storage), offset_(offset), size_(size) {}
@@ -44,24 +46,14 @@ namespace alps {
         /// Create view for the raw buffer
         data_view(T*data, size_t size) : data_slice_(data, size), offset_(0), size_(size){}
         /// Copy constructor
-        data_view(const data_view<T> & storage) : data_slice_(storage.data_slice_), offset_(storage.offset_), size_(storage.size_) {}
+        data_view(const data_view<T> & storage) = default;
         /// Move constructor
-        data_view(data_view<T> && storage) : data_slice_(storage.data_slice_), offset_(storage.offset_), size_(storage.size_) {}
+        data_view(data_view<T> && storage) = default;
 
         /// Copy assignment
-        data_view<T>& operator=(const data_view<T>& rhs) {
-          data_slice_ = rhs.data_slice_;
-          offset_ = rhs.offset_;
-          size_ = rhs.size_;
-          return (*this);
-        }
+        data_view<T>& operator=(const data_view<T>& rhs) = default;
         /// Move assignment
-        data_view<T>& operator=(data_view<T>&& rhs) {
-          data_slice_ = rhs.data_slice_;
-          offset_ = rhs.offset_;
-          size_ = rhs.size_;
-          return (*this);
-        }
+        data_view<T>& operator=(data_view<T>&& rhs) = default;
 
         /// @return reference to the data at point i
         T& data(size_t i) {return data_slice_.data(i + offset_);};
@@ -72,14 +64,14 @@ namespace alps {
         /// @return offset from the buffer beginning
         size_t offset() const {return offset_;}
         /// @return pointer to the raw buffer
-        T* data() {return data_slice_.data();}
+        T* data() {return data_slice_.data() + offset_;}
         /// @return const pointer to the raw buffer
-        const T* data() const {return data_slice_.data();}
+        const T* data() const {return data_slice_.data() + offset_;}
 
         /// DataView comparison
         template<typename T2>
         bool operator==(const data_view<T2>& r) const {
-          return size() == r.size() && std::equal(data(), data() + size(), data());
+          return size() == r.size() && std::equal(r.data(), r.data() + r.size(), data());
         }
 
         /// Comparison against DataStorage
@@ -91,4 +83,4 @@ namespace alps {
     }
   }
 }
-#endif //GF2_TENSORVIEW_H
+#endif //ALPSCORE_GF_TENSORVIEW_H
