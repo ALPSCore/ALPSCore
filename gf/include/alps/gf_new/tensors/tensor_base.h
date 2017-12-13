@@ -4,8 +4,8 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef GF2_TENSOR_H
-#define GF2_TENSOR_H
+#ifndef ALPSCORE_GF_TENSOR_H
+#define ALPSCORE_GF_TENSOR_H
 
 
 #include <vector>
@@ -17,12 +17,17 @@
 
 #include <alps/gf_new/type_traits.h>
 #include <alps/gf_new/tensors/data_view.h>
-
+#include <numeric>
 
 
 namespace alps {
   namespace gf {
     namespace detail {
+      /**
+       *
+       * @tparam T
+       * @tparam St
+       */
       template<typename T, typename St>
       struct is_storage {
         static constexpr bool value = std::is_same < St, data_storage <T> >::value || std::is_same < St, data_view <T> >::value;
@@ -56,47 +61,46 @@ namespace alps {
        *
        * @author iskakoff
        */
-      template<typename T, int D, typename C>
+      template<typename T, int Dim, typename Container>
       class tensor_base {
         // types definitions
         typedef T prec;
         typedef data_view < T > viewType;
         typedef data_storage < T > storageType;
         /// current Tensor type
-        typedef tensor_base < T, D, C > tType;
+        typedef tensor_base < T, Dim, Container > tType;
         /// Tensor type with storage
-        typedef tensor < T, D > tensorType;
+        typedef tensor < T, Dim > tensorType;
         /// view Tensor type
-        typedef tensor_view < T, D > tensorViewType;
+        typedef tensor_view < T, Dim > tensorViewType;
         /// generic tensor type
         template<typename St>
-        using   genericTensor = tensor_base < T, D, St >;
+        using   genericTensor = tensor_base < T, Dim, St >;
 
       private:
         // fields definitions
         /// tensor dimension
-        static int constexpr dim = D;
+        static int constexpr dim = Dim;
         /// data storage object
-        C data_;
+        Container data_;
         /// stored sizes for each dimensions
-        std::array < size_t, D > sizes_;
+        std::array < size_t, Dim > shape_;
         /// offset multiplier for each dimension
-        std::array < size_t, D > acc_sizes_;
+        std::array < size_t, Dim > acc_sizes_;
 
       public:
 
         /**
-         *
-         * @param container
+         * @param container - internal storage container
          * @param sizes
          */
-        tensor_base(C &&container, std::array < size_t, D > sizes) : data_(container), sizes_(sizes) {
-          static_assert(is_storage< T, C>::value, "Should be either data_storage or data_view type");
+        tensor_base(Container &&container, const std::array < size_t, Dim >& sizes) : data_(container), shape_(sizes) {
+          static_assert(is_storage< T, Container>::value, "Should be either data_storage or data_view type");
           fill_acc_sizes();
         }
 
-        tensor_base(C &container, std::array < size_t, D > sizes) : data_(container), sizes_(sizes) {
-          static_assert(is_storage< T, C>::value, "Should be either data_storage or data_view type");
+        tensor_base(Container &container, const std::array < size_t, Dim >& sizes) : data_(container), shape_(sizes) {
+          static_assert(is_storage< T, Container>::value, "Should be either data_storage or data_view type");
           fill_acc_sizes();
         }
 
@@ -107,7 +111,7 @@ namespace alps {
          * @param data  - pointer to the raw data buffer
          * @param sizes - array with sizes for each dimension
          */
-        tensor_base(T *data, std::array < size_t, D > sizes) : data_(viewType(data, size(sizes))), sizes_(sizes) {
+        tensor_base(T *data, const std::array < size_t, Dim > & sizes) : data_(viewType(data, size(sizes))), shape_(sizes) {
           fill_acc_sizes();
         }
 
@@ -117,48 +121,42 @@ namespace alps {
          * @tparam X type of storage to be created. Should always be DataStorage
          * @param sizes - array of data dimensions
          */
-        template<typename X = C>
-        tensor_base(typename std::enable_if < std::is_same < X, data_storage < T > >::value, const std::array < size_t, D > & >::type sizes) : data_(size(sizes)), sizes_(sizes) {
+        template<typename X = Container>
+        tensor_base(typename std::enable_if < std::is_same < X, data_storage < T > >::value,
+                        const std::array < size_t, Dim > & >::type sizes) : data_(size(sizes)), shape_(sizes) {
           fill_acc_sizes();
         }
 
-        explicit tensor_base(size_t size) : data_(size), sizes_{{size}} {
-          static_assert(1 == D, "Wrong dimension");
+        explicit tensor_base(size_t size) : data_(size), shape_{{size}} {
+          static_assert(1 == Dim, "Wrong dimension");
           fill_acc_sizes();
         }
 
-        /// copy constructor
-        tensor_base(const tensorType& rhs) : data_(rhs.data()), sizes_(rhs.sizes()), acc_sizes_(rhs.acc_sizes()) {}
-
-        template<typename St = C>
+        // this constructor create a view of other tensor. that is why rhs is not const
+        template<typename St = Container>
         tensor_base(typename std::enable_if<std::is_same<St, viewType>::value, tensorType>::type& rhs) :
-          data_(rhs.data()), sizes_(rhs.sizes()), acc_sizes_(rhs.acc_sizes()) {}
-        /// move constructor
-        tensor_base(tensorType &&rhs) : data_(rhs.data()), sizes_(rhs.sizes()), acc_sizes_(rhs.acc_sizes()) {}
+          data_(rhs.data()), shape_(rhs.shape()), acc_sizes_(rhs.acc_sizes()) {}
+
         /// copy constructor
-        tensor_base(const tensorViewType &rhs) : data_(rhs.data()), sizes_(rhs.sizes()), acc_sizes_(rhs.acc_sizes()) {}
+        tensor_base(const tType& rhs) = default;
         /// move constructor
-        tensor_base(tensorViewType &&rhs) : data_(rhs.data()), sizes_(rhs.sizes()), acc_sizes_(rhs.acc_sizes()) {}
+        tensor_base(tType &&rhs) = default;
+        /// copy constructor
+        template<typename T2, typename St, typename = std::enable_if<std::is_same<Container, storageType>::value, void >>
+        tensor_base(const tensor_base<T2, Dim, St> &rhs) : data_(rhs.data()), shape_(rhs.shape()), acc_sizes_(rhs.acc_sizes()) {}
+        /// move constructor
+        template<typename T2, typename St, typename = std::enable_if<std::is_same<Container, storageType>::value, void >>
+        tensor_base(tensor_base<T2, Dim, St> &&rhs) noexcept: data_(rhs.data()), shape_(rhs.shape()), acc_sizes_(rhs.acc_sizes()) {}
 
 
         /// Copy assignment
-        tensor_base < T, D, C > &operator=(const tensor_base < T, D, C > &rhs) {
-          data_ = rhs.data_;
-          sizes_ = rhs.sizes_;
-          acc_sizes_ = rhs.acc_sizes_;
-          return *this;
-        }
-
+        tensor_base < T, Dim, Container > &operator=(const tensor_base < T, Dim, Container > &rhs) = default;
         /// Move assignment
-        tensor_base < T, D, C > &operator=(tensor_base < T, D, C > &&rhs) noexcept {
-          data_ = rhs.data_;
-          sizes_ = rhs.sizes_;
-          acc_sizes_ = rhs.acc_sizes_;
-          return *this;
-        }
-
-        bool operator==(const tType& rhs) const {
-          return std::equal(sizes_.begin(), sizes_.end(), rhs.sizes_.begin()) && data_ == rhs.data_;
+        tensor_base < T, Dim, Container > &operator=(tensor_base < T, Dim, Container > &&rhs) = default;
+        /// compare tensors
+        template<typename T2, typename St>
+        bool operator==(const tensor_base<T2, Dim, St>& rhs) const {
+          return std::equal(shape_.begin(), shape_.end(), rhs.shape().begin()) && data_ == rhs.data();
         }
 
         /**
@@ -169,16 +167,16 @@ namespace alps {
          * @return value of tensor at the (t1, indices...) point
          */
         template<typename ...IndexTypes>
-        T operator()(typename std::enable_if < sizeof...(IndexTypes) == D - 1, size_t >::type t1, IndexTypes ... indices) const {
-          return data_.data(index(std::integral_constant < int, 0 >(), t1, indices...));
+        T operator()(typename std::enable_if < sizeof...(IndexTypes) == Dim - 1, size_t >::type t1, IndexTypes ... indices) const {
+          return data_.data(index(t1, indices...));
         }
 
         /**
          * Get reference to the data point at the (t1, indices...) point
          */
         template<typename ...IndexTypes>
-        T &operator()(typename std::enable_if < sizeof...(IndexTypes) == D - 1, size_t >::type t1, IndexTypes ... indices) {
-          return data_.data(index(std::integral_constant < int, 0 >(), t1, indices...));
+        T &operator()(typename std::enable_if < sizeof...(IndexTypes) == Dim - 1, size_t >::type t1, IndexTypes ... indices) {
+          return data_.data(index(t1, indices...));
         }
 
 
@@ -193,59 +191,44 @@ namespace alps {
          * @return slice for the specific leading indices
          */
         template<typename ...IndexTypes>
-        tensor_view < T, D - (sizeof...(IndexTypes)) - 1 > operator()(typename std::enable_if < (sizeof...(IndexTypes) < D - 1), size_t >::type t1, IndexTypes ... indices) {
-          std::array < size_t, D - (sizeof...(IndexTypes)) - 1 > sizes;
+        tensor_view < T, Dim - (sizeof...(IndexTypes)) - 1 > operator()(typename std::enable_if < (sizeof...(IndexTypes) < Dim - 1), size_t >::type t1, IndexTypes ... indices) {
+          std::array < size_t, Dim - (sizeof...(IndexTypes)) - 1 > sizes;
           size_t s = 1;
           for (int i = 0; i < sizes.size(); ++i) {
-            sizes[i] = sizes_[i + sizeof...(IndexTypes) + 1];
+            sizes[i] = shape_[i + sizeof...(IndexTypes) + 1];
             s *= sizes[i];
           }
-          return tensor_view < T, D - (sizeof...(IndexTypes)) - 1 >(viewType(data_, s, (index(std::integral_constant < int, 0 >(), t1, indices...))), sizes);
+          return tensor_view < T, Dim - (sizeof...(IndexTypes)) - 1 >(viewType(data_, s, (index(t1, indices...))), sizes);
         }
 
         /*
          * Basic arithmetic operations
          */
         /**
-         * @tparam S     - type of scalar multiplier (If tensor is real, S should be real, If tensor is complex S can be any scalar type.)
+         * Multiplication by scalar. This method checks the resulting type of Tensor based on the scalar type and tensor type.
+         *
+         * @tparam S     - type of scalar multiplier
          * @param scalar - scalar factor
          * @return New tensor equal to the current tensor multiplied by scalar
          */
         template<typename S>
-        typename std::enable_if < !std::is_same < S, tensorType >::value && std::is_scalar < S >::value, tensorType >::type operator*(S scalar) {
-          tensorType x(*this);
-          x *= T(scalar);
-          return x;
-        };
-
-        /**
-         * Scaling by complex scalar. Method returns new complex Tensor that is the result of scaling the current real tensor object by complex scalar.
-         * This method checks that the type of the current Tensor is not complex.
-         *
-         * @tparam S     - type of scalar multiplier (If tensor is real, S should be real, If tensor is complex S can be any scalar type.)
-         * @param scalar - scalar factor
-         * @return New tensor equal to the current tensor multiplied by scalar
-         */
-        template<typename S, int M = D>
-        typename std::enable_if < !std::is_same < S, tensorType >::value && (is_complex < S >::value && !is_complex < T >::value), tensor < S, M > >::type operator*(S scalar) {
-          tensor < S, M > x(data_storage < S >(data_.size()), this->sizes_);
-          Eigen::Map < Eigen::Matrix < T, 1, Eigen::Dynamic, Eigen::RowMajor > > M1(&data_.data(0), data_.size());
-          Eigen::Map < Eigen::Matrix < S, 1, Eigen::Dynamic, Eigen::RowMajor > > M2(&x.data().data(0), data_.size());
-          M2 = M1;
-          x *= scalar;
-          return x;
+        typename std::enable_if < !std::is_same < S, tensorType >::value, tensor_base< decltype(S{} + T{}), Dim, data_storage< decltype(S{} * T{}) > > >::type
+        operator*(S scalar) {
+          tensor_base< decltype(S{} + T{}), Dim, data_storage< decltype(S{} * T{}) > > x(*this);
+          return (x *= static_cast<decltype(S{} + T{})>(scalar));
         };
 
         /**
          * Two tensors multiplication. We need to decide whether it should be element-wise or more sofisticated tensor contraction.
          *
          * @tparam S     - type of the right hand side tensor
-         * @param tensor - right hand side tensor
+         * @param rhs - right hand side tensor
          * @return result of two tensor multiplication
          */
         template<typename S>
-        typename std::enable_if < std::is_same < S, tensorType >::value, tensorType >::type operator*(S tensor) {
-          throw std::runtime_error("Function is not implemented yet.");
+        typename std::enable_if < std::is_same < S, tensorType >::value, tensorType >::type operator*(const S& rhs) {
+          tensorType x(*this);
+          return x*=rhs;
         };
 
         /**
@@ -253,6 +236,7 @@ namespace alps {
          */
         template<typename S>
         typename std::enable_if < !std::is_same < S, tensorType >::value, tType & >::type operator*=(S scalar) {
+          static_assert(std::is_convertible<S, T>::value, "Can't perform inplace multiplication: S can be casted into T");
           Eigen::Map < Eigen::Matrix < T, 1, Eigen::Dynamic > > M(&data_.data(0), data_.size());
           M *= T(scalar);
           return *this;
@@ -262,31 +246,20 @@ namespace alps {
          * Inplace tensor multiplication
          */
         template<typename S>
-        typename std::enable_if < std::is_same < S, tensorType >::value, tensorType & >::type operator*=(S tensor) {
-          throw std::runtime_error("Function is not implemented yet.");
+        typename std::enable_if < std::is_same < S, tensorType >::value, tensorType & >::type operator*=(const S& rhs) {
+          Eigen::Map < Eigen::Array < T, 1, Eigen::Dynamic > > M1(&data_.data(0), data_.size());
+          Eigen::Map < const Eigen::Array < T, 1, Eigen::Dynamic > > M2(&rhs.data().data(0), rhs.data().size());
+          M1*=M2;
+          return *this;
         };
 
         /**
          * Tensor inversed scaling
          */
         template<typename S>
-        typename std::enable_if < !std::is_same < S, tensorType >::value && std::is_scalar < S >::value, tensorType >::type operator/(S scalar) {
-          tensorType x(*this);
-          x /= T(scalar);
-          return x;
-        };
-
-        /**
-         * Real value Tensor division by complex scalar. Method will create complex Tensor that equals to current real tensor divided by complex scalar.
-         */
-        template<typename S, int M = D>
-        typename std::enable_if < !std::is_same < S, tensorType >::value && (is_complex < S >::value && !is_complex < T >::value), tensor < S, M > >::type operator/(S scalar) {
-          tensor < S, M > x(data_storage < S >(data_.size()), this->sizes_);
-          Eigen::Map < Eigen::Matrix < T, 1, Eigen::Dynamic, Eigen::RowMajor > > M1(&data_.data(0), data_.size());
-          Eigen::Map < Eigen::Matrix < S, 1, Eigen::Dynamic, Eigen::RowMajor > > M2(&x.data().data(0), data_.size());
-          M2 = M1;
-          x /= scalar;
-          return x;
+        typename std::enable_if < !std::is_same < S, tensorType >::value, tensor_base< decltype(S{} + T{}), Dim, data_storage< decltype(S{} * T{}) > > >::type operator/(S scalar) {
+          tensor_base< decltype(S{} + T{}), Dim, data_storage< decltype(S{} * T{}) > >  x(*this);
+          return (x /= scalar);
         };
 
         /**
@@ -294,8 +267,9 @@ namespace alps {
          */
         template<typename S>
         typename std::enable_if < !std::is_same < S, tensorType >::value, tType & >::type operator/=(S scalar) {
+          static_assert(std::is_convertible<S, T>::value, "Can not perform inplace division: S can be casted into T");
           Eigen::Map < Eigen::Matrix < T, 1, Eigen::Dynamic > > M(&data_.data(0), data_.size());
-          M /= T(scalar);
+          M *= T(1.0)/T(scalar);
           return *this;
         };
 
@@ -310,72 +284,39 @@ namespace alps {
          * For 2D square Tensor compute inverse Tensor.
          * @return inversed Tensor
          */
-        template<int M = D>
+        template<int M = Dim>
         typename std::enable_if < M == 2, tensorType >::type
         inverse() {
-          if (sizes_[0] != sizes_[1]) {
+          if (shape_[0] != shape_[1]) {
             throw std::invalid_argument("Can not do inversion of the non-square matrix.");
           }
           tensorType x(*this);
-          Eigen::Map < Eigen::Matrix < T, Eigen::Dynamic, Eigen::Dynamic > > Mt(&(x.data().data(0)), sizes_[0], sizes_[1]);
+          Eigen::Map < Eigen::Matrix < T, Eigen::Dynamic, Eigen::Dynamic > > Mt(&(x.data().data(0)), shape_[0], shape_[1]);
           Mt = Mt.inverse();
           return x;
         };
 
         /**
-         * Compute sum of two tensors if either left-hand-side tensor is complex or lhs and rhs tensors are of the same type.
+         * Compute sum of two tensors
          *
          * @tparam S  - data type of rhs tensor
          * @tparam Ct - storage type of rhs tensor
-         * @param  y  - rhs tensor
+         * @param  rhs  - rhs tensor
          * @return new tensor object that equals to sum of current tensor and rhs tensor
          */
         template<typename S, typename Ct>
-        typename std::enable_if <
-          std::is_same < S, T >::value || std::is_same < T, std::complex < double>>::value || std::is_same < T, std::complex < float>>::value, tensorType >::type
-        operator+(const tensor_base < S, D, Ct > &y) {
-          tensorType x(*this);
-          x += y;
-          return x;
-        };
-
-        /**
-         * Compute sum of two tensors if right-hand-side tensor is complex and rhs and lhs tensor are of different type.
-         *
-         * @tparam S  - data type of rhs tensor
-         * @tparam Ct - storage type of rhs tensor
-         * @param  y  - rhs tensor
-         * @return new tensor object that equals to sum of current tensor and rhs tensor
-         */
-        template<typename S, typename Ct>
-        typename std::enable_if <
-          !std::is_same < S, T >::value && (std::is_same < S, std::complex < double>>::value || std::is_same < S, std::complex < float>>::value), tensor < S, D > >::type
-        operator+(const tensor_base < S, D, Ct > &y) {
-          tensor < S, D > x(y);
-          x += *this;
-          return x;
+        tensor < decltype(S{} + T{}), Dim > operator+(const tensor_base < S, Dim, Ct > &rhs) {
+          tensor < decltype(S{} + T{}), Dim > x(*this);
+          return (x += rhs);
         };
 
         /**
          * Compute difference of two tensors of a same type
          */
-        template<typename S>
-        typename std::enable_if < std::is_same < S, tensorType >::value || std::is_same < S, tensorViewType >::value, tensorType >::type operator-(const S &y) {
-          tensorType x(*this);
-          x -= y;
-          return x;
-        };
-
-        /**
-         * Compute difference of two tensors of a different type
-         */
         template<typename S, typename Ct>
-        typename std::enable_if <
-          !std::is_same < S, T >::value && (std::is_same < S, std::complex < double>>::value || std::is_same < S, std::complex < float>>::value), tensor < S, D > >::type
-        operator-(const tensor_base < S, D, Ct > &y) {
-          tensor < S, D > x(y);
-          x -= *this;
-          return x;
+        tensor < decltype(S{} - T{}), Dim > operator-(const tensor_base < S, Dim, Ct > &rhs) {
+          tensor < decltype(S{} - T{}), Dim > x(*this);
+          return (x -= rhs);
         };
 
         /**
@@ -384,7 +325,7 @@ namespace alps {
         template<typename S, typename Ct>
         typename std::enable_if <
           std::is_same < S, T >::value || std::is_same < T, std::complex < double>>::value || std::is_same < T, std::complex < float>>::value, tType & >::type
-        operator+=(const tensor_base < S, D, Ct > &y) {
+        operator+=(const tensor_base < S, Dim, Ct > &y) {
           MatrixMap < T, 1, Eigen::Dynamic > M1(&data_.data(0), data_.size());
           Eigen::Map < const Eigen::Matrix < S, 1, Eigen::Dynamic, Eigen::RowMajor > > M2(&y.data().data(0), y.data().size());
           M1.noalias() += M2;
@@ -405,60 +346,57 @@ namespace alps {
         /**
          * Compute a dot product of two 2D tensors
          */
-        template<int M = D>
-        typename std::enable_if < M == 2, tensorType >::type
-        dot(const tensorType &y) {
-          if (sizes_[0] != y.sizes_[1] && sizes_[1] != y.sizes_[0]) {
+        tensorType dot(const tensorType &y) const {
+          static_assert(Dim == 2, "Can not do inversion for not 2D tensor.");
+          if (shape_[1] != y.shape_[0]) {
             throw std::invalid_argument("Can not do multiplication. Dimensions missmatches.");
           }
-          tensorType x(*this);
-          MatrixMap < T > M1(&x.data().data(0), sizes_[0], sizes_[1]);
-          Eigen::Map < const Eigen::Matrix < T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor > > M2(&y.data().data(0), sizes_[0], sizes_[1]);
-          M1 *= M2;
+          tensorType x({{shape_[0], y.shape_[1]}});
+          Eigen::Map < const Eigen::Matrix < T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor > > M1(&data().data(0), shape_[0], shape_[1]);
+          Eigen::Map < const Eigen::Matrix < T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor > > M2(&y.data().data(0), y.shape()[0], y.shape()[1]);
+          MatrixMap < T > M3(&x.data().data(0), x.shape()[0], x.shape()[1]);
+          M3 = M1*M2;
           return x;
         };
 
         /**
          * @return Eigen matrix representation for 2D Tensor
          */
-        template<int M = D>
-        typename std::enable_if < M == 2, MatrixMap < T > >::type
-        matrix() {
-          return MatrixMap < T >(&data().data(0), sizes_[0], sizes_[1]);
+        MatrixMap < T > matrix() {
+          static_assert(Dim == 2, "Can not return Eigen matrix view for not 2D tensor.");
+          return MatrixMap < T >(&data().data(0), shape_[0], shape_[1]);
         };
 
-
-
         /// sizes for each dimension
-        const std::array < size_t, D > &sizes() const { return sizes_; };
+        const std::array < size_t, Dim > &shape() const { return shape_; };
 
         /// offset multipliers for each dimension
-        const std::array < size_t, D > &acc_sizes() const { return acc_sizes_; };
+        const std::array < size_t, Dim > &acc_sizes() const { return acc_sizes_; };
 
         /// dimension of the tensor
-        int dimension() const { return D; }
+        int dimension() const { return Dim; }
 
         /// const reference to the data storage
-        const C &data() const { return data_; }
+        const Container &data() const { return data_; }
 
         /// reference to the data storage
-        C &data() { return data_; }
+        Container &data() { return data_; }
 
-        // these methods should be private but they are public for the test purposes
-      public:
         /// return index in the raw buffer for specified indices
-        template<int M, typename Ti, typename ...Ts>
-        size_t index(std::integral_constant < int, M > i, const Ti &t1, const Ts &...ts) const {
-          return t1 * acc_sizes_[i.value] + index(std::integral_constant < int, M + 1 >(), std::forward < const Ts & >(ts)...);
-        }
-
-        /// return index in the raw buffer for the last index
-        template<int M, typename Ti>
-        size_t index(std::integral_constant < int, M > i, const Ti &t1) const {
-          return t1 * acc_sizes_[i.value];
+        template<typename ...Indices>
+        size_t index(const Indices&...indices) const {
+          return index_impl(make_index_sequence<sizeof...(Indices)>(), size_t(indices)...);
         }
 
       private:
+        /**
+         * Internal implementation of indexing
+         */
+        template<size_t... I, typename ...Indices>
+        size_t index_impl(index_sequence<I...>, const Indices&... indices) const {
+          std::array<size_t, sizeof...(Indices)> a{{indices * acc_sizes_[I] ...}};
+          return std::accumulate(a.begin(), a.end(), 0, std::plus<size_t>());
+        }
         /**
          * compute offset multiplier for each dimension
          */
@@ -466,19 +404,15 @@ namespace alps {
           int k = 1;
           for (size_t &i : acc_sizes_) {
             i = 1;
-            for (int j = k; j < sizes_.size(); ++j) {
-              i *= sizes_[j];
+            for (int j = k; j < shape_.size(); ++j) {
+              i *= shape_[j];
             }
             ++k;
           }
         }
         /// compte size for the specific dimensions
-        size_t size(const std::array < size_t, D > &sizes) {
-          size_t res = 1;
-          for (int i = 0; i < D; ++i) {
-            res *= sizes[i];
-          }
-          return res;
+        size_t size(const std::array < size_t, Dim > &shape) {
+          return std::accumulate(shape.begin(), shape.end(), size_t(1), std::multiplies<size_t>());
         }
       };
 
@@ -486,4 +420,4 @@ namespace alps {
   }
 }
 
-#endif //GF2_TENSOR_H
+#endif //ALPSCORE_GF_TENSOR_H

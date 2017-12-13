@@ -4,8 +4,8 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef GF2_TENSORBASE_H
-#define GF2_TENSORBASE_H
+#ifndef ALPSCORE_GF_TENSORBASE_H
+#define ALPSCORE_GF_TENSORBASE_H
 
 
 namespace alps {
@@ -26,18 +26,21 @@ namespace alps {
         /// internal data storage
         std::vector<T> data_;
       public:
-        /// Create DataStorage from the view object by copying data into vector
-        explicit data_storage(const data_view<T> & view): data_(view.size()) {
-          for(int i =0 ; i< view.size(); ++i) {
-            data_[i] = view.data(i);
-          }
+
+        /// create data_dtorage from other storage object by copying data into vector
+        template<typename T2>
+        data_storage(const data_storage<T2> & storage): data_(storage.data().begin(), storage.data().end()) {};
+        template<typename T2>
+        data_storage(data_storage<T2> && storage): data_(storage.data().begin(), storage.data().end()) {};
+        /// Create data_dtorage from the view object by copying data into vector
+        template<typename T2>
+        data_storage(const data_view<T2> & view): data_(view.size()) {
+          static_assert(std::is_convertible<T2, T>::value, "View type can not be converted into storage");
+          std::copy(view.data(), view.data() + view.size(), data_.begin());
         }
         /// Move-Create DataStorage from the view object by copying data into vector
-        explicit data_storage(data_view<T> && view): data_(view.size()) {
-          for(int i =0 ; i< view.size(); ++i) {
-            data_[i] = view.data(i);
-          }
-        }
+        template<typename T2>
+        data_storage(data_view<T2> && view) noexcept : data_(view.data(), view.data() + view.size()){};
         /// Create data storage from raw buffer by data copying
         data_storage(const T *data, size_t size): data_(data, data+size){}
         /// Create empty storage of size %size%
@@ -76,4 +79,4 @@ namespace alps {
   }
 }
 
-#endif //GF2_TENSORBASE_H
+#endif //ALPSCORE_GF_TENSORBASE_H

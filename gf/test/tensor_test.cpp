@@ -54,27 +54,43 @@ TEST(TensorTest, TestAssignments) {
   U(3) = 555.0;
   ASSERT_DOUBLE_EQ(U(3), 555.0);
   ASSERT_DOUBLE_EQ(U(0), 0.0);
+
+  size_t N = 10;
+  Eigen::MatrixXd M1 = Eigen::MatrixXd::Random(N, N);
+  Eigen::MatrixXcd M2 = Eigen::MatrixXcd::Random(N, N);
+  tensor<double, 2> T1({{N, N}});
+  tensor<double, 2> T3(T1);
+  tensor<std::complex<double>, 2> T2({{N, N}});
+  for(int i = 0; i< N; ++i) {
+    for (int j = 0; j < N; ++j) {
+      T1(i,j) = M1(i,j);
+    }
+  }
+  T2 = T1;
+  ASSERT_EQ(T2, T1);
+  tensor_view<std::complex<double>, 2> V = T2;
+  ASSERT_EQ(V, T1);
 }
 
 
 TEST(TensorTest, TestSlices) {
-  tensor<std::complex<double>, 3> X(std::array<size_t, 3>{{1,2,3}});
+  tensor<std::complex<double>, 3> X({{1,2,3}});
 
   tensor_view<std::complex<double>, 1> slice1 = X(0, 1);
   ASSERT_EQ(slice1.dimension(), 1);
 
-  ASSERT_EQ(slice1.sizes()[0], 3);
+  ASSERT_EQ(slice1.shape()[0], 3);
 
-  for (int i = 0; i<X.sizes()[0]; ++i) {
+  for (int i = 0; i<X.shape()[0]; ++i) {
     tensor_view<std::complex<double>, 2> slice2 = X(i);
-    ASSERT_EQ(X.index(std::integral_constant<int, 0>(), i), 6*i);
+    ASSERT_EQ(X.index(i), 6*i);
     ASSERT_EQ(slice2.dimension(), 2);
-    ASSERT_EQ(slice2.sizes()[0], 2);
-    ASSERT_EQ(slice2.sizes()[1], 3);
-    for (int j = 0; j < X.sizes()[1]; ++j) {
-      ASSERT_EQ(X.index(std::integral_constant<int, 0>(), i, j), 6*i + j*3);
-      for (int k = 0; k < X.sizes()[2]; ++k) {
-        X(i, j, k) = i*X.sizes()[1]*X.sizes()[2] + j*X.sizes()[2] + k;
+    ASSERT_EQ(slice2.shape()[0], 2);
+    ASSERT_EQ(slice2.shape()[1], 3);
+    for (int j = 0; j < X.shape()[1]; ++j) {
+      ASSERT_EQ(X.index(i, j), 6*i + j*3);
+      for (int k = 0; k < X.shape()[2]; ++k) {
+        X(i, j, k) = i*X.shape()[1]*X.shape()[2] + j*X.shape()[2] + k;
         ASSERT_DOUBLE_EQ(slice2(j, k).real(), X(i,j,k).real());
         ASSERT_DOUBLE_EQ(slice2(j, k).imag(), X(i,j,k).imag());
       }
@@ -85,25 +101,25 @@ TEST(TensorTest, TestSlices) {
 
 TEST(TensorTest, TestSubSlices) {
   tensor<double, 4> X({{3,4,5,6}});
-  for (int i = 0; i<X.sizes()[0]; ++i) {
+  for (int i = 0; i< X.shape()[0]; ++i) {
     tensor_view<double, 3> Y = X(i);
-    for (int j = 0; j < X.sizes()[1]; ++j) {
+    for (int j = 0; j < X.shape()[1]; ++j) {
       tensor_view<double, 2> Z = Y (j);
-      ASSERT_EQ(Z.data().offset(), (i*X.sizes()[1]+ j)*X.sizes()[2]*X.sizes()[3]);
-      std::vector<double> XX(X.sizes()[2]*X.sizes()[3], 0.0);
-      for (int k = 0; k < X.sizes()[2]; ++k) {
-        for (int l = 0; l < X.sizes()[3]; ++l) {
-          double value = i * X.sizes()[1] * X.sizes()[2] * X.sizes()[3] + j * X.sizes()[2] * X.sizes()[3] + k * X.sizes()[3] + l;
+      ASSERT_EQ(Z.data().offset(), (i* X.shape()[1]+ j)* X.shape()[2]* X.shape()[3]);
+      std::vector<double> XX(X.shape()[2]* X.shape()[3], 0.0);
+      for (int k = 0; k < X.shape()[2]; ++k) {
+        for (int l = 0; l < X.shape()[3]; ++l) {
+          double value = i * X.shape()[1] * X.shape()[2] * X.shape()[3] + j * X.shape()[2] * X.shape()[3] + k * X.shape()[3] + l;
           X(i, j, k, l) = value;
-          XX[k*X.sizes()[3] + l] = value;
+          XX[k* X.shape()[3] + l] = value;
           ASSERT_DOUBLE_EQ(Y(j, k, l), X(i, j, k, l));
           ASSERT_DOUBLE_EQ(Z(k, l),    X(i, j, k, l));
         }
       }
-      for (int k = 0; k < X.sizes()[2]; ++k) {
-        for (int l = 0; l < X.sizes()[3]; ++l) {
-          ASSERT_DOUBLE_EQ(XX[k*X.sizes()[3] + l], X(i, j, k, l));
-          ASSERT_DOUBLE_EQ(XX[k*X.sizes()[3] + l], Z(k, l));
+      for (int k = 0; k < X.shape()[2]; ++k) {
+        for (int l = 0; l < X.shape()[3]; ++l) {
+          ASSERT_DOUBLE_EQ(XX[k* X.shape()[3] + l], X(i, j, k, l));
+          ASSERT_DOUBLE_EQ(XX[k* X.shape()[3] + l], Z(k, l));
         }
       }
     }
@@ -112,30 +128,35 @@ TEST(TensorTest, TestSubSlices) {
 
 TEST(TensorTest, TestMultByScalar) {
   tensor<double, 2> XX({{3, 4}});
-  for (int i = 0; i < XX.sizes()[0]; ++i) {
-    for (int j = 0; j < XX.sizes()[1]; ++j) {
-      double value = i * XX.sizes()[0] + j;
+  for (int i = 0; i < XX.shape()[0]; ++i) {
+    for (int j = 0; j < XX.shape()[1]; ++j) {
+      double value = i * XX.shape()[0] + j;
       XX(i, j) = value;
     }
   }
   double mult = 12;
   tensor<double, 2> X = XX * mult;
-  for (int i = 0; i < XX.sizes()[0]; ++i) {
-    for (int j = 0; j < XX.sizes()[1]; ++j) {
-      double value = i * XX.sizes()[0] + j;
+  for (int i = 0; i < XX.shape()[0]; ++i) {
+    for (int j = 0; j < XX.shape()[1]; ++j) {
+      double value = i * XX.shape()[0] + j;
       ASSERT_DOUBLE_EQ(value*mult, X(i, j));
       ASSERT_DOUBLE_EQ(value, XX(i, j));
     }
   }
   XX *= 10;
-  for (int i = 0; i < XX.sizes()[0]; ++i) {
-    for (int j = 0; j < XX.sizes()[1]; ++j) {
-      double value = i * XX.sizes()[0] + j;
+  for (int i = 0; i < XX.shape()[0]; ++i) {
+    for (int j = 0; j < XX.shape()[1]; ++j) {
+      double value = i * XX.shape()[0] + j;
       ASSERT_DOUBLE_EQ(value*10, XX(i, j));
     }
   }
-
-  ASSERT_ANY_THROW(XX * X);
+  auto Z = XX * X;
+  for (int i = 0; i < XX.shape()[0]; ++i) {
+    for (int j = 0; j < XX.shape()[1]; ++j) {
+      double value = i * XX.shape()[0] + j;
+      ASSERT_DOUBLE_EQ(Z(i, j), X(i, j) * XX(i, j));
+    }
+  }
 }
 
 TEST(TensorTest, RemoteDataRef) {
@@ -146,15 +167,15 @@ TEST(TensorTest, RemoteDataRef) {
   for(int i = 0; i< X.size(); ++i) {
     X[i] = i*0.5;
   }
-  for(int i = 0; i<Y.sizes()[0]; ++i) {
+  for(int i = 0; i< Y.shape()[0]; ++i) {
     ASSERT_DOUBLE_EQ(X[i], Y(i));
   }
-  for(int i = 0; i<Z.sizes()[0]; ++i) {
+  for(int i = 0; i< Z.shape()[0]; ++i) {
     tensor_view<double, 1> W = Z(i);
-    for (int j = 0; j < Z.sizes()[1]; ++j) {
+    for (int j = 0; j < Z.shape()[1]; ++j) {
       W(j) += 10;
-      ASSERT_DOUBLE_EQ(X[i*Z.sizes()[1] + j], Z(i, j));
-      ASSERT_DOUBLE_EQ(X[i*Z.sizes()[1] + j], W(j));
+      ASSERT_DOUBLE_EQ(X[i* Z.shape()[1] + j], Z(i, j));
+      ASSERT_DOUBLE_EQ(X[i* Z.shape()[1] + j], W(j));
     }
   }
 }
@@ -287,8 +308,16 @@ TEST(TensorTest, DoubleScaleByComplex) {
       X(i,j) = M1(i,j);
     }
   }
-  auto M3 = M1 * x;
+  auto M2 = M1 * x;
   auto Y = X * x;
+  for(int i = 0; i< N; ++i){
+    for (int j = 0; j < N; ++j) {
+      ASSERT_DOUBLE_EQ(Y(i, j).real(), M2(i, j).real());
+      ASSERT_DOUBLE_EQ(Y(i, j).imag(), M2(i, j).imag());
+    }
+  }
+  auto M3 = M1 / x;
+  Y = X / x;
   for(int i = 0; i< N; ++i){
     for (int j = 0; j < N; ++j) {
       ASSERT_DOUBLE_EQ(Y(i, j).real(), M3(i, j).real());
@@ -342,10 +371,73 @@ TEST(TensorTest, DoublePlusComplex) {
       ASSERT_DOUBLE_EQ(Y(i, j).imag(), M3(i, j).imag());
     }
   }
-//  Y -= Z;
+  Y -= Z;
   for(int i = 0; i< N; ++i){
     for (int j = 0; j < N; ++j) {
-//      ASSERT_DOUBLE_EQ(Y(i, j), X(i, j));
+      ASSERT_DOUBLE_EQ(Y(i, j).real(), X(i, j));
     }
   }
+}
+
+TEST(TensorTest, DotProduct) {
+  size_t n = 40;
+  size_t m = 40;
+  size_t l = 20;
+  // same size
+  Eigen::MatrixXd M(n,n);
+  M = Eigen::MatrixXd::Random(n, n);
+  tensor<double, 2> X1({{n, n}});
+  tensor<double, 2> X2({{n, n}});
+  for(int i = 0; i< n; ++i){
+    for (int j = 0; j < n; ++j) {
+      X1(i, j) = M(i, j);
+      X2(i, j) = M(j, i);
+    }
+  }
+  Eigen::MatrixXd M2 = M*(M.transpose());
+  auto X3 = X1.dot(X2);
+  for(int i = 0; i< n; ++i){
+    for (int j = 0; j < n; ++j) {
+      ASSERT_DOUBLE_EQ(X3(i, j), M2(i, j));
+    }
+  }
+  Eigen::MatrixXd N1(n,l);
+  Eigen::MatrixXd N2(l,n);
+  N1 = Eigen::MatrixXd::Random(n, l);
+  N2 = Eigen::MatrixXd::Random(l, n);
+  tensor<double, 2> Y1({{n, l}});
+  tensor<double, 2> Y2({{l, n}});
+  for(int i = 0; i< n; ++i){
+    for (int j = 0; j < l; ++j) {
+      Y1(i, j) = N1(i, j);
+      Y2(j, i) = N2(j, i);
+    }
+  }
+  ASSERT_ANY_THROW(Y1.dot(X1));
+  Eigen::MatrixXd N3 = N1*N2;
+  auto Y3 = Y1.dot(Y2);
+  ASSERT_EQ(Y3.shape()[0], n);
+  ASSERT_EQ(Y3.shape()[1], n);
+  for(int i = 0; i< n; ++i){
+    for (int j = 0; j < n; ++j) {
+      ASSERT_DOUBLE_EQ(Y3(i, j), N3(i, j));
+    }
+  }
+}
+
+TEST(TensorTest, StorageAssignments) {
+  size_t N = 10;
+  data_storage<double> storage_obj(N);
+  std::vector<double> buffer_obj(N, 0.0);
+  for(int i =0 ;i<buffer_obj.size(); ++i) {
+    buffer_obj[i] = i*15.0;
+  }
+//  data_view<double> view_obj(buffer_obj.data(), buffer_obj.size());
+  data_storage<std::complex<double> > storage_obj2 = data_view<double>(buffer_obj.data(), buffer_obj.size());
+  ASSERT_EQ(storage_obj2.size(), buffer_obj.size());
+  for(int i =0 ;i<buffer_obj.size(); ++i) {
+    ASSERT_DOUBLE_EQ(buffer_obj[i], storage_obj2.data(i).real());
+  }
+  ASSERT_NO_THROW(storage_obj2 = storage_obj);
+
 }

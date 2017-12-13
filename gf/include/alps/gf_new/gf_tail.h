@@ -42,6 +42,7 @@ namespace alps {
     }
     template<typename HEADGF, typename TAILGF>
     using gf_tail      = detail::gf_tail_base<HEADGF, TAILGF>;
+    // TODO: think how to implement tailed GF view
 //    template<typename VTYPE, typename ...Meshes>
 //    using gf_tail_view = detail::gf_tail_base<VTYPE, detail::tensor_view<VTYPE, sizeof...(Meshes)>, Meshes...>;
 
@@ -121,7 +122,7 @@ namespace alps {
               tail_eq &= (tails_[i] == rhs.tails_[i]);
             }
           }
-          return tail_eq && HEADGF::operator==(static_cast<HEADGF>(rhs));
+          return tail_eq && HEADGF::operator==(rhs);
         }
 
         /**
