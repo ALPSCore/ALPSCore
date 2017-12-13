@@ -132,11 +132,11 @@ namespace alps {
          * @return      - return current GF with new tail of order %order% set
          */
         gf_type_with_tail& set_tail(int order, const tail_type &tail){
-          static_assert(std::is_same<typename tail_type::mesh_types, decltype(subtuple<1>(HEADGF::meshes())) >::value, "Incorrect tail mesh types" );
+          static_assert(std::is_same<typename tail_type::mesh_types, decltype(tuple_tail < 1 >(HEADGF::meshes())) >::value, "Incorrect tail mesh types" );
 
           int tail_size=tails_.size();
           if(order>=tail_size){
-            tails_.resize(order+1, tail_type ( subtuple<1>(meshes())));
+            tails_.resize(order+1, tail_type (tuple_tail < 1 >(meshes())));
             for(int i=tail_size;i<=order;++i) tails_[i].initialize();
           }
           tails_[order]=tail;
@@ -174,12 +174,12 @@ namespace alps {
           tails_.clear();
           if(min_tail_order_==TAIL_NOT_SET) return;
 
-          if(min_tail_order_>0) tails_.resize(min_tail_order_, tail_type ( subtuple<1>(meshes())));
+          if(min_tail_order_>0) tails_.resize(min_tail_order_, tail_type (tuple_tail < 1 >(meshes())));
 
           std::vector<typename TAILGF::value_type> buffer;
           for (int i=min_tail_order_; i<=max_tail_order_; ++i) {
             ar[path+"/tail/"+boost::lexical_cast<std::string>(i)] >> buffer;
-            tails_.push_back(tail_type(buffer.data(), subtuple<1>(meshes())));
+            tails_.push_back(tail_type(buffer.data(), tuple_tail < 1 >(meshes())));
           }
         }
 
@@ -203,7 +203,7 @@ namespace alps {
           gf_type::broadcast(comm,root);
           detail::broadcast_tail(comm,
                                  min_tail_order_, max_tail_order_,
-                                 tails_, tail_type(subtuple<1>(meshes())),
+                                 tails_, tail_type(tuple_tail < 1 >(meshes())),
                                  root);
         }
 #endif

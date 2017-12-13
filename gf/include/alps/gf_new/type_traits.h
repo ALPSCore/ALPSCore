@@ -73,15 +73,15 @@ namespace alps {
 
 
       template <int Cut, typename... T, std::size_t... I>
-      auto subtuple_(const std::tuple<T...>& t, index_sequence<I...> s) -> decltype(std::make_tuple(std::get<Cut + I>(t)...)) {
+      auto tuple_tail_(const std::tuple < T... > &t, index_sequence < I... > s) -> decltype(std::make_tuple(std::get<Cut + I>(t)...)) {
         return std::make_tuple(std::get<Cut + I>(t)...);
       }
 
-      // using the index sequence iterate over tuple from the end and create a new tuple
+      // using the index sequence iterate to extract a tail of Trim size
       template <int Trim, typename... T>
-      auto subtuple(const std::tuple<T...>& t) -> decltype(subtuple_<Trim>(t, make_index_sequence<sizeof...(T) - Trim>()))
+      auto tuple_tail(const std::tuple < T... > &t) -> decltype(tuple_tail_<Trim>(t, make_index_sequence<sizeof...(T) - Trim>()))
       {
-        return subtuple_<Trim>(t, make_index_sequence<sizeof...(T) - Trim>());
+        return tuple_tail_<Trim>(t, make_index_sequence<sizeof...(T) - Trim>());
       }
     }
   }
