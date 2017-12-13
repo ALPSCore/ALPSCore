@@ -203,7 +203,7 @@ namespace alps {
         auto operator()(typename std::enable_if<(sizeof...(Indices)+1 < N_), typename std::tuple_element<0,mesh_types>::type::index_type >::type ind,
                     Indices...inds) -> decltype(subpack<VTYPE, N_ - sizeof...(Indices) - 1>(VTYPE(0), meshes_)) {
           return decltype(subpack<VTYPE, N_ - sizeof...(Indices) - 1>(VTYPE(0), meshes_))
-                          (*this, meshes_, subtuple<sizeof...(Indices) + 1>(meshes_), ind, std::forward<Indices>(inds)...);
+                          (*this, meshes_, tuple_tail < sizeof...(Indices) + 1 >(meshes_), ind, std::forward<Indices>(inds)...);
         }
 
 
