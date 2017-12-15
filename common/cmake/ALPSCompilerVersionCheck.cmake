@@ -98,7 +98,7 @@ endfunction()
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 if (ALPS_CXX_STD STREQUAL "c++03")
-  # FIXME: we have to "downgrade" the standard if compiler's default is C++1x
+  # we have to "downgrade" the standard if compiler's default is C++1x
   alps_get_cxx03_flag(cxx03_flag_)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${cxx03_flag_}")
   set(ALPS_CXX_FEATURES "" CACHE INTERNAL "List of C++ features required by ALPSCore")
