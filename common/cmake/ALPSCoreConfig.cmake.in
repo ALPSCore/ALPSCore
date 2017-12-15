@@ -53,8 +53,25 @@ function(alpscore_config_main_)
     set(ALPSCore_LIBRARIES ${ALPSCore_LIBRARIES} PARENT_SCOPE)
 endfunction(alpscore_config_main_)
 
-alpscore_config_main_()
-set(ALPSCore_HAS_MPI @ALPS_HAVE_MPI@)
 
+set(ALPSCore_HAS_MPI @ALPS_HAVE_MPI@)
+set(ALPSCore_CXX_COMPILER_ID @CMAKE_CXX_COMPILER_ID@)
+set(ALPSCore_CXX_COMPILER_VERSION @CMAKE_CXX_COMPILER_VERSION@)
+if (ALPSCore_CXX_COMPILER_ID STREQUAL CMAKE_CXX_COMPILER_ID
+    AND
+    ALPSCore_CXX_COMPILER_VERSION STREQUAL CMAKE_CXX_COMPILER_VERSION)
+  set(ALPSCore_COMPILER_MATCH true)
+  alpscore_config_main_()
+else()
+  message(WARNING "The C++ compiler used to build your project should exactly match"
+    " the C++ compiler that was used to build ALPSCore."
+"
+ ALPSCore C++ compiler ID: ${ALPSCore_CXX_COMPILER_ID}
+ ALPSCore C++ compiler version: ${ALPSCore_CXX_COMPILER_VERSION}
+ Current C++ compiler ID: ${CMAKE_CXX_COMPILER_ID}
+ Current C++ compiler version: ${CMAKE_CXX_COMPILER_VERSION}
+ Current C++ compiler: ${CMAKE_CXX_COMPILER}")
+  set(ALPSCore_COMPILER_MATCH false)
+endif()
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(ALPSCore REQUIRED_VARS ALPSCore_LIBRARIES HANDLE_COMPONENTS)
+find_package_handle_standard_args(ALPSCore REQUIRED_VARS ALPSCore_LIBRARIES ALPSCore_COMPILER_MATCH HANDLE_COMPONENTS)
