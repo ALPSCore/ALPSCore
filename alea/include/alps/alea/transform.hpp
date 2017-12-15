@@ -9,116 +9,100 @@
 #include <alps/alea/computed.hpp>
 
 #include <alps/alea/mean.hpp>
+#include <alps/alea/variance.hpp>
+#include <alps/alea/covariance.hpp>
+#include <alps/alea/batch.hpp>
+
 #include <alps/alea/propagation.hpp>
 #include <alps/alea/convert.hpp>
+#include <alps/alea/transformer.hpp> //FIXME
 
 #include <random>
+#include <type_traits>
+
 
 namespace alps { namespace alea {
 
-/**
- * Linear transformation mediated by a matrix.
- */
-template <typename T>
-struct linear_transform
-    : public transform<T>
+template <typename T, typename InResult>
+mean_result<T> transform(no_prop, const transformer<T> &tf, const InResult &in)
 {
-public:
-    template <typename Derived>
-    linear_transform(const Eigen::MatrixBase<Derived> &mat)
-        : mat_(mat)
-    { }
+    static_assert(traits<InResult>::HAVE_MEAN, "result does not have mean");
+    static_assert(std::is_same<typename traits<InResult>::value_type, T>::value,
+                  "Result and transform types are mismatched");
 
-    size_t in_size() const { return mat_.rows(); }
+    if (tf.in_size() != in.size())
+        throw size_mismatch();
 
-    size_t out_size() const { return mat_.cols(); }
-
-    column<T> operator() (const column<T> &in) const
-    {
-        // TODO figure this out
-        return mat_ * typename eigen<T>::col(in);
-    }
-
-    bool is_linear() const { return true; }
-
-private:
-    typename eigen<T>::matrix mat_;
-};
-
-// TODO: make this more general
-
-template <typename T>
-struct scalar_unary_transform
-    : public transform<T>
-{
-public:
-    scalar_unary_transform(const std::function<T(T)> &fn) : fn_(fn) { }
-
-    size_t in_size() const { return 1; }
-
-    size_t out_size() const { return 1; }
-
-    column<T> operator() (const column<T> &in) const
-    {
-        if (in.size() != in_size())
-            throw size_mismatch();
-
-        column<T> ret(1);
-        ret(0) = fn_(in(0));
-        return ret;
-    }
-
-private:
-    std::function<T(T)> fn_;
-};
-
-template <typename T>
-struct scalar_binary_transform
-    : public transform<T>
-{
-public:
-    scalar_binary_transform(const std::function<T(T,T)> &fn) : fn_(fn) { }
-
-    size_t in_size() const { return 2; }
-
-    size_t out_size() const { return 1; }
-
-    column<T> operator() (const column<T> &in) const
-    {
-        if (in.size() != in_size())
-            throw size_mismatch();
-
-        column<T> ret(1);
-        ret(0) = fn_(in(0), in(1));
-        return ret;
-    }
-
-private:
-    std::function<T(T,T)> fn_;
-};
-
-template <typename T>
-scalar_unary_transform<T> make_scalar_transform(const std::function<T(T)> &fn)
-{
-    return scalar_unary_transform<T>(fn);
+    mean_result<T> res(mean_data<T>(tf.out_size()));
+    res.store().data() = tf(in.mean());
+    res.store().count() = in.count();
+    return res;
 }
 
-template <typename T>
-scalar_unary_transform<T> make_scalar_transform(const std::function<T(T,T)> &fn)
+// template mean_result<double> transform(no_prop, const transformer<double>&, const mean_result<double>&);
+
+template <typename T, typename InResult,
+          typename std::enable_if<traits<InResult>::HAVE_COV>::type * = nullptr>
+cov_result<T> transform(linear_prop p, const transformer<T> &tf, const InResult &in)
 {
-    return scalar_binary_transform<T>(fn);
+    static_assert(traits<InResult>::HAVE_MEAN, "result does not have mean");
+    static_assert(traits<InResult>::HAVE_COV, "result does not have covariance");
+    static_assert(std::is_same<typename traits<InResult>::value_type, T>::value,
+                  "Result and transform types are mismatched");
+
+    if (tf.in_size() != in.size())
+        throw size_mismatch();
+
+    double dx = p.dx();
+    if (dx == 0)
+        dx = 0.125 * std::abs(in.stderror().mean());
+    typename eigen<T>::matrix jac = jacobian(tf, in.mean(), dx);
+
+    cov_result<T> res(cov_data<T>(tf.out_size()));
+    res.store().data() = tf(in.mean());
+    res.store().data2() = jac * in.cov() * jac.adjoint();
+    res.store().count() = in.count();
+    return res;
 }
 
-// template <typename T, typename Result, typename Str=no_propagation>
-// typename bind<
-//
-//
-// template <typename Result, typename Str=no_propagation>
-// typename bind<Str,Result>::out_result_type do_transform(
-//                             const typename bind<Str,Result>::transform_type &t,
-//                             const Result &in)
-// {
-//     return bind<Str,Result>(t, in);
-// }
+// template cov_result<double> transform(linear_prop, const transformer<double>&, const cov_result<double>&);
+
+template <typename T, typename InResult,
+          typename std::enable_if<!traits<InResult>::HAVE_COV>::type * = nullptr>
+cov_result<T> transform(linear_prop p, const transformer<T> &tf, const InResult &in)
+{
+    static_assert(traits<InResult>::HAVE_MEAN, "result does not have mean");
+    static_assert(traits<InResult>::HAVE_VAR, "result does not have variance");
+    static_assert(std::is_same<typename traits<InResult>::value_type, T>::value,
+                  "Result and transform types are mismatched");
+
+    if (tf.in_size() != in.size())
+        throw size_mismatch();
+
+    double dx = p.dx();
+    if (dx == 0)
+        dx = 0.125 * std::abs(in.stderror().mean());
+    typename eigen<T>::matrix jac = jacobian(tf, in.mean(), dx);
+
+    cov_result<T> res(cov_data<T>(tf.out_size()));
+    res.store().data() = tf(in.mean());
+    res.store().data2() = jac * in.var().asDiagonal() * jac.adjoint();
+    res.store().count() = in.count();
+    return res;
+}
+
+// template cov_result<double> transform(linear_prop, const transformer<double>&, const var_result<double>&);
+
+template <typename T>
+batch_result<T> transform(jackknife_prop, const transformer<T> &tf, const batch_result<T> &in)
+{
+    if (tf.in_size() != in.size())
+        throw size_mismatch();
+
+    batch_result<T> res(jackknife(in.store(), tf));
+    return res;
+}
+
+template batch_result<double> transform(jackknife_prop, const transformer<double>&, const batch_result<double>&);
 
 }}

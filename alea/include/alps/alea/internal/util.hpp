@@ -18,4 +18,25 @@ inline void check_valid(const Acc &acc)
         throw alps::alea::finalized_accumulator();
 }
 
+
+template <typename T, typename... Args>
+T call_vargs(std::function<T(Args...)> func, const T *args);
+
+template <typename T, typename... Args>
+T call_vargs(std::function<T(T, Args...)> func, const T *args)
+{
+    // use currying to transform multi-argument function to hierarchy
+    const T head = *args;
+    std::function<T(Args...)> closure =
+                [=](Args... tail) -> T { return func(head, tail...); };
+    return call_vargs(closure, ++args);
+}
+
+template <typename T>
+T call_vargs(std::function<T()> func, const T *)
+{
+    // unravel the currying hierarchy
+    return func();
+}
+
 }}}

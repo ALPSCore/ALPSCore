@@ -3,6 +3,7 @@
 #include <alps/alea/covariance.hpp>
 #include <alps/alea/convert.hpp>
 #include <alps/alea/transform.hpp>
+#include <alps/alea/transformer.hpp>
 #include <alps/alea/propagation.hpp>
 
 #include <alps/testing/near.hpp>
@@ -15,7 +16,7 @@
 TEST(jacobian, linear)
 {
     Eigen::MatrixXd tfmat = Eigen::MatrixXd::Random(3, 3);
-    alps::alea::linear_transform<double> tf = tfmat;
+    alps::alea::linear_transformer<double> tf = tfmat;
 
     // The Jacobian is now constant
     Eigen::VectorXd x = Eigen::VectorXd::Zero(3);
@@ -74,4 +75,72 @@ TEST(twogauss, join)
     EXPECT_EQ(2U, joined_mean.size());
     EXPECT_NEAR(twogauss_mean[0], joined_mean[0], 1e-6);
     EXPECT_NEAR(twogauss_mean[1], joined_mean[1], 1e-6);
+}
+
+template <typename Acc>
+class twogauss_join_case
+    : public ::testing::Test
+{
+public:
+    typedef typename alps::alea::traits<Acc>::value_type value_type;
+    typedef typename alps::alea::traits<Acc>::result_type result_type;
+
+    twogauss_join_case() { }
+
+    void test_result()
+    {
+        Acc acc1;
+        for (size_t i = 0; i != twogauss_count; ++i)
+            acc1 << twogauss_data[i][0];
+
+        Acc acc2;
+        for (size_t i = 0; i != twogauss_count; ++i)
+            acc2 << twogauss_data[i][1];
+
+        std::vector<double> joined_mean =
+                        alps::alea::join(acc1.result(), acc2.result()).mean();
+        EXPECT_EQ(2U, joined_mean.size());
+        EXPECT_NEAR(twogauss_mean[0], joined_mean[0], 1e-6);
+        EXPECT_NEAR(twogauss_mean[1], joined_mean[1], 1e-6);
+    }
+};
+
+typedef ::testing::Types<
+      alps::alea::mean_acc<double>
+    , alps::alea::var_acc<double>
+    , alps::alea::cov_acc<double>
+    , alps::alea::autocorr_acc<double>
+    , alps::alea::batch_acc<double>
+    > joinable;
+
+TYPED_TEST_CASE(twogauss_join_case, joinable);
+TYPED_TEST(twogauss_join_case, test_result) { this->test_result(); }
+
+TEST(twogauss, rotate)
+{
+    Eigen::Matrix2d rot;
+    rot << 1, 2, 3, 4;
+
+    alps::alea::cov_acc<double> norm_acc(2);
+    alps::alea::cov_acc<double> rot_acc(2);
+    for (size_t i = 0; i != twogauss_count; ++i) {
+        Eigen::Map<Eigen::Vector2d> dat((double *)twogauss_data[i], 2);
+
+        // TODO make this nicer
+        norm_acc << alps::alea::column<double>(dat);
+        rot_acc << alps::alea::column<double>(rot * dat);
+    }
+
+    alps::alea::linear_transformer<double> tf(rot);
+    alps::alea::cov_result<double> norm_res = norm_acc.finalize();
+    alps::alea::cov_result<double> rot_res = rot_acc.finalize();
+    alps::alea::cov_result<double> norm_res_ret =
+                alps::alea::transform(alps::alea::linear_prop(), tf, norm_res);
+
+    // check if mean is commutative
+    EXPECT_NEAR(norm_res_ret.mean()[0], rot_res.mean()[0], 1e-6);
+    EXPECT_NEAR(norm_res_ret.mean()[1], rot_res.mean()[1], 1e-6);
+
+    // check if covariance is commutative
+    ALPS_EXPECT_NEAR(norm_res_ret.cov(), rot_res.cov(), 1e-6);
 }

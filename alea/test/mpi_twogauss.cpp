@@ -1,5 +1,9 @@
-#include <alps/alea/mean.hpp>
 #include <alps/alea/mpi.hpp>
+#include <alps/alea/mean.hpp>
+#include <alps/alea/variance.hpp>
+#include <alps/alea/covariance.hpp>
+#include <alps/alea/autocorr.hpp>
+#include <alps/alea/batch.hpp>
 
 #include "alps/utilities/gtest_par_xml_output.hpp"
 #include "gtest/gtest.h"
@@ -25,6 +29,7 @@ class mpi_twogauss_case
 {
 public:
     typedef typename alps::alea::traits<Acc>::value_type value_type;
+    typedef typename alps::alea::traits<Acc>::result_type result_type;
 
     mpi_twogauss_case()
         : acc_(2)
@@ -41,7 +46,7 @@ public:
 
     void test_mean()
     {
-        alps::alea::mean_result<value_type> result = acc_.result();
+        result_type result = acc_.result();
 
         alps::alea::reducer_setup setup = red_.get_setup();
         result.reduce(red_);
@@ -61,7 +66,11 @@ private:
 
 
 typedef ::testing::Types<
-    alps::alea::mean_acc<double>
+      alps::alea::mean_acc<double>
+    , alps::alea::var_acc<double>
+    , alps::alea::cov_acc<double>
+    , alps::alea::autocorr_acc<double>
+    , alps::alea::batch_acc<double>
     > test_types;
 
 TYPED_TEST_CASE(mpi_twogauss_case, test_types);

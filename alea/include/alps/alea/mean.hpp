@@ -89,27 +89,39 @@ public:
 
     mean_acc &operator=(const mean_acc &other);
 
+    /** Re-allocate and thus clear all accumulated data */
     void reset();
 
+    /** Returns `false` if `finalize()` has been called, `true` otherwise */
     bool valid() const { return (bool)store_; }
 
+    /** Number of components of the random vector (e.g., size of mean) */
     size_t size() const { return size_; }
 
-    template <typename S>
-    mean_acc &operator<<(const S &obj)
-    {
-        computed_adapter<T, S> source(obj);
-        return *this << (const computed<T> &) source;
-    }
-
+    /** Add computed vector to the accumulator */
     mean_acc &operator<<(const computed<T> &source);
 
+    /** Add Eigen vector-valued expression to accumulator */
+    template <typename Derived>
+    mean_acc &operator<<(const Eigen::DenseBase<Derived> &o)
+    { return *this << eigen_adapter<T,Derived>(o); }
+
+    /** Add `std::vector` to accumulator */
+    mean_acc &operator<<(const std::vector<T> &o) { return *this << vector_adapter<T>(o); }
+
+    /** Add scalar value to accumulator */
+    mean_acc &operator<<(T o) { return *this << value_adapter<T>(o); }
+
+    /** Returns sample size, i.e., number of accumulated data points */
     size_t count() const { return store_->count(); }
 
+    /** Returns result corresponding to current state of accumulator */
     mean_result<T> result() const;
 
+    /** Frees data associated with accumulator and return result */
     mean_result<T> finalize();
 
+    /** Return backend object used for storing estimands */
     const mean_data<T> &store() const { return *store_; }
 
 protected:
@@ -148,23 +160,32 @@ public:
 
     mean_result &operator=(const mean_result &other);
 
+    /** Returns `false` if `finalize()` has been called, `true` otherwise */
     bool valid() const { return (bool)store_; }
 
+    /** Number of components of the random vector (e.g., size of mean) */
     size_t size() const { return store_->size(); }
 
+    /** Returns sample size, i.e., number of accumulated data points */
     size_t count() const { return store_->count(); }
 
+    /** Returns sample mean */
     const column<T> &mean() const { return store_->data(); }
 
+    /** Return backend object used for storing estimands */
     const mean_data<T> &store() const { return *store_; }
 
+    /** Return backend object used for storing estimands */
     mean_data<T> &store() { return *store_; }
 
-    void reduce(reducer &);
+    /** Collect measurements from different instances using sum-reducer */
+    void reduce(const reducer &r) { return reduce(r, true, true); }
 
+    /** Convert result to a permanent format (write to disk etc.) */
     void serialize(serializer &);
 
-    void transform(const transform<T> &);
+protected:
+    void reduce(const reducer &, bool do_pre_commit, bool do_post_commit);
 
 private:
     std::unique_ptr< mean_data<T> > store_;

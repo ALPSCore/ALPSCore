@@ -189,6 +189,25 @@ column<typename bind<Str,T>::cov_type> batch_result<T>::cov() const
     return aux_acc.finalize().cov();
 }
 
+template <typename T>
+void batch_result<T>::reduce(const reducer &r, bool pre_commit, bool post_commit)
+{
+    // FIXME this is bad since it mixes bins
+    internal::check_valid(*this);
+    if (pre_commit) {
+        r.reduce(sink<T>(store_->batch().data(), store_->batch().size()));
+        r.reduce(sink<size_t>(store_->count().data(), store_->num_batches()));
+    }
+    if (pre_commit && post_commit) {
+        r.commit();
+    }
+    if (post_commit) {
+        reducer_setup setup = r.get_setup();
+        if (!setup.have_result)
+            store_.reset();   // free data
+    }
+}
+
 template column<double> batch_result<double>::var<circular_var>() const;
 template column<double> batch_result<std::complex<double> >::var<circular_var>() const;
 template column<complex_op<double> > batch_result<std::complex<double> >::var<elliptic_var>() const;

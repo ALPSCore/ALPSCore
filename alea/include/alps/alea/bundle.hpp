@@ -22,10 +22,12 @@ class bundle
 public:
     bundle(size_t size, size_t cap) : sum_(size), capacity_(cap) { reset(); }
 
+    /** Re-allocate and thus clear all accumulated data */
     void reset() { sum_.fill(0); count_ = 0; }
 
     bool is_full() { assert(count_ <= capacity_); return count_ == capacity_; }
 
+    /** Number of components of the random vector (e.g., size of mean) */
     size_t size() const { return sum_.rows(); }
 
     size_t &capacity() { return capacity_; }

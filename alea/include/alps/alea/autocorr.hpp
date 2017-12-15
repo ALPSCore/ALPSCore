@@ -62,25 +62,36 @@ public:
 public:
     autocorr_acc(size_t size=1, size_t batch_size=1, size_t granularity=2);
 
+    /** Re-allocate and thus clear all accumulated data */
     void reset();
 
+    /** Returns `false` if `finalize()` has been called, `true` otherwise */
     bool valid() const { return !level_.empty(); }
 
+    /** Number of components of the random vector (e.g., size of mean) */
     size_t size() const { return size_; }
 
-    template <typename S>
-    autocorr_acc &operator<<(const S &obj)
-    {
-        computed_adapter<value_type, S> source(obj);
-        return *this << (const computed<value_type> &) source;
-    }
+    /** Add computed vector to the accumulator */
+    autocorr_acc &operator<<(const computed<T> &source);
 
-    autocorr_acc &operator<<(const computed<value_type> &source);
+    /** Add Eigen vector-valued expression to accumulator */
+    template <typename Derived>
+    autocorr_acc &operator<<(const Eigen::DenseBase<Derived> &o)
+    { return *this << eigen_adapter<T,Derived>(o); }
 
+    /** Add `std::vector` to accumulator */
+    autocorr_acc &operator<<(const std::vector<T> &o) { return *this << vector_adapter<T>(o); }
+
+    /** Add scalar value to accumulator */
+    autocorr_acc &operator<<(T o) { return *this << value_adapter<T>(o); }
+
+    /** Returns sample size, i.e., number of accumulated data points */
     size_t count() const { return count_; }
 
+    /** Returns result corresponding to current state of accumulator */
     autocorr_result<T> result() const;
 
+    /** Frees data associated with accumulator and return result */
     autocorr_result<T> finalize();
 
     size_t nlevel() const { return level_.size(); }
@@ -125,24 +136,33 @@ public:
     typedef var_result<T, circular_var> level_result_type;
 
 public:
-    autocorr_result() { }
+    autocorr_result(size_t nlevel=0) : level_(nlevel) { }
 
+    /** Returns `false` if `finalize()` has been called, `true` otherwise */
     bool valid() const { return !level_.empty(); }
 
+    /** Number of components of the random vector (e.g., size of mean) */
     size_t size() const { return level_[0].size(); }
 
+    /** Returns sample size, i.e., number of accumulated data points */
     size_t count() const { return level_[0].count(); }
 
+    /** Returns sample mean */
     const column<T> &mean() const { return level_[0].mean(); }
 
+    /** Returns bias-corrected sample variance */
     column<var_type> var() const;
 
+    /** Returns bias-corrected standard error of the mean */
     column<var_type> stderror() const;
 
+    /** Returns integrated auto-correlation time */
     column<var_type> tau() const;
 
-    void reduce(reducer &);
+    /** Collect measurements from different instances using sum-reducer */
+    void reduce(const reducer &r) { reduce(r, true, true); }
 
+    /** Convert result to a permanent format (write to disk etc.) */
     void serialize(serializer &);
 
     size_t find_level(size_t min_samples) const;
@@ -152,6 +172,11 @@ public:
     size_t nlevel() const { return level_.size(); }
 
     const level_result_type &level(size_t i) const { return level_[i]; }
+
+    level_result_type &level(size_t i) { return level_[i]; }
+
+protected:
+    void reduce(const reducer &r, bool do_pre_commit, bool do_post_commit);
 
 private:
     const static size_t default_min_samples = 256;

@@ -19,30 +19,79 @@
 namespace alps { namespace alea {
 
 /**
- * Do not perform error propagation
+ * Do not perform error propagation.
+ *
+ * Given a transformation `f` and random sample `X`, just trasform the sample
+ * mean `f(Mean[X])` and discard any error information.
  */
-struct no_propagation { };
+struct no_prop { };
 
 /**
- * Perform linar error propagation by estimating the jacobian
+ * Perform linaralized error propagation by estimating the Jacobian.
+ *
+ * Given a transformation `f` and a random sample `X`, estimate the propagated
+ * uncertainties by performing a Taylor series and keeping the linear term:
+ *
+ *     Cov[f(X)] = df/dX Cov[X] (df/dX)^T + O(d^2f/dx^2)
+ *
+ * where `df/dX` is the Jacobian of `f` at `X`, as estimated by finite
+ * differences of `dx`.  This procedure is exact for linear transformations;
+ * for non-linear transformation, it will introduce bias.
+ *
+ * @see alps::alea::jacobian
  */
-struct linear_var_propagation { };
+struct linear_prop
+{
+    linear_prop() : dx_(0) { }
+
+    linear_prop(double dx) : dx_(dx) { assert(dx >= 0); }
+
+    double dx() const { return dx_; }
+
+private:
+    double dx_;
+};
 
 /**
- * Perform linar error propagation by estimating the jacobian
+ * Estimate propagated variance by sampling the prior.
+ *
+ * @warning Not implemented
  */
-struct linear_propagation { };  // TODO
+struct sampling_prop
+{
+    sampling_prop(size_t nsamples=1024) : nsamples_(nsamples) { }
+
+    size_t nsamples() const { return nsamples_; }
+
+private:
+    size_t nsamples_;
+};
 
 /**
- * Not implemented
+ * Perform Jackknife rebatching.
+ *
+ * Jackknife is a rebatching method, which can operate on any distribution and
+ * exactly removes the bias in the transformed uncertainties up to order `1/N`,
+ * where `N` is the sample size.
+ *
+ * @see alps::alea::jackknife
  */
-struct jackknife_propagation { };  // TODO
+struct jackknife_prop { };
 
 /**
- * Not implemented
+ * Perform non-parametric bootstrap rebatching.
+ *
+ * @warning Not implemented
  */
-struct sampling_propagation { };   // TODO
+struct bootstrap_prop
+{
+    bootstrap_prop(size_t nsamples=1024) : nsamples_(nsamples) { }
 
+    size_t nsamples() const { return nsamples_; }
+
+private:
+    size_t nsamples_;
+};
 
 /**
  * Given a function `f`, estimate its Jacobian `J[i,j] = df[i]/dx[j]`.
@@ -56,34 +105,13 @@ struct sampling_propagation { };   // TODO
  * linear transformations and biased otherwise.
  */
 template <typename T>
-typename eigen<T>::matrix jacobian(const transform<T> &f, column<T> x, double dx);
+typename eigen<T>::matrix jacobian(const transformer<T> &f, column<T> x, double dx);
+
 
 /**
  * Perform Jackknife transformation to pseudovalues
  */
 template <typename T>
-batch_data<T> jackknife(const batch_data<T> &in, transform<T> &tf);
-
-
-template <typename InResult>
-struct bind<no_propagation, InResult>
-{
-    typedef typename traits<InResult>::value_type value_type;
-
-    typedef InResult in_result_type;
-    typedef mean_result<value_type> out_result_type;
-    typedef transform<value_type> transform_type;
-
-    out_result_type operator() (const transform_type &tf, const in_result_type &in)
-    {
-        if (tf.in_size() != in.size())
-            throw size_mismatch();
-
-        out_result_type res(tf.out_size());
-        res.store().data() = tf(in.mean());
-        res.store().count() = in.count();
-        return res;
-    }
-};
+batch_data<T> jackknife(const batch_data<T> &in, const transformer<T> &tf);
 
 }}

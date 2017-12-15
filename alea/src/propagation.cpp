@@ -5,7 +5,7 @@
 namespace alps { namespace alea {
 
 template <typename T>
-typename eigen<T>::matrix jacobian(const transform<T> &f, column<T> x, double dx)
+typename eigen<T>::matrix jacobian(const transformer<T> &f, column<T> x, double dx)
 {
     size_t in_size = f.in_size();
     size_t out_size = f.out_size();
@@ -22,14 +22,14 @@ typename eigen<T>::matrix jacobian(const transform<T> &f, column<T> x, double dx
 }
 
 template eigen<double>::matrix jacobian(
-            const transform<double> &, column<double>, double);
+            const transformer<double> &, column<double>, double);
 template eigen< std::complex<double> >::matrix jacobian(
-            const transform<std::complex<double> > &, column<std::complex<double> >,
+            const transformer<std::complex<double> > &, column<std::complex<double> >,
             double);
 
 
 template <typename T>
-batch_data<T> jackknife(const batch_data<T> &in, transform<T> &tf)
+batch_data<T> jackknife(const batch_data<T> &in, const transformer<T> &tf)
 {
     // compute batch sums
     if (tf.in_size() != in.size())
@@ -60,16 +60,11 @@ batch_data<T> jackknife(const batch_data<T> &in, transform<T> &tf)
     return res;
 }
 
-template batch_data<double> jackknife(const batch_data<double> &in, transform<double> &tf);
-template batch_data<std::complex<double> > jackknife(const batch_data<std::complex<double> > &in,
-                                                     transform<std::complex<double> > &tf);
-
-
-template struct bind<no_propagation, mean_result<double> >;
-template struct bind<no_propagation, var_result<double> >;
-template struct bind<no_propagation, cov_result<double> >;
-template struct bind<no_propagation, autocorr_result<double> >;
-template struct bind<no_propagation, batch_result<double> >;
+template batch_data<double> jackknife(const batch_data<double> &in,
+                                      const transformer<double> &tf);
+template batch_data<std::complex<double> > jackknife(
+                                const batch_data<std::complex<double> > &in,
+                                const transformer<std::complex<double> > &tf);
 
 }}
 

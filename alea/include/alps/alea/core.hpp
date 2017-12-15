@@ -30,6 +30,9 @@ struct unsupported_operation : public std::exception { };
 /** Accumulator has lost its data */
 struct finalized_accumulator : public std::exception { };
 
+/** Accumulator has lost its data */
+struct weight_mismatch : public std::exception { };
+
 template <typename T>
 struct traits;
 
@@ -215,26 +218,26 @@ struct reducer
     virtual reducer_setup get_setup() const = 0;
 
     /** Reduce double data-set into `data` */
-    virtual void reduce(sink<double> data) = 0;
+    virtual void reduce(sink<double> data) const = 0;
 
     /** Reduce long data-set into `data` */
-    virtual void reduce(sink<long> data) = 0;
+    virtual void reduce(sink<long> data) const = 0;
 
     /** Finish reduction of all data if deferred */
-    virtual void commit() = 0;
+    virtual void commit() const = 0;
 
     /** Destructor */
     virtual ~reducer() { }
 
     // Convenience functions
 
-    void reduce(sink<std::complex<double> > data) {
+    void reduce(sink<std::complex<double> > data) const {
         reduce(sink<double>((double *)data.data(), 2 * data.size()));
     }
-    void reduce(sink<complex_op<double> > data) {
+    void reduce(sink<complex_op<double> > data) const {
         reduce(sink<double>((double *)data.data(), 4 * data.size()));
     }
-    void reduce(sink<unsigned long> data) {
+    void reduce(sink<unsigned long> data) const {
         reduce(sink<long>((long *)data.data(), data.size()));
     }
 };
@@ -256,20 +259,28 @@ struct serializer
 };
 
 /**
- * Transformer method
+ * Transformer instance.
+ *
+ * Note that multi-argument transformations are not supported.  Such
+ * transformations must be implemented by first homogenizing the type and then
+ * concatenating the argument vectors to a single argument.
+ *
+ * @see alps::alea::transform, alps::alea::join
  */
 template <typename T>
-struct transform
+struct transformer
 {
+    /** apply transformation */
     virtual column<T> operator() (const column<T> &in) const = 0;
 
+    /** expected number of components of the input vector */
     virtual size_t in_size() const = 0;
 
+    /** number of components of the returned vector */
     virtual size_t out_size() const = 0;
 
+    /** Guarantee transformation to be linear (allows certain optimizations) */
     virtual bool is_linear() const { return false; }
 };
-
-
 
 }}

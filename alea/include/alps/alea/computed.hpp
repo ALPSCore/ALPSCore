@@ -16,31 +16,27 @@
 #include <alps/alea/core.hpp>
 #include <alps/alea/util.hpp>
 
-namespace alps { namespace alea {
-
 // Forward declarations
 
-struct size_mismatch;
-struct unsupported_operation;
-template <typename T> class sink;
-template <typename T> struct computed;
-template <typename T, typename E> class computed_adapter;
+namespace alps { namespace alea {
+    template <typename T> class value_adapter;
+    template <typename T> class vector_adapter;
+    template <typename T, typename Derived> class eigen_adapter;
+}}
 
 // Actual declarations
 
-/** Promote type to computed result */
-template <typename T, typename Estimator>
-class computed_adapter;
+namespace alps { namespace alea {
 
 template <typename T>
-class computed_adapter<T, T>
+class value_adapter
     : public computed<T>
 {
 public:
     typedef T value_type;
 
 public:
-    computed_adapter(T in) : in_(in) { }
+    value_adapter(T in) : in_(in) { }
 
     size_t size() const { return 1; }
 
@@ -51,21 +47,21 @@ public:
         out.data()[0] += in_;
     }
 
-    ~computed_adapter() { }
+    ~value_adapter() { }
 
 private:
     T in_;
 };
 
 template <typename T>
-class computed_adapter< T, std::vector<T> >
+class vector_adapter
     : public computed<T>
 {
 public:
     typedef T value_type;
 
 public:
-    computed_adapter(const std::vector<T> &in) : in_(in) { }
+    vector_adapter(const std::vector<T> &in) : in_(in) { }
 
     size_t size() const { return in_.size(); }
 
@@ -77,22 +73,27 @@ public:
             out.data()[i] += in_[i];
     }
 
-    ~computed_adapter() { }
+    ~vector_adapter() { }
 
 private:
     const std::vector<T> &in_;
 };
 
-
-template <typename T>
-class computed_adapter< T, column<T> >
+template <typename T, typename Derived>
+class eigen_adapter
     : public computed<T>
 {
 public:
     typedef T value_type;
 
 public:
-    computed_adapter(const column<T> &in) : in_(in) { }
+    eigen_adapter(const Eigen::DenseBase<Derived> &in)
+        : in_(in)
+    {
+        EIGEN_STATIC_ASSERT_VECTOR_ONLY(Eigen::DenseBase<Derived>);
+        static_assert(std::is_same<T, typename Derived::Scalar>::value,
+                      "Type mismatch -- use explicit cast");
+    }
 
     size_t size() const { return in_.size(); }
 
@@ -100,14 +101,15 @@ public:
     {
         if (out.size() != (size_t)in_.rows())
             throw size_mismatch();
-        for (size_t i = 0; i != (size_t)in_.rows(); ++i)
-            out.data()[i] += in_(i);
+
+        typename eigen<T>::col_map out_map(out.data(), out.size());
+        out_map += in_;
     }
 
-    ~computed_adapter() { }
+    ~eigen_adapter() { }
 
 private:
-    const column<T> &in_;
+    const Eigen::DenseBase<Derived> &in_;
 };
 
 /**
