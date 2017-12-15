@@ -25,24 +25,20 @@ else()
   endif()  
 endif()
 
-# if both options are unset, make sure default settings are acquired
-if (NOT ALPS_USE_CXX03 AND NOT ALPS_USE_CXX11)
-  unset(ALPS_USE_CXX03)
-  unset(ALPS_USE_CXX11)
-  if (NOT ALPS_USE_CXX03 AND NOT ALPS_USE_CXX11)
-    unset(ALPS_USE_CXX03 CACHE)
-    unset(ALPS_USE_CXX11 CACHE)
+
+
+unset(ALPS_CXX_STD) # ensure the var is read from cache, if any
+if (DEFINED ALPS_CXX_STD)
+  string(TOLOWER ${ALPS_CXX_STD} ALPS_CXX_STD)
+  if (NOT ALPS_CXX_STD MATCHES "c[+][+]03|c[+][+]11")
+    message(FATAL_ERROR "Invalid value of ALPS_CXX_STD='${ALPS_CXX_STD}'")
   endif()
+else()
+  set(ALPS_CXX_STD "c++03")
 endif()
-
-option(ALPS_USE_CXX03 "Use C++03 to compile ALPSCore" ON)
-option(ALPS_USE_CXX11 "Use C++11 to compile ALPSCore" OFF)
-mark_as_advanced(ALPS_USE_CXX03)
-mark_as_advanced(ALPS_USE_CXX11)
-
-if (ALPS_USE_CXX03 AND ALPS_USE_CXX11)
-  message(FATAL_ERROR "Both ALPS_USE_CXX03 AND ALPS_USE_CXX11 options are set, but they are mutually exclusive")
-endif()
+set(ALPS_CXX_STD ${ALPS_CXX_STD} CACHE STRING "C++ standard used to compile ALPSCore" FORCE)
+set_property(CACHE ALPS_CXX_STD PROPERTY STRINGS "c++03" "c++11")
+mark_as_advanced(ALPS_CXX_STD)
 
 function(alps_get_cxx03_flag flagvar)
   include(CheckCXXCompilerFlag)
@@ -101,7 +97,7 @@ endfunction()
 
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-if (ALPS_USE_CXX03)
+if (ALPS_CXX_STD STREQUAL "c++03")
   # FIXME: we have to "downgrade" the standard if compiler's default is C++1x
   alps_get_cxx03_flag(cxx03_flag_)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${cxx03_flag_}")
@@ -109,7 +105,7 @@ if (ALPS_USE_CXX03)
   set(ALPS_CXX_FLAGS ${cxx03_flag_} CACHE INTERNAL "C++ compilation flags to be set as interface")
 endif()
 
-if (ALPS_USE_CXX11)
+if (ALPS_CXX_STD STREQUAL "c++11")
   set(ALPS_CXX_FEATURES "cxx_auto_type;cxx_constexpr" CACHE INTERNAL "List of C++ features required by ALPSCore")
   set(ALPS_CXX_FLAGS "" CACHE INTERNAL "C++ compilation flags to be set as interface")  
 endif()
