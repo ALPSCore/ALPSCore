@@ -25,13 +25,13 @@ namespace alps { namespace alea {
 namespace alps { namespace alea {
 
 template <typename T>
-scalar_unary_transformer<T> make_transformer(const std::function<T(T)> &fn)
+scalar_unary_transformer<T> make_transformer(std::function<T(T)> fn)
 {
     return scalar_unary_transformer<T>(fn);
 }
 
 template <typename T>
-scalar_binary_transformer<T> make_transformer(const std::function<T(T,T)> &fn)
+scalar_binary_transformer<T> make_transformer(std::function<T(T,T)> fn)
 {
     return scalar_binary_transformer<T>(fn);
 }
