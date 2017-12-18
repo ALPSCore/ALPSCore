@@ -28,8 +28,8 @@ void autocorr_acc<T>::reset()
 template <typename T>
 void autocorr_acc<T>::add_level()
 {
-    // add a new level on top and push back the
-    level_.push_back(var_acc<T>(size(), granularity_));
+    // add a new level on top and push back the nextlevel
+    level_.push_back(var_acc<T>(size(), nextlevel_));
     nextlevel_ *= granularity_;
 
     // make sure all the links still work (vector may reallocate elements)
@@ -45,11 +45,11 @@ void autocorr_acc<T>::add(const computed<T> &source, size_t count)
 
     // if we require next level, then do it!
     count_ += count;
-    if(count_ == nextlevel_)
+    if(count_ >= nextlevel_)
         add_level();
 
     // now add current element at the bottom and watch it propagate
-    level_[0] << source;
+    level_[0].add(source, count);
 }
 
 template <typename T>
@@ -89,8 +89,7 @@ template class autocorr_acc<std::complex<double> >;
 template <typename T>
 size_t autocorr_result<T>::batch_size(size_t i) const
 {
-    // This is a little hairy, but it works in practice
-    return level_[0].count() / level_[i].count();
+    return level_[i].batch_size();
 }
 
 template <typename T>
@@ -98,7 +97,7 @@ size_t autocorr_result<T>::find_level(size_t min_samples) const
 {
     // TODO: this can be done in O(1)
     for (unsigned i = nlevel(); i != 0; --i) {
-        if (level(i - 1).count() >= min_samples)
+        if (level(i-1).count() / level(i-1).batch_size() >= min_samples)
             return i - 1;
     }
     return 0;
@@ -109,9 +108,9 @@ column<typename autocorr_result<T>::var_type> autocorr_result<T>::var() const
 {
     size_t lvl = find_level(default_min_samples);
 
-    // The factor comes from the fact that we accumulate means of batch_size
+    // The factor comes from the fact that we accumulate sums of batch_size
     // elements, and therefore we get this by the law of large numbers
-    return batch_size(lvl) * level_[lvl].var();
+    return level_[lvl].var();
 }
 
 template <typename T>
@@ -134,8 +133,8 @@ column<typename autocorr_result<T>::var_type> autocorr_result<T>::tau() const
     // The factor `n` comes from the fact that the variance of an n-element mean
     // estimator has tighter variance by the CLT; it can be dropped if one
     // performs the batch sum rather than the batch mean.
-    double fact = batch_size(lvl) / 2 * batch_size(0);
-    return (fact * varn.array()/ var0.array() - 0.5).matrix();
+    //double fact = 0.5 * batch_size(0) / batch_size(lvl);
+    return (0.5 * varn.array() / var0.array() - 0.5).matrix();
 }
 
 template <typename T>

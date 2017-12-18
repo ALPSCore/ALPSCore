@@ -117,15 +117,14 @@ template <typename T, typename Str>
 void cov_acc<T,Str>::add_bundle()
 {
     // add batch to average and squared
-    current_.sum() /= current_.count();
     store_->data().noalias() += current_.sum();
     store_->data2().noalias() +=
                 internal::outer<bind<Str, T> >(current_.sum(), current_.sum());
-    store_->count() += 1;
+    store_->count() += current_.count();
 
     // add batch mean also to uplevel
     if (uplevel_ != nullptr)
-        (*uplevel_) << current_.sum();
+        uplevel_->add(make_adapter(current_.sum()), current_.count());
 
     current_.reset();
 }

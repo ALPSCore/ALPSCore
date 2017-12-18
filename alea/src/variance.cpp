@@ -120,14 +120,13 @@ void var_acc<T,Str>::add_bundle()
     typename bind<Str, T>::abs2_op abs2;
 
     // add batch to average and squared
-    current_.sum() /= current_.count();
     store_->data().noalias() += current_.sum();
     store_->data2().noalias() += current_.sum().unaryExpr(abs2);
-    store_->count() += 1;
+    store_->count() += current_.count();
 
     // add batch mean also to uplevel
     if (uplevel_ != nullptr)
-        (*uplevel_) << current_.sum();
+        uplevel_->add(make_adapter(current_.sum()), current_.count());
 
     current_.reset();
 }

@@ -25,15 +25,15 @@ namespace alps { namespace alea {
 /**
  * Accumulator for the integrated autocorrelation time.
  *
- * The integrated autocorrelation time `tau_int` of a time series is defined
- * as the large-n limit of:
+ * The integrated autocorrelation time `tau_int` of a time series can be
+ * defined as the large-n limit of:
  *
- *                   1 + 2 * tau_int = n * var(n) / var(1),                (A)
+ *                   1 + 2 * tau_int = var(n) / var(1),                    (A)
  *
- * where `var(n)` is the sample variance obtained when averaging over batches
- * batches, each batch being the mean of `n` consecutive elements of the series.
- * Given a simulation of `N` steps, its corresponding squared error `sq_error`
- * must thus be corrected as:
+ * where `var(n)` is the sample variance obtained when averaging over batches,
+ * each batch being the sum of `n` consecutive elements of the series. Given a
+ * simulation of `N` steps, its corresponding squared error of the mean
+ * `sq_error` must thus be corrected as:
  *
  *                sq_error = (1 + 2 * tau_int) * var(1) / N                (B)
  *

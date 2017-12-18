@@ -28,6 +28,13 @@ namespace alps { namespace alea {
 
 namespace alps { namespace alea {
 
+template <typename Derived>
+eigen_adapter<typename Derived::Scalar, Derived> make_adapter(
+                                    const Eigen::DenseBase<Derived> &in)
+{
+    return eigen_adapter<typename Derived::Scalar, Derived>(in);
+}
+
 template <typename T>
 class value_adapter
     : public computed<T>
