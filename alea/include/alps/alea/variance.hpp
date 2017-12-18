@@ -125,7 +125,7 @@ public:
     size_t batch_size() const { return current_.target(); }
 
     /** Add computed vector to the accumulator */
-    var_acc &operator<<(const computed<T> &src) { add(src, 1); return *this; }
+    var_acc &operator<<(const computed<T> &src) { add(src, 1, nullptr); return *this; }
 
     /** Add Eigen vector-valued expression to accumulator */
     template <typename Derived>
@@ -153,18 +153,15 @@ public:
     const var_data<T,Strategy> &store() const { return *store_; }
 
 protected:
-    void add(const computed<T> &source, size_t count);
+    void add(const computed<T> &source, size_t count, var_acc *cascade);
 
-    void add_bundle();
+    void add_bundle(var_acc *cascade);
 
-    void uplevel(var_acc &new_uplevel) { uplevel_ = &new_uplevel; }
-
-    void finalize_to(var_result<T,Strategy> &result);
+    void finalize_to(var_result<T,Strategy> &result, var_acc *cascade);
 
 private:
     std::unique_ptr< var_data<value_type, Strategy> > store_;
     bundle<value_type> current_;
-    var_acc *uplevel_;
 
     friend class autocorr_acc<T>;
 };

@@ -29,12 +29,8 @@ template <typename T>
 void autocorr_acc<T>::add_level()
 {
     // add a new level on top and push back the nextlevel
-    level_.push_back(var_acc<T>(size(), nextlevel_));
     nextlevel_ *= granularity_;
-
-    // make sure all the links still work (vector may reallocate elements)
-    for (unsigned i = 0; i != level_.size() - 1; ++i)
-        level_[i].uplevel(level_[i+1]);
+    level_.push_back(var_acc<T>(size(), nextlevel_));
 }
 
 template <typename T>
@@ -49,17 +45,15 @@ void autocorr_acc<T>::add(const computed<T> &source, size_t count)
         add_level();
 
     // now add current element at the bottom and watch it propagate
-    level_[0].add(source, count);
+    level_[0].add(source, count, level_.data() + 1);
 }
 
 template <typename T>
 autocorr_result<T> autocorr_acc<T>::result() const
 {
     internal::check_valid(*this);
-
     autocorr_result<T> result;
-    for (size_t i = 0; i != level_.size(); ++i)
-        result.level_.push_back(level_[i].result());
+    autocorr_acc<T>(*this).finalize_to(result);
     return result;
 }
 
@@ -76,9 +70,15 @@ void autocorr_acc<T>::finalize_to(autocorr_result<T> &result)
 {
     internal::check_valid(*this);
     result.level_.resize(level_.size());
-    for (size_t i = 0; i != level_.size(); ++i)
-        level_[i].finalize_to(result.level_[i]);
 
+    // Finalize each level.
+    // NOTE: it is imperative to do this in bottom-up order, since it collects
+    //       the left-over data in the current batch from the low-lying levels
+    //       and propagates them upwards.
+    for (size_t i = 0; i != level_.size() - 1; ++i)
+        level_[i].finalize_to(result.level_[i], level_.data() + i + 1);
+
+    level_[nlevel() - 1].finalize_to(result.level_[nlevel() - 1], nullptr);
     level_.clear();     // signal invalidity
 }
 

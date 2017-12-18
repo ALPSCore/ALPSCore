@@ -47,7 +47,6 @@ template <typename T, typename Str>
 var_acc<T,Str>::var_acc(size_t size, size_t bundle_size)
     : store_(new var_data<T,Str>(size, bundle_size))
     , current_(size, bundle_size)
-    , uplevel_(nullptr)
 { }
 
 // We need an explicit copy constructor, as we need to copy the data
@@ -55,7 +54,6 @@ template <typename T, typename Str>
 var_acc<T,Str>::var_acc(const var_acc &other)
     : store_(other.store_ ? new var_data<T,Str>(*other.store_) : nullptr)
     , current_(other.current_)
-    , uplevel_(other.uplevel_)
 { }
 
 template <typename T, typename Str>
@@ -63,7 +61,6 @@ var_acc<T,Str> &var_acc<T,Str>::operator=(const var_acc &other)
 {
     store_.reset(other.store_ ? new var_data<T,Str>(*other.store_) : nullptr);
     current_ = other.current_;
-    uplevel_ = other.uplevel_;
     return *this;
 }
 
@@ -78,22 +75,23 @@ void var_acc<T,Str>::reset()
 }
 
 template <typename T, typename Str>
-void var_acc<T,Str>::add(const computed<T> &source, size_t count)
+void var_acc<T,Str>::add(const computed<T> &source, size_t count,
+                         var_acc<T,Str> *cascade)
 {
     internal::check_valid(*this);
     source.add_to(sink<T>(current_.sum().data(), current_.size()));
     current_.count() += count;
 
     if (current_.is_full())
-        add_bundle();
+        add_bundle(cascade);
 }
 
 template <typename T, typename Str>
 var_result<T,Str> var_acc<T,Str>::result() const
 {
     internal::check_valid(*this);
-    var_result<T,Str> result(*store_);
-    result.store_->convert_to_mean();
+    var_result<T,Str> result;
+    var_acc<T,Str>(*this).finalize_to(result, nullptr);
     return result;
 }
 
@@ -101,21 +99,30 @@ template <typename T, typename Str>
 var_result<T,Str> var_acc<T,Str>::finalize()
 {
     var_result<T,Str> result;
-    finalize_to(result);
+    finalize_to(result, nullptr);
     return result;
 }
 
 template <typename T, typename Str>
-void var_acc<T,Str>::finalize_to(var_result<T,Str> &result)
+void var_acc<T,Str>::finalize_to(var_result<T,Str> &result, var_acc<T,Str> *cascade)
 {
     internal::check_valid(*this);
+
+    // add leftover data to the variance.  The upwards propagation must be
+    // handled by going through a hierarchy in ascending order.
+    if (current_.count() != 0)
+        add_bundle(cascade);
+
+    // data swap
     result.store_.reset();
     result.store_.swap(store_);
+
+    // post-processing to result
     result.store_->convert_to_mean();
 }
 
 template <typename T, typename Str>
-void var_acc<T,Str>::add_bundle()
+void var_acc<T,Str>::add_bundle(var_acc<T,Str> *cascade)
 {
     typename bind<Str, T>::abs2_op abs2;
 
@@ -125,8 +132,8 @@ void var_acc<T,Str>::add_bundle()
     store_->count() += current_.count();
 
     // add batch mean also to uplevel
-    if (uplevel_ != nullptr)
-        uplevel_->add(make_adapter(current_.sum()), current_.count());
+    if (cascade != nullptr)
+        cascade->add(make_adapter(current_.sum()), current_.count(), cascade+1);
 
     current_.reset();
 }
