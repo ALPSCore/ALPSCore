@@ -6,9 +6,10 @@
 namespace alps { namespace alea {
 
 template <typename T, typename Str>
-var_data<T,Str>::var_data(size_t size)
+var_data<T,Str>::var_data(size_t size, size_t batch_size)
     : data_(size)
     , data2_(size)
+    , batch_size_(batch_size)
 {
     reset();
 }
@@ -44,7 +45,7 @@ template class var_data<std::complex<double>, elliptic_var>;
 
 template <typename T, typename Str>
 var_acc<T,Str>::var_acc(size_t size, size_t bundle_size)
-    : store_(new var_data<T,Str>(size))
+    : store_(new var_data<T,Str>(size, bundle_size))
     , current_(size, bundle_size)
     , uplevel_(nullptr)
 { }
@@ -73,7 +74,7 @@ void var_acc<T,Str>::reset()
     if (valid())
         store_->reset();
     else
-        store_.reset(new var_data<T,Str>(size()));
+        store_.reset(new var_data<T,Str>(size(), batch_size()));
 }
 
 template <typename T, typename Str>

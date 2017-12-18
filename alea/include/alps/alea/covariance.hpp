@@ -43,7 +43,7 @@ public:
     typedef typename eigen<cov_type>::matrix cov_matrix_type;
 
 public:
-    cov_data(size_t size);
+    cov_data(size_t size, size_t batch_size);
 
     /** Re-allocate and thus clear all accumulated data */
     void reset();
@@ -56,6 +56,12 @@ public:
 
     /** Returns sample size, i.e., number of accumulated data points */
     size_t &count() { return count_; }
+
+    /** Returns number of data points per batch */
+    size_t batch_size() const { return batch_size_; }
+
+    /** Returns number of data points per batch */
+    size_t &batch_size() { return batch_size_; }
 
     const column<value_type> &data() const { return data_; }
 
@@ -72,7 +78,7 @@ public:
 private:
     column<T> data_;
     cov_matrix_type data2_;
-    size_t count_;
+    size_t count_, batch_size_;
 };
 
 template <typename T, typename Strategy>
@@ -116,6 +122,9 @@ public:
 
     /** Number of components of the random vector (e.g., size of mean) */
     size_t size() const { return current_.size(); }
+
+    /** Returns number of data points per batch */
+    size_t batch_size() const { return current_.target(); }
 
     /** Add computed vector to the accumulator */
     cov_acc &operator<<(const computed<T> &src) { add(src, 1); return *this; }
@@ -205,6 +214,9 @@ public:
 
     /** Returns sample size, i.e., number of accumulated data points */
     size_t count() const { return store_->count(); }
+
+    /** Returns number of data points per batch */
+    size_t batch_size() const { return store_->batch_size(); }
 
     /** Returns sample mean */
     const column<T> &mean() const { return store_->data(); }

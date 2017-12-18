@@ -5,9 +5,10 @@
 namespace alps { namespace alea {
 
 template <typename T, typename Str>
-cov_data<T,Str>::cov_data(size_t size)
+cov_data<T,Str>::cov_data(size_t size, size_t batch_size)
     : data_(size)
     , data2_(size, size)
+    , batch_size_(batch_size)
 {
     reset();
 }
@@ -43,7 +44,7 @@ template class cov_data<std::complex<double>, elliptic_var>;
 
 template <typename T, typename Str>
 cov_acc<T,Str>::cov_acc(size_t size, size_t bundle_size)
-    : store_(new cov_data<T,Str>(size))
+    : store_(new cov_data<T,Str>(size, bundle_size))
     , current_(size, bundle_size)
     , uplevel_(nullptr)
 { }
@@ -72,7 +73,7 @@ void cov_acc<T,Str>::reset()
     if (valid())
         store_->reset();
     else
-        store_.reset(new cov_data<T,Str>(size()));
+        store_.reset(new cov_data<T,Str>(size(), batch_size()));
 }
 
 template <typename T, typename Str>

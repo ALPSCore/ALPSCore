@@ -58,7 +58,7 @@ cov_result<T> transform(linear_prop p, const transformer<T> &tf, const InResult 
         dx = 0.125 * std::abs(in.stderror().mean());
     typename eigen<T>::matrix jac = jacobian(tf, in.mean(), dx);
 
-    cov_result<T> res(cov_data<T>(tf.out_size()));
+    cov_result<T> res(cov_data<T>(tf.out_size(), in.batch_size()));
     res.store().data() = tf(in.mean());
     res.store().data2() = jac * in.cov() * jac.adjoint();
     res.store().count() = in.count();
@@ -84,7 +84,7 @@ cov_result<T> transform(linear_prop p, const transformer<T> &tf, const InResult 
         dx = 0.125 * std::abs(in.stderror().mean());
     typename eigen<T>::matrix jac = jacobian(tf, in.mean(), dx);
 
-    cov_result<T> res(cov_data<T>(tf.out_size()));
+    cov_result<T> res(cov_data<T>(tf.out_size(), in.batch_size()));
     res.store().data() = tf(in.mean());
     res.store().data2() = jac * in.var().asDiagonal() * jac.adjoint();
     res.store().count() = in.count();
