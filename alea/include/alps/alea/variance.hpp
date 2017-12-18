@@ -116,7 +116,7 @@ public:
     size_t size() const { return current_.size(); }
 
     /** Add computed vector to the accumulator */
-    var_acc &operator<<(const computed<value_type> &source);
+    var_acc &operator<<(const computed<T> &src) { add(src, 1); return *this; }
 
     /** Add Eigen vector-valued expression to accumulator */
     template <typename Derived>
@@ -144,6 +144,8 @@ public:
     const var_data<T,Strategy> &store() const { return *store_; }
 
 protected:
+    void add(const computed<T> &source, size_t count);
+
     void add_bundle();
 
     void uplevel(var_acc &new_uplevel) { uplevel_ = &new_uplevel; }

@@ -92,7 +92,7 @@ public:
     size_t size() const { return size_; }
 
     /** Add computed vector to the accumulator */
-    batch_acc &operator<<(const computed<T> &source);
+    batch_acc &operator<<(const computed<T> &src) { add(src, 1); return *this; }
 
     /** Add Eigen vector-valued expression to accumulator */
     template <typename Derived>
@@ -124,6 +124,8 @@ public:
     size_t current_batch_size() const { return base_size_ * cursor_.factor(); }
 
 protected:
+    void add(const computed<T> &source, size_t count);
+
     void next_batch();
 
     void finalize_to(batch_result<T> &result);

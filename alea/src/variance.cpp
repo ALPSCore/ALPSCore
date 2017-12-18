@@ -77,15 +77,14 @@ void var_acc<T,Str>::reset()
 }
 
 template <typename T, typename Str>
-var_acc<T,Str> &var_acc<T,Str>::operator<<(const computed<value_type> &source)
+void var_acc<T,Str>::add(const computed<T> &source, size_t count)
 {
     internal::check_valid(*this);
     source.add_to(sink<T>(current_.sum().data(), current_.size()));
-    ++current_.count();
+    current_.count() += count;
 
     if (current_.is_full())
         add_bundle();
-    return *this;
 }
 
 template <typename T, typename Str>

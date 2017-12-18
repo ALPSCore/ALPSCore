@@ -45,12 +45,11 @@ mean_acc<T> &mean_acc<T>::operator=(const mean_acc &other)
 }
 
 template <typename T>
-mean_acc<T> &mean_acc<T>::operator<<(const computed<T> &source)
+void mean_acc<T>::add(const computed<T> &source, size_t count)
 {
     internal::check_valid(*this);
     source.add_to(sink<T>(store_->data().data(), size()));
-    store_->count() += 1.0;
-    return *this;
+    store_->count() += count;
 }
 
 template <typename T>

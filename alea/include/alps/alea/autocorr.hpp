@@ -72,7 +72,7 @@ public:
     size_t size() const { return size_; }
 
     /** Add computed vector to the accumulator */
-    autocorr_acc &operator<<(const computed<T> &source);
+    autocorr_acc &operator<<(const computed<T> &src) { add(src, 1); return *this; }
 
     /** Add Eigen vector-valued expression to accumulator */
     template <typename Derived>
@@ -99,6 +99,8 @@ public:
     const level_acc_type &level(size_t i) const { return level_[i]; }
 
 protected:
+    void add(const computed<T> &source, size_t count);
+
     void add_level();
 
     void finalize_to(autocorr_result<T> &result);

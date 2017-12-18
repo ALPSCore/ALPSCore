@@ -38,18 +38,18 @@ void autocorr_acc<T>::add_level()
 }
 
 template <typename T>
-autocorr_acc<T> &autocorr_acc<T>::operator<<(const computed<T> &source)
+void autocorr_acc<T>::add(const computed<T> &source, size_t count)
 {
     assert(count_ < nextlevel_);
     internal::check_valid(*this);
 
     // if we require next level, then do it!
-    if(++count_ == nextlevel_)
+    count_ += count;
+    if(count_ == nextlevel_)
         add_level();
 
     // now add current element at the bottom and watch it propagate
     level_[0] << source;
-    return *this;
 }
 
 template <typename T>

@@ -20,23 +20,23 @@ template <typename T>
 class bundle
 {
 public:
-    bundle(size_t size, size_t cap) : sum_(size), capacity_(cap) { reset(); }
+    bundle(size_t size, size_t target) : sum_(size), target_(target) { reset(); }
 
     /** Re-allocate and thus clear all accumulated data */
     void reset() { sum_.fill(0); count_ = 0; }
 
-    bool is_full() { assert(count_ <= capacity_); return count_ == capacity_; }
+    bool is_full() { return count_ >= target_; }
 
     /** Number of components of the random vector (e.g., size of mean) */
     size_t size() const { return sum_.rows(); }
 
-    size_t &capacity() { return capacity_; }
+    size_t &target() { return target_; }
 
-    const size_t &capacity() const { return capacity_; }
+    const size_t &target() const { return target_; }
 
     size_t &count() { return count_; }
 
-    const size_t &count() const { return count_; }
+    size_t count() const { return count_; }
 
     column<T> &sum() { return sum_; }
 
@@ -44,7 +44,7 @@ public:
 
 private:
     column<T> sum_;
-    size_t capacity_, count_;
+    size_t target_, count_;
 };
 
 }}

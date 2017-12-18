@@ -80,20 +80,18 @@ void batch_acc<T>::reset()
 }
 
 template <typename T>
-batch_acc<T> &batch_acc<T>::operator<<(const computed<T> &source)
+void batch_acc<T>::add(const computed<T> &source, size_t count)
 {
     internal::check_valid(*this);
 
     // batch is full, move the cursor.
     // Doing this before the addition ensures no empty batches.
-    if (store_->count()(cursor_.current()) == current_batch_size())
+    if (store_->count()(cursor_.current()) >= current_batch_size())
         next_batch();
 
     // Since Eigen matrix are column-major, we can just pass the pointer
     source.add_to(sink<T>(store_->batch().col(cursor_.current()).data(), size()));
-    store_->count()(cursor_.current()) += 1;
-
-    return *this;
+    store_->count()(cursor_.current()) += count;
 }
 
 template <typename T>
