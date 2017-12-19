@@ -16,6 +16,8 @@
 namespace alps { namespace alea {
     template <typename T> class autocorr_acc;
     template <typename T> class autocorr_result;
+
+    template <typename T> class batch_result;
 }}
 
 // Actual declarations
@@ -108,6 +110,8 @@ protected:
 private:
     size_t size_, batch_size_, count_, nextlevel_, granularity_;
     std::vector<level_acc_type> level_;
+
+    friend class batch_result<T>;
 };
 
 template <typename T>
@@ -181,7 +185,7 @@ protected:
     void reduce(const reducer &r, bool do_pre_commit, bool do_post_commit);
 
 private:
-    const static size_t default_min_samples = 256;
+    const static size_t DEFAULT_MIN_SAMPLES = 1024;
     std::vector<level_result_type> level_;
 
     friend class autocorr_acc<T>;

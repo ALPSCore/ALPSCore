@@ -166,11 +166,10 @@ template <typename Str>
 column<typename bind<Str,T>::var_type> batch_result<T>::var() const
 {
     var_acc<T, Str> aux_acc(store_->size());
-
-    // FIXME count
-    for (size_t i = 0; i != store_->num_batches(); ++i)
-        aux_acc << column<T>(store_->batch().col(i));
-
+    for (size_t i = 0; i != store_->num_batches(); ++i) {
+        aux_acc.add(make_adapter(store_->batch().col(i)), store_->count()(i),
+                    nullptr);
+    }
     return aux_acc.finalize().var();
 }
 
@@ -179,11 +178,8 @@ template <typename Str>
 column<typename bind<Str,T>::cov_type> batch_result<T>::cov() const
 {
     cov_acc<T, Str> aux_acc(store_->size());
-
-    // FIXME count
     for (size_t i = 0; i != store_->num_batches(); ++i)
-        aux_acc << column<T>(store_->batch().col(i));
-
+        aux_acc.add(make_adapter(store_->batch().col(i)), store_->count()(i));
     return aux_acc.finalize().cov();
 }
 

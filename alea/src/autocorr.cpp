@@ -106,7 +106,7 @@ size_t autocorr_result<T>::find_level(size_t min_samples) const
 template <typename T>
 column<typename autocorr_result<T>::var_type> autocorr_result<T>::var() const
 {
-    size_t lvl = find_level(default_min_samples);
+    size_t lvl = find_level(DEFAULT_MIN_SAMPLES);
 
     // The factor comes from the fact that we accumulate sums of batch_size
     // elements, and therefore we get this by the law of large numbers
@@ -116,7 +116,7 @@ column<typename autocorr_result<T>::var_type> autocorr_result<T>::var() const
 template <typename T>
 column<typename autocorr_result<T>::var_type> autocorr_result<T>::stderror() const
 {
-    size_t lvl = find_level(default_min_samples);
+    size_t lvl = find_level(DEFAULT_MIN_SAMPLES);
 
     // Standard error of the mean has another 1/N (but at the level!)
     double fact = 1. * batch_size(lvl) / level_[lvl].count();
@@ -126,7 +126,7 @@ column<typename autocorr_result<T>::var_type> autocorr_result<T>::stderror() con
 template <typename T>
 column<typename autocorr_result<T>::var_type> autocorr_result<T>::tau() const
 {
-    size_t lvl = find_level(default_min_samples);
+    size_t lvl = find_level(DEFAULT_MIN_SAMPLES);
     const column<var_type> &var0 = level_[0].var();
     const column<var_type> &varn = level_[lvl].var();
 

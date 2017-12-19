@@ -23,6 +23,8 @@ namespace alps { namespace alea {
 
     template <typename T> class autocorr_acc;
     template <typename T> class autocorr_result;
+
+    template <typename T> class batch_result;
 }}
 
 // Actual declarations
@@ -164,6 +166,7 @@ private:
     bundle<value_type> current_;
 
     friend class autocorr_acc<T>;
+    friend class batch_result<T>;
 };
 
 template <typename T, typename Strategy>
