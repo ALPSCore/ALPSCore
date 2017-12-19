@@ -46,7 +46,6 @@ template <typename T, typename Str>
 cov_acc<T,Str>::cov_acc(size_t size, size_t bundle_size)
     : store_(new cov_data<T,Str>(size, bundle_size))
     , current_(size, bundle_size)
-    , uplevel_(nullptr)
 { }
 
 // We need an explicit copy constructor, as we need to copy the data
@@ -54,7 +53,6 @@ template <typename T, typename Str>
 cov_acc<T,Str>::cov_acc(const cov_acc &other)
     : store_(other.store_ ? new cov_data<T,Str>(*other.store_) : nullptr)
     , current_(other.current_)
-    , uplevel_(other.uplevel_)
 { }
 
 template <typename T, typename Str>
@@ -62,7 +60,6 @@ cov_acc<T,Str> &cov_acc<T,Str>::operator=(const cov_acc &other)
 {
     store_.reset(other.store_ ? new cov_data<T,Str>(*other.store_) : nullptr);
     current_ = other.current_;
-    uplevel_ = other.uplevel_;
     return *this;
 }
 
@@ -92,7 +89,7 @@ cov_result<T,Str> cov_acc<T,Str>::result() const
 {
     internal::check_valid(*this);
     cov_result<T,Str> result(*store_);
-    result.store_->convert_to_mean();
+    cov_acc<T,Str>(*this).finalize_to(result);
     return result;
 }
 
@@ -108,8 +105,16 @@ template <typename T, typename Str>
 void cov_acc<T,Str>::finalize_to(cov_result<T,Str> &result)
 {
     internal::check_valid(*this);
+
+    // add leftover data to the covariance.
+    if (current_.count() != 0)
+        add_bundle();
+
+    // swap data with result
     result.store_.reset();
     result.store_.swap(store_);
+
+    // post-process data
     result.store_->convert_to_mean();
 }
 
@@ -122,10 +127,7 @@ void cov_acc<T,Str>::add_bundle()
                 internal::outer<bind<Str, T> >(current_.sum(), current_.sum());
     store_->count() += current_.count();
 
-    // add batch mean also to uplevel
-    if (uplevel_ != nullptr)
-        uplevel_->add(make_adapter(current_.sum()), current_.count());
-
+    // TODO: add possibility for uplevel also here
     current_.reset();
 }
 

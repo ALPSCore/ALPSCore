@@ -20,6 +20,8 @@ namespace alps { namespace alea {
     template <typename T, typename Str> class cov_data;
     template <typename T, typename Str> class cov_acc;
     template <typename T, typename Str> class cov_result;
+
+    template <typename T> class batch_result;
 }}
 
 // Actual declarations
@@ -159,14 +161,13 @@ protected:
 
     void add_bundle();
 
-    void uplevel(cov_acc &new_uplevel) { uplevel_ = &new_uplevel; }
-
     void finalize_to(cov_result<T,Strategy> &result);
 
 private:
     std::unique_ptr<cov_data<T,Strategy> > store_;
     bundle<value_type> current_;
-    cov_acc *uplevel_;
+
+    friend class batch_result<T>;
 };
 
 template <typename T, typename Strategy>
