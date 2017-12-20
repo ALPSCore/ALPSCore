@@ -2,12 +2,15 @@
 
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
+#include <locale> // FIXME: needed only for boolean conversions
+#include <boost/foreach.hpp> // FIXME: needed only for boolean conversions
+
 namespace alps {
     namespace params_ns {
 
         namespace detail {
 
-            
+            // FIXME: move this to a *.cpp file
             template <typename T>
             struct parse_string {
                 static boost::optional<T> apply(const std::string& in) {
@@ -29,11 +32,14 @@ namespace alps {
 
             template <>
             struct parse_string<bool> {
-                static boost::optional<bool> apply(const std::string& in) {
-                    // FIXME: use C_locale and lowercase the string
+                static boost::optional<bool> apply(std::string in) {
+                    std::locale c_locale("C");
+                    BOOST_FOREACH(char& c, in) { // FIXME:C++11
+                        c=tolower(c, c_locale);
+                    }
                     boost::optional<bool> result;
-                    if (in=="true") result=true;
-                    if (in=="false") result=false;
+                    if (in=="true" || in=="on" || in=="yes" || in=="1") result=true;
+                    if (in=="false" || in=="off" || in=="no" || in=="0") result=false;
                     return result;
                 }
             };

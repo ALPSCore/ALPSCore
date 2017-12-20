@@ -21,6 +21,14 @@ namespace test_data {
     static const char inifile_content[]=
         "my_true=true\n"
         "my_false=false\n"
+        "my_true_upper=TRUE\n"
+        "my_false_mixed=False\n"
+        "my_true1=1\n"
+        "my_false1=0\n"
+        "my_true2=on\n"
+        "my_false2=off\n"
+        "my_true3=yes\n"
+        "my_false3=no\n"
         "my_long=8589934593\n" // 2^33+1
         "my_float=1.25\n"
         "my_double=2.75\n"
@@ -38,22 +46,35 @@ namespace test_data {
         ;
 }
 
-template <typename T, int K>
+template <typename T, int =0, typename =void>
 struct my_data;
 
-#define MAKE_SOURCE2(__name__,__type__,__value__,__kind__)      \
-template <>                                              \
-struct my_data<__type__,__kind__> {                      \
-    typedef __type__ value_type;                         \
-    static __type__ get() { return __value__; }          \
-    static std::string name() { return #__name__; }      \
-};                                                       \
-typedef my_data<__type__,__kind__> __name__;
+#define MAKE_SOURCE2(__name__,__type__,__value__,__kind_tag__)      \
+    struct __name__##_##__kind_tag__;                               \
+    template <>                                                     \
+    struct my_data<__type__,0,__name__##_##__kind_tag__> {          \
+        typedef __type__ value_type;                                \
+        static __type__ get() { return __value__; }                 \
+        static std::string name() { return #__name__; }             \
+    };                                                              \
+    typedef my_data<__type__,0,__name__##_##__kind_tag__> __name__;
 
-#define MAKE_SOURCE(__name__, __type__,__value__) MAKE_SOURCE2(__name__,__type__,__value__,0)
+#define MAKE_SOURCE(__name__, __type__,__value__) MAKE_SOURCE2(__name__,__type__,__value__,)
 
-MAKE_SOURCE2(my_true, bool,true, 1)
-MAKE_SOURCE2(my_false, bool,false, 2)
+MAKE_SOURCE2(my_true, bool,true, TrueAsLiteral)
+MAKE_SOURCE2(my_false, bool,false, FalseAsLiteral)
+
+MAKE_SOURCE2(my_true_upper, bool,true, TrueAsUpperLiteral)
+MAKE_SOURCE2(my_false_mixed, bool,false, FalseAsMixedLiteral)
+
+MAKE_SOURCE2(my_true1, bool,true, TrueAsInt)
+MAKE_SOURCE2(my_false1, bool,false, FalseAsInt)
+
+MAKE_SOURCE2(my_true2, bool,true, TrueAsOn)
+MAKE_SOURCE2(my_false2, bool,false, FalseAsOff)
+
+MAKE_SOURCE2(my_true3, bool,true, TrueAsYes)
+MAKE_SOURCE2(my_false3, bool,false, FalseAsNo)
 
 MAKE_SOURCE(my_long, long, 8589934593)
 MAKE_SOURCE(my_float, float, 1.25)
@@ -114,7 +135,8 @@ class ParamsTest1 : public testing::Test {
         std::string name=generator_type::name();
         value_type expected=generator_type::get();
         EXPECT_TRUE(par_.define<value_type>(name, "parameter").ok());
-        value_type actual=cpar_[name];
+        value_type actual;
+        ASSERT_NO_THROW(actual=cpar_[name]);
         EXPECT_EQ(expected,actual);
     }
 };
@@ -123,6 +145,22 @@ typedef ::testing::Types<
     my_true
     ,
     my_false
+    ,
+    my_true_upper
+    ,
+    my_false_mixed
+    ,
+    my_true1
+    ,
+    my_false1
+    ,
+    my_true2
+    ,
+    my_false2
+    ,
+    my_true3
+    ,
+    my_false3
     ,
     my_long
     ,
