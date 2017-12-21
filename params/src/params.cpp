@@ -129,6 +129,7 @@ namespace alps {
                 if (names_column_width<name_and_type.size()) names_column_width=name_and_type.size();
 
                 std::ostringstream ostr;
+                boolalpha(ostr);
                 ostr << tdp.second.descr();
                 if (this->exists(tdp.first) && tdp.first!="help") {
                     ostr << " (default value: ";

@@ -240,7 +240,26 @@ TEST_F(ParamsTest0, helpNotRequested) {
     EXPECT_TRUE(ostr.str().find("fp_num")!=std::string::npos);
     EXPECT_TRUE(ostr.str().find("My-fp")!=std::string::npos);
     EXPECT_TRUE(ostr.str().find("1.25")!=std::string::npos);
-    std::cout << ostr.str(); /// DEBUG
+
+    std::cout << ostr.str(); // DEBUG
+}
+
+TEST_F(ParamsTest0, helpBooleanOff) {
+    par_.
+        define("some_option", "An option");
+    std::ostringstream ostr;
+    par_.print_help(ostr);
+    EXPECT_TRUE(ostr.str().find("false")!=std::string::npos);
+    std::cout << ostr.str(); // DEBUG
+}
+
+TEST_F(ParamsTest0, helpBooleanOn) {
+    par_.
+        define<bool>("some_option", true, "An option normally ON");
+    std::ostringstream ostr;
+    par_.print_help(ostr);
+    EXPECT_TRUE(ostr.str().find("true")!=std::string::npos);
+    std::cout << ostr.str(); // DEBUG
 }
 
 TEST_F(ParamsTest0, helpRequested) {
@@ -265,7 +284,7 @@ TEST_F(ParamsTest0, helpRequested) {
     EXPECT_TRUE(ostr.str().find("fp_num")!=std::string::npos);
     EXPECT_TRUE(ostr.str().find("My-fp")!=std::string::npos);
     EXPECT_TRUE(ostr.str().find("1.25")!=std::string::npos);
-    std::cout << ostr.str(); /// DEBUG
+    std::cout << ostr.str(); // DEBUG
 }
 
 TEST_F(ParamsTest0, helpRequestedNoDescription) {
@@ -294,7 +313,7 @@ TEST_F(ParamsTest0, helpRequestedNoDescription) {
     EXPECT_TRUE(ostr.str().find("fp_num")!=std::string::npos);
     EXPECT_TRUE(ostr.str().find("My-fp")!=std::string::npos);
     EXPECT_TRUE(ostr.str().find("1.25")!=std::string::npos);
-    std::cout << ostr.str(); /// DEBUG
+    std::cout << ostr.str(); // DEBUG
 }
 
 /* ***** */
