@@ -23,7 +23,9 @@ if (DocumentationOnly)
   return()
 endif()
 
-add_this_package(params dict_value dictionary iniparser_interface)
+# The `EXTRA` is a workaround against a misfeature in CMake 3.1
+#  not allowing $<TARGET_OBJECTS:tgt> in `target_sources()`
+add_this_package(params dict_value dictionary iniparser_interface EXTRA $<TARGET_OBJECTS:libiniparser>)
 
 add_boost()
 add_hdf5()
@@ -33,8 +35,9 @@ if (ALPS_BUILD_SHARED OR ALPS_BUILD_PIC)
   # FIXME: is it necessary or CMake can figure it out?
   set_target_properties(libiniparser PROPERTIES POSITION_INDEPENDENT_CODE ON)
 endif()
-
-target_link_libraries(${PROJECT_NAME} PRIVATE libiniparser)
+target_include_directories(${PROJECT_NAME} PRIVATE $<TARGET_PROPERTY:libiniparser,INTERFACE_INCLUDE_DIRECTORIES>)
+# This does not work in CMake 3.1:
+# target_sources(${PROJECT_NAME} PRIVATE $<TARGET_OBJECTS:libiniparser>)
 
 add_alps_package(alps-utilities alps-hdf5)
 

@@ -154,11 +154,14 @@ macro(add_alps_package)
     endforeach(pkg_)
 endmacro(add_alps_package) 
 
-# Usage: add_this_package(srcs...)
+# Usage: add_this_package(srcs... EXTRA extra_srcs...)
 # The `srcs` are source file names in directory "src/"
+# After `EXTRA`, `extra_srcs` are added verbatim
 # Defines ${PROJECT_NAME} target
 # Exports alps::${PROJECT_NAME} target
 function(add_this_package)
+  include(CMakeParseArguments)
+  cmake_parse_arguments(THIS_PACKAGE "" "" "EXTRA" ${ARGV})
    # This is needed to compile tests:
    include_directories(
      ${PROJECT_SOURCE_DIR}/include
@@ -166,10 +169,10 @@ function(add_this_package)
    )
   
   set(src_list_ "")
-  foreach(src_ ${ARGV})
+  foreach(src_ ${THIS_PACKAGE_UNPARSED_ARGUMENTS})
     list(APPEND src_list_ "src/${src_}.cpp")
   endforeach()
-  add_library(${PROJECT_NAME} ${src_list_})
+  add_library(${PROJECT_NAME} ${src_list_} ${THIS_PACKAGE_EXTRA})
   if (ALPS_CXX_FEATURES)
     target_compile_features(${PROJECT_NAME} PUBLIC ${ALPS_CXX_FEATURES})
   endif()
