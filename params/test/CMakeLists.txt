@@ -4,6 +4,7 @@ set (test_src
   serialize_variant
   dictionary
   params
+  dots_in_keys
   params_formats
   params_cmdline
   params_defaulted

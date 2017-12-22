@@ -22,71 +22,43 @@ namespace alps {
         namespace detail {
 
             class ini_dict_impl {
-                const std::string& inifile_;
                 dictionary* inidict_;
 
               public:
-                typedef std::vector<std::string> stringvec;
+                struct kv_type {
+                    const char* key;
+                    const char* val;
+                    kv_type(const char* k, const char* v): key(k), val(v) {}
+                };
 
-                ini_dict_impl(const std::string& inifile) : inifile_(inifile), inidict_(iniparser_load(inifile.c_str()))
+                ini_dict_impl(const std::string& inifile)
+                    : inidict_(iniparser_load(inifile.c_str()))
                 {
                     if (!inidict_) throw std::runtime_error("Cannot read INI file " + inifile);
                 }
-                
+
                 ~ini_dict_impl() {
                     if (inidict_) iniparser_freedict(inidict_);
                 }
 
-                /// Returns vector of sections in the INI file
-                stringvec list_sections() const;
+                /// Returns the number of entries in the dictionary object
+                std::size_t size() const;
 
-                /// Returns vector of keys in the given section
-                stringvec list_keys(const std::string& sec) const;
-
-                /// Returns the value for a given key
-                std::string get_value(const std::string& key) const;
+                /// Returns pointers to a given key and value
+                kv_type get_kv(const std::size_t i) const;
             };
 
-            ini_dict_impl::stringvec ini_dict_impl::list_sections() const
+            std::size_t ini_dict_impl::size() const
             {
-                int nsec=iniparser_getnsec(inidict_);
-                if (nsec<0) throw std::runtime_error("Cannot read number of sections in "+inifile_);
-
-                stringvec vec(1, "");
-                vec.reserve(nsec+1);
-
-                for (int i=0; i<nsec; ++i) {
-                    vec.push_back(std::string(iniparser_getsecname(inidict_, i)));
-                }
-                return vec;
+                int n=inidict_->n;
+                if (n<0) throw std::runtime_error("Dictionary is invalid: negative number of entries");
+                return static_cast<std::size_t>(n);
             }
 
-            ini_dict_impl::stringvec ini_dict_impl::list_keys(const std::string &sec) const
+            ini_dict_impl::kv_type ini_dict_impl::get_kv(const std::size_t i) const
             {
-                int nkeys=iniparser_getsecnkeys(inidict_, sec.c_str());
-                if (nkeys<0) throw std::runtime_error("Cannot determin number of keys in sec '"
-                                                      + sec + "' of inifile '"
-                                                      + inifile_+"'");
-                std::vector<const char*> vptr(nkeys, (char*)0);
-                if (!vptr.empty() && iniparser_getseckeys(inidict_, sec.c_str(), &vptr.front())==0)
-                {
-                    throw std::runtime_error("Cannot retrieve keys from sec '"
-                                             + sec + "' of inifile '"
-                                             + inifile_+"'");
-                }
-                stringvec kvec;
-                kvec.reserve(nkeys);
-                copy(vptr.begin(), vptr.end(), std::back_inserter(kvec));
-
-                return kvec;
-            }
-
-            std::string ini_dict_impl::get_value(const std::string& key) const
-            {
-                const char* const miss="MISSED";
-                const char* val=iniparser_getstring(inidict_, key.c_str(), miss);
-                if (miss==val) throw std::runtime_error("Key '"+key+"' is missing in file "+inifile_);
-                return std::string(val);
+                if (i>=this->size()) throw std::out_of_range("Access beyond the end of the dictionary");
+                return kv_type(inidict_->key[i], inidict_->val[i]);
             }
 
 
@@ -100,20 +72,21 @@ namespace alps {
 
             iniparser::kv_container_type iniparser::operator()() const
             {
-                typedef std::vector<std::string> stringvec;
                 kv_container_type kv_vec;
-                
-                const stringvec sections=ini_dict_ptr_->list_sections();
-                BOOST_FOREACH(const std::string& sec, sections) {
-                    const stringvec keys=ini_dict_ptr_->list_keys(sec);
-                    BOOST_FOREACH(const std::string& k, keys) {
-                        kv_vec.push_back(std::make_pair(k, ini_dict_ptr_->get_value(k)));
+
+                // the actual vector size will likely be smaller due to sections
+                std::size_t inidict_sz=ini_dict_ptr_->size();
+
+                kv_vec.reserve(inidict_sz);
+                for (std::size_t i=0; i<inidict_sz; ++i) {
+                    ini_dict_impl::kv_type kv=ini_dict_ptr_->get_kv(i);
+                    if (kv.val && kv.key) {
+                        kv_vec.push_back(std::make_pair(std::string(kv.key),std::string(kv.val)));
                     }
                 }
                 return kv_vec;
             }
-            
+
         } // ::detail
     } // ::param_ns
 } // ::alps
-

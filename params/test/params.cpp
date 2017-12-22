@@ -5,7 +5,7 @@
  */
 
 /** @file params.cpp
-    
+
     @brief Tests the behaviour of parameters
 */
 
@@ -113,7 +113,7 @@ TEST_F(ParamsTest0, swapParams) {
 
     using std::swap;
     swap(par_, par2);
-    
+
     EXPECT_EQ(cpar_, par2_copy);
     EXPECT_EQ(par2, par1_copy);
 }
@@ -184,7 +184,7 @@ TEST_F(ParamsTest0, flags) {
     params p(args.argc(), args.argv());
     ASSERT_TRUE(p.define("flag", "A flag option").ok());
     ASSERT_TRUE(p.define("other_flag", "Another flag option").ok());
-    
+
     EXPECT_TRUE(p["flag"].as<bool>());
     EXPECT_FALSE(p["other_flag"].as<bool>());
 }
@@ -227,8 +227,8 @@ TEST_F(ParamsTest0, helpNotRequested) {
         define<double>("fp_num", 1.25, "My-fp").
         define<std::string>("solver.name", "Solver name").
         define<double>("solver.precision", 1E-5, "Solver precision").
-        define< std::vector<int> >("solver.parameters", "Solver internal parameters"); 
-        
+        define< std::vector<int> >("solver.parameters", "Solver internal parameters");
+
     std::ostringstream ostr;
     EXPECT_FALSE(par_.help_requested(ostr));
     EXPECT_TRUE(ostr.str().empty());
@@ -273,8 +273,8 @@ TEST_F(ParamsTest0, helpRequested) {
         define<double>("fp_num", 1.25, "My-fp").
         define<std::string>("solver.name", "Solver name").
         define<double>("solver.precision", 1E-5, "Solver precision").
-        define< std::vector<int> >("solver.parameters", "Solver internal parameters"); 
-        
+        define< std::vector<int> >("solver.parameters", "Solver internal parameters");
+
     EXPECT_TRUE(p.help_requested());
     std::ostringstream ostr;
     EXPECT_TRUE(p.help_requested(ostr));
@@ -297,14 +297,14 @@ TEST_F(ParamsTest0, helpRequestedNoDescription) {
         define<double>("fp_num", 1.25, "My-fp").
         define<std::string>("solver.name", "Solver name").
         define<double>("solver.precision", 1E-5, "Solver precision").
-        define< std::vector<int> >("solver.parameters", "Solver internal parameters"); 
-        
+        define< std::vector<int> >("solver.parameters", "Solver internal parameters");
+
     EXPECT_FALSE(p.help_requested());
 
     p.define("help", "A user-defined flag (aka boolean parameter)");
 
     EXPECT_TRUE(p.help_requested());
-    
+
     std::ostringstream ostr;
     EXPECT_TRUE(p.help_requested(ostr));
     EXPECT_FALSE(ostr.str().find("This is a test message")!=std::string::npos);
@@ -326,7 +326,7 @@ TEST_F(ParamsTest0, helpRequestedNoDescription) {
 
    where:
    N generally stand for "nothing", C for "correct", W for "wrong"; specifically:
-   
+
    defined... : call to the defined<T>():
                 { with default | without default }
 
@@ -556,7 +556,7 @@ TEST_F(ParamsTest0, definedNODEFdictCargNredefN) {
     par_[name]=preexisting_int_val;
 
     EXPECT_EQ("", cpar_.get_descr(name));
-    
+
     EXPECT_TRUE(par_.define<int>(name, "Int arg without default").ok());
     EXPECT_EQ("Int arg without default", cpar_.get_descr(name));
 
@@ -1198,7 +1198,7 @@ TEST_F(ParamsTest0, definedDEFdictNargWredefW) {
 
     EXPECT_THROW(par_.define<std::string>(name, "NEW default value", "String arg with NEW default"),
                  de::type_mismatch);
-    
+
     ASSERT_FALSE(cpar_.exists(name));
 }
 
