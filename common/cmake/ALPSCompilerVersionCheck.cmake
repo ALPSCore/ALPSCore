@@ -22,22 +22,22 @@ else()
     endif()
   else()
     message(WARNING "Unknown C++ compiler version: might not be supported")
-  endif()  
+  endif()
 endif()
 
 
 
 unset(ALPS_CXX_STD) # ensure the var is read from cache, if any
 if (DEFINED ALPS_CXX_STD)
-  string(TOLOWER ${ALPS_CXX_STD} ALPS_CXX_STD)
-  if (NOT ALPS_CXX_STD MATCHES "c[+][+]03|c[+][+]11")
+  if (NOT ALPS_CXX_STD MATCHES "^[cC][+][+](03|11|14)$")
     message(FATAL_ERROR "Invalid value of ALPS_CXX_STD='${ALPS_CXX_STD}'")
   endif()
+  string(TOLOWER ${ALPS_CXX_STD} ALPS_CXX_STD)
 else()
   set(ALPS_CXX_STD "c++03")
 endif()
 set(ALPS_CXX_STD ${ALPS_CXX_STD} CACHE STRING "C++ standard used to compile ALPSCore" FORCE)
-set_property(CACHE ALPS_CXX_STD PROPERTY STRINGS "c++03" "c++11")
+set_property(CACHE ALPS_CXX_STD PROPERTY STRINGS "c++03" "c++11" "c++14")
 mark_as_advanced(ALPS_CXX_STD)
 
 function(alps_get_cxx03_flag flagvar)
@@ -73,7 +73,7 @@ function(alps_get_cxx03_flag flagvar)
 #define STRINGIFY(s) STRINGIFY_HELPER(s)
 int main() { puts(STRINGIFY(__cplusplus)); return 0; }
 ")
-  
+
   try_run(run_result compile_result
     ${CMAKE_BINARY_DIR} ${cxxfile}
     COMPILE_DEFINITIONS ${retval}
@@ -85,7 +85,7 @@ int main() { puts(STRINGIFY(__cplusplus)); return 0; }
   if (run_result STREQUAL "FAILED_TO_RUN")
     message(FATAL_ERROR "Unable to run test executable")
   endif()
-  
+
   if (NOT run_output MATCHES "199711L")
     message(AUTHOR_WARNING "Setting C++ standard to C++03 has apparently failed:
 Compiler ID='${CXX_COMPILER_ID}' with option='${retval}' using standard '${run_output}'
@@ -103,9 +103,18 @@ if (ALPS_CXX_STD STREQUAL "c++03")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${cxx03_flag_}")
   set(ALPS_CXX_FEATURES "" CACHE INTERNAL "List of C++ features required by ALPSCore")
   set(ALPS_CXX_FLAGS ${cxx03_flag_} CACHE INTERNAL "C++ compilation flags to be set as interface")
+  message(STATUS "ALPSCore will use C++03")
 endif()
 
 if (ALPS_CXX_STD STREQUAL "c++11")
   set(ALPS_CXX_FEATURES "cxx_auto_type;cxx_constexpr" CACHE INTERNAL "List of C++ features required by ALPSCore")
-  set(ALPS_CXX_FLAGS "" CACHE INTERNAL "C++ compilation flags to be set as interface")  
+  set(ALPS_CXX_FLAGS "" CACHE INTERNAL "C++ compilation flags to be set as interface")
+  message(STATUS "ALPSCore will use C++11")
 endif()
+
+if (ALPS_CXX_STD STREQUAL "c++14")
+  set(ALPS_CXX_FEATURES "cxx_auto_type;cxx_constexpr;cxx_decltype_auto" CACHE INTERNAL "List of C++ features required by ALPSCore")
+  set(ALPS_CXX_FLAGS "" CACHE INTERNAL "C++ compilation flags to be set as interface")
+  message(STATUS "ALPSCore will use C++14")
+endif()
+
