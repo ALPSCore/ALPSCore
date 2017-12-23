@@ -29,7 +29,7 @@ endif()
 
 unset(ALPS_CXX_STD) # ensure the var is read from cache, if any
 if (DEFINED ALPS_CXX_STD)
-  if (NOT ALPS_CXX_STD MATCHES "^[cC][+][+](03|11|14)$")
+  if (NOT ALPS_CXX_STD MATCHES "^[cC][+][+](03|11|14)|custom$")
     message(FATAL_ERROR "Invalid value of ALPS_CXX_STD='${ALPS_CXX_STD}'")
   endif()
   string(TOLOWER ${ALPS_CXX_STD} ALPS_CXX_STD)
@@ -37,7 +37,7 @@ else()
   set(ALPS_CXX_STD "c++03")
 endif()
 set(ALPS_CXX_STD ${ALPS_CXX_STD} CACHE STRING "C++ standard used to compile ALPSCore" FORCE)
-set_property(CACHE ALPS_CXX_STD PROPERTY STRINGS "c++03" "c++11" "c++14")
+set_property(CACHE ALPS_CXX_STD PROPERTY STRINGS "c++03" "c++11" "c++14" "custom")
 mark_as_advanced(ALPS_CXX_STD)
 
 function(alps_get_cxx03_flag flagvar)
@@ -118,3 +118,9 @@ if (ALPS_CXX_STD STREQUAL "c++14")
   message(STATUS "ALPSCore will use C++14")
 endif()
 
+if (ALPS_CXX_STD STREQUAL "custom")
+  set(ALPS_CXX_FEATURES "" CACHE INTERNAL "List of C++ features required by ALPSCore")
+  set(ALPS_CXX_FLAGS "" CACHE INTERNAL "C++ compilation flags to be set as interface")
+  message("CAUTION: ALPSCore C++ standard will be set by compiler flags;"
+    " client code will not have any way to inquire the C++ standard used by ALPSCore!")
+endif()
