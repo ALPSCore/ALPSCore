@@ -21,7 +21,7 @@ if (DocumentationOnly)
   return()
 endif()
 
-add_this_package(mesh gf)
+add_this_package(mesh)
 
 add_boost()
 add_hdf5()

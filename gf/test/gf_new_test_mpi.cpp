@@ -7,7 +7,7 @@
 
 #include <gtest/gtest.h>
 
-#include <alps/gf_new/gf_base.h>
+#include <alps/gf/gf_base.hpp>
 #include <alps/gf/mesh.hpp>
 #include <alps/utilities/gtest_par_xml_output.hpp>
 #include "mpi_guard.hpp"

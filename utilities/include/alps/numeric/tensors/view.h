@@ -8,7 +8,7 @@
 #define ALPSCORE_GF_VIEW_H
 
 
-#include <alps/gf_new/tensors/data_storage.h>
+#include <alps/numeric/tensors/data_storage.h>
 
 namespace alps {
   namespace gf {
@@ -35,7 +35,6 @@ namespace alps {
         /**
          * Construct view on DataStorage object
          */
-        view(const data_storage<T>&storage) : data_(storage.data().data()), size_(storage.data().size())  {}
         view(data_storage<T>&storage) : data_(storage.data().data()), size_(storage.data().size())  {}
         /// Copy constructor
         view(const view & view) : data_(view.data_), size_(view.size_) {}

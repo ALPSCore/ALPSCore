@@ -6,15 +6,33 @@
 
 #include <gtest/gtest.h>
 
-#include <alps/gf_new/gf_base.h>
+#include <alps/gf/gf_base.hpp>
 #include <alps/gf/mesh.hpp>
+
+#include <alps/testing/near.hpp>
 
 
 using namespace alps::gf;
 
 TEST(GreensFunction, InitializationTest){
-  greenf<double, alps::gf::matsubara_positive_mesh, alps::gf::index_mesh, alps::gf::itime_mesh, alps::gf::legendre_mesh> g;
+  alps::gf::matsubara_positive_mesh x(100, 10);
+  alps::gf::index_mesh y(10);
+  alps::gf::itime_mesh z(100, 10);
+  alps::gf::legendre_mesh w(100, 10);
 
+  greenf<double, alps::gf::matsubara_positive_mesh, alps::gf::index_mesh, alps::gf::itime_mesh, alps::gf::legendre_mesh> g(x, y, z, w);
+  for(int i = 0; i<g.data().size(); ++i) {
+    ASSERT_NEAR(g.data().data().data(i), 0.0, 1E-15);
+  }
+  for(alps::gf::matsubara_positive_mesh::index_type i(0); i<x.extent(); ++i) {
+    for(alps::gf::index_mesh::index_type j(0); j<x.extent(); ++j){
+      for(alps::gf::itime_mesh::index_type k(0); k<x.extent(); ++k){
+        for(alps::gf::legendre_mesh::index_type l(0); l<x.extent(); ++l){
+          ASSERT_NEAR(g(i,j,k,l), 0.0, 1E-15);
+        }
+      }
+    }
+  }
 }
 
 TEST(GreensFunction, AsignmentTest){
@@ -118,11 +136,14 @@ TEST(GreensFunction, BasicArithmetics2DScaling) {
       ASSERT_DOUBLE_EQ(w() * s, g(w, i).imag());
     }
   }
+  auto gg = g / s;
   g /= s;
   for(alps::gf::matsubara_positive_mesh::index_type w(0); w<x.extent(); ++w) {
     for(alps::gf::index_mesh::index_type i(0); i<y.extent(); ++i) {
       ASSERT_DOUBLE_EQ(3.0 * i(), g(w, i).real());
       ASSERT_DOUBLE_EQ(w(), g(w, i).imag());
+      ASSERT_DOUBLE_EQ(gg(w,i).real(), g(w, i).real());
+      ASSERT_DOUBLE_EQ(gg(w,i).imag(), g(w, i).imag());
     }
   }
   std::complex<double> f(0.0, s);
@@ -146,6 +167,8 @@ TEST(GreensFunction, BasicArithmetics2DScalingComplex) {
   }
   std::complex<double> s = 3.0;
   greenf<std::complex<double>, alps::gf::matsubara_positive_mesh, alps::gf::index_mesh > g2 = g * s;
+  greenf<std::complex<double>, alps::gf::matsubara_positive_mesh, alps::gf::index_mesh > g3 = s * g;
+  ASSERT_EQ(g2, g3);
   for (alps::gf::matsubara_positive_mesh::index_type w(0); w < x.extent(); ++w) {
     for (alps::gf::index_mesh::index_type i(0); i < y.extent(); ++i) {
       ASSERT_DOUBLE_EQ(g(w, i) * s.real(), g2(w, i).real());
@@ -235,3 +258,62 @@ TEST(GreensFunction, NegateGF) {
     }
   }
 }
+
+TEST(GreensFunction, StreamOut) {
+  alps::gf::matsubara_positive_mesh x(100, 10);
+  alps::gf::itime_mesh y(100, 3);
+  alps::gf::index_mesh z(3);
+  greenf<double, alps::gf::matsubara_positive_mesh, alps::gf::itime_mesh, alps::gf::index_mesh > g(x, y, z);
+  int k = 0;
+  for(alps::gf::matsubara_positive_mesh::index_type w(0); w<x.extent(); ++w) {
+    for (alps::gf::itime_mesh::index_type t(0); t < y.extent(); ++t) {
+      for (alps::gf::index_mesh::index_type i(0); i < z.extent(); ++i) {
+        g(w, t, i) = ++k;
+      }
+    }
+  }
+
+  std::stringstream gf_stream_by_hand;
+  gf_stream_by_hand<<x
+                   <<y
+                   <<z;
+  k = 0;
+  for(int i=0;i<x.extent();++i){
+    gf_stream_by_hand<<(2*i+1)*M_PI/100.;
+    for(int n = 0; n< 9 ;++n){
+      gf_stream_by_hand<<" "<<std::to_string(++k);
+    }
+    gf_stream_by_hand<<" "<<std::endl;
+  }
+  std::stringstream gf_stream;
+  gf_stream<<g;
+  EXPECT_EQ(gf_stream_by_hand.str(), gf_stream.str());
+}
+
+TEST(GreensFunction, ConstRef) {
+  alps::gf::matsubara_positive_mesh x(100, 10);
+  alps::gf::index_mesh y(10);
+  alps::gf::index_mesh z(10);
+  greenf<double, alps::gf::matsubara_positive_mesh, alps::gf::index_mesh, alps::gf::index_mesh > g(x, y, z);
+  const greenf<double, alps::gf::matsubara_positive_mesh, alps::gf::index_mesh, alps::gf::index_mesh >& g2 = g;
+  for (alps::gf::matsubara_positive_mesh::index_type w(0); w < x.extent(); ++w) {
+    for (alps::gf::index_mesh::index_type i(0); i < y.extent(); ++i) {
+      for (alps::gf::index_mesh::index_type j(0); j < z.extent(); ++j) {
+        g(w, i, j) = 3.0 * j() + w() + i();
+      }
+    }
+  }
+  for (alps::gf::matsubara_positive_mesh::index_type w(0); w < x.extent(); ++w) {
+    auto g3 = g2(w);
+    for (alps::gf::index_mesh::index_type i(0); i < y.extent(); ++i) {
+      std::stringstream gf_stream1;
+      std::stringstream gf_stream2;
+      auto g4 = g2(w)(i);
+      auto g5 = g3(i);
+      gf_stream1<<g4;
+      gf_stream2<<g5;
+      EXPECT_EQ(gf_stream1.str(), gf_stream2.str());
+    }
+  }
+}
+

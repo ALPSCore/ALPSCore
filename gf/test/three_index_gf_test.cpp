@@ -5,8 +5,7 @@
  */
 
 #include "gtest/gtest.h"
-#include "alps/gf/gf.hpp"
-#include "alps/gf/tail.hpp"
+#include <alps/gf/gf.hpp>
 #include "gf_test.hpp"
 
 class ThreeIndexGFTest : public ::testing::Test
@@ -385,6 +384,7 @@ TEST_F(ThreeIndexGFTest, tailPrint)
 TEST_F(ThreeIndexGFTest, DefaultConstructive)
 {
     gf_type gf_empty;
+#ifndef NDEBUG
     EXPECT_THROW(gf_empty.norm(), std::runtime_error);
     {
         alps::hdf5::archive oar("gf_3i_defconstr.h5","w");
@@ -395,4 +395,5 @@ TEST_F(ThreeIndexGFTest, DefaultConstructive)
         iar["/gf"] >> gf_empty;
     }
     EXPECT_NO_THROW(gf_empty.norm());
+#endif
 }

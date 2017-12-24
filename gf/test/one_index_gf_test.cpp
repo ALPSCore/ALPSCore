@@ -83,7 +83,7 @@ TEST_F(OneIndexGFTest,print)
   std::stringstream gf_stream_by_hand;
   gf_stream_by_hand<<matsubara_mesh(beta,nfreq);
   for(int i=0;i<nfreq;++i){
-    gf_stream_by_hand<<(2*i+1)*M_PI/beta<<" 0 0"<<std::endl;
+    gf_stream_by_hand<<(2*i+1)*M_PI/beta<<" 0 0 "<<std::endl;
   }
   EXPECT_EQ(gf_stream_by_hand.str(), gf_stream.str());
 }
@@ -163,6 +163,7 @@ TEST_F(OneIndexGFTest, Legendre) {
 TEST_F(OneIndexGFTest, DefaultConstructive)
 {
     gf_type gf_empty;
+#ifndef NDEBUG
     EXPECT_THROW(gf_empty.norm(), std::runtime_error);
     {
         alps::hdf5::archive oar("gf_1i_defconstr.h5","w");
@@ -173,4 +174,5 @@ TEST_F(OneIndexGFTest, DefaultConstructive)
         iar["/gf"] >> gf_empty;
     }
     EXPECT_NO_THROW(gf_empty.norm());
+#endif
 }

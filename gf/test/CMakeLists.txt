@@ -15,7 +15,6 @@ set (test_srcs
   seven_index_gf_test
   itime_gf_test
   fourier_test
-  tensor_test
   grid_test
   piecewise_polynomial_test
     )

@@ -11,8 +11,8 @@
 
 #include <vector>
 #include <array>
-#include <alps/gf_new/tensors/data_storage.h>
-#include <alps/gf_new/tensors/view.h>
+#include <alps/numeric/tensors/data_storage.h>
+#include <alps/numeric/tensors/view.h>
 
 namespace alps {
   namespace gf {
@@ -35,10 +35,10 @@ namespace alps {
       public:
         /// Construct view of the whole DataStorage
         data_view(data_storage<T> & storage) : data_slice_(storage), offset_(0), size_(storage.size()) {}
-//        data_view(const data_storage<T> & storage) : data_slice_(storage), offset_(0), size_(storage.size()) {}
+        template<typename S>
+        data_view(const data_storage<S> & storage, size_t size = 0, size_t offset = 0) : data_slice_(storage.data().data(), size), offset_(offset), size_(size) {}
         /// Construct subview of specified size for DataStorage starting from offset point
         data_view(data_storage<T> & storage, size_t size, size_t offset = 0) : data_slice_(storage), offset_(offset), size_(size) {}
-        data_view(const data_storage<T> & storage, size_t size, size_t offset = 0) : data_slice_(storage), offset_(offset), size_(size) {}
         /// Move-construction of subview of specified size for another View starting from offset point
         data_view(data_view<T> && storage, size_t size, size_t offset) : data_slice_(storage.data_slice_), offset_(offset + storage.offset_), size_(size) {}
         /// Copy-construction of subview of specified size for another View starting from offset point
@@ -47,6 +47,12 @@ namespace alps {
         data_view(T*data, size_t size) : data_slice_(data, size), offset_(0), size_(size){}
         /// Copy constructor
         data_view(const data_view<T> & storage) = default;
+
+        template<typename S>
+        data_view(const data_view<S>& storage, size_t size = 0, size_t offset = 0) :
+          data_slice_(&storage.data()[0], storage.size()) {};
+
+
         /// Move constructor
         data_view(data_view<T> && storage) = default;
 
@@ -59,6 +65,9 @@ namespace alps {
         T& data(size_t i) {return data_slice_.data(i + offset_);};
         /// @return const-reference to the data at point i
         const T& data(size_t i) const {return data_slice_.data(i + offset_);};
+        /// bracket operators
+        inline T  operator()(size_t i) const {return data_slice_.data(i + offset_);};
+        inline T& operator()(size_t i) {return data_slice_.data(i + offset_);};
         /// @return buffer size
         size_t size() const {return size_;}
         /// @return offset from the buffer beginning

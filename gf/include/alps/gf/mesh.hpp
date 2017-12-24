@@ -97,7 +97,7 @@ namespace alps {
             real_frequency_mesh() {};
 
             template<typename GRID>
-            explicit real_frequency_mesh(GRID grid)  {
+            explicit real_frequency_mesh(const GRID & grid)  {
                 grid.compute_points(_points());
             }
             int extent() const {return points().size();}

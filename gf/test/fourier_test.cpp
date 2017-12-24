@@ -5,8 +5,7 @@
  */
 
 #include "gtest/gtest.h"
-#include "alps/gf/gf.hpp"
-#include "alps/gf/tail.hpp"
+#include <alps/gf/gf.hpp>
 #include "alps/gf/fourier.hpp"
 
 class AtomicFourierTestGF : public ::testing::Test

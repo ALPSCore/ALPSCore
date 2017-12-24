@@ -4,7 +4,7 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#include "alps/gf/gf.hpp"
+#include <alps/gf/gf.hpp>
 
 #include "gtest/gtest.h"
 #include "mpi_guard.hpp"
