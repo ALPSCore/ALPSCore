@@ -9,6 +9,7 @@
 
 
 #include <vector>
+#include <tuple>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/preprocessor/cat.hpp>
@@ -19,8 +20,10 @@
 #include <alps/utilities/mpi.hpp>
 #endif
 
-#include <alps/gf_new/tensors/tensor_base.h>
-#include <alps/gf_new/type_traits.h>
+#include <alps/numeric/tensors/tensor_base.h>
+#include <alps/gf/mesh.hpp>
+#include <alps/type_traits/tuple_traits.hpp>
+#include <alps/type_traits/index_sequence.hpp>
 
 
 namespace alps {
@@ -31,6 +34,24 @@ namespace alps {
        */
       template<class VTYPE, class Storage, class ...MESHES>
       class gf_base;
+
+      template <typename Tuple, std::size_t...Is>
+      std::ostream & output(std::ostream & os, const Tuple& t, index_sequence<Is...>) {
+        using swallow = int[];
+        (void)swallow{0, (void(os << std::get<Is>(t)), 0)...};
+        return os;
+      };
+
+      template <typename ...Args>
+      auto operator<<(std::ostream & os, const std::tuple<Args...>& t) -> DECLTYPE(detail::output(os, t, make_index_sequence<sizeof...(Args)>()))
+
+      template<typename T> void print_no_complex(std::ostream &os, const T &z){
+        os<<z;
+      }
+      template<> void print_no_complex(std::ostream &os, const std::complex<double> &z){
+        //specialization for printing complex as ... real imag ...
+        os<<z.real()<<" "<<z.imag();
+      }
     }
 
     /**
@@ -87,24 +108,25 @@ namespace alps {
         bool empty_;
 
         // template hacks
+        /**
+         * Create Greens function view class based on the mesh tuple types.
+         *
+         * @tparam S   - type of the stored data
+         * @tparam Tup - Mesh tuple
+         */
+        template <typename S, class Tup> struct subpack_impl;
+        template<typename S, template<class...> class Tup, class... T>
+        struct subpack_impl<S, Tup<T...> >
+        {
+          using type = gf_base<S, tensor_view < S, sizeof...(T)>,  T...>;
+        };
+        template<typename S, int I>
+        using subpack = typename subpack_impl<S, decltype(tuple_tail < I >(meshes_) )>::type;
 
-        // this is a helper function that should never be called. It used to get compile time type declaration.
-        // using the index_sequence we create the proper set of meshes by unrolling tuple into parameter pack with
-        // the following template code: "typename std::tuple_element<sizeof...(Ti) - Trim + I, _mesh_types >::type..."
-        template <typename S, int Trim, typename... Ti, std::size_t... I>
-        gf_base<S, tensor_view < S, Trim>,
-          typename std::tuple_element<sizeof...(Ti) - Trim + I, mesh_types >::type...>
-        subpack_(S x, const std::tuple<Ti...>& t, index_sequence<I...>) {
-          throw std::runtime_error("This function is not intended to be called. The only purpose of this function is to get type declaration.");
-        }
-
-        // this is a helper function that should never be called. It used to get compile time type declaration
-        // Using the size of current GF mesh and number of indices in new GF we create an index sequence and
-        // evaluate the return type of %subpack_% method.
-        template <typename S, int Trim, typename... T>
-        auto subpack(S x, const std::tuple<T...>& t) -> decltype(subpack_<S, Trim, T...>(x, t, make_index_sequence<Trim>())) {
-          throw std::runtime_error("This function is not intended to be called. The only purpose of this function is to get type declaration.");
-        }
+        template<typename RHS_VTYPE, typename LHS_VTYPE>
+        struct convert {
+          typedef typename std::conditional<std::is_integral<RHS_VTYPE>::value, VTYPE, RHS_VTYPE>::type type;
+        };
 
       public:
 
@@ -128,7 +150,7 @@ namespace alps {
          * Create Green's function object with given meshes
          * @param meshes - list of meshes
          */
-        gf_base(MESHES...meshes) : gf_base(std::forward_as_tuple(meshes...)) {}
+        gf_base(MESHES...meshes) : gf_base(std::make_tuple(meshes...)) {}
         /// tuple version of the previous function
         gf_base(const mesh_types &meshes) : data_(get_sizes(meshes)), meshes_(meshes), empty_(false) {}
         /// Create GF with the provided data
@@ -151,19 +173,37 @@ namespace alps {
         }
 
         /// construct new green's function from index slice of GF with higher dimension
-        template<typename St, typename...OLDMESHES, typename ...Indices>
+        template<typename St, typename...OLDMESHES, typename Index, typename ...Indices>
         gf_base(gf_base<VTYPE, tensor_base < VTYPE, sizeof...(OLDMESHES), St >, OLDMESHES...> & g, std::tuple<OLDMESHES...>& oldmesh,
-                const mesh_types &meshes, const Indices... idx) :
-          data_(g.data()(idx()...)), meshes_(meshes), empty_(false) {}
+                const mesh_types &meshes, const Index ind, const Indices... idx) :
+          data_(g.data()(ind(), idx()...)), meshes_(meshes), empty_(false) {}
+
+        /// construct const view
+        template<typename RHSTYPE ,typename St, typename...OLDMESHES, typename ...Indices>
+        gf_base(const gf_base<RHSTYPE, tensor_base < RHSTYPE, sizeof...(OLDMESHES), St >, OLDMESHES...> & g, const std::tuple<OLDMESHES...>& oldmesh,
+                mesh_types &meshes, const Indices... idx) : data_(g.data()(idx()...)), meshes_(meshes), empty_(false) {}
 
         /// copy assignment
-        gf_type& operator=(const gf_type & rhs) = default;
+        gf_type& operator=(const gf_type & rhs) {
+          throw_if_empty();
+          check_meshes(rhs);
+          data_ = rhs.data();
+          return *this;
+        }
         /// move assignment
         gf_type& operator=(gf_type && rhs) = default;
 
         /// initialize with zeros
         void initialize() {
           data_ *= VTYPE(0);
+        }
+
+        /// Check if meshes are compatible, throw if not
+        void check_meshes(const gf_type& rhs) const
+        {
+          if (meshes_ != rhs.meshes_) {
+            throw std::invalid_argument("Green Functions have incompatible meshes");
+          }
         }
 
         /*
@@ -201,9 +241,16 @@ namespace alps {
          */
         template<class...Indices>
         auto operator()(typename std::enable_if<(sizeof...(Indices)+1 < N_), typename std::tuple_element<0,mesh_types>::type::index_type >::type ind,
-                    Indices...inds) -> decltype(subpack<VTYPE, N_ - sizeof...(Indices) - 1>(VTYPE(0), meshes_)) {
-          return decltype(subpack<VTYPE, N_ - sizeof...(Indices) - 1>(VTYPE(0), meshes_))
+                    Indices...inds) -> subpack<VTYPE, sizeof...(Indices) + 1> {
+          return subpack<VTYPE, sizeof...(Indices) + 1 >
                           (*this, meshes_, tuple_tail < sizeof...(Indices) + 1 >(meshes_), ind, std::forward<Indices>(inds)...);
+        }
+
+        template<class...Indices>
+        auto operator()(typename std::enable_if<(sizeof...(Indices)+1 < N_), typename std::tuple_element<0,mesh_types>::type::index_type >::type ind,
+                        Indices...inds) const -> subpack<const VTYPE, sizeof...(Indices) + 1> {
+          auto t = tuple_tail < sizeof...(Indices) + 1 >(meshes_);
+          return subpack<const VTYPE, sizeof...(Indices) + 1>  (*this, meshes_, t, ind, std::forward<Indices>(inds)...);
         }
 
 
@@ -287,10 +334,15 @@ namespace alps {
          * @return new scaled Green's function
          */
         template<typename RHS>
-        gf_op_type<RHS> operator*(RHS rhs) const {
+        gf_op_type<typename convert<RHS,VTYPE>::type> operator*(RHS rhs) const {
           throw_if_empty();
-          gf_op_type<RHS> res(*this);
+          gf_op_type<typename convert<RHS,VTYPE>::type> res(*this);
           return res *= rhs;
+        }
+
+        template<typename LHS>
+        friend gf_op_type<typename convert<LHS,VTYPE>::type> operator*(LHS lhs, const gf_type & g) {
+          return g * lhs;
         }
 
         /**
@@ -316,10 +368,15 @@ namespace alps {
         * @return scaled Green's function
         */
         template<typename RHS>
-        gf_op_type<RHS> operator/(RHS rhs) const {
+        gf_op_type<typename convert<RHS,VTYPE>::type> operator/(RHS rhs) const {
           throw_if_empty();
-          gf_op_type<RHS> res(meshes_);
+          gf_op_type<typename convert<RHS,VTYPE>::type> res(*this);
           return res /= rhs;
+        }
+
+        template<typename LHS>
+        friend gf_op_type<typename convert<LHS,VTYPE>::type> operator/(LHS lhs, const gf_type & g) {
+          return g / lhs;
         }
 
         /**
@@ -341,6 +398,11 @@ namespace alps {
         typename std::enable_if < std::is_base_of< generic_gf<data_storage>, RHS_GF >::value || std::is_base_of < generic_gf<data_view>, RHS_GF >::value, bool >::type
         operator==(const RHS_GF &rhs) const {
           return (empty_ && rhs.is_empty()) || (data_.shape() == rhs.data().shape() && data_.data() == rhs.data().data() );
+        }
+
+        template<typename RHS_GF>
+        bool operator!=(const RHS_GF &rhs) const {
+          return !(*this==rhs);
         }
 
         /**
@@ -650,6 +712,21 @@ namespace alps {
 
       };
 
+    }
+    template<typename value_type, typename St, typename ...Meshes>
+    inline std::ostream &operator<<(std::ostream &os, const detail::gf_base<value_type, St, Meshes...> & G ){
+      using detail::operator<<;
+      os<<G.meshes();
+      for(int i=0;i<G.mesh1().extent();++i){
+        os<<(G.mesh1().points()[i])<<" ";
+        size_t points = G.data().size()/G.data().shape()[0];
+        for(size_t j = 0; j< points; ++j) {
+          detail::print_no_complex<value_type>(os, G.data().data()(j + G.data().index(i)));
+          os<<" ";
+        }
+        os<<std::endl;
+      }
+      return os;
     }
   }
 }

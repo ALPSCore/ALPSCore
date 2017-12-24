@@ -7,7 +7,7 @@
 #include <gtest/gtest.h>
 #include <complex>
 
-#include "alps/gf_new/tensors/tensor_base.h"
+#include "alps/numeric/tensors/tensor_base.h"
 
 using namespace alps::gf::detail;
 
@@ -36,12 +36,13 @@ TEST(TensorTest, StoragesComparison) {
 
 }
 
-
 TEST(TensorTest, TestInitialization) {
-  tensor<std::complex<double>, 3> X(std::array<size_t, 3>{{1,2,3}});
+  tensor<std::complex<double>, 3> X(1,2,3);
   ASSERT_EQ(X.size(), 1*2*3);
   tensor<double, 1> U( 50 );
   ASSERT_EQ(U.size(), 50);
+  std::vector<double> x(100);
+  tensor<double, 2> UU(x.data(), 25, 4);
 }
 
 TEST(TensorTest, TestAssignments) {
@@ -72,9 +73,8 @@ TEST(TensorTest, TestAssignments) {
   ASSERT_EQ(V, T1);
 }
 
-
 TEST(TensorTest, TestSlices) {
-  tensor<std::complex<double>, 3> X({{1,2,3}});
+  tensor<std::complex<double>, 3> X(1, 2, 3);
 
   tensor_view<std::complex<double>, 1> slice1 = X(0, 1);
   ASSERT_EQ(slice1.dimension(), 1);
@@ -97,7 +97,6 @@ TEST(TensorTest, TestSlices) {
     }
   }
 }
-
 
 TEST(TensorTest, TestSubSlices) {
   tensor<double, 4> X({{3,4,5,6}});
@@ -350,7 +349,6 @@ TEST(TensorTest, DoubleScaleByComplexView) {
   }
 }
 
-
 TEST(TensorTest, DoublePlusComplex) {
   size_t N = 10;
   Eigen::MatrixXd M1 = Eigen::MatrixXd::Random(N, N);
@@ -367,14 +365,14 @@ TEST(TensorTest, DoublePlusComplex) {
   auto Y = Z + X;
   for(int i = 0; i< N; ++i){
     for (int j = 0; j < N; ++j) {
-      ASSERT_DOUBLE_EQ(Y(i, j).real(), M3(i, j).real());
-      ASSERT_DOUBLE_EQ(Y(i, j).imag(), M3(i, j).imag());
+      ASSERT_NEAR(Y(i, j).real(), M3(i, j).real(), 1e-12);
+      ASSERT_NEAR(Y(i, j).imag(), M3(i, j).imag(), 1e-12);
     }
   }
   Y -= Z;
   for(int i = 0; i< N; ++i){
     for (int j = 0; j < N; ++j) {
-      ASSERT_DOUBLE_EQ(Y(i, j).real(), X(i, j));
+      ASSERT_NEAR(Y(i, j).real(), X(i, j),1e-12);
     }
   }
 }
@@ -440,4 +438,11 @@ TEST(TensorTest, StorageAssignments) {
   }
   ASSERT_NO_THROW(storage_obj2 = storage_obj);
 
+}
+
+TEST(TensorTest, ConstTensor) {
+  size_t N = 10;
+  tensor <double, 3> X(N, N, N);
+  const tensor <double, 3> & Y = X;
+  Y( 1 ) ( 1 );
 }

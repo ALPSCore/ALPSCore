@@ -6,11 +6,11 @@
 
 #include <gtest/gtest.h>
 
-#include <alps/gf_new/gf_tail.h>
+#include <alps/gf/tail.hpp>
 #include <alps/gf/mesh.hpp>
 
 
-namespace g=alps::gf;
+namespace gfns=alps::gf;
 
 class GreensFunctionTailTest : public ::testing::Test
 {
@@ -19,9 +19,9 @@ public:
   const int nsites;
   const int nfreq ;
   const int nspins;
-  typedef g::greenf<std::complex<double> , g::matsubara_positive_mesh, g::index_mesh> omega_sigma_gf;
-  typedef g::greenf<std::complex<double>, alps::gf::matsubara_positive_mesh, alps::gf::index_mesh> head;
-  typedef g::greenf<double, alps::gf::index_mesh> tail;
+  typedef gfns::greenf<std::complex<double> , gfns::matsubara_positive_mesh, gfns::index_mesh> omega_sigma_gf;
+  typedef gfns::greenf<std::complex<double>, alps::gf::matsubara_positive_mesh, alps::gf::index_mesh> head;
+  typedef gfns::greenf<double, alps::gf::index_mesh> tail;
   omega_sigma_gf gf;
   omega_sigma_gf gf2;
   typedef alps::gf::matsubara_mesh<alps::gf::mesh::POSITIVE_ONLY> matsubara_mesh;
@@ -35,21 +35,21 @@ public:
 
 
 TEST_F(GreensFunctionTailTest, InitializationTest){
-  typedef g::greenf<double, alps::gf::matsubara_positive_mesh, alps::gf::index_mesh, alps::gf::itime_mesh, alps::gf::legendre_mesh> head;
-  typedef g::greenf<double, alps::gf::index_mesh, alps::gf::itime_mesh, alps::gf::legendre_mesh> tail;
-  g::gf_tail<head, tail> g;
+  typedef gfns::greenf<double, alps::gf::matsubara_positive_mesh, alps::gf::index_mesh, alps::gf::itime_mesh, alps::gf::legendre_mesh> head;
+  typedef gfns::greenf<double, alps::gf::index_mesh, alps::gf::itime_mesh, alps::gf::legendre_mesh> tail;
+  gfns::gf_tail<head, tail> g;
 }
 
 TEST_F(GreensFunctionTailTest, AssignTest){
   alps::gf::matsubara_positive_mesh x(100, 10);
   alps::gf::index_mesh y(10);
   alps::gf::itime_mesh z(100, 10);
-  typedef g::greenf<double, alps::gf::matsubara_positive_mesh, alps::gf::index_mesh, alps::gf::itime_mesh> head;
-  typedef g::greenf<double, alps::gf::index_mesh, alps::gf::itime_mesh> tail;
-  g::greenf<double, alps::gf::matsubara_positive_mesh, alps::gf::index_mesh, alps::gf::itime_mesh> g(x,y,z);
+  typedef gfns::greenf<double, alps::gf::matsubara_positive_mesh, alps::gf::index_mesh, alps::gf::itime_mesh> head;
+  typedef gfns::greenf<double, alps::gf::index_mesh, alps::gf::itime_mesh> tail;
+  gfns::greenf<double, alps::gf::matsubara_positive_mesh, alps::gf::index_mesh, alps::gf::itime_mesh> g(x,y,z);
   g(alps::gf::matsubara_positive_mesh::index_type(0), alps::gf::index_mesh::index_type(0), alps::gf::itime_mesh::index_type(0)) = 10.0;
-  g::gf_tail<head, tail> g2(g);
-  g::gf_tail<head, tail> g3(g);
+  gfns::gf_tail<head, tail> g2(g);
+  gfns::gf_tail<head, tail> g3(g);
   ASSERT_EQ(g.data(), g2.data());
   ASSERT_EQ(g2, g3);
   tail t1(y,z);
@@ -57,13 +57,14 @@ TEST_F(GreensFunctionTailTest, AssignTest){
   t1(alps::gf::index_mesh::index_type(0), alps::gf::itime_mesh::index_type(3)) = 1.0;
   t2(alps::gf::index_mesh::index_type(0), alps::gf::itime_mesh::index_type(3)) = 1.0;
   g2.set_tail(0, t1);
+  ASSERT_NE(g2, g3);
   g3.set_tail(0, t2);
   ASSERT_EQ(g2, g3);
 }
 
 TEST_F(GreensFunctionTailTest, SetTail){
   alps::gf::index_mesh y(nspins);
-  g::gf_tail<head, tail> g2 (gf);
+  gfns::gf_tail<head, tail> g2 (gf);
   tail tail1(y);
   tail1(alps::gf::index_mesh::index_type(0)) = 10.0;
   g2.set_tail(0, tail1);
@@ -73,27 +74,27 @@ TEST_F(GreensFunctionTailTest, SetTail){
 
 TEST_F(GreensFunctionTailTest, TailSaveLoad)
 {
-  typedef g::greenf<std::complex<double>, g::matsubara_mesh<g::mesh::POSITIVE_ONLY>, g::index_mesh> omega_sigma_gf;
-  typedef g::greenf<std::complex<double>, g::index_mesh> one_index_gf;
-  typedef g::gf_tail<omega_sigma_gf, g::greenf<double, g::index_mesh> > omega_sigma_gf_with_tail;
-  typedef g::greenf<double, g::index_mesh> density_matrix_type;
-  density_matrix_type denmat = density_matrix_type(g::index_mesh(nspins));
+  typedef gfns::greenf<std::complex<double>, gfns::matsubara_mesh<gfns::mesh::POSITIVE_ONLY>, gfns::index_mesh> omega_sigma_gf;
+  typedef gfns::greenf<std::complex<double>, gfns::index_mesh> one_index_gf;
+  typedef gfns::gf_tail<omega_sigma_gf, gfns::greenf<double, gfns::index_mesh> > omega_sigma_gf_with_tail;
+  typedef gfns::greenf<double, gfns::index_mesh> density_matrix_type;
+  density_matrix_type denmat = density_matrix_type(gfns::index_mesh(nspins));
 
-  omega_sigma_gf gf(g::matsubara_positive_mesh(beta,nfreq), alps::gf::index_mesh(nspins));
+  omega_sigma_gf gf(gfns::matsubara_positive_mesh(beta,nfreq), alps::gf::index_mesh(nspins));
 
   // prepare diagonal matrix
   double U=3.0;
   denmat.initialize();
-  denmat(g::index(0))=0.5*U;
-  denmat(g::index(1))=0.5*U;
+  denmat(gfns::index(0))=0.5*U;
+  denmat(gfns::index(1))=0.5*U;
 
   // Attach a tail to the GF
   int order=0;
 
   omega_sigma_gf_with_tail gft(gf);
   omega_sigma_gf_with_tail gft2(gft);
-  EXPECT_EQ(g::TAIL_NOT_SET,gft.min_tail_order());
-  EXPECT_EQ(g::TAIL_NOT_SET,gft.max_tail_order());
+  EXPECT_EQ(gfns::TAIL_NOT_SET,gft.min_tail_order());
+  EXPECT_EQ(gfns::TAIL_NOT_SET,gft.max_tail_order());
 
   gft.set_tail(order, denmat);
 
@@ -102,7 +103,7 @@ TEST_F(GreensFunctionTailTest, TailSaveLoad)
   EXPECT_EQ(0,(denmat - gft.tail(0)).norm());
   {
     alps::hdf5::archive oar("gf_2i_tailsaveload.h5","w");
-    gft(g::matsubara_index(4),g::index(1))=std::complex<double>(7., 3.);
+    gft(gfns::matsubara_index(4),gfns::index(1))=std::complex<double>(7., 3.);
     oar["/gft"] << gft;
   }
   {
@@ -113,7 +114,7 @@ TEST_F(GreensFunctionTailTest, TailSaveLoad)
   EXPECT_EQ(gft2.tail().size(), gft.tail().size()) << "Tail size mismatch";
   EXPECT_NEAR(0, (gft.tail(0)-gft2.tail(0)).norm(), 1E-8)<<"Tail loaded differs from tail stored";
 
-  EXPECT_EQ(7, gft2(g::matsubara_index(4), g::index(1)).real()) << "GF real part mismatch";
-  EXPECT_EQ(3, gft2(g::matsubara_index(4), g::index(1)).imag()) << "GF imag part mismatch";
+  EXPECT_EQ(7, gft2(gfns::matsubara_index(4), gfns::index(1)).real()) << "GF real part mismatch";
+  EXPECT_EQ(3, gft2(gfns::matsubara_index(4), gfns::index(1)).imag()) << "GF imag part mismatch";
 
 }

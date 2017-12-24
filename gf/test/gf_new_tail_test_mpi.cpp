@@ -7,13 +7,13 @@
 
 #include <gtest/gtest.h>
 
-#include <alps/gf_new/gf_base.h>
+#include <alps/gf/gf_base.hpp>
 #include <alps/gf/mesh.hpp>
 #include <alps/utilities/gtest_par_xml_output.hpp>
-#include <alps/gf_new/gf_tail.h>
+#include <alps/gf/tail.hpp>
 #include "mpi_guard.hpp"
 
-namespace g = alps::gf;
+namespace gfns = alps::gf;
 
 class TailedGreensFunctionMPI : public ::testing::Test
 {
@@ -25,9 +25,9 @@ public:
   int rank;
   bool is_root;
   static const int MASTER=0;
-  typedef g::greenf<std::complex<double> , g::matsubara_positive_mesh, g::index_mesh> omega_sigma_gf;
-  typedef g::greenf<std::complex<double>, alps::gf::matsubara_positive_mesh, alps::gf::index_mesh> head;
-  typedef g::greenf<double, alps::gf::index_mesh> tail;
+  typedef gfns::greenf<std::complex<double> , gfns::matsubara_positive_mesh, gfns::index_mesh> omega_sigma_gf;
+  typedef gfns::greenf<std::complex<double>, alps::gf::matsubara_positive_mesh, alps::gf::index_mesh> head;
+  typedef gfns::greenf<double, alps::gf::index_mesh> tail;
   typedef alps::gf::matsubara_mesh<alps::gf::mesh::POSITIVE_ONLY> matsubara_mesh;
   typedef alps::gf::index_mesh index_mesh;
   omega_sigma_gf gf;
@@ -44,18 +44,18 @@ public:
 
 TEST_F(TailedGreensFunctionMPI, Broadcast){
   double new_val = 15.0;
-  alps::gf::index_mesh y(nspins);
+  alps::gf::index_mesh y(nsites);
   // set value in GF
   gf(matsubara_mesh::index_type(0), index_mesh::index_type(0)) = new_val;
   // create tail
   tail tail1(y);
   tail1(alps::gf::index_mesh::index_type(0)) = 10.0;
   // create tailed GF
-  g::gf_tail<head, tail> gft(gf);
+  gfns::gf_tail<head, tail> gft(gf);
   // attach tail
   gft.set_tail(0, tail1);
   if(!is_root) {
-    g::gf_tail<head, tail> gf3;
+    gfns::gf_tail<head, tail> gf3;
     gf3.broadcast(alps::mpi::communicator(), MASTER);
     // check that GF is unchanged
     ASSERT_DOUBLE_EQ(gf(matsubara_mesh::index_type(0), index_mesh::index_type(0)).real(), new_val);

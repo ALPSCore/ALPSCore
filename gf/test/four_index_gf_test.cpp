@@ -253,6 +253,7 @@ TEST_F(FourIndexGFTest,print)
 TEST_F(FourIndexGFTest, DefaultConstructive)
 {
     gf_type gf_empty;
+#ifndef NDEBUG
     EXPECT_THROW(gf_empty.norm(), std::runtime_error);
     {
         alps::hdf5::archive oar("gf_4i_defconstr.h5","w");
@@ -263,4 +264,5 @@ TEST_F(FourIndexGFTest, DefaultConstructive)
         iar["/gf"] >> gf_empty;
     }
     EXPECT_NO_THROW(gf_empty.norm());
+#endif
 }

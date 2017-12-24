@@ -5,9 +5,8 @@
  */
 
 #include "gtest/gtest.h"
-#include "alps/gf/gf.hpp"
-#include "alps/gf/tail.hpp"
 
+#include <alps/gf/gf.hpp>
 
 class TwoIndexGFTest : public ::testing::Test
 {
@@ -61,7 +60,7 @@ TEST_F(TwoIndexGFTest,scaling)
     EXPECT_NEAR(6, x.real(),1.e-10);
     EXPECT_NEAR(8, x.imag(),1.e-10);
 
-    alps::gf::omega_sigma_gf gf1=gf/2;
+    alps::gf::omega_sigma_gf gf1=gf / 2;
     std::complex<double> x1=gf1(omega,sigma);
     EXPECT_NEAR(3, x1.real(),1.e-10);
     EXPECT_NEAR(4, x1.imag(),1.e-10);
@@ -204,8 +203,7 @@ TEST_F(TwoIndexGFTest, tailPrint)
     gft.set_tail(order, denmat);
 
     std::ostringstream outs;
-    outs << gft.tail(0);
-    std::cout << "Output is:\n" << outs.str() << std::endl;
+    ASSERT_NO_THROW(outs << gft.tail(0));
 }
 
 TEST_F(TwoIndexGFTest, TailSaveLoad)
@@ -262,13 +260,14 @@ TEST_F(TwoIndexGFTest,Assign)
     
     gf2=gf;
     EXPECT_EQ(data, gf2(omega,sigma));
-    EXPECT_THROW(other_gf=gf, std::invalid_argument);
+    EXPECT_THROW(other_gf = gf, std::invalid_argument);
     // EXPECT_EQ(data, other_gf(omega,sigma));
 }
 
 TEST_F(TwoIndexGFTest, DefaultConstructive)
 {
     gf_type gf_empty;
+#ifndef NDEBUG
     EXPECT_THROW(gf_empty.norm(), std::runtime_error);
     {
         alps::hdf5::archive oar("gf_2i_defconstr.h5","w");
@@ -279,4 +278,26 @@ TEST_F(TwoIndexGFTest, DefaultConstructive)
         iar["/gf"] >> gf_empty;
     }
     EXPECT_NO_THROW(gf_empty.norm());
+#endif
+}
+
+TEST_F(TwoIndexGFTest, ops)
+{
+  namespace g=alps::gf;
+  typedef g::one_index_gf<double, g::index_mesh> density_matrix_type;
+  density_matrix_type denmat=density_matrix_type(g::index_mesh(nspins));
+
+  // prepare diagonal matrix
+  double U=3.0;
+  denmat.initialize();
+  denmat(g::index(0))=0.5*U;
+  denmat(g::index(1))=0.5*U;
+
+  // Attach a tail to the GF
+  int order=0;
+
+  g::omega_sigma_gf_with_tail gft(gf);
+  gft.set_tail(order, denmat);
+
+  EXPECT_NEAR((denmat-gft.tail(order)).norm(), 0, 1.e-8);
 }

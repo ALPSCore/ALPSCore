@@ -15,8 +15,8 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
-#include <alps/gf_new/type_traits.h>
-#include <alps/gf_new/tensors/data_view.h>
+#include <alps/type_traits/index_sequence.hpp>
+#include <alps/numeric/tensors/data_view.h>
 #include <numeric>
 
 
@@ -34,6 +34,7 @@ namespace alps {
       };
       /**
        * Base Tensor Class
+       *
        * @tparam T - datatype, should be scalar
        * @tparam D - dimension of tensor
        * @tparam C - type of the container, either DataStorage or DataView
@@ -66,6 +67,7 @@ namespace alps {
         // types definitions
         typedef T prec;
         typedef data_view < T > viewType;
+        //typedef data_view < const T > constViewType;
         typedef data_storage < T > storageType;
         /// current Tensor type
         typedef tensor_base < T, Dim, Container > tType;
@@ -115,6 +117,9 @@ namespace alps {
           fill_acc_sizes();
         }
 
+        template<typename...Indices>
+        tensor_base(T *data, size_t size1, Indices...sizes) : tensor_base(data, {{size1, size_t(sizes)...}}) {}
+
         /**
          * Create empty Tensor with provided sizes for each dimensions
          *
@@ -127,8 +132,10 @@ namespace alps {
           fill_acc_sizes();
         }
 
-        explicit tensor_base(size_t size) : data_(size), shape_{{size}} {
-          static_assert(1 == Dim, "Wrong dimension");
+        template<typename X = Container, typename...Indices>
+        tensor_base(typename std::enable_if < std::is_same < X, data_storage < T > >::value,
+          size_t>::type size1, Indices...sizes) : data_(size({{size1, size_t(sizes)...}})), shape_({{size1, size_t(sizes)...}}) {
+          static_assert(sizeof...(Indices) + 1 == Dim, "Wrong dimension");
           fill_acc_sizes();
         }
 
@@ -193,12 +200,15 @@ namespace alps {
         template<typename ...IndexTypes>
         tensor_view < T, Dim - (sizeof...(IndexTypes)) - 1 > operator()(typename std::enable_if < (sizeof...(IndexTypes) < Dim - 1), size_t >::type t1, IndexTypes ... indices) {
           std::array < size_t, Dim - (sizeof...(IndexTypes)) - 1 > sizes;
-          size_t s = 1;
-          for (int i = 0; i < sizes.size(); ++i) {
-            sizes[i] = shape_[i + sizeof...(IndexTypes) + 1];
-            s *= sizes[i];
-          }
+          size_t s = new_size(sizes);
           return tensor_view < T, Dim - (sizeof...(IndexTypes)) - 1 >(viewType(data_, s, (index(t1, indices...))), sizes);
+        }
+
+        template<typename ...IndexTypes>
+        tensor_view <const typename std::remove_const<T>::type, Dim - (sizeof...(IndexTypes)) - 1 > operator()(typename std::enable_if < (sizeof...(IndexTypes) < Dim - 1), size_t >::type t1, IndexTypes ... indices) const {
+          std::array < size_t, Dim - (sizeof...(IndexTypes)) - 1 > sizes;
+          size_t s = new_size(sizes);
+          return tensor_view <const typename std::remove_const<T>::type, Dim - (sizeof...(IndexTypes)) - 1 >(data_view<const typename std::remove_const<T>::type>( data_, s, index(t1, indices...) ), sizes );
         }
 
         /*
@@ -384,7 +394,7 @@ namespace alps {
 
         /// return index in the raw buffer for specified indices
         template<typename ...Indices>
-        size_t index(const Indices&...indices) const {
+        inline size_t index(const Indices&...indices) const {
           return index_impl(make_index_sequence<sizeof...(Indices)>(), size_t(indices)...);
         }
 
@@ -393,26 +403,31 @@ namespace alps {
          * Internal implementation of indexing
          */
         template<size_t... I, typename ...Indices>
-        size_t index_impl(index_sequence<I...>, const Indices&... indices) const {
+        inline size_t index_impl(index_sequence<I...>, const Indices&... indices) const {
           std::array<size_t, sizeof...(Indices)> a{{indices * acc_sizes_[I] ...}};
-          return std::accumulate(a.begin(), a.end(), 0, std::plus<size_t>());
+          return std::accumulate(a.begin(), a.end(), size_t(0), std::plus<size_t>());
         }
         /**
          * compute offset multiplier for each dimension
          */
         void fill_acc_sizes() {
-          int k = 1;
-          for (size_t &i : acc_sizes_) {
-            i = 1;
-            for (int j = k; j < shape_.size(); ++j) {
-              i *= shape_[j];
-            }
-            ++k;
-          }
+          acc_sizes_[shape_.size()-1] = 1;
+          for(int k = int(shape_.size()) - 2; k >= 0; --k)
+            acc_sizes_[k] = acc_sizes_[k+1] * shape_[k+1];
         }
         /// compte size for the specific dimensions
         size_t size(const std::array < size_t, Dim > &shape) {
           return std::accumulate(shape.begin(), shape.end(), size_t(1), std::multiplies<size_t>());
+        }
+        /// compute sizes for sliced tensor
+        template<size_t M>
+        inline size_t new_size(std::array < size_t, M >& sizes) const {
+          size_t s = 1;
+          for (int i = 0; i < sizes.size(); ++i) {
+            sizes[i] = shape_[i + Dim - M];
+            s *= sizes[i];
+          }
+          return s;
         }
       };
 
