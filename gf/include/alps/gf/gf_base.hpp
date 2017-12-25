@@ -11,7 +11,6 @@
 #include <vector>
 #include <tuple>
 
-#include <boost/lexical_cast.hpp>
 #include <boost/preprocessor/cat.hpp>
 #include <boost/preprocessor/repetition/repeat_from_to.hpp>
 
@@ -457,7 +456,7 @@ namespace alps {
           empty_ = false;
           int ndim;
           ar[path + "/mesh/N"] >> ndim;
-          if (ndim != N_) throw std::runtime_error("Wrong number of dimension reading Matsubara GF, ndim=" + boost::lexical_cast < std::string >(ndim));
+          if (ndim != N_) throw std::runtime_error("Wrong number of dimension reading Matsubara GF, ndim=" + std::to_string(ndim));
           load_meshes(ar, path, make_index_sequence<sizeof...(MESHES)>());
           data_ = tensor < VTYPE, N_ >(get_sizes(meshes_));
           ar[path + "/data"] >> data_.data().data();
