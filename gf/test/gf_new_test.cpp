@@ -186,7 +186,7 @@ TEST(GreensFunction, TestSave) {
       g(w,i) = 3.0 * i() + w();
     }
   }
-  alps::hdf5::archive ar("test", "w");
+  alps::hdf5::archive ar("test.h5", "w");
   g.save(ar, "");
   greenf<std::complex<double>, alps::gf::matsubara_positive_mesh, alps::gf::index_mesh> g2;
   g2.load(ar, "");
@@ -196,7 +196,7 @@ TEST(GreensFunction, TestSave) {
 
 TEST(GreensFunction, TestSlices) {
   alps::gf::matsubara_positive_mesh x(100, 10);
-  alps::gf::index_mesh y(10);
+  alps::gf::index_mesh y(20);
   greenf<double, alps::gf::matsubara_positive_mesh, alps::gf::index_mesh> g(x,y);
   for(alps::gf::matsubara_positive_mesh::index_type w(0); w<x.extent(); ++w) {
     for(alps::gf::index_mesh::index_type i(0); i<y.extent(); ++i) {
@@ -220,8 +220,8 @@ TEST(GreensFunction, TestSlices) {
 
 TEST(GreensFunction, TestMultidimensionalSlices) {
   alps::gf::matsubara_positive_mesh x(100, 10);
-  alps::gf::index_mesh y(10);
-  alps::gf::itime_mesh z(100, 10);
+  alps::gf::index_mesh y(15);
+  alps::gf::itime_mesh z(100, 25);
   greenf<double, alps::gf::matsubara_positive_mesh, alps::gf::index_mesh, alps::gf::itime_mesh> g(x,y,z);
   for(alps::gf::matsubara_positive_mesh::index_type w(0); w<x.extent(); ++w) {
     for(alps::gf::index_mesh::index_type i(0); i<y.extent(); ++i) {

@@ -80,6 +80,8 @@ namespace alps {
         using storage_type = Storage;
         /// mesh types tuple
         using mesh_types = std::tuple < MESHES... >;
+        /// index types tuple
+        using index_types = std::tuple < typename MESHES::index_type... >;
       private:
         /// current GF type
         using gf_type   = gf_base < VTYPE, Storage, MESHES... >;
@@ -126,6 +128,16 @@ namespace alps {
         template<typename RHS_VTYPE, typename LHS_VTYPE>
         struct convert {
           typedef typename std::conditional<std::is_integral<RHS_VTYPE>::value, VTYPE, RHS_VTYPE>::type type;
+        };
+
+        /**
+         * Check that indices' types are consistent with mesh indices' types
+         *
+         * @tparam IndicesTypes - types of indices template parameter pack
+         */
+        template<typename ...IndicesTypes>
+        struct check_mesh {
+          using type = typename std::conditional<std::is_convertible<std::tuple<IndicesTypes...>, index_types>::value, std::true_type, std::false_type>::type;
         };
 
       public:
@@ -218,7 +230,7 @@ namespace alps {
         typename std::enable_if < (sizeof...(Indices) == sizeof...(MESHES)), VTYPE >::type
         operator()(Indices...inds) const {
           // check that index types are the same as mesh indices
-          check(std::integral_constant < int, 0 >(), std::forward < Indices >(inds)...);
+          static_assert(check_mesh<Indices...>::type::value, "Index type is inconsistent with mesh index type.");
           return value(std::forward < Indices >(inds)...);
         }
 
@@ -227,7 +239,7 @@ namespace alps {
         typename std::enable_if < (sizeof...(Indices) == sizeof...(MESHES)), VTYPE & >::type
         operator()(Indices...inds) {
           // check that index types are the same as mesh indices
-          check(std::integral_constant < int, 0 >(), std::forward < Indices >(inds)...);
+          static_assert(check_mesh<Indices...>::type::value, "Index type is inconsistent with mesh index type.");
           return value(std::forward < Indices >(inds)...);
         }
 
@@ -436,7 +448,7 @@ namespace alps {
           save_version(ar, path);
           ar[path + "/data"] << data_.data().data();
           ar[path + "/mesh/N"] << int(N_);
-          save_meshes(ar, path, std::integral_constant < int, 0 >());
+          save_meshes(ar, path, make_index_sequence<sizeof...(MESHES)>());
         }
 
         /// Load the GF from HDF5
@@ -446,7 +458,7 @@ namespace alps {
           int ndim;
           ar[path + "/mesh/N"] >> ndim;
           if (ndim != N_) throw std::runtime_error("Wrong number of dimension reading Matsubara GF, ndim=" + boost::lexical_cast < std::string >(ndim));
-          load_meshes(ar, path, std::integral_constant < int, 0 >());
+          load_meshes(ar, path, make_index_sequence<sizeof...(MESHES)>());
           data_ = tensor < VTYPE, N_ >(get_sizes(meshes_));
           ar[path + "/data"] >> data_.data().data();
         }
@@ -585,93 +597,48 @@ namespace alps {
          */
         std::array < size_t, N_ > get_sizes(const mesh_types &meshes) {
           std::array < size_t, N_ > sizes;
-          fill_sizes(sizes, std::integral_constant < int, 0 >(), meshes);
+          sizes = fill_sizes(meshes, make_index_sequence<sizeof...(MESHES)>());
           return sizes;
         };
 
         /**
          * The following two methods fill array with the sizes of each grid
          *
-         * @tparam M     - current leading grid number
-         * @tparam Grid  - leading grid type
-         * @tparam Grids - tail grids types
+         * @tparam Is    - indices to be filled
          * @param sizes  - array to fill sizes of each grid
          * @param index  - current leading grid index
          * @param g1     - leading grid
          * @param grids  - tail grids
+         * @return new sizes
          */
-        template<int M>
-        void fill_sizes(std::array < size_t, N_ > &sizes, std::integral_constant < int, M > index, const mesh_types &grids) {
-          sizes[index.value] = std::get < M >(grids).extent();
-          fill_sizes(sizes, std::integral_constant < int, M + 1 >(), grids);
+        template<size_t...Is>
+        inline std::array < size_t, N_ > fill_sizes(const mesh_types &grids, index_sequence<Is...>) {
+          return {size_t(std::get<Is>(grids).extent())...};
         };
-
-        void fill_sizes(std::array < size_t, N_ > &sizes, std::integral_constant < int, N_ - 1 > index, const mesh_types &grids) {
-          sizes[index.value] = std::get < N_ - 1 >(grids).extent();
-        };
-
-        /**
-         *
-         * The following two methods check that indices provided are consistent with the indices of the GF mesh
-         *
-         * @tparam M - current leading index to check
-         * @tparam Index - current leading index type
-         * @tparam Indices - tail indices
-         * @param i - current leading index number
-         * @param id - current leading index value
-         * @param inds - tail indices
-         */
-        template<int M, class Index, class...Indices>
-        void check(std::integral_constant < int, M > i, const Index &id, const Indices &...inds) const {
-          static_assert(std::is_same < Index, typename std::tuple_element < i.value, mesh_types >::type::index_type >::value, "Index type is inconsistent with mesh index type.");
-          check(std::integral_constant < int, M + 1 >(), std::forward < const Indices & >(inds)...);
-        }
-
-        template<class Index>
-        void check(std::integral_constant < int, N_ - 1 > i, const Index &id) const {
-          static_assert(std::is_same < Index, typename std::tuple_element < i.value, mesh_types >::type::index_type >::value, "Index type is inconsistent with mesh index type.");
-        }
 
         /**
          * Save meshes into hdf5
          *
-         * @tparam D   - current mesh number
+         * @tparam Is  - mesh index list
          * @param ar   - hdf5 archive object
          * @param path - relative context
-         * @param i    - current mesh number
          */
-        template<int D>
-        void save_meshes(alps::hdf5::archive &ar, const std::string &path, std::integral_constant < int, D > i) const {
-          ar[path + "/mesh/" + boost::lexical_cast < std::string >(i.value)] << std::get < i.value >(meshes_);
-          save_meshes(ar, path, std::integral_constant < int, D + 1 >());
+        template<size_t...Is>
+        void save_meshes(alps::hdf5::archive &ar, const std::string &path, index_sequence<Is...>) const {
+          std::tie(ar[path + "/mesh/" + std::to_string(Is)] << std::get < Is >(meshes_)...);
         }
 
-        /**
-         * Save the last mesh into hdf5
-         */
-        void save_meshes(alps::hdf5::archive &ar, const std::string &path, std::integral_constant < int, N_ - 1 > i) const {
-          ar[path + "/mesh/" + boost::lexical_cast < std::string >(i.value)] << std::get < i.value >(meshes_);
-        }
 
         /**
          * Load meshes from hdf5
          *
-         * @tparam D   - current mesh number
+         * @tparam Is  - mesh index list
          * @param ar   - hdf5 archive object
          * @param path - relative context
-         * @param i    - current mesh number
          */
-        template<int D>
-        void load_meshes(alps::hdf5::archive &ar, const std::string &path, std::integral_constant < int, D > i) {
-          ar[path + "/mesh/" + boost::lexical_cast < std::string >(i.value)] >> std::get < i.value >(meshes_);
-          load_meshes(ar, path, std::integral_constant < int, D + 1 >());
-        }
-
-        /**
-         * Load the last mesh from hdf5
-         */
-        void load_meshes(alps::hdf5::archive &ar, const std::string &path, std::integral_constant < int, N_ - 1 > i) {
-          ar[path + "/mesh/" + boost::lexical_cast < std::string >(i.value)] >> std::get < i.value >(meshes_);
+        template<size_t...Is>
+        void load_meshes(alps::hdf5::archive &ar, const std::string &path, index_sequence<Is...>) {
+          std::tie(ar[path + "/mesh/" + std::to_string(Is)] >> std::get < Is >(meshes_)...);
         }
 
         /**
