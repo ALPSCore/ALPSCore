@@ -50,7 +50,7 @@ namespace alps {
                     // NOTE: questionable; boost::multi_array does not document comparison of storage orders
                     if (! (data.storage_order()==boost::c_storage_order()) )
                         throw std::logic_error("Unsupported storage order in multi_array broadcast at rank #"+
-                                               boost::lexical_cast<std::string>(rank));
+                                               std::to_string(rank));
                 
                     // Compare dimensions with root. Normally should not be needed,
                     // and incurs extra communication cost ==> enabled only in debug mode.
@@ -61,12 +61,12 @@ namespace alps {
                         if (ndim!=N) {
                             throw std::logic_error("Different multi_array dimensions in broadcast:\n"
                                                    "root (rank #"+
-                                                   boost::lexical_cast<std::string>(root)+
+                                                   std::to_string(root)+
                                                    ") expects N="+
-                                                   boost::lexical_cast<std::string>(ndim)+
+                                                   std::to_string(ndim)+
                                                    ", rank #"+
-                                                   boost::lexical_cast<std::string>(rank)+
-                                                   " has N="+boost::lexical_cast<std::string>(N));
+                                                   std::to_string(rank)+
+                                                   " has N="+std::to_string(N));
                         }
                     }
 #endif

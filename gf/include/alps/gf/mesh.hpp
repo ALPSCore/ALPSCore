@@ -7,7 +7,6 @@
 #include <complex>
 #include <cassert>
 #include <boost/multi_array.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/operators.hpp>
 #include <boost/type_traits/integral_constant.hpp>
 
@@ -258,7 +257,7 @@ namespace alps {
 
                 statistics_=statistics::statistics_type(stat);
                 if (mesh::frequency_positivity_type(posonly)!=positivity_) {
-                    throw std::invalid_argument("Attempt to read Matsubara mesh with the wrong positivity type "+boost::lexical_cast<std::string>(posonly) ); // FIXME: specific exception? Verbose positivity?
+                    throw std::invalid_argument("Attempt to read Matsubara mesh with the wrong positivity type "+std::to_string(posonly) ); // FIXME: specific exception? Verbose positivity?
                 };
                 beta_=beta;
                 nfreq_=nfr;
@@ -293,7 +292,7 @@ namespace alps {
                 int pos = int(positivity_);
                 broadcast(comm, pos, root);
                 if (mesh::frequency_positivity_type(pos)!=positivity_) {
-                  throw std::invalid_argument("Attempt to broadcast Matsubara mesh with the wrong positivity type "+boost::lexical_cast<std::string>(pos) ); // FIXME: specific exception? Verbose positivity?
+                  throw std::invalid_argument("Attempt to broadcast Matsubara mesh with the wrong positivity type "+std::to_string(pos) ); // FIXME: specific exception? Verbose positivity?
                 };
                 offset_ = ((PTYPE==mesh::POSITIVE_ONLY)?0:nfreq_);
 
@@ -1109,7 +1108,7 @@ namespace alps {
                 ar[path+"/statistics"] << int(statistics_);
                 ar[path+"/beta"] << beta_;
                 for (int l=0; l < dim_; ++l) {
-                    basis_functions_[l].save(ar, path+"/basis_functions"+boost::lexical_cast<std::string>(l));
+                    basis_functions_[l].save(ar, path+"/basis_functions"+std::to_string(l));
                 }
             }
 
@@ -1130,7 +1129,7 @@ namespace alps {
                 ar[path+"/beta"] >> beta;
                 basis_functions_.resize(dim);
                 for (int l=0; l < dim; ++l) {
-                    basis_functions_[l].load(ar, path+"/basis_functions"+boost::lexical_cast<std::string>(l));
+                    basis_functions_[l].load(ar, path+"/basis_functions"+std::to_string(l));
                 }
 
                 statistics_ = static_cast<statistics::statistics_type>(stat);
