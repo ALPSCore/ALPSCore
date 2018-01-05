@@ -9,7 +9,7 @@
 
 
 namespace alps {
-  namespace gf {
+  namespace numerics {
     namespace detail {
 
       // Forward declarations

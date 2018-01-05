@@ -19,7 +19,7 @@
 #include <alps/utilities/mpi.hpp>
 #endif
 
-#include <alps/numeric/tensors/tensor_base.h>
+#include <alps/numeric/tensors/tensor_base.hpp>
 #include <alps/gf/mesh.hpp>
 #include <alps/type_traits/tuple_traits.hpp>
 #include <alps/type_traits/index_sequence.hpp>
@@ -57,12 +57,12 @@ namespace alps {
      * Definition of regular GF with dedicated storage
      */
     template<class VTYPE, class ...MESHES>
-    using greenf = detail::gf_base<VTYPE, detail::tensor<VTYPE, sizeof...(MESHES)>, MESHES...>;
+    using greenf = detail::gf_base<VTYPE, numerics::tensor<VTYPE, sizeof...(MESHES)>, MESHES...>;
     /**
      * Definition of GF as view of existent data array
      */
     template<class VTYPE, class ...MESHES>
-    using greenf_view = detail::gf_base<VTYPE, detail::tensor_view<VTYPE, sizeof...(MESHES)>, MESHES...>;
+    using greenf_view = detail::gf_base<VTYPE, numerics::tensor_view<VTYPE, sizeof...(MESHES)>, MESHES...>;
 
     namespace detail {
       /**
@@ -85,20 +85,20 @@ namespace alps {
         /// current GF type
         using gf_type   = gf_base < VTYPE, Storage, MESHES... >;
         /// storage types
-        using data_storage = tensor < VTYPE, sizeof...(MESHES) >;
-        using data_view    = tensor_view < VTYPE, sizeof...(MESHES) >;
+        using data_storage = numerics::tensor < VTYPE, sizeof...(MESHES) >;
+        using data_view    = numerics::tensor_view < VTYPE, sizeof...(MESHES) >;
         /// Generic GF type
         template<typename St>
         using generic_gf   = gf_base < VTYPE, St, MESHES... >;
         /// Greens function return type for arithmetic operations with different type
         template<typename RHS_VTYPE>
-        using gf_op_type   = gf_base < decltype(RHS_VTYPE{} + VTYPE{}), tensor<decltype(RHS_VTYPE{} + VTYPE{}), sizeof...(MESHES)>, MESHES... >;
+        using gf_op_type   = gf_base < decltype(RHS_VTYPE{} + VTYPE{}), numerics::tensor<decltype(RHS_VTYPE{} + VTYPE{}), sizeof...(MESHES)>, MESHES... >;
 
         // fields definition
       private:
         /// GF version
-        static const int minor_version = 1;
-        static const int major_version = 0;
+        static constexpr int minor_version = 1;
+        static constexpr int major_version = 0;
         /// Dimension of grid
         static constexpr int N_ = sizeof...(MESHES);
         /// data_storage
@@ -119,7 +119,7 @@ namespace alps {
         template<typename S, template<class...> class Tup, class... T>
         struct subpack_impl<S, Tup<T...> >
         {
-          using type = gf_base<S, tensor_view < S, sizeof...(T)>,  T...>;
+          using type = gf_base<S, numerics::tensor_view < S, sizeof...(T)>,  T...>;
         };
         template<typename S, int I>
         using subpack = typename subpack_impl<S, decltype(tuple_tail < I >(meshes_) )>::type;
@@ -185,13 +185,13 @@ namespace alps {
 
         /// construct new green's function from index slice of GF with higher dimension
         template<typename St, typename...OLDMESHES, typename Index, typename ...Indices>
-        gf_base(gf_base<VTYPE, tensor_base < VTYPE, sizeof...(OLDMESHES), St >, OLDMESHES...> & g, std::tuple<OLDMESHES...>& oldmesh,
+        gf_base(gf_base<VTYPE, numerics::detail::tensor_base < VTYPE, sizeof...(OLDMESHES), St >, OLDMESHES...> & g, std::tuple<OLDMESHES...>& oldmesh,
                 const mesh_types &meshes, const Index ind, const Indices... idx) :
           data_(g.data()(ind(), idx()...)), meshes_(meshes), empty_(false) {}
 
         /// construct const view
         template<typename RHSTYPE ,typename St, typename...OLDMESHES, typename ...Indices>
-        gf_base(const gf_base<RHSTYPE, tensor_base < RHSTYPE, sizeof...(OLDMESHES), St >, OLDMESHES...> & g, const std::tuple<OLDMESHES...>& oldmesh,
+        gf_base(const gf_base<RHSTYPE, numerics::detail::tensor_base < RHSTYPE, sizeof...(OLDMESHES), St >, OLDMESHES...> & g, const std::tuple<OLDMESHES...>& oldmesh,
                 mesh_types &meshes, const Indices... idx) : data_(g.data()(idx()...)), meshes_(meshes), empty_(false) {}
 
         /// copy assignment
@@ -393,7 +393,7 @@ namespace alps {
         /**
          * @returns Negated Green's Function (a new copy).
          */
-        gf_base < VTYPE, tensor<VTYPE, N_>, MESHES... > operator-() const {
+        gf_base < VTYPE, numerics::tensor<VTYPE, N_>, MESHES... > operator-() const {
           throw_if_empty();
           return (*this)*(VTYPE(-1.0));
         }
@@ -458,7 +458,7 @@ namespace alps {
           ar[path + "/mesh/N"] >> ndim;
           if (ndim != N_) throw std::runtime_error("Wrong number of dimension reading Matsubara GF, ndim=" + std::to_string(ndim));
           load_meshes(ar, path, make_index_sequence<sizeof...(MESHES)>());
-          data_ = tensor < VTYPE, N_ >(get_sizes(meshes_));
+          data_ = numerics::tensor < VTYPE, N_ >(get_sizes(meshes_));
           ar[path + "/data"] >> data_.data().data();
         }
 
@@ -521,7 +521,7 @@ namespace alps {
           size_t root_sz=data_.size();
           alps::mpi::broadcast(comm, root_sz, root);
           // as long as all grids have been broadcasted we can define tensor object
-          if(comm.rank() != root) data_ = tensor < VTYPE, N_ >(get_sizes(meshes_));
+          if(comm.rank() != root) data_ = numerics::tensor < VTYPE, N_ >(get_sizes(meshes_));
           alps::mpi::broadcast(comm, &data_.data().data(0), root_sz, root);
         }
 #endif

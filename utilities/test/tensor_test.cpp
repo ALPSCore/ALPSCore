@@ -7,9 +7,10 @@
 #include <gtest/gtest.h>
 #include <complex>
 
-#include "alps/numeric/tensors/tensor_base.h"
+#include "alps/numeric/tensors/tensor_base.hpp"
 
-using namespace alps::gf::detail;
+using namespace alps::numerics::detail;
+using namespace alps::numerics;
 
 
 TEST(TensorTest, StoragesComparison) {
