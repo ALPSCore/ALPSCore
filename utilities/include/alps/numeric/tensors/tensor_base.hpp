@@ -16,12 +16,12 @@
 #include <Eigen/Dense>
 
 #include <alps/type_traits/index_sequence.hpp>
-#include <alps/numeric/tensors/data_view.h>
+#include <alps/numeric/tensors/data_view.hpp>
 #include <numeric>
 
 
 namespace alps {
-  namespace gf {
+  namespace numerics {
     namespace detail {
       /**
        *
@@ -30,8 +30,9 @@ namespace alps {
        */
       template<typename T, typename St>
       struct is_storage {
-        static constexpr bool value = std::is_same < St, data_storage <T> >::value || std::is_same < St, data_view <T> >::value;
+        static constexpr bool value = std::is_same < St, data_storage < T > > ::value || std::is_same < St, data_view < T > > ::value;
       };
+
       /**
        * Base Tensor Class
        *
@@ -41,19 +42,19 @@ namespace alps {
        */
       template<typename T, int D, typename C>
       class tensor_base;
-
+    }
       /**
        * Definition of Tensor with storage
        */
       template<typename T, int D>
-      using tensor = tensor_base < T, D, data_storage < T > >;
+      using tensor = detail::tensor_base < T, D, detail::data_storage < T > >;
       /**
        * Definition of Tensor as view of existent data array
        */
       template<typename T, int D>
-      using tensor_view = tensor_base < T, D, data_view < T > >;
+      using tensor_view = detail::tensor_base < T, D, detail::data_view < T > >;
 
-
+    namespace detail {
       template<typename X, int Rows = Eigen::Dynamic, int Cols = Eigen::Dynamic>
       using MatrixMap =  Eigen::Map < Eigen::Matrix < X, Rows, Cols, Eigen::RowMajor > >;
 

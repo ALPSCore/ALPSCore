@@ -11,11 +11,11 @@
 
 #include <vector>
 #include <array>
-#include <alps/numeric/tensors/data_storage.h>
-#include <alps/numeric/tensors/view.h>
+#include <alps/numeric/tensors/data_storage.hpp>
+#include <alps/numeric/tensors/view.hpp>
 
 namespace alps {
-  namespace gf {
+  namespace numerics {
     namespace detail {
 
        /**

@@ -8,10 +8,10 @@
 #define ALPSCORE_GF_VIEW_H
 
 
-#include <alps/numeric/tensors/data_storage.h>
+#include <alps/numeric/tensors/data_storage.hpp>
 
 namespace alps {
-  namespace gf {
+  namespace numerics {
     namespace detail {
 
       /**
