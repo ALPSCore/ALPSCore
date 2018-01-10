@@ -8,16 +8,17 @@
 #define ALPSCORE_GF_TENSOR_H
 
 
-#include <vector>
 #include <array>
 #include <iostream>
+#include <numeric>
 #include <type_traits>
+#include <vector>
+
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
 #include <alps/type_traits/index_sequence.hpp>
 #include <alps/numeric/tensors/data_view.hpp>
-#include <numeric>
 
 
 namespace alps {
@@ -40,18 +41,18 @@ namespace alps {
        * @tparam D - dimension of tensor
        * @tparam C - type of the container, either DataStorage or DataView
        */
-      template<typename T, int D, typename C>
+      template<typename T, size_t D, typename C>
       class tensor_base;
     }
       /**
        * Definition of Tensor with storage
        */
-      template<typename T, int D>
+      template<typename T, size_t D>
       using tensor = detail::tensor_base < T, D, detail::data_storage < T > >;
       /**
        * Definition of Tensor as view of existent data array
        */
-      template<typename T, int D>
+      template<typename T, size_t D>
       using tensor_view = detail::tensor_base < T, D, detail::data_view < T > >;
 
     namespace detail {
@@ -63,7 +64,7 @@ namespace alps {
        *
        * @author iskakoff
        */
-      template<typename T, int Dim, typename Container>
+      template<typename T, size_t Dim, typename Container>
       class tensor_base {
         // types definitions
         typedef T prec;
@@ -83,7 +84,7 @@ namespace alps {
       private:
         // fields definitions
         /// tensor dimension
-        static int constexpr dim = Dim;
+        static size_t constexpr dim = Dim;
         /// data storage object
         Container data_;
         /// stored sizes for each dimensions
@@ -295,7 +296,7 @@ namespace alps {
          * For 2D square Tensor compute inverse Tensor.
          * @return inversed Tensor
          */
-        template<int M = Dim>
+        template<size_t M = Dim>
         typename std::enable_if < M == 2, tensorType >::type
         inverse() {
           if (shape_[0] != shape_[1]) {
@@ -381,11 +382,32 @@ namespace alps {
         /// sizes for each dimension
         const std::array < size_t, Dim > &shape() const { return shape_; };
 
+        /// reshape tensor object
+        template<typename X = Container>
+        typename std::enable_if<std::is_same < X, data_storage < T > >::value, void>::type reshape(std::array<size_t, Dim>& shape) {
+          size_t new_size = size(shape);
+          data_.data().resize(new_size);
+          shape_ = shape;
+          fill_acc_sizes();
+        }
+
+        /// reshape tensor view object
+        template<typename X = Container>
+        typename std::enable_if<std::is_same < X, data_view < T > >::value, void>::type reshape(std::array<size_t, Dim>& shape) {
+          size_t new_size = size(shape);
+          if(new_size != size()) {
+            throw std::invalid_argument("Wrong size. Can't reshape tensor.");
+          }
+          data_.data().resize(new_size);
+          shape_ = shape;
+          fill_acc_sizes();
+        }
+
         /// offset multipliers for each dimension
         const std::array < size_t, Dim > &acc_sizes() const { return acc_sizes_; };
 
         /// dimension of the tensor
-        int dimension() const { return Dim; }
+        size_t dimension() const { return Dim; }
 
         /// const reference to the data storage
         const Container &data() const { return data_; }

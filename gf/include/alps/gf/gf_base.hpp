@@ -15,6 +15,7 @@
 #include <boost/preprocessor/repetition/repeat_from_to.hpp>
 
 #include <alps/hdf5/archive.hpp>
+#include <alps/hdf5/tensor.hpp>
 #ifdef ALPS_HAVE_MPI
 #include <alps/utilities/mpi.hpp>
 #endif
@@ -445,7 +446,7 @@ namespace alps {
         void save(alps::hdf5::archive &ar, const std::string &path) const {
           throw_if_empty();
           save_version(ar, path);
-          ar[path + "/data"] << data_.data().data();
+          ar[path + "/data"] << data_;
           ar[path + "/mesh/N"] << int(N_);
           save_meshes(ar, path, make_index_sequence<sizeof...(MESHES)>());
         }
@@ -459,7 +460,7 @@ namespace alps {
           if (ndim != N_) throw std::runtime_error("Wrong number of dimension reading Matsubara GF, ndim=" + std::to_string(ndim));
           load_meshes(ar, path, make_index_sequence<sizeof...(MESHES)>());
           data_ = numerics::tensor < VTYPE, N_ >(get_sizes(meshes_));
-          ar[path + "/data"] >> data_.data().data();
+          ar[path + "/data"] >> data_;
         }
 
         /// Save version of the GF object to maintain compatibility
@@ -624,7 +625,7 @@ namespace alps {
          */
         template<size_t...Is>
         void save_meshes(alps::hdf5::archive &ar, const std::string &path, index_sequence<Is...>) const {
-          std::tie(ar[path + "/mesh/" + std::to_string(Is)] << std::get < Is >(meshes_)...);
+          std::tie(ar[path + "/mesh/" + std::to_string(Is+1)] << std::get < Is >(meshes_)...);
         }
 
 
@@ -637,7 +638,7 @@ namespace alps {
          */
         template<size_t...Is>
         void load_meshes(alps::hdf5::archive &ar, const std::string &path, index_sequence<Is...>) {
-          std::tie(ar[path + "/mesh/" + std::to_string(Is)] >> std::get < Is >(meshes_)...);
+          std::tie(ar[path + "/mesh/" + std::to_string(Is+1)] >> std::get < Is >(meshes_)...);
         }
 
         /**

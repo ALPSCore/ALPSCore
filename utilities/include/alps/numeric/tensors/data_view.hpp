@@ -11,8 +11,8 @@
 
 #include <vector>
 #include <array>
-#include <alps/numeric/tensors/data_storage.hpp>
-#include <alps/numeric/tensors/view.hpp>
+#include "data_storage.hpp"
+#include "view.hpp"
 
 namespace alps {
   namespace numerics {

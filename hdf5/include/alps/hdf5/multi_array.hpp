@@ -47,7 +47,7 @@ namespace alps {
                         std::vector<std::size_t> extent(get_extent(*value.data()));
                         for (std::size_t i = 1; i < value.num_elements(); ++i)
                             if (!std::equal(extent.begin(), extent.end(), get_extent(value.data()[i]).begin()))
-                                throw archive_error("no rectengual matrix");
+                                throw archive_error("no rectangular matrix");
                         std::copy(extent.begin(), extent.end(), std::back_inserter(result));
                     }
                     return result;
