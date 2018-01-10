@@ -27,13 +27,13 @@ void var_data<T,Str>::convert_to_mean()
 {
     data_ /= count_;
     data2_ -= count_ * data_.cwiseAbs2();
-    data2_ /= count_ - 1;
+    data2_ *= internal::make_eigen_scalar(1/(count_ - 1.0));
 }
 
 template <typename T, typename Str>
 void var_data<T,Str>::convert_to_sum()
 {
-    data2_ *= count_ - 1;
+    data2_ *= internal::make_eigen_scalar(count_ - 1.0);
     data2_ += count_ * data_.cwiseAbs2();
     data_ *= count_;
 }

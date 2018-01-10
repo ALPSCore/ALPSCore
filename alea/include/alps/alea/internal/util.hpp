@@ -39,4 +39,31 @@ T call_vargs(std::function<T()> func, const T *)
     return func();
 }
 
-}}}
+template <typename Acc>
+typename traits<Acc>::result_type finalize(Acc &acc)
+{
+    typename traits<Acc>::result_type result;
+    acc.finalize_to(result);
+    return result;
+}
+
+template <typename Acc>
+typename traits<Acc>::result_type result(const Acc &acc)
+{
+    typename traits<Acc>::result_type result;
+    Acc copy = acc;
+    copy.finalize_to(result);
+    return result;
+}
+
+inline Eigen::Matrix<double,1,1> make_eigen_scalar(double x)
+{
+    // FIXME: this works around the fact that the following snippet chokes:
+    //
+    //     Eigen::Matrix<complex_op<double> > m;
+    //     m *= 1.0;    // wants to cast double to complex_op
+    //
+    return Eigen::Matrix<double,1,1>(x);
+}
+
+}}} /* namespace alps::alea::internal */
