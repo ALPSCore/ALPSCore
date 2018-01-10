@@ -94,8 +94,7 @@ if(DOXYGEN_FOUND AND DOXYFILE_IN_FOUND)
 
 	add_custom_target(doxygen
                 VERBATIM
-		COMMAND "/bin/sh" "-c"
-                        "${DOXYGEN_EXECUTABLE} ${DOXYFILE} >${CMAKE_BINARY_DIR}/doxygen.log 2>&1"
+		COMMAND "${DOXYGEN_EXECUTABLE}" "${DOXYFILE}"
 		COMMENT "Writing documentation to ${DOXYFILE_OUTPUT_DIR}..."
 		WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 
@@ -123,7 +122,7 @@ if(DOXYGEN_FOUND AND DOXYFILE_IN_FOUND)
 
 			add_custom_command(TARGET doxygen
 				POST_BUILD
-				COMMAND "/bin/sh" "-c" "${DOXYFILE_MAKE} >>${CMAKE_BINARY_DIR}/doxygen.log 2>&1"
+				COMMAND "${DOXYFILE_MAKE}"
 				COMMENT	"Running LaTeX for Doxygen documentation in ${DOXYFILE_OUTPUT_DIR}/${DOXYFILE_LATEX_DIR}..."
 				WORKING_DIRECTORY "${DOXYFILE_OUTPUT_DIR}/${DOXYFILE_LATEX_DIR}")
 		else()

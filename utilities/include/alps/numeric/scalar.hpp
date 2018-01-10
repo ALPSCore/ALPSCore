@@ -4,14 +4,14 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-/** @file type_traits.hpp: Defines type traits for ALPSCore numeric types.
-    
+/** @file scalar.hpp: Defines type traits for ALPSCore numeric types.
+
     This file is in `alps/numeric/` directory because it defines
     entities in `alps::numeric` namespace.
 */
 
-#ifndef ALPS_NUMERIC_TYPE_TRAITS_H
-#define ALPS_NUMERIC_TYPE_TRAITS_H
+#ifndef ALPS_NUMERIC_SCALAR_HPP_1444d6233fe94fe1ba881085afd0f012
+#define ALPS_NUMERIC_SCALAR_HPP_1444d6233fe94fe1ba881085afd0f012
 
 #include <complex>
 #include "alps/type_traits/element_type.hpp"
@@ -35,4 +35,4 @@ namespace alps {
     }
 }
 
-#endif // ALPS_NUMERIC_TYPE_TRAITS_H
+#endif /* ALPS_NUMERIC_SCALAR_HPP_1444d6233fe94fe1ba881085afd0f012 */

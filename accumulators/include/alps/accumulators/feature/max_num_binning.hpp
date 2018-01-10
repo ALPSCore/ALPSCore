@@ -50,11 +50,11 @@ namespace alps {
                     , m_num_elements(num_elements)
                     , m_bins(bins)
                 {}
-                
+
                 std::vector<M> const & bins() const {
                     return m_bins;
                 }
-                
+
                 C num_elements() const {
                     return m_num_elements;
                 }
@@ -144,9 +144,9 @@ namespace alps {
         }
 
         namespace impl {
-            
+
             template<typename T, typename B> struct Accumulator<T, max_num_binning_tag, B> : public B {
-                
+
               public:
                 typedef typename alps::accumulators::max_num_binning_type<B>::type max_num_binning_type;
                 typedef Result<T, max_num_binning_tag, typename B::result_type> result_type;
@@ -187,14 +187,14 @@ namespace alps {
                 template <typename U, typename OP> void transform(U const &, OP) {
                     throw std::runtime_error("Transform can only be applied to a result" + ALPS_STACKTRACE);
                 }
-                
+
                 using B::operator();
                 void operator()(T const & val) {
                     using alps::numeric::operator+=;
                     using alps::numeric::operator+;
                     using alps::numeric::operator/;
                     using alps::numeric::check_size;
-                    
+
                     B::operator()(val);
 
                     if (!m_mn_elements_in_bin) {
@@ -269,7 +269,7 @@ namespace alps {
                         ar["timeseries/partialbin/@count"] >> m_mn_elements_in_partial;
                     }
                 }
-                
+
                 static std::size_t rank() { return B::rank() + 1; }
 
                 static bool can_load(hdf5::archive & ar) { // TODO: make archive const
@@ -298,7 +298,7 @@ namespace alps {
                 }
 
                 /// Merge the bins of the given accumulator of type A into this accumulator @param rhs Accumulator to merge
-                    /** @BUG: FIXME: Incomplete, therefore always throws. */
+                    /** @warning: FIXME: Incomplete, therefore always throws. */
                 template <typename A>
                 void merge(const A& rhs)
                 {
@@ -327,7 +327,7 @@ namespace alps {
                     } else
                         const_cast<Accumulator<T, max_num_binning_tag, B> const *>(this)->collective_merge(comm, root);
                 }
-                
+
                 void collective_merge(alps::mpi::communicator const & comm,
                                       int root) const
                 {
@@ -383,7 +383,7 @@ namespace alps {
                     }
                 }
 #endif
-                
+
               private:
 
                 std::size_t m_mn_max_number;
@@ -402,7 +402,7 @@ namespace alps {
 
                 Result()
                     : B()
-                    , m_mn_max_number(0) 
+                    , m_mn_max_number(0)
                     , m_mn_elements_in_bin(0)
                     , m_mn_count(typename B::count_type())
                     , m_mn_mean(typename mean_type<B>::type())
@@ -412,7 +412,7 @@ namespace alps {
                     , m_mn_data_is_analyzed(true)
                     , m_mn_jackknife_bins(0)
                 {}
-                
+
                 // copy constructor
                 template<typename A> Result(A const & acc, typename boost::enable_if<boost::is_base_of<ResultBase<T>, A>, int>::type = 0)
                     : B(acc)
@@ -442,11 +442,11 @@ namespace alps {
                     , m_mn_jackknife_bins(0)
                 {}
 
-                typename B::count_type count() const { 
-                    if (!m_mn_data_is_analyzed) { 
-                        return m_mn_elements_in_bin * m_mn_bins.size(); 
+                typename B::count_type count() const {
+                    if (!m_mn_data_is_analyzed) {
+                        return m_mn_elements_in_bin * m_mn_bins.size();
                     }
-                    else { 
+                    else {
                         return m_mn_count;
                     };
                     //analyze();
@@ -456,7 +456,7 @@ namespace alps {
                     analyze();
                     return m_mn_mean;
                 }
-                
+
                 typename error_type<B>::type const & error() const {
                     analyze();
                     return m_mn_error;
@@ -465,7 +465,7 @@ namespace alps {
                 max_num_binning_type const max_num_binning() const {
                     return max_num_binning_type(m_mn_bins, m_mn_elements_in_bin, m_mn_max_number);
                 }
-                
+
                 template <typename A>
                 typename boost::enable_if<typename has_feature<A, max_num_binning_tag>::type,
                                           typename covariance_type<B>::type
@@ -483,15 +483,15 @@ namespace alps {
                         throw std::runtime_error("No binning information available for calculation of covariances" + ALPS_STACKTRACE);
 
                     typename alps::numeric::scalar<typename mean_type<B>::type>::type bin_number = m_mn_bins.size();
-                    
+
                     typename mean_type<B>::type unbiased_mean_1;
                     for (typename std::vector<typename mean_type<B>::type>::const_iterator it = m_mn_jackknife_bins.begin() + 1; it != m_mn_jackknife_bins.end(); ++it)
                         unbiased_mean_1 = unbiased_mean_1 + *it / bin_number;
-                    
+
                     typename mean_type<B>::type unbiased_mean_2;
                     for (typename std::vector<typename mean_type<B>::type>::const_iterator it = obs.m_mn_jackknife_bins.begin() + 1; it != obs.m_mn_jackknife_bins.end(); ++it)
                         unbiased_mean_2 = unbiased_mean_2 + *it / bin_number;
-                    
+
                     typename covariance_type<B>::type cov = outer_product(m_mn_jackknife_bins[1], obs.m_mn_jackknife_bins[1]);
                     for (typename B::count_type i = 1; i < m_mn_bins.size(); ++i)
                         cov += outer_product(m_mn_jackknife_bins[i + 1], obs.m_mn_jackknife_bins[i + 1]);
@@ -519,25 +519,25 @@ namespace alps {
                         throw std::runtime_error("Unequal number of bins in calculation of covariance matrix" + ALPS_STACKTRACE);
                     if (!m_mn_jackknife_bins.size() || !obs.m_mn_jackknife_bins.size())
                         throw std::runtime_error("No binning information available for calculation of covariances" + ALPS_STACKTRACE);
-                    
+
                     typedef typename alps::numeric::scalar<typename mean_type<B>::type>::type scalar_type;
                     scalar_type bin_number = m_mn_bins.size();
-                    
+
                     typename mean_type<B>::type unbiased_mean_1;
                     for (typename std::vector<typename mean_type<B>::type>::const_iterator it = m_mn_jackknife_bins.begin() + 1; it != m_mn_jackknife_bins.end(); ++it)
                         unbiased_mean_1 = unbiased_mean_1 + *it / bin_number;
-                    
+
                     typename mean_type<B>::type unbiased_mean_2;
                     for (typename std::vector<typename mean_type<B>::type>::const_iterator it = obs.m_mn_jackknife_bins.begin() + 1; it != obs.m_mn_jackknife_bins.end(); ++it)
                         unbiased_mean_2 = unbiased_mean_2 + *it / bin_number;
-                    
+
                     std::vector<typename mean_type<B>::type> X(m_mn_bins.size());
                     std::vector<typename mean_type<B>::type> Y(m_mn_bins.size());
                     for (typename B::count_type i = 0; i < m_mn_bins.size(); ++i) {
                         X[i] = m_mn_jackknife_bins[i + 1] - unbiased_mean_1;
                         Y[i] = obs.m_mn_jackknife_bins[i + 1] - unbiased_mean_2;
                     }
-                    
+
                     typename mean_type<B>::type xbar;
                     typename mean_type<B>::type ybar;
                     typename covariance_type<B>::type cov = outer_product(xbar, ybar);
@@ -582,7 +582,7 @@ namespace alps {
                         ar["jacknife/data/@binningtype"] = "linear";
                     }
                 }
-                
+
                 void load(hdf5::archive & ar) {
                     B::load(ar);
                     ar["timeseries/data"] >> m_mn_bins;
@@ -605,7 +605,7 @@ namespace alps {
                     using alps::hdf5::get_extent;
                     const char name[]="timeseries/data";
                     const std::size_t ndim=get_extent(T()).size()+1;
-                    
+
                     return B::can_load(ar) &&
                            detail::archive_trait<T>::can_load(ar, name, ndim) && // FIXME: `T` should rather be `error_type`, defined at class level
                            ar.is_attribute("timeseries/data/@binsize") &&
@@ -616,7 +616,7 @@ namespace alps {
                 template<typename U> void operator-=(U const & arg) { augsub(arg); }
                 template<typename U> void operator*=(U const & arg) { augmul(arg); }
                 template<typename U> void operator/=(U const & arg) { augdiv(arg); }
-                
+
                 template <typename OP> void transform(OP op) {
                     generate_jackknife();
                     m_mn_data_is_analyzed = false;
@@ -643,7 +643,7 @@ namespace alps {
                     for (it = m_mn_jackknife_bins.begin(), jt = arg.get_jackknife_bins().begin(); it != m_mn_jackknife_bins.end(); ++it, ++jt)
                         *it = op(*it, *jt);
                 }
-                
+
 #define NUMERIC_FUNCTION_IMPLEMENTATION(FUNCTION_NAME)                  \
                 void FUNCTION_NAME () {                                 \
                     using alps::numeric::sq;                            \
@@ -709,22 +709,22 @@ namespace alps {
                 void negate()
                 {
                     using alps::numeric::negate;
-                    
+
                     typedef typename value_type<B>::type value_type;
                     transform(negate<value_type>());
                     B::negate();
                 }
-                    
+
                 /// Invert the Result by calling transform() with the corresponding functor object
                 void inverse()
                 {
                     using alps::numeric::invert;
-                    
+
                     typedef typename value_type<B>::type value_type;
                     transform(invert<value_type>());
                     B::inverse();
                 }
-                    
+
               private:
                 std::size_t m_mn_max_number;
                 typename B::count_type m_mn_elements_in_bin;
@@ -827,7 +827,7 @@ namespace alps {
                 NUMERIC_FUNCTION_OPERATOR(operator-, operator-=, -, sub, alps::numeric::minus)
                 NUMERIC_FUNCTION_OPERATOR(operator*, operator*=, *, mul, alps::numeric::multiplies)
                 NUMERIC_FUNCTION_OPERATOR(operator/, operator/=, /, div, alps::numeric::divides)
-                
+
 #undef NUMERIC_FUNCTION_OPERATOR
             };
 
@@ -842,7 +842,7 @@ namespace alps {
                 public:
                 DerivedWrapper(): B() {}
                 DerivedWrapper(T const & arg): B(arg) {}
-                
+
                 bool has_max_num_binning() const { return has_feature<T, max_num_binning_tag>::type::value; }
                 bool has_transform() const { return has_feature<T, max_num_binning_tag>::type::value; }
 

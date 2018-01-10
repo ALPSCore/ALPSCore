@@ -5,7 +5,6 @@
  */
 #include"alps/gf/gf.hpp"
 
-///Stream output operator, e.g. for printing to file
 namespace alps{
     namespace gf{
 

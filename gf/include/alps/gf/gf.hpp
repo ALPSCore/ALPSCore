@@ -209,7 +209,7 @@ namespace alps {
             }
 
             /// Element-wise assignment
-            /** @Note Copies only the data, requires identical grids. */
+            /** @note Copies only the data, requires identical grids. */
             // FIXME: this is a hack, to be replaced by a proper assignment later
             one_index_gf& operator=(const one_index_gf& rhs)
             {
@@ -440,7 +440,7 @@ namespace alps {
             }
 
             /// Element-wise assignment
-            /** @Note Copies only the data, requires identical grids. */
+            /** @note Copies only the data, requires identical grids. */
             // FIXME: this is a hack, to be replaced by a proper assignment later
             two_index_gf& operator=(const two_index_gf& rhs)
             {
@@ -684,7 +684,7 @@ namespace alps {
             }
 
             /// Element-wise assignment
-            /** @Note Copies only the data, requires identical grids. */
+            /** @note Copies only the data, requires identical grids. */
             // FIXME: this is a hack, to be replaced by a proper assignment later
             three_index_gf& operator=(const three_index_gf& rhs)
             {
@@ -938,7 +938,7 @@ namespace alps {
             }
 
             /// Element-wise assignment
-            /** @Note Copies only the data, requires identical grids. */
+            /** @note Copies only the data, requires identical grids. */
             // FIXME: this is a hack, to be replaced by a proper assignment later
             four_index_gf& operator=(const four_index_gf& rhs)
             {
@@ -1192,7 +1192,7 @@ namespace alps {
             }
 
             /// Element-wise assignment
-            /** @Note Copies only the data, requires identical grids. */
+            /** @note Copies only the data, requires identical grids. */
             // FIXME: this is a hack, to be replaced by a proper assignment later
             five_index_gf& operator=(const five_index_gf& rhs)
             {
@@ -1467,7 +1467,7 @@ namespace alps {
                  }
 
                  /// Element-wise assignment
-                 /** @Note Copies only the data, requires identical grids. */
+                 /** @note Copies only the data, requires identical grids. */
                  // FIXME: this is a hack, to be replaced by a proper assignment later
                  seven_index_gf& operator=(const seven_index_gf& rhs)
                  {
