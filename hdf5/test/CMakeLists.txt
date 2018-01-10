@@ -21,6 +21,7 @@ set (test_src
     hdf5_io_types
     hdf5_attributes
     hdf5_omp #this one was commented out. Any idea why?
+    hdf5_tensor
     )
 
 if (ExtensiveTesting)

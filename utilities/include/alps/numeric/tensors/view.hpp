@@ -8,7 +8,7 @@
 #define ALPSCORE_GF_VIEW_H
 
 
-#include <alps/numeric/tensors/data_storage.hpp>
+#include "data_storage.hpp"
 
 namespace alps {
   namespace numerics {
@@ -43,15 +43,15 @@ namespace alps {
 
         /// assignment operator
         view<T>& operator=(const view<T> & rhs) {
-          data_ = rhs.data_;
-          size_ = rhs.size_;
+          assert(size_ == rhs.size_);
+          std::copy(rhs.data_, rhs.data_+rhs.size_, data_);
           return (*this);
         }
 
         /// move assignment operator
         view<T> operator=(view<T> && rhs) {
-          data_ = rhs.data_;
-          size_ = rhs.size_;
+          assert(size_ == rhs.size_);
+          std::copy(rhs.data_, rhs.data_+rhs.size_, data_);
           return (*this);
         }
 

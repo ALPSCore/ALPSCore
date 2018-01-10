@@ -74,6 +74,28 @@ TEST(TensorTest, TestAssignments) {
   ASSERT_EQ(V, T1);
 }
 
+TEST(TensorTest, TestCopyAssignments) {
+  size_t N = 10;
+  Eigen::MatrixXd M1 = Eigen::MatrixXd::Random(N, N);
+  Eigen::MatrixXcd M2 = Eigen::MatrixXcd::Random(N, N);
+  tensor<double, 2> T1(N, N);
+  tensor<double, 2> T3(T1);
+  tensor<double, 2> T2(N, N);
+  for(int i = 0; i< N; ++i) {
+    for (int j = 0; j < N; ++j) {
+      T1(i,j) = M1(i,j);
+    }
+  }
+  T2 = T1;
+  ASSERT_EQ(T2, T1);
+  tensor_view<double, 2> V1 = T1;
+  tensor_view<double, 2> V2 = T2;
+  ASSERT_EQ(V2, T1);
+  V1(0,0) = -15.0;
+  V2 = V1;
+  ASSERT_EQ(T2(0,0), -15.0);
+}
+
 TEST(TensorTest, TestSlices) {
   tensor<std::complex<double>, 3> X(1, 2, 3);
 
