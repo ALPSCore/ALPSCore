@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -17,13 +17,13 @@ namespace alps {
             // default constructor
             template<> virtual_result_wrapper<virtual_accumulator_wrapper>::virtual_result_wrapper()
                 : m_cnt(new std::ptrdiff_t(1))
-                , m_ptr(new result_wrapper()) 
+                , m_ptr(new result_wrapper())
             {}
 
             // constructor from raw accumulator
             template<> virtual_result_wrapper<virtual_accumulator_wrapper>::virtual_result_wrapper(result_wrapper * arg)
                 : m_cnt(new std::ptrdiff_t(1))
-                , m_ptr(arg) 
+                , m_ptr(arg)
             {}
 
             // copy constructor
@@ -49,7 +49,7 @@ namespace alps {
             }
 
                 // // default constructor
-                //     result_wrapper() 
+                //     result_wrapper()
                 //         : m_variant()
                 //     {}
 
@@ -373,13 +373,13 @@ namespace alps {
             // default constructor
 			virtual_accumulator_wrapper::virtual_accumulator_wrapper()
 				: m_cnt(new std::ptrdiff_t(1))
-				, m_ptr(new accumulator_wrapper()) 
+				, m_ptr(new accumulator_wrapper())
 			{}
 
             // constructor from raw accumulator
             virtual_accumulator_wrapper::virtual_accumulator_wrapper(accumulator_wrapper * arg)
 				: m_cnt(new std::ptrdiff_t(1))
-				, m_ptr(arg) 
+				, m_ptr(arg)
             {}
 
             // copy constructor
@@ -413,7 +413,7 @@ namespace alps {
             BOOST_PP_SEQ_FOR_EACH(ALPS_ACCUMULATOR_OPERATOR_CALL, ~, ALPS_ACCUMULATOR_VALUE_TYPES_SEQ)
             #undef ALPS_ACCUMULATOR_OPERATOR_CALL
 
-            /// Merge another accumulator into this one. @param rhs_acc  accumulator to merge.
+            /// Merge another accumulator into this one. @param rhs  accumulator to merge.
 			void virtual_accumulator_wrapper::merge(const virtual_accumulator_wrapper & rhs){
             	m_ptr->merge(*(rhs.m_ptr));
             }

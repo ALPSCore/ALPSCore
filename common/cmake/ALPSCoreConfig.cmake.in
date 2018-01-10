@@ -1,4 +1,10 @@
-#  Try to find ALPSCore. Once done this will define
+#  Try to find ALPSCore.
+#  Affected by the following variables:
+#  ALPS_FORCE_CXX_STD=C++11|C++14|custom    - Override the request for the C++capabilities
+#                                               for the dependent targets.
+#  ALPS_FORCE_NO_COMPILER_CHECK             - If true, override complier mismatch check.
+#
+#  Once done this will define
 #  ALPSCore_FOUND         - System has ALPSCore
 #  ALPSCore_LIBRARIES     - The ALPSCore libraries (imported targets)
 #  ALPSCore_HAS_MPI       - True if ALPSCore is compiled with MPI enabled
@@ -13,6 +19,22 @@
 #   ALPSCore_<c>_FOUND (for each component <c>) 
 #   ALPSCore_<c>_LIBRARIES (for each component <c>) 
 function(alpscore_config_main_)
+    unset(cxx_features)
+    if (DEFINED ALPS_FORCE_CXX_STD)
+      if (ALPS_FORCE_CXX_STD MATCHES "^[Cc][+][+]11$")
+        set(cxx_features "cxx_auto_type;cxx_constexpr")
+        message(STATUS "ALPSCore will request C++11 features")
+      elseif (ALPS_FORCE_CXX_STD MATCHES "^[Cc][+][+]14$")
+        set(cxx_features "cxx_decltype_auto")
+        message(STATUS "ALPSCore will request C++14 features")
+      elseif (ALPS_FORCE_CXX_STD MATCHES "^custom$")
+        set(cxx_features "")
+        message("Caution: ALPSCore is forced to not request any specific C++ features from the compiler")
+      else()
+        message(FATAL_ERROR "ALPS_FORCE_CXX_STD is set to unknown value ${ALPS_FORCE_CXX_STD}")
+      endif()
+    endif()
+
     # Create a list of known components
     set(known_components_ utilities hdf5 accumulators params mc gf alea)
 
@@ -50,11 +72,46 @@ function(alpscore_config_main_)
             endif()
         endif()
     endforeach()
+
+    if (DEFINED cxx_features)
+      foreach (tgt_ ${ALPSCore_LIBRARIES})
+        if (TARGET ${tgt_})
+          set_property(TARGET ${tgt_} PROPERTY INTERFACE_COMPILE_FEATURES ${cxx_features})
+        endif()
+      endforeach()
+    endif()
+    
     set(ALPSCore_LIBRARIES ${ALPSCore_LIBRARIES} PARENT_SCOPE)
 endfunction(alpscore_config_main_)
 
-alpscore_config_main_()
+
 set(ALPSCore_HAS_MPI @ALPS_HAVE_MPI@)
+set(ALPSCore_CXX_STD "@ALPS_CXX_STD@")
+set(ALPSCore_CXX_COMPILER_ID "@CMAKE_CXX_COMPILER_ID@")
+set(ALPSCore_CXX_COMPILER_VERSION "@CMAKE_CXX_COMPILER_VERSION@")
+if (ALPSCore_CXX_COMPILER_ID STREQUAL CMAKE_CXX_COMPILER_ID
+    AND
+    ALPSCore_CXX_COMPILER_VERSION VERSION_EQUAL CMAKE_CXX_COMPILER_VERSION)
+  set(ALPSCore_COMPILER_MATCH true)
+else()
+  message(WARNING "The C++ compiler used to build your project should exactly match"
+    " the C++ compiler that was used to build ALPSCore."
+"
+ ALPSCore C++ compiler ID: ${ALPSCore_CXX_COMPILER_ID}
+ ALPSCore C++ compiler version: ${ALPSCore_CXX_COMPILER_VERSION}
+ Current C++ compiler ID: ${CMAKE_CXX_COMPILER_ID}
+ Current C++ compiler version: ${CMAKE_CXX_COMPILER_VERSION}
+ Current C++ compiler: ${CMAKE_CXX_COMPILER}")
+  if (ALPS_FORCE_NO_COMPILER_CHECK)
+    message("WARNING: Compiler mismatch is ignored, as requested")
+    set(ALPSCore_COMPILER_MATCH true)
+  else()
+    set(ALPSCore_COMPILER_MATCH false)
+  endif()
+endif()
+if (ALPSCore_COMPILER_MATCH)
+  alpscore_config_main_()
+endif()
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(ALPSCore REQUIRED_VARS ALPSCore_LIBRARIES HANDLE_COMPONENTS)
+find_package_handle_standard_args(ALPSCore REQUIRED_VARS ALPSCore_LIBRARIES ALPSCore_COMPILER_MATCH HANDLE_COMPONENTS)

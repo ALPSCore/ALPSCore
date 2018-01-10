@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -113,9 +113,8 @@ namespace alps {
             return has_unused_(out, 0);
         }
 
-        bool params::help_requested(std::ostream& out) const
+        std::ostream& params::print_help(std::ostream& out) const 
         {
-            if (!this->help_requested()) return false;
             out << help_header_ << "\nAvailable options:\n";
 
             typedef std::pair<std::string, std::string> nd_pair; // name and description
@@ -130,6 +129,7 @@ namespace alps {
                 if (names_column_width<name_and_type.size()) names_column_width=name_and_type.size();
 
                 std::ostringstream ostr;
+                boolalpha(ostr);
                 ostr << tdp.second.descr();
                 if (this->exists(tdp.first) && tdp.first!="help") {
                     ostr << " (default value: ";
@@ -156,9 +156,20 @@ namespace alps {
             }
             out.flags(oldfmt);
 
-            return true;
+            return out;
         }
 
+        bool params::help_requested() const
+        {
+            return this->exists<bool>("help") && (*this)["help"].as<bool>();
+        }
+        
+        bool params::help_requested(std::ostream& out) const
+        {
+            if (!this->help_requested()) return false;
+            print_help(out);
+            return true;
+        }
         
         bool params::has_missing(std::ostream& out) const
         {

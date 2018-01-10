@@ -1,9 +1,15 @@
+/*
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
+ * All rights reserved. Use is subject to license terms. See LICENSE.TXT
+ * For use in publications, see ACKNOWLEDGE.TXT
+ */
+
 /**
    @file dict_value_impl.hpp
    Contains header-part implementation of dict_value.
    NOT TO BE INCLUDED DIRECTLY!
 */
-   
+
 #include <boost/type_traits/is_integral.hpp>
 #include <boost/type_traits/is_signed.hpp>
 #include <boost/type_traits/is_unsigned.hpp>
@@ -143,7 +149,7 @@ namespace alps {
                                  boost::is_floating_point<B>::value &&
                                  !boost::is_same<A,B>::value>
             {};
-            
+
             // meta-predicate: other comparison
             template <typename A, typename B>
             struct is_other_cmp
@@ -164,7 +170,7 @@ namespace alps {
                     return boost::typeindex::type_id<T>().pretty_name();
                 }
             };
-            
+
             namespace visitor {
                 /// Visitor to get a value (with conversion): returns type LHS_T, converts from the bound type RHS_T
                 template <typename LHS_T>
@@ -172,7 +178,7 @@ namespace alps {
 
                     /// Simplest case: the values are of the same type
                     LHS_T apply(const LHS_T& val) const {
-                        return val; // no conversion 
+                        return val; // no conversion
                     }
 
                     /// Extracting bool type to an integral type
@@ -197,7 +203,7 @@ namespace alps {
                             throw exception::value_mismatch("", "Integer overflow detected: unsigned integer too large");
                         return val;
                     }
-                
+
                     /// Extracting signed integral type to an integral type
                     template <typename RHS_T>
                     LHS_T apply(const RHS_T& val, typename is_sig_to_intgl<RHS_T,LHS_T>::yes =true) const {
@@ -206,12 +212,12 @@ namespace alps {
                         typedef typename boost::make_unsigned<RHS_T>::type U_RHS_T;
 
                         const S_LHS_T min_num=boost::integer_traits<LHS_T>::const_min; // always possible
-                        
+
                         if (val<min_num)
                             throw exception::value_mismatch("", "Integer underflow detected: signed integer too small");
 
                         if (val<0) return val; // always within range
-                        
+
                         const U_LHS_T max_num=boost::integer_traits<LHS_T>::const_max; // always possible
                         const U_RHS_T uval=val; // as val>=0, it's always correct
                         // compare 2 unsigned
@@ -219,7 +225,7 @@ namespace alps {
                             throw exception::value_mismatch("", "Integer overflow detected: signed integer too large");
                         return val;
                     }
-                
+
                     /// Placeholder: extracting any other type
                     template <typename RHS_T>
                     LHS_T apply(const RHS_T& val, typename is_other_conversion<RHS_T,LHS_T>::yes =true) const {
@@ -228,7 +234,7 @@ namespace alps {
                         throw exception::type_mismatch("","Types do not match;"
                                                        " conversion " + rhs_name + " --> " + lhs_name);
                     }
-                
+
 
                     /// Called by apply_visitor()
                     template <typename RHS_T>
@@ -243,7 +249,7 @@ namespace alps {
 
                     /// Simplest case: the value is of type bool
                     bool apply(const bool& val) const {
-                        return val; // no conversion 
+                        return val; // no conversion
                     }
 
                     /// Extracting any other type
@@ -266,7 +272,7 @@ namespace alps {
                   public:
                     /// Called by apply_visitor() if the bound type is X
                     bool operator()(const X& val) const { return true; }
-                    
+
                     /// Called by apply_visitor() for bound type T
                     template <typename T>
                     bool operator()(const T& val) const { return false; }
@@ -280,7 +286,7 @@ namespace alps {
 
                     template <typename A, typename B>
                     static bool cmp_(const A& a, const B& b) { return (a==b)? 0 : (a<b)? -1:1; }
-                    
+
                   public:
                     comparator(const RHS_T& rhs): rhs_(rhs) {}
 
@@ -288,7 +294,7 @@ namespace alps {
                     int operator()(const RHS_T& lhs) const {
                         return cmp_(lhs,rhs_);
                     }
-                    
+
                     /// Called by apply_visitor for the bound value of type LHS_T
                     template <typename LHS_T>
                     int operator()(const LHS_T& lhs) const {
@@ -332,7 +338,7 @@ namespace alps {
                     int apply(const LHS_T& lhs, const RHS_T& rhs, typename is_signed_unsigned<RHS_T,LHS_T>::yes =true) const {
                         return -apply(rhs,lhs);
                     }
-                    
+
                     /// Invoked when an integral bound type is compared with a floating-point type
                     template <typename LHS_T>
                     int apply(const LHS_T& lhs, const RHS_T& rhs, typename is_intgl_to_fp<LHS_T,RHS_T>::yes =true) const {
@@ -363,20 +369,20 @@ namespace alps {
 
             } // ::visitor
         } //::detail
-        
+
         template <typename F>
         typename F::result_type dict_value::apply_visitor(F& visitor) const {
             return boost::apply_visitor(visitor, val_);
         }
-        
+
         template <typename F>
         typename F::result_type dict_value::apply_visitor(const F& visitor) const {
             return boost::apply_visitor(visitor, val_);
         }
-        
+
         inline bool dict_value::empty() const {
             return val_.which()==0; // NOTE: relies on `None` being the first type
-        } 
+        }
 
         template <typename X>
         inline bool dict_value::isType() const {
@@ -388,12 +394,12 @@ namespace alps {
             val_=rhs;
             return rhs;
         }
-            
+
         inline const char* dict_value::operator=(const char* rhs) {
             val_=std::string(rhs);
             return rhs;
         }
-            
+
         template <typename T>
         inline T dict_value::as() const {
             BOOST_STATIC_ASSERT_MSG(detail::is_allowed<T>::value, "The type is not supported by dictionary");
@@ -405,7 +411,7 @@ namespace alps {
                 throw;
             }
         }
-            
+
         // template <typename T,
         //           typename boost::enable_if<detail::is_allowed<T>, int> =0>
         // inline dict_value::operator T() const {
@@ -433,97 +439,97 @@ namespace alps {
             @param dv  the dictionary value to access
 
             The functor type `F` must define typename `F::result_type`.
-        */ 
+        */
         template <typename F>
         inline typename F::result_type apply_visitor(F& visitor, const dict_value& dv)
         {
             return dv.apply_visitor(visitor);
         }
-        
+
         /// Const-access visitor to the bound value
         /** @param visitor functor should be callable as `R result=visitor(bound_value_const_ref)`
             @param dv  the dictionary value to access
 
             The functor type `F` must define typename `F::result_type`.
-        */ 
+        */
         template <typename F>
         inline typename F::result_type apply_visitor(const F& visitor, const dict_value& dv)
         {
             return dv.apply_visitor(visitor);
         }
-        
+
         template <typename T>
         inline bool operator==(const T& lhs, const dict_value& rhs) { return rhs.compare(lhs)==0; }
-        
+
         // template <typename T>
         // inline bool operator<(const T& lhs, const dict_value& rhs) {return false; }
-        
+
         // template <typename T>
         // inline bool operator>(const T& lhs, const dict_value& rhs) {return false; }
-        
+
         template <typename T>
         inline bool operator!=(const T& lhs, const dict_value& rhs) { return rhs.compare(lhs)!=0; }
-        
+
         // template <typename T>
         // inline bool operator>=(const T& lhs, const dict_value& rhs) {return false; }
-        
+
         // template <typename T>
         // inline bool operator<=(const T& lhs, const dict_value& rhs) {return false; }
-        
+
         template <typename T>
         inline bool operator==(const dict_value& lhs, const T& rhs) { return lhs.compare(rhs)==0; }
-        
+
         // template <typename T>
         // inline bool operator<(const dict_value& lhs, const T& rhs) {return false; }
-        
+
         // template <typename T>
         // inline bool operator>(const dict_value& lhs, const T& rhs) {return false; }
-        
+
         template <typename T>
         inline bool operator!=(const dict_value& lhs, const T& rhs) {return lhs.compare(rhs)!=0; }
-        
+
         // template <typename T>
         // inline bool operator>=(const dict_value& lhs, const T& rhs) {return false; }
-        
+
         // template <typename T>
         // inline bool operator<=(const dict_value& lhs, const T& rhs) {return false; }
 
         inline bool operator==(const dict_value& lhs, const dict_value& rhs) {return lhs.compare(rhs)==0; }
-        
+
         // inline bool operator<(const dict_value& lhs, const dict_value& rhs) {return false; }
-        
+
         // inline bool operator>(const dict_value& lhs, const dict_value& rhs) {return false; }
-        
+
         inline bool operator!=(const dict_value& lhs, const dict_value& rhs) {return lhs.compare(rhs)!=0; }
-        
+
         // inline bool operator>=(const dict_value& lhs, const dict_value& rhs) {return false; }
-        
+
         // inline bool operator<=(const dict_value& lhs, const dict_value& rhs) {return false; }
 
         inline bool operator==(const dict_value& lhs, const char* rhs) {return lhs.compare(std::string(rhs))==0; }
-        
+
         // inline bool operator<(const dict_value& lhs, const char* rhs) {return false; }
-        
+
         // inline bool operator>(const dict_value& lhs, const char* rhs) {return false; }
-        
+
         inline bool operator!=(const dict_value& lhs, const char* rhs) {return lhs.compare(std::string(rhs))!=0; }
-        
+
         // inline bool operator>=(const dict_value& lhs, const char* rhs) {return false; }
-        
+
         // inline bool operator<=(const dict_value& lhs, const char* rhs) {return false; }
 
         inline bool operator==(const char* lhs, const dict_value& rhs) {return rhs.compare(std::string(lhs))==0; }
-        
+
         // inline bool operator<(const char* lhs, const dict_value& rhs) {return false; }
-        
+
         // inline bool operator>(const char* lhs, const dict_value& rhs) {return false; }
-        
+
         inline bool operator!=(const char* lhs, const dict_value& rhs) {return rhs.compare(std::string(lhs))!=0; }
-        
+
         // inline bool operator>=(const char* lhs, const dict_value& rhs) {return false; }
-        
+
         // inline bool operator<=(const char* lhs, const dict_value& rhs) {return false; }
-        
+
     } // params_ns::
 
 
@@ -535,5 +541,5 @@ namespace alps {
         }
     }
 #endif
-    
+
 } // alps::

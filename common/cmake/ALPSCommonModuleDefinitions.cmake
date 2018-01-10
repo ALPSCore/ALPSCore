@@ -3,7 +3,7 @@
 #
 
 # Do not forget to adjust as needed!
-set(ALPSCORE_VERSION "2.0.0-rc1")
+set(ALPSCORE_VERSION "2.1.1")
 
 # Disable in-source builds
 if (${CMAKE_BINARY_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
@@ -154,11 +154,14 @@ macro(add_alps_package)
     endforeach(pkg_)
 endmacro(add_alps_package) 
 
-# Usage: add_this_package(srcs...)
+# Usage: add_this_package(srcs... EXTRA extra_srcs...)
 # The `srcs` are source file names in directory "src/"
+# After `EXTRA`, `extra_srcs` are added verbatim
 # Defines ${PROJECT_NAME} target
 # Exports alps::${PROJECT_NAME} target
 function(add_this_package)
+  include(CMakeParseArguments)
+  cmake_parse_arguments(THIS_PACKAGE "" "" "EXTRA" ${ARGV})
    # This is needed to compile tests:
    include_directories(
      ${PROJECT_SOURCE_DIR}/include
@@ -166,10 +169,16 @@ function(add_this_package)
    )
   
   set(src_list_ "")
-  foreach(src_ ${ARGV})
+  foreach(src_ ${THIS_PACKAGE_UNPARSED_ARGUMENTS})
     list(APPEND src_list_ "src/${src_}.cpp")
   endforeach()
-  add_library(${PROJECT_NAME} ${src_list_})
+  add_library(${PROJECT_NAME} ${src_list_} ${THIS_PACKAGE_EXTRA})
+  if (ALPS_CXX_FEATURES)
+    target_compile_features(${PROJECT_NAME} PUBLIC ${ALPS_CXX_FEATURES})
+  endif()
+  if (ALPS_CXX_FLAGS)
+    set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY INTERFACE_COMPILE_OPTIONS ${ALPS_CXX_FLAGS})
+  endif()
   if (ALPS_BUILD_PIC) 
     set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
   endif()
@@ -233,15 +242,6 @@ endmacro(gen_pkg_config)
 
 # Function: generates main ALPSCore config
 function(gen_cfg_main)
-  # message("DEBUG: Eigen version is ${ALPS_HAVE_EIGEN_VERSION}")
-  # if (TARGET eigen)
-  #   message("DEBUG: OK, Eigen target is global")
-  #   get_target_property(prop_ eigen INTERFACE_INCLUDE_DIRECTORIES)
-  #   message("DEBUG: Eigen interface directories: ${prop_}")
-  # else()
-  #   message("DEBUG: No Eigen target is visible???")
-  # endif()
-  
   configure_file("${PROJECT_SOURCE_DIR}/common/cmake/ALPSCoreConfig.cmake.in" 
                  "${PROJECT_BINARY_DIR}/ALPSCoreConfig.cmake" @ONLY)
   configure_file("${PROJECT_SOURCE_DIR}/common/cmake/ALPSCoreConfigVersion.cmake.in" 

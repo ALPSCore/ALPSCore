@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -35,7 +35,7 @@ namespace alps {
                 static std::string apply() { return detail::type_info<T>::pretty_name(); }
             };
 
-            /// Param_type with description 
+            /// Param_type with description
             struct td_type {
                 std::string typestr_;
                 std::string descr_;
@@ -102,14 +102,14 @@ namespace alps {
                     if (data_.size()<INIFILES)
                         throw std::logic_error("params::origins_type invariants violation");
                 }
-            };            
-            
+            };
+
             typedef std::map<std::string, detail::td_type> td_map_type;
 
             strmap raw_kv_content_;
             td_map_type td_map_;
             strvec err_status_;
-            origins_type origins_; 
+            origins_type origins_;
             std::string help_header_;
 
             void read_ini_file_(const std::string& inifile);
@@ -139,8 +139,10 @@ namespace alps {
             /** Tries to see if the file is an HDF5, in which case restores the object from the
                 HDF5 file, ignoring the command line.
 
-                @param hdf5_path : path to HDF5 dataset containing the saved parameter object
-                (NULL if this functionality is not needed)
+                @param argc Number of command line arguments (as in `main(int argc, char** argv)`)
+                @param argv Array of pointers to command line arguments (as in `main(int argc, char** argv)`)
+                @param hdf5_path path to HDF5 dataset containing the saved parameter object
+                       (NULL if this functionality is not needed)
             */
             params(int argc, const char* const* argv, const char* hdf5_path="/parameters")
                 : dictionary(),
@@ -160,12 +162,12 @@ namespace alps {
 
             /// Returns the number of ini file names
             int get_ini_name_count() const;
-            
-            
+
+
             /// Convenience method: returns the "origin name"
             /** @returns (parameter_file_name || restart_file name || program_name || "")
 
-                @warning Deprecated. Use `alps::params_ns::get_origin(const params&)` instead,
+                @deprecated Use `alps::params_ns::get_origin(const params&)` instead,
                 also available as `alps::get_origin(const params&)`.
              **/
             std::string get_origin_name() const ALPS_DEPRECATED;
@@ -178,10 +180,10 @@ namespace alps {
 
             /// Conveninece method: true if the object was restored from an archive
             bool is_restored() const { return !origins_.data()[origins_type::ARCHNAME].empty(); }
-            
+
             /// Convenience method: returns the archive name the object has been restored from, or throws
             std::string get_archive_name() const;
-            
+
             /// No-errors status
             bool ok() const { return err_status_.empty(); }
 
@@ -199,6 +201,7 @@ namespace alps {
 
             /// True if there are parameters supplied but not defined in a subsection; prints them out
             /**
+               @param out Stream to print the list of supplied, but unused parameters
                @param subsection The subsection to look into; empty
                string means "top level" (or "anonymous") subsection.
              */
@@ -208,10 +211,13 @@ namespace alps {
             bool has_missing(std::ostream& out) const;
 
             /// True if user requested help
-            bool help_requested() const { return !help_header_.empty() && (*this)["help"].as<bool>(); }
+            bool help_requested() const;
 
             /// True if user requested help; print it to the supplied stream
             bool help_requested(std::ostream&) const;
+
+            /// Print help to the given stream. @returns the stream
+            std::ostream& print_help(std::ostream&) const;
 
             /// Returns true if the objects are identical
             bool operator==(const params& rhs) const;
@@ -235,7 +241,7 @@ namespace alps {
 
             /// Sets a description for the help message and introduces "--help" flag
             params& description(const std::string& message);
-            
+
             /// Returns a string describing the parameter (or an empty string)
             const std::string get_descr(const std::string& name) const;
 

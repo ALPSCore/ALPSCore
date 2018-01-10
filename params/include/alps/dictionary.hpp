@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -25,13 +25,13 @@ namespace alps {
 
           public:
             typedef map_type::const_iterator const_iterator;
-            
+
             /// Const-iterator to the beginning of the contained map
             const_iterator begin() const { return map_.begin(); }
-            
+
             /// Const-iterator to the end of the contained map
             const_iterator end() const { return map_.end(); }
-            
+
             /// Virtual destructor to make dictionary inheritable
             virtual ~dictionary() {}
 
@@ -43,7 +43,7 @@ namespace alps {
 
             /// Erase an element if it exists
             void erase(const std::string& key) { map_.erase(key); }
-            
+
             /// Access with intent to assign
             value_type& operator[](const std::string& key);
 
@@ -60,12 +60,12 @@ namespace alps {
             map_type::const_iterator find_nonempty_(const std::string& key) const;
 
           public:
-            
+
             /// Check if a key exists and has a value (without creating the key)
             bool exists(const std::string& key) const {
                 return find_nonempty_(key)!=map_.end();
             }
-            
+
             /// Check if a key exists and has a value of a particular type (without creating the key)
             template <typename T>
             bool exists(const std::string& key) const {
@@ -75,7 +75,7 @@ namespace alps {
 
             /// Swap the dictionaries
             friend void swap(dictionary& d1, dictionary& d2) { using std::swap; swap(d1.map_, d2.map_); }
-            
+
             /// Compare two dictionaries (true if all entries are of the same type and value)
             bool equals(const dictionary& rhs) const;
 
@@ -102,25 +102,25 @@ namespace alps {
         }
 
         /// Const-access visitor to a value by an iterator
-        /** @param visitor functor should be callable as `R result=visitor(bound_value_const_ref)`
-
-            The functor type `F` must define typename `F::result_type`.
+        /** @param visitor A functor that should be callable as `R result=visitor(bound_value_const_ref)`
+            @param it Iterator to the dictionary
+            @tparam F The functor type; must define typename `F::result_type`.
         */
         template <typename F>
         inline typename F::result_type apply_visitor(F& visitor, dictionary::const_iterator it) {
             return boost::apply_visitor(visitor, it->second);
         }
-            
-        /// Const-access visitor to a value by an iterator
-        /** @param visitor functor should be callable as `R result=visitor(bound_value_const_ref)`
 
-            The functor type `F` must define typename `F::result_type`.
+        /// Const-access visitor to a value by an iterator
+        /** @param visitor A functor that should be callable as `R result=visitor(bound_value_const_ref)`
+            @param it Iterator to the dictionary
+            @tparam F The functor type; must define typename `F::result_type`.
         */
         template <typename F>
         inline typename F::result_type apply_visitor(const F& visitor, dictionary::const_iterator it) {
             return boost::apply_visitor(visitor, it->second);
         }
-            
+
     } // params_ns::
 } // alps::
 

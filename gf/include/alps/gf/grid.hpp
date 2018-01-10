@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -11,15 +11,12 @@
 #include <cmath>
 #include <vector>
 
-/**
- * @brief Grids definition for real frequency mesh
- */
 namespace alps {
   namespace gf {
+    /// Grids definitions for real frequency mesh
     namespace grid{
-/**
-             * Define a linear grid in real frequency
-             */
+
+      /// Linear grid in real frequency
       class linear_real_frequency_grid {
       private:
         /// lowest frequency in real frequency space
@@ -38,9 +35,8 @@ namespace alps {
           }
         }
       };
-      /**
-       * Define Logarithmic grid in real frequency
-       */
+
+      /// Logarithmic grid in real frequency
       class logarithmic_real_frequency_grid {
       private:
         /// first step value
@@ -79,6 +75,8 @@ namespace alps {
             points[nfreq_ / 2 + nfreq_ / 2] = c_ + t_min_ * std::exp(((float) (nfreq_/2 - 1)) * scale);
         }
       };
+
+      /// Quadratic grid in real frequency
       class quadratic_real_frequency_grid {
       private:
         /// number of frequency points

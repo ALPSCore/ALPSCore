@@ -1,13 +1,26 @@
-// ** Implementation of alps::params
+/*
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
+ * All rights reserved. Use is subject to license terms. See LICENSE.TXT
+ * For use in publications, see ACKNOWLEDGE.TXT
+ */
+
+/**
+   @file params_impl.hpp
+   Contains header-part implementation of alps::params
+   NOT TO BE INCLUDED DIRECTLY!
+*/
 
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
+#include <locale> // FIXME: needed only for boolean conversions
+#include <boost/foreach.hpp> // FIXME: needed only for boolean conversions
+
 namespace alps {
     namespace params_ns {
 
         namespace detail {
 
-            
+            // FIXME: move this to a *.cpp file
             template <typename T>
             struct parse_string {
                 static boost::optional<T> apply(const std::string& in) {
@@ -29,11 +42,14 @@ namespace alps {
 
             template <>
             struct parse_string<bool> {
-                static boost::optional<bool> apply(const std::string& in) {
-                    // FIXME: use C_locale and lowercase the string
+                static boost::optional<bool> apply(std::string in) {
+                    std::locale c_locale("C");
+                    BOOST_FOREACH(char& c, in) { // FIXME:C++11
+                        c=tolower(c, c_locale);
+                    }
                     boost::optional<bool> result;
-                    if (in=="true") result=true;
-                    if (in=="false") result=false;
+                    if (in=="true" || in=="on" || in=="yes" || in=="1") result=true;
+                    if (in=="false" || in=="off" || in=="no" || in=="0") result=false;
                     return result;
                 }
             };
@@ -74,7 +90,7 @@ namespace alps {
                 return false;
             }
         }
-        
+
         template <typename T>
         bool params::define_(const std::string& name, const std::string& descr)
         {
@@ -105,11 +121,11 @@ namespace alps {
         params& params::define(const std::string& name, const std::string& descr)
         {
             if (!define_<T>(name, descr)) {
-                if (!this->exists<T>(name)) err_status_.push_back("Required parameter '"+name+"' is missing"); 
+                if (!this->exists<T>(name)) err_status_.push_back("Required parameter '"+name+"' is missing");
             }
             return *this;
         }
-        
+
         template <typename T>
         params& params::define(const std::string& name, const T& defval, const std::string& descr)
         {
@@ -123,17 +139,17 @@ namespace alps {
         {
             return raw_kv_content_.count(name);
         }
-        
+
         inline bool params::defaulted(const std::string& name) const
         {
             return exists(name) && !supplied(name);
         }
-        
+
         inline bool params::defined(const std::string& name) const
         {
             return td_map_.count(name)!=0 || exists(name);
         }
-        
+
         inline void swap(params& p1, params& p2)
         {
             using std::swap;
@@ -157,7 +173,7 @@ namespace alps {
         {
             return origin_name(*this);
         }
-        
+
     } // params_ns::
     using params_ns::origin_name;
     using params_ns::swap;

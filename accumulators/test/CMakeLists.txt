@@ -1,5 +1,9 @@
 include(ALPSEnableTests)
 
+if (HDF5_VERSION VERSION_LESS 1.10)
+  add_definitions("-DALPS_HDF5_1_8")
+endif()
+
 set (test_src
     testharness
     acc_check_eigen

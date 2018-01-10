@@ -1,11 +1,11 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
 /** @file params.cpp
-    
+
     @brief Tests the behaviour of parameters
 */
 
@@ -113,7 +113,7 @@ TEST_F(ParamsTest0, swapParams) {
 
     using std::swap;
     swap(par_, par2);
-    
+
     EXPECT_EQ(cpar_, par2_copy);
     EXPECT_EQ(par2, par1_copy);
 }
@@ -184,7 +184,7 @@ TEST_F(ParamsTest0, flags) {
     params p(args.argc(), args.argv());
     ASSERT_TRUE(p.define("flag", "A flag option").ok());
     ASSERT_TRUE(p.define("other_flag", "Another flag option").ok());
-    
+
     EXPECT_TRUE(p["flag"].as<bool>());
     EXPECT_FALSE(p["other_flag"].as<bool>());
 }
@@ -221,9 +221,45 @@ TEST_F(ParamsTest0, helpNotRequested) {
     par_.description("This is a test message");
     EXPECT_TRUE(par_.exists("help"));
     EXPECT_FALSE(par_.help_requested());
+
+    par_.
+        define<int>("whole_num", "My-integer").
+        define<double>("fp_num", 1.25, "My-fp").
+        define<std::string>("solver.name", "Solver name").
+        define<double>("solver.precision", 1E-5, "Solver precision").
+        define< std::vector<int> >("solver.parameters", "Solver internal parameters");
+
     std::ostringstream ostr;
     EXPECT_FALSE(par_.help_requested(ostr));
     EXPECT_TRUE(ostr.str().empty());
+
+    EXPECT_EQ(&ostr, & par_.print_help(ostr));
+    EXPECT_TRUE(ostr.str().find("This is a test message")!=std::string::npos);
+    EXPECT_TRUE(ostr.str().find("whole_num")!=std::string::npos);
+    EXPECT_TRUE(ostr.str().find("My-integer")!=std::string::npos);
+    EXPECT_TRUE(ostr.str().find("fp_num")!=std::string::npos);
+    EXPECT_TRUE(ostr.str().find("My-fp")!=std::string::npos);
+    EXPECT_TRUE(ostr.str().find("1.25")!=std::string::npos);
+
+    std::cout << ostr.str(); // DEBUG
+}
+
+TEST_F(ParamsTest0, helpBooleanOff) {
+    par_.
+        define("some_option", "An option");
+    std::ostringstream ostr;
+    par_.print_help(ostr);
+    EXPECT_TRUE(ostr.str().find("false")!=std::string::npos);
+    std::cout << ostr.str(); // DEBUG
+}
+
+TEST_F(ParamsTest0, helpBooleanOn) {
+    par_.
+        define<bool>("some_option", true, "An option normally ON");
+    std::ostringstream ostr;
+    par_.print_help(ostr);
+    EXPECT_TRUE(ostr.str().find("true")!=std::string::npos);
+    std::cout << ostr.str(); // DEBUG
 }
 
 TEST_F(ParamsTest0, helpRequested) {
@@ -237,8 +273,8 @@ TEST_F(ParamsTest0, helpRequested) {
         define<double>("fp_num", 1.25, "My-fp").
         define<std::string>("solver.name", "Solver name").
         define<double>("solver.precision", 1E-5, "Solver precision").
-        define< std::vector<int> >("solver.parameters", "Solver internal parameters"); 
-        
+        define< std::vector<int> >("solver.parameters", "Solver internal parameters");
+
     EXPECT_TRUE(p.help_requested());
     std::ostringstream ostr;
     EXPECT_TRUE(p.help_requested(ostr));
@@ -248,7 +284,36 @@ TEST_F(ParamsTest0, helpRequested) {
     EXPECT_TRUE(ostr.str().find("fp_num")!=std::string::npos);
     EXPECT_TRUE(ostr.str().find("My-fp")!=std::string::npos);
     EXPECT_TRUE(ostr.str().find("1.25")!=std::string::npos);
-    std::cout << ostr.str(); /// DEBUG
+    std::cout << ostr.str(); // DEBUG
+}
+
+TEST_F(ParamsTest0, helpRequestedNoDescription) {
+    arg_holder args;
+    args.add("--help");
+    params p(args.argc(), args.argv());
+
+    p.
+        define<int>("whole_num", "My-integer").
+        define<double>("fp_num", 1.25, "My-fp").
+        define<std::string>("solver.name", "Solver name").
+        define<double>("solver.precision", 1E-5, "Solver precision").
+        define< std::vector<int> >("solver.parameters", "Solver internal parameters");
+
+    EXPECT_FALSE(p.help_requested());
+
+    p.define("help", "A user-defined flag (aka boolean parameter)");
+
+    EXPECT_TRUE(p.help_requested());
+
+    std::ostringstream ostr;
+    EXPECT_TRUE(p.help_requested(ostr));
+    EXPECT_FALSE(ostr.str().find("This is a test message")!=std::string::npos);
+    EXPECT_TRUE(ostr.str().find("whole_num")!=std::string::npos);
+    EXPECT_TRUE(ostr.str().find("My-integer")!=std::string::npos);
+    EXPECT_TRUE(ostr.str().find("fp_num")!=std::string::npos);
+    EXPECT_TRUE(ostr.str().find("My-fp")!=std::string::npos);
+    EXPECT_TRUE(ostr.str().find("1.25")!=std::string::npos);
+    std::cout << ostr.str(); // DEBUG
 }
 
 /* ***** */
@@ -261,7 +326,7 @@ TEST_F(ParamsTest0, helpRequested) {
 
    where:
    N generally stand for "nothing", C for "correct", W for "wrong"; specifically:
-   
+
    defined... : call to the defined<T>():
                 { with default | without default }
 
@@ -491,7 +556,7 @@ TEST_F(ParamsTest0, definedNODEFdictCargNredefN) {
     par_[name]=preexisting_int_val;
 
     EXPECT_EQ("", cpar_.get_descr(name));
-    
+
     EXPECT_TRUE(par_.define<int>(name, "Int arg without default").ok());
     EXPECT_EQ("Int arg without default", cpar_.get_descr(name));
 
@@ -1133,7 +1198,7 @@ TEST_F(ParamsTest0, definedDEFdictNargWredefW) {
 
     EXPECT_THROW(par_.define<std::string>(name, "NEW default value", "String arg with NEW default"),
                  de::type_mismatch);
-    
+
     ASSERT_FALSE(cpar_.exists(name));
 }
 

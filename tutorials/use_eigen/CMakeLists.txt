@@ -2,7 +2,7 @@
 # in project that uses ALPSCore
 
 # we need at least cmake version 3.0
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.1)
 
 # the project is called 'use_eigen', and it is a C++ project
 project(use_eigen CXX)
