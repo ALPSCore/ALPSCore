@@ -42,14 +42,14 @@ namespace alps {
 
         namespace detail {
             typedef std::string printable_type; ///<Implementation-defined printable type for results/accumulators
-          
+
             template<typename T> struct add_base_wrapper_pointer {
                 typedef boost::shared_ptr<base_wrapper<T> > type;
             };
 
             typedef boost::make_variant_over<boost::mpl::transform<
                   boost::mpl::vector<ALPS_ACCUMULATOR_VALUE_TYPES>
-                , detail::add_base_wrapper_pointer<boost::mpl::_1> 
+                , detail::add_base_wrapper_pointer<boost::mpl::_1>
             >::type>::type variant_type;
 
             template<typename T, typename A> struct is_valid_argument : public boost::mpl::if_<
@@ -74,7 +74,7 @@ namespace alps {
             public:
 
                 // default constructor
-                result_wrapper() 
+                result_wrapper()
                     : m_variant()
                 {}
 
@@ -177,18 +177,19 @@ namespace alps {
                     }
                 };
             public:
-                /// Cast to the result_wrapper containing another raw result type, or throw.
-                /** AFROM, ATO are named accumulator template names (e.g., `NoBinningAccumulator`)
-                    to convert from and to.
+                /// Cast to the `result_wrapper` containing another raw result type, or throw.
+                /** @tparam AFROM named accumulator template names (e.g., `FullBinningAccumulator`) to convert from
+                    @tparam ATO named accumulator template names (e.g., `NoBinningAccumulator`) to convert to
 
                     Example:
-                    
+                    @code
                         result_set rset;
                         // ....
                         const result_wrapper& r1=rset["no_binning"];
                         result_wrapper r2=rset["full_binning"].cast<FullBinningAccumulator,NoBinningAccumulator>();
                         result_wrapper rsum=r1+r2;
-                   
+                    @endcode
+
                 */
                 template <template<typename> class AFROM, template<typename> class ATO>
                 result_wrapper cast() const {
@@ -488,36 +489,39 @@ namespace alps {
         }
 
         /// Cast to the result_wrapper containing another raw result type, or throw.
-        /** AFROM, ATO are raw result types (e.g., `NoBinningAccumulator<double>::result_type`)
-            to convert from and to.
+        /** @tparam AFROM raw result type (e.g., `NoBinningAccumulator<double>``::``result_type`) to cast from
+            @tparam ATO raw result type (e.g., `FullBinningAccumulator<double>``::``result_type`) to cast to
+
             Example:
-            
+            @code
                 result_set rset;
                 // ....
                 const result_wrapper& r1=rset["no_binning"];
-                result_wrapper r2=cast<FullBinningAccumulator<double>::result_type,
-                                       NoBinningAccumulator<double>::result_type>(rset["full_binning"]);
+                result_wrapper r2=cast_raw<FullBinningAccumulator<double>::result_type,
+                                           NoBinningAccumulator<double>::result_type>(rset["full_binning"]);
                 result_wrapper rsum=r1+r2;
-                   
+            @endcode
         */
         template <typename AFROM, typename ATO>
-        result_wrapper cast(const result_wrapper& res) {
+        result_wrapper cast_raw(const result_wrapper& res) {
             const AFROM& raw_res_from=extract<AFROM>(res);
             const ATO& raw_res_to=dynamic_cast<const ATO&>(raw_res_from);
             return result_wrapper(raw_res_to);
         }
 
         /// Cast to the result_wrapper containing another raw result type, or throw.
-        /** AFROM, ATO are named accumulator template names (e.g., `NoBinningAccumulator`)
-            to convert from and to.
+        /** @tparam AFROM named accumulator template name (e.g., `FullBinningAccumulator`) to convert from
+            @tparam ATO named accumulator template name (e.g., `NoBinningAccumulator`) to convert to
+
             Example:
-            
+            @code
                 result_set rset;
                 // ....
                 const result_wrapper& r1=rset["no_binning"];
                 result_wrapper r2=cast<FullBinningAccumulator,NoBinningAccumulator>(rset["full_binning"]);
                 result_wrapper rsum=r1+r2;
-                   
+            @endcode
+
         */
         template <template<typename> class AFROM,
                   template<typename> class ATO>
@@ -525,7 +529,7 @@ namespace alps {
             return res.cast<AFROM,ATO>();
         }
 
-            
+
         #define EXTERNAL_FUNCTION(FUN)                          \
             result_wrapper FUN (result_wrapper const & arg);
 
@@ -567,10 +571,10 @@ namespace alps {
                 static void check_nonempty_vector(const std::vector<T>& vec) {
                     if (vec.empty()) throw std::runtime_error("Zero-sized vector observables are not allowed");
                 }
-            
+
             public:
             /// default constructor
-                accumulator_wrapper() 
+                accumulator_wrapper()
                     : m_variant()
                 {}
 
@@ -599,7 +603,7 @@ namespace alps {
                     template<typename X> void apply(typename boost::enable_if<
                         typename detail::is_valid_argument<T, typename value_type<X>::type>::type, X &
                     >::type arg) const {
-                        arg(value); 
+                        arg(value);
                     }
                     template<typename X> void apply(typename boost::disable_if<
                         typename detail::is_valid_argument<T, typename value_type<X>::type>::type, X &
@@ -631,7 +635,7 @@ namespace alps {
 
                   // Remember the RHS accumulator
                   merge_visitor(const accumulator_wrapper& b): rhs_acc(b) {}
-                  
+
                   // This is called by apply_visitor()
                   template <typename P> // P can be dereferenced to base_wrapper<T>
                   void operator()(P& lhs_ptr)
@@ -689,7 +693,7 @@ namespace alps {
                     acc_wrap_.m_variant=T(val->clone());
                 }
             };
-            
+
             // Cloning, public code.
             public:
             /// Returns a copy with the wrapped accumulator cloned
@@ -700,7 +704,7 @@ namespace alps {
                 boost::apply_visitor(vis, m_variant);
                 return result;
             }
-            
+
             /// Returns a pointer to a new-allocated copy with the wrapped accumulator cloned
             accumulator_wrapper* new_clone() const
             {
@@ -709,8 +713,8 @@ namespace alps {
                 boost::apply_visitor(vis, m_variant);
                 return result;
             }
-            
-          
+
+
             // operator=
             private:
                 struct assign_visitor: public boost::static_visitor<> {
