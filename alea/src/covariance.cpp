@@ -179,6 +179,20 @@ void cov_result<T,Str>::reduce(const reducer &r, bool pre_commit, bool post_comm
     }
 }
 
+template <typename T, typename Str>
+void cov_result<T,Str>::serialize(serializer &s) const
+{
+    internal::check_valid(*this);
+    s.write("count", make_adapter(count()));
+    s.write("mean/value", make_adapter(mean()));
+    s.write("mean/error", make_adapter(stderror()));
+
+    // FIXME: flattened
+    typename eigen<cov_type>::matrix cov_mat = cov();
+    typename eigen<cov_type>::col_map cov_map(cov_mat.data(), cov_mat.size());
+    s.write("cov/value", make_adapter(cov_map));
+}
+
 template class cov_result<double>;
 template class cov_result<std::complex<double>, circular_var>;
 template class cov_result<std::complex<double>, elliptic_var>;

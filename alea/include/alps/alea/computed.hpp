@@ -36,6 +36,12 @@ eigen_adapter<typename Derived::Scalar, Derived> make_adapter(
 }
 
 template <typename T>
+vector_adapter<T> make_adapter(const std::vector<T> &v)
+{
+    return vector_adapter<T>(v);
+}
+
+template <typename T>
 class value_adapter
     : public computed<T>
 {
@@ -59,6 +65,23 @@ public:
 private:
     T in_;
 };
+
+inline value_adapter<long> make_adapter(size_t v)  // FIXME
+{
+    return value_adapter<long>(v);
+}
+
+inline value_adapter<long> make_adapter(long v)
+{
+    return value_adapter<long>(v);
+}
+
+inline value_adapter<double> make_adapter(double v)
+{
+    return value_adapter<double>(v);
+}
+
+
 
 template <typename T>
 class vector_adapter

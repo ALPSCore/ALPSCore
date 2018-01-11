@@ -189,6 +189,9 @@ public:
     template <typename Strategy=circular_var>
     column<typename bind<Strategy,T>::cov_type> cov() const;
 
+    /** Return standard error of the mean */
+    column<typename bind<circular_var,T>::var_type> stderror() const;
+
     /** Return backend object used for storing estimands */
     const batch_data<T> &store() const { return *store_; }
 
@@ -199,7 +202,7 @@ public:
     void reduce(const reducer &r) { reduce(r, true, true); }
 
     /** Convert result to a permanent format (write to disk etc.) */
-    void serialize(serializer &);
+    void serialize(serializer &) const;
 
 protected:
     void reduce(const reducer &r, bool do_pre_commit, bool do_post_commit);

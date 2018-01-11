@@ -184,6 +184,14 @@ void var_result<T,Str>::reduce(const reducer &r, bool pre_commit, bool post_comm
     }
 }
 
+template <typename T, typename Str>
+void var_result<T,Str>::serialize(serializer &s) const
+{
+    internal::check_valid(*this);
+    s.write("count", make_adapter(count()));
+    s.write("mean/value", make_adapter(mean()));
+    s.write("mean/error", make_adapter(stderror()));
+}
 
 template class var_result<double>;
 template class var_result<std::complex<double>, circular_var>;

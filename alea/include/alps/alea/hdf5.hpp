@@ -26,6 +26,7 @@ std::string join_paths(const std::string &base, const std::string &rel)
 }
 
 class hdf5_serializer
+    : public serializer
 {
 public:
     hdf5_serializer(hdf5::archive &ar, const std::string &path)
@@ -33,25 +34,29 @@ public:
         , path_(path)
     { }
 
-    void write(const std::string &key, computed<double> &value) {
+    void write(const std::string &key, const computed<double> &value) {
         do_write(key, value);
     }
 
-    void write(const std::string &key, computed<std::complex<double> > &value) {
+    void write(const std::string &key, const computed<std::complex<double> > &value) {
         do_write(key, value);
     }
 
-    void write(const std::string &key, computed<complex_op<double> > &value) {
+    void write(const std::string &key, const computed<complex_op<double> > &value) {
         do_write(key, value);
     }
 
-    void write(const std::string &key, computed<long> &value) {
+    void write(const std::string &key, const computed<long> &value) {
+        do_write(key, value);
+    }
+
+    void write(const std::string &key, const computed<unsigned long> &value) {
         do_write(key, value);
     }
 
 protected:
     template <typename T>
-    void do_write(const std::string &relpath, computed<T> &data)
+    void do_write(const std::string &relpath, const computed<T> &data)
     {
         // Look at:
         // void archive::write(std::string path, T const * value,

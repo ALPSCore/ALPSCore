@@ -184,7 +184,7 @@ public:
     void reduce(const reducer &r) { return reduce(r, true, true); }
 
     /** Convert result to a permanent format (write to disk etc.) */
-    void serialize(serializer &);
+    void serialize(serializer &) const;
 
 protected:
     void reduce(const reducer &, bool do_pre_commit, bool do_post_commit);

@@ -184,6 +184,17 @@ column<typename bind<Str,T>::cov_type> batch_result<T>::cov() const
 }
 
 template <typename T>
+column<typename bind<circular_var,T>::var_type> batch_result<T>::stderror() const
+{
+    var_acc<T, circular_var> aux_acc(store_->size());
+    for (size_t i = 0; i != store_->num_batches(); ++i) {
+        aux_acc.add(make_adapter(store_->batch().col(i)), store_->count()(i),
+                    nullptr);
+    }
+    return aux_acc.finalize().stderror();
+}
+
+template <typename T>
 void batch_result<T>::reduce(const reducer &r, bool pre_commit, bool post_commit)
 {
     // FIXME this is bad since it mixes bins
@@ -200,6 +211,20 @@ void batch_result<T>::reduce(const reducer &r, bool pre_commit, bool post_commit
         if (!setup.have_result)
             store_.reset();   // free data
     }
+}
+
+template <typename T>
+void batch_result<T>::serialize(serializer &s) const
+{
+    internal::check_valid(*this);
+    s.write("count", make_adapter(count()));
+    s.write("mean/value", make_adapter(mean()));
+    s.write("mean/error", make_adapter(stderror()));
+
+    // FIXME
+    typename eigen<T>::col_map batch_map(store_->batch().data(), store_->batch().size());
+    s.write("batch/count", make_adapter(store_->count().transpose()));
+    s.write("batch/sum", make_adapter(batch_map));
 }
 
 template column<double> batch_result<double>::var<circular_var>() const;

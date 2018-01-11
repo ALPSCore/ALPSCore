@@ -169,7 +169,7 @@ public:
     void reduce(const reducer &r) { reduce(r, true, true); }
 
     /** Convert result to a permanent format (write to disk etc.) */
-    void serialize(serializer &);
+    void serialize(serializer &) const;
 
     size_t find_level(size_t min_samples) const;
 

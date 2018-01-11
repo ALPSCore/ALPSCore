@@ -162,6 +162,22 @@ void autocorr_result<T>::reduce(const reducer &r, bool pre_commit, bool post_com
     }
 }
 
+template <typename T>
+void autocorr_result<T>::serialize(serializer &s) const
+{
+    internal::check_valid(*this);
+    s.write("count", make_adapter(count()));
+    s.write("mean/value", make_adapter(mean()));
+    s.write("mean/error", make_adapter(stderror()));
+
+    typename eigen<var_type>::matrix level_var(size(), nlevel());
+    for (size_t l = 0; l != nlevel(); ++l)
+        level_var.col(l) = level_[l].var();
+
+    typename eigen<var_type>::col_map var_map(level_var.data(), level_var.size());
+    s.write("levels/var/value", make_adapter(var_map));
+}
+
 template class autocorr_result<double>;
 template class autocorr_result<std::complex<double> >;
 
