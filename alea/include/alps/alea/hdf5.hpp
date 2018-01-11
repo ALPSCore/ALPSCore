@@ -12,6 +12,10 @@
 
 #include <alps/hdf5/archive.hpp>
 
+//FIXME
+#include <iostream>
+#include <iterator>
+
 namespace alps { namespace alea {
 
 std::string join_paths(const std::string &base, const std::string &rel)
@@ -67,14 +71,22 @@ protected:
         std::string path = join_paths(path_, relpath);
 
         std::vector<size_t> shape = data.shape();
-        std::vector<size_t> offset(0, shape.size());
-        std::vector<size_t> chunk(1, shape.size());
+        std::vector<size_t> offset(shape.size(), 0);
+        std::vector<size_t> chunk = shape;
         size_t size = std::accumulate(shape.begin(), shape.end(), 1,
                                       std::multiplies<size_t>());
+
+        std::cerr << "X" << size << std::endl;
+        std::copy(shape.begin(), shape.end(), std::ostream_iterator<size_t>(std::cerr, ","));
+        std::cerr << std::endl;
+
 
         // TODO: use HDF5 dataspaces to avoid copy
         std::vector<T> buffer(size, 0);
         data.add_to(sink<T>(&buffer[0], size));
+
+        std::copy(buffer.begin(), buffer.end(), std::ostream_iterator<T>(std::cerr, ","));
+        std::cerr << std::endl;
 
         (*archive_).write(path, &buffer[0], shape, chunk, offset);
     }
