@@ -26,13 +26,13 @@ void cov_data<T,Str>::convert_to_mean()
 {
     data_ /= count_;
     data2_ -= count_ * internal::outer<bind<Str, T> >(data_, data_);
-    data2_ *= internal::make_eigen_scalar(1/(count_ - 1.0));
+    data2_ = data2_ / (count_ - 1.0);
 }
 
 template <typename T, typename Str>
 void cov_data<T,Str>::convert_to_sum()
 {
-    data2_ *= internal::make_eigen_scalar(count_ - 1.0);
+    data2_ = data2_ * (count_ - 1.0);
     data2_ += count_ * internal::outer<bind<Str, T> >(data_, data_);
     data_ *= count_;
 }

@@ -56,14 +56,4 @@ typename traits<Acc>::result_type result(const Acc &acc)
     return result;
 }
 
-inline Eigen::Matrix<double,1,1> make_eigen_scalar(double x)
-{
-    // FIXME: this works around the fact that the following snippet chokes:
-    //
-    //     Eigen::Matrix<complex_op<double> > m;
-    //     m *= 1.0;    // wants to cast double to complex_op
-    //
-    return Eigen::Matrix<double,1,1>(x);
-}
-
 }}} /* namespace alps::alea::internal */
