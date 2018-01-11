@@ -21,6 +21,13 @@ if (DocumentationOnly)
   return()
 endif()
 
+# A gentle reminder for a developer that uses -DCMAKE_BUILD_TYPE=Debug
+# (does not really try to analyze compilation flags)
+string(TOUPPER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE)
+if (CMAKE_BUILD_TYPE STREQUAL "DEBUG")
+  message("Warning: Debug build of GF module may produce slow code. Do not use in production.")
+endif()
+
 add_this_package(mesh gf)
 
 add_boost()
