@@ -5,8 +5,9 @@
 cmake_minimum_required (VERSION 3.1)
 project(ALPSCore C CXX)
 
-# TODO: should probably a bit more fine-grained
-set(CMAKE_CXX_STANDARD 11)
+# # TODO: should probably a bit more fine-grained
+# # Is expected to be taken care of by ALPS_CXX_STD, which works transitively
+# set(CMAKE_CXX_STANDARD 11)
 
 # include cmake scripts from common/cmake directory
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/./common/cmake)
