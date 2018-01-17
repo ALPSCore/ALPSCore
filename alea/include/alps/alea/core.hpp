@@ -255,6 +255,8 @@ struct serializer
 
     virtual void write(const std::string &key, const computed<long> &value) = 0;
 
+    virtual void write(const std::string &key, const computed<unsigned long> &value) = 0;
+
     virtual ~serializer() { }
 };
 

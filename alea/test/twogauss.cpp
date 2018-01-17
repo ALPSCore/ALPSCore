@@ -4,6 +4,8 @@
 #include <alps/alea/autocorr.hpp>
 #include <alps/alea/batch.hpp>
 
+#include <alps/alea/hdf5.hpp>
+
 #include "gtest/gtest.h"
 #include "dataset.hpp"
 
@@ -84,6 +86,14 @@ public:
         this->fill();
         test_result();    // keeps mean constant
     }
+
+    void test_serialize()
+    {
+        alps::hdf5::archive ar("twogauss.hdf5", "w");
+        alps::alea::hdf5_serializer ser(ar, "");
+        result_type res = this->acc().finalize();
+        res.serialize(ser);
+    }
 };
 
 typedef ::testing::Types<
@@ -101,6 +111,8 @@ TYPED_TEST(twogauss_mean_case, test_result) { this->test_result(); }
 TYPED_TEST(twogauss_mean_case, test_finalize) { this->test_finalize(); }
 
 TYPED_TEST(twogauss_mean_case, test_lifecycle) { this->test_lifecycle(); }
+
+TYPED_TEST(twogauss_mean_case, test_serialize) { this->test_serialize(); }
 
 // VARIANCE
 

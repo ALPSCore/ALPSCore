@@ -99,7 +99,7 @@ public:
     size_t size() const { return size_; }
 
     /** Add computed vector to the accumulator */
-    mean_acc &operator<<(const computed<T> &source);
+    mean_acc &operator<<(const computed<T> &src) { add(src, 1); return *this; }
 
     /** Add Eigen vector-valued expression to accumulator */
     template <typename Derived>
@@ -125,6 +125,8 @@ public:
     const mean_data<T> &store() const { return *store_; }
 
 protected:
+    void add(const computed<T> &source, size_t count);
+
     void finalize_to(mean_result<T> &result);
 
 private:
@@ -182,7 +184,7 @@ public:
     void reduce(const reducer &r) { return reduce(r, true, true); }
 
     /** Convert result to a permanent format (write to disk etc.) */
-    void serialize(serializer &);
+    void serialize(serializer &) const;
 
 protected:
     void reduce(const reducer &, bool do_pre_commit, bool do_post_commit);

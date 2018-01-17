@@ -6,9 +6,10 @@
 namespace alps { namespace alea {
 
 template <typename T, typename Str>
-var_data<T,Str>::var_data(size_t size)
+var_data<T,Str>::var_data(size_t size, size_t batch_size)
     : data_(size)
     , data2_(size)
+    , batch_size_(batch_size)
 {
     reset();
 }
@@ -26,13 +27,13 @@ void var_data<T,Str>::convert_to_mean()
 {
     data_ /= count_;
     data2_ -= count_ * data_.cwiseAbs2();
-    data2_ /= count_ - 1;
+    data2_ = data2_ / (count_ - 1.0);
 }
 
 template <typename T, typename Str>
 void var_data<T,Str>::convert_to_sum()
 {
-    data2_ *= count_ - 1;
+    data2_ = data2_ * (count_ - 1.0);
     data2_ += count_ * data_.cwiseAbs2();
     data_ *= count_;
 }
@@ -44,9 +45,8 @@ template class var_data<std::complex<double>, elliptic_var>;
 
 template <typename T, typename Str>
 var_acc<T,Str>::var_acc(size_t size, size_t bundle_size)
-    : store_(new var_data<T,Str>(size))
+    : store_(new var_data<T,Str>(size, bundle_size))
     , current_(size, bundle_size)
-    , uplevel_(nullptr)
 { }
 
 // We need an explicit copy constructor, as we need to copy the data
@@ -54,7 +54,6 @@ template <typename T, typename Str>
 var_acc<T,Str>::var_acc(const var_acc &other)
     : store_(other.store_ ? new var_data<T,Str>(*other.store_) : nullptr)
     , current_(other.current_)
-    , uplevel_(other.uplevel_)
 { }
 
 template <typename T, typename Str>
@@ -62,7 +61,6 @@ var_acc<T,Str> &var_acc<T,Str>::operator=(const var_acc &other)
 {
     store_.reset(other.store_ ? new var_data<T,Str>(*other.store_) : nullptr);
     current_ = other.current_;
-    uplevel_ = other.uplevel_;
     return *this;
 }
 
@@ -73,27 +71,27 @@ void var_acc<T,Str>::reset()
     if (valid())
         store_->reset();
     else
-        store_.reset(new var_data<T,Str>(size()));
+        store_.reset(new var_data<T,Str>(size(), batch_size()));
 }
 
 template <typename T, typename Str>
-var_acc<T,Str> &var_acc<T,Str>::operator<<(const computed<value_type> &source)
+void var_acc<T,Str>::add(const computed<T> &source, size_t count,
+                         var_acc<T,Str> *cascade)
 {
     internal::check_valid(*this);
     source.add_to(sink<T>(current_.sum().data(), current_.size()));
-    ++current_.count();
+    current_.count() += count;
 
     if (current_.is_full())
-        add_bundle();
-    return *this;
+        add_bundle(cascade);
 }
 
 template <typename T, typename Str>
 var_result<T,Str> var_acc<T,Str>::result() const
 {
     internal::check_valid(*this);
-    var_result<T,Str> result(*store_);
-    result.store_->convert_to_mean();
+    var_result<T,Str> result;
+    var_acc<T,Str>(*this).finalize_to(result, nullptr);
     return result;
 }
 
@@ -101,33 +99,41 @@ template <typename T, typename Str>
 var_result<T,Str> var_acc<T,Str>::finalize()
 {
     var_result<T,Str> result;
-    finalize_to(result);
+    finalize_to(result, nullptr);
     return result;
 }
 
 template <typename T, typename Str>
-void var_acc<T,Str>::finalize_to(var_result<T,Str> &result)
+void var_acc<T,Str>::finalize_to(var_result<T,Str> &result, var_acc<T,Str> *cascade)
 {
     internal::check_valid(*this);
+
+    // add leftover data to the variance.  The upwards propagation must be
+    // handled by going through a hierarchy in ascending order.
+    if (current_.count() != 0)
+        add_bundle(cascade);
+
+    // data swap
     result.store_.reset();
     result.store_.swap(store_);
+
+    // post-processing to result
     result.store_->convert_to_mean();
 }
 
 template <typename T, typename Str>
-void var_acc<T,Str>::add_bundle()
+void var_acc<T,Str>::add_bundle(var_acc<T,Str> *cascade)
 {
     typename bind<Str, T>::abs2_op abs2;
 
     // add batch to average and squared
-    current_.sum() /= current_.count();
     store_->data().noalias() += current_.sum();
     store_->data2().noalias() += current_.sum().unaryExpr(abs2);
-    store_->count() += 1;
+    store_->count() += current_.count();
 
     // add batch mean also to uplevel
-    if (uplevel_ != nullptr)
-        (*uplevel_) << current_.sum();
+    if (cascade != nullptr)
+        cascade->add(make_adapter(current_.sum()), current_.count(), cascade+1);
 
     current_.reset();
 }
@@ -178,6 +184,14 @@ void var_result<T,Str>::reduce(const reducer &r, bool pre_commit, bool post_comm
     }
 }
 
+template <typename T, typename Str>
+void var_result<T,Str>::serialize(serializer &s) const
+{
+    internal::check_valid(*this);
+    s.write("count", make_adapter(count()));
+    s.write("mean/value", make_adapter(mean()));
+    s.write("mean/error", make_adapter(stderror()));
+}
 
 template class var_result<double>;
 template class var_result<std::complex<double>, circular_var>;

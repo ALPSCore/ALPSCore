@@ -16,6 +16,8 @@
 namespace alps { namespace alea {
     template <typename T> class autocorr_acc;
     template <typename T> class autocorr_result;
+
+    template <typename T> class batch_result;
 }}
 
 // Actual declarations
@@ -25,15 +27,15 @@ namespace alps { namespace alea {
 /**
  * Accumulator for the integrated autocorrelation time.
  *
- * The integrated autocorrelation time `tau_int` of a time series is defined
- * as the large-n limit of:
+ * The integrated autocorrelation time `tau_int` of a time series can be
+ * defined as the large-n limit of:
  *
- *                   1 + 2 * tau_int = n * var(n) / var(1),                (A)
+ *                   1 + 2 * tau_int = var(n) / var(1),                    (A)
  *
- * where `var(n)` is the sample variance obtained when averaging over batches
- * batches, each batch being the mean of `n` consecutive elements of the series.
- * Given a simulation of `N` steps, its corresponding squared error `sq_error`
- * must thus be corrected as:
+ * where `var(n)` is the sample variance obtained when averaging over batches,
+ * each batch being the sum of `n` consecutive elements of the series. Given a
+ * simulation of `N` steps, its corresponding squared error of the mean
+ * `sq_error` must thus be corrected as:
  *
  *                sq_error = (1 + 2 * tau_int) * var(1) / N                (B)
  *
@@ -72,7 +74,7 @@ public:
     size_t size() const { return size_; }
 
     /** Add computed vector to the accumulator */
-    autocorr_acc &operator<<(const computed<T> &source);
+    autocorr_acc &operator<<(const computed<T> &src) { add(src, 1); return *this; }
 
     /** Add Eigen vector-valued expression to accumulator */
     template <typename Derived>
@@ -99,6 +101,8 @@ public:
     const level_acc_type &level(size_t i) const { return level_[i]; }
 
 protected:
+    void add(const computed<T> &source, size_t count);
+
     void add_level();
 
     void finalize_to(autocorr_result<T> &result);
@@ -106,6 +110,8 @@ protected:
 private:
     size_t size_, batch_size_, count_, nextlevel_, granularity_;
     std::vector<level_acc_type> level_;
+
+    friend class batch_result<T>;
 };
 
 template <typename T>
@@ -163,7 +169,7 @@ public:
     void reduce(const reducer &r) { reduce(r, true, true); }
 
     /** Convert result to a permanent format (write to disk etc.) */
-    void serialize(serializer &);
+    void serialize(serializer &) const;
 
     size_t find_level(size_t min_samples) const;
 
@@ -179,7 +185,7 @@ protected:
     void reduce(const reducer &r, bool do_pre_commit, bool do_post_commit);
 
 private:
-    const static size_t default_min_samples = 256;
+    const static size_t DEFAULT_MIN_SAMPLES = 1024;
     std::vector<level_result_type> level_;
 
     friend class autocorr_acc<T>;

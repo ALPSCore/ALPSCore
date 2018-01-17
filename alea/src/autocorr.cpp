@@ -28,38 +28,32 @@ void autocorr_acc<T>::reset()
 template <typename T>
 void autocorr_acc<T>::add_level()
 {
-    // add a new level on top and push back the
-    level_.push_back(var_acc<T>(size(), granularity_));
+    // add a new level on top and push back the nextlevel
     nextlevel_ *= granularity_;
-
-    // make sure all the links still work (vector may reallocate elements)
-    for (unsigned i = 0; i != level_.size() - 1; ++i)
-        level_[i].uplevel(level_[i+1]);
+    level_.push_back(var_acc<T>(size(), nextlevel_));
 }
 
 template <typename T>
-autocorr_acc<T> &autocorr_acc<T>::operator<<(const computed<T> &source)
+void autocorr_acc<T>::add(const computed<T> &source, size_t count)
 {
     assert(count_ < nextlevel_);
     internal::check_valid(*this);
 
     // if we require next level, then do it!
-    if(++count_ == nextlevel_)
+    count_ += count;
+    if(count_ >= nextlevel_)
         add_level();
 
     // now add current element at the bottom and watch it propagate
-    level_[0] << source;
-    return *this;
+    level_[0].add(source, count, level_.data() + 1);
 }
 
 template <typename T>
 autocorr_result<T> autocorr_acc<T>::result() const
 {
     internal::check_valid(*this);
-
     autocorr_result<T> result;
-    for (size_t i = 0; i != level_.size(); ++i)
-        result.level_.push_back(level_[i].result());
+    autocorr_acc<T>(*this).finalize_to(result);
     return result;
 }
 
@@ -76,9 +70,15 @@ void autocorr_acc<T>::finalize_to(autocorr_result<T> &result)
 {
     internal::check_valid(*this);
     result.level_.resize(level_.size());
-    for (size_t i = 0; i != level_.size(); ++i)
-        level_[i].finalize_to(result.level_[i]);
 
+    // Finalize each level.
+    // NOTE: it is imperative to do this in bottom-up order, since it collects
+    //       the left-over data in the current batch from the low-lying levels
+    //       and propagates them upwards.
+    for (size_t i = 0; i != level_.size() - 1; ++i)
+        level_[i].finalize_to(result.level_[i], level_.data() + i + 1);
+
+    level_[nlevel() - 1].finalize_to(result.level_[nlevel() - 1], nullptr);
     level_.clear();     // signal invalidity
 }
 
@@ -89,8 +89,7 @@ template class autocorr_acc<std::complex<double> >;
 template <typename T>
 size_t autocorr_result<T>::batch_size(size_t i) const
 {
-    // This is a little hairy, but it works in practice
-    return level_[0].count() / level_[i].count();
+    return level_[i].batch_size();
 }
 
 template <typename T>
@@ -98,7 +97,7 @@ size_t autocorr_result<T>::find_level(size_t min_samples) const
 {
     // TODO: this can be done in O(1)
     for (unsigned i = nlevel(); i != 0; --i) {
-        if (level(i - 1).count() >= min_samples)
+        if (level(i-1).count() / level(i-1).batch_size() >= min_samples)
             return i - 1;
     }
     return 0;
@@ -107,17 +106,17 @@ size_t autocorr_result<T>::find_level(size_t min_samples) const
 template <typename T>
 column<typename autocorr_result<T>::var_type> autocorr_result<T>::var() const
 {
-    size_t lvl = find_level(default_min_samples);
+    size_t lvl = find_level(DEFAULT_MIN_SAMPLES);
 
-    // The factor comes from the fact that we accumulate means of batch_size
+    // The factor comes from the fact that we accumulate sums of batch_size
     // elements, and therefore we get this by the law of large numbers
-    return batch_size(lvl) * level_[lvl].var();
+    return level_[lvl].var();
 }
 
 template <typename T>
 column<typename autocorr_result<T>::var_type> autocorr_result<T>::stderror() const
 {
-    size_t lvl = find_level(default_min_samples);
+    size_t lvl = find_level(DEFAULT_MIN_SAMPLES);
 
     // Standard error of the mean has another 1/N (but at the level!)
     double fact = 1. * batch_size(lvl) / level_[lvl].count();
@@ -127,15 +126,15 @@ column<typename autocorr_result<T>::var_type> autocorr_result<T>::stderror() con
 template <typename T>
 column<typename autocorr_result<T>::var_type> autocorr_result<T>::tau() const
 {
-    size_t lvl = find_level(default_min_samples);
+    size_t lvl = find_level(DEFAULT_MIN_SAMPLES);
     const column<var_type> &var0 = level_[0].var();
     const column<var_type> &varn = level_[lvl].var();
 
     // The factor `n` comes from the fact that the variance of an n-element mean
     // estimator has tighter variance by the CLT; it can be dropped if one
     // performs the batch sum rather than the batch mean.
-    double fact = batch_size(lvl) / 2 * batch_size(0);
-    return (fact * varn.array()/ var0.array() - 0.5).matrix();
+    //double fact = 0.5 * batch_size(0) / batch_size(lvl);
+    return (0.5 * varn.array() / var0.array() - 0.5).matrix();
 }
 
 template <typename T>
@@ -161,6 +160,22 @@ void autocorr_result<T>::reduce(const reducer &r, bool pre_commit, bool post_com
         if (!setup.have_result)
             level_.clear();         // invalidate
     }
+}
+
+template <typename T>
+void autocorr_result<T>::serialize(serializer &s) const
+{
+    internal::check_valid(*this);
+    s.write("count", make_adapter(count()));
+    s.write("mean/value", make_adapter(mean()));
+    s.write("mean/error", make_adapter(stderror()));
+
+    typename eigen<var_type>::matrix level_var(size(), nlevel());
+    for (size_t l = 0; l != nlevel(); ++l)
+        level_var.col(l) = level_[l].var();
+
+    typename eigen<var_type>::col_map var_map(level_var.data(), level_var.size());
+    s.write("levels/var/value", make_adapter(var_map));
 }
 
 template class autocorr_result<double>;

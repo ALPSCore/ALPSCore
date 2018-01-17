@@ -41,6 +41,9 @@ namespace alps { namespace alea {
  * (The elements are laid out in that way as well.) If one identifies the
  * imaginary part of the result with the prefactor of 'j', then `complex_op`
  * is equivalent to a quarternion `a + b*i + c*j + d*k`.
+ *
+ * Note that `dot(a, b)` must be used to multiply two complex_op instances and
+ * `solve(a, b)` for division because multiplication is not commutative.
  */
 template <typename T>
 class complex_op
@@ -102,10 +105,6 @@ public:
         return *this;
     }
 
-    complex_op &operator*=(complex_op x) { return *this = *this * x; }
-
-    complex_op &operator/=(complex_op x) { return *this = *this / x; }
-
     complex_op &operator*=(double x)
     {
         vals_[0][0] *= x;
@@ -132,7 +131,19 @@ public:
         return complex_op(l) -= r;
     }
 
-    friend complex_op operator*(complex_op l, complex_op r)
+    friend complex_op operator*(complex_op x, double f)
+    {
+        return complex_op(x) *= f;
+    }
+
+    friend complex_op operator*(double f, complex_op x) { return x * f; }
+
+    friend complex_op operator/(complex_op x, double f)
+    {
+        return complex_op(x) /= f;
+    }
+
+    friend complex_op dot(complex_op l, complex_op r)
     {
         // Matrix multiplication of two 2x2 matrices
         return complex_op(l.rere() * r.rere() + l.reim() * r.imre(),
@@ -141,27 +152,9 @@ public:
                           l.imre() * r.reim() + l.imim() * r.imim());
     }
 
-    friend complex_op operator*(complex_op x, double f)
+    friend complex_op solve(complex_op l, complex_op r)
     {
-        return complex_op(x) *= f;
-    }
-
-    friend complex_op operator*(double f, complex_op x) { return x * f; }
-
-    friend std::complex<T> operator*(complex_op op, std::complex<T> x)
-    {
-        return std::complex<T>(op.rere() * x.real() + op.reim() * x.imag(),
-                               op.imre() * x.real() + op.imim() * x.imag());
-    }
-
-    friend complex_op operator/(complex_op l, complex_op r)
-    {
-        return l * inv(r);
-    }
-
-    friend complex_op operator/(complex_op x, double f)
-    {
-        return complex_op(x) /= f;
+        return dot(l, inv(r));
     }
 
     friend bool operator==(complex_op l, complex_op r)

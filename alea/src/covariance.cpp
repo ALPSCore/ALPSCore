@@ -5,9 +5,10 @@
 namespace alps { namespace alea {
 
 template <typename T, typename Str>
-cov_data<T,Str>::cov_data(size_t size)
+cov_data<T,Str>::cov_data(size_t size, size_t batch_size)
     : data_(size)
     , data2_(size, size)
+    , batch_size_(batch_size)
 {
     reset();
 }
@@ -25,13 +26,13 @@ void cov_data<T,Str>::convert_to_mean()
 {
     data_ /= count_;
     data2_ -= count_ * internal::outer<bind<Str, T> >(data_, data_);
-    data2_ /= count_ - 1;
+    data2_ = data2_ / (count_ - 1.0);
 }
 
 template <typename T, typename Str>
 void cov_data<T,Str>::convert_to_sum()
 {
-    data2_ *= count_ - 1;
+    data2_ = data2_ * (count_ - 1.0);
     data2_ += count_ * internal::outer<bind<Str, T> >(data_, data_);
     data_ *= count_;
 }
@@ -43,9 +44,8 @@ template class cov_data<std::complex<double>, elliptic_var>;
 
 template <typename T, typename Str>
 cov_acc<T,Str>::cov_acc(size_t size, size_t bundle_size)
-    : store_(new cov_data<T,Str>(size))
+    : store_(new cov_data<T,Str>(size, bundle_size))
     , current_(size, bundle_size)
-    , uplevel_(nullptr)
 { }
 
 // We need an explicit copy constructor, as we need to copy the data
@@ -53,7 +53,6 @@ template <typename T, typename Str>
 cov_acc<T,Str>::cov_acc(const cov_acc &other)
     : store_(other.store_ ? new cov_data<T,Str>(*other.store_) : nullptr)
     , current_(other.current_)
-    , uplevel_(other.uplevel_)
 { }
 
 template <typename T, typename Str>
@@ -61,7 +60,6 @@ cov_acc<T,Str> &cov_acc<T,Str>::operator=(const cov_acc &other)
 {
     store_.reset(other.store_ ? new cov_data<T,Str>(*other.store_) : nullptr);
     current_ = other.current_;
-    uplevel_ = other.uplevel_;
     return *this;
 }
 
@@ -72,19 +70,18 @@ void cov_acc<T,Str>::reset()
     if (valid())
         store_->reset();
     else
-        store_.reset(new cov_data<T,Str>(size()));
+        store_.reset(new cov_data<T,Str>(size(), batch_size()));
 }
 
 template <typename T, typename Str>
-cov_acc<T,Str> &cov_acc<T,Str>::operator<<(const computed<value_type> &source)
+void cov_acc<T,Str>::add(const computed<value_type> &source, size_t count)
 {
     internal::check_valid(*this);
     source.add_to(sink<T>(current_.sum().data(), current_.size()));
-    ++current_.count();
+    current_.count() += count;
 
     if (current_.is_full())
         add_bundle();
-    return *this;
 }
 
 template <typename T, typename Str>
@@ -92,7 +89,7 @@ cov_result<T,Str> cov_acc<T,Str>::result() const
 {
     internal::check_valid(*this);
     cov_result<T,Str> result(*store_);
-    result.store_->convert_to_mean();
+    cov_acc<T,Str>(*this).finalize_to(result);
     return result;
 }
 
@@ -108,8 +105,16 @@ template <typename T, typename Str>
 void cov_acc<T,Str>::finalize_to(cov_result<T,Str> &result)
 {
     internal::check_valid(*this);
+
+    // add leftover data to the covariance.
+    if (current_.count() != 0)
+        add_bundle();
+
+    // swap data with result
     result.store_.reset();
     result.store_.swap(store_);
+
+    // post-process data
     result.store_->convert_to_mean();
 }
 
@@ -117,16 +122,12 @@ template <typename T, typename Str>
 void cov_acc<T,Str>::add_bundle()
 {
     // add batch to average and squared
-    current_.sum() /= current_.count();
     store_->data().noalias() += current_.sum();
     store_->data2().noalias() +=
                 internal::outer<bind<Str, T> >(current_.sum(), current_.sum());
-    store_->count() += 1;
+    store_->count() += current_.count();
 
-    // add batch mean also to uplevel
-    if (uplevel_ != nullptr)
-        (*uplevel_) << current_.sum();
-
+    // TODO: add possibility for uplevel also here
     current_.reset();
 }
 
@@ -176,6 +177,20 @@ void cov_result<T,Str>::reduce(const reducer &r, bool pre_commit, bool post_comm
         else
             store_.reset();   // free data
     }
+}
+
+template <typename T, typename Str>
+void cov_result<T,Str>::serialize(serializer &s) const
+{
+    internal::check_valid(*this);
+    s.write("count", make_adapter(count()));
+    s.write("mean/value", make_adapter(mean()));
+    s.write("mean/error", make_adapter(stderror()));
+
+    // FIXME: flattened
+    typename eigen<cov_type>::matrix cov_mat = cov();
+    typename eigen<cov_type>::col_map cov_map(cov_mat.data(), cov_mat.size());
+    s.write("cov/value", make_adapter(cov_map));
 }
 
 template class cov_result<double>;

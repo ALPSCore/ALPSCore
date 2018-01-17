@@ -39,4 +39,21 @@ T call_vargs(std::function<T()> func, const T *)
     return func();
 }
 
-}}}
+template <typename Acc>
+typename traits<Acc>::result_type finalize(Acc &acc)
+{
+    typename traits<Acc>::result_type result;
+    acc.finalize_to(result);
+    return result;
+}
+
+template <typename Acc>
+typename traits<Acc>::result_type result(const Acc &acc)
+{
+    typename traits<Acc>::result_type result;
+    Acc copy = acc;
+    copy.finalize_to(result);
+    return result;
+}
+
+}}} /* namespace alps::alea::internal */
