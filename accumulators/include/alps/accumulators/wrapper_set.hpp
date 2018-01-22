@@ -12,12 +12,14 @@
 #include <alps/hdf5/archive.hpp>
 
 #include <boost/shared_ptr.hpp>
+#include <mutex>
+
 
 namespace alps {
     namespace accumulators {
 
          namespace detail {
-            
+
             template<typename T> struct serializable_type {
                 virtual ~serializable_type() {}
                 virtual std::size_t rank() const = 0;
@@ -37,7 +39,7 @@ namespace alps {
                 }
             };
 
-            void register_predefined_serializable_type();
+            void register_predefined_serializable_types();
 
         }
 
@@ -45,7 +47,7 @@ namespace alps {
 
             template <typename T> class wrapper_set {
 
-                public: 
+                public:
                     typedef T value_type;
 
                     typedef typename std::map<std::string, boost::shared_ptr<T> >::iterator iterator;
@@ -66,8 +68,10 @@ namespace alps {
 
 
                     wrapper_set() {
-                        if (m_types.empty())
-                            detail::register_predefined_serializable_type();
+                        std::lock_guard<std::mutex> guard(m_types_mutex);
+                        if (m_types.empty()) {
+                            detail::register_predefined_serializable_types();
+                        }
                     }
                     wrapper_set(wrapper_set const &) {} // TODO: how do we handle that?
 
@@ -86,7 +90,7 @@ namespace alps {
                     bool has(std::string const & name) const{
                         return m_storage.find(name) != m_storage.end();
                     }
-                    
+
                     void insert(std::string const & name, boost::shared_ptr<T> ptr){
                         if (has(name))
                             throw std::out_of_range("There exists already an accumulator with the name: " + name + ALPS_STACKTRACE);
@@ -107,6 +111,7 @@ namespace alps {
                     }
 
                     void load(hdf5::archive & ar) {
+                        std::lock_guard<std::mutex> guard(m_types_mutex);
                         std::vector<std::string> list = ar.list_children("");
                         for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
                             ar.set_context(*it);
@@ -125,19 +130,25 @@ namespace alps {
                         }
                     }
 
-                    template<typename A> static void register_serializable_type(bool known = false) {
-                        if (!known && m_types.empty())
-                            detail::register_predefined_serializable_type();
+                    /// Register a serializable type, without locking
+                    template<typename A> static void register_serializable_type_nolock() {
                         m_types.push_back(boost::shared_ptr<detail::serializable_type<T> >(new detail::serializable_type_impl<T, A>));
                         for (std::size_t i = m_types.size(); i > 1 && m_types[i - 1]->rank() > m_types[i - 2]->rank(); --i)
                             m_types[i - 1].swap(m_types[i - 2]);
+                    }
+
+                    /// Register a user-defined serializable type
+                    template<typename A> static void register_serializable_type() {
+                        std::lock_guard<std::mutex> guard(m_types_mutex);
+                        if (m_types.empty()) detail::register_predefined_serializable_types();
+                        register_serializable_type_nolock<A>();
                     }
 
                     /// Merge another accumulator/result set into this one. @param rhs the set to merge.
                     void merge(wrapper_set const &rhs) {
                         iterator it1 = this->begin();
                         const_iterator it2 = rhs.begin();
-                        for(; it1 != end(); ++it1, ++it2) { 
+                        for(; it1 != end(); ++it1, ++it2) {
                             if (it1->first != it2 ->first) throw std::logic_error("Can't merge" + it1->first + " and " + it2->first);
                             it1->second->merge(*(it2->second));
                         }
@@ -152,20 +163,22 @@ namespace alps {
                         for(iterator it = begin(); it != end(); ++it)
                             it->second->reset();
                     }
-                    
+
                     iterator begin() { return m_storage.begin(); }
                     iterator end() { return m_storage.end(); }
 
                     const_iterator begin() const { return m_storage.begin(); }
                     const_iterator end() const { return m_storage.end(); }
-                    
+
                     void clear() { m_storage.clear(); }
 
                 private:
                     std::map<std::string, boost::shared_ptr<T> > m_storage;
                     static std::vector<boost::shared_ptr<detail::serializable_type<T> > > m_types;
+                    static std::mutex m_types_mutex;
             };
             template<typename T> std::vector<boost::shared_ptr<detail::serializable_type<T> > > wrapper_set<T>::m_types;
+            template<typename T> std::mutex wrapper_set<T>::m_types_mutex;
 
             template<typename T> inline std::ostream & operator<<(std::ostream & os, const wrapper_set<T> & arg) {
                 arg.print(os);

@@ -10,10 +10,10 @@ namespace alps {
     namespace accumulators {
         namespace detail {
 
-            void register_predefined_serializable_type() {
+            void register_predefined_serializable_types() {
                 #define ALPS_ACCUMULATOR_REGISTER_ACCUMULATOR(A)                                                    \
-                    accumulator_set::register_serializable_type<A::accumulator_type>(true);                         \
-                    result_set::register_serializable_type<A::result_type>(true);
+                    accumulator_set::register_serializable_type_nolock<A::accumulator_type>();                         \
+                    result_set::register_serializable_type_nolock<A::result_type>();
 
                 #define ALPS_ACCUMULATOR_REGISTER_TYPE(T)                                                           \
                     ALPS_ACCUMULATOR_REGISTER_ACCUMULATOR(MeanAccumulator<T>)                                       \
@@ -21,7 +21,7 @@ namespace alps {
                     ALPS_ACCUMULATOR_REGISTER_ACCUMULATOR(LogBinningAccumulator<T>)                                 \
                     ALPS_ACCUMULATOR_REGISTER_ACCUMULATOR(FullBinningAccumulator<T>)
 
-                // TODO: ues ALPS_ACCUMULATOR_VALUE_TYPES and iterate over it
+                // TODO: use ALPS_ACCUMULATOR_VALUE_TYPES and iterate over it
                 ALPS_ACCUMULATOR_REGISTER_TYPE(float)
                 ALPS_ACCUMULATOR_REGISTER_TYPE(double)
                 ALPS_ACCUMULATOR_REGISTER_TYPE(long double)

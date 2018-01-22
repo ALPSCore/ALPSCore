@@ -29,6 +29,7 @@ set (test_src
     binop_mixed_faildemo
     single_accumulator
     autocorrelation
+    concurrent_access
     print
     scalar_result_type
     negative_error # FIXME!! Incorporate in the corresponding test
