@@ -25,7 +25,7 @@ class SingleAccumulatorTest : public ::testing::Test {
     {
         named_acc_type named_acc("accname");
         named_acc << 1.0;
-        EXPECT_EQ(1, named_acc.result()->count());
+        EXPECT_EQ(1u, named_acc.result()->count());
         EXPECT_EQ(1.0,named_acc.result()->template mean<value_type>());
     }
 
@@ -55,11 +55,11 @@ class SingleAccumulatorTest : public ::testing::Test {
         aset << named_acc;
         alps::accumulators::accumulator_wrapper& aw=aset["accname"];
         aw << 1.0;
-        
+
         alps::accumulators::result_set rset(aset);
         alps::accumulators::result_wrapper& res=rset["accname"];
-        int n=res.count();
-        EXPECT_EQ(1, n);
+        unsigned int n=res.count();
+        EXPECT_EQ(1u, n);
         EXPECT_EQ(1.0, res.mean<value_type>());
     }
 
@@ -71,8 +71,8 @@ class SingleAccumulatorTest : public ::testing::Test {
         acc_vec[0] << 1.;
 
         EXPECT_EQ(1.0, acc_vec[0].result()->template mean<value_type>());
-        EXPECT_EQ(1, acc_vec[0].result()->count());
-        EXPECT_EQ(0, acc_vec[1].result()->count()); //verify that the wrapped accumulator is not shared
+        EXPECT_EQ(1u, acc_vec[0].result()->count());
+        EXPECT_EQ(0u, acc_vec[1].result()->count()); //verify that the wrapped accumulator is not shared
     }
 };
 

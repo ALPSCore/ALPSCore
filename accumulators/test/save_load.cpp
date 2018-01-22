@@ -43,12 +43,12 @@ class AccumulatorTest : public ::testing::Test {
     typedef typename alps::accumulators::value_type<typename A::accumulator_type>::type value_type;
     typedef A accumulator_type;
 
-    int nsamples;
+    unsigned int nsamples;
     const std::string h5name;
 
     AccumulatorTest() : nsamples(0), h5name(alps::testing::temporary_filename("save_load.h5."))
     { }
-  
+
     // Add (constant) data to an accumulator
     void add_samples(alps::accumulators::accumulator_set& measurements,
                      const int howmany,
@@ -66,14 +66,14 @@ class AccumulatorTest : public ::testing::Test {
     {
         if (!results.has("my_acc")) {
             // No results implies there were no data saved
-            EXPECT_EQ(0, nsamples) << "Data generated, but no results are present";
+            EXPECT_EQ(0u, nsamples) << "Data generated, but no results are present";
             return;
         }
-        EXPECT_NE(0,nsamples) << "No data generated, but results are present";
+        EXPECT_NE(0u, nsamples) << "No data generated, but results are present";
 
         const alps::accumulators::result_wrapper& res=results["my_acc"];
         value_type xmean=res.mean<value_type>();
-        
+
         EXPECT_EQ(nsamples, res.count());
         // EXPECT_EQ(get_datum(v, (value_type*)0), xmean);
         EXPECT_TRUE(alps::testing::is_near(get_datum(v, (value_type*)0), xmean, tol));
@@ -93,15 +93,15 @@ class AccumulatorTest : public ::testing::Test {
     {
         alps::hdf5::archive ar(h5name,"w");
         ar["mydata"] << measurements;
-    }        
-  
+    }
+
     // Load measurements/results/whatever
     template <typename T>
     void load(T& measurements) const
     {
         alps::hdf5::archive ar(h5name,"w");
         ar["mydata"] >> measurements;
-    }        
+    }
 };
 
 typedef std::vector<double> doublevec;
@@ -139,7 +139,7 @@ TYPED_TEST(AccumulatorTest,SaveLoad)
     alps::accumulators::accumulator_set measurements;
     typedef typename TestFixture::accumulator_type accumulator_type;
     measurements << accumulator_type("my_acc");
-    
+
     this->add_samples(measurements, 1000, 0.5);
     this->save(measurements);
 
@@ -155,10 +155,10 @@ TYPED_TEST(AccumulatorTest,SaveLoadResults)
     alps::accumulators::accumulator_set measurements;
     typedef typename TestFixture::accumulator_type accumulator_type;
     measurements << accumulator_type("my_acc");
-    
+
     this->add_samples(measurements, 1000, 0.5);
     alps::accumulators::result_set results(measurements);
-    
+
     this->save(results);
 
     alps::accumulators::result_set new_results;
@@ -174,7 +174,7 @@ TYPED_TEST(AccumulatorTest,SaveLoadTypecheck)
     alps::accumulators::accumulator_set measurements;
     typedef typename TestFixture::accumulator_type accumulator_type;
     measurements << accumulator_type("my_acc");
-    
+
     this->add_samples(measurements, 1, 0.3);
     this->save(measurements);
 
@@ -190,10 +190,10 @@ TYPED_TEST(AccumulatorTest,SaveLoadResultsTypecheck)
     alps::accumulators::accumulator_set measurements;
     typedef typename TestFixture::accumulator_type accumulator_type;
     measurements << accumulator_type("my_acc");
-    
+
     this->add_samples(measurements, 1, 0.3);
     alps::accumulators::result_set results(measurements);
-    
+
     this->save(results);
 
     alps::accumulators::result_set new_results;
@@ -208,7 +208,7 @@ TYPED_TEST(AccumulatorTest,SaveLoadEmpty)
     alps::accumulators::accumulator_set measurements;
     typedef typename TestFixture::accumulator_type accumulator_type;
     measurements << accumulator_type("my_acc");
-    
+
     this->add_samples(measurements, 0, 0.3);
     this->save(measurements);
 
@@ -224,10 +224,10 @@ TYPED_TEST(AccumulatorTest,SaveLoadEmptyResults)
     alps::accumulators::accumulator_set measurements;
     typedef typename TestFixture::accumulator_type accumulator_type;
     measurements << accumulator_type("my_acc");
-    
+
     this->add_samples(measurements, 0, 0.5);
     alps::accumulators::result_set results(measurements);
-    
+
     this->save(results);
 
     alps::accumulators::result_set new_results;
@@ -242,7 +242,7 @@ TYPED_TEST(AccumulatorTest,SaveEmpty)
     alps::accumulators::accumulator_set measurements;
     typedef typename TestFixture::accumulator_type accumulator_type;
     measurements << accumulator_type("my_acc");
-    
+
     this->add_samples(measurements, 0, 0.3);
     this->save(measurements);
 }
@@ -253,10 +253,10 @@ TYPED_TEST(AccumulatorTest,SaveEmptyResults)
     alps::accumulators::accumulator_set measurements;
     typedef typename TestFixture::accumulator_type accumulator_type;
     measurements << accumulator_type("my_acc");
-    
+
     this->add_samples(measurements, 0, 0.5);
     alps::accumulators::result_set results(measurements);
-    
+
     this->save(results);
 }
 
@@ -266,13 +266,13 @@ TYPED_TEST(AccumulatorTest,SaveLoadAdd)
     alps::accumulators::accumulator_set measurements;
     typedef typename TestFixture::accumulator_type accumulator_type;
     measurements << accumulator_type("my_acc");
-    
+
     this->add_samples(measurements, 1000, 0.5);
     this->save(measurements);
 
     alps::accumulators::accumulator_set new_measurements;
     this->load(new_measurements);
     this->add_samples(new_measurements, 500, 0.5);
-    
+
     this->test_samples(new_measurements, 0.5, 1E-7);
 }

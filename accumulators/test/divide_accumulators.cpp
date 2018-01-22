@@ -24,7 +24,7 @@ void test_divide_accumulators_scalar(alps::accumulators::accumulator_set & measu
     double div_mean = (results[name1] / results[name2]).mean<double>();
     double div_mean2 = results[name1].mean<double>() / results[name2].mean<double>();
     std::cout << div_mean << " == " << div_mean2 << std::endl;
-    
+
     ASSERT_EQ(boost::math::isnan(div_mean), false);
     ASSERT_EQ(boost::math::isinf(div_mean), false);
     ASSERT_NEAR(div_mean, div_mean2, 5e-4);
@@ -33,8 +33,8 @@ void test_divide_accumulators_scalar(alps::accumulators::accumulator_set & measu
 void test_divide_accumulators_vector(alps::accumulators::accumulator_set & measurements, std::string name) {
 	std::string name1 = name + "_1_vector";
 	std::string name2 = name + "_2_vector";
-        int L=10;
-	for (int i = 0; i < 1000; ++i) {
+        unsigned int L=10;
+	for (unsigned int i = 0; i < 1000; ++i) {
 		measurements[name1] << std::vector<double>(L, (i % 2) + 1);
 		measurements[name2] << std::vector<double>(L, 2. * (i % 2));
 	}
@@ -44,7 +44,7 @@ void test_divide_accumulators_vector(alps::accumulators::accumulator_set & measu
 	std::cout << results[name1] / results[name2] << std::endl;
         std::vector<double> mean_vec=(results[name1] / results[name2]).mean<std::vector<double> >();
         ASSERT_EQ(mean_vec.size(), L);
-        for(int i=0;i<L;++i) {
+        for(unsigned int i=0;i<L;++i) {
           EXPECT_EQ(mean_vec[i], mean_vec[0]);
         }
         alps::accumulators::result_wrapper r=results[name1];
@@ -72,4 +72,3 @@ ALPS_TEST_RUN_MUL_CONST_TEST(NoBinningAccumulator, noBinningDouble)
 ALPS_TEST_RUN_MUL_CONST_TEST(LogBinningAccumulator, logBinningDouble)
 ALPS_TEST_RUN_MUL_CONST_TEST(FullBinningAccumulator, fullBinningDouble)
 #undef ALPS_TEST_RUN_MUL_CONST_TEST
-

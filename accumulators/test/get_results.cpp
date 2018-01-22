@@ -18,7 +18,7 @@ class AccumulatorTest : public ::testing::Test {
         typedef typename alps::accumulators::value_type<typename A::accumulator_type>::type value_type;
         alps::accumulators::accumulator_set measurements;
         measurements<<A("one_half");
-        for(int count=0; count<nsamples; ++count){
+        for(unsigned int count=0; count<nsamples; ++count){
             measurements["one_half"]<<0.5;
         }
 
@@ -32,7 +32,7 @@ class AccumulatorTest : public ::testing::Test {
 
 
 #define MAKE_TEST(atype,dtype,num) \
-    TEST_F(AccumulatorTest, Result ## atype ## X ## dtype ## num) { tester< alps::accumulators::atype<dtype> >(num); } 
+    TEST_F(AccumulatorTest, Result ## atype ## X ## dtype ## num) { tester< alps::accumulators::atype<dtype> >(num); }
 
 MAKE_TEST(MeanAccumulator,double, 128)
 MAKE_TEST(NoBinningAccumulator,double, 128)
@@ -53,5 +53,3 @@ MAKE_TEST(MeanAccumulator,double, 127)
 MAKE_TEST(NoBinningAccumulator,double, 127)
 MAKE_TEST(LogBinningAccumulator,double, 127)
 MAKE_TEST(FullBinningAccumulator,double, 127)
-
-

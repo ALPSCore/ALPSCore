@@ -40,7 +40,7 @@ template<typename A, typename T> void mean_test_body_vector() {
 		measurements["obs2"] << std::vector<T>(L, T(i));
 		std::vector<T> mean_vec_1=measurements["obs1"].mean<std::vector<T> >();
 		std::vector<T> mean_vec_2=measurements["obs2"].mean<std::vector<T> >();
-		for(int j=0;j<mean_vec_1.size();++j){
+		for(unsigned int j=0;j<mean_vec_1.size();++j){
 			EXPECT_NEAR(mean_vec_1[j] , T(1.) , prec);
 			EXPECT_NEAR(mean_vec_2[j] , T(i + 1) / 2 , prec);
 		}
@@ -49,7 +49,7 @@ template<typename A, typename T> void mean_test_body_vector() {
 	alps::accumulators::result_set results(measurements);
 		std::vector<T> mean_vec_1=results["obs1"].mean<std::vector<T> >();
 		std::vector<T> mean_vec_2=results["obs2"].mean<std::vector<T> >();
-		for(int i=0;i<mean_vec_1.size();++i){
+		for(unsigned int i=0;i<mean_vec_1.size();++i){
 	  		EXPECT_NEAR(mean_vec_1[i] , T(1.) , prec);
 			EXPECT_NEAR(mean_vec_2[i] , T(500.) , prec);
 	}
@@ -66,7 +66,7 @@ template<typename A, typename T> void mean_test_body_vector() {
 #define ALPS_TEST_RUN_MEAN_TEST_EACH_TYPE(A)													\
 	ALPS_TEST_RUN_MEAN_TEST(A, double, double)													\
 	ALPS_TEST_RUN_MEAN_TEST(A, longdouble, long_double)
-//	ALPS_TEST_RUN_MEAN_TEST(A, float, float)	
+//	ALPS_TEST_RUN_MEAN_TEST(A, float, float)
 
 ALPS_TEST_RUN_MEAN_TEST_EACH_TYPE(MeanAccumulator)
 ALPS_TEST_RUN_MEAN_TEST_EACH_TYPE(NoBinningAccumulator)
@@ -75,4 +75,3 @@ ALPS_TEST_RUN_MEAN_TEST_EACH_TYPE(FullBinningAccumulator)
 
 #undef ALPS_TEST_RUN_MEAN_TEST
 #undef ALPS_TEST_RUN_MEAN_TEST_EACH_TYPE
-

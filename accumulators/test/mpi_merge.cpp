@@ -53,14 +53,14 @@ class AccumulatorTest : public ::testing::Test {
         EXPECT_NEAR(expected, val, 1.E-3) << "Scalar " << msg
                                           << " is incorrect in MPI rank " << rank;
     }
-    
+
     // compare vector values
     template <typename T>
     void compare_values(double expected, const std::vector<T>& val, const char* msg, int rank) const
     {
         EXPECT_EQ(VECSIZE, val.size()) << "Vector " << msg
                                        << "size is incorrect in MPI rank " << rank;
-        for (int i=0; i<VECSIZE; ++i) {
+        for (unsigned int i=0; i<VECSIZE; ++i) {
             EXPECT_NEAR(expected, val[i], 1.E-3) << "Vector " << msg
                                                  << " element #" << i
                                                  << " is incorrect in MPI rank " << rank;
@@ -76,7 +76,7 @@ class AccumulatorTest : public ::testing::Test {
         alps::accumulators::accumulator_wrapper& acc=measurements[OBSNAME];
         const unsigned ns=nsamples[comm.rank()];
         srand48(43);
-        for (int i=0; i<ns; ++i) {
+        for (unsigned int i=0; i<ns; ++i) {
             acc << get_data(drand48(), VECSIZE, (value_type*)0);
         }
 
@@ -102,7 +102,7 @@ class AccumulatorTest : public ::testing::Test {
             comm.barrier();
         }
     }
-  
+
     // the same test for an individual accumulator
     void TestIndividual(const std::vector<unsigned>& nsamples, const alps::mpi::communicator& comm)
     {
@@ -110,7 +110,7 @@ class AccumulatorTest : public ::testing::Test {
         A acc(OBSNAME);
         const unsigned ns=nsamples[comm.rank()];
         srand48(43);
-        for (int i=0; i<ns; ++i) {
+        for (unsigned int i=0; i<ns; ++i) {
             acc << get_data(drand48(), VECSIZE, (value_type*)0);
         }
 
@@ -183,5 +183,4 @@ int main(int argc, char** argv)
    tweak(alps::mpi::communicator().rank(), argc, argv);
    ::testing::InitGoogleTest(&argc, argv);
    return RUN_ALL_TESTS();
-}    
-
+}

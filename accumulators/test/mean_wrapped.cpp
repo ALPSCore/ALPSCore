@@ -33,7 +33,7 @@ template<typename A, typename T> void mean_test_body_vector() {
 	alps::accumulator_set measurements;
 	measurements << A("obs1") << A("obs2");
 
-	int L = 10;
+	unsigned int L = 10;
 
 	for (int i = 1; i < 1000; ++i) {
 		measurements["obs1"] << std::vector<T>(L, T(1.));
@@ -77,4 +77,3 @@ ALPS_TEST_RUN_MEAN_TEST_EACH_TYPE(FullBinningAccumulator)
 
 #undef ALPS_TEST_RUN_MEAN_TEST
 #undef ALPS_TEST_RUN_MEAN_TEST_EACH_TYPE
-
