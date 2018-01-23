@@ -145,6 +145,46 @@ TYPED_TEST_CASE(twogauss_var_case, has_var);
 TYPED_TEST(twogauss_var_case, test) { this->test(); }
 
 
+// BLOCKING
+
+template <typename Acc>
+class twogauss_block_case
+    : public ::testing::Test
+    , public twogauss_setup<Acc>
+{
+public:
+    typedef typename alps::alea::traits<Acc>::var_type var_type;
+    typedef typename alps::alea::traits<Acc>::result_type result_type;
+
+    twogauss_block_case() : twogauss_setup<Acc>()
+    {
+        this->acc() = Acc(2, 40);
+        this->fill();
+    }
+
+    void test()
+    {
+        result_type res = this->acc().result();
+        EXPECT_NEAR(twogauss_block40_count, res.observations(), 1e-10);
+
+        std::vector<var_type> obs_var = res.var();
+        EXPECT_NEAR(obs_var[0], twogauss_block40_var[0], 1e-6);
+        EXPECT_NEAR(obs_var[1], twogauss_block40_var[1], 1e-6);
+
+        std::vector<var_type> obs_err = res.stderror();
+        EXPECT_NEAR(obs_err[0], twogauss_block40_stderr[0], 1e-6);
+        EXPECT_NEAR(obs_err[1], twogauss_block40_stderr[1], 1e-6);
+    }
+};
+
+typedef ::testing::Types<
+      alps::alea::var_acc<double>
+    , alps::alea::cov_acc<double>
+    > has_var;
+
+TYPED_TEST_CASE(twogauss_block_case, has_var);
+TYPED_TEST(twogauss_block_case, test) { this->test(); }
+
 // int main(int argc, char **argv)
 // {
 //     ::testing::InitGoogleTest(&argc, argv);
