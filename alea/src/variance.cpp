@@ -6,10 +6,9 @@
 namespace alps { namespace alea {
 
 template <typename T, typename Str>
-var_data<T,Str>::var_data(size_t size, size_t batch_size)
+var_data<T,Str>::var_data(size_t size)
     : data_(size)
     , data2_(size)
-    , batch_size_(batch_size)
 {
     reset();
 }
@@ -20,6 +19,7 @@ void var_data<T,Str>::reset()
     data_.fill(0);
     data2_.fill(0);
     count_ = 0;
+    count2_ = 0;
 }
 
 template <typename T, typename Str>
@@ -27,13 +27,15 @@ void var_data<T,Str>::convert_to_mean()
 {
     data_ /= count_;
     data2_ -= count_ * data_.cwiseAbs2();
-    data2_ = data2_ / (count_ - 1.0);
+
+    // bias correction: count2_/count_ is 1 for (non-weighted) mean
+    data2_ = data2_ / (count_ - count2_/count_);
 }
 
 template <typename T, typename Str>
 void var_data<T,Str>::convert_to_sum()
 {
-    data2_ = data2_ * (count_ - 1.0);
+    data2_ = data2_ * (count_ - count2_/count_);
     data2_ += count_ * data_.cwiseAbs2();
     data_ *= count_;
 }
@@ -45,7 +47,7 @@ template class var_data<std::complex<double>, elliptic_var>;
 
 template <typename T, typename Str>
 var_acc<T,Str>::var_acc(size_t size, size_t bundle_size)
-    : store_(new var_data<T,Str>(size, bundle_size))
+    : store_(new var_data<T,Str>(size))
     , current_(size, bundle_size)
 { }
 
@@ -71,7 +73,7 @@ void var_acc<T,Str>::reset()
     if (valid())
         store_->reset();
     else
-        store_.reset(new var_data<T,Str>(size(), batch_size()));
+        store_.reset(new var_data<T,Str>(size()));
 }
 
 template <typename T, typename Str>
@@ -128,8 +130,9 @@ void var_acc<T,Str>::add_bundle(var_acc<T,Str> *cascade)
 
     // add batch to average and squared
     store_->data().noalias() += current_.sum();
-    store_->data2().noalias() += current_.sum().unaryExpr(abs2);
+    store_->data2().noalias() += current_.sum().unaryExpr(abs2) / current_.count();
     store_->count() += current_.count();
+    store_->count2() += current_.count() * current_.count();
 
     // add batch mean also to uplevel
     if (cascade != nullptr)
@@ -159,7 +162,7 @@ template <typename T, typename Str>
 column<typename var_result<T,Str>::var_type> var_result<T,Str>::stderror() const
 {
     internal::check_valid(*this);
-    return (store_->data2() / store_->count()).cwiseSqrt();
+    return (store_->data2() / observations()).cwiseSqrt();
 }
 
 template <typename T, typename Str>
@@ -170,7 +173,8 @@ void var_result<T,Str>::reduce(const reducer &r, bool pre_commit, bool post_comm
         store_->convert_to_sum();
         r.reduce(sink<T>(store_->data().data(), store_->data().rows()));
         r.reduce(sink<var_type>(store_->data2().data(), store_->data2().rows()));
-        r.reduce(sink<size_t>(&store_->count(), 1));
+        r.reduce(sink<double>(&store_->count(), 1));
+        r.reduce(sink<double>(&store_->count2(), 1));
     }
     if (pre_commit && post_commit) {
         r.commit();
@@ -189,6 +193,7 @@ void var_result<T,Str>::serialize(serializer &s) const
 {
     internal::check_valid(*this);
     s.write("count", make_adapter(count()));
+    s.write("observations", make_adapter(observations()));
     s.write("mean/value", make_adapter(mean()));
     s.write("mean/error", make_adapter(stderror()));
 }

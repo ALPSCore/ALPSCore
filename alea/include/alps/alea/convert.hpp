@@ -75,16 +75,16 @@ struct joiner<var_result<T> >
     {
         if (first.store().count() != second.store().count())
             throw weight_mismatch();
-        if (first.batch_size() != second.batch_size())
+        if (first.store().count2() != second.store().count2())
             throw weight_mismatch();
 
-        var_result<T> res(var_data<T>(first.size() + second.size(),
-                                      first.batch_size()));
+        var_result<T> res(var_data<T>(first.size() + second.size()));
         res.store().data().topRows(first.size()) = first.store().data();
         res.store().data().bottomRows(second.size()) = second.store().data();
         res.store().data2().topRows(first.size()) = first.store().data2();
         res.store().data2().bottomRows(second.size()) = second.store().data2();
         res.store().count() = first.store().count();
+        res.store().count2() = first.store().count2();
         return res;
     }
 };
@@ -97,11 +97,10 @@ struct joiner<cov_result<T> >
     {
         if (first.store().count() != second.store().count())
             throw weight_mismatch();
-        if (first.store().batch_size() != second.store().batch_size())
+        if (first.store().count2() != second.store().count2())
             throw weight_mismatch();
 
-        cov_result<T> res(cov_data<T>(first.size() + second.size(),
-                                      first.batch_size()));
+        cov_result<T> res(cov_data<T>(first.size() + second.size()));
         res.store().data().topRows(first.size()) = first.store().data();
         res.store().data().bottomRows(second.size()) = second.store().data();
 
