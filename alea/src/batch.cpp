@@ -4,7 +4,6 @@
 #include <alps/alea/internal/util.hpp>
 
 #include <numeric>
-#include <iostream>
 
 namespace alps { namespace alea {
 

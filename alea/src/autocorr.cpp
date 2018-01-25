@@ -119,8 +119,9 @@ column<typename autocorr_result<T>::var_type> autocorr_result<T>::stderror() con
     size_t lvl = find_level(DEFAULT_MIN_SAMPLES);
 
     // Standard error of the mean has another 1/N (but at the level!)
-    double fact = 1. * batch_size(lvl) / level_[lvl].count();
-    return (fact * level_[lvl].var()).cwiseSqrt();
+    //double fact = 1. * batch_size(lvl) / level_[lvl].count();
+    //return (fact * level_[lvl].var()).cwiseSqrt();
+    return level_[lvl].stderror();
 }
 
 template <typename T>
@@ -133,8 +134,8 @@ column<typename autocorr_result<T>::var_type> autocorr_result<T>::tau() const
     // The factor `n` comes from the fact that the variance of an n-element mean
     // estimator has tighter variance by the CLT; it can be dropped if one
     // performs the batch sum rather than the batch mean.
-    //double fact = 0.5 * batch_size(0) / batch_size(lvl);
-    return (0.5 * varn.array() / var0.array() - 0.5).matrix();
+    double fact = 0.5 * level_[0].observations() / level_[lvl].observations();
+    return (fact * varn.array() / var0.array() - 0.5).matrix();
 }
 
 template <typename T>

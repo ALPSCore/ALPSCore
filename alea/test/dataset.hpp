@@ -6,6 +6,11 @@ static const double twogauss_mean[2] = { 1.00718307, -0.497835 };
 static const double twogauss_var[2] = { 0.01020943,  0.06409987 };
 static const double twogauss_stderr[2] = { 0.00580469,  0.01454478 };
 static const size_t twogauss_count = 303;
+
+static const double twogauss_block40_var[2] = { 0.000353196237,  0.001940527539 };
+static const double twogauss_block40_stderr[2] = { 0.006717317855,  0.015745185074 };
+static const double twogauss_block40_count = 303.*303/(7.*40*40 + 23*23);
+
 static const double twogauss_data[303][2] = {
     { 1.087913, -0.359963 }, { 1.026298, -0.369782 }, { 0.999170, -0.135513 },
     { 0.914673, -0.398053 }, { 0.996864, -0.428036 }, { 1.022673, -0.710856 },
