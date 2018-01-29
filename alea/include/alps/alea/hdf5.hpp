@@ -14,7 +14,7 @@
 
 namespace alps { namespace alea {
 
-std::string join_paths(const std::string &base, const std::string &rel)
+inline std::string join_paths(const std::string &base, const std::string &rel)
 {
     std::ostringstream maker(base);
     if (*(base.rbegin()) != '/')
