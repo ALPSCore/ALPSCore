@@ -24,7 +24,7 @@ template <> struct is_scalar<long double> : public std::true_type { };
 
 /** Helper function for implementing ALPS_EXPECT_NEAR. */
 template <typename T,
-          typename std::enable_if<is_scalar<T>::value>::type * = 0>
+          typename std::enable_if<is_scalar<T>::value,int>::type = 0>
 ::testing::AssertionResult NearPredFormat(const char* expr1,
                                           const char* expr2,
                                           const char* abs_error_expr,
