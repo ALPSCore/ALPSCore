@@ -13,13 +13,13 @@ namespace alps { namespace mpi {
 
 struct failed_operation : std::exception { };
 
-void checked(int retcode)
+inline void checked(int retcode)
 {
     if (retcode != MPI_SUCCESS)
         throw failed_operation();
 }
 
-bool is_intercomm(const communicator &comm)
+inline bool is_intercomm(const communicator &comm)
 {
     int flag;
     checked(MPI_Comm_test_inter(comm, &flag));
