@@ -57,13 +57,13 @@ std::ostream &operator<<(std::ostream &os, const legendre_mesh &M){
   {
     typedef boost::multi_array<double, 1> data_type;
     typedef data_type::const_iterator iterator_type;
-    s << "(";
+    s << "";
     iterator_type it=data.begin();
     if (data.end()!=it) s << *(it++);
     for (; it!=data.end(); ++it) {
-      s << "," << *it;
+      s << " " << *it;
     }
-    s << ")" << std::endl;
+    s << " "; // << std::endl;
     return s;
   }
   } // detail::
