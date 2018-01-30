@@ -51,11 +51,11 @@ public:
 
     /** Returns bias-corrected sample variance for given strategy */
     template <typename T, typename Str=circular_var>
-    column<typename Str::var_type> var() const;
+    column<typename bind<Str,T>::var_type> var() const;
 
     /** Returns bias-corrected sample covariance matrix for given strategy */
     template <typename T, typename Str=circular_var>
-    typename eigen<typename Str::cov_type>::matrix cov() const;
+    typename eigen<typename bind<Str,T>::cov_type>::matrix cov() const;
 
 private:
     typedef boost::variant<
