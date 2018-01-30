@@ -286,6 +286,14 @@ namespace alps {
         };
 
         /**
+         * Set data to 0
+         */
+        void set_zero() {
+          Eigen::Map < Eigen::Matrix < T, 1, Eigen::Dynamic > > M(&data_.data(0), data_.size());
+          M.setZero();
+        }
+
+        /**
          * @return raw data buffer size
          */
         size_t size() const {

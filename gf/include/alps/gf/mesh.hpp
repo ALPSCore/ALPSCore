@@ -75,6 +75,8 @@ namespace alps {
         /// Common part of interface and implementation for GF meshes
         class base_mesh {
         public:
+            base_mesh() {}
+            base_mesh(const base_mesh& rhs) : points_(rhs.points_) {}
             /// Const access to mesh points
             const std::vector<double> &points() const{return points_;}
         protected:
@@ -98,6 +100,7 @@ namespace alps {
         public:
             typedef generic_index<real_frequency_mesh> index_type;
             real_frequency_mesh() {};
+            real_frequency_mesh(const real_frequency_mesh& rhs) : base_mesh(rhs) {}
 
             template<typename GRID>
             explicit real_frequency_mesh(const GRID & grid)  {
@@ -186,13 +189,15 @@ namespace alps {
 
             public:
             typedef generic_index<matsubara_mesh> index_type;
+            /// copy constructor
+            matsubara_mesh(const matsubara_mesh& rhs) : beta_(rhs.beta_), nfreq_(rhs.nfreq_), statistics_(rhs.statistics_), offset_(rhs.offset_) {check_range();compute_points();}
             matsubara_mesh():
                 beta_(0.0), nfreq_(0), statistics_(statistics::FERMIONIC), offset_(-1)
             {
             }
 
             matsubara_mesh(double b, int nfr, gf::statistics::statistics_type statistics=statistics::FERMIONIC):
-                beta_(b), nfreq_(nfr), statistics_(statistics), offset_((PTYPE==mesh::POSITIVE_ONLY)?0:nfr) {
+                beta_(b), nfreq_(nfr), statistics_(statistics), offset_((PTYPE==mesh::POSITIVE_ONLY)?0:nfr/2) {
                 check_range();
                 compute_points();
             }
@@ -326,7 +331,7 @@ namespace alps {
                 throw_if_empty();
                 _points().resize(extent());
                 for(int i=0;i<nfreq_;++i){
-                    _points()[i]=(2*i+statistics_)*M_PI/beta_;
+                    _points()[i]=(2*(i-offset_)+statistics_)*M_PI/beta_;
                 }
             }
         };
@@ -364,6 +369,12 @@ namespace alps {
 
             itime_mesh(): beta_(0.0), ntau_(0), last_point_included_(true), half_point_mesh_(false), statistics_(statistics::FERMIONIC)
             {
+            }
+
+            itime_mesh(const itime_mesh&rhs): beta_(rhs.beta_), ntau_(rhs.ntau_),
+                                              last_point_included_(rhs.last_point_included_), half_point_mesh_(rhs.half_point_mesh_), statistics_(rhs.statistics_){
+              compute_points();
+
             }
 
             itime_mesh(double beta, int ntau): beta_(beta), ntau_(ntau), last_point_included_(true), half_point_mesh_(false), statistics_(statistics::FERMIONIC){
@@ -497,6 +508,11 @@ namespace alps {
 
             public:
             typedef generic_index<power_mesh> index_type;
+
+            power_mesh(const power_mesh& rhs): beta_(rhs.beta_), power_(rhs.power_), uniform_(rhs.uniform_), statistics_(rhs.statistics_){
+              compute_points();
+              compute_weights();
+            }
 
             power_mesh(): beta_(0.0), ntau_(0), power_(0), uniform_(0), statistics_(statistics::FERMIONIC){
             }
@@ -642,6 +658,14 @@ namespace alps {
         class momentum_realspace_index_mesh {
             public:
             typedef boost::multi_array<double,2> container_type;
+            momentum_realspace_index_mesh(const momentum_realspace_index_mesh& rhs) : points_(boost::extents[rhs.points_.shape()[0]][rhs.points_.shape()[1]]) {
+              points_ = rhs.points_;
+            }
+            momentum_realspace_index_mesh& operator=(const momentum_realspace_index_mesh& rhs) {
+              points_.resize(boost::extents[rhs.points_.shape()[0]][rhs.points_.shape()[1]]);
+              points_ = rhs.points_;
+              return *this;
+            }
             protected:
             container_type points_;
             private:
@@ -688,6 +712,7 @@ namespace alps {
             }
 
             const container_type &points() const{return points_;}
+            container_type &points() {return points_;}
 
             void save(alps::hdf5::archive& ar, const std::string& path) const
             {
@@ -743,6 +768,12 @@ namespace alps {
             public:
 
             typedef generic_index<momentum_index_mesh> index_type;
+            momentum_index_mesh(const momentum_index_mesh& rhs) : base_type(rhs) {}
+
+            momentum_index_mesh& operator=(const momentum_index_mesh& rhs) {
+              base_type::operator=(rhs);
+              return *this;
+            }
 
             momentum_index_mesh(): base_type("MOMENTUM_INDEX",0,0)
             {
@@ -766,6 +797,7 @@ namespace alps {
             public:
 
             typedef generic_index<momentum_index_mesh> index_type;
+            real_space_index_mesh(const real_space_index_mesh& rhs) : base_type(rhs.kind(), rhs.extent(), rhs.dimension()) {}
 
             real_space_index_mesh(): base_type("REAL_SPACE_INDEX",0,0)
             {
@@ -789,6 +821,8 @@ namespace alps {
             public:
             typedef generic_index<index_mesh> index_type;
 
+            index_mesh(const index_mesh& rhs) : npoints_(rhs.npoints_) {compute_points();}
+            index_mesh& operator=(const index_mesh& rhs) {npoints_ = rhs.npoints_; compute_points();return * this;}
             index_mesh(): npoints_(0) { compute_points();}
             index_mesh(int np): npoints_(np) { compute_points();}
             int extent() const{return npoints_;}
@@ -873,7 +907,7 @@ namespace alps {
 
         public:
             typedef generic_index<legendre_mesh> index_type;
-
+            legendre_mesh(const legendre_mesh& rhs) : beta_(rhs.beta_), n_max_(rhs.n_max_), statistics_(rhs.statistics_) {}
             legendre_mesh(gf::statistics::statistics_type statistics=statistics::FERMIONIC):
                     beta_(0.0), n_max_(0), statistics_(statistics) {}
 
@@ -1038,7 +1072,10 @@ namespace alps {
 
         public:
             typedef generic_index<numerical_mesh> index_type;
-
+            numerical_mesh(const numerical_mesh<T>& rhs) : beta_(rhs.beta_), dim_(rhs.dim_), basis_functions_(rhs.basis_functions_), statistics_(rhs.statistics_), valid_(rhs.valid_) {
+                set_validity();
+                compute_points();
+            }
             numerical_mesh(gf::statistics::statistics_type statistics=statistics::FERMIONIC):
                     beta_(0.0), dim_(0), statistics_(statistics), valid_(false) {}
 

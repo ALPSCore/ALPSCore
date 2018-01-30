@@ -203,11 +203,16 @@ namespace alps {
           return *this;
         }
         /// move assignment
-        gf_type& operator=(gf_type && rhs) = default;
+        gf_type& operator=(gf_type && rhs) {
+          swap_meshes(rhs.meshes_, make_index_sequence<sizeof...(MESHES)>());
+          data_ = rhs.data();
+          empty_= rhs.empty_;
+          return *this;
+        }
 
         /// initialize with zeros
         void initialize() {
-          data_ *= VTYPE(0);
+          data_.set_zero();
         }
 
         /// Check if meshes are compatible, throw if not
@@ -602,7 +607,7 @@ namespace alps {
         };
 
         /**
-         * The following two methods fill array with the sizes of each grid
+         * The following method fill array with the sizes of each grid
          *
          * @tparam Is    - indices to be filled
          * @param sizes  - array to fill sizes of each grid
@@ -615,6 +620,16 @@ namespace alps {
         inline std::array < size_t, N_ > fill_sizes(const mesh_types &grids, index_sequence<Is...>) {
           return {size_t(std::get<Is>(grids).extent())...};
         };
+
+        /**
+         * Swap meshes between
+         * @tparam Is
+         * @param old_meshes
+         */
+        template<size_t...Is>
+        void swap_meshes(mesh_types & old_meshes, index_sequence<Is...>) {
+          std::tie(std::get < Is >(meshes_) = std::get < Is >(old_meshes)...);
+        }
 
         /**
          * Save meshes into hdf5
@@ -658,7 +673,7 @@ namespace alps {
           using type
           = typename std::conditional < (i <= N_),
             std::tuple_element < i - 1, mesh_types >,
-            void_type >::type::type;
+            void_type>::type::type;
         };
 
       public:
@@ -668,7 +683,7 @@ namespace alps {
          */
         #define MESH_FUNCTION(z, num, c) \
         template<typename = typename std::enable_if< (N_ >= num)> >\
-        const typename args<num>::type mesh##num() const {\
+        typename std::add_lvalue_reference<const typename args<num>::type>::type mesh##num() const {\
           return std::get<int(num-1)>(meshes_); \
         }
 
