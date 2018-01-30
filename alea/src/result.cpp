@@ -105,16 +105,27 @@ column<T> result::mean() const
     return boost::apply_visitor(mean_visitor<T>(), res_);
 }
 
+template column<double> result::mean<double>() const;
+template column<std::complex<double> > result::mean<std::complex<double> >() const;
+
 template <typename T, typename Str>
-column<typename Str::var_type> result::var() const
+column<typename bind<Str,T>::var_type> result::var() const
 {
     return boost::apply_visitor(var_visitor<T,Str>(), res_);
 }
 
+template column<double> result::var<double, circular_var>() const;
+template column<double> result::var<std::complex<double>, circular_var>() const;
+template column<complex_op<double> > result::var<std::complex<double>, elliptic_var>() const;
+
 template <typename T, typename Str>
-typename eigen<typename Str::cov_type>::matrix result::cov() const
+typename eigen<typename bind<Str,T>::cov_type>::matrix result::cov() const
 {
     return boost::apply_visitor(cov_visitor<T,Str>(), res_);
 }
+
+template eigen<double>::matrix result::cov<double, circular_var>() const;
+template eigen<std::complex<double> >::matrix result::cov<std::complex<double>, circular_var>() const;
+template eigen<complex_op<double> >::matrix result::cov<std::complex<double>, elliptic_var>() const;
 
 }}
