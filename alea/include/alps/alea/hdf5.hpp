@@ -55,15 +55,16 @@ public:
     }
 
 protected:
+    // Look at:
+    // void archive::write(std::string path, T const * value,
+    //     , std::vector<std::size_t> size
+    //     , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+    //     , std::vector<std::size_t> offset = std::vector<std::size_t>()
+    //     ) const;
+
     template <typename T>
     void do_write(const std::string &relpath, const computed<T> &data)
     {
-        // Look at:
-        // void archive::write(std::string path, T const * value,
-        //     , std::vector<std::size_t> size
-        //     , std::vector<std::size_t> chunk = std::vector<std::size_t>()
-        //     , std::vector<std::size_t> offset = std::vector<std::size_t>()
-        //     ) const;
         std::string path = join_paths(path_, relpath);
 
         std::vector<size_t> shape = data.shape();
@@ -74,11 +75,32 @@ protected:
 
         // TODO: use HDF5 dataspaces to avoid copy
         std::vector<T> buffer(size, 0);
-        data.add_to(sink<T>(&buffer[0], size));
-
-        (*archive_).write(path, &buffer[0], shape, chunk, offset);
+        data.add_to(sink<T>(buffer.data(), size));
+        (*archive_).write(path, buffer.data(), shape, chunk, offset);
     }
 
+    template <typename T>
+    void do_write(const std::string &relpath, const computed<std::complex<T>> &data)
+    {
+        std::string path = join_paths(path_, relpath);
+
+        std::vector<size_t> shape = data.shape();
+        shape.push_back(2);         // last dimension
+
+        std::vector<size_t> offset(shape.size(), 0);
+        std::vector<size_t> chunk = shape;
+        size_t size = std::accumulate(shape.begin(), shape.end(), 1,
+                                      std::multiplies<size_t>());
+
+        // TODO: use HDF5 dataspaces to avoid copy
+        std::vector<T> buffer(size, 0);
+        data.add_to(sink<std::complex<T>>(
+                            reinterpret_cast<std::complex<T>*>(buffer.data()),
+                            size/2
+                            ));
+        (*archive_).write(path, &buffer[0], shape, chunk, offset);
+        (*archive_).write(path + "/@__complex__", true);
+    }
 
 private:
     hdf5::archive *archive_;
