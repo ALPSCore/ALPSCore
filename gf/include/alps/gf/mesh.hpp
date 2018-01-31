@@ -270,7 +270,7 @@ namespace alps {
                 };
                 beta_=beta;
                 nfreq_=nfr;
-                offset_ = ((PTYPE==mesh::POSITIVE_ONLY)?0:nfr);
+                offset_ = ((PTYPE==mesh::POSITIVE_ONLY)?0:nfr/2);
                 check_range();
                 compute_points();
             }
@@ -658,12 +658,14 @@ namespace alps {
         class momentum_realspace_index_mesh {
             public:
             typedef boost::multi_array<double,2> container_type;
-            momentum_realspace_index_mesh(const momentum_realspace_index_mesh& rhs) : points_(boost::extents[rhs.points_.shape()[0]][rhs.points_.shape()[1]]) {
+            momentum_realspace_index_mesh(const momentum_realspace_index_mesh& rhs) : points_(boost::extents[rhs.points_.shape()[0]][rhs.points_.shape()[1]]),
+                                                                                      kind_(rhs.kind_){
               points_ = rhs.points_;
             }
             momentum_realspace_index_mesh& operator=(const momentum_realspace_index_mesh& rhs) {
               points_.resize(boost::extents[rhs.points_.shape()[0]][rhs.points_.shape()[1]]);
               points_ = rhs.points_;
+              kind_   = rhs.kind_;
               return *this;
             }
             protected:
