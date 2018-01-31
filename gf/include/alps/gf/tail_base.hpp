@@ -161,7 +161,7 @@ namespace alps {
           ar[path+"/tail/max_tail_order"]=max_tail_order_;
           if(min_tail_order_==TAIL_NOT_SET) return;
           for (int i=min_tail_order_; i<=max_tail_order_; ++i) {
-            ar[path+"/tail/"+std::to_string(i)] << tails_[i].data().data().data();
+            ar[path+"/tail/"+std::to_string(i)] << tails_[i].data().storage().data();
           }
         }
 

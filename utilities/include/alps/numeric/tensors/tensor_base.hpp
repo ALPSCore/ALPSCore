@@ -86,7 +86,7 @@ namespace alps {
         /// tensor dimension
         static size_t constexpr dim = Dim;
         /// data storage object
-        Container data_;
+        Container storage_;
         /// stored sizes for each dimensions
         std::array < size_t, Dim > shape_;
         /// offset multiplier for each dimension
@@ -98,12 +98,12 @@ namespace alps {
          * @param container - internal storage container
          * @param sizes
          */
-        tensor_base(Container &&container, const std::array < size_t, Dim >& sizes) : data_(container), shape_(sizes) {
+        tensor_base(Container &&container, const std::array < size_t, Dim >& sizes) : storage_(container), shape_(sizes) {
           static_assert(is_storage< T, Container>::value, "Should be either data_storage or data_view type");
           fill_acc_sizes();
         }
 
-        tensor_base(Container &container, const std::array < size_t, Dim >& sizes) : data_(container), shape_(sizes) {
+        tensor_base(Container &container, const std::array < size_t, Dim >& sizes) : storage_(container), shape_(sizes) {
           static_assert(is_storage< T, Container>::value, "Should be either data_storage or data_view type");
           fill_acc_sizes();
         }
@@ -115,7 +115,7 @@ namespace alps {
          * @param data  - pointer to the raw data buffer
          * @param sizes - array with sizes for each dimension
          */
-        tensor_base(T *data, const std::array < size_t, Dim > & sizes) : data_(viewType(data, size(sizes))), shape_(sizes) {
+        tensor_base(T *data, const std::array < size_t, Dim > & sizes) : storage_(viewType(data, size(sizes))), shape_(sizes) {
           fill_acc_sizes();
         }
 
@@ -130,13 +130,13 @@ namespace alps {
          */
         template<typename X = Container>
         tensor_base(typename std::enable_if < std::is_same < X, data_storage < T > >::value,
-                        const std::array < size_t, Dim > & >::type sizes) : data_(size(sizes)), shape_(sizes) {
+                        const std::array < size_t, Dim > & >::type sizes) : storage_(size(sizes)), shape_(sizes) {
           fill_acc_sizes();
         }
 
         template<typename X = Container, typename...Indices>
         tensor_base(typename std::enable_if < std::is_same < X, data_storage < T > >::value,
-          size_t>::type size1, Indices...sizes) : data_(size({{size1, size_t(sizes)...}})), shape_({{size1, size_t(sizes)...}}) {
+          size_t>::type size1, Indices...sizes) : storage_(size({{size1, size_t(sizes)...}})), shape_({{size1, size_t(sizes)...}}) {
           static_assert(sizeof...(Indices) + 1 == Dim, "Wrong dimension");
           fill_acc_sizes();
         }
@@ -144,7 +144,7 @@ namespace alps {
         // this constructor create a view of other tensor. that is why rhs is not const
         template<typename St = Container>
         tensor_base(typename std::enable_if<std::is_same<St, viewType>::value, tensorType>::type& rhs) :
-          data_(rhs.data()), shape_(rhs.shape()), acc_sizes_(rhs.acc_sizes()) {}
+          storage_(rhs.storage()), shape_(rhs.shape()), acc_sizes_(rhs.acc_sizes()) {}
 
         /// copy constructor
         tensor_base(const tType& rhs) = default;
@@ -152,10 +152,10 @@ namespace alps {
         tensor_base(tType &&rhs) = default;
         /// copy constructor
         template<typename T2, typename St, typename = std::enable_if<std::is_same<Container, storageType>::value, void >>
-        tensor_base(const tensor_base<T2, Dim, St> &rhs) : data_(rhs.data()), shape_(rhs.shape()), acc_sizes_(rhs.acc_sizes()) {}
+        tensor_base(const tensor_base<T2, Dim, St> &rhs) : storage_(rhs.storage()), shape_(rhs.shape()), acc_sizes_(rhs.acc_sizes()) {}
         /// move constructor
         template<typename T2, typename St, typename = std::enable_if<std::is_same<Container, storageType>::value, void >>
-        tensor_base(tensor_base<T2, Dim, St> &&rhs) noexcept: data_(rhs.data()), shape_(rhs.shape()), acc_sizes_(rhs.acc_sizes()) {}
+        tensor_base(tensor_base<T2, Dim, St> &&rhs) noexcept: storage_(rhs.storage()), shape_(rhs.shape()), acc_sizes_(rhs.acc_sizes()) {}
 
 
         /// Copy assignment
@@ -165,7 +165,7 @@ namespace alps {
         /// compare tensors
         template<typename T2, typename St>
         bool operator==(const tensor_base<T2, Dim, St>& rhs) const {
-          return std::equal(shape_.begin(), shape_.end(), rhs.shape().begin()) && data_ == rhs.data();
+          return std::equal(shape_.begin(), shape_.end(), rhs.shape().begin()) && storage_ == rhs.storage();
         }
 
         /**
@@ -177,7 +177,7 @@ namespace alps {
          */
         template<typename ...IndexTypes>
         T operator()(typename std::enable_if < sizeof...(IndexTypes) == Dim - 1, size_t >::type t1, IndexTypes ... indices) const {
-          return data_.data(index(t1, indices...));
+          return storage_.data(index(t1, indices...));
         }
 
         /**
@@ -185,7 +185,7 @@ namespace alps {
          */
         template<typename ...IndexTypes>
         T &operator()(typename std::enable_if < sizeof...(IndexTypes) == Dim - 1, size_t >::type t1, IndexTypes ... indices) {
-          return data_.data(index(t1, indices...));
+          return storage_.data(index(t1, indices...));
         }
 
 
@@ -203,14 +203,14 @@ namespace alps {
         tensor_view < T, Dim - (sizeof...(IndexTypes)) - 1 > operator()(typename std::enable_if < (sizeof...(IndexTypes) < Dim - 1), size_t >::type t1, IndexTypes ... indices) {
           std::array < size_t, Dim - (sizeof...(IndexTypes)) - 1 > sizes;
           size_t s = new_size(sizes);
-          return tensor_view < T, Dim - (sizeof...(IndexTypes)) - 1 >(viewType(data_, s, (index(t1, indices...))), sizes);
+          return tensor_view < T, Dim - (sizeof...(IndexTypes)) - 1 >(viewType(storage_, s, (index(t1, indices...))), sizes);
         }
 
         template<typename ...IndexTypes>
         tensor_view <const typename std::remove_const<T>::type, Dim - (sizeof...(IndexTypes)) - 1 > operator()(typename std::enable_if < (sizeof...(IndexTypes) < Dim - 1), size_t >::type t1, IndexTypes ... indices) const {
           std::array < size_t, Dim - (sizeof...(IndexTypes)) - 1 > sizes;
           size_t s = new_size(sizes);
-          return tensor_view <const typename std::remove_const<T>::type, Dim - (sizeof...(IndexTypes)) - 1 >(data_view<const typename std::remove_const<T>::type>( data_, s, index(t1, indices...) ), sizes );
+          return tensor_view <const typename std::remove_const<T>::type, Dim - (sizeof...(IndexTypes)) - 1 >(data_view<const typename std::remove_const<T>::type>( storage_, s, index(t1, indices...) ), sizes );
         }
 
         /*
@@ -249,7 +249,7 @@ namespace alps {
         template<typename S>
         typename std::enable_if < !std::is_same < S, tensorType >::value, tType & >::type operator*=(S scalar) {
           static_assert(std::is_convertible<S, T>::value, "Can't perform inplace multiplication: S can be casted into T");
-          Eigen::Map < Eigen::Matrix < T, 1, Eigen::Dynamic > > M(&data_.data(0), data_.size());
+          Eigen::Map < Eigen::Matrix < T, 1, Eigen::Dynamic > > M(&storage_.data(0), storage_.size());
           M *= T(scalar);
           return *this;
         };
@@ -259,8 +259,8 @@ namespace alps {
          */
         template<typename S>
         typename std::enable_if < std::is_same < S, tensorType >::value, tensorType & >::type operator*=(const S& rhs) {
-          Eigen::Map < Eigen::Array < T, 1, Eigen::Dynamic > > M1(&data_.data(0), data_.size());
-          Eigen::Map < const Eigen::Array < T, 1, Eigen::Dynamic > > M2(&rhs.data().data(0), rhs.data().size());
+          Eigen::Map < Eigen::Array < T, 1, Eigen::Dynamic > > M1(&storage_.data(0), storage_.size());
+          Eigen::Map < const Eigen::Array < T, 1, Eigen::Dynamic > > M2(&rhs.storage().data(0), rhs.storage().size());
           M1*=M2;
           return *this;
         };
@@ -280,7 +280,7 @@ namespace alps {
         template<typename S>
         typename std::enable_if < !std::is_same < S, tensorType >::value, tType & >::type operator/=(S scalar) {
           static_assert(std::is_convertible<S, T>::value, "Can not perform inplace division: S can be casted into T");
-          Eigen::Map < Eigen::Matrix < T, 1, Eigen::Dynamic > > M(&data_.data(0), data_.size());
+          Eigen::Map < Eigen::Matrix < T, 1, Eigen::Dynamic > > M(&storage_.data(0), storage_.size());
           M *= T(1.0)/T(scalar);
           return *this;
         };
@@ -289,7 +289,7 @@ namespace alps {
          * Set data to 0
          */
         void set_zero() {
-          Eigen::Map < Eigen::Matrix < T, 1, Eigen::Dynamic > > M(&data_.data(0), data_.size());
+          Eigen::Map < Eigen::Matrix < T, 1, Eigen::Dynamic > > M(&storage_.data(0), storage_.size());
           M.setZero();
         }
 
@@ -297,7 +297,11 @@ namespace alps {
          * @return raw data buffer size
          */
         size_t size() const {
-          return data_.size();
+          return storage_.size();
+        }
+
+        size_t num_elements() const {
+          return storage_.size();
         }
 
         /**
@@ -311,7 +315,7 @@ namespace alps {
             throw std::invalid_argument("Can not do inversion of the non-square matrix.");
           }
           tensorType x(*this);
-          Eigen::Map < Eigen::Matrix < T, Eigen::Dynamic, Eigen::Dynamic > > Mt(&(x.data().data(0)), shape_[0], shape_[1]);
+          Eigen::Map < Eigen::Matrix < T, Eigen::Dynamic, Eigen::Dynamic > > Mt(&(x.storage().data(0)), shape_[0], shape_[1]);
           Mt = Mt.inverse();
           return x;
         };
@@ -346,8 +350,8 @@ namespace alps {
         typename std::enable_if <
           std::is_same < S, T >::value || std::is_same < T, std::complex < double>>::value || std::is_same < T, std::complex < float>>::value, tType & >::type
         operator+=(const tensor_base < S, Dim, Ct > &y) {
-          MatrixMap < T, 1, Eigen::Dynamic > M1(&data_.data(0), data_.size());
-          Eigen::Map < const Eigen::Matrix < S, 1, Eigen::Dynamic, Eigen::RowMajor > > M2(&y.data().data(0), y.data().size());
+          MatrixMap < T, 1, Eigen::Dynamic > M1(&storage_.data(0), storage_.size());
+          Eigen::Map < const Eigen::Matrix < S, 1, Eigen::Dynamic, Eigen::RowMajor > > M2(&y.storage().data(0), y.storage().size());
           M1.noalias() += M2;
           return (*this);
         };
@@ -357,8 +361,8 @@ namespace alps {
          */
         template<typename S>
         typename std::enable_if < std::is_same < S, tensorType >::value || std::is_same < S, tensorViewType >::value, tType & >::type operator-=(const S &y) {
-          MatrixMap < T, 1, Eigen::Dynamic > M1(&data_.data(0), data_.size());
-          Eigen::Map < const Eigen::Matrix < T, 1, Eigen::Dynamic, Eigen::RowMajor > > M2(&y.data().data(0), y.data().size());
+          MatrixMap < T, 1, Eigen::Dynamic > M1(&storage_.data(0), storage_.size());
+          Eigen::Map < const Eigen::Matrix < T, 1, Eigen::Dynamic, Eigen::RowMajor > > M2(&y.storage().data(0), y.storage().size());
           M1.noalias() -= M2;
           return (*this);
         };
@@ -372,9 +376,9 @@ namespace alps {
             throw std::invalid_argument("Can not do multiplication. Dimensions missmatches.");
           }
           tensorType x({{shape_[0], y.shape_[1]}});
-          Eigen::Map < const Eigen::Matrix < T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor > > M1(&data().data(0), shape_[0], shape_[1]);
-          Eigen::Map < const Eigen::Matrix < T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor > > M2(&y.data().data(0), y.shape()[0], y.shape()[1]);
-          MatrixMap < T > M3(&x.data().data(0), x.shape()[0], x.shape()[1]);
+          Eigen::Map < const Eigen::Matrix < T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor > > M1(&storage().data(0), shape_[0], shape_[1]);
+          Eigen::Map < const Eigen::Matrix < T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor > > M2(&y.storage().data(0), y.shape()[0], y.shape()[1]);
+          MatrixMap < T > M3(&x.storage().data(0), x.shape()[0], x.shape()[1]);
           M3 = M1*M2;
           return x;
         };
@@ -384,7 +388,7 @@ namespace alps {
          */
         MatrixMap < T > matrix() {
           static_assert(Dim == 2, "Can not return Eigen matrix view for not 2D tensor.");
-          return MatrixMap < T >(&data().data(0), shape_[0], shape_[1]);
+          return MatrixMap < T >(&storage().data(0), shape_[0], shape_[1]);
         };
 
         /// sizes for each dimension
@@ -394,7 +398,7 @@ namespace alps {
         template<typename X = Container>
         typename std::enable_if<std::is_same < X, data_storage < T > >::value, void>::type reshape(std::array<size_t, Dim>& shape) {
           size_t new_size = size(shape);
-          data_.data().resize(new_size);
+          storage_.data().resize(new_size);
           shape_ = shape;
           fill_acc_sizes();
         }
@@ -406,7 +410,7 @@ namespace alps {
           if(new_size != size()) {
             throw std::invalid_argument("Wrong size. Can't reshape tensor.");
           }
-          data_.data().resize(new_size);
+          storage_.data().resize(new_size);
           shape_ = shape;
           fill_acc_sizes();
         }
@@ -417,11 +421,17 @@ namespace alps {
         /// dimension of the tensor
         size_t dimension() const { return Dim; }
 
+        /// const pointer to the internal data
+        const prec *data() const { return &storage_.data(0); }
+
+        /// pointer to the internal data
+        prec *data() { return &storage_.data(0); }
+
         /// const reference to the data storage
-        const Container &data() const { return data_; }
+        const Container &storage() const { return storage_; }
 
         /// reference to the data storage
-        Container &data() { return data_; }
+        Container &storage() { return storage_; }
 
         /// return index in the raw buffer for specified indices
         template<typename ...Indices>

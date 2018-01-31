@@ -414,7 +414,7 @@ namespace alps {
         template<typename RHS_GF>
         typename std::enable_if < std::is_base_of< generic_gf<data_storage>, RHS_GF >::value || std::is_base_of < generic_gf<data_view>, RHS_GF >::value, bool >::type
         operator==(const RHS_GF &rhs) const {
-          return (empty_ && rhs.is_empty()) || (data_.shape() == rhs.data().shape() && data_.data() == rhs.data().data() );
+          return (empty_ && rhs.is_empty()) || (data_.shape() == rhs.data().shape() && data_.storage() == rhs.data().storage() );
         }
 
         template<typename RHS_GF>
@@ -430,7 +430,7 @@ namespace alps {
          */
         double norm() const {
           throw_if_empty();
-          return std::abs(*std::max_element(&data_.data().data(0), data_.data().size() + &data_.data().data(0), [](VTYPE a, VTYPE b) {return std::abs(a) < std::abs(b);} ) );
+          return std::abs(*std::max_element(data_.data(), data_.num_elements() + data_.data(), [](VTYPE a, VTYPE b) {return std::abs(a) < std::abs(b);} ) );
         }
 
         /**
@@ -459,13 +459,13 @@ namespace alps {
         /// Load the GF from HDF5
         void load(alps::hdf5::archive &ar, const std::string &path) {
           if (!check_version(ar, path)) throw std::runtime_error("Incompatible archive version");
-          empty_ = false;
           int ndim;
           ar[path + "/mesh/N"] >> ndim;
           if (ndim != N_) throw std::runtime_error("Wrong number of dimension reading Matsubara GF, ndim=" + std::to_string(ndim));
           load_meshes(ar, path, make_index_sequence<sizeof...(MESHES)>());
           data_ = numerics::tensor < VTYPE, N_ >(get_sizes(meshes_));
           ar[path + "/data"] >> data_;
+          empty_ = false;
         }
 
         /// Save version of the GF object to maintain compatibility
@@ -528,7 +528,7 @@ namespace alps {
           alps::mpi::broadcast(comm, root_sz, root);
           // as long as all grids have been broadcasted we can define tensor object
           if(comm.rank() != root) data_ = numerics::tensor < VTYPE, N_ >(get_sizes(meshes_));
-          alps::mpi::broadcast(comm, &data_.data().data(0), root_sz, root);
+          alps::mpi::broadcast(comm, &data_.storage().data(0), root_sz, root);
         }
 #endif
 
@@ -708,7 +708,7 @@ namespace alps {
             os<<(G.mesh1().points()[i])<<" ";
             size_t points = G.data().size()/G.data().shape()[0];
             for(size_t j = 0; j< points; ++j) {
-              detail::print_no_complex<value_type>(os, G.data().data()(j + G.data().index(i)));
+              detail::print_no_complex<value_type>(os, G.data().data()[j + G.data().index(i)]);
               os<<" ";
             }
             os<<std::endl;

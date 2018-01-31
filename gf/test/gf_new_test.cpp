@@ -22,7 +22,7 @@ TEST(GreensFunction, InitializationTest){
 
   greenf<double, alps::gf::matsubara_positive_mesh, alps::gf::index_mesh, alps::gf::itime_mesh, alps::gf::legendre_mesh> g(x, y, z, w);
   for(int i = 0; i<g.data().size(); ++i) {
-    ASSERT_NEAR(g.data().data().data(i), 0.0, 1E-15);
+    ASSERT_NEAR(g.data().storage().data(i), 0.0, 1E-15);
   }
   for(alps::gf::matsubara_positive_mesh::index_type i(0); i<x.extent(); ++i) {
     for(alps::gf::index_mesh::index_type j(0); j<x.extent(); ++j){

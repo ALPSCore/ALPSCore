@@ -127,7 +127,7 @@ TEST(TensorTest, TestSubSlices) {
     tensor_view<double, 3> Y = X(i);
     for (int j = 0; j < X.shape()[1]; ++j) {
       tensor_view<double, 2> Z = Y (j);
-      ASSERT_EQ(Z.data().offset(), (i* X.shape()[1]+ j)* X.shape()[2]* X.shape()[3]);
+      ASSERT_EQ(Z.storage().offset(), (i* X.shape()[1]+ j)* X.shape()[2]* X.shape()[3]);
       std::vector<double> XX(X.shape()[2]* X.shape()[3], 0.0);
       for (int k = 0; k < X.shape()[2]; ++k) {
         for (int l = 0; l < X.shape()[3]; ++l) {

@@ -30,9 +30,9 @@ namespace alps {
           using alps::hdf5::get_extent;
           std::vector < std::size_t > result(value.shape().begin(), value.shape().begin() + N);
           if (value.size()) {
-            std::vector < std::size_t > extent(get_extent(value.data().data()[0]));
+            std::vector < std::size_t > extent(get_extent(value.data()[0]));
             for (std::size_t i = 1; i < value.size(); ++i)
-              if (!std::equal(extent.begin(), extent.end(), get_extent(value.data().data()[i]).begin()))
+              if (!std::equal(extent.begin(), extent.end(), get_extent(value.data()[i]).begin()))
                 throw archive_error("no rectangular matrix");
             std::copy(extent.begin(), extent.end(), std::back_inserter(result));
           }
@@ -46,7 +46,7 @@ namespace alps {
           using alps::hdf5::get_extent;
           if (N > size.size())
             throw archive_error("invalid data size");
-          std::vector < std::size_t > extent(get_extent(value.data().data()[0]));
+          std::vector < std::size_t > extent(get_extent(value.data()[0]));
           std::array<size_t, N> new_size;
           std::copy(size.begin(), size.end() - extent.size(), new_size.begin());
           value.reshape(new_size);
@@ -56,13 +56,13 @@ namespace alps {
       template<typename T, std::size_t N, typename A> struct get_pointer<alps::numerics::detail::tensor_base<T, N, A>> {
         static typename alps::hdf5::scalar_type<alps::numerics::detail::tensor_base<T, N, A>>::type * apply(alps::numerics::detail::tensor_base<T, N, A> & value) {
           using alps::hdf5::get_pointer;
-          return get_pointer(value.data().data(0));
+          return get_pointer(value.storage().data(0));
         }
       };
         template<typename T, std::size_t N, typename A> struct get_pointer<const alps::numerics::detail::tensor_base<T, N, A> > {
         static typename alps::hdf5::scalar_type<alps::numerics::detail::tensor_base<T, N, A> >::type const * apply(alps::numerics::detail::tensor_base<T, N, A> const & value) {
           using alps::hdf5::get_pointer;
-          return get_pointer(value.data().data(0));
+          return get_pointer(value.storage().data(0));
         }
       };
 
