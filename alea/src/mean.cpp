@@ -125,15 +125,19 @@ void mean_result<T>::reduce(const reducer &r, bool pre_commit, bool post_commit)
     }
 }
 
-template <typename T>
-void mean_result<T>::serialize(serializer &s) const
-{
-    internal::check_valid(*this);
-    s.write("count", make_adapter(count()));
-    s.write("mean/value", make_adapter(mean()));
-}
-
 template class mean_result<double>;
 template class mean_result<std::complex<double> >;
+
+
+template <typename T>
+void serialize(serializer &s, const mean_result<T> &self)
+{
+    internal::check_valid(self);
+    s.write("count", make_adapter(self.count()));
+    s.write("mean/value", make_adapter(self.mean()));
+}
+
+template void serialize(serializer &, const mean_result<double> &);
+template void serialize(serializer &, const mean_result<std::complex<double> > &);
 
 }} /* namespace alps::alea */

@@ -184,23 +184,29 @@ void cov_result<T,Str>::reduce(const reducer &r, bool pre_commit, bool post_comm
     }
 }
 
-template <typename T, typename Str>
-void cov_result<T,Str>::serialize(serializer &s) const
-{
-    internal::check_valid(*this);
-    s.write("count", make_adapter(count()));
-    s.write("obs", make_adapter(observations()));
-    s.write("mean/value", make_adapter(mean()));
-    s.write("mean/error", make_adapter(stderror()));
-
-    // FIXME: flattened
-    typename eigen<cov_type>::matrix cov_mat = cov();
-    typename eigen<cov_type>::col_map cov_map(cov_mat.data(), cov_mat.size());
-    s.write("cov/value", make_adapter(cov_map));
-}
-
 template class cov_result<double>;
 template class cov_result<std::complex<double>, circular_var>;
 template class cov_result<std::complex<double>, elliptic_var>;
 
-}}
+
+template <typename T, typename Str>
+void serialize(serializer &s, const cov_result<T,Str> &self)
+{
+    internal::check_valid(self);
+    s.write("count", make_adapter(self.count()));
+    s.write("obs", make_adapter(self.observations()));
+    s.write("mean/value", make_adapter(self.mean()));
+    s.write("mean/error", make_adapter(self.stderror()));
+
+    // FIXME: flattened
+    typedef typename traits<cov_result<T,Str>>::cov_type cov_type;
+    typename eigen<cov_type>::matrix cov_mat = self.cov();
+    typename eigen<cov_type>::col_map cov_map(cov_mat.data(), cov_mat.size());
+    s.write("cov/value", make_adapter(cov_map));
+}
+
+template void serialize(serializer &, const cov_result<double, circular_var> &);
+template void serialize(serializer &, const cov_result<std::complex<double>, circular_var> &);
+template void serialize(serializer &, const cov_result<std::complex<double>, elliptic_var> &);
+
+}} /* namespace alps::alea */

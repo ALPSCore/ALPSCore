@@ -212,20 +212,6 @@ void batch_result<T>::reduce(const reducer &r, bool pre_commit, bool post_commit
     }
 }
 
-template <typename T>
-void batch_result<T>::serialize(serializer &s) const
-{
-    internal::check_valid(*this);
-    s.write("count", make_adapter(count()));
-    s.write("mean/value", make_adapter(mean()));
-    s.write("mean/error", make_adapter(stderror()));
-
-    // FIXME
-    typename eigen<T>::col_map batch_map(store_->batch().data(), store_->batch().size());
-    s.write("batch/count", make_adapter(store_->count().transpose()));
-    s.write("batch/sum", make_adapter(batch_map));
-}
-
 template column<double> batch_result<double>::var<circular_var>() const;
 template column<double> batch_result<std::complex<double> >::var<circular_var>() const;
 template column<complex_op<double> > batch_result<std::complex<double> >::var<elliptic_var>() const;
@@ -237,4 +223,22 @@ template column<complex_op<double> > batch_result<std::complex<double> >::cov<el
 template class batch_result<double>;
 template class batch_result<std::complex<double> >;
 
-}}
+
+template <typename T>
+void serialize(serializer &s, const batch_result<T> &self)
+{
+    internal::check_valid(self);
+    s.write("count", make_adapter(self.count()));
+    s.write("mean/value", make_adapter(self.mean()));
+    s.write("mean/error", make_adapter(self.stderror()));
+
+    // FIXME flattened
+    typename eigen<T>::col_map batch_map(self.store_->batch().data(), self.store_->batch().size());
+    s.write("batch/count", make_adapter(self.store_->count().transpose()));
+    s.write("batch/sum", make_adapter(batch_map));
+}
+
+template void serialize(serializer &, const batch_result<double> &);
+template void serialize(serializer &, const batch_result<std::complex<double>> &);
+
+}} /* namespace alps::alea */
