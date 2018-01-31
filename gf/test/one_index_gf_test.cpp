@@ -126,9 +126,9 @@ TEST_F(OneIndexGFTest,Assign)
     
     gf2=gf;
     EXPECT_EQ(data, gf2(omega));
-    
-    EXPECT_THROW(other_gf=gf, std::invalid_argument);
-    // EXPECT_EQ(data, other_gf(omega));
+
+    EXPECT_NO_THROW(other_gf=gf);
+    EXPECT_EQ(data, other_gf(omega));
 }
 
 TEST_F(OneIndexGFTest, RealFreq) {

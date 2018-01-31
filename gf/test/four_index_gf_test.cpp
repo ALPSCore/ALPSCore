@@ -81,8 +81,8 @@ TEST_F(FourIndexGFTest,Assign)
     
     gf2=gf;
     EXPECT_EQ(data, gf2(omega,i,j,sigma));
-    EXPECT_THROW(other_gf=gf, std::invalid_argument);
-    // EXPECT_EQ(data, other_gf(omega,i,j,sigma));
+    EXPECT_NO_THROW(other_gf=gf);
+    EXPECT_EQ(data, other_gf(omega,i,j,sigma));
 }
 
 
@@ -184,7 +184,8 @@ TEST_F(FourIndexGFTest, tail)
                              g::momentum_index_mesh(get_data_for_momentum_mesh()),
                              g::index_mesh(nspins*2));
     g::omega_k1_k2_sigma_gf_with_tail other_gft(other_gf);
-    EXPECT_THROW(other_gft=gft, std::invalid_argument);
+    EXPECT_NO_THROW(other_gft=gft);
+    EXPECT_EQ(gft, other_gft);
 }
 
 TEST_F(FourIndexGFTest, TailSaveLoad)

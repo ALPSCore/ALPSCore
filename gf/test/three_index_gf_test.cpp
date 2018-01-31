@@ -252,14 +252,14 @@ TEST_F(ThreeIndexGFTest,Assign)
     gf2=gf;
     EXPECT_EQ(data, gf2(omega,i,sigma));
     
-    EXPECT_THROW(other_gf_beta=gf, std::invalid_argument);
-    // EXPECT_EQ(data, other_gf_beta(omega,i,sigma));
+    EXPECT_NO_THROW(other_gf_beta=gf);
+    EXPECT_EQ(data, other_gf_beta(omega,i,sigma));
     
-    EXPECT_THROW(other_gf_nfreq=gf, std::invalid_argument);
-    // EXPECT_EQ(data, other_gf_nfreq(omega,i,sigma));
+    EXPECT_NO_THROW(other_gf_nfreq=gf);
+    EXPECT_EQ(data, other_gf_nfreq(omega,i,sigma));
 
-    EXPECT_THROW(other_gf_nspins=gf, std::invalid_argument);
-    // EXPECT_EQ(data, other_gf_nspins(omega,i,sigma));
+    EXPECT_NO_THROW(other_gf_nspins=gf);
+    EXPECT_EQ(data, other_gf_nspins(omega,i,sigma));
 }
 
 

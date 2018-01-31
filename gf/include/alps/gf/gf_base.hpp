@@ -204,9 +204,10 @@ namespace alps {
 
         /// copy assignment
         gf_type& operator=(const gf_type & rhs) {
-          throw_if_empty();
-          check_meshes(rhs);
+          rhs.throw_if_empty();
+          swap_meshes(rhs.meshes_, make_index_sequence<sizeof...(MESHES)>());
           data_ = rhs.data();
+          empty_= rhs.empty_;
           return *this;
         }
         /// move assignment
@@ -638,7 +639,7 @@ namespace alps {
          * @param old_meshes
          */
         template<size_t...Is>
-        void swap_meshes(mesh_types & old_meshes, index_sequence<Is...>) {
+        void swap_meshes(const mesh_types & old_meshes, index_sequence<Is...>) {
           std::tie(std::get < Is >(meshes_) = std::get < Is >(old_meshes)...);
         }
 
