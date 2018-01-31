@@ -188,18 +188,23 @@ void var_result<T,Str>::reduce(const reducer &r, bool pre_commit, bool post_comm
     }
 }
 
-template <typename T, typename Str>
-void var_result<T,Str>::serialize(serializer &s) const
-{
-    internal::check_valid(*this);
-    s.write("count", make_adapter(count()));
-    s.write("observations", make_adapter(observations()));
-    s.write("mean/value", make_adapter(mean()));
-    s.write("mean/error", make_adapter(stderror()));
-}
-
 template class var_result<double>;
 template class var_result<std::complex<double>, circular_var>;
 template class var_result<std::complex<double>, elliptic_var>;
+
+
+template <typename T, typename Str>
+void serialize(serializer &s, const var_result<T,Str> &self)
+{
+    internal::check_valid(self);
+    s.write("count", make_adapter(self.count()));
+    s.write("observations", make_adapter(self.observations()));
+    s.write("mean/value", make_adapter(self.mean()));
+    s.write("mean/error", make_adapter(self.stderror()));
+}
+
+template void serialize(serializer &, const var_result<double, circular_var> &);
+template void serialize(serializer &, const var_result<std::complex<double>, circular_var> &);
+template void serialize(serializer &, const var_result<std::complex<double>, elliptic_var> &);
 
 }}

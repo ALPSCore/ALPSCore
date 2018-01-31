@@ -25,6 +25,9 @@ namespace alps { namespace alea {
     template <typename T> class autocorr_result;
 
     template <typename T> class batch_result;
+
+    template <typename T, typename Str>
+    void serialize(serializer &, const var_result<T,Str> &);
 }}
 
 // Actual declarations
@@ -237,7 +240,7 @@ public:
     void reduce(const reducer &r) { reduce(r, true, true); }
 
     /** Convert result to a permanent format (write to disk etc.) */
-    void serialize(serializer &) const;
+    friend void serialize<>(serializer &, const var_result &);
 
 protected:
     void reduce(const reducer &, bool do_pre_commit, bool do_post_commit);

@@ -163,24 +163,30 @@ void autocorr_result<T>::reduce(const reducer &r, bool pre_commit, bool post_com
     }
 }
 
+template class autocorr_result<double>;
+template class autocorr_result<std::complex<double> >;
+
+
 template <typename T>
-void autocorr_result<T>::serialize(serializer &s) const
+void serialize(serializer &s, const autocorr_result<T> &self)
 {
-    internal::check_valid(*this);
-    s.write("count", make_adapter(count()));
-    s.write("mean/value", make_adapter(mean()));
-    s.write("mean/error", make_adapter(stderror()));
+    internal::check_valid(self);
+    s.write("count", make_adapter(self.count()));
+    s.write("mean/value", make_adapter(self.mean()));
+    s.write("mean/error", make_adapter(self.stderror()));
 
-    typename eigen<var_type>::matrix level_var(size(), nlevel());
-    for (size_t l = 0; l != nlevel(); ++l)
-        level_var.col(l) = level_[l].var();
+    typedef typename traits<autocorr_result<T>>::var_type var_type;
+    typename eigen<var_type>::matrix level_var(self.size(), self.nlevel());
+    for (size_t l = 0; l != self.nlevel(); ++l)
+        level_var.col(l) = self.level_[l].var();
 
+    // FIXME flattened
     typename eigen<var_type>::col_map var_map(level_var.data(), level_var.size());
     s.write("levels/var/value", make_adapter(var_map));
 }
 
-template class autocorr_result<double>;
-template class autocorr_result<std::complex<double> >;
+template void serialize(serializer &, const autocorr_result<double> &);
+template void serialize(serializer &, const autocorr_result<std::complex<double>> &);
 
 }}
 
