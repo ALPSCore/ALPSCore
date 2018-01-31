@@ -15,6 +15,14 @@
 
 namespace alps { namespace alea {
 
+class result;
+void serialize(serializer &, const result &);
+
+}}
+
+
+namespace alps { namespace alea {
+
 struct estimate_unavailable : public std::exception { };
 
 struct estimate_type_mismatch : public std::exception { };
@@ -56,6 +64,9 @@ public:
     /** Returns bias-corrected sample covariance matrix for given strategy */
     template <typename T, typename Str=circular_var>
     typename eigen<typename bind<Str,T>::cov_type>::matrix cov() const;
+
+    /** Convert result to a permanent format (write to disk etc.) */
+    friend void serialize(serializer &, const result &);
 
 private:
     typedef boost::variant<

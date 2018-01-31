@@ -19,6 +19,9 @@ namespace alps { namespace alea {
     template <typename T> class batch_acc;
     template <typename T> class batch_data;
     template <typename T> class batch_result;
+
+    template <typename T>
+    void serialize(serializer &, const batch_result<T> &);
 }}
 
 // Actual declarations
@@ -202,7 +205,7 @@ public:
     void reduce(const reducer &r) { reduce(r, true, true); }
 
     /** Convert result to a permanent format (write to disk etc.) */
-    void serialize(serializer &) const;
+    friend void serialize<>(serializer &, const batch_result &);
 
 protected:
     void reduce(const reducer &r, bool do_pre_commit, bool do_post_commit);
@@ -229,4 +232,4 @@ struct traits< batch_result<T> >
 extern template class batch_result<double>;
 extern template class batch_result<std::complex<double> >;
 
-}}
+}} /* namespace alps::alea */
