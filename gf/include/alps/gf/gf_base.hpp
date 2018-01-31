@@ -45,10 +45,10 @@ namespace alps {
       template <typename ...Args>
       auto operator<<(std::ostream & os, const std::tuple<Args...>& t) -> DECLTYPE(detail::output(os, t, make_index_sequence<sizeof...(Args)>()))
 
-      template<typename T> void print_no_complex(std::ostream &os, const T &z){
+      template<typename T> inline void print_no_complex(std::ostream &os, const T &z){
         os<<z;
       }
-      template<> void print_no_complex(std::ostream &os, const std::complex<double> &z){
+      template<> inline void print_no_complex(std::ostream &os, const std::complex<double> &z){
         //specialization for printing complex as ... real imag ...
         os<<z.real()<<" "<<z.imag();
       }
@@ -687,28 +687,35 @@ namespace alps {
           return std::get<int(num-1)>(meshes_); \
         }
 
+        #define MESH_TYPES(z, num, c) \
+        /*template<typename = typename std::enable_if< (N_ >= num)> >*/\
+        typedef typename args<num>::type mesh##num##_type;
+        // = typename args<num>::type;
+
         /*
          * I guess 10 functions would be enough
          */
         BOOST_PP_REPEAT_FROM_TO (1, 11, MESH_FUNCTION, int)
+        BOOST_PP_REPEAT_FROM_TO (1, 11, MESH_TYPES, int)
 
-      };
-
-    }
-    template<typename value_type, typename St, typename ...Meshes>
-    inline std::ostream &operator<<(std::ostream &os, const detail::gf_base<value_type, St, Meshes...> & G ){
-      using detail::operator<<;
-      os<<G.meshes();
-      for(int i=0;i<G.mesh1().extent();++i){
-        os<<(G.mesh1().points()[i])<<" ";
-        size_t points = G.data().size()/G.data().shape()[0];
-        for(size_t j = 0; j< points; ++j) {
-          detail::print_no_complex<value_type>(os, G.data().data()(j + G.data().index(i)));
-          os<<" ";
+        /**
+         * Print Green's function object into stream
+         */
+        friend std::ostream &operator<<(std::ostream &os, const gf_type & G ){
+          using detail::operator<<;
+          os<<G.meshes();
+          for(int i=0;i<G.mesh1().extent();++i){
+            os<<(G.mesh1().points()[i])<<" ";
+            size_t points = G.data().size()/G.data().shape()[0];
+            for(size_t j = 0; j< points; ++j) {
+              detail::print_no_complex<value_type>(os, G.data().data()(j + G.data().index(i)));
+              os<<" ";
+            }
+            os<<std::endl;
+          }
+          return os;
         }
-        os<<std::endl;
-      }
-      return os;
+      };
     }
   }
 }

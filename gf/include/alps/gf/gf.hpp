@@ -8,7 +8,7 @@
 #define ALPSCORE_NEW_GF_H
 
 #include <alps/gf/gf_base.hpp>
-#include <alps/gf/tail.hpp>
+#include <alps/gf/tail_base.hpp>
 #include <alps/gf/mesh.hpp>
 
 namespace alps {namespace gf {
