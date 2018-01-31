@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -43,7 +43,8 @@ namespace alps {
       };
 
       template <typename ...Args>
-      auto operator<<(std::ostream & os, const std::tuple<Args...>& t) -> DECLTYPE(detail::output(os, t, make_index_sequence<sizeof...(Args)>()))
+      auto operator<<(std::ostream & os, const std::tuple<Args...>& t) ->
+                                                DECLTYPE(detail::output(os, t, make_index_sequence<sizeof...(Args)>()))
 
       template<typename T> inline void print_no_complex(std::ostream &os, const T &z){
         os<<z;
@@ -93,7 +94,8 @@ namespace alps {
         using generic_gf   = gf_base < VTYPE, St, MESHES... >;
         /// Greens function return type for arithmetic operations with different type
         template<typename RHS_VTYPE>
-        using gf_op_type   = gf_base < decltype(RHS_VTYPE{} + VTYPE{}), numerics::tensor<decltype(RHS_VTYPE{} + VTYPE{}), sizeof...(MESHES)>, MESHES... >;
+        using gf_op_type   = gf_base < decltype(RHS_VTYPE{} + VTYPE{}), numerics::tensor<decltype(RHS_VTYPE{} + VTYPE{}),
+            sizeof...(MESHES)>, MESHES... >;
 
         // fields definition
       private:
@@ -106,7 +108,7 @@ namespace alps {
         Storage data_;
         /// stored meshes
         std::tuple < MESHES... > meshes_;
-        /// unitialized state flag
+        /// uninitialized state flag
         bool empty_;
 
         // template hacks
@@ -137,7 +139,8 @@ namespace alps {
          */
         template<typename ...IndicesTypes>
         struct check_mesh {
-          using type = typename std::conditional<std::is_convertible<std::tuple<IndicesTypes...>, index_types>::value, std::true_type, std::false_type>::type;
+          using type = typename std::conditional<std::is_convertible<std::tuple<IndicesTypes...>, index_types>::value,
+              std::true_type, std::false_type>::type;
         };
 
       public:
@@ -186,14 +189,15 @@ namespace alps {
 
         /// construct new green's function from index slice of GF with higher dimension
         template<typename St, typename...OLDMESHES, typename Index, typename ...Indices>
-        gf_base(gf_base<VTYPE, numerics::detail::tensor_base < VTYPE, sizeof...(OLDMESHES), St >, OLDMESHES...> & g, std::tuple<OLDMESHES...>& oldmesh,
-                const mesh_types &meshes, const Index ind, const Indices... idx) :
+        gf_base(gf_base<VTYPE, numerics::detail::tensor_base < VTYPE, sizeof...(OLDMESHES), St >, OLDMESHES...> & g,
+                std::tuple<OLDMESHES...>& oldmesh, const mesh_types &meshes, const Index ind, const Indices... idx) :
           data_(g.data()(ind(), idx()...)), meshes_(meshes), empty_(false) {}
 
         /// construct const view
         template<typename RHSTYPE ,typename St, typename...OLDMESHES, typename ...Indices>
-        gf_base(const gf_base<RHSTYPE, numerics::detail::tensor_base < RHSTYPE, sizeof...(OLDMESHES), St >, OLDMESHES...> & g, const std::tuple<OLDMESHES...>& oldmesh,
-                mesh_types &meshes, const Indices... idx) : data_(g.data()(idx()...)), meshes_(meshes), empty_(false) {}
+        gf_base(const gf_base<RHSTYPE, numerics::detail::tensor_base < RHSTYPE, sizeof...(OLDMESHES), St >, OLDMESHES...> & g,
+                const std::tuple<OLDMESHES...>& oldmesh, mesh_types &meshes, const Indices... idx) :
+            data_(g.data()(idx()...)), meshes_(meshes), empty_(false) {}
 
         /// copy assignment
         gf_type& operator=(const gf_type & rhs) {
@@ -257,15 +261,17 @@ namespace alps {
          * @return GF view object
          */
         template<class...Indices>
-        auto operator()(typename std::enable_if<(sizeof...(Indices)+1 < N_), typename std::tuple_element<0,mesh_types>::type::index_type >::type ind,
-                    Indices...inds) -> subpack<VTYPE, sizeof...(Indices) + 1> {
+        auto operator()(typename std::enable_if<(sizeof...(Indices)+1 < N_),
+            typename std::tuple_element<0,mesh_types>::type::index_type >::type ind, Indices...inds) ->
+                                                                            subpack<VTYPE, sizeof...(Indices) + 1> {
           return subpack<VTYPE, sizeof...(Indices) + 1 >
                           (*this, meshes_, tuple_tail < sizeof...(Indices) + 1 >(meshes_), ind, std::forward<Indices>(inds)...);
         }
 
         template<class...Indices>
-        auto operator()(typename std::enable_if<(sizeof...(Indices)+1 < N_), typename std::tuple_element<0,mesh_types>::type::index_type >::type ind,
-                        Indices...inds) const -> subpack<const VTYPE, sizeof...(Indices) + 1> {
+        auto operator()(typename std::enable_if<(sizeof...(Indices)+1 < N_),
+            typename std::tuple_element<0,mesh_types>::type::index_type >::type ind, Indices...inds) const ->
+                                                                            subpack<const VTYPE, sizeof...(Indices) + 1> {
           auto t = tuple_tail < sizeof...(Indices) + 1 >(meshes_);
           return subpack<const VTYPE, sizeof...(Indices) + 1>  (*this, meshes_, t, ind, std::forward<Indices>(inds)...);
         }
@@ -297,7 +303,8 @@ namespace alps {
          * @return updated GF object
          */
         template<typename RHS_GF>
-        typename std::enable_if < std::is_same < RHS_GF, generic_gf<data_storage> >::value || std::is_same < RHS_GF, generic_gf<data_view> >::value, gf_type & >::type
+        typename std::enable_if < std::is_same < RHS_GF, generic_gf<data_storage> >::value ||
+            std::is_same < RHS_GF, generic_gf<data_view> >::value, gf_type & >::type
         operator+=(const RHS_GF &rhs) {
           throw_if_empty();
           data_ += rhs.data_;
@@ -322,7 +329,8 @@ namespace alps {
          * Inplace subtraction
          */
         template<typename RHS_GF>
-        typename std::enable_if < std::is_same < RHS_GF, generic_gf<data_storage> >::value || std::is_same < RHS_GF, generic_gf<data_view> >::value, gf_type & >::type
+        typename std::enable_if < std::is_same < RHS_GF, generic_gf<data_storage> >::value ||
+            std::is_same < RHS_GF, generic_gf<data_view> >::value, gf_type & >::type
         operator-=(const RHS_GF &rhs) {
           throw_if_empty();
           data_ -= rhs.data_;
@@ -412,7 +420,8 @@ namespace alps {
          *  B.2. And have the same values
          */
         template<typename RHS_GF>
-        typename std::enable_if < std::is_base_of< generic_gf<data_storage>, RHS_GF >::value || std::is_base_of < generic_gf<data_view>, RHS_GF >::value, bool >::type
+        typename std::enable_if < std::is_base_of< generic_gf<data_storage>, RHS_GF >::value
+                                  || std::is_base_of < generic_gf<data_view>, RHS_GF >::value, bool >::type
         operator==(const RHS_GF &rhs) const {
           return (empty_ && rhs.is_empty()) || (data_.shape() == rhs.data().shape() && data_.storage() == rhs.data().storage() );
         }
@@ -423,14 +432,12 @@ namespace alps {
         }
 
         /**
-         *
-         * FIXME: It is a very strange definition of norm
-         *
          * @return norm of the Green's function
          */
         double norm() const {
           throw_if_empty();
-          return std::abs(*std::max_element(data_.data(), data_.num_elements() + data_.data(), [](VTYPE a, VTYPE b) {return std::abs(a) < std::abs(b);} ) );
+          return std::abs(*std::max_element(data_.data(), data_.num_elements() + data_.data(),
+                                            [](VTYPE a, VTYPE b) {return std::abs(a) < std::abs(b);} ) );
         }
 
         /**
@@ -461,7 +468,8 @@ namespace alps {
           if (!check_version(ar, path)) throw std::runtime_error("Incompatible archive version");
           int ndim;
           ar[path + "/mesh/N"] >> ndim;
-          if (ndim != N_) throw std::runtime_error("Wrong number of dimension reading GF, ndim=" + std::to_string(ndim) + ", should be N=" + std::to_string(N_));
+          if (ndim != N_) throw std::runtime_error("Wrong number of dimension reading GF, ndim=" + std::to_string(ndim)
+                                                   + ", should be N=" + std::to_string(N_));
           load_meshes(ar, path, make_index_sequence<sizeof...(MESHES)>());
           data_ = numerics::tensor < VTYPE, N_ >(get_sizes(meshes_));
           ar[path + "/data"] >> data_;

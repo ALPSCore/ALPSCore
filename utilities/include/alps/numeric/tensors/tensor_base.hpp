@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -58,6 +58,8 @@ namespace alps {
     namespace detail {
       template<typename X, int Rows = Eigen::Dynamic, int Cols = Eigen::Dynamic>
       using MatrixMap =  Eigen::Map < Eigen::Matrix < X, Rows, Cols, Eigen::RowMajor > >;
+      template<typename X, int Rows = Eigen::Dynamic, int Cols = Eigen::Dynamic>
+      using ConstMatrixMap =  Eigen::Map <const Eigen::Matrix < X, Rows, Cols, Eigen::RowMajor > >;
 
       /**
        * @brief Tensor class for raw data storage and performing the basic arithmetic operations
@@ -200,17 +202,20 @@ namespace alps {
          * @return slice for the specific leading indices
          */
         template<typename ...IndexTypes>
-        tensor_view < T, Dim - (sizeof...(IndexTypes)) - 1 > operator()(typename std::enable_if < (sizeof...(IndexTypes) < Dim - 1), size_t >::type t1, IndexTypes ... indices) {
+        tensor_view < T, Dim - (sizeof...(IndexTypes)) - 1 > operator()(typename std::enable_if < (sizeof...(IndexTypes) < Dim - 1),
+            size_t >::type t1, IndexTypes ... indices) {
           std::array < size_t, Dim - (sizeof...(IndexTypes)) - 1 > sizes;
           size_t s = new_size(sizes);
           return tensor_view < T, Dim - (sizeof...(IndexTypes)) - 1 >(viewType(storage_, s, (index(t1, indices...))), sizes);
         }
 
         template<typename ...IndexTypes>
-        tensor_view <const typename std::remove_const<T>::type, Dim - (sizeof...(IndexTypes)) - 1 > operator()(typename std::enable_if < (sizeof...(IndexTypes) < Dim - 1), size_t >::type t1, IndexTypes ... indices) const {
+        tensor_view <const typename std::remove_const<T>::type, Dim - (sizeof...(IndexTypes)) - 1 > operator()
+            (typename std::enable_if < (sizeof...(IndexTypes) < Dim - 1), size_t >::type t1, IndexTypes ... indices) const {
           std::array < size_t, Dim - (sizeof...(IndexTypes)) - 1 > sizes;
           size_t s = new_size(sizes);
-          return tensor_view <const typename std::remove_const<T>::type, Dim - (sizeof...(IndexTypes)) - 1 >(data_view<const typename std::remove_const<T>::type>( storage_, s, index(t1, indices...) ), sizes );
+          return tensor_view <const typename std::remove_const<T>::type, Dim - (sizeof...(IndexTypes)) - 1 >
+              (data_view<const typename std::remove_const<T>::type>( storage_, s, index(t1, indices...) ), sizes );
         }
 
         /*
@@ -224,8 +229,8 @@ namespace alps {
          * @return New tensor equal to the current tensor multiplied by scalar
          */
         template<typename S>
-        typename std::enable_if < !std::is_same < S, tensorType >::value, tensor_base< decltype(S{} + T{}), Dim, data_storage< decltype(S{} * T{}) > > >::type
-        operator*(S scalar) {
+        typename std::enable_if < !std::is_same < S, tensorType >::value, tensor_base< decltype(S{} + T{}), Dim,
+            data_storage< decltype(S{} * T{}) > > >::type operator*(S scalar) {
           tensor_base< decltype(S{} + T{}), Dim, data_storage< decltype(S{} * T{}) > > x(*this);
           return (x *= static_cast<decltype(S{} + T{})>(scalar));
         };
@@ -269,7 +274,8 @@ namespace alps {
          * Tensor inversed scaling
          */
         template<typename S>
-        typename std::enable_if < !std::is_same < S, tensorType >::value, tensor_base< decltype(S{} + T{}), Dim, data_storage< decltype(S{} * T{}) > > >::type operator/(S scalar) {
+        typename std::enable_if < !std::is_same < S, tensorType >::value, tensor_base< decltype(S{} + T{}), Dim,
+            data_storage< decltype(S{} * T{}) > > >::type operator/(S scalar) {
           tensor_base< decltype(S{} + T{}), Dim, data_storage< decltype(S{} * T{}) > >  x(*this);
           return (x /= scalar);
         };
@@ -348,10 +354,10 @@ namespace alps {
          */
         template<typename S, typename Ct>
         typename std::enable_if <
-          std::is_same < S, T >::value || std::is_same < T, std::complex < double>>::value || std::is_same < T, std::complex < float>>::value, tType & >::type
-        operator+=(const tensor_base < S, Dim, Ct > &y) {
+          std::is_same < S, T >::value || std::is_same < T, std::complex < double>>::value
+          || std::is_same < T, std::complex < float>>::value, tType & >::type operator+=(const tensor_base < S, Dim, Ct > &y) {
           MatrixMap < T, 1, Eigen::Dynamic > M1(&storage_.data(0), storage_.size());
-          Eigen::Map < const Eigen::Matrix < S, 1, Eigen::Dynamic, Eigen::RowMajor > > M2(&y.storage().data(0), y.storage().size());
+          ConstMatrixMap < S, 1, Eigen::Dynamic > M2(&y.storage().data(0), y.storage().size());
           M1.noalias() += M2;
           return (*this);
         };
@@ -360,9 +366,10 @@ namespace alps {
          * Inplace subtraction
          */
         template<typename S>
-        typename std::enable_if < std::is_same < S, tensorType >::value || std::is_same < S, tensorViewType >::value, tType & >::type operator-=(const S &y) {
+        typename std::enable_if < std::is_same < S, tensorType >::value ||
+            std::is_same < S, tensorViewType >::value, tType & >::type operator-=(const S &y) {
           MatrixMap < T, 1, Eigen::Dynamic > M1(&storage_.data(0), storage_.size());
-          Eigen::Map < const Eigen::Matrix < T, 1, Eigen::Dynamic, Eigen::RowMajor > > M2(&y.storage().data(0), y.storage().size());
+          ConstMatrixMap < T, 1, Eigen::Dynamic> M2(&y.storage().data(0), y.storage().size());
           M1.noalias() -= M2;
           return (*this);
         };
@@ -376,8 +383,8 @@ namespace alps {
             throw std::invalid_argument("Can not do multiplication. Dimensions missmatches.");
           }
           tensorType x({{shape_[0], y.shape_[1]}});
-          Eigen::Map < const Eigen::Matrix < T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor > > M1(&storage().data(0), shape_[0], shape_[1]);
-          Eigen::Map < const Eigen::Matrix < T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor > > M2(&y.storage().data(0), y.shape()[0], y.shape()[1]);
+          ConstMatrixMap < T, Eigen::Dynamic, Eigen::Dynamic > M1(&storage().data(0), shape_[0], shape_[1]);
+          ConstMatrixMap < T, Eigen::Dynamic, Eigen::Dynamic > M2(&y.storage().data(0), y.shape()[0], y.shape()[1]);
           MatrixMap < T > M3(&x.storage().data(0), x.shape()[0], x.shape()[1]);
           M3 = M1*M2;
           return x;

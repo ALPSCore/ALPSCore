@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -87,7 +87,8 @@ namespace alps {
         { }
         /// copy-constructor
         gf_tail_base(const gf_type_with_tail& gft): gf_type(gft), tails_(gft.tails_),
-                                                           min_tail_order_(gft.min_tail_order_), max_tail_order_(gft.max_tail_order_)
+                                                           min_tail_order_(gft.min_tail_order_),
+                                                           max_tail_order_(gft.max_tail_order_)
         { }
 
         /// minimum non-empty tail order
@@ -97,7 +98,8 @@ namespace alps {
 
         /// Returns tail component of the given order
         const tail_type& tail(int order) const{
-          if (order<min_tail_order_ || order > max_tail_order_) throw std::runtime_error("tails are known between min and max order, your order is outside.");
+          if (order<min_tail_order_ || order > max_tail_order_)
+            throw std::runtime_error("tails are known between min and max order, your order is outside.");
           return tails_[order];
         }
 
@@ -137,7 +139,8 @@ namespace alps {
          * @return      - return current GF with new tail of order %order% set
          */
         gf_type_with_tail& set_tail(int order, const tail_type &tail){
-          static_assert(std::is_same<typename tail_type::mesh_types, decltype(tuple_tail < 1 >(HEADGF::meshes())) >::value, "Incorrect tail mesh types" );
+          static_assert(std::is_same<typename tail_type::mesh_types,
+              decltype(tuple_tail < 1 >(HEADGF::meshes())) >::value, "Incorrect tail mesh types" );
 
           int tail_size=tails_.size();
           if(order>=tail_size){
