@@ -461,7 +461,7 @@ namespace alps {
           if (!check_version(ar, path)) throw std::runtime_error("Incompatible archive version");
           int ndim;
           ar[path + "/mesh/N"] >> ndim;
-          if (ndim != N_) throw std::runtime_error("Wrong number of dimension reading Matsubara GF, ndim=" + std::to_string(ndim));
+          if (ndim != N_) throw std::runtime_error("Wrong number of dimension reading GF, ndim=" + std::to_string(ndim) + ", should be N=" + std::to_string(N_));
           load_meshes(ar, path, make_index_sequence<sizeof...(MESHES)>());
           data_ = numerics::tensor < VTYPE, N_ >(get_sizes(meshes_));
           ar[path + "/data"] >> data_;
