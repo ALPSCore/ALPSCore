@@ -166,7 +166,10 @@ namespace alps {
          * @param meshes - list of meshes
          */
         gf_base(MESHES...meshes) : gf_base(std::make_tuple(meshes...)) {}
-        /// tuple version of the previous function
+        /**
+         * Create Green's function object with given meshes
+         * @param meshes - tuple of meshes
+         */
         gf_base(const mesh_types &meshes) : data_(get_sizes(meshes)), meshes_(meshes), empty_(false) {}
         /// Create GF with the provided data
         gf_base(VTYPE* data, const mesh_types &meshes) : data_(data, get_sizes(meshes)), meshes_(meshes), empty_(false) {}
