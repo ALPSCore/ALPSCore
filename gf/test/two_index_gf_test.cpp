@@ -267,8 +267,7 @@ TEST_F(TwoIndexGFTest,Assign)
 TEST_F(TwoIndexGFTest, DefaultConstructive)
 {
     gf_type gf_empty;
-#ifndef NDEBUG
-    EXPECT_THROW(gf_empty.norm(), std::runtime_error);
+    EXPECT_TRUE(gf_empty.is_empty());
     {
         alps::hdf5::archive oar("gf_2i_defconstr.h5","w");
         oar["/gf"] << gf;
@@ -277,8 +276,7 @@ TEST_F(TwoIndexGFTest, DefaultConstructive)
         alps::hdf5::archive iar("gf_2i_defconstr.h5");
         iar["/gf"] >> gf_empty;
     }
-    EXPECT_NO_THROW(gf_empty.norm());
-#endif
+    EXPECT_FALSE(gf_empty.is_empty());
 }
 
 TEST_F(TwoIndexGFTest, ops)
@@ -301,3 +299,12 @@ TEST_F(TwoIndexGFTest, ops)
 
   EXPECT_NEAR((denmat-gft.tail(order)).norm(), 0, 1.e-8);
 }
+
+#ifndef NDEBUG
+TEST_F(TwoIndexGFTest, DefaultConstructiveAccess) {
+  gf_type gf_empty;
+  EXPECT_ANY_THROW(gf_empty.norm());
+  EXPECT_ANY_THROW(gf_empty*1.0);
+  EXPECT_ANY_THROW(-gf_empty);
+}
+#endif

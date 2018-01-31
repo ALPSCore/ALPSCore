@@ -384,8 +384,7 @@ TEST_F(ThreeIndexGFTest, tailPrint)
 TEST_F(ThreeIndexGFTest, DefaultConstructive)
 {
     gf_type gf_empty;
-#ifndef NDEBUG
-    EXPECT_THROW(gf_empty.norm(), std::runtime_error);
+    EXPECT_TRUE(gf_empty.is_empty());
     {
         alps::hdf5::archive oar("gf_3i_defconstr.h5","w");
         oar["/gf"] << gf;
@@ -394,6 +393,14 @@ TEST_F(ThreeIndexGFTest, DefaultConstructive)
         alps::hdf5::archive iar("gf_3i_defconstr.h5");
         iar["/gf"] >> gf_empty;
     }
-    EXPECT_NO_THROW(gf_empty.norm());
-#endif
+    EXPECT_FALSE(gf_empty.is_empty());
 }
+
+#ifndef NDEBUG
+TEST_F(ThreeIndexGFTest, DefaultConstructiveAccess) {
+    gf_type gf_empty;
+    EXPECT_ANY_THROW(gf_empty.norm());
+    EXPECT_ANY_THROW(gf_empty*1.0);
+    EXPECT_ANY_THROW(-gf_empty);
+}
+#endif

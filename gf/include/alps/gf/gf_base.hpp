@@ -8,8 +8,8 @@
 #define ALPSCORE_GF_H
 
 
-#include <vector>
 #include <tuple>
+#include <vector>
 
 #include <boost/preprocessor/cat.hpp>
 #include <boost/preprocessor/repetition/repeat_from_to.hpp>
@@ -20,10 +20,10 @@
 #include <alps/utilities/mpi.hpp>
 #endif
 
-#include <alps/numeric/tensors/tensor_base.hpp>
 #include <alps/gf/mesh.hpp>
-#include <alps/type_traits/tuple_traits.hpp>
+#include <alps/numeric/tensors/tensor_base.hpp>
 #include <alps/type_traits/index_sequence.hpp>
+#include <alps/type_traits/tuple_traits.hpp>
 
 
 namespace alps {

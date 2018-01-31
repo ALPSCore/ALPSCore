@@ -282,7 +282,7 @@ TEST(TensorTest, BasicArithmetics) {
   Y -= Z;
   for(int i = 0; i< N; ++i){
     for (int j = 0; j < N; ++j) {
-      ASSERT_DOUBLE_EQ(Y(i, j), X(i, j));
+      ASSERT_NEAR(Y(i, j), X(i, j), 1e-10);
     }
   }
 }
