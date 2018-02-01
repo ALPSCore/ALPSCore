@@ -4,7 +4,7 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 #pragma once
-#include "tail.hpp"
+#include <alps/gf/gf.hpp>
 
 namespace alps {
 namespace gf {

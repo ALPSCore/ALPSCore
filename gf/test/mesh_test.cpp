@@ -109,6 +109,53 @@ TEST(Mesh,CompareMatsubara) {
 
 }
 
+TEST(Mesh, MatsubaraPositiveLoadSave) {
+  alps::testing::unique_file ufile("gf.h5.", alps::testing::unique_file::REMOVE_NOW);
+  const std::string&  filename = ufile.name();
+  namespace g=alps::gf;
+  double beta = 100;
+  int nfr = 10;
+  typedef g::matsubara_positive_mesh::index_type index;
+  g::matsubara_positive_mesh mesh1(beta, nfr);
+  g::matsubara_positive_mesh mesh2;
+  {
+    alps::hdf5::archive oar(filename,"w");
+    mesh1.save(oar,"/gf");
+  }
+  {
+    alps::hdf5::archive iar(filename);
+    mesh2.load(iar,"/gf");
+  }
+  EXPECT_EQ(mesh1, mesh2);
+  for(index i(0); i<mesh2.extent(); ++i) {
+    EXPECT_EQ(mesh1(i), mesh2(i));
+  }
+}
+
+TEST(Mesh, MatsubaraPNLoadSave) {
+  alps::testing::unique_file ufile("gf.h5.", alps::testing::unique_file::REMOVE_NOW);
+  const std::string&  filename = ufile.name();
+  namespace g=alps::gf;
+  typedef g::matsubara_pn_mesh::index_type index;
+  double beta = 100;
+  int nfr = 10;
+  g::matsubara_pn_mesh mesh1(beta, nfr);
+  g::matsubara_pn_mesh mesh2;
+  {
+    alps::hdf5::archive oar(filename,"w");
+    mesh1.save(oar,"/gf");
+  }
+  {
+    alps::hdf5::archive iar(filename);
+    mesh2.load(iar,"/gf");
+  }
+  EXPECT_EQ(mesh1, mesh2);
+  for(index i(0); i<mesh2.extent(); ++i) {
+    EXPECT_EQ(mesh1(i), mesh2(i));
+  }
+}
+
+
 TEST(Mesh,CompareITime) {
   alps::gf::itime_mesh mesh1(5.0, 20);
   alps::gf::itime_mesh mesh2(5.0, 20);
