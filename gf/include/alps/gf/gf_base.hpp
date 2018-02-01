@@ -204,7 +204,6 @@ namespace alps {
 
         /// copy assignment
         gf_type& operator=(const gf_type & rhs) {
-          rhs.throw_if_empty();
           swap_meshes(rhs.meshes_, make_index_sequence<sizeof...(MESHES)>());
           data_ = rhs.data();
           empty_= rhs.empty_;

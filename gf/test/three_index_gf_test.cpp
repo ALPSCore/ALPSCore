@@ -396,6 +396,22 @@ TEST_F(ThreeIndexGFTest, DefaultConstructive)
     EXPECT_FALSE(gf_empty.is_empty());
 }
 
+TEST_F(ThreeIndexGFTest, DefaultConstructiveAssign)
+{
+    gf_type gf_empty;
+    gf_type gf_empty2;
+    gf_type gf_empty3 = gf;
+    EXPECT_TRUE(gf_empty.is_empty());
+    EXPECT_TRUE(gf_empty2.is_empty());
+    EXPECT_FALSE(gf_empty3.is_empty());
+    EXPECT_FALSE(gf_empty3.data().size()==0);
+    EXPECT_NO_THROW(gf_empty = gf_empty2);
+    EXPECT_NO_THROW(gf_empty3 = gf_empty);
+    EXPECT_TRUE(gf_empty.is_empty());
+    EXPECT_TRUE(gf_empty3.is_empty());
+    EXPECT_TRUE(gf_empty3.data().size()==0);
+}
+
 #ifndef NDEBUG
 TEST_F(ThreeIndexGFTest, DefaultConstructiveAccess) {
     gf_type gf_empty;
