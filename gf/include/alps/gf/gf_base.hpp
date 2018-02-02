@@ -310,8 +310,8 @@ namespace alps {
          * @return updated GF object
          */
         template<typename RHS_GF>
-        typename std::enable_if < std::is_same < RHS_GF, generic_gf<data_storage> >::value ||
-            std::is_same < RHS_GF, generic_gf<data_view> >::value, gf_type & >::type
+        typename std::enable_if < std::is_convertible < RHS_GF, generic_gf<data_storage>>::value ||
+                                  std::is_convertible < RHS_GF, generic_gf<data_view>>::value, gf_type & >::type
         operator+=(const RHS_GF &rhs) {
           throw_if_empty();
           data_ += rhs.data_;
@@ -336,8 +336,8 @@ namespace alps {
          * Inplace subtraction
          */
         template<typename RHS_GF>
-        typename std::enable_if < std::is_same < RHS_GF, generic_gf<data_storage> >::value ||
-            std::is_same < RHS_GF, generic_gf<data_view> >::value, gf_type & >::type
+        typename std::enable_if < std::is_convertible < RHS_GF, generic_gf<data_storage>>::value ||
+                                  std::is_convertible < RHS_GF, generic_gf<data_view>>::value, gf_type & >::type
         operator-=(const RHS_GF &rhs) {
           throw_if_empty();
           data_ -= rhs.data_;
@@ -427,8 +427,8 @@ namespace alps {
          *  B.2. And have the same values
          */
         template<typename RHS_GF>
-        typename std::enable_if < std::is_base_of< generic_gf<data_storage>, RHS_GF >::value
-                                  || std::is_base_of < generic_gf<data_view>, RHS_GF >::value, bool >::type
+        typename std::enable_if < std::is_convertible < RHS_GF, generic_gf<data_storage> >::value
+                               || std::is_convertible < RHS_GF, generic_gf<data_view> >::value, bool >::type
         operator==(const RHS_GF &rhs) const {
           return (empty_ && rhs.is_empty()) || (data_.shape() == rhs.data().shape() && data_.storage() == rhs.data().storage() );
         }
