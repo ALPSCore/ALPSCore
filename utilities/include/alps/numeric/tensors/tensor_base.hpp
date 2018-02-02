@@ -426,7 +426,7 @@ namespace alps {
         const std::array < size_t, Dim > &acc_sizes() const { return acc_sizes_; };
 
         /// dimension of the tensor
-        size_t dimension() const { return Dim; }
+        static size_t dimension() { return Dim; }
 
         /// const pointer to the internal data
         const prec *data() const { return &storage_.data(0); }
