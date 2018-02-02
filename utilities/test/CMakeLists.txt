@@ -10,6 +10,7 @@ set (test_src
     type_traits_test
     vector_functions
     rectangularize
+    tensor_test
     )
 
 set (test_src_mpi

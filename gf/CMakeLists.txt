@@ -28,7 +28,7 @@ if (CMAKE_BUILD_TYPE STREQUAL "DEBUG")
   message("Warning: Debug build of GF module may produce slow code. Do not use in production.")
 endif()
 
-add_this_package(mesh gf)
+add_this_package(mesh)
 
 add_boost()
 add_hdf5()
