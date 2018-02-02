@@ -51,7 +51,7 @@ namespace alps {
         /// @return const-reference to the data at point i
         inline const T& data(size_t i) const {return data_[i];};
         /// bracket operators
-        inline T  operator()(size_t i) const {return data_[i];};
+        inline const T& operator()(size_t i) const {return data_[i];};
         inline T& operator()(size_t i) {return data_[i];};
         /// @return data size
         size_t size() const {return data_.size();}

@@ -178,7 +178,7 @@ namespace alps {
          * @return value of tensor at the (t1, indices...) point
          */
         template<typename ...IndexTypes>
-        T operator()(typename std::enable_if < sizeof...(IndexTypes) == Dim - 1, size_t >::type t1, IndexTypes ... indices) const {
+        const T & operator()(typename std::enable_if < sizeof...(IndexTypes) == Dim - 1, size_t >::type t1, IndexTypes ... indices) const {
           return storage_.data(index(t1, indices...));
         }
 

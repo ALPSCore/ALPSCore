@@ -239,7 +239,7 @@ namespace alps {
          * @return value at the specific position
          */
         template<class...Indices>
-        typename std::enable_if < (sizeof...(Indices) == sizeof...(MESHES)), VTYPE >::type
+        typename std::enable_if < (sizeof...(Indices) == sizeof...(MESHES)), const VTYPE & >::type
         operator()(Indices...inds) const {
           // check that index types are the same as mesh indices
           static_assert(check_mesh<Indices...>::type::value, "Index type is inconsistent with mesh index type.");
@@ -586,7 +586,7 @@ namespace alps {
          * @return element for the provided indices
          */
         template<class ... Indices>
-        VTYPE value(Indices...inds) const {
+        const VTYPE & value(Indices...inds) const {
           return data_(inds()...);
         }
 
