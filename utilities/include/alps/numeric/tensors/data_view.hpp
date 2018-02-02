@@ -66,7 +66,7 @@ namespace alps {
         /// @return const-reference to the data at point i
         const T& data(size_t i) const {return data_slice_.data(i + offset_);};
         /// bracket operators
-        inline T  operator()(size_t i) const {return data_slice_.data(i + offset_);};
+        inline const T&  operator()(size_t i) const {return data_slice_.data(i + offset_);};
         inline T& operator()(size_t i) {return data_slice_.data(i + offset_);};
         /// @return buffer size
         size_t size() const {return size_;}
