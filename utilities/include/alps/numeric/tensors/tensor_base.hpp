@@ -408,7 +408,7 @@ namespace alps {
 
         /// reshape tensor object
         template<typename X = Container>
-        typename std::enable_if<std::is_same < X, data_storage < T > >::value, void>::type reshape(std::array<size_t, Dim>& shape) {
+        typename std::enable_if<std::is_same < X, data_storage < T > >::value, void>::type reshape(const std::array<size_t, Dim>& shape) {
           size_t new_size = size(shape);
           storage_.data().resize(new_size);
           shape_ = shape;
@@ -417,7 +417,7 @@ namespace alps {
 
         /// reshape tensor view object
         template<typename X = Container>
-        typename std::enable_if<std::is_same < X, data_view < T > >::value, void>::type reshape(std::array<size_t, Dim>& shape) {
+        typename std::enable_if<std::is_same < X, data_view < T > >::value, void>::type reshape(const std::array<size_t, Dim>& shape) {
           size_t new_size = size(shape);
           if(new_size != size()) {
             throw std::invalid_argument("Wrong size. Can't reshape tensor.");
