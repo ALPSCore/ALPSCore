@@ -173,6 +173,10 @@ namespace alps {
         gf_base(const mesh_types &meshes) : data_(get_sizes(meshes)), meshes_(meshes), empty_(false) {}
         /// Create GF with the provided data
         gf_base(VTYPE* data, const mesh_types &meshes) : data_(data, get_sizes(meshes)), meshes_(meshes), empty_(false) {}
+        /// Create GF with the provided data and meshes
+        gf_base(data_storage const &data, MESHES...meshes) : data_(data), meshes_(std::make_tuple(meshes...)), empty_(false) {}
+        /// Create GF with the provided data and meshes
+        gf_base(data_storage && data, MESHES...meshes) : data_(std::move(data)), meshes_(std::make_tuple(meshes...)), empty_(false) {}
 
         /// construct new GF object by copy data from another GF object defined with different storage type
         template<typename St, typename = std::enable_if<!std::is_same<St, Storage>::value && std::is_same<St, data_view>::value > >
