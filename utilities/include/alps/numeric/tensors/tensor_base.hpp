@@ -97,6 +97,11 @@ namespace alps {
       public:
 
         /**
+         * Create empty tensor.
+         */
+        tensor_base() : storage_(0) {};
+
+        /**
          * @param container - internal storage container
          * @param sizes
          */
