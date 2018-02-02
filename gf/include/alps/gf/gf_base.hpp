@@ -176,7 +176,7 @@ namespace alps {
 
         /// construct new GF object by copy data from another GF object defined with different storage type
         template<typename St, typename = std::enable_if<!std::is_same<St, Storage>::value && std::is_same<St, data_view>::value > >
-        gf_base(const gf_base<VTYPE, data_view, MESHES...> &g) : data_(g.data()), meshes_(g.meshes()), empty_(g.is_empty()) {}
+        gf_base(const gf_base<VTYPE, St, MESHES...> &g) : data_(g.data()), meshes_(g.meshes()), empty_(g.is_empty()) {}
         template<typename St, typename = std::enable_if<!std::is_same<St, Storage>::value && std::is_same<St, data_storage>::value > >
         gf_base(gf_base<VTYPE, St, MESHES...> &g) : data_(g.data()), meshes_(g.meshes()), empty_(g.is_empty()) {}
 
@@ -629,7 +629,9 @@ namespace alps {
          */
         template<size_t...Is>
         inline std::array < size_t, N_ > fill_sizes(const mesh_types &grids, index_sequence<Is...>) {
-          return {size_t(std::get<Is>(grids).extent())...};
+          std::array< size_t, N_ > res;
+          std::tie(res[Is] = size_t(std::get<Is>(grids).extent())...);
+          return res;
         };
 
         /**

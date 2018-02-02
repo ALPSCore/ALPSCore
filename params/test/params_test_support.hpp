@@ -43,8 +43,8 @@ class arg_holder {
     const char* const * argv() {
         argv_.resize(args_.size());
         std::transform(args_.begin(), args_.end(), argv_.begin(),
-                       std::const_mem_fun_ref_t<const char*, std::string>(&std::string::c_str));
-        return &argv_.front();
+                       [](const std::string& s) { return s.c_str(); });
+        return argv_.data();
     }
 };
 

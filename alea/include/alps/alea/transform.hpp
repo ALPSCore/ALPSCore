@@ -41,9 +41,8 @@ mean_result<T> transform(no_prop, const transformer<T> &tf, const InResult &in)
 
 // template mean_result<double> transform(no_prop, const transformer<double>&, const mean_result<double>&);
 
-template <typename T, typename InResult,
-          typename std::enable_if<traits<InResult>::HAVE_COV>::type * = nullptr>
-cov_result<T> transform(linear_prop p, const transformer<T> &tf, const InResult &in)
+template <typename T, typename InResult>
+typename std::enable_if<traits<InResult>::HAVE_COV, cov_result<T> >::type transform(linear_prop p, const transformer<T> &tf, const InResult &in)
 {
     static_assert(traits<InResult>::HAVE_MEAN, "result does not have mean");
     static_assert(traits<InResult>::HAVE_COV, "result does not have covariance");
@@ -67,9 +66,8 @@ cov_result<T> transform(linear_prop p, const transformer<T> &tf, const InResult 
 
 // template cov_result<double> transform(linear_prop, const transformer<double>&, const cov_result<double>&);
 
-template <typename T, typename InResult,
-          typename std::enable_if<!traits<InResult>::HAVE_COV>::type * = nullptr>
-cov_result<T> transform(linear_prop p, const transformer<T> &tf, const InResult &in)
+template <typename T, typename InResult>
+typename std::enable_if<!traits<InResult>::HAVE_COV, cov_result<T>>::type transform(linear_prop p, const transformer<T> &tf, const InResult &in)
 {
     static_assert(traits<InResult>::HAVE_MEAN, "result does not have mean");
     static_assert(traits<InResult>::HAVE_VAR, "result does not have variance");

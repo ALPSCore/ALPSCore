@@ -30,7 +30,7 @@ namespace alps{
       typedef integer_sequence<T, A..., B...> type;
     };
 
-    template <typename T, int First, int Count>
+    template <typename T, size_t First, size_t Count>
     struct build_helper {
       using type = typename concat<
         typename build_helper<T, First,           Count/2>::type,
@@ -38,12 +38,12 @@ namespace alps{
       >::type;
     };
 
-    template <typename T, int First>
+    template <typename T, size_t First>
     struct build_helper<T, First, 1> {
       using type = integer_sequence<T, T(First)>;
     };
 
-    template <typename T, int First>
+    template <typename T, size_t First>
     struct build_helper<T, First, 0> {
       using type = integer_sequence<T>;
     };
