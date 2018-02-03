@@ -154,7 +154,7 @@ namespace alps {
         /**
          * Move-constructor
          */
-        gf_base(gf_type &&g) noexcept = default;
+        gf_base(gf_type &&g) = default;
 
         /**
          * Default constructor. Create uninitilized GF
