@@ -154,7 +154,7 @@ namespace alps {
         /**
          * Move-constructor
          */
-        gf_base(gf_type &&g) = default;
+        gf_base(gf_type &&g) noexcept = default;
 
         /**
          * Default constructor. Create uninitilized GF
@@ -190,7 +190,7 @@ namespace alps {
           static_assert(std::is_convertible<RHS_VTYPE, VTYPE>::value, "Right-hand side data type is not convertible into left-hand side.");
         }
         template<typename RHS_VTYPE, typename St, typename = std::enable_if<std::is_same<data_storage, Storage>::value>>
-        gf_base(gf_base<RHS_VTYPE, St, MESHES...> &&g) : data_(g.data()), meshes_(g.meshes()), empty_(g.is_empty()) {
+        gf_base(gf_base<RHS_VTYPE, St, MESHES...> &&g) noexcept : data_(std::move(g.data())), meshes_(std::move(g.meshes())), empty_(g.is_empty()) {
           static_assert(std::is_convertible<RHS_VTYPE, VTYPE>::value, "Right-hand side data type is not convertible into left-hand side.");
         }
 
@@ -214,10 +214,11 @@ namespace alps {
           return *this;
         }
         /// move assignment
-        gf_type& operator=(gf_type && rhs) {
+        gf_type& operator=(gf_type && rhs) noexcept {
           swap_meshes(rhs.meshes_, make_index_sequence<sizeof...(MESHES)>());
-          data_ = rhs.data();
-          empty_= rhs.empty_;
+          using std::swap;
+          swap(data_, rhs.data_);
+          swap(empty_, rhs.empty_);
           return *this;
         }
 
