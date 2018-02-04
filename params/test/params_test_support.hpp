@@ -5,7 +5,7 @@
  */
 
 /** @file params_test_support.hpp
-    
+
     @brief Utility classes to support param testing
 */
 
@@ -29,7 +29,7 @@ class arg_holder {
     explicit arg_holder(const std::string progname="./program_name") {
         this->add(progname);
     }
-    
+
     arg_holder& add(const std::string& arg) {
         args_.push_back(arg);
         return *this;
