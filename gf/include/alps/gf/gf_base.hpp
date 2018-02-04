@@ -124,8 +124,8 @@ namespace alps {
         {
           using type = gf_base<S, numerics::tensor_view < S, sizeof...(T)>,  T...>;
         };
-        template<typename S, int I>
-        using subpack = typename subpack_impl<S, decltype(tuple_tail < I >(meshes_) )>::type;
+        template<typename S, size_t I>
+        using subpack = typename subpack_impl<S, decltype(tuple_tail < I, MESHES... >(meshes_) )>::type;
 
         template<typename RHS_VTYPE, typename LHS_VTYPE>
         struct convert {
@@ -180,7 +180,7 @@ namespace alps {
 
         /// construct new GF object by copy data from another GF object defined with different storage type
         template<typename St, typename = std::enable_if<!std::is_same<St, Storage>::value && std::is_same<St, data_view>::value > >
-        gf_base(const gf_base<VTYPE, data_view, MESHES...> &g) : data_(g.data()), meshes_(g.meshes()), empty_(g.is_empty()) {}
+        gf_base(const gf_base<VTYPE, St, MESHES...> &g) : data_(g.data()), meshes_(g.meshes()), empty_(g.is_empty()) {}
         template<typename St, typename = std::enable_if<!std::is_same<St, Storage>::value && std::is_same<St, data_storage>::value > >
         gf_base(gf_base<VTYPE, St, MESHES...> &g) : data_(g.data()), meshes_(g.meshes()), empty_(g.is_empty()) {}
 
@@ -273,14 +273,14 @@ namespace alps {
             typename std::tuple_element<0,mesh_types>::type::index_type >::type ind, Indices...inds) ->
                                                                             subpack<VTYPE, sizeof...(Indices) + 1> {
           return subpack<VTYPE, sizeof...(Indices) + 1 >
-                          (*this, meshes_, tuple_tail < sizeof...(Indices) + 1 >(meshes_), ind, std::forward<Indices>(inds)...);
+                          (*this, meshes_, tuple_tail < sizeof...(Indices) + 1, MESHES...>(meshes_), ind, std::forward<Indices>(inds)...);
         }
 
         template<class...Indices>
         auto operator()(typename std::enable_if<(sizeof...(Indices)+1 < N_),
             typename std::tuple_element<0,mesh_types>::type::index_type >::type ind, Indices...inds) const ->
                                                                             subpack<const VTYPE, sizeof...(Indices) + 1> {
-          auto t = tuple_tail < sizeof...(Indices) + 1 >(meshes_);
+          auto t = tuple_tail < sizeof...(Indices) + 1, MESHES...>(meshes_);
           return subpack<const VTYPE, sizeof...(Indices) + 1>  (*this, meshes_, t, ind, std::forward<Indices>(inds)...);
         }
 
@@ -634,7 +634,7 @@ namespace alps {
          */
         template<size_t...Is>
         inline std::array < size_t, N_ > fill_sizes(const mesh_types &grids, index_sequence<Is...>) {
-          return {size_t(std::get<Is>(grids).extent())...};
+          return {{size_t(std::get<Is>(grids).extent())...}};
         };
 
         /**
