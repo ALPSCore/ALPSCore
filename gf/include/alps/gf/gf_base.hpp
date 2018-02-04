@@ -629,9 +629,7 @@ namespace alps {
          */
         template<size_t...Is>
         inline std::array < size_t, N_ > fill_sizes(const mesh_types &grids, index_sequence<Is...>) {
-          std::array< size_t, N_ > res;
-          std::tie(res[Is] = size_t(std::get<Is>(grids).extent())...);
-          return res;
+          return {{size_t(std::get<Is>(grids).extent())...}};
         };
 
         /**
