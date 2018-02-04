@@ -124,8 +124,8 @@ namespace alps {
         {
           using type = gf_base<S, numerics::tensor_view < S, sizeof...(T)>,  T...>;
         };
-        template<typename S, int I>
-        using subpack = typename subpack_impl<S, decltype(tuple_tail < I >(meshes_) )>::type;
+        template<typename S, size_t I>
+        using subpack = typename subpack_impl<S, decltype(tuple_tail < I, MESHES... >(meshes_) )>::type;
 
         template<typename RHS_VTYPE, typename LHS_VTYPE>
         struct convert {
@@ -268,14 +268,14 @@ namespace alps {
             typename std::tuple_element<0,mesh_types>::type::index_type >::type ind, Indices...inds) ->
                                                                             subpack<VTYPE, sizeof...(Indices) + 1> {
           return subpack<VTYPE, sizeof...(Indices) + 1 >
-                          (*this, meshes_, tuple_tail < sizeof...(Indices) + 1 >(meshes_), ind, std::forward<Indices>(inds)...);
+                          (*this, meshes_, tuple_tail < sizeof...(Indices) + 1, MESHES...>(meshes_), ind, std::forward<Indices>(inds)...);
         }
 
         template<class...Indices>
         auto operator()(typename std::enable_if<(sizeof...(Indices)+1 < N_),
             typename std::tuple_element<0,mesh_types>::type::index_type >::type ind, Indices...inds) const ->
                                                                             subpack<const VTYPE, sizeof...(Indices) + 1> {
-          auto t = tuple_tail < sizeof...(Indices) + 1 >(meshes_);
+          auto t = tuple_tail < sizeof...(Indices) + 1, MESHES...>(meshes_);
           return subpack<const VTYPE, sizeof...(Indices) + 1>  (*this, meshes_, t, ind, std::forward<Indices>(inds)...);
         }
 
