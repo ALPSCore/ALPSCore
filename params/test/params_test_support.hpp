@@ -5,7 +5,7 @@
  */
 
 /** @file params_test_support.hpp
-    
+
     @brief Utility classes to support param testing
 */
 
@@ -29,7 +29,7 @@ class arg_holder {
     explicit arg_holder(const std::string progname="./program_name") {
         this->add(progname);
     }
-    
+
     arg_holder& add(const std::string& arg) {
         args_.push_back(arg);
         return *this;
@@ -43,8 +43,8 @@ class arg_holder {
     const char* const * argv() {
         argv_.resize(args_.size());
         std::transform(args_.begin(), args_.end(), argv_.begin(),
-                       std::const_mem_fun_ref_t<const char*, std::string>(&std::string::c_str));
-        return &argv_.front();
+                       [](const std::string& s) { return s.c_str(); });
+        return argv_.data();
     }
 };
 
