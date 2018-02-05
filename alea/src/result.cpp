@@ -82,7 +82,7 @@ struct cov_visitor
     result_type operator() (const var_result<T,Str> &) const { throw estimate_unavailable(); }
     result_type operator() (const cov_result<T,Str> &r) const { return r.cov(); }
     result_type operator() (const autocorr_result<T> &) const { throw estimate_unavailable(); }
-    result_type operator() (const batch_result<T> &r) const { r.template cov<Str>(); }
+    result_type operator() (const batch_result<T> &r) const { return r.template cov<Str>(); }
 
     // default case
     template <typename Res>

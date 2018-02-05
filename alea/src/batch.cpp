@@ -174,7 +174,7 @@ column<typename bind<Str,T>::var_type> batch_result<T>::var() const
 
 template <typename T>
 template <typename Str>
-column<typename bind<Str,T>::cov_type> batch_result<T>::cov() const
+typename eigen<typename bind<Str,T>::cov_type>::matrix batch_result<T>::cov() const
 {
     cov_acc<T, Str> aux_acc(store_->size());
     for (size_t i = 0; i != store_->num_batches(); ++i)
@@ -230,9 +230,9 @@ template column<double> batch_result<double>::var<circular_var>() const;
 template column<double> batch_result<std::complex<double> >::var<circular_var>() const;
 template column<complex_op<double> > batch_result<std::complex<double> >::var<elliptic_var>() const;
 
-template column<double> batch_result<double>::cov< circular_var>() const;
-template column<std::complex<double> > batch_result<std::complex<double> >::cov<circular_var>() const;
-template column<complex_op<double> > batch_result<std::complex<double> >::cov<elliptic_var>() const;
+template eigen<double>::matrix batch_result<double>::cov< circular_var>() const;
+template eigen<std::complex<double>>::matrix batch_result<std::complex<double> >::cov<circular_var>() const;
+template eigen<complex_op<double> >::matrix batch_result<std::complex<double> >::cov<elliptic_var>() const;
 
 template class batch_result<double>;
 template class batch_result<std::complex<double> >;

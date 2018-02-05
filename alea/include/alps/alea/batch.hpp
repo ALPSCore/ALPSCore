@@ -187,7 +187,7 @@ public:
 
     /** Returns bias-corrected sample covariance matrix for given strategy */
     template <typename Strategy=circular_var>
-    column<typename bind<Strategy,T>::cov_type> cov() const;
+    typename eigen<typename bind<Strategy,T>::cov_type>::matrix cov() const;
 
     /** Return standard error of the mean */
     column<typename bind<circular_var,T>::var_type> stderror() const;
