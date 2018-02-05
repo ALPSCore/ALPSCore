@@ -124,8 +124,8 @@ namespace alps {
         {
           using type = gf_base<S, numerics::tensor_view < S, sizeof...(T)>,  T...>;
         };
-        template<typename S, int I>
-        using subpack = typename subpack_impl<S, decltype(tuple_tail < I >(meshes_) )>::type;
+        template<typename S, size_t I>
+        using subpack = typename subpack_impl<S, decltype(tuple_tail < I, MESHES... >(meshes_) )>::type;
 
         template<typename RHS_VTYPE, typename LHS_VTYPE>
         struct convert {
@@ -173,10 +173,14 @@ namespace alps {
         gf_base(const mesh_types &meshes) : data_(get_sizes(meshes)), meshes_(meshes), empty_(false) {}
         /// Create GF with the provided data
         gf_base(VTYPE* data, const mesh_types &meshes) : data_(data, get_sizes(meshes)), meshes_(meshes), empty_(false) {}
+        /// Create GF with the provided data and meshes
+        gf_base(data_storage const &data, MESHES...meshes) : data_(data), meshes_(std::make_tuple(meshes...)), empty_(false) {}
+        /// Create GF with the provided data and meshes
+        gf_base(data_storage && data, MESHES...meshes) : data_(std::move(data)), meshes_(std::make_tuple(meshes...)), empty_(false) {}
 
         /// construct new GF object by copy data from another GF object defined with different storage type
         template<typename St, typename = std::enable_if<!std::is_same<St, Storage>::value && std::is_same<St, data_view>::value > >
-        gf_base(const gf_base<VTYPE, data_view, MESHES...> &g) : data_(g.data()), meshes_(g.meshes()), empty_(g.is_empty()) {}
+        gf_base(const gf_base<VTYPE, St, MESHES...> &g) : data_(g.data()), meshes_(g.meshes()), empty_(g.is_empty()) {}
         template<typename St, typename = std::enable_if<!std::is_same<St, Storage>::value && std::is_same<St, data_storage>::value > >
         gf_base(gf_base<VTYPE, St, MESHES...> &g) : data_(g.data()), meshes_(g.meshes()), empty_(g.is_empty()) {}
 
@@ -186,7 +190,7 @@ namespace alps {
           static_assert(std::is_convertible<RHS_VTYPE, VTYPE>::value, "Right-hand side data type is not convertible into left-hand side.");
         }
         template<typename RHS_VTYPE, typename St, typename = std::enable_if<std::is_same<data_storage, Storage>::value>>
-        gf_base(gf_base<RHS_VTYPE, St, MESHES...> &&g) : data_(g.data()), meshes_(g.meshes()), empty_(g.is_empty()) {
+        gf_base(gf_base<RHS_VTYPE, St, MESHES...> &&g) noexcept : data_(std::move(g.data())), meshes_(std::move(g.meshes())), empty_(g.is_empty()) {
           static_assert(std::is_convertible<RHS_VTYPE, VTYPE>::value, "Right-hand side data type is not convertible into left-hand side.");
         }
 
@@ -210,10 +214,11 @@ namespace alps {
           return *this;
         }
         /// move assignment
-        gf_type& operator=(gf_type && rhs) {
+        gf_type& operator=(gf_type && rhs) noexcept {
           swap_meshes(rhs.meshes_, make_index_sequence<sizeof...(MESHES)>());
-          data_ = rhs.data();
-          empty_= rhs.empty_;
+          using std::swap;
+          swap(data_, rhs.data_);
+          swap(empty_, rhs.empty_);
           return *this;
         }
 
@@ -239,7 +244,7 @@ namespace alps {
          * @return value at the specific position
          */
         template<class...Indices>
-        typename std::enable_if < (sizeof...(Indices) == sizeof...(MESHES)), VTYPE >::type
+        typename std::enable_if < (sizeof...(Indices) == sizeof...(MESHES)), const VTYPE & >::type
         operator()(Indices...inds) const {
           // check that index types are the same as mesh indices
           static_assert(check_mesh<Indices...>::type::value, "Index type is inconsistent with mesh index type.");
@@ -268,14 +273,14 @@ namespace alps {
             typename std::tuple_element<0,mesh_types>::type::index_type >::type ind, Indices...inds) ->
                                                                             subpack<VTYPE, sizeof...(Indices) + 1> {
           return subpack<VTYPE, sizeof...(Indices) + 1 >
-                          (*this, meshes_, tuple_tail < sizeof...(Indices) + 1 >(meshes_), ind, std::forward<Indices>(inds)...);
+                          (*this, meshes_, tuple_tail < sizeof...(Indices) + 1, MESHES...>(meshes_), ind, std::forward<Indices>(inds)...);
         }
 
         template<class...Indices>
         auto operator()(typename std::enable_if<(sizeof...(Indices)+1 < N_),
             typename std::tuple_element<0,mesh_types>::type::index_type >::type ind, Indices...inds) const ->
                                                                             subpack<const VTYPE, sizeof...(Indices) + 1> {
-          auto t = tuple_tail < sizeof...(Indices) + 1 >(meshes_);
+          auto t = tuple_tail < sizeof...(Indices) + 1, MESHES...>(meshes_);
           return subpack<const VTYPE, sizeof...(Indices) + 1>  (*this, meshes_, t, ind, std::forward<Indices>(inds)...);
         }
 
@@ -306,8 +311,8 @@ namespace alps {
          * @return updated GF object
          */
         template<typename RHS_GF>
-        typename std::enable_if < std::is_same < RHS_GF, generic_gf<data_storage> >::value ||
-            std::is_same < RHS_GF, generic_gf<data_view> >::value, gf_type & >::type
+        typename std::enable_if < std::is_convertible < RHS_GF, generic_gf<data_storage>>::value ||
+                                  std::is_convertible < RHS_GF, generic_gf<data_view>>::value, gf_type & >::type
         operator+=(const RHS_GF &rhs) {
           throw_if_empty();
           data_ += rhs.data_;
@@ -332,8 +337,8 @@ namespace alps {
          * Inplace subtraction
          */
         template<typename RHS_GF>
-        typename std::enable_if < std::is_same < RHS_GF, generic_gf<data_storage> >::value ||
-            std::is_same < RHS_GF, generic_gf<data_view> >::value, gf_type & >::type
+        typename std::enable_if < std::is_convertible < RHS_GF, generic_gf<data_storage>>::value ||
+                                  std::is_convertible < RHS_GF, generic_gf<data_view>>::value, gf_type & >::type
         operator-=(const RHS_GF &rhs) {
           throw_if_empty();
           data_ -= rhs.data_;
@@ -423,8 +428,8 @@ namespace alps {
          *  B.2. And have the same values
          */
         template<typename RHS_GF>
-        typename std::enable_if < std::is_base_of< generic_gf<data_storage>, RHS_GF >::value
-                                  || std::is_base_of < generic_gf<data_view>, RHS_GF >::value, bool >::type
+        typename std::enable_if < std::is_convertible < RHS_GF, generic_gf<data_storage> >::value
+                               || std::is_convertible < RHS_GF, generic_gf<data_view> >::value, bool >::type
         operator==(const RHS_GF &rhs) const {
           return (empty_ && rhs.is_empty()) || (data_.shape() == rhs.data().shape() && data_.storage() == rhs.data().storage() );
         }
@@ -586,7 +591,7 @@ namespace alps {
          * @return element for the provided indices
          */
         template<class ... Indices>
-        VTYPE value(Indices...inds) const {
+        const VTYPE & value(Indices...inds) const {
           return data_(inds()...);
         }
 
@@ -629,7 +634,7 @@ namespace alps {
          */
         template<size_t...Is>
         inline std::array < size_t, N_ > fill_sizes(const mesh_types &grids, index_sequence<Is...>) {
-          return {size_t(std::get<Is>(grids).extent())...};
+          return {{size_t(std::get<Is>(grids).extent())...}};
         };
 
         /**
