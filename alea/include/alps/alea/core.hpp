@@ -115,24 +115,6 @@ struct computed
 
     /** Destroy estimator */
     virtual ~computed() { }
-
-    // FIXME: use a construction like this
-    //   template <typename U>  U as();
-
-    /** Allow for default conversions for convenience */
-    operator std::vector<T>() const
-    {
-        std::vector<T> res(size(), 0);
-        add_to(sink<T>(&res[0], res.size())); // TODO: data
-        return res;
-    }
-
-    operator T() const
-    {
-        T res;
-        add_to(sink<T>(&res, 1));
-        return res;
-    }
 };
 
 /**
@@ -160,20 +142,18 @@ public:
 
     // Methods for convenience and backwards compatibility
 
-    size_t size() const { return this->rows(); }
+    // TODO this prevents us from doing, which we should be at some point ...
+    // template <typename T>
+    // using column = Eigen::Matrix<T, Eigen::Dynamic, 1>;
 
-    operator T() const
-    {
-        if (this->rows() != 1)
-            throw size_mismatch();
-        return (*this)(0);
-    }
+    size_t size() const { return this->rows(); }
 
     operator std::vector<T>() const
     {
         return std::vector<T>(this->data(), this->data() + this->rows());
     }
 };
+
 
 /**
  * Setup information struct for the reduction
@@ -283,6 +263,9 @@ struct transformer
 
     /** Guarantee transformation to be linear (allows certain optimizations) */
     virtual bool is_linear() const { return false; }
+
+    /** Destructor */
+    virtual ~transformer() { }
 };
 
 }}
