@@ -178,6 +178,9 @@ public:
     /** Returns sample size, i.e., total number of accumulated data points */
     size_t count() const { return store_->count().sum(); }
 
+    /** Returns sample size, i.e., total number of accumulated data points */
+    double count2() const { return store_->count().squaredNorm(); }
+
     /** Returns sample mean */
     column<T> mean() const;
 

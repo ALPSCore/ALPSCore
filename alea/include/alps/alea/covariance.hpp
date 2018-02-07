@@ -216,6 +216,9 @@ public:
     /** Returns sample size, i.e., number of accumulated data points */
     size_t count() const { return store_->count(); }
 
+    /** Returns sum of squared sample sizes */
+    size_t count2() const { return store_->count2(); }
+
     /** Returns average batch size */
     double batch_size() const { return store_->count2() / store_->count(); }
 
@@ -226,10 +229,10 @@ public:
     const column<T> &mean() const { return store_->data(); }
 
     /** Returns bias-corrected sample variance */
-    column<var_type> var() const { return store_->data2().diagonal().real(); }
+    column<var_type> var() const { return batch_size() * store_->data2().diagonal().real(); } // TODO
 
     /** Returns bias-corrected sample covariance matrix  */
-    const typename eigen<cov_type>::matrix &cov() const { return store_->data2(); }
+    typename eigen<cov_type>::matrix cov() const { return batch_size() * store_->data2(); } // TODO
 
     /** Returns bias-corrected standard error of the mean */
     column<var_type> stderror() const;

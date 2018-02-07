@@ -131,11 +131,7 @@ column<typename autocorr_result<T>::var_type> autocorr_result<T>::tau() const
     const column<var_type> &var0 = level_[0].var();
     const column<var_type> &varn = level_[lvl].var();
 
-    // The factor `n` comes from the fact that the variance of an n-element mean
-    // estimator has tighter variance by the CLT; it can be dropped if one
-    // performs the batch sum rather than the batch mean.
-    double fact = 0.5 * level_[0].observations() / level_[lvl].observations();
-    return (fact * varn.array() / var0.array() - 0.5).matrix();
+    return (0.5 * varn.array() / var0.array() - 0.5).matrix();
 }
 
 template <typename T>

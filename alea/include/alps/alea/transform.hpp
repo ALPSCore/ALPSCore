@@ -62,6 +62,7 @@ cov_result<T> transform(linear_prop p, const transformer<T> &tf, const InResult 
     res.store().data() = tf(in.mean());
     res.store().data2() = jac * in.cov() * jac.adjoint();
     res.store().count() = in.count();
+    res.store().count2() = in.count2();
     return res;
 }
 
@@ -88,6 +89,7 @@ cov_result<T> transform(linear_prop p, const transformer<T> &tf, const InResult 
     res.store().data() = tf(in.mean());
     res.store().data2() = jac * in.var().asDiagonal() * jac.adjoint();
     res.store().count() = in.count();
+    res.store().count2() = in.count2();
     return res;
 }
 
