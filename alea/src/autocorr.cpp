@@ -140,7 +140,11 @@ void autocorr_result<T>::reduce(const reducer &r, bool pre_commit, bool post_com
     internal::check_valid(*this);
 
     if (pre_commit) {
-        // initialize reduction
+        // initialize reduction: we may need to amend the number of levels
+        size_t needs_levels = r.get_max(nlevel());
+        for (size_t i = nlevel(); i != needs_levels; ++i)
+            level_.push_back(level_result_type(var_data<T>(size())));
+
         // TODO: figure out if this is statistically sound
         for (size_t i = 0; i != nlevel(); ++i)
             level_[i].reduce(r, true, false);

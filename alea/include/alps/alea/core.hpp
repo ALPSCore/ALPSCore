@@ -197,6 +197,9 @@ struct reducer
     /** Set-up reduction operation */
     virtual reducer_setup get_setup() const = 0;
 
+    /** Get maximum of scalar value over all instances (immediate) */
+    virtual long get_max(long value) const = 0;
+
     /** Reduce double data-set into `data` */
     virtual void reduce(sink<double> data) const = 0;
 
