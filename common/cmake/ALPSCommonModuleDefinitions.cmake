@@ -253,11 +253,11 @@ endmacro(gen_pkg_config)
 # Function: generates main ALPSCore config
 function(gen_cfg_main)
   configure_file("${PROJECT_SOURCE_DIR}/common/cmake/ALPSCoreConfig.cmake.in" 
-                 "${PROJECT_BINARY_DIR}/ALPSCoreConfig.cmake" @ONLY)
+                 "${PROJECT_BINARY_DIR}/stage/ALPSCoreConfig.cmake" @ONLY)
   configure_file("${PROJECT_SOURCE_DIR}/common/cmake/ALPSCoreConfigVersion.cmake.in" 
-                 "${PROJECT_BINARY_DIR}/ALPSCoreConfigVersion.cmake" @ONLY)
-  install(FILES "${PROJECT_BINARY_DIR}/ALPSCoreConfig.cmake" DESTINATION "share/ALPSCore/")
-  install(FILES "${PROJECT_BINARY_DIR}/ALPSCoreConfigVersion.cmake" DESTINATION "share/ALPSCore/")
+                 "${PROJECT_BINARY_DIR}/stage/ALPSCoreConfigVersion.cmake" @ONLY)
+  install(FILES "${PROJECT_BINARY_DIR}/stage/ALPSCoreConfig.cmake" DESTINATION "share/ALPSCore/")
+  install(FILES "${PROJECT_BINARY_DIR}/stage/ALPSCoreConfigVersion.cmake" DESTINATION "share/ALPSCore/")
 endfunction()
 
 
@@ -282,27 +282,6 @@ function(gen_cfg_module)
         set(EXPORTS alps::${PROJECT_NAME})
     endif()
     configure_file("${PROJECT_SOURCE_DIR}/../common/cmake/ALPSModuleConfig.cmake.in" 
-                   "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" @ONLY)
-    install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" DESTINATION "share/${PROJECT_NAME}/")
+                   "${PROJECT_BINARY_DIR}/stage/${PROJECT_NAME}Config.cmake" @ONLY)
+    install(FILES "${PROJECT_BINARY_DIR}/stage/${PROJECT_NAME}Config.cmake" DESTINATION "share/${PROJECT_NAME}/")
 endfunction()
-
-# # Requred parameters:
-# #  project_search_file_ : filename helping to identify the location of the project 
-# # Optional parameters:
-# #  HEADER_ONLY : the package does not contain libraries
-# #
-# function(gen_find_module project_search_file_)
-#   set(PROJECT_SEARCH_FILE ${project_search_file_})
-#   set (NOT_HEADER_ONLY true)
-#   foreach(arg ${ARGV})
-#     if (arg STREQUAL "HEADER_ONLY")
-#       set(NOT_HEADER_ONLY false)
-#     endif()
-#   endforeach()
-#   configure_file("${PROJECT_SOURCE_DIR}/../common/cmake/ALPSModuleConfig.cmake.in" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" @ONLY)
-#   # configure_file("${PROJECT_SOURCE_DIR}/../common/cmake/FindALPSModule.cmake.in" "${PROJECT_BINARY_DIR}/Find${PROJECT_NAME}.cmake" @ONLY)
-#   # install(FILES "${PROJECT_BINARY_DIR}/Find${PROJECT_NAME}.cmake" DESTINATION "share/cmake/Modules/")
-#   install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" DESTINATION "share/${PROJECT_NAME}/")
-#   install(FILES "${PROJECT_SOURCE_DIR}/../common/cmake/ALPSCoreConfig.cmake" DESTINATION "share/ALPSCore/")
-#   install(FILES "${PROJECT_SOURCE_DIR}/../common/cmake/FindALPSCore.cmake" DESTINATION "share/cmake/Modules/")
-# endfunction(gen_find_module)
