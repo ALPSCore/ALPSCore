@@ -74,6 +74,13 @@ public:
     }
 
 protected:
+    // Look at:
+    // void archive::write(std::string path, T const * value,
+    //     , std::vector<std::size_t> size
+    //     , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+    //     , std::vector<std::size_t> offset = std::vector<std::size_t>()
+    //     ) const;
+
     template <typename T>
     void do_write(const std::string &relpath, sink<const T> data)
     {
@@ -93,6 +100,24 @@ protected:
         std::vector<size_t> chunk = shape;
 
         (*archive_).write(path, data.data(), shape, chunk, offset);
+    }
+
+    template <typename T>
+    void do_write(const std::string &relpath, const computed<std::complex<T>> &data)
+    {
+        if (debug_)
+            std::cerr << "Writing:" << get_path(relpath) << "\n";
+        std::string path = get_path(relpath);
+
+        // FIXME: support shape
+        std::vector<size_t> shape = {data.size(), 2};
+        std::vector<size_t> offset(shape.size(), 0);
+        std::vector<size_t> chunk = shape;
+
+        // hdf5::archive does not support complex
+        (*archive_).write(path, reinterpret_cast<T*>(data.data()), shape,
+                          chunk, offset);
+        (*archive_).write(path + "/@__complex__", true);
     }
 
     std::string get_path(const std::string &key)

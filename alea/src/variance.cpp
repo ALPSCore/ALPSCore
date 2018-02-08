@@ -188,28 +188,34 @@ void var_result<T,Str>::reduce(const reducer &r, bool pre_commit, bool post_comm
     }
 }
 
-template <typename T, typename Str>
-void var_result<T,Str>::serialize(serializer &s) const
-{
-    internal::check_valid(*this);
-
-    size_t size = store_->data_.size();
-    s.write("@size", sink<const size_t>(&size, 1));
-    s.write("count", sink<const double>(&store_->count_, 1));
-    s.write("count2", sink<const double>(&store_->count2_, 1));
-    s.enter("mean");
-    s.write("value", sink<const T>(store_->data_.data(), store_->data_.size()));
-    {
-        // TODO get rid of temporary
-        column<var_type> error = stderror();
-        s.write("error", sink<const var_type>(error.data(), error.size()));
-    }
-    s.exit();
-    s.write("var", sink<const var_type>(store_->data2_.data(), store_->data2_.size()));
-}
-
 template class var_result<double>;
 template class var_result<std::complex<double>, circular_var>;
 template class var_result<std::complex<double>, elliptic_var>;
+
+
+template <typename T, typename Str>
+void serialize(serializer &s, const var_result<T,Str> &self)
+{
+    typedef typename bind<Str,T>::var_type var_type;
+    internal::check_valid(self);
+
+    size_t size = self.store_->data_.size();
+    s.write("@size", sink<const size_t>(&size, 1));
+    s.write("count", sink<const double>(&self.store_->count_, 1));
+    s.write("count2", sink<const double>(&self.store_->count2_, 1));
+    s.enter("mean");
+    s.write("value", sink<const T>(self.store_->data_.data(), self.store_->data_.size()));
+    {
+        // TODO get rid of temporary
+        column<var_type> error = self.stderror();
+        s.write("error", sink<const var_type>(error.data(), error.size()));
+    }
+    s.exit();
+    s.write("var", sink<const var_type>(self.store_->data2_.data(), self.store_->data2_.size()));
+}
+
+template void serialize(serializer &, const var_result<double, circular_var> &);
+template void serialize(serializer &, const var_result<std::complex<double>, circular_var> &);
+template void serialize(serializer &, const var_result<std::complex<double>, elliptic_var> &);
 
 }}

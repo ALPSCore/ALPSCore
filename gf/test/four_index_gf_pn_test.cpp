@@ -5,7 +5,7 @@
  */
 
 #include "gtest/gtest.h"
-#include "alps/gf/gf.hpp"
+#include <alps/gf/gf.hpp>
 #include "gf_test.hpp"
 
 class TestGFM : public ::testing::Test

@@ -22,6 +22,9 @@ namespace alps { namespace alea {
     template <typename T, typename Str> class cov_result;
 
     template <typename T> class batch_result;
+
+    template <typename T, typename Str>
+    void serialize(serializer &, const cov_result<T,Str> &);
 }}
 
 // Actual declarations
@@ -84,6 +87,7 @@ private:
 
     friend class cov_acc<T, Strategy>;
     friend class cov_result<T, Strategy>;
+    friend void serialize<>(serializer &, const cov_result<T,Strategy> &);
 };
 
 template <typename T, typename Strategy>
@@ -250,7 +254,7 @@ public:
     void reduce(const reducer &r) { reduce(r, true, true); }
 
     /** Convert result to a permanent format (write to disk etc.) */
-    void serialize(serializer &) const;
+    friend void serialize<>(serializer &, const cov_result &);
 
 protected:
     void reduce(const reducer &, bool do_pre_commit, bool do_post_commit);
@@ -267,6 +271,7 @@ struct traits< cov_result<T,Strategy> >
     typedef Strategy strategy_type;
     typedef typename bind<Strategy, T>::value_type value_type;
     typedef typename bind<Strategy, T>::var_type var_type;
+    typedef typename bind<Strategy, T>::cov_type cov_type;
 
     const static bool HAVE_MEAN  = true;
     const static bool HAVE_VAR   = true;
@@ -279,5 +284,4 @@ extern template class cov_result<double>;
 extern template class cov_result<std::complex<double>, circular_var>;
 extern template class cov_result<std::complex<double>, elliptic_var>;
 
-
-}}
+}} /* namespace alps::alea */

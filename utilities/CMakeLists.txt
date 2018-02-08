@@ -35,6 +35,7 @@ add_this_package(
 )
 
 add_boost()
+add_eigen()
 
 add_testing()
 CHECK_INCLUDE_FILE(unistd.h ALPS_HAVE_UNISTD_H)

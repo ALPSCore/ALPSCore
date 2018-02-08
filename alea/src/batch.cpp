@@ -212,38 +212,6 @@ void batch_result<T>::reduce(const reducer &r, bool pre_commit, bool post_commit
     }
 }
 
-template <typename T>
-void batch_result<T>::serialize(serializer &s) const
-{
-    internal::check_valid(*this);
-    {
-        size_t size_var = size();
-        s.write("@size", sink<const size_t>(&size_var, 1));
-    }
-    {
-        size_t nbatch = store().num_batches();
-        s.write("@num_batches", sink<const size_t>(&nbatch, 1));
-    }
-
-    s.enter("batch");
-    s.write("count", sink<const size_t>(store().count().data(), store().count().size()));
-    s.write("sum", sink<const T>(store().batch().data(), store().batch().size()));
-    s.exit();
-
-    s.enter("mean");
-    {
-        // TODO temporary
-        column<T> mean_var = mean();
-        s.write("value", sink<const T>(mean_var.data(), mean_var.size()));
-    }
-    {
-        typedef typename bind<circular_var,T>::var_type var_type;
-        column<var_type> error = stderror();
-        s.write("error", sink<const var_type>(error.data(), error.size()));
-    }
-    s.exit();
-}
-
 template column<double> batch_result<double>::var<circular_var>() const;
 template column<double> batch_result<std::complex<double> >::var<circular_var>() const;
 template column<complex_op<double> > batch_result<std::complex<double> >::var<elliptic_var>() const;
@@ -255,4 +223,40 @@ template eigen<complex_op<double> >::matrix batch_result<std::complex<double> >:
 template class batch_result<double>;
 template class batch_result<std::complex<double> >;
 
-}}
+
+template <typename T>
+void serialize(serializer &s, const batch_result<T> &self)
+{
+    internal::check_valid(self);
+    {
+        size_t size_var = self.size();
+        s.write("@size", sink<const size_t>(&size_var, 1));
+    }
+    {
+        size_t nbatch = self.store().num_batches();
+        s.write("@num_batches", sink<const size_t>(&nbatch, 1));
+    }
+
+    s.enter("batch");
+    s.write("count", sink<const size_t>(self.store().count().data(), self.store().count().size()));
+    s.write("sum", sink<const T>(self.store().batch().data(), self.store().batch().size()));
+    s.exit();
+
+    s.enter("mean");
+    {
+        // TODO temporary
+        column<T> mean_var = self.mean();
+        s.write("value", sink<const T>(mean_var.data(), mean_var.size()));
+    }
+    {
+        typedef typename bind<circular_var,T>::var_type var_type;
+        column<var_type> error = self.stderror();
+        s.write("error", sink<const var_type>(error.data(), error.size()));
+    }
+    s.exit();
+}
+
+template void serialize(serializer &, const batch_result<double> &);
+template void serialize(serializer &, const batch_result<std::complex<double>> &);
+
+}} /* namespace alps::alea */

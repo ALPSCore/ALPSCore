@@ -89,6 +89,24 @@ struct cov_visitor
     result_type operator() (const Res &) const { throw estimate_type_mismatch(); }
 };
 
+struct serialize_visitor
+{
+    typedef bool result_type;
+
+    serialize_visitor(serializer &s) : s_(s) { }
+
+    // default case
+    template <typename Res>
+    bool operator() (const Res &res) const
+    {
+        serialize(s_, res);
+        return false;     // the visitor mechanism does not allow void returns
+    }
+
+private:
+    serializer &s_;
+};
+
 bool result::valid() const
 {
     return boost::apply_visitor(valid_visitor(), res_);
@@ -127,5 +145,10 @@ typename eigen<typename bind<Str,T>::cov_type>::matrix result::cov() const
 template eigen<double>::matrix result::cov<double, circular_var>() const;
 template eigen<std::complex<double> >::matrix result::cov<std::complex<double>, circular_var>() const;
 template eigen<complex_op<double> >::matrix result::cov<std::complex<double>, elliptic_var>() const;
+
+void serialize(serializer &s, const result &result)
+{
+    boost::apply_visitor(serialize_visitor(s), result.res_);
+}
 
 }}
