@@ -37,24 +37,26 @@ template <typename T>
 struct traits;
 
 /**
- * Data sink as a thin wrapper around a continuous array.
+ * Data sink as a thin wrapper around a continuous multi-dimensional array.
  *
- * Basically collects a pointer continuous array (vector, Eigen array, C
- * array etc.) together with its size.  This is sufficiently generic for the
- * virtual interface of `estimator`.
+ * Basically collects a pointer continuous array in ROW-MAJOR format (vector,
+ * transposed Eigen array, C array etc.) together with its shape.  Note that
+ * the view neither owns the `data` pointer nor the `shape` pointer.
  */
 template <typename T>
-class sink
+class ndview
 {
 public:
     typedef T value_type;
 
 public:
     /** Construct view on nothing */
-    sink() : data_(nullptr), size_(0) { }
+    ndview() : data_(nullptr), shape_(nullptr), ndim_(0) { }
 
     /** Construct view on data area with size */
-    sink(T *data, size_t size) : data_(data), size_(size) { }
+    ndview(T *data, const size_t *shape, size_t ndim)
+        : data_(data), shape_(shape), ndim_(ndim)
+    { }
 
     /** Get pointer to zeroth element */
     T *data() { return data_; }
@@ -62,12 +64,62 @@ public:
     /** Get pointer to zeroth element */
     const T *data() const { return data_; }
 
-    /** Get size of data space */
-    size_t size() const { return size_; }
+    /** Get shape of data space */
+    const size_t *shape() const { return shape_; }
+
+    /** Get number of dimensions */
+    size_t ndim() const { return ndim_; }
+
+    /** Return size */
+    size_t size() const
+    {
+        size_t result = 1;
+        for (size_t d = 0; d != ndim_; ++d)
+            result *= shape_[d];
+        return result;
+    }
 
 private:
     T *data_;
-    size_t size_;
+    const size_t *shape_;
+    size_t ndim_;
+};
+
+/**
+ * Wrapper around K-dim array.
+ *
+ * @warning Don't create pure rvalues of this class -- casting this to
+ *          ndview<T>() frees the array!
+ */
+template <typename T, size_t K=1>
+class sink
+    : public ndview<T>
+{
+public:
+    /** Construct view on nothing */
+    sink() : ndview<T>() { }
+
+        /** Construct view on data area with size */
+    template <size_t L=K>
+    sink(T *data, typename std::enable_if<L == 0>::type* = nullptr)
+        : ndview<T>(data, shape_.data(), K)
+    { }
+
+    /** Construct view on data area with size */
+    template <size_t L=K>
+    sink(T *data, size_t size, typename std::enable_if<L == 1>::type* = nullptr)
+        : ndview<T>(data, shape_.data(), K)
+        , shape_({{size}})
+    { }
+
+    /** Construct view on data area with size */
+    sink(T *data, std::array<size_t, K> shape)
+        : ndview<T>(data, shape_.data(), K)
+        , shape_(shape)
+    { }
+
+private:
+    std::array<size_t, K> shape_;
 };
 
 /**
@@ -154,7 +206,6 @@ public:
     }
 };
 
-
 /**
  * Setup information struct for the reduction
  */
@@ -234,28 +285,28 @@ struct serializer
 
     virtual void exit() = 0;
 
-    virtual void write(const std::string &key, sink<const double> value) = 0;
+    virtual void write(const std::string &key, ndview<const double>) = 0;
 
-    virtual void write(const std::string &key, sink<const std::complex<double>>) = 0;
+    virtual void write(const std::string &key, ndview<const std::complex<double>>) = 0;
 
-    virtual void write(const std::string &key, sink<const complex_op<double>>) = 0;
+    virtual void write(const std::string &key, ndview<const complex_op<double>>) = 0;
 
-    virtual void write(const std::string &key, sink<const long>) = 0;
+    virtual void write(const std::string &key, ndview<const long>) = 0;
 
-    virtual void write(const std::string &key, sink<const unsigned long>) = 0;
+    virtual void write(const std::string &key, ndview<const unsigned long>) = 0;
 
     virtual ~serializer() { }
 
     // Convenience functions for scalars
 
     void write(const std::string &key, unsigned long value) {
-        write(key, sink<const unsigned long>(&value, 1));
+        write(key, sink<const unsigned long, 0>(&value));
     }
     void write(const std::string &key, long value) {
-        write(key, sink<const long>(&value, 1));
+        write(key, sink<const long, 0>(&value));
     }
     void write(const std::string &key, double value) {
-        write(key, sink<const double>(&value, 1));
+        write(key, sink<const double, 0>(&value));
     }
 
     // Convenience functions for writing Eigen expressions
@@ -263,12 +314,22 @@ struct serializer
     template <typename Derived>
     void write(const std::string &key, const Eigen::DenseBase<Derived> &value)
     {
-        typedef typename Eigen::internal::traits<Derived>::Scalar scalar_type;
+        typedef Eigen::internal::traits<Derived> traits;
+        typedef typename traits::Scalar scalar_type;
 
-        // FIXME with strided arrays, we are probably screwed here
-        // FIXME also, as with everywhere, communicate shape
+        // TODO figure out whether strided arrays are evaluated
         auto temp = value.eval();
-        write(key, sink<const scalar_type>(temp.data(), temp.size()));
+
+        if (Derived::ColsAtCompileTime == 1 || Derived::RowsAtCompileTime == 1) {
+            // Omit second dimension for simple vectors
+            sink<const scalar_type> view(temp.data(), {(size_t)temp.size()});
+            write(key, view);
+        } else {
+            // Eigen arrays are column-major
+            sink<const scalar_type,2> view(temp.data(),
+                                    {(size_t)temp.cols(), (size_t)temp.rows()});
+            write(key, view);
+        }
     }
 };
 

@@ -43,23 +43,23 @@ public:
         group_.pop_back();
     }
 
-    void write(const std::string &key, sink<const double> value) {
+    void write(const std::string &key, ndview<const double> value) {
         do_write(key, value);
     }
 
-    void write(const std::string &key, sink<const std::complex<double>> value) {
+    void write(const std::string &key, ndview<const std::complex<double>> value) {
         do_write(key, value);
     }
 
-    void write(const std::string &key, sink<const complex_op<double>> value) {
+    void write(const std::string &key, ndview<const complex_op<double>> value) {
         do_write(key, value);
     }
 
-    void write(const std::string &key, sink<const long> value) {
+    void write(const std::string &key, ndview<const long> value) {
         do_write(key, value);
     }
 
-    void write(const std::string &key, sink<const unsigned long> value) {
+    void write(const std::string &key, ndview<const unsigned long> value) {
         do_write(key, value);
     }
 
@@ -82,7 +82,7 @@ protected:
     //     ) const;
 
     template <typename T>
-    void do_write(const std::string &relpath, sink<const T> data)
+    void do_write(const std::string &relpath, ndview<const T> data)
     {
         // Look at:
         // void archive::write(std::string path, T const * value,
@@ -94,8 +94,7 @@ protected:
             std::cerr << "Writing:" << get_path(relpath) << "\n";
         std::string path = get_path(relpath);
 
-        // FIXME: support shape
-        std::vector<size_t> shape = {data.size()};
+        std::vector<size_t> shape(data.shape(), data.shape() + data.ndim());
         std::vector<size_t> offset(shape.size(), 0);
         std::vector<size_t> chunk = shape;
 
@@ -109,8 +108,9 @@ protected:
             std::cerr << "Writing:" << get_path(relpath) << "\n";
         std::string path = get_path(relpath);
 
-        // FIXME: support shape
-        std::vector<size_t> shape = {data.size(), 2};
+        std::vector<size_t> shape(data.shape(), data.shape() + data.ndim());
+        shape.push_back(2);  // for complex
+
         std::vector<size_t> offset(shape.size(), 0);
         std::vector<size_t> chunk = shape;
 
