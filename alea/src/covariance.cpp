@@ -188,15 +188,22 @@ template <typename T, typename Str>
 void cov_result<T,Str>::serialize(serializer &s) const
 {
     internal::check_valid(*this);
-    s.write("count", make_adapter(count()));
-    s.write("obs", make_adapter(observations()));
-    s.write("mean/value", make_adapter(mean()));
-    s.write("mean/error", make_adapter(stderror()));
 
-    // FIXME: flattened
-    typename eigen<cov_type>::matrix cov_mat = cov();
-    typename eigen<cov_type>::col_map cov_map(cov_mat.data(), cov_mat.size());
-    s.write("cov/value", make_adapter(cov_map));
+    size_t size = store_->data_.size();
+    s.write("@size", sink<const size_t>(&size, 1));
+    s.write("count", sink<const double>(&store_->count_, 1));
+    s.write("count2", sink<const double>(&store_->count2_, 1));
+    s.enter("mean");
+    s.write("value", sink<const T>(store_->data_.data(), store_->data_.size()));
+    {
+        // TODO get rid of temporary
+        column<var_type> error = stderror();
+        s.write("error", sink<const var_type>(error.data(), error.size()));
+    }
+    s.exit();
+
+    // FIXME flattened
+    s.write("cov", sink<const cov_type>(store_->data2_.data(), store_->data2_.size()));
 }
 
 template class cov_result<double>;

@@ -167,16 +167,34 @@ template <typename T>
 void autocorr_result<T>::serialize(serializer &s) const
 {
     internal::check_valid(*this);
-    s.write("count", make_adapter(count()));
-    s.write("mean/value", make_adapter(mean()));
-    s.write("mean/error", make_adapter(stderror()));
+    {
+        size_t size_var = size();
+        s.write("@size", sink<const size_t>(&size_var, 1));
+    }
+    {
+        size_t nlevel_var = nlevel();
+        s.write("@nlevel", sink<const size_t>(&nlevel_var, 1));
+    }
 
-    typename eigen<var_type>::matrix level_var(size(), nlevel());
-    for (size_t l = 0; l != nlevel(); ++l)
-        level_var.col(l) = level_[l].var();
+    s.enter("level");
+    for (size_t i = 0; i != nlevel(); ++i) {
+        s.enter(std::to_string(i));
+        level_[i].serialize(s);
+        s.exit();
+    }
+    s.exit();
 
-    typename eigen<var_type>::col_map var_map(level_var.data(), level_var.size());
-    s.write("levels/var/value", make_adapter(var_map));
+    s.enter("mean");
+    {
+        // TODO temporary
+        column<T> mean_var = mean();
+        s.write("value", sink<const T>(mean_var.data(), mean_var.size()));
+    }
+    {
+        column<var_type> error = stderror();
+        s.write("error", sink<const var_type>(error.data(), error.size()));
+    }
+    s.exit();
 }
 
 template class autocorr_result<double>;

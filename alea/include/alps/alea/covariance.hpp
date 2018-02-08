@@ -81,6 +81,9 @@ private:
     column<T> data_;
     cov_matrix_type data2_;
     double count_, count2_;
+
+    friend class cov_acc<T, Strategy>;
+    friend class cov_result<T, Strategy>;
 };
 
 template <typename T, typename Strategy>

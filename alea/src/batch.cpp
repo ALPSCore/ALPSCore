@@ -216,14 +216,32 @@ template <typename T>
 void batch_result<T>::serialize(serializer &s) const
 {
     internal::check_valid(*this);
-    s.write("count", make_adapter(count()));
-    s.write("mean/value", make_adapter(mean()));
-    s.write("mean/error", make_adapter(stderror()));
+    {
+        size_t size_var = size();
+        s.write("@size", sink<const size_t>(&size_var, 1));
+    }
+    {
+        size_t nbatch = store().num_batches();
+        s.write("@num_batches", sink<const size_t>(&nbatch, 1));
+    }
 
-    // FIXME
-    typename eigen<T>::col_map batch_map(store_->batch().data(), store_->batch().size());
-    s.write("batch/count", make_adapter(store_->count().transpose()));
-    s.write("batch/sum", make_adapter(batch_map));
+    s.enter("batch");
+    s.write("count", sink<const size_t>(store().count().data(), store().count().size()));
+    s.write("sum", sink<const T>(store().batch().data(), store().batch().size()));
+    s.exit();
+
+    s.enter("mean");
+    {
+        // TODO temporary
+        column<T> mean_var = mean();
+        s.write("value", sink<const T>(mean_var.data(), mean_var.size()));
+    }
+    {
+        typedef typename bind<circular_var,T>::var_type var_type;
+        column<var_type> error = stderror();
+        s.write("error", sink<const var_type>(error.data(), error.size()));
+    }
+    s.exit();
 }
 
 template column<double> batch_result<double>::var<circular_var>() const;

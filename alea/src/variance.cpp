@@ -192,10 +192,20 @@ template <typename T, typename Str>
 void var_result<T,Str>::serialize(serializer &s) const
 {
     internal::check_valid(*this);
-    s.write("count", make_adapter(count()));
-    s.write("observations", make_adapter(observations()));
-    s.write("mean/value", make_adapter(mean()));
-    s.write("mean/error", make_adapter(stderror()));
+
+    size_t size = store_->data_.size();
+    s.write("@size", sink<const size_t>(&size, 1));
+    s.write("count", sink<const double>(&store_->count_, 1));
+    s.write("count2", sink<const double>(&store_->count2_, 1));
+    s.enter("mean");
+    s.write("value", sink<const T>(store_->data_.data(), store_->data_.size()));
+    {
+        // TODO get rid of temporary
+        column<var_type> error = stderror();
+        s.write("error", sink<const var_type>(error.data(), error.size()));
+    }
+    s.exit();
+    s.write("var", sink<const var_type>(store_->data2_.data(), store_->data2_.size()));
 }
 
 template class var_result<double>;

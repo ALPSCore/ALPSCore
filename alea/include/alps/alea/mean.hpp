@@ -64,6 +64,9 @@ public:
 private:
     column<T> data_;
     size_t count_;
+
+    friend class mean_acc<T>;
+    friend class mean_result<T>;
 };
 
 template <typename T>

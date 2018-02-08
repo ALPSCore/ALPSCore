@@ -83,6 +83,9 @@ private:
     column<T> data_;
     column<var_type> data2_;
     double count_, count2_;
+
+    friend class var_acc<T, Strategy>;
+    friend class var_result<T, Strategy>;
 };
 
 template <typename T, typename Strategy>

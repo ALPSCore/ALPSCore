@@ -129,8 +129,13 @@ template <typename T>
 void mean_result<T>::serialize(serializer &s) const
 {
     internal::check_valid(*this);
-    s.write("count", make_adapter(count()));
-    s.write("mean/value", make_adapter(mean()));
+
+    size_t size = store_->data_.size();
+    s.write("@size", sink<const size_t>(&size, 1));
+    s.write("count", sink<const size_t>(&store_->count_, 1));
+    s.enter("mean");
+    s.write("value", sink<const T>(store_->data_.data(), store_->data_.size()));
+    s.exit();
 }
 
 template class mean_result<double>;

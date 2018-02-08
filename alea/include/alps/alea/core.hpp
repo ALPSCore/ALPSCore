@@ -230,15 +230,19 @@ struct reducer
  */
 struct serializer
 {
-    virtual void write(const std::string &key, const computed<double> &value) = 0;
+    virtual void enter(const std::string &group) = 0;
 
-    virtual void write(const std::string &key, const computed<std::complex<double> > &value) = 0;
+    virtual void exit() = 0;
 
-    virtual void write(const std::string &key, const computed<complex_op<double> > &value) = 0;
+    virtual void write(const std::string &key, sink<const double> value) = 0;
 
-    virtual void write(const std::string &key, const computed<long> &value) = 0;
+    virtual void write(const std::string &key, sink<const std::complex<double>>) = 0;
 
-    virtual void write(const std::string &key, const computed<unsigned long> &value) = 0;
+    virtual void write(const std::string &key, sink<const complex_op<double>>) = 0;
+
+    virtual void write(const std::string &key, sink<const long>) = 0;
+
+    virtual void write(const std::string &key, sink<const unsigned long>) = 0;
 
     virtual ~serializer() { }
 };
