@@ -17,6 +17,7 @@ namespace alps { namespace alea {
 
 class hdf5_serializer
     : public serializer
+    , public deserializer
 {
 public:
     hdf5_serializer(hdf5::archive &ar, const std::string &path, bool debug=false)
@@ -26,7 +27,9 @@ public:
         , debug_(debug)
     { }
 
-    void enter(const std::string &group)
+    // Common methods
+
+    void enter(const std::string &group) override
     {
         if (debug_)
             std::cerr << "Entering group: " << get_path(group) << "\n";
@@ -34,7 +37,7 @@ public:
         group_.push_back(group);
     }
 
-    void exit()
+    void exit() override
     {
         if (debug_)
             std::cerr << "Exiting group: " << get_path("") << "\n";
@@ -43,24 +46,52 @@ public:
         group_.pop_back();
     }
 
-    void write(const std::string &key, sink<const double> value) {
+    // Serialization methods
+
+    void write(const std::string &key, sink<const double> value) override {
         do_write(key, value);
     }
 
-    void write(const std::string &key, sink<const std::complex<double>> value) {
+    void write(const std::string &key, sink<const std::complex<double>> value) override {
         do_write(key, value);
     }
 
-    void write(const std::string &key, sink<const complex_op<double>> value) {
+    void write(const std::string &key, sink<const complex_op<double>> value) override {
         do_write(key, value);
     }
 
-    void write(const std::string &key, sink<const long> value) {
+    void write(const std::string &key, sink<const long> value) override {
         do_write(key, value);
     }
 
-    void write(const std::string &key, sink<const unsigned long> value) {
+    void write(const std::string &key, sink<const unsigned long> value) override {
         do_write(key, value);
+    }
+
+    // Deserialization methods
+
+    virtual metadata get_metadata(const std::string &key) override {
+        throw unsupported_operation(); // FIXME
+    }
+
+    virtual void read(const std::string &key, sink<const double> value) override {
+        do_read(key, value);
+    }
+
+    virtual void read(const std::string &key, sink<const std::complex<double>> value) override {
+        do_read(key, value);
+    }
+
+    virtual void read(const std::string &key, sink<const complex_op<double>> value) override {
+        do_read(key, value);
+    }
+
+    virtual void read(const std::string &key, sink<const long> value) override {
+        do_read(key, value);
+    }
+
+    virtual void read(const std::string &key, sink<const unsigned long> value) override {
+        do_read(key, value);
     }
 
     ~hdf5_serializer()
@@ -74,22 +105,9 @@ public:
     }
 
 protected:
-    // Look at:
-    // void archive::write(std::string path, T const * value,
-    //     , std::vector<std::size_t> size
-    //     , std::vector<std::size_t> chunk = std::vector<std::size_t>()
-    //     , std::vector<std::size_t> offset = std::vector<std::size_t>()
-    //     ) const;
-
     template <typename T>
     void do_write(const std::string &relpath, sink<const T> data)
     {
-        // Look at:
-        // void archive::write(std::string path, T const * value,
-        //     , std::vector<std::size_t> size
-        //     , std::vector<std::size_t> chunk = std::vector<std::size_t>()
-        //     , std::vector<std::size_t> offset = std::vector<std::size_t>()
-        //     ) const;
         if (debug_)
             std::cerr << "Writing:" << get_path(relpath) << "\n";
         std::string path = get_path(relpath);
@@ -119,6 +137,22 @@ protected:
                           chunk, offset);
         (*archive_).write(path + "/@__complex__", true);
     }
+
+    template <typename T>
+    void do_read(const std::string &relpath, sink<const T> data)
+    {
+        if (debug_)
+            std::cerr << "Writing:" << get_path(relpath) << "\n";
+        std::string path = get_path(relpath);
+
+        // FIXME: support shape
+        std::vector<size_t> shape = {data.size()};
+        std::vector<size_t> offset(shape.size(), 0);
+        std::vector<size_t> chunk = shape;
+
+        (*archive_).write(path, data.data(), shape, chunk, offset);
+    }
+
 
     std::string get_path(const std::string &key)
     {

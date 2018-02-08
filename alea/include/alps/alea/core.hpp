@@ -272,6 +272,37 @@ struct serializer
     }
 };
 
+struct metadata
+{
+
+    std::vector<size_t> shape;
+    enum dtype_tag { DOUBLE, DCOMPLEX, DCOMPLEX_OP, LONG, ULONG } dtype;
+};
+
+/**
+ * Foster the deserialization of data from disk.
+ */
+struct deserializer
+{
+    virtual metadata get_metadata(const std::string &key) = 0;
+
+    virtual void enter(const std::string &group) = 0;
+
+    virtual void exit() = 0;
+
+    virtual void read(const std::string &key, sink<const double> value) = 0;
+
+    virtual void read(const std::string &key, sink<const std::complex<double>>) = 0;
+
+    virtual void read(const std::string &key, sink<const complex_op<double>>) = 0;
+
+    virtual void read(const std::string &key, sink<const long>) = 0;
+
+    virtual void read(const std::string &key, sink<const unsigned long>) = 0;
+
+    virtual ~deserializer() { }
+};
+
 /**
  * Transformer instance.
  *
