@@ -170,16 +170,9 @@ template class autocorr_result<std::complex<double> >;
 template <typename T>
 void serialize(serializer &s, const autocorr_result<T> &self)
 {
-    typedef typename bind<circular_var,T>::var_type var_type;
     internal::check_valid(self);
-    {
-        size_t size_var = self.size();
-        s.write("@size", sink<const size_t>(&size_var, 1));
-    }
-    {
-        size_t nlevel_var = self.nlevel();
-        s.write("@nlevel", sink<const size_t>(&nlevel_var, 1));
-    }
+    s.write("@size", self.size());
+    s.write("@nlevel", self.nlevel());
 
     s.enter("level");
     for (size_t i = 0; i != self.nlevel(); ++i) {
@@ -190,15 +183,8 @@ void serialize(serializer &s, const autocorr_result<T> &self)
     s.exit();
 
     s.enter("mean");
-    {
-        // TODO temporary
-        column<T> mean_var = self.mean();
-        s.write("value", sink<const T>(mean_var.data(), mean_var.size()));
-    }
-    {
-        column<var_type> error = self.stderror();
-        s.write("error", sink<const var_type>(error.data(), error.size()));
-    }
+    s.write("value", self.mean());
+    s.write("error", self.stderror());
     s.exit();
 }
 

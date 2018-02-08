@@ -245,6 +245,31 @@ struct serializer
     virtual void write(const std::string &key, sink<const unsigned long>) = 0;
 
     virtual ~serializer() { }
+
+    // Convenience functions for scalars
+
+    void write(const std::string &key, unsigned long value) {
+        write(key, sink<const unsigned long>(&value, 1));
+    }
+    void write(const std::string &key, long value) {
+        write(key, sink<const long>(&value, 1));
+    }
+    void write(const std::string &key, double value) {
+        write(key, sink<const double>(&value, 1));
+    }
+
+    // Convenience functions for writing Eigen expressions
+
+    template <typename Derived>
+    void write(const std::string &key, const Eigen::DenseBase<Derived> &value)
+    {
+        typedef typename Eigen::internal::traits<Derived>::Scalar scalar_type;
+
+        // FIXME with strided arrays, we are probably screwed here
+        // FIXME also, as with everywhere, communicate shape
+        auto temp = value.eval();
+        write(key, sink<const scalar_type>(temp.data(), temp.size()));
+    }
 };
 
 /**

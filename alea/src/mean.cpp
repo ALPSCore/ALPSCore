@@ -134,11 +134,10 @@ void serialize(serializer &s, const mean_result<T> &self)
 {
     internal::check_valid(self);
 
-    size_t size = self.store_->data_.size();
-    s.write("@size", sink<const size_t>(&size, 1));
-    s.write("count", sink<const size_t>(&self.store_->count_, 1));
+    s.write("@size", self.store_->data_.size());
+    s.write("count", self.store_->count_);
     s.enter("mean");
-    s.write("value", sink<const T>(self.store_->data_.data(), self.store_->data_.size()));
+    s.write("value", self.store_->data_);
     s.exit();
 }
 

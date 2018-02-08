@@ -196,22 +196,15 @@ template class var_result<std::complex<double>, elliptic_var>;
 template <typename T, typename Str>
 void serialize(serializer &s, const var_result<T,Str> &self)
 {
-    typedef typename bind<Str,T>::var_type var_type;
     internal::check_valid(self);
-
-    size_t size = self.store_->data_.size();
-    s.write("@size", sink<const size_t>(&size, 1));
-    s.write("count", sink<const double>(&self.store_->count_, 1));
-    s.write("count2", sink<const double>(&self.store_->count2_, 1));
+    s.write("@size", self.store_->data_.size());
+    s.write("count", self.store_->count_);
+    s.write("count2", self.store_->count2_);
     s.enter("mean");
-    s.write("value", sink<const T>(self.store_->data_.data(), self.store_->data_.size()));
-    {
-        // TODO get rid of temporary
-        column<var_type> error = self.stderror();
-        s.write("error", sink<const var_type>(error.data(), error.size()));
-    }
+    s.write("value", self.store_->data_);
+    s.write("error", self.stderror());   // TODO temporary
     s.exit();
-    s.write("var", sink<const var_type>(self.store_->data2_.data(), self.store_->data2_.size()));
+    s.write("var", self.store_->data2_);
 }
 
 template void serialize(serializer &, const var_result<double, circular_var> &);
