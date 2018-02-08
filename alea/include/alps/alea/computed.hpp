@@ -53,7 +53,7 @@ public:
 
     size_t size() const { return 1; }
 
-    void add_to(sink<T> out) const
+    void add_to(view<T> out) const
     {
         if (out.size() != 1)
             throw size_mismatch();
@@ -95,7 +95,7 @@ public:
 
     size_t size() const { return in_.size(); }
 
-    void add_to(sink<T> out) const
+    void add_to(view<T> out) const
     {
         if (out.size() != in_.size())
             throw size_mismatch();
@@ -127,7 +127,7 @@ public:
 
     size_t size() const { return in_.size(); }
 
-    void add_to(sink<T> out) const
+    void add_to(view<T> out) const
     {
         if (out.size() != (size_t)in_.rows())
             throw size_mismatch();
@@ -151,7 +151,7 @@ class computed_cmember
 {
 public:
     typedef T value_type;
-    typedef void (Parent::*adder_type)(sink<T>) const;
+    typedef void (Parent::*adder_type)(view<T>) const;
 
 public:
     computed_cmember(const Parent &parent, adder_type adder, size_t size)
@@ -162,9 +162,9 @@ public:
 
     size_t size() const { return size_; }
 
-    void add_to(sink<T> out) const { (parent_.*adder_)(out); }
+    void add_to(view<T> out) const { (parent_.*adder_)(out); }
 
-    void fast_add_to(sink<T> out) { (parent_.*adder_)(out); }
+    void fast_add_to(view<T> out) { (parent_.*adder_)(out); }
 
     const Parent &parent() const { return parent_; }
 

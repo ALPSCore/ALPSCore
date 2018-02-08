@@ -81,7 +81,7 @@ void var_acc<T,Str>::add(const computed<T> &source, size_t count,
                          var_acc<T,Str> *cascade)
 {
     internal::check_valid(*this);
-    source.add_to(sink<T>(current_.sum().data(), current_.size()));
+    source.add_to(view<T>(current_.sum().data(), current_.size()));
     current_.count() += count;
 
     if (current_.is_full())
@@ -171,10 +171,10 @@ void var_result<T,Str>::reduce(const reducer &r, bool pre_commit, bool post_comm
     internal::check_valid(*this);
     if (pre_commit) {
         store_->convert_to_sum();
-        r.reduce(sink<T>(store_->data().data(), store_->data().rows()));
-        r.reduce(sink<var_type>(store_->data2().data(), store_->data2().rows()));
-        r.reduce(sink<double>(&store_->count(), 1));
-        r.reduce(sink<double>(&store_->count2(), 1));
+        r.reduce(view<T>(store_->data().data(), store_->data().rows()));
+        r.reduce(view<var_type>(store_->data2().data(), store_->data2().rows()));
+        r.reduce(view<double>(&store_->count(), 1));
+        r.reduce(view<double>(&store_->count2(), 1));
     }
     if (pre_commit && post_commit) {
         r.commit();

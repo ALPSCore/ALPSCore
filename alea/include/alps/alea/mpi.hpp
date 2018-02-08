@@ -62,9 +62,9 @@ struct mpi_reducer
         return data;
     }
 
-    void reduce(sink<double> data) const override { inplace_reduce(data); }
+    void reduce(view<double> data) const override { inplace_reduce(data); }
 
-    void reduce(sink<long> data) const override { inplace_reduce(data); }
+    void reduce(view<long> data) const override { inplace_reduce(data); }
 
     void commit() const { }
 
@@ -76,7 +76,7 @@ struct mpi_reducer
 
 protected:
     template <typename T>
-    void inplace_reduce(sink<T> data) const
+    void inplace_reduce(view<T> data) const
     {
         // NO-OP in the case of empty data (strange though)
         if (data.size() == 0)

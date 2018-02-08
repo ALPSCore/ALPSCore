@@ -48,7 +48,7 @@ template <typename T>
 void mean_acc<T>::add(const computed<T> &source, size_t count)
 {
     internal::check_valid(*this);
-    source.add_to(sink<T>(store_->data().data(), size()));
+    source.add_to(view<T>(store_->data().data(), size()));
     store_->count() += count;
 }
 
@@ -110,8 +110,8 @@ void mean_result<T>::reduce(const reducer &r, bool pre_commit, bool post_commit)
     internal::check_valid(*this);
     if (pre_commit) {
         store_->convert_to_sum();
-        r.reduce(sink<T>(store_->data().data(), store_->data().rows()));
-        r.reduce(sink<size_t>(&store_->count(), 1));
+        r.reduce(view<T>(store_->data().data(), store_->data().rows()));
+        r.reduce(view<size_t>(&store_->count(), 1));
     }
     if (pre_commit && post_commit) {
         r.commit();

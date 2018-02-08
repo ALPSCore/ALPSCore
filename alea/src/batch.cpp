@@ -89,7 +89,7 @@ void batch_acc<T>::add(const computed<T> &source, size_t count)
         next_batch();
 
     // Since Eigen matrix are column-major, we can just pass the pointer
-    source.add_to(sink<T>(store_->batch().col(cursor_.current()).data(), size()));
+    source.add_to(view<T>(store_->batch().col(cursor_.current()).data(), size()));
     store_->count()(cursor_.current()) += count;
 }
 
@@ -199,8 +199,8 @@ void batch_result<T>::reduce(const reducer &r, bool pre_commit, bool post_commit
     // FIXME this is bad since it mixes bins
     internal::check_valid(*this);
     if (pre_commit) {
-        r.reduce(sink<T>(store_->batch().data(), store_->batch().size()));
-        r.reduce(sink<size_t>(store_->count().data(), store_->num_batches()));
+        r.reduce(view<T>(store_->batch().data(), store_->batch().size()));
+        r.reduce(view<size_t>(store_->count().data(), store_->num_batches()));
     }
     if (pre_commit && post_commit) {
         r.commit();

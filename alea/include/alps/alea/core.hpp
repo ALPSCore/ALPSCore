@@ -21,7 +21,7 @@ namespace alps { namespace alea {
 using std::size_t;
 using std::ptrdiff_t;
 
-/** Estimator cannot add to sink as the sizes are mismatched */
+/** Estimator cannot add to view as the sizes are mismatched */
 struct size_mismatch : public std::exception { };
 
 /** Estimator does not support this operation */
@@ -37,25 +37,24 @@ template <typename T>
 struct traits;
 
 /**
- * Data sink as a thin wrapper around a continuous multi-dimensional array.
+ * Data view as a thin wrapper around a continuous array.
  *
- * Basically collects a pointer continuous array in ROW-MAJOR format (vector,
- * transposed Eigen array, C array etc.) together with its shape.  Note that
- * the view neither owns the `data` pointer nor the `shape` pointer.
+ * Basically collects a pointer continuous array together with its size.  Note
+ * that the view does not own the `data` pointer.
  */
 template <typename T>
-class ndview
+class view
 {
 public:
     typedef T value_type;
 
 public:
     /** Construct view on nothing */
-    ndview() : data_(nullptr), shape_(nullptr), ndim_(0) { }
+    view() : data_(nullptr), size_(0) { }
 
     /** Construct view on data area with size */
-    ndview(T *data, const size_t *shape, size_t ndim)
-        : data_(data), shape_(shape), ndim_(ndim)
+    view(T *data, size_t size)
+        : data_(data), size_(size)
     { }
 
     /** Get pointer to zeroth element */
@@ -64,62 +63,67 @@ public:
     /** Get pointer to zeroth element */
     const T *data() const { return data_; }
 
+    /** Return size */
+    size_t size() const { return size_; }
+
+private:
+    T *data_;
+    size_t size_;
+};
+
+/**
+ * Data view as a thin wrapper around a continuous multi-dimensional array.
+ *
+ * Basically collects a pointer continuous array in ROW-MAJOR format (vector,
+ * transposed Eigen array, C array etc.) together with its shape.  Note that
+ * the view neither owns the `data` pointer nor the `shape` pointer.  Thus it
+ * amends `view<T>` with shape information.
+ */
+template <typename T>
+class ndview
+    : public view<T>
+{
+public:
+    typedef T value_type;
+
+public:
+    /** Construct view on nothing */
+    ndview() : view<T>(), shape_(nullptr), ndim_(0) { }
+
+    /** Construct view on data area with shape */
+    ndview(T *data, const size_t *shape, size_t ndim)
+        : view<T>(data, compute_size(shape, ndim))
+        , shape_(shape)
+        , ndim_(ndim)
+    { }
+
+    /** Construct view on data area with shape and size hint */
+    ndview(T *data, size_t size, const size_t *shape, size_t ndim)
+        : view<T>(data, size)
+        , shape_(shape)
+        , ndim_(ndim)
+    {
+        assert(size == compute_size(shape, ndim));
+    }
+
     /** Get shape of data space */
     const size_t *shape() const { return shape_; }
 
     /** Get number of dimensions */
     size_t ndim() const { return ndim_; }
 
-    /** Return size */
-    size_t size() const
+protected:
+    static size_t compute_size(const size_t *shape, size_t ndim)
     {
         size_t result = 1;
-        for (size_t d = 0; d != ndim_; ++d)
-            result *= shape_[d];
+        for (size_t d = 0; d != ndim; ++d)
+            result *= shape[d];
         return result;
     }
 
 private:
-    T *data_;
     const size_t *shape_;
     size_t ndim_;
-};
-
-/**
- * Wrapper around K-dim array.
- *
- * @warning Don't create pure rvalues of this class -- casting this to
- *          ndview<T>() frees the array!
- */
-template <typename T, size_t K=1>
-class sink
-    : public ndview<T>
-{
-public:
-    /** Construct view on nothing */
-    sink() : ndview<T>() { }
-
-        /** Construct view on data area with size */
-    template <size_t L=K>
-    sink(T *data, typename std::enable_if<L == 0>::type* = nullptr)
-        : ndview<T>(data, shape_.data(), K)
-    { }
-
-    /** Construct view on data area with size */
-    template <size_t L=K>
-    sink(T *data, size_t size, typename std::enable_if<L == 1>::type* = nullptr)
-        : ndview<T>(data, shape_.data(), K)
-        , shape_({{size}})
-    { }
-
-    /** Construct view on data area with size */
-    sink(T *data, std::array<size_t, K> shape)
-        : ndview<T>(data, shape_.data(), K)
-        , shape_(shape)
-    { }
-
-private:
-    std::array<size_t, K> shape_;
 };
 
 /**
@@ -160,7 +164,7 @@ struct computed
      *     for (size_t i = 0; i != size(); ++i)
      *         out[i] += in(i);
      */
-    virtual void add_to(sink<T> out) const = 0;
+    virtual void add_to(view<T> out) const = 0;
 
     /** Returns a clone of the estimator (optional) */
     virtual computed *clone() { throw unsupported_operation(); }
@@ -228,7 +232,7 @@ struct reducer_setup
  * whether this core/thread will get a copy of the result, but this is not
  * required
  *
- * The `reduce()` family of methods take the data sink and add to it the data
+ * The `reduce()` family of methods take the data view and add to it the data
  * from the reducers source (possibly by performing an MPI/OpenMP reduction or
  * gathering data from files, etc.).
  *
@@ -252,10 +256,10 @@ struct reducer
     virtual long get_max(long value) const = 0;
 
     /** Reduce double data-set into `data` */
-    virtual void reduce(sink<double> data) const = 0;
+    virtual void reduce(view<double> data) const = 0;
 
     /** Reduce long data-set into `data` */
-    virtual void reduce(sink<long> data) const = 0;
+    virtual void reduce(view<long> data) const = 0;
 
     /** Finish reduction of all data if deferred */
     virtual void commit() const = 0;
@@ -265,14 +269,14 @@ struct reducer
 
     // Convenience functions
 
-    void reduce(sink<std::complex<double> > data) const {
-        reduce(sink<double>((double *)data.data(), 2 * data.size()));
+    void reduce(view<std::complex<double> > data) const {
+        reduce(view<double>((double *)data.data(), 2 * data.size()));
     }
-    void reduce(sink<complex_op<double> > data) const {
-        reduce(sink<double>((double *)data.data(), 4 * data.size()));
+    void reduce(view<complex_op<double> > data) const {
+        reduce(view<double>((double *)data.data(), 4 * data.size()));
     }
-    void reduce(sink<unsigned long> data) const {
-        reduce(sink<long>((long *)data.data(), data.size()));
+    void reduce(view<unsigned long> data) const {
+        reduce(view<long>((long *)data.data(), data.size()));
     }
 };
 
@@ -300,13 +304,13 @@ struct serializer
     // Convenience functions for scalars
 
     void write(const std::string &key, unsigned long value) {
-        write(key, sink<const unsigned long, 0>(&value));
+        write(key, ndview<const unsigned long>(&value, nullptr, 0));
     }
     void write(const std::string &key, long value) {
-        write(key, sink<const long, 0>(&value));
+        write(key, ndview<const long>(&value, nullptr, 0));
     }
     void write(const std::string &key, double value) {
-        write(key, sink<const double, 0>(&value));
+        write(key, ndview<const double>(&value, nullptr, 0));
     }
 
     // Convenience functions for writing Eigen expressions
@@ -315,20 +319,19 @@ struct serializer
     void write(const std::string &key, const Eigen::DenseBase<Derived> &value)
     {
         typedef Eigen::internal::traits<Derived> traits;
-        typedef typename traits::Scalar scalar_type;
+        typedef const typename traits::Scalar scalar_type;
 
         // TODO figure out whether strided arrays are evaluated
         auto temp = value.eval();
 
         if (Derived::ColsAtCompileTime == 1 || Derived::RowsAtCompileTime == 1) {
             // Omit second dimension for simple vectors
-            sink<const scalar_type> view(temp.data(), {(size_t)temp.size()});
-            write(key, view);
+            std::array<size_t, 1> dims = {(size_t)temp.size()};
+            write(key, ndview<scalar_type>(temp.data(), dims.data(), 1));
         } else {
             // Eigen arrays are column-major
-            sink<const scalar_type,2> view(temp.data(),
-                                    {(size_t)temp.cols(), (size_t)temp.rows()});
-            write(key, view);
+            std::array<size_t, 2> dims = {(size_t)temp.cols(), (size_t)temp.rows()};
+            write(key, ndview<scalar_type>(temp.data(), dims.data(), 2));
         }
     }
 };

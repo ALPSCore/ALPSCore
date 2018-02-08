@@ -79,7 +79,7 @@ template <typename T, typename Str>
 void cov_acc<T,Str>::add(const computed<value_type> &source, size_t count)
 {
     internal::check_valid(*this);
-    source.add_to(sink<T>(current_.sum().data(), current_.size()));
+    source.add_to(view<T>(current_.sum().data(), current_.size()));
     current_.count() += count;
 
     if (current_.is_full())
@@ -167,10 +167,10 @@ void cov_result<T,Str>::reduce(const reducer &r, bool pre_commit, bool post_comm
 
     if (pre_commit) {
         store_->convert_to_sum();
-        r.reduce(sink<T>(store_->data().data(), store_->data().rows()));
-        r.reduce(sink<cov_type>(store_->data2().data(), store_->data2().size()));
-        r.reduce(sink<double>(&store_->count(), 1));
-        r.reduce(sink<double>(&store_->count2(), 1));
+        r.reduce(view<T>(store_->data().data(), store_->data().rows()));
+        r.reduce(view<cov_type>(store_->data2().data(), store_->data2().size()));
+        r.reduce(view<double>(&store_->count(), 1));
+        r.reduce(view<double>(&store_->count2(), 1));
     }
     if (pre_commit && post_commit) {
         r.commit();
