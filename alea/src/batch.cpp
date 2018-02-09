@@ -249,7 +249,20 @@ void serialize(serializer &s, const std::string &key, const batch_result<T> &sel
 template <typename T>
 void deserialize(deserializer &s, const std::string &key, batch_result<T> &self)
 {
-    throw unsupported_operation();
+    internal::deserializer_sentry group(s, key);
+
+    // first deserialize the fundamentals and make sure that the target fits
+    size_t new_size, new_nbatches;
+    deserialize(s, "@size", new_size);
+    deserialize(s, "@num_batches", new_nbatches);
+    if (!self.valid() || self.size() != new_size || self.store().num_batches() != new_nbatches)
+        self.store_.reset(new batch_data<T>(new_size, new_nbatches));
+
+    // deserialize data
+    s.enter("batch");
+    deserialize(s, "count", self.store().count());
+    deserialize(s, "sum", self.store().batch());
+    s.exit();
 }
 
 template void serialize(serializer &, const std::string &key, const batch_result<double> &);

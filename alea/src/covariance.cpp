@@ -210,7 +210,21 @@ void serialize(serializer &s, const std::string &key, const cov_result<T,Str> &s
 template <typename T, typename Str>
 void deserialize(deserializer &s, const std::string &key, cov_result<T,Str> &self)
 {
-    throw unsupported_operation();
+    internal::deserializer_sentry group(s, key);
+
+    // first deserialize the fundamentals and make sure that the target fits
+    size_t new_size;
+    deserialize(s, "@size", new_size);
+    if (!self.valid() || self.size() != new_size)
+        self.store_.reset(new cov_data<T,Str>(new_size));
+
+    // deserialize data
+    deserialize(s, "count", self.store_->count_);
+    deserialize(s, "count2", self.store_->count2_);
+    s.enter("mean");
+    deserialize(s, "value", self.store_->data_);
+    s.exit();
+    deserialize(s, "cov", self.store_->data2_);
 }
 
 template void serialize(serializer &, const std::string &key, const cov_result<double, circular_var> &);

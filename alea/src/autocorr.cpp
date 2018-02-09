@@ -190,7 +190,17 @@ void serialize(serializer &s, const std::string &key, const autocorr_result<T> &
 template <typename T>
 void deserialize(deserializer &s, const std::string &key, autocorr_result<T> &self)
 {
-    throw unsupported_operation();
+    internal::deserializer_sentry group(s, key);
+
+    // first deserialize the fundamentals and make sure that the target fits
+    size_t new_nlevel;
+    deserialize(s, "@nlevel", new_nlevel);
+    self.level_.resize(new_nlevel);
+
+    s.enter("level");
+    for (size_t i = 0; i != self.nlevel(); ++i)
+        deserialize(s, std::to_string(i), self.level_[i]);
+    s.exit();
 }
 
 template void serialize(serializer &, const std::string &key, const autocorr_result<double> &);
