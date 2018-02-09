@@ -1,8 +1,9 @@
 #include <alps/alea/covariance.hpp>
+#include <alps/alea/serialize.hpp>
+
 #include <alps/alea/internal/outer.hpp>
 #include <alps/alea/internal/util.hpp>
-
-#include <alps/alea/serialize.hpp>
+#include <alps/alea/internal/format.hpp>
 
 namespace alps { namespace alea {
 
@@ -253,5 +254,24 @@ template void serialize(serializer &, const std::string &key, const cov_result<s
 template void deserialize(deserializer &, const std::string &key, cov_result<double, circular_var> &);
 template void deserialize(deserializer &, const std::string &key, cov_result<std::complex<double>, circular_var> &);
 template void deserialize(deserializer &, const std::string &key, cov_result<std::complex<double>, elliptic_var> &);
+
+
+template <typename T, typename Str>
+std::ostream &operator<<(std::ostream &str, const cov_result<T,Str> &self)
+{
+    internal::format_sentry sentry(str);
+    verbosity verb = internal::get_format(str, PRINT_TERSE);
+
+    if (verb == PRINT_VERBOSE)
+        str << "<X> = ";
+    str << self.mean() << " +- " << self.stderror();
+    if (verb == PRINT_VERBOSE)
+        str << "\nSigma = " << self.cov();
+    return str;
+}
+
+template std::ostream &operator<<(std::ostream &, const cov_result<double, circular_var> &);
+template std::ostream &operator<<(std::ostream &, const cov_result<std::complex<double>, circular_var> &);
+template std::ostream &operator<<(std::ostream &, const cov_result<std::complex<double>, elliptic_var> &);
 
 }} /* namespace alps::alea */

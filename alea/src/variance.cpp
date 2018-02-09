@@ -3,6 +3,7 @@
 #include <alps/alea/serialize.hpp>
 
 #include <alps/alea/internal/util.hpp>
+#include <alps/alea/internal/format.hpp>
 
 namespace alps { namespace alea {
 
@@ -256,5 +257,23 @@ template void serialize(serializer &, const std::string &key, const var_result<s
 template void deserialize(deserializer &, const std::string &key, var_result<double, circular_var> &);
 template void deserialize(deserializer &, const std::string &key, var_result<std::complex<double>, circular_var> &);
 template void deserialize(deserializer &, const std::string &key, var_result<std::complex<double>, elliptic_var> &);
+
+
+template <typename T, typename Str>
+std::ostream &operator<<(std::ostream &str, const var_result<T,Str> &self)
+{
+    internal::check_valid(self);
+    internal::format_sentry sentry(str);
+    verbosity verb = internal::get_format(str, PRINT_TERSE);
+
+    if (verb == PRINT_VERBOSE)
+        str << "<X> = ";
+    str << self.mean() << " +- " << self.stderror();
+    return str;
+}
+
+template std::ostream &operator<<(std::ostream &, const var_result<double, circular_var> &);
+template std::ostream &operator<<(std::ostream &, const var_result<std::complex<double>, circular_var> &);
+template std::ostream &operator<<(std::ostream &, const var_result<std::complex<double>, elliptic_var> &);
 
 }}

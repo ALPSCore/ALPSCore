@@ -24,6 +24,9 @@ namespace alps { namespace alea {
 
     template <typename T>
     void deserialize(deserializer &, const std::string &, autocorr_result<T> &);
+
+    template <typename T>
+    std::ostream &operator<<(std::ostream &, const autocorr_result<T> &);
 }}
 
 // Actual declarations
@@ -182,6 +185,9 @@ public:
 
     /** Convert result to a permanent format (write to disk etc.) */
     friend void deserialize<>(deserializer &, const std::string &, autocorr_result &);
+
+    /** Write some info about the result to a stream */
+    friend std::ostream &operator<< <>(std::ostream &, const autocorr_result &);
 
     size_t find_level(size_t min_samples) const;
 

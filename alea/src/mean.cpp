@@ -4,6 +4,7 @@
 #include <alps/alea/serialize.hpp>
 
 #include <alps/alea/internal/util.hpp>
+#include <alps/alea/internal/format.hpp>
 
 namespace alps { namespace alea {
 
@@ -177,10 +178,28 @@ void deserialize(deserializer &s, const std::string &key, mean_result<T> &self)
     s.exit();
 }
 
-template void serialize(serializer &, const std::string &key, const mean_result<double> &);
-template void serialize(serializer &, const std::string &key, const mean_result<std::complex<double> > &);
+template void serialize(serializer &, const std::string &, const mean_result<double> &);
+template void serialize(serializer &, const std::string &, const mean_result<std::complex<double> > &);
 
-template void deserialize(deserializer &, const std::string &key, mean_result<double> &);
-template void deserialize(deserializer &, const std::string &key, mean_result<std::complex<double> > &);
+template void deserialize(deserializer &, const std::string &, mean_result<double> &);
+template void deserialize(deserializer &, const std::string &, mean_result<std::complex<double> > &);
+
+
+template <typename T>
+std::ostream &operator<<(std::ostream &str, const mean_result<T> &self)
+{
+    internal::check_valid(self);
+    internal::format_sentry sentry(str);
+    verbosity verb = internal::get_format(str, PRINT_TERSE);
+
+    if (verb == PRINT_VERBOSE)
+        str << "<X> = ";
+    str << self.mean();
+    return str;
+}
+
+template std::ostream &operator<<(std::ostream &, const mean_result<double> &);
+template std::ostream &operator<<(std::ostream &, const mean_result<std::complex<double>> &);
+
 
 }} /* namespace alps::alea */

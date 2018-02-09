@@ -23,6 +23,9 @@ namespace alps { namespace alea {
 
     template <typename T>
     void deserialize(deserializer &, const std::string &, mean_result<T> &);
+
+    template <typename T>
+    std::ostream &operator<<(std::ostream &, const mean_result<T> &);
 }}
 
 // Actual declarations
@@ -201,7 +204,10 @@ public:
     friend void serialize<>(serializer &, const std::string &, const mean_result &);
 
     /** Reresult to a permanent format (write to disk etc.) */
-    friend void deserialize<>(deserializer &, const std::string &, mean_result<T> &);
+    friend void deserialize<>(deserializer &, const std::string &, mean_result &);
+
+    /** Write some info about the result to a stream */
+    friend std::ostream &operator<< <>(std::ostream &, const mean_result &);
 
 protected:
     void reduce(const reducer &, bool do_pre_commit, bool do_post_commit);

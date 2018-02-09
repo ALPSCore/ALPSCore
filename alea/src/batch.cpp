@@ -1,9 +1,10 @@
 #include <alps/alea/batch.hpp>
 #include <alps/alea/variance.hpp>
 #include <alps/alea/covariance.hpp>
-#include <alps/alea/internal/util.hpp>
-
 #include <alps/alea/serialize.hpp>
+
+#include <alps/alea/internal/util.hpp>
+#include <alps/alea/internal/format.hpp>
 
 #include <numeric>
 
@@ -287,5 +288,26 @@ template void serialize(serializer &, const std::string &key, const batch_result
 
 template void deserialize(deserializer &, const std::string &key, batch_result<double> &);
 template void deserialize(deserializer &, const std::string &key, batch_result<std::complex<double> > &);
+
+template <typename T>
+std::ostream &operator<<(std::ostream &str, const batch_result<T> &self)
+{
+    internal::check_valid(self);
+    internal::format_sentry sentry(str);
+    verbosity verb = internal::get_format(str, PRINT_TERSE);
+
+    if (verb == PRINT_VERBOSE)
+        str << "<X> = ";
+    str << self.mean() << " +- " << self.stderror();
+
+    if (verb == PRINT_VERBOSE) {
+        str << "\n<Xi> = " << self.store().batch()
+            << "\nNi = " << self.store().count();
+    }
+    return str;
+}
+
+template std::ostream &operator<<(std::ostream &, const batch_result<double> &);
+template std::ostream &operator<<(std::ostream &, const batch_result<std::complex<double>> &);
 
 }} /* namespace alps::alea */

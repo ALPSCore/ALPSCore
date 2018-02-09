@@ -1,7 +1,8 @@
 #include <alps/alea/autocorr.hpp>
+#include <alps/alea/serialize.hpp>
 
 #include <alps/alea/internal/util.hpp>
-#include <alps/alea/serialize.hpp>
+#include <alps/alea/internal/format.hpp>
 
 namespace alps { namespace alea {
 
@@ -225,6 +226,28 @@ template void serialize(serializer &, const std::string &key, const autocorr_res
 
 template void deserialize(deserializer &, const std::string &key, autocorr_result<double> &);
 template void deserialize(deserializer &, const std::string &key, autocorr_result<std::complex<double> > &);
+
+template <typename T>
+std::ostream &operator<<(std::ostream &str, const autocorr_result<T> &self)
+{
+    internal::check_valid(self);
+    internal::format_sentry sentry(str);
+    verbosity verb = internal::get_format(str, PRINT_TERSE);
+
+    if (verb == PRINT_VERBOSE)
+        str << "<X> = ";
+    str << self.mean() << " +- " << self.stderror();
+
+    if (verb == PRINT_VERBOSE) {
+        str << "\nLevels:" << PRINT_TERSE;
+        for (const var_result<T> &curr : self.level_)
+            str << "\n  " << curr;
+    }
+    return str;
+}
+
+template std::ostream &operator<<(std::ostream &, const autocorr_result<double> &);
+template std::ostream &operator<<(std::ostream &, const autocorr_result<std::complex<double>> &);
 
 }}
 

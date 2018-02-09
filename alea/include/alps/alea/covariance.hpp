@@ -28,6 +28,9 @@ namespace alps { namespace alea {
 
     template <typename T, typename Str>
     void deserialize(deserializer &, const std::string &, cov_result<T,Str> &);
+
+    template <typename T, typename Str>
+    std::ostream &operator<<(std::ostream &, const cov_result<T,Str> &);
 }}
 
 // Actual declarations
@@ -265,6 +268,9 @@ public:
 
     /** Convert result from a permanent format (write to disk etc.) */
     friend void deserialize<>(deserializer &, const std::string &, cov_result &);
+
+    /** Write some info about the result to a stream */
+    friend std::ostream &operator<< <>(std::ostream &, const cov_result &);
 
 protected:
     void reduce(const reducer &, bool do_pre_commit, bool do_post_commit);

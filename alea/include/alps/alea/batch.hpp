@@ -25,6 +25,9 @@ namespace alps { namespace alea {
 
     template <typename T>
     void deserialize(deserializer &, const std::string &, batch_result<T> &);
+
+    template <typename T>
+    std::ostream &operator<<(std::ostream &, const batch_result<T> &);
 }}
 
 // Actual declarations
@@ -224,6 +227,9 @@ public:
 
     /** Convert result to a permanent format (write to disk etc.) */
     friend void deserialize<>(deserializer &, const std::string &, batch_result &);
+
+    /** Write some info about the result to a stream */
+    friend std::ostream &operator<< <>(std::ostream &, const batch_result &);
 
 protected:
     void reduce(const reducer &r, bool do_pre_commit, bool do_post_commit);

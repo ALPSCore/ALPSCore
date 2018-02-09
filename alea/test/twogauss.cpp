@@ -126,9 +126,12 @@ public:
         this->acc() << res;
         res = this->acc().finalize();
 
+        std::cerr << alps::alea::PRINT_TERSE << res << "\n";
         std::vector<value_type> obs_mean = res.mean();
         EXPECT_NEAR(twogauss_mean[0], obs_mean[0], 1e-6);
         EXPECT_NEAR(twogauss_mean[1], obs_mean[1], 1e-6);
+
+        std::cerr << alps::alea::PRINT_VERBOSE << res << "\n";
     }
 };
 
@@ -151,6 +154,8 @@ TYPED_TEST(twogauss_mean_case, test_lifecycle) { this->test_lifecycle(); }
 TYPED_TEST(twogauss_mean_case, test_serialize) { this->test_serialize(); }
 
 TYPED_TEST(twogauss_mean_case, test_sederialize) { this->test_sederialize(); }
+
+TYPED_TEST(twogauss_mean_case, test_merge) { this->test_merge(); }
 
 // VARIANCE
 

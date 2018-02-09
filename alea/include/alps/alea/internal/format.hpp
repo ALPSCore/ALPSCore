@@ -10,6 +10,11 @@
 #include <memory>
 
 namespace alps { namespace alea { namespace internal {
+    class format_sentry;
+    template <typename T> class format_registry;
+}}}
+
+namespace alps { namespace alea { namespace internal {
 
 /**
  * Undoes all formatting flag changes on stream when it goes out of scope.
@@ -57,12 +62,45 @@ private:
 };
 
 /**
+ * Allows the use of custom formatting state to I/O stream objects.
+ *
+ * Retrieves a reference of the object of copy-constructable type `T`
+ * associated with stream.  If no such object exists, it will first associate
+ * `initial_value` with the stream.
+ *
+ * Example use:
+ *
+ *     #include <iostream>
+ *     enum verbosity { TERSE, VERBOSE, DEBUG };
+ *     class my_type;
+ *     // ...
+ *     std::ostream &operator<<(std::ostream &str, verbosity verb) {
+ *         get_format(std::cerr, TERSE) = verb;
+ *     }
+ *     // ...
+ *     std::ostream &operator<<(std::ostream &str, const my_type &obj) {
+ *         if (get_format(std::cerr, TERSE) == VERBOSE) {
+ *             // ...
+ *         }
+ *     }
+ *
+ * @see format_registry
+ */
+template <typename T>
+T &get_format(std::ios_base &stream, T initial_value = T())
+{
+    return format_registry<T>::get(stream, initial_value);
+}
+
+/**
  * Allows the addition of custom formatting state to I/O stream objects.
  *
  * This class allows to store one instance of type `T` with each `std::ios_base`
  * instance via the `get()` method.  This in turn can be used to implement
  * user-defined I/O manipulators that modify these format flags and are then
  * used by stream operations with user-defined objects.
+ *
+ * @see get_format()
  */
 template <typename T>
 class format_registry
@@ -79,18 +117,6 @@ public:
             stream.register_callback(callback, get_xindex());
         }
         return *format;
-    }
-
-    /** Returns value of format object for stream or fallback if not present. */
-    static T value(const std::ios_base &stream, T fallback = T())
-    {
-        // HACK: pword() has no const variant, so we have to do this
-        T *&format = get_format(const_cast<std::ios_base &>(stream));
-
-        if (format == nullptr)
-            return fallback;
-        else
-            return format;
     }
 
     /** Removes format object from stream */
@@ -147,5 +173,18 @@ protected:
 private:
     format_registry() = delete;
 };
+
+// explicitly disallow some built-in types
+
+template <> class format_registry<char> { };
+template <> class format_registry<bool> { };
+template <> class format_registry<short> { };
+template <> class format_registry<unsigned short> { };
+template <> class format_registry<int> { };
+template <> class format_registry<unsigned int> { };
+template <> class format_registry<long> { };
+template <> class format_registry<unsigned long> { };
+template <> class format_registry<float> { };
+template <> class format_registry<double> { };
 
 }}}
