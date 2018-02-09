@@ -198,7 +198,7 @@ template <typename T, typename Str>
 void serialize(serializer &s, const std::string &key, const var_result<T,Str> &self)
 {
     internal::check_valid(self);
-    internal::group_sentry group(s, key);
+    internal::serializer_sentry group(s, key);
 
     serialize(s, "@size", self.store_->data_.size());
     serialize(s, "count", self.store_->count_);
@@ -210,8 +210,18 @@ void serialize(serializer &s, const std::string &key, const var_result<T,Str> &s
     serialize(s, "var", self.store_->data2_);
 }
 
+template <typename T, typename Str>
+void deserialize(deserializer &s, const std::string &key, var_result<T,Str> &self)
+{
+    throw unsupported_operation();
+}
+
 template void serialize(serializer &, const std::string &key, const var_result<double, circular_var> &);
 template void serialize(serializer &, const std::string &key, const var_result<std::complex<double>, circular_var> &);
 template void serialize(serializer &, const std::string &key, const var_result<std::complex<double>, elliptic_var> &);
+
+template void deserialize(deserializer &, const std::string &key, var_result<double, circular_var> &);
+template void deserialize(deserializer &, const std::string &key, var_result<std::complex<double>, circular_var> &);
+template void deserialize(deserializer &, const std::string &key, var_result<std::complex<double>, elliptic_var> &);
 
 }}

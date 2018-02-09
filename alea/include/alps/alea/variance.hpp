@@ -28,6 +28,9 @@ namespace alps { namespace alea {
 
     template <typename T, typename Str>
     void serialize(serializer &, const std::string &, const var_result<T,Str> &);
+
+    template <typename T, typename Str>
+    void deserialize(deserializer &, const std::string &, var_result<T,Str> &);
 }}
 
 // Actual declarations
@@ -90,6 +93,7 @@ private:
     friend class var_acc<T, Strategy>;
     friend class var_result<T, Strategy>;
     friend void serialize<>(serializer &, const std::string &, const var_result<T,Strategy> &);
+    friend void deserialize<>(deserializer &, const std::string &, var_result<T,Strategy> &);
 };
 
 template <typename T, typename Strategy>
@@ -252,6 +256,9 @@ public:
 
     /** Convert result to a permanent format (write to disk etc.) */
     friend void serialize<>(serializer &, const std::string &, const var_result &);
+
+    /** Convert result from a permanent format (write to disk etc.) */
+    friend void deserialize<>(deserializer &, const std::string &, var_result &);
 
 protected:
     void reduce(const reducer &, bool do_pre_commit, bool do_post_commit);

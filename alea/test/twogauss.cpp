@@ -94,6 +94,32 @@ public:
         result_type res = this->acc().finalize();
         alps::alea::serialize(ser, "", res);
     }
+
+    void test_sederialize()
+    {
+        {
+            std::cerr << "N";
+            alps::hdf5::archive ar("twogauss.hdf5", "w");
+            alps::alea::hdf5_serializer ser(ar, "");
+            result_type res = this->acc().finalize();
+            alps::alea::serialize(ser, "", res);
+        }
+
+        {
+            alps::hdf5::archive ar("twogauss.hdf5", "r");
+            alps::alea::hdf5_serializer ser(ar, "");
+            result_type res2;
+
+            std::cerr << "D";
+            alps::alea::deserialize(ser, "", res2);
+
+            std::cerr << "X\n";
+            std::vector<value_type> obs_mean = res2.mean();
+            EXPECT_NEAR(twogauss_mean[0], obs_mean[0], 1e-6);
+            EXPECT_NEAR(twogauss_mean[1], obs_mean[1], 1e-6);
+        }
+    }
+
 };
 
 typedef ::testing::Types<
@@ -113,6 +139,8 @@ TYPED_TEST(twogauss_mean_case, test_finalize) { this->test_finalize(); }
 TYPED_TEST(twogauss_mean_case, test_lifecycle) { this->test_lifecycle(); }
 
 TYPED_TEST(twogauss_mean_case, test_serialize) { this->test_serialize(); }
+
+TYPED_TEST(twogauss_mean_case, test_sederialize) { this->test_sederialize(); }
 
 // VARIANCE
 

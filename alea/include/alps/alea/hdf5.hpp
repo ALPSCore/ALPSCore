@@ -46,30 +46,30 @@ public:
         group_.pop_back();
     }
 
-    void write(const std::string &key, ndview<const double> value) {
+    void write(const std::string &key, ndview<const double> value) override {
         do_write(key, value);
     }
 
-    void write(const std::string &key, ndview<const std::complex<double>> value) {
+    void write(const std::string &key, ndview<const std::complex<double>> value) override {
         do_write(key, value);
     }
 
-    void write(const std::string &key, ndview<const complex_op<double>> value) {
+    void write(const std::string &key, ndview<const complex_op<double>> value) override {
+        throw unsupported_operation();  // FIXME
+    }
+
+    void write(const std::string &key, ndview<const long> value) override {
         do_write(key, value);
     }
 
-    void write(const std::string &key, ndview<const long> value) {
-        do_write(key, value);
-    }
-
-    void write(const std::string &key, ndview<const unsigned long> value) {
+    void write(const std::string &key, ndview<const unsigned long> value) override {
         do_write(key, value);
     }
 
     // Deserialization methods
 
-    metadata get_metadata(const std::string &key) override {
-        throw unsupported_operation(); // FIXME
+    std::vector<size_t> get_shape(const std::string &key) override {
+        return get_extent(get_path(key));
     }
 
     void read(const std::string &key, ndview<double> value) override {
@@ -81,7 +81,7 @@ public:
     }
 
     void read(const std::string &key, ndview<complex_op<double>> value) override {
-        do_read(key, value);
+        throw unsupported_operation();  // FIXME
     }
 
     void read(const std::string &key, ndview<long> value) override {
@@ -114,7 +114,10 @@ protected:
         std::vector<size_t> offset(shape.size(), 0);
         std::vector<size_t> chunk = shape;
 
-        (*archive_).write(path, data.data(), shape, chunk, offset);
+        if (data.ndim() == 0)
+            archive_->write(path, *data.data());
+        else
+            archive_->write(path, data.data(), shape, chunk, offset);
     }
 
     template <typename T>
@@ -124,30 +127,71 @@ protected:
             std::cerr << "Writing:" << get_path(relpath) << "\n";
         std::string path = get_path(relpath);
 
+        if (data.ndim() == 0)
+            throw unsupported_operation();
+
         std::vector<size_t> shape(data.shape(), data.shape() + data.ndim());
         shape.push_back(2);  // for complex
         std::vector<size_t> offset(shape.size(), 0);
         std::vector<size_t> chunk = shape;
 
         // hdf5::archive does not support complex
-        (*archive_).write(path, reinterpret_cast<const T*>(data.data()), shape,
+        archive_->write(path, reinterpret_cast<const T*>(data.data()), shape,
                           chunk, offset);
-        (*archive_).write(path + "/@__complex__", true);
+        archive_->write(path + "/@__complex__", true);
     }
 
     template <typename T>
     void do_read(const std::string &relpath, ndview<T> data)
     {
         if (debug_)
-            std::cerr << "Writing:" << get_path(relpath) << "\n";
+            std::cerr << "Reading:" << get_path(relpath) << "\n";
+
         std::string path = get_path(relpath);
 
-        std::vector<size_t> shape(data.shape(), data.shape() + data.ndim());
+        // check shape (this is cheap compared to reading)
+        std::vector<size_t> shape = get_extent(path);
+        if (data.ndim() != shape.size())
+            throw size_mismatch();
+        for (size_t i = 0; i != shape.size(); ++i)
+            if (shape[i] != data.shape()[i])
+                throw size_mismatch();
+
+        if (shape.empty()) {
+            archive_->read(path, *data.data());
+        } else {
+            // vector read
+            std::vector<size_t> offset(shape.size(), 0);
+            std::vector<size_t> chunk = shape;
+            archive_->read(path, data.data(), chunk, offset);
+        }
+    }
+
+    template <typename T>
+    void do_read(const std::string &relpath, ndview<std::complex<T>> data)
+    {
+        if (debug_)
+            std::cerr << "Reading:" << get_path(relpath) << "\n";
+
+        std::string path = get_path(relpath);
+
+        // check shape (this is cheap compared to reading)
+        std::vector<size_t> shape = get_extent(path);
+        if (data.ndim() != shape.size() - 1)
+            throw size_mismatch();
+        for (size_t i = 0; i != data.ndim(); ++i)
+            if (shape[i] != data.shape()[i])
+                throw size_mismatch();
+        if (shape[data.ndim()] != 2)
+            throw size_mismatch();
+
+        // vector read
         std::vector<size_t> offset(shape.size(), 0);
         std::vector<size_t> chunk = shape;
+        archive_->read(path, reinterpret_cast<T*>(data.data()), chunk, offset);
 
-        // FIXME
-        //(*archive_).read(path, data.data(), shape, chunk, offset);
+        bool tag;
+        archive_->read(path + "/@__complex__", tag);
     }
 
     std::string get_path(const std::string &key)
@@ -160,6 +204,14 @@ protected:
             throw std::runtime_error("Key must not contain '/'");
         maker << key;
         return maker.str();
+    }
+
+    std::vector<size_t> get_extent(const std::string &path)
+    {
+        if (archive_->is_scalar(path))
+            return std::vector<size_t>();
+        else
+            return archive_->extent(path);
     }
 
 private:

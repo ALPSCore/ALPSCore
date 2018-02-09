@@ -316,12 +316,6 @@ struct serializer
     virtual ~serializer() { }
 };
 
-struct metadata
-{
-    std::vector<size_t> shape;
-    enum dtype_tag { DOUBLE, DCOMPLEX, DCOMPLEX_OP, LONG, ULONG } dtype;
-};
-
 /**
  * Foster the deserialization of data from disk.
  *
@@ -333,22 +327,31 @@ struct metadata
  */
 struct deserializer
 {
+    /** Descends into a group with name `group` */
     virtual void enter(const std::string &group) = 0;
 
+    /** Ascends from the lowermost group */
     virtual void exit() = 0;
 
-    virtual metadata get_metadata(const std::string &key) = 0;
+    /** Retrieves metadata for a primitive */
+    virtual std::vector<size_t> get_shape(const std::string &key) = 0;
 
+    /** Reads a named multi-dimensional array of double */
     virtual void read(const std::string &key, ndview<double>) = 0;
 
+    /** Reads a named multi-dimensional array of double complex */
     virtual void read(const std::string &key, ndview<std::complex<double>>) = 0;
 
+    /** Reads a named multi-dimensional array of double complex operand */
     virtual void read(const std::string &key, ndview<complex_op<double>>) = 0;
 
+    /** Reads a named multi-dimensional array of long */
     virtual void read(const std::string &key, ndview<long>) = 0;
 
+    /** Reads a named multi-dimensional array of unsigned long */
     virtual void read(const std::string &key, ndview<unsigned long>) = 0;
 
+    /** Destructor */
     virtual ~deserializer() { }
 };
 

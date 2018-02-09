@@ -230,7 +230,7 @@ template <typename T>
 void serialize(serializer &s, const std::string &key, const batch_result<T> &self)
 {
     internal::check_valid(self);
-    internal::group_sentry group(s, key);
+    internal::serializer_sentry group(s, key);
 
     serialize(s, "@size", self.size());
     serialize(s, "@num_batches", self.store().num_batches());
@@ -246,7 +246,16 @@ void serialize(serializer &s, const std::string &key, const batch_result<T> &sel
     s.exit();
 }
 
+template <typename T>
+void deserialize(deserializer &s, const std::string &key, batch_result<T> &self)
+{
+    throw unsupported_operation();
+}
+
 template void serialize(serializer &, const std::string &key, const batch_result<double> &);
 template void serialize(serializer &, const std::string &key, const batch_result<std::complex<double>> &);
+
+template void deserialize(deserializer &, const std::string &key, batch_result<double> &);
+template void deserialize(deserializer &, const std::string &key, batch_result<std::complex<double> > &);
 
 }} /* namespace alps::alea */

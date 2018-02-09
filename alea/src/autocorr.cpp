@@ -172,7 +172,7 @@ template <typename T>
 void serialize(serializer &s, const std::string &key, const autocorr_result<T> &self)
 {
     internal::check_valid(self);
-    internal::group_sentry group(s, key);
+    internal::serializer_sentry group(s, key);
     serialize(s, "@size", self.size());
     serialize(s, "@nlevel", self.nlevel());
 
@@ -187,8 +187,17 @@ void serialize(serializer &s, const std::string &key, const autocorr_result<T> &
     s.exit();
 }
 
+template <typename T>
+void deserialize(deserializer &s, const std::string &key, autocorr_result<T> &self)
+{
+    throw unsupported_operation();
+}
+
 template void serialize(serializer &, const std::string &key, const autocorr_result<double> &);
 template void serialize(serializer &, const std::string &key, const autocorr_result<std::complex<double>> &);
+
+template void deserialize(deserializer &, const std::string &key, autocorr_result<double> &);
+template void deserialize(deserializer &, const std::string &key, autocorr_result<std::complex<double> > &);
 
 }}
 

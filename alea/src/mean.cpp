@@ -134,7 +134,7 @@ template <typename T>
 void serialize(serializer &s, const std::string &key, const mean_result<T> &self)
 {
     internal::check_valid(self);
-    internal::group_sentry group(s, key);
+    internal::serializer_sentry group(s, key);
 
     serialize(s, "@size", self.store_->data_.size());
     serialize(s, "count", self.store_->count_);
@@ -143,24 +143,28 @@ void serialize(serializer &s, const std::string &key, const mean_result<T> &self
     s.exit();
 }
 
+template <typename T>
+void deserialize(deserializer &s, const std::string &key, mean_result<T> &self)
+{
+    internal::deserializer_sentry group(s, key);
+
+    // first deserialize the fundamentals and make sure that the target fits
+    size_t new_size;
+    deserialize(s, "@size", new_size);
+    if (!self.valid() || self.size() != new_size)
+        self.store_.reset(new mean_data<T>(new_size));
+
+    // deserialize data
+    deserialize(s, "count", self.store_->count_);
+    s.enter("mean");
+    deserialize(s, "value", self.store_->data_);
+    s.exit();
+}
+
 template void serialize(serializer &, const std::string &key, const mean_result<double> &);
 template void serialize(serializer &, const std::string &key, const mean_result<std::complex<double> > &);
 
-
-// template <typename T>
-// mean_result<T> deserialize(deserializer &s)
-// {
-//     size_t size = s.get<size_t>("@size");
-//     mean_result<T> result;
-//     result.store_.reset(new mean_data<T>(size));
-//
-//     s.read("count", ndview<size_t>(&result.store->count_, nullptr, 0));
-//     s.enter("mean");
-//     s.read("value", ndview<size_t>(&result.store->data_, &size, 1));
-//     s.exit();
-//     return result;
-// }
-
-
+template void deserialize(deserializer &, const std::string &key, mean_result<double> &);
+template void deserialize(deserializer &, const std::string &key, mean_result<std::complex<double> > &);
 
 }} /* namespace alps::alea */
