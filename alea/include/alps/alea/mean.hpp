@@ -123,6 +123,9 @@ public:
     /** Add scalar value to accumulator */
     mean_acc &operator<<(T o) { return *this << value_adapter<T>(o); }
 
+    /** Merge partial result into accumulator */
+    mean_acc &operator<<(const mean_result<T> &result);
+
     /** Returns sample size, i.e., number of accumulated data points */
     size_t count() const { return store_->count(); }
 

@@ -120,6 +120,16 @@ public:
         }
     }
 
+    void test_merge()
+    {
+        result_type res = this->acc().result();
+        this->acc() << res;
+        res = this->acc().finalize();
+
+        std::vector<value_type> obs_mean = res.mean();
+        EXPECT_NEAR(twogauss_mean[0], obs_mean[0], 1e-6);
+        EXPECT_NEAR(twogauss_mean[1], obs_mean[1], 1e-6);
+    }
 };
 
 typedef ::testing::Types<

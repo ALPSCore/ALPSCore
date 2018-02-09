@@ -89,6 +89,25 @@ void cov_acc<T,Str>::add(const computed<value_type> &source, size_t count)
 }
 
 template <typename T, typename Str>
+cov_acc<T,Str> &cov_acc<T,Str>::operator<<(const cov_result<T,Str> &other)
+{
+    internal::check_valid(*this);
+    if (size() != other.size())
+        throw size_mismatch();
+
+    // NOTE partial sums are unchanged
+    // HACK we need this for "outwardly constant" manipulation
+    cov_data<T,Str> &other_store = const_cast<cov_data<T,Str> &>(other.store());
+    other_store.convert_to_sum();
+    store_->data() += other_store.data();
+    store_->data2() += other_store.data2();
+    store_->count() += other_store.count();
+    store_->count2() += other_store.count2();
+    other_store.convert_to_mean();
+    return *this;
+}
+
+template <typename T, typename Str>
 cov_result<T,Str> cov_acc<T,Str>::result() const
 {
     internal::check_valid(*this);

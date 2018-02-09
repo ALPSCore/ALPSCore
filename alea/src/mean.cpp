@@ -54,6 +54,22 @@ void mean_acc<T>::add(const computed<T> &source, size_t count)
 }
 
 template <typename T>
+mean_acc<T> &mean_acc<T>::operator<<(const mean_result<T> &other)
+{
+    internal::check_valid(*this);
+    if (size() != other.size())
+        throw size_mismatch();
+
+    // HACK we need this for "outwardly constant" manipulation
+    mean_data<T> &other_store = const_cast<mean_data<T> &>(other.store());
+    other_store.convert_to_sum();
+    store_->data() += other_store.data();
+    store_->count() += other_store.count();
+    other_store.convert_to_mean();
+    return *this;
+}
+
+template <typename T>
 void mean_acc<T>::reset()
 {
     if (valid())

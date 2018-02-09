@@ -93,6 +93,9 @@ public:
     /** Add scalar value to accumulator */
     autocorr_acc &operator<<(T o) { return *this << value_adapter<T>(o); }
 
+    /** Merge partial result into accumulator */
+    autocorr_acc &operator<<(const autocorr_result<T> &result);
+
     /** Returns sample size, i.e., number of accumulated data points */
     size_t count() const { return count_; }
 

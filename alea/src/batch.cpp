@@ -96,6 +96,23 @@ void batch_acc<T>::add(const computed<T> &source, size_t count)
 }
 
 template <typename T>
+batch_acc<T> &batch_acc<T>::operator<<(const batch_result<T> &other)
+{
+    internal::check_valid(*this);
+    if (size() != other.size())
+        throw size_mismatch();
+    // TODO this is not strictly speaking necessary when done properly
+    if (num_batches() != other.num_batches())
+        throw size_mismatch();
+
+    // FIXME: this is a terrible idea because it mixes two time series
+    batch_data<T> &other_store = const_cast<batch_data<T> &>(other.store());
+    store_->batch() += other_store.batch();
+    store_->count() += other_store.count();
+    return *this;
+}
+
+template <typename T>
 void batch_acc<T>::next_batch()
 {
     ++cursor_;

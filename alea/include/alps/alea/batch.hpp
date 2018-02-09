@@ -97,6 +97,9 @@ public:
     /** Number of components of the random vector (e.g., size of mean) */
     size_t size() const { return size_; }
 
+    /** Number of stores batches */
+    size_t num_batches() const { return num_batches_; }
+
     /** Add computed vector to the accumulator */
     batch_acc &operator<<(const computed<T> &src) { add(src, 1); return *this; }
 
@@ -110,6 +113,9 @@ public:
 
     /** Add scalar value to accumulator */
     batch_acc &operator<<(T o) { return *this << value_adapter<T>(o); }
+
+    /** Merge partial result into accumulator */
+    batch_acc &operator<<(const batch_result<T> &result);
 
     /** Returns sample size, i.e., total number of accumulated data points */
     size_t count() const { return store_->count().sum(); }
@@ -180,6 +186,9 @@ public:
 
     /** Number of components of the random vector (e.g., size of mean) */
     size_t size() const { return store_->size(); }
+
+    /** Number of stores batches */
+    size_t num_batches() const { return store_->num_batches(); }
 
     /** Returns sample size, i.e., total number of accumulated data points */
     size_t count() const { return store_->count().sum(); }

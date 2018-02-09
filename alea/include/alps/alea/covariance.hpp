@@ -153,6 +153,9 @@ public:
     /** Add scalar value to accumulator */
     cov_acc &operator<<(T o) { return *this << value_adapter<T>(o); }
 
+    /** Merge partial result into accumulator */
+    cov_acc &operator<<(const cov_result<T,Strategy> &result);
+
     /** Returns sample size, i.e., number of accumulated data points */
     size_t count() const { return store_->count(); }
 
