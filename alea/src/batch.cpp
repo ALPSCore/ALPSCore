@@ -3,6 +3,8 @@
 #include <alps/alea/covariance.hpp>
 #include <alps/alea/internal/util.hpp>
 
+#include <alps/alea/serialize.hpp>
+
 #include <numeric>
 
 namespace alps { namespace alea {
@@ -225,25 +227,26 @@ template class batch_result<std::complex<double> >;
 
 
 template <typename T>
-void serialize(serializer &s, const batch_result<T> &self)
+void serialize(serializer &s, const std::string &key, const batch_result<T> &self)
 {
     internal::check_valid(self);
+    internal::group_sentry group(s, key);
 
-    s.write("@size", self.size());
-    s.write("@num_batches", self.store().num_batches());
+    serialize(s, "@size", self.size());
+    serialize(s, "@num_batches", self.store().num_batches());
 
     s.enter("batch");
-    s.write("count", self.store().count());
-    s.write("sum", self.store().batch());
+    serialize(s, "count", self.store().count());
+    serialize(s, "sum", self.store().batch());
     s.exit();
 
     s.enter("mean");
-    s.write("value", self.mean());
-    s.write("error", self.stderror());
+    serialize(s, "value", self.mean());
+    serialize(s, "error", self.stderror());
     s.exit();
 }
 
-template void serialize(serializer &, const batch_result<double> &);
-template void serialize(serializer &, const batch_result<std::complex<double>> &);
+template void serialize(serializer &, const std::string &key, const batch_result<double> &);
+template void serialize(serializer &, const std::string &key, const batch_result<std::complex<double>> &);
 
 }} /* namespace alps::alea */

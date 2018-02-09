@@ -21,7 +21,7 @@ namespace alps { namespace alea {
     template <typename T> class batch_result;
 
     template <typename T>
-    void serialize(serializer &, const batch_result<T> &);
+    void serialize(serializer &, const std::string &, const batch_result<T> &);
 }}
 
 // Actual declarations
@@ -208,7 +208,7 @@ public:
     void reduce(const reducer &r) { reduce(r, true, true); }
 
     /** Convert result to a permanent format (write to disk etc.) */
-    friend void serialize<>(serializer &, const batch_result &);
+    friend void serialize<>(serializer &, const std::string &, const batch_result &);
 
 protected:
     void reduce(const reducer &r, bool do_pre_commit, bool do_post_commit);

@@ -282,58 +282,74 @@ struct reducer
 
 /**
  * Foster the serialization of data to disk.
+ *
+ * The serialization interface writes a hierarchy of named groups, traversed by
+ * `enter()` and `exit()`, each containing a set of primitives or key-value
+ * pairs, written by the `write()` family of methods.
+ *
+ * @see alps::alea::serialize(), alps::alea::deserializer
  */
 struct serializer
+{
+    /** Creates and descends into a group with name `group` */
+    virtual void enter(const std::string &group) = 0;
+
+    /** Ascends from the lowermost group */
+    virtual void exit() = 0;
+
+    /** Writes a named multi-dimensional array of doubles */
+    virtual void write(const std::string &key, ndview<const double>) = 0;
+
+    /** Writes a named multi-dimensional array of complex doubles */
+    virtual void write(const std::string &key, ndview<const std::complex<double>>) = 0;
+
+    /** Writes a named multi-dimensional array of complex operands */
+    virtual void write(const std::string &key, ndview<const complex_op<double>>) = 0;
+
+    /** Writes a named multi-dimensional array of longs */
+    virtual void write(const std::string &key, ndview<const long>) = 0;
+
+    /** Writes a named multi-dimensional array of unsigned longs */
+    virtual void write(const std::string &key, ndview<const unsigned long>) = 0;
+
+    /** Destructor */
+    virtual ~serializer() { }
+};
+
+struct metadata
+{
+    std::vector<size_t> shape;
+    enum dtype_tag { DOUBLE, DCOMPLEX, DCOMPLEX_OP, LONG, ULONG } dtype;
+};
+
+/**
+ * Foster the deserialization of data from disk.
+ *
+ * The serialization interface writes a hierarchy of named groups, traversed by
+ * `enter()` and `exit()`, each containing a set of primitives or key-value
+ * pairs, read out by the `read()` family of methods.
+ *
+ * @see alps::alea::deserialize(), alps::alea::serializer
+ */
+struct deserializer
 {
     virtual void enter(const std::string &group) = 0;
 
     virtual void exit() = 0;
 
-    virtual void write(const std::string &key, ndview<const double>) = 0;
+    virtual metadata get_metadata(const std::string &key) = 0;
 
-    virtual void write(const std::string &key, ndview<const std::complex<double>>) = 0;
+    virtual void read(const std::string &key, ndview<double>) = 0;
 
-    virtual void write(const std::string &key, ndview<const complex_op<double>>) = 0;
+    virtual void read(const std::string &key, ndview<std::complex<double>>) = 0;
 
-    virtual void write(const std::string &key, ndview<const long>) = 0;
+    virtual void read(const std::string &key, ndview<complex_op<double>>) = 0;
 
-    virtual void write(const std::string &key, ndview<const unsigned long>) = 0;
+    virtual void read(const std::string &key, ndview<long>) = 0;
 
-    virtual ~serializer() { }
+    virtual void read(const std::string &key, ndview<unsigned long>) = 0;
 
-    // Convenience functions for scalars
-
-    void write(const std::string &key, unsigned long value) {
-        write(key, ndview<const unsigned long>(&value, nullptr, 0));
-    }
-    void write(const std::string &key, long value) {
-        write(key, ndview<const long>(&value, nullptr, 0));
-    }
-    void write(const std::string &key, double value) {
-        write(key, ndview<const double>(&value, nullptr, 0));
-    }
-
-    // Convenience functions for writing Eigen expressions
-
-    template <typename Derived>
-    void write(const std::string &key, const Eigen::DenseBase<Derived> &value)
-    {
-        typedef Eigen::internal::traits<Derived> traits;
-        typedef const typename traits::Scalar scalar_type;
-
-        // TODO figure out whether strided arrays are evaluated
-        auto temp = value.eval();
-
-        if (Derived::ColsAtCompileTime == 1 || Derived::RowsAtCompileTime == 1) {
-            // Omit second dimension for simple vectors
-            std::array<size_t, 1> dims = {(size_t)temp.size()};
-            write(key, ndview<scalar_type>(temp.data(), dims.data(), 1));
-        } else {
-            // Eigen arrays are column-major
-            std::array<size_t, 2> dims = {(size_t)temp.cols(), (size_t)temp.rows()};
-            write(key, ndview<scalar_type>(temp.data(), dims.data(), 2));
-        }
-    }
+    virtual ~deserializer() { }
 };
 
 /**

@@ -1,6 +1,7 @@
 #include <alps/alea/autocorr.hpp>
 
 #include <alps/alea/internal/util.hpp>
+#include <alps/alea/serialize.hpp>
 
 namespace alps { namespace alea {
 
@@ -168,28 +169,26 @@ template class autocorr_result<std::complex<double> >;
 
 
 template <typename T>
-void serialize(serializer &s, const autocorr_result<T> &self)
+void serialize(serializer &s, const std::string &key, const autocorr_result<T> &self)
 {
     internal::check_valid(self);
-    s.write("@size", self.size());
-    s.write("@nlevel", self.nlevel());
+    internal::group_sentry group(s, key);
+    serialize(s, "@size", self.size());
+    serialize(s, "@nlevel", self.nlevel());
 
     s.enter("level");
-    for (size_t i = 0; i != self.nlevel(); ++i) {
-        s.enter(std::to_string(i));
-        serialize(s, self.level_[i]);
-        s.exit();
-    }
+    for (size_t i = 0; i != self.nlevel(); ++i)
+        serialize(s, std::to_string(i), self.level_[i]);
     s.exit();
 
     s.enter("mean");
-    s.write("value", self.mean());
-    s.write("error", self.stderror());
+    serialize(s, "value", self.mean());
+    serialize(s, "error", self.stderror());
     s.exit();
 }
 
-template void serialize(serializer &, const autocorr_result<double> &);
-template void serialize(serializer &, const autocorr_result<std::complex<double>> &);
+template void serialize(serializer &, const std::string &key, const autocorr_result<double> &);
+template void serialize(serializer &, const std::string &key, const autocorr_result<std::complex<double>> &);
 
 }}
 

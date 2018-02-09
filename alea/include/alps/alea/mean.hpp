@@ -19,7 +19,7 @@ namespace alps { namespace alea {
     template <typename T> class mean_result;
 
     template <typename T>
-    void serialize(serializer &, const mean_result<T> &);
+    void serialize(serializer &, const std::string &, const mean_result<T> &);
 }}
 
 // Actual declarations
@@ -70,7 +70,7 @@ private:
 
     friend class mean_acc<T>;
     friend class mean_result<T>;
-    friend void serialize<>(serializer &, const mean_result<T> &);
+    friend void serialize<>(serializer &, const std::string &, const mean_result<T> &);
 };
 
 template <typename T>
@@ -191,7 +191,7 @@ public:
     void reduce(const reducer &r) { return reduce(r, true, true); }
 
     /** Convert result to a permanent format (write to disk etc.) */
-    friend void serialize<>(serializer &, const mean_result &);
+    friend void serialize<>(serializer &, const std::string &, const mean_result &);
 
 protected:
     void reduce(const reducer &, bool do_pre_commit, bool do_post_commit);

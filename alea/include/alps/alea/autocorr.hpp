@@ -20,7 +20,7 @@ namespace alps { namespace alea {
     template <typename T> class batch_result;
 
     template <typename T>
-    void serialize(serializer &, const autocorr_result<T> &);
+    void serialize(serializer &, const std::string &, const autocorr_result<T> &);
 }}
 
 // Actual declarations
@@ -172,7 +172,7 @@ public:
     void reduce(const reducer &r) { reduce(r, true, true); }
 
     /** Convert result to a permanent format (write to disk etc.) */
-    friend void serialize<>(serializer &, const autocorr_result &);
+    friend void serialize<>(serializer &, const std::string &, const autocorr_result &);
 
     size_t find_level(size_t min_samples) const;
 

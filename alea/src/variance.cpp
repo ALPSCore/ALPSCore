@@ -1,5 +1,6 @@
 #include <alps/alea/variance.hpp>
 #include <alps/alea/util.hpp>
+#include <alps/alea/serialize.hpp>
 
 #include <alps/alea/internal/util.hpp>
 
@@ -194,21 +195,23 @@ template class var_result<std::complex<double>, elliptic_var>;
 
 
 template <typename T, typename Str>
-void serialize(serializer &s, const var_result<T,Str> &self)
+void serialize(serializer &s, const std::string &key, const var_result<T,Str> &self)
 {
     internal::check_valid(self);
-    s.write("@size", self.store_->data_.size());
-    s.write("count", self.store_->count_);
-    s.write("count2", self.store_->count2_);
+    internal::group_sentry group(s, key);
+
+    serialize(s, "@size", self.store_->data_.size());
+    serialize(s, "count", self.store_->count_);
+    serialize(s, "count2", self.store_->count2_);
     s.enter("mean");
-    s.write("value", self.store_->data_);
-    s.write("error", self.stderror());   // TODO temporary
+    serialize(s, "value", self.store_->data_);
+    serialize(s, "error", self.stderror());   // TODO temporary
     s.exit();
-    s.write("var", self.store_->data2_);
+    serialize(s, "var", self.store_->data2_);
 }
 
-template void serialize(serializer &, const var_result<double, circular_var> &);
-template void serialize(serializer &, const var_result<std::complex<double>, circular_var> &);
-template void serialize(serializer &, const var_result<std::complex<double>, elliptic_var> &);
+template void serialize(serializer &, const std::string &key, const var_result<double, circular_var> &);
+template void serialize(serializer &, const std::string &key, const var_result<std::complex<double>, circular_var> &);
+template void serialize(serializer &, const std::string &key, const var_result<std::complex<double>, elliptic_var> &);
 
 }}

@@ -2,6 +2,8 @@
 #include <alps/alea/internal/outer.hpp>
 #include <alps/alea/internal/util.hpp>
 
+#include <alps/alea/serialize.hpp>
+
 namespace alps { namespace alea {
 
 template <typename T, typename Str>
@@ -190,21 +192,23 @@ template class cov_result<std::complex<double>, elliptic_var>;
 
 
 template <typename T, typename Str>
-void serialize(serializer &s, const cov_result<T,Str> &self)
+void serialize(serializer &s, const std::string &key, const cov_result<T,Str> &self)
 {
     internal::check_valid(self);
-    s.write("@size", self.store_->data_.size());
-    s.write("count", self.store_->count_);
-    s.write("count2", self.store_->count2_);
+    internal::group_sentry group(s, key);
+
+    serialize(s, "@size", self.store_->data_.size());
+    serialize(s, "count", self.store_->count_);
+    serialize(s, "count2", self.store_->count2_);
     s.enter("mean");
-    s.write("value", self.store_->data_);
-    s.write("error", self.stderror());   // TODO temporary
+    serialize(s, "value", self.store_->data_);
+    serialize(s, "error", self.stderror());   // TODO temporary
     s.exit();
-    s.write("cov", self.store_->data2_);
+    serialize(s, "cov", self.store_->data2_);
 }
 
-template void serialize(serializer &, const cov_result<double, circular_var> &);
-template void serialize(serializer &, const cov_result<std::complex<double>, circular_var> &);
-template void serialize(serializer &, const cov_result<std::complex<double>, elliptic_var> &);
+template void serialize(serializer &, const std::string &key, const cov_result<double, circular_var> &);
+template void serialize(serializer &, const std::string &key, const cov_result<std::complex<double>, circular_var> &);
+template void serialize(serializer &, const std::string &key, const cov_result<std::complex<double>, elliptic_var> &);
 
 }} /* namespace alps::alea */

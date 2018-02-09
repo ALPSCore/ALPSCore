@@ -24,7 +24,7 @@ namespace alps { namespace alea {
     template <typename T> class batch_result;
 
     template <typename T, typename Str>
-    void serialize(serializer &, const cov_result<T,Str> &);
+    void serialize(serializer &, const std::string &, const cov_result<T,Str> &);
 }}
 
 // Actual declarations
@@ -87,7 +87,7 @@ private:
 
     friend class cov_acc<T, Strategy>;
     friend class cov_result<T, Strategy>;
-    friend void serialize<>(serializer &, const cov_result<T,Strategy> &);
+    friend void serialize<>(serializer &, const std::string &, const cov_result<T,Strategy> &);
 };
 
 template <typename T, typename Strategy>
@@ -254,7 +254,7 @@ public:
     void reduce(const reducer &r) { reduce(r, true, true); }
 
     /** Convert result to a permanent format (write to disk etc.) */
-    friend void serialize<>(serializer &, const cov_result &);
+    friend void serialize<>(serializer &, const std::string &, const cov_result &);
 
 protected:
     void reduce(const reducer &, bool do_pre_commit, bool do_post_commit);

@@ -92,7 +92,7 @@ public:
         alps::hdf5::archive ar("twogauss.hdf5", "w");
         alps::alea::hdf5_serializer ser(ar, "");
         result_type res = this->acc().finalize();
-        alps::alea::serialize(ser, res);
+        alps::alea::serialize(ser, "", res);
     }
 };
 

@@ -1,6 +1,7 @@
 #include <alps/alea/mean.hpp>
 #include <alps/alea/util.hpp>
 #include <alps/alea/computed.hpp>
+#include <alps/alea/serialize.hpp>
 
 #include <alps/alea/internal/util.hpp>
 
@@ -130,18 +131,36 @@ template class mean_result<std::complex<double> >;
 
 
 template <typename T>
-void serialize(serializer &s, const mean_result<T> &self)
+void serialize(serializer &s, const std::string &key, const mean_result<T> &self)
 {
     internal::check_valid(self);
+    internal::group_sentry group(s, key);
 
-    s.write("@size", self.store_->data_.size());
-    s.write("count", self.store_->count_);
+    serialize(s, "@size", self.store_->data_.size());
+    serialize(s, "count", self.store_->count_);
     s.enter("mean");
-    s.write("value", self.store_->data_);
+    serialize(s, "value", self.store_->data_);
     s.exit();
 }
 
-template void serialize(serializer &, const mean_result<double> &);
-template void serialize(serializer &, const mean_result<std::complex<double> > &);
+template void serialize(serializer &, const std::string &key, const mean_result<double> &);
+template void serialize(serializer &, const std::string &key, const mean_result<std::complex<double> > &);
+
+
+// template <typename T>
+// mean_result<T> deserialize(deserializer &s)
+// {
+//     size_t size = s.get<size_t>("@size");
+//     mean_result<T> result;
+//     result.store_.reset(new mean_data<T>(size));
+//
+//     s.read("count", ndview<size_t>(&result.store->count_, nullptr, 0));
+//     s.enter("mean");
+//     s.read("value", ndview<size_t>(&result.store->data_, &size, 1));
+//     s.exit();
+//     return result;
+// }
+
+
 
 }} /* namespace alps::alea */

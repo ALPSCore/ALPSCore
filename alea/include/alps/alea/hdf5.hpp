@@ -17,6 +17,7 @@ namespace alps { namespace alea {
 
 class hdf5_serializer
     : public serializer
+    , public deserializer
 {
 public:
     hdf5_serializer(hdf5::archive &ar, const std::string &path, bool debug=false)
@@ -26,7 +27,9 @@ public:
         , debug_(debug)
     { }
 
-    void enter(const std::string &group)
+    // Common methods
+
+    void enter(const std::string &group) override
     {
         if (debug_)
             std::cerr << "Entering group: " << get_path(group) << "\n";
@@ -34,7 +37,7 @@ public:
         group_.push_back(group);
     }
 
-    void exit()
+    void exit() override
     {
         if (debug_)
             std::cerr << "Exiting group: " << get_path("") << "\n";
@@ -63,6 +66,32 @@ public:
         do_write(key, value);
     }
 
+    // Deserialization methods
+
+    metadata get_metadata(const std::string &key) override {
+        throw unsupported_operation(); // FIXME
+    }
+
+    void read(const std::string &key, ndview<double> value) override {
+        do_read(key, value);
+    }
+
+    void read(const std::string &key, ndview<std::complex<double>> value) override {
+        do_read(key, value);
+    }
+
+    void read(const std::string &key, ndview<complex_op<double>> value) override {
+        do_read(key, value);
+    }
+
+    void read(const std::string &key, ndview<long> value) override {
+        do_read(key, value);
+    }
+
+    void read(const std::string &key, ndview<unsigned long> value) override {
+        do_read(key, value);
+    }
+
     ~hdf5_serializer()
     {
         // Cannot do exception because we are in destructor
@@ -74,22 +103,9 @@ public:
     }
 
 protected:
-    // Look at:
-    // void archive::write(std::string path, T const * value,
-    //     , std::vector<std::size_t> size
-    //     , std::vector<std::size_t> chunk = std::vector<std::size_t>()
-    //     , std::vector<std::size_t> offset = std::vector<std::size_t>()
-    //     ) const;
-
     template <typename T>
     void do_write(const std::string &relpath, ndview<const T> data)
     {
-        // Look at:
-        // void archive::write(std::string path, T const * value,
-        //     , std::vector<std::size_t> size
-        //     , std::vector<std::size_t> chunk = std::vector<std::size_t>()
-        //     , std::vector<std::size_t> offset = std::vector<std::size_t>()
-        //     ) const;
         if (debug_)
             std::cerr << "Writing:" << get_path(relpath) << "\n";
         std::string path = get_path(relpath);
@@ -102,7 +118,7 @@ protected:
     }
 
     template <typename T>
-    void do_write(const std::string &relpath, const computed<std::complex<T>> &data)
+    void do_write(const std::string &relpath, ndview<const std::complex<T>> data)
     {
         if (debug_)
             std::cerr << "Writing:" << get_path(relpath) << "\n";
@@ -110,14 +126,28 @@ protected:
 
         std::vector<size_t> shape(data.shape(), data.shape() + data.ndim());
         shape.push_back(2);  // for complex
-
         std::vector<size_t> offset(shape.size(), 0);
         std::vector<size_t> chunk = shape;
 
         // hdf5::archive does not support complex
-        (*archive_).write(path, reinterpret_cast<T*>(data.data()), shape,
+        (*archive_).write(path, reinterpret_cast<const T*>(data.data()), shape,
                           chunk, offset);
         (*archive_).write(path + "/@__complex__", true);
+    }
+
+    template <typename T>
+    void do_read(const std::string &relpath, ndview<T> data)
+    {
+        if (debug_)
+            std::cerr << "Writing:" << get_path(relpath) << "\n";
+        std::string path = get_path(relpath);
+
+        std::vector<size_t> shape(data.shape(), data.shape() + data.ndim());
+        std::vector<size_t> offset(shape.size(), 0);
+        std::vector<size_t> chunk = shape;
+
+        // FIXME
+        //(*archive_).read(path, data.data(), shape, chunk, offset);
     }
 
     std::string get_path(const std::string &key)
