@@ -7,6 +7,8 @@
 
 #include <alps/alea/core.hpp>
 
+#include <array>
+
 namespace alps { namespace alea { namespace internal {
 
 /**
@@ -123,11 +125,11 @@ void serialize(serializer &ser, const std::string &key,
 
     if (Derived::ColsAtCompileTime == 1 || Derived::RowsAtCompileTime == 1) {
         // Omit second dimension for simple vectors
-        std::array<size_t, 1> dims = {(size_t)temp.size()};
+        std::array<size_t, 1> dims = {{(size_t)temp.size()}};
         ser.write(key, ndview<const scalar_type>(temp.data(), dims.data(), 1));
     } else {
         // Eigen arrays are column-major
-        std::array<size_t, 2> dims = {(size_t)temp.cols(), (size_t)temp.rows()};
+        std::array<size_t, 2> dims = {{(size_t)temp.cols(), (size_t)temp.rows()}};
         ser.write(key, ndview<const scalar_type>(temp.data(), dims.data(), 2));
     }
 }
@@ -153,7 +155,7 @@ template <typename T>
 void deserialize(deserializer &ser, const std::string &key,
                  Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &value)
 {
-    std::array<size_t, 2> shape = {(size_t)value.cols(), (size_t)value.rows()};
+    std::array<size_t, 2> shape = {{(size_t)value.cols(), (size_t)value.rows()}};
     ser.read(key, ndview<T>(value.data(), shape.data(), shape.size()));
 }
 
@@ -161,7 +163,7 @@ template <typename T>
 void deserialize(deserializer &ser, const std::string &key,
                  Eigen::Matrix<T, Eigen::Dynamic, 1> &value)
 {
-    std::array<size_t, 1> shape = {(size_t)value.rows()};
+    std::array<size_t, 1> shape = {{(size_t)value.rows()}};
     ser.read(key, ndview<T>(value.data(), shape.data(), shape.size()));
 }
 
@@ -169,7 +171,7 @@ template <typename T>
 void deserialize(deserializer &ser, const std::string &key,
                  Eigen::Matrix<T, 1, Eigen::Dynamic> &value)
 {
-    std::array<size_t, 1> shape = {(size_t)value.cols()};
+    std::array<size_t, 1> shape = {{(size_t)value.cols()}};
     ser.read(key, ndview<T>(value.data(), shape.data(), shape.size()));
 }
 
