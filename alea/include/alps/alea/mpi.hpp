@@ -66,7 +66,7 @@ struct mpi_reducer
 
     void reduce(view<long> data) const override { inplace_reduce(data); }
 
-    void commit() const { }
+    void commit() const override { }
 
     const mpi::communicator &comm() const { return comm_; }
 
