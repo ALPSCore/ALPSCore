@@ -245,11 +245,15 @@ public:
     /** Returns sample mean */
     const column<T> &mean() const { return store_->data(); }
 
+    // TODO: this is essentially a weighted variance thing.  The weighted
+    // variance differs from the pooled on by a factor.  We should probably
+    // split the two things.
+
     /** Returns bias-corrected sample variance */
-    column<var_type> var() const { return batch_size() * store_->data2().diagonal().real(); } // TODO
+    column<var_type> var() const { return batch_size() * store_->data2().diagonal().real(); }
 
     /** Returns bias-corrected sample covariance matrix  */
-    typename eigen<cov_type>::matrix cov() const { return batch_size() * store_->data2(); } // TODO
+    typename eigen<cov_type>::matrix cov() const { return batch_size() * store_->data2(); }
 
     /** Returns bias-corrected standard error of the mean */
     column<var_type> stderror() const;

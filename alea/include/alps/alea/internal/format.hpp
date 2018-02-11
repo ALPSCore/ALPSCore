@@ -34,7 +34,7 @@ class format_sentry
 public:
     explicit format_sentry(std::ostream &str)
         : stream_(str)
-        , saved_(NULL)
+        , saved_(nullptr)
     {
         // save all flags to auxiliary ios_base instance
         saved_.copyfmt(stream_);

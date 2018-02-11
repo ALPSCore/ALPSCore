@@ -205,10 +205,6 @@ extern template class var_acc<std::complex<double>, elliptic_var>;
 template <typename T, typename Strategy=circular_var>
 class var_result
 {
-    // TODO: this is essentially a weighted variance thing.  The weighted
-    // variance differs from the pooled on by a factor.  We should probably
-    // split the two things.
-
 public:
     typedef typename bind<Strategy, T>::value_type value_type;
     typedef typename bind<Strategy, T>::var_type var_type;
@@ -245,8 +241,12 @@ public:
     /** Returns sample mean */
     const column<T> &mean() const { return store_->data(); }
 
+    // TODO: this is essentially a weighted variance thing.  The weighted
+    // variance differs from the pooled on by a factor.  We should probably
+    // split the two things.
+
     /** Returns bias-corrected sample variance */
-    column<var_type> var() const { return batch_size() * store_->data2(); } // TODO
+    column<var_type> var() const { return batch_size() * store_->data2(); }
 
     /** Returns bias-corrected standard error of the mean */
     column<var_type> stderror() const;
