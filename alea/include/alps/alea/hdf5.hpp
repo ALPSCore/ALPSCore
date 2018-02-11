@@ -145,6 +145,10 @@ protected:
             if (shape[i] != data.shape()[i])
                 throw size_mismatch();
 
+        // discard the data
+        if (data.data() == nullptr)
+            return;
+
         if (shape.empty()) {
             archive_->read(path, *data.data());
         } else {
@@ -169,6 +173,10 @@ protected:
                 throw size_mismatch();
         if (shape[data.ndim()] != 2)
             throw size_mismatch();
+
+        // discard the data
+        if (data.data() == nullptr)
+            return;
 
         // vector read
         std::vector<size_t> offset(shape.size(), 0);

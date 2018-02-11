@@ -8,6 +8,7 @@
 #include <cassert>
 #include <ostream>
 #include <memory>
+#include <mutex>
 
 namespace alps { namespace alea { namespace internal {
     class format_sentry;

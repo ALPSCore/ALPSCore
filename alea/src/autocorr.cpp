@@ -208,6 +208,7 @@ void serialize(serializer &s, const std::string &key, const autocorr_result<T> &
 template <typename T>
 void deserialize(deserializer &s, const std::string &key, autocorr_result<T> &self)
 {
+    typedef typename autocorr_result<T>::var_type var_type;
     internal::deserializer_sentry group(s, key);
 
     // first deserialize the fundamentals and make sure that the target fits
@@ -218,6 +219,12 @@ void deserialize(deserializer &s, const std::string &key, autocorr_result<T> &se
     s.enter("level");
     for (size_t i = 0; i != self.nlevel(); ++i)
         deserialize(s, std::to_string(i), self.level_[i]);
+    s.exit();
+
+    s.enter("mean");
+    size_t new_size = self.size();
+    s.read("value", ndview<T>(nullptr, &new_size, 1)); // discard
+    s.read("error", ndview<var_type>(nullptr, &new_size, 1)); // discard
     s.exit();
 }
 

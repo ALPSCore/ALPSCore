@@ -233,6 +233,7 @@ void serialize(serializer &s, const std::string &key, const var_result<T,Str> &s
 template <typename T, typename Str>
 void deserialize(deserializer &s, const std::string &key, var_result<T,Str> &self)
 {
+    typedef typename var_result<T,Str>::var_type var_type;
     internal::deserializer_sentry group(s, key);
 
     // first deserialize the fundamentals and make sure that the target fits
@@ -246,6 +247,7 @@ void deserialize(deserializer &s, const std::string &key, var_result<T,Str> &sel
     deserialize(s, "count2", self.store_->count2_);
     s.enter("mean");
     deserialize(s, "value", self.store_->data_);
+    s.read("error", ndview<var_type>(nullptr, &new_size, 1)); // discard
     s.exit();
     deserialize(s, "var", self.store_->data2_);
 }

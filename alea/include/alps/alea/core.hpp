@@ -329,6 +329,9 @@ struct serializer
  * `enter()` and `exit()`, each containing a set of primitives or key-value
  * pairs, read out by the `read()` family of methods.
  *
+ * Each `read()` method read to the `ndview::data()` buffer, if given.  If
+ * that field is `nullptr`, it shall instead read but discard the data.
+ *
  * @see alps::alea::deserialize(), alps::alea::serializer
  */
 struct deserializer

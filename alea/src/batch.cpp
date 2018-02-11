@@ -267,6 +267,7 @@ void serialize(serializer &s, const std::string &key, const batch_result<T> &sel
 template <typename T>
 void deserialize(deserializer &s, const std::string &key, batch_result<T> &self)
 {
+    typedef typename bind<circular_var, T>::var_type var_type;
     internal::deserializer_sentry group(s, key);
 
     // first deserialize the fundamentals and make sure that the target fits
@@ -280,6 +281,11 @@ void deserialize(deserializer &s, const std::string &key, batch_result<T> &self)
     s.enter("batch");
     deserialize(s, "count", self.store().count());
     deserialize(s, "sum", self.store().batch());
+    s.exit();
+
+    s.enter("mean");
+    s.read("value", ndview<T>(nullptr, &new_size, 1)); // discard
+    s.read("error", ndview<var_type>(nullptr, &new_size, 1)); // discard
     s.exit();
 }
 
