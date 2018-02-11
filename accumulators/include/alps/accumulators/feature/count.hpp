@@ -4,8 +4,7 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_ACCUMULATOR_COUNT_HPP
-#define ALPS_ACCUMULATOR_COUNT_HPP
+#pragma once
 
 #include <alps/config.hpp>
 
@@ -231,7 +230,7 @@ namespace alps {
                         m_count = 0;
                     }
 
-              /// Merge the counter of the given accumulator of type A into this counter. @param rhs Accumulator to merge 
+              /// Merge the counter of the given accumulator of type A into this counter. @param rhs Accumulator to merge
               template <typename A>
               void merge(const A& rhs)
               {
@@ -282,5 +281,3 @@ namespace alps {
         }
     }
 }
-
- #endif

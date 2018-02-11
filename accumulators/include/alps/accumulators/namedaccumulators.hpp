@@ -4,8 +4,7 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_ACCUMULATOR_NAMEDACCUMULATOR_HPP
-#define ALPS_ACCUMULATOR_NAMEDACCUMULATOR_HPP
+#pragma once
 
 #include <alps/accumulators/accumulator.hpp>
 
@@ -14,10 +13,6 @@ namespace alps {
 
         namespace detail {
 
-            // template <typename T> struct AccumulatorBase;
-            // template <typename T> struct is_AccumulatorBase : public boost::false_type {};
-            // template <typename T> struct is_AccumulatorBase< AccumulatorBase<T> > : public boost::true_type {};
-
             template<typename A> struct AccumulatorBase {
                 typedef A accumulator_type;
                 typedef typename A::result_type result_type;
@@ -25,7 +20,7 @@ namespace alps {
                 /// Named-argument constructor: takes `name`, forwards the ArgumentPack to the wrapped accumulator constructor
                 template<typename ArgumentPack>
                 AccumulatorBase(const ArgumentPack& args,
-                                typename boost::disable_if<boost::is_base_of<AccumulatorBase,ArgumentPack>,int>::type =0) 
+                                typename boost::disable_if<boost::is_base_of<AccumulatorBase,ArgumentPack>,int>::type =0)
                     : name(args[accumulator_name])
                     , wrapper(new accumulator_wrapper(A(args)))
                 {}
@@ -68,7 +63,7 @@ namespace alps {
                 {
                     this->wrapper->collective_merge(comm,root);
                 }
-#endif            
+#endif
 
                 std::string name;
                 boost::shared_ptr<accumulator_wrapper> wrapper;
@@ -82,12 +77,12 @@ namespace alps {
             typedef typename impl::Accumulator<T, mean_tag, impl::Accumulator<T, count_tag, impl::AccumulatorBase<T> > > accumulator_type;
             typedef typename accumulator_type::result_type result_type;
             BOOST_PARAMETER_CONSTRUCTOR(
-                MeanAccumulator, 
+                MeanAccumulator,
                 (detail::AccumulatorBase<accumulator_type>),
                 accumulator_keywords,
                     (required (_accumulator_name, (std::string)))
             )
-            
+
             MeanAccumulator& operator=(const MeanAccumulator& rhs) { return static_cast<MeanAccumulator&>(*this=rhs); }
             MeanAccumulator(const MeanAccumulator& rhs) : detail::AccumulatorBase<accumulator_type>(rhs) {}
         };
@@ -98,7 +93,7 @@ namespace alps {
             typedef typename impl::Accumulator<T, error_tag, typename MeanAccumulator<T>::accumulator_type> accumulator_type;
             typedef typename accumulator_type::result_type result_type;
             BOOST_PARAMETER_CONSTRUCTOR(
-                NoBinningAccumulator, 
+                NoBinningAccumulator,
                 (detail::AccumulatorBase<accumulator_type>),
                 accumulator_keywords,
                     (required (_accumulator_name, (std::string)))
@@ -108,7 +103,7 @@ namespace alps {
                 return static_cast<NoBinningAccumulator&>(*this=rhs);
             }
             NoBinningAccumulator(const NoBinningAccumulator& rhs) : detail::AccumulatorBase<accumulator_type>(rhs) {}
-        };        
+        };
 
         template<typename T> struct LogBinningAccumulator : public detail::AccumulatorBase<
             typename impl::Accumulator<T, binning_analysis_tag, typename NoBinningAccumulator<T>::accumulator_type>
@@ -116,7 +111,7 @@ namespace alps {
             typedef typename impl::Accumulator<T, binning_analysis_tag, typename NoBinningAccumulator<T>::accumulator_type> accumulator_type;
             typedef typename accumulator_type::result_type result_type;
             BOOST_PARAMETER_CONSTRUCTOR(
-                LogBinningAccumulator, 
+                LogBinningAccumulator,
                 (detail::AccumulatorBase<accumulator_type>),
                 accumulator_keywords,
                     (required (_accumulator_name, (std::string)))
@@ -130,7 +125,7 @@ namespace alps {
             typedef typename autocorrelation_type<accumulator_type>::type autocorrelation_type;
             /// Returns autocorrelation for this accumulator.
             autocorrelation_type tau() const { return this->wrapper->template extract<accumulator_type>().autocorrelation(); }
-        }; 
+        };
 
         template<typename T> struct FullBinningAccumulator : public detail::AccumulatorBase<
             typename impl::Accumulator<T, max_num_binning_tag, typename LogBinningAccumulator<T>::accumulator_type>
@@ -138,7 +133,7 @@ namespace alps {
             typedef typename impl::Accumulator<T, max_num_binning_tag, typename LogBinningAccumulator<T>::accumulator_type> accumulator_type;
             typedef typename accumulator_type::result_type result_type;
             BOOST_PARAMETER_CONSTRUCTOR(
-                FullBinningAccumulator, 
+                FullBinningAccumulator,
                 (detail::AccumulatorBase<accumulator_type>),
                 accumulator_keywords,
                     (required (_accumulator_name, (std::string)))
@@ -156,7 +151,7 @@ namespace alps {
             typedef typename autocorrelation_type<accumulator_type>::type autocorrelation_type;
             /// Returns autocorrelation for this accumulator.
             autocorrelation_type tau() const { return this->wrapper->template extract<accumulator_type>().autocorrelation(); }
-        }; 
+        };
 
         #define ALPS_ACCUMULATOR_REGISTER_OPERATOR(A)                                                               \
             template<typename T> inline accumulator_set & operator<<(accumulator_set & set, const A <T> & arg) {    \
@@ -173,4 +168,3 @@ namespace alps {
     }
 }
 
- #endif

@@ -4,8 +4,7 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_ACCUMULATOR_MEAN_HPP
-#define ALPS_ACCUMULATOR_MEAN_HPP
+#pragma once
 
 #include <alps/config.hpp>
 
@@ -88,7 +87,7 @@ namespace alps {
 
                         // TODO: make library for scalar type
                         typename alps::numeric::scalar<mean_type>::type cnt = B::count();
-                        
+
                         return mean_type(m_sum) / cnt;
                     }
 
@@ -137,7 +136,7 @@ namespace alps {
                         m_sum = T();
                     }
 
-              /// Merge the sum (mean) of  given accumulator of type A into this sum (mean) @param rhs Accumulator to merge 
+              /// Merge the sum (mean) of  given accumulator of type A into this sum (mean) @param rhs Accumulator to merge
               template <typename A>
               void merge(const A& rhs)
               {
@@ -188,7 +187,7 @@ namespace alps {
 
                     Result()
                         : B()
-                        , m_mean(mean_type()) 
+                        , m_mean(mean_type())
                     {}
 
                     template<typename A> Result(A const & acc)
@@ -196,8 +195,8 @@ namespace alps {
                         , m_mean(detail::mean_impl(acc))
                     {}
 
-                    mean_type const mean() const { 
-                        return m_mean; 
+                    mean_type const mean() const {
+                        return m_mean;
                     }
 
                     template<typename S> void print(S & os, bool terse=false) const {
@@ -232,14 +231,14 @@ namespace alps {
                         using alps::numeric::operator-;
                         m_mean = -m_mean;
                         B::negate();
-                    }                    
+                    }
                     void inverse() {
                         using alps::numeric::operator/;
                         // TODO: make library for scalar type
                         typename alps::numeric::scalar<mean_type>::type one = 1;
                         m_mean = one / m_mean;
                         B::inverse();
-                    }                    
+                    }
 
                     #define NUMERIC_FUNCTION_IMPLEMENTATION(FUNCTION_NAME)              \
                         void FUNCTION_NAME () {                                         \
@@ -322,5 +321,3 @@ namespace alps {
         }
     }
 }
-
- #endif

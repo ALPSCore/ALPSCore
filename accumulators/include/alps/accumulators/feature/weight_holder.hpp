@@ -4,8 +4,7 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_ACCUMULATOR_WEIGHT_HOLDER_HPP
-#define ALPS_ACCUMULATOR_WEIGHT_HOLDER_HPP
+#pragma once
 
 #include <alps/config.hpp>
 
@@ -198,5 +197,3 @@ namespace alps {
         }
     }
 }
-
- #endif

@@ -4,8 +4,7 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_ACCUMULATOR_MAX_NUM_BINNING_HPP
-#define ALPS_ACCUMULATOR_MAX_NUM_BINNING_HPP
+#pragma once
 
 #include <alps/config.hpp>
 
@@ -853,5 +852,3 @@ namespace alps {
         }
     }
 }
-
-#endif

@@ -4,8 +4,7 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_ACCUMULATOR_MPI_HPP
-#define ALPS_ACCUMULATOR_MPI_HPP
+#pragma once
 
 #include <alps/config.hpp>
 
@@ -37,7 +36,7 @@
                         throw std::invalid_argument("MPI_Reduce() is called with sendbuf==recvbuf"
                                                     + ALPS_STACKTRACE);
                     }
-                    // WORKAROUND: 
+                    // WORKAROUND:
                     // for some reason, OpenMPI 1.6 declares `sendbuf` as `void*`, hence `const_cast`.
                     const int rc=MPI_Reduce(const_cast<void*>(sendbuf), recvbuf, count, datatype, op, root, comm);
                     return rc;
@@ -52,7 +51,7 @@
                     a vector of type S) is accessed via a direct
                     memory copy and is assumed to have sufficient
                     size.
-                    
+
                     @param values: value to copy from;
                     @param buffer: vector to copy to, starting from offset;
                     @param offset: position in the buffer to copy to;
@@ -82,7 +81,7 @@
                     @returns the new offset pointing right after the last used position in the buffer.
                  */
                 template<typename T, typename S> std::size_t copy_to_buffer(T const & values, std::vector<S> & buffer, std::size_t offset, boost::false_type) {
-                    /// FIXME!! BUG: if `T` is not vectorizable it may not have `begin()` and `end()` methods nor `const_iterator` type. This function won't be called --- but it gives compilation error! 
+                    /// FIXME!! BUG: if `T` is not vectorizable it may not have `begin()` and `end()` methods nor `const_iterator` type. This function won't be called --- but it gives compilation error!
                     for(typename T::const_iterator it = values.begin(); it != values.end(); ++it)
                         offset = copy_to_buffer(*it, buffer, offset, typename hdf5::is_continuous<typename T::value_type>::type());
                     return offset;
@@ -98,7 +97,7 @@
                     a vector of type S) is accessed via a direct
                     memory copy and is assumed to have sufficient
                     size.
-                    
+
                     @warning FIXME (design bug?) Although the
                     container `values` is declared as a const
                     reference, its contents is modified by this
@@ -144,13 +143,13 @@
                 template<typename T, typename Op, typename C> void reduce_impl(const alps::mpi::communicator & comm, T const & in_values, Op /*op*/, int root, boost::true_type, C) {
                     // using alps::mpi::reduce;
                     // reduce(comm, in_values, op, root);
-                    using alps::mpi::get_mpi_datatype;                    
+                    using alps::mpi::get_mpi_datatype;
                     if (comm.rank()==root) {
                         throw std::logic_error("reduce_impl(): 4-arg overload is called by root rank."+ALPS_STACKTRACE);
                     }
                     checked_mpi_reduce((void*)&in_values, NULL, 1, get_mpi_datatype(T()),
                                        alps::mpi::is_mpi_op<Op, T>::op(), root, comm);
-                    
+
                 }
 
                 template<typename T, typename Op> void reduce_impl(const alps::mpi::communicator & comm, T const & in_values, Op /*op*/, int root, boost::false_type, boost::true_type) {
@@ -267,4 +266,3 @@
 
 #endif
 
-#endif

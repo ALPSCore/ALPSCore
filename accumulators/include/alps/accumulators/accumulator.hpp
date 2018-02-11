@@ -4,8 +4,7 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_ACCUMULATOR_ACCUMULATOR_HPP
-#define ALPS_ACCUMULATOR_ACCUMULATOR_HPP
+#pragma once
 
 #include <alps/config.hpp>
 #include <alps/hdf5/vector.hpp>
@@ -654,32 +653,6 @@ namespace alps {
                   boost::apply_visitor(visitor, m_variant);
                 }
 
-            // // operator(T, W)
-            // private:
-            //     template<typename T, typename W> struct call_2_visitor: public boost::static_visitor<> {
-            //         call_2_visitor(T const & v, W const & w) : value(v), weight(w) {}
-            //         template<typename X> void apply(typename boost::enable_if<
-            //             typename detail::is_valid_argument<T, typename value_type<X>::type>::type, X &
-            //         >::type arg) const {
-            //             arg(value, weight);
-            //         }
-            //         template<typename X> void apply(typename boost::disable_if<
-            //             typename detail::is_valid_argument<T, typename value_type<X>::type>::type, X &
-            //         >::type arg) const {
-            //             throw std::logic_error(std::string("cannot convert: ") + typeid(T).name() + " to " + typeid(typename value_type<X>::type).name() + ALPS_STACKTRACE);
-            //         }
-            //         template<typename X> void operator()(X & arg) const {
-            //             apply<typename X::element_type>(*arg);
-            //         }
-            //         T const & value;
-            //         detail::weight_variant_type weight;
-            //     };
-            // public:
-            //     template<typename T, typename W> void operator()(T const & value, W const & weight) {
-            //         boost::apply_visitor(call_2_visitor<T, W>(value, weight), m_variant);
-            //     }
-
-
             // Cloning, private code.
             private:
             // Copy/cloning visitor
@@ -911,4 +884,3 @@ namespace alps {
     }
 }
 
- #endif

@@ -4,8 +4,7 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_ACCUMULATOR_WRAPPER_SET_HPP
-#define ALPS_ACCUMULATOR_WRAPPER_SET_HPP
+#pragma once
 
 #include <alps/config.hpp>
 #include <alps/hdf5/vector.hpp>
@@ -188,5 +187,3 @@ namespace alps {
 
     }
 }
-
- #endif

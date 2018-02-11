@@ -4,8 +4,7 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_ACCUMULATOR_BINNING_ANALYSIS_HPP
-#define ALPS_ACCUMULATOR_BINNING_ANALYSIS_HPP
+#pragma once
 
 #include <alps/config.hpp>
 
@@ -136,7 +135,7 @@ namespace alps {
                         , m_ac_sum2()
                         , m_ac_partial()
                         , m_ac_count()
-                    {}                    
+                    {}
 
                     typename alps::accumulators::convergence_type<B>::type converged_errors() const {
                         typedef typename alps::numeric::scalar<typename convergence_type<T>::type>::type convergence_scalar_type;
@@ -227,7 +226,7 @@ namespace alps {
                         typedef typename alps::numeric::scalar<mean_type>::type mean_scalar_type;
 
                         mean_type err = error();
-                        
+
                         // if not enoght bins are available, return infinity
                         if (m_ac_sum2.size() < 2)
                             return alps::numeric::inf<mean_type>(err);
@@ -277,7 +276,7 @@ namespace alps {
                                 m_ac_count[i]++;
                                 m_ac_partial[i] = T();
                                 check_size(m_ac_partial[i], val);
-                            }                            
+                            }
                         }
                     }
 
@@ -754,5 +753,3 @@ namespace alps {
         }
     }
 }
-
- #endif

@@ -4,8 +4,7 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_ACCUMULATOR_ERROR_HPP
-#define ALPS_ACCUMULATOR_ERROR_HPP
+#pragma once
 
 #include <alps/config.hpp>
 
@@ -19,7 +18,7 @@
 #include <alps/numeric/check_size.hpp>
 #include <alps/numeric/vector_functions.hpp>
 #include <alps/numeric/boost_array_functions.hpp>
- 
+
 #include <alps/utilities/stacktrace.hpp>
 #include <alps/utilities/short_print.hpp>
 
@@ -146,7 +145,7 @@ namespace alps {
                         m_sum2 = T();
                     }
 
-                    /// Merge the mean & error of given accumulator of type A into this accumulator  @param rhs Accumulator to merge 
+                    /// Merge the mean & error of given accumulator of type A into this accumulator  @param rhs Accumulator to merge
                     template <typename A>
                     void merge(const A& rhs)
                     {
@@ -192,9 +191,9 @@ namespace alps {
                     typedef typename alps::numeric::scalar<error_type>::type error_scalar_type; // FIXME: should be numeric::scalar<>
                     typedef typename detail::make_scalar_result_type<impl::Result,T,error_tag,B>::type scalar_result_type;
 
-                    Result() 
+                    Result()
                         : B()
-                        , m_error(error_type()) 
+                        , m_error(error_type())
                     {}
 
                     template<typename A> Result(A const & acc)
@@ -202,8 +201,8 @@ namespace alps {
                         , m_error(detail::error_impl(acc))
                     {}
 
-                    error_type const error() const { 
-                        return m_error; 
+                    error_type const error() const {
+                        return m_error;
                     }
 
                     template<typename S> void print(S & os, bool terse=false) const {
@@ -365,5 +364,3 @@ namespace alps {
         }
     }
 }
-
- #endif

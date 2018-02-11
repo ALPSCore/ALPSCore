@@ -4,8 +4,7 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_ACCUMULATOR_WEIGHT_HPP
-#define ALPS_ACCUMULATOR_WEIGHT_HPP
+#pragma once
 
 #include <alps/accumulators/feature.hpp>
 #include <alps/accumulators/parameter.hpp>
@@ -85,11 +84,9 @@ namespace alps {
                     DerivedWrapper(T const & arg): B(arg) {}
 
                     bool has_weight() const { return has_feature<T, weight_tag>::type::value; }
-                    base_wrapper<typename value_type<T>::type> const * weight() const { return detail::weight_impl(this->m_data); } 
+                    base_wrapper<typename value_type<T>::type> const * weight() const { return detail::weight_impl(this->m_data); }
             };
 
         }
     }
 }
-
- #endif

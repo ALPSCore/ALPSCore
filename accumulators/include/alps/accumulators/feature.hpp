@@ -4,8 +4,7 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_ACCUMULATOR_FEATURE_HPP
-#define ALPS_ACCUMULATOR_FEATURE_HPP
+#pragma once
 
 #include <alps/config.hpp>
 #include <alps/numeric/inf.hpp>
@@ -25,7 +24,7 @@
 namespace alps {
     namespace accumulators {
 
-        template<typename T, typename F> struct has_feature 
+        template<typename T, typename F> struct has_feature
             : public boost::false_type
         {};
 
@@ -72,9 +71,9 @@ namespace alps {
                                                  this_scalar_result_type_>::type type;
             };
         }
-      
+
         namespace impl {
-        
+
             template<typename T> struct ResultBase {
                 typedef T value_type;
                 typedef typename boost::mpl::if_<alps::is_scalar<T>,
@@ -87,7 +86,7 @@ namespace alps {
                 void merge(const A& /*rhs*/) {
                      throw std::runtime_error("A result cannot be merged " + ALPS_STACKTRACE);
                 }
-              
+
 #ifdef ALPS_HAVE_MPI
                 inline void collective_merge(
                       alps::mpi::communicator const & /*comm*/
@@ -128,22 +127,22 @@ namespace alps {
                     typedef ResultBase<T> result_type;
 
                     template<typename U> void operator+=(U) {
-                        throw std::runtime_error("The Function operator += is not implemented for accumulators, only for results" + ALPS_STACKTRACE); 
+                        throw std::runtime_error("The Function operator += is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
                     }
                     template<typename U> void operator-=(U) {
-                        throw std::runtime_error("The Function operator -= is not implemented for accumulators, only for results" + ALPS_STACKTRACE); 
+                        throw std::runtime_error("The Function operator -= is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
                     }
                     template<typename U> void operator*=(U) {
-                        throw std::runtime_error("The Function operator *= is not implemented for accumulators, only for results" + ALPS_STACKTRACE); 
+                        throw std::runtime_error("The Function operator *= is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
                     }
                     template<typename U> void operator/=(U) {
-                        throw std::runtime_error("The Function operator /= is not implemented for accumulators, only for results" + ALPS_STACKTRACE); 
+                        throw std::runtime_error("The Function operator /= is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
                     }
                     void negate() {
-                        throw std::runtime_error("The Function gegate is not implemented for accumulators, only for results" + ALPS_STACKTRACE); 
+                        throw std::runtime_error("The Function gegate is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
                     }
                     void inverse() {
-                        throw std::runtime_error("The Function inverse is not implemented for accumulators, only for results" + ALPS_STACKTRACE); 
+                        throw std::runtime_error("The Function inverse is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
                     }
 
                     void sin() { throw std::runtime_error("The Function sin is not implemented for accumulators, only for results" + ALPS_STACKTRACE); }
@@ -218,4 +217,3 @@ namespace alps {
     }
 }
 
- #endif
