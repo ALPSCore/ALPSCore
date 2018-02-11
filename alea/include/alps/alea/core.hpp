@@ -9,12 +9,12 @@
 #include <cassert>
 #include <stdexcept>
 #include <complex>
-
+#include <string>
 #include <vector>
+
 #include <Eigen/Dense>
 
 #include <alps/alea/complex_op.hpp>
-
 
 namespace alps { namespace alea {
 
@@ -264,6 +264,9 @@ struct reducer
     /** Finish reduction of all data if deferred */
     virtual void commit() const = 0;
 
+    /** Returns a copy of `*this` created using `new` */
+    virtual reducer *clone() { throw unsupported_operation(); }
+
     /** Destructor */
     virtual ~reducer() { }
 
@@ -312,6 +315,9 @@ struct serializer
     /** Writes a named multi-dimensional array of unsigned longs */
     virtual void write(const std::string &key, ndview<const unsigned long>) = 0;
 
+    /** Returns a copy of `*this` created using `new` */
+    virtual serializer *clone() { throw unsupported_operation(); }
+
     /** Destructor */
     virtual ~serializer() { }
 };
@@ -350,6 +356,9 @@ struct deserializer
 
     /** Reads a named multi-dimensional array of unsigned long */
     virtual void read(const std::string &key, ndview<unsigned long>) = 0;
+
+    /** Returns a copy of `*this` created using `new` */
+    virtual deserializer *clone() { throw unsupported_operation(); }
 
     /** Destructor */
     virtual ~deserializer() { }

@@ -6,8 +6,8 @@
 #pragma once
 
 #include <sstream>
-#include <iostream>
 #include <numeric>
+#include <iostream>
 
 #include <alps/alea/core.hpp>
 
@@ -20,27 +20,22 @@ class hdf5_serializer
     , public deserializer
 {
 public:
-    hdf5_serializer(hdf5::archive &ar, const std::string &path, bool debug=false)
+    hdf5_serializer(hdf5::archive &ar, const std::string &path)
         : archive_(&ar)
         , path_(path)
         , group_()
-        , debug_(debug)
     { }
 
     // Common methods
 
     void enter(const std::string &group) override
     {
-        if (debug_)
-            std::cerr << "Entering group: " << get_path(group) << "\n";
         archive_->create_group(get_path(group));  // TODO: what if exists?
         group_.push_back(group);
     }
 
     void exit() override
     {
-        if (debug_)
-            std::cerr << "Exiting group: " << get_path("") << "\n";
         if (group_.empty())
             throw std::runtime_error("exit without enter");
         group_.pop_back();
@@ -106,8 +101,6 @@ protected:
     template <typename T>
     void do_write(const std::string &relpath, ndview<const T> data)
     {
-        if (debug_)
-            std::cerr << "Writing:" << get_path(relpath) << "\n";
         std::string path = get_path(relpath);
 
         std::vector<size_t> shape(data.shape(), data.shape() + data.ndim());
@@ -123,8 +116,6 @@ protected:
     template <typename T>
     void do_write(const std::string &relpath, ndview<const std::complex<T>> data)
     {
-        if (debug_)
-            std::cerr << "Writing:" << get_path(relpath) << "\n";
         std::string path = get_path(relpath);
 
         if (data.ndim() == 0)
@@ -144,9 +135,6 @@ protected:
     template <typename T>
     void do_read(const std::string &relpath, ndview<T> data)
     {
-        if (debug_)
-            std::cerr << "Reading:" << get_path(relpath) << "\n";
-
         std::string path = get_path(relpath);
 
         // check shape (this is cheap compared to reading)
@@ -170,9 +158,6 @@ protected:
     template <typename T>
     void do_read(const std::string &relpath, ndview<std::complex<T>> data)
     {
-        if (debug_)
-            std::cerr << "Reading:" << get_path(relpath) << "\n";
-
         std::string path = get_path(relpath);
 
         // check shape (this is cheap compared to reading)
@@ -218,7 +203,6 @@ private:
     hdf5::archive *archive_;
     std::string path_;
     std::vector<std::string> group_;
-    bool debug_;
 };
 
 }}
