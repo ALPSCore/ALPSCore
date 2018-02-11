@@ -137,10 +137,8 @@ protected:
         case std::ios::erase_event:
             // this will be called in destructor, so we MUST NOT throw
             // exceptions
-            if (self != nullptr) {
-                delete self;
-                self = nullptr;  // to be sure
-            }
+            delete self;
+            self = nullptr;
             break;
 
         case std::ios::copyfmt_event:
