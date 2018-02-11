@@ -15,11 +15,6 @@
 
 #include <alps/hdf5/archive.hpp>
 
-#include <boost/mpl/if.hpp>
-#include <boost/mpl/vector.hpp>
-#include <boost/mpl/placeholders.hpp>
-#include <boost/mpl/transform.hpp>
-
 #include <boost/type_traits/is_scalar.hpp>
 #include <boost/type_traits/is_convertible.hpp>
 #include <boost/type_traits/is_same.hpp>
@@ -34,6 +29,7 @@
 #endif
 
 #include <typeinfo>
+#include <type_traits>
 #include <stdexcept>
 
 namespace alps {
@@ -46,15 +42,16 @@ namespace alps {
                 typedef boost::shared_ptr<base_wrapper<T> > type;
             };
 
-            typedef boost::make_variant_over<boost::mpl::transform<
-                  boost::mpl::vector<ALPS_ACCUMULATOR_VALUE_TYPES>
-                , detail::add_base_wrapper_pointer<boost::mpl::_1>
-            >::type>::type variant_type;
+            template<typename... Types> struct make_variant_type {
+              typedef boost::variant<typename add_base_wrapper_pointer<Types>::type...> type;
+            };
 
-            template<typename T, typename A> struct is_valid_argument : public boost::mpl::if_<
-                  typename boost::is_scalar<A>::type
-                , typename boost::is_convertible<T, A>::type
-                , typename boost::is_same<T, A>::type
+            typedef typename make_variant_type<ALPS_ACCUMULATOR_VALUE_TYPES>::type variant_type;
+
+            template<typename T, typename A> struct is_valid_argument : public std::conditional<
+                    boost::is_scalar<A>::value
+                  , typename boost::is_convertible<T, A>::type
+                  , typename boost::is_same<T, A>::type
             > {};
 
             /// Check if LHS and RHS result types are allowed in binary OP

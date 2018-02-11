@@ -11,17 +11,13 @@
 #include <alps/accumulators/feature/mean.hpp>
 #include <alps/accumulators/feature/error.hpp>
 #include <alps/accumulators/feature/count.hpp>
-// #include <alps/accumulators/feature/weight.hpp>
 #include <alps/accumulators/feature/max_num_binning.hpp>
 #include <alps/accumulators/feature/binning_analysis.hpp>
 
 #include <alps/hdf5/archive.hpp>
 
-#include <boost/mpl/vector.hpp>
 #include <boost/variant/variant.hpp>
 #include <boost/variant/apply_visitor.hpp>
-
-#include <boost/mpl/if.hpp>
 
 #include <typeinfo>
 #include <stdexcept>
@@ -35,11 +31,6 @@ namespace alps {
             template<typename T> struct value_wrapper {
                 typedef T value_type;
             };
-
-            // typedef boost::make_variant_over<
-            //     boost::mpl::vector<ALPS_ACCUMULATOR_VALUE_TYPES>
-            // >::type weight_variant_type;
-
         }
 
         template<typename T> class base_wrapper : public

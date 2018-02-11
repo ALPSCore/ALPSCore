@@ -25,7 +25,6 @@
 #include <alps/numeric/outer_product.hpp>
 #include <alps/type_traits/covariance_type.hpp>
 
-#include <boost/mpl/if.hpp>
 #include <boost/utility.hpp>
 #include <boost/function.hpp>
 #include <boost/type_traits/is_scalar.hpp>

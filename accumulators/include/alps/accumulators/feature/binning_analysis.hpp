@@ -28,7 +28,6 @@
 #include <alps/type_traits/slice.hpp>
 #include <alps/type_traits/change_value_type.hpp>
 
-#include <boost/mpl/if.hpp>
 #include <boost/utility.hpp>
 #include <boost/type_traits/is_scalar.hpp>
 #include <boost/type_traits/is_integral.hpp>
