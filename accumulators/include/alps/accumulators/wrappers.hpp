@@ -20,6 +20,7 @@
 #include <boost/variant/apply_visitor.hpp>
 
 #include <typeinfo>
+#include <type_traits>
 #include <stdexcept>
 
 namespace alps {
@@ -389,10 +390,10 @@ namespace alps {
 
             private:
 
-                template<typename T> typename boost::enable_if<typename has_result_type<T>::type, base_wrapper<typename value_type<A>::type> *>::type result_impl() const {
+                template<typename T> typename std::enable_if<has_result_type<T>::value, base_wrapper<typename value_type<A>::type> *>::type result_impl() const {
                     return new derived_result_wrapper<typename A::result_type>(this->m_data);
                 }
-                template<typename T> typename boost::disable_if<typename has_result_type<T>::type, base_wrapper<typename value_type<A>::type> *>::type result_impl() const {
+                template<typename T> typename std::enable_if<!has_result_type<T>::value, base_wrapper<typename value_type<A>::type> *>::type result_impl() const {
                     throw std::runtime_error(std::string("The type ") + typeid(A).name() + " has no result_type" + ALPS_STACKTRACE);
                     return NULL;
                 }

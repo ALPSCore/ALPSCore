@@ -15,6 +15,7 @@
     #include <alps/utilities/boost_mpi.hpp>
 
     #include <cassert>
+    #include <type_traits>
     #include <boost/lexical_cast.hpp> // for throw() message
 
     namespace alps {
@@ -57,7 +58,7 @@
                     @param offset: position in the buffer to copy to;
                     @returns the new offset pointing right after the last used position in the buffer.
                  */
-                template<typename T, typename S> std::size_t copy_to_buffer(T const & values, std::vector<S> & buffer, std::size_t offset, boost::true_type) {
+                template<typename T, typename S> std::size_t copy_to_buffer(T const & values, std::vector<S> & buffer, std::size_t offset, std::true_type) {
                     using alps::hdf5::get_extent;
                     std::vector<std::size_t> extent(get_extent(values));
                     std::size_t size = std::accumulate(extent.begin(), extent.end(), 1, std::multiplies<std::size_t>());
@@ -80,7 +81,7 @@
                     @param offset: position in the buffer to copy to;
                     @returns the new offset pointing right after the last used position in the buffer.
                  */
-                template<typename T, typename S> std::size_t copy_to_buffer(T const & values, std::vector<S> & buffer, std::size_t offset, boost::false_type) {
+                template<typename T, typename S> std::size_t copy_to_buffer(T const & values, std::vector<S> & buffer, std::size_t offset, std::false_type) {
                     /// FIXME!! BUG: if `T` is not vectorizable it may not have `begin()` and `end()` methods nor `const_iterator` type. This function won't be called --- but it gives compilation error!
                     for(typename T::const_iterator it = values.begin(); it != values.end(); ++it)
                         offset = copy_to_buffer(*it, buffer, offset, typename hdf5::is_continuous<typename T::value_type>::type());
@@ -108,7 +109,7 @@
                     @param offset: position in the buffer to copy from;
                     @returns the new offset pointing right after the last used position in the buffer.
                  */
-                template<typename T, typename S> std::size_t copy_from_buffer(T const & values, std::vector<S> & buffer, std::size_t offset, boost::true_type) {
+                template<typename T, typename S> std::size_t copy_from_buffer(T const & values, std::vector<S> & buffer, std::size_t offset, std::true_type) {
                     using alps::hdf5::get_extent;
                     std::vector<std::size_t> extent(get_extent(values));
                     std::size_t size = std::accumulate(extent.begin(), extent.end(), 1, std::multiplies<std::size_t>());
@@ -134,13 +135,13 @@
                     reference, its content is modified by this
                     function.
                  */
-                template<typename T, typename S> std::size_t copy_from_buffer(T const & values, std::vector<S> & buffer, std::size_t offset, boost::false_type) {
+                template<typename T, typename S> std::size_t copy_from_buffer(T const & values, std::vector<S> & buffer, std::size_t offset, std::false_type) {
                     for(typename T::const_iterator it = values.begin(); it != values.end(); ++it)
                         offset = copy_from_buffer(*it, buffer, offset, typename hdf5::is_continuous<typename T::value_type>::type());
                     return offset;
                 }
 
-                template<typename T, typename Op, typename C> void reduce_impl(const alps::mpi::communicator & comm, T const & in_values, Op /*op*/, int root, boost::true_type, C) {
+                template<typename T, typename Op, typename C> void reduce_impl(const alps::mpi::communicator & comm, T const & in_values, Op /*op*/, int root, std::true_type, C) {
                     // using alps::mpi::reduce;
                     // reduce(comm, in_values, op, root);
                     using alps::mpi::get_mpi_datatype;
@@ -152,7 +153,7 @@
 
                 }
 
-                template<typename T, typename Op> void reduce_impl(const alps::mpi::communicator & comm, T const & in_values, Op /*op*/, int root, boost::false_type, boost::true_type) {
+                template<typename T, typename Op> void reduce_impl(const alps::mpi::communicator & comm, T const & in_values, Op /*op*/, int root, std::false_type, std::true_type) {
                     typedef typename alps::hdf5::scalar_type<T>::type scalar_type;
                     using alps::hdf5::get_extent;
                     std::vector<std::size_t> extent(get_extent(in_values));
@@ -167,7 +168,7 @@
                                        get_mpi_datatype(scalar_type()), alps::mpi::is_mpi_op<Op, scalar_type>::op(), root, comm);
                 }
 
-                template<typename T, typename Op, typename C> void reduce_impl(const alps::mpi::communicator & comm, T const & in_values, T & out_values, Op /*op*/, int root, boost::true_type, C) {
+                template<typename T, typename Op, typename C> void reduce_impl(const alps::mpi::communicator & comm, T const & in_values, T & out_values, Op /*op*/, int root, std::true_type, C) {
                     using alps::mpi::reduce;
                     // using boost::mpi::reduce;
                     // reduce(comm, (T)in_values, out_values, op, root); // TODO: WTF? - why does boost not define unsigned long long as native datatype
@@ -185,7 +186,7 @@
                                        alps::mpi::is_mpi_op<Op, T>::op(), root, comm);
                 }
 
-                template<typename T, typename Op> void reduce_impl(const alps::mpi::communicator & comm, T const & in_values, T & out_values, Op /*op*/, int root, boost::false_type, boost::true_type) {
+                template<typename T, typename Op> void reduce_impl(const alps::mpi::communicator & comm, T const & in_values, T & out_values, Op /*op*/, int root, std::false_type, std::true_type) {
                     typedef typename alps::hdf5::scalar_type<T>::type scalar_type;
                     using alps::hdf5::get_extent;
                     std::vector<std::size_t> extent(get_extent(in_values));
@@ -202,7 +203,7 @@
                                get_mpi_datatype(scalar_type()), alps::mpi::is_mpi_op<Op, scalar_type>::op(), root, comm);
                 }
 
-                template<typename T, typename Op> void reduce_impl(const alps::mpi::communicator & comm, T const & in_values, Op /*op*/, int root, boost::false_type, boost::false_type) {
+                template<typename T, typename Op> void reduce_impl(const alps::mpi::communicator & comm, T const & in_values, Op /*op*/, int root, std::false_type, std::false_type) {
                     using alps::hdf5::is_vectorizable;
                     if (is_vectorizable(in_values)) {
                         using alps::hdf5::get_extent;
@@ -223,7 +224,7 @@
                         throw std::logic_error("No alps::mpi::reduce available for this type " + std::string(typeid(T).name()) + ALPS_STACKTRACE);
                 }
 
-                template<typename T, typename Op> void reduce_impl(const alps::mpi::communicator & comm, T const & in_values, T & out_values, Op /*op*/, int root, boost::false_type, boost::false_type) {
+                template<typename T, typename Op> void reduce_impl(const alps::mpi::communicator & comm, T const & in_values, T & out_values, Op /*op*/, int root, std::false_type, std::false_type) {
                     using alps::hdf5::is_vectorizable;
                     if (is_vectorizable(in_values)) {
                         using alps::hdf5::get_extent;
@@ -253,12 +254,12 @@
 
             template<typename T, typename Op> void reduce(const alps::mpi::communicator & comm, T const & in_values, Op op, int root) {
                 using detail::reduce_impl;
-                reduce_impl(comm, in_values, op, root, typename boost::is_scalar<T>::type(), typename hdf5::is_content_continuous<T>::type());
+                reduce_impl(comm, in_values, op, root, typename std::is_scalar<T>::type(), typename hdf5::is_content_continuous<T>::type());
             }
 
             template<typename T, typename Op> void reduce(const alps::mpi::communicator & comm, T const & in_values, T & out_values, Op op, int root) {
                 using detail::reduce_impl;
-                reduce_impl(comm, in_values, out_values, op, root, typename boost::is_scalar<T>::type(), typename hdf5::is_content_continuous<T>::type());
+                reduce_impl(comm, in_values, out_values, op, root, typename std::is_scalar<T>::type(), typename hdf5::is_content_continuous<T>::type());
             }
 
         } // alps_mpi::

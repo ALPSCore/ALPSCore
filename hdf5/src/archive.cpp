@@ -11,8 +11,6 @@
 
 #include <boost/scoped_array.hpp>
 #include <boost/noncopyable.hpp>
-#include <boost/type_traits/remove_cv.hpp>
-#include <boost/type_traits/remove_reference.hpp>
 
 #include <hdf5.h>
 
@@ -55,8 +53,8 @@ namespace alps {
 
         namespace detail {
 
-            herr_t noop(hid_t) { 
-                return 0; 
+            herr_t noop(hid_t) {
+                return 0;
             }
 
             template<typename T> struct native_ptr_converter {
@@ -90,16 +88,16 @@ namespace alps {
                 private:
 
                     static herr_t callback(unsigned n, H5E_error2_t const * desc, void * buffer) {
-                        *reinterpret_cast<std::ostringstream *>(buffer) 
-                            << "    #" 
-                            << cast<std::string>(n) 
-                            << " " << desc->file_name 
-                            << " line " 
-                            << cast<std::string>(desc->line) 
-                            << " in " 
-                            << desc->func_name 
-                            << "(): " 
-                            << desc->desc 
+                        *reinterpret_cast<std::ostringstream *>(buffer)
+                            << "    #"
+                            << cast<std::string>(n)
+                            << " " << desc->file_name
+                            << " line "
+                            << cast<std::string>(desc->line)
+                            << " in "
+                            << desc->func_name
+                            << "(): "
+                            << desc->desc
                             << std::endl;
                         return 0;
                     }
@@ -116,15 +114,15 @@ namespace alps {
 
                     ~resource() {
                         if(_id < 0 || (_id = F(_id)) < 0) {
-                            std::cerr << "Error in " 
-                                      << __FILE__ 
-                                      << " on " 
-                                      << ALPS_STRINGIFY(__LINE__) 
-                                      << " in " 
-                                      << __FUNCTION__ // TODO: check for gcc and use __PRETTY_FUNCTION__ 
-                                      << ":" 
-                                      << std::endl 
-                                      << error().invoke(_id) 
+                            std::cerr << "Error in "
+                                      << __FILE__
+                                      << " on "
+                                      << ALPS_STRINGIFY(__LINE__)
+                                      << " in "
+                                      << __FUNCTION__ // TODO: check for gcc and use __PRETTY_FUNCTION__
+                                      << ":"
+                                      << std::endl
+                                      << error().invoke(_id)
                                       << std::endl;
                             std::abort();
                         }
@@ -135,7 +133,7 @@ namespace alps {
                     }
 
                     resource<F> & operator=(hid_t id) {
-                        if ((_id = id) < 0) 
+                        if ((_id = id) < 0)
                             throw archive_error(error().invoke(_id) + ALPS_STACKTRACE);
                         return *this;
                     }
@@ -213,7 +211,7 @@ namespace alps {
                 ~archivecontext() {
                     destruct(true);
                 }
-                
+
                 void grant(bool write, bool replace) {
                     if (!write_ && (write || replace)) {
                         destruct(false);
@@ -222,7 +220,7 @@ namespace alps {
                         construct();
                     }
                 }
-                
+
                 bool compress_;
                 bool write_;
                 bool replace_;
@@ -230,7 +228,7 @@ namespace alps {
                 std::string filename_;
                 std::string filename_new_;
                 hid_t file_id_;
-                
+
                 private:
 
                     void construct() {
@@ -307,13 +305,13 @@ namespace alps {
                                 }
                             #endif
                             if (H5Fclose(file_id_) < 0)
-                                std::cerr << "Error in " 
-                                          << __FILE__ 
-                                          << " on " 
-                                          << ALPS_STRINGIFY(__LINE__) 
-                                          << " in " 
-                                          << __FUNCTION__ // TODO: check for gcc and use __PRETTY_FUNCTION__  
-                                          << ":" 
+                                std::cerr << "Error in "
+                                          << __FILE__
+                                          << " on "
+                                          << ALPS_STRINGIFY(__LINE__)
+                                          << " in "
+                                          << __FUNCTION__ // TODO: check for gcc and use __PRETTY_FUNCTION__
+                                          << ":"
                                           << std::endl
                                           << error().invoke(file_id_)
                                           << std::endl;
@@ -341,13 +339,13 @@ namespace alps {
         archive::archive(std::string const & filename, int prop) : context_(NULL) {
             std::cerr << "WARNING: Use of `archive(string name, int mode)` constructor (name=\""
                       << filename << "\") is DEPRECATED!\n";
-            
+
             std::string mode="";
             if (prop & COMPRESS) mode += "c";
             if (prop & MEMORY) mode += "m";
 
             prop = prop & ~(COMPRESS|MEMORY);
-            
+
             if (prop == READ) {
                 mode += "r";
             } else if ((prop == WRITE) || (prop == REPLACE) || (prop == (WRITE|REPLACE))) {
@@ -359,7 +357,7 @@ namespace alps {
                       << mode << "\" instead!\n";
             open(filename,mode);
         }
-        
+
         archive::archive(std::string const & filename, std::string mode) : context_(NULL) {
             open(filename, mode);
         }
@@ -417,7 +415,7 @@ namespace alps {
                 throw archive_opened("the archive '"+ filename + "' is already opened" + ALPS_STACKTRACE);
             if (mode.find_first_not_of("rwacm")!=std::string::npos)
                 throw wrong_mode("Incorrect mode '"+mode+"' opening file '"+filename+"'" + ALPS_STACKTRACE);
-            
+
             construct(filename,
                       (mode.find_last_of('w') == std::string::npos ? 0 : WRITE) //@todo FIXME_DEBOOST: "w" is equiv to "a"
                       | (mode.find_last_of('a') == std::string::npos ? 0 : WRITE)
@@ -425,7 +423,7 @@ namespace alps {
                       | (mode.find_last_of('m') == std::string::npos ? 0 : MEMORY)
             );
         }
-        
+
         bool archive::is_open() {
             return context_ != NULL;
         }
@@ -446,8 +444,8 @@ namespace alps {
 
         std::string archive::decode_segment(std::string segment) const {
             for (std::size_t pos = segment.find_first_of('&'); pos < std::string::npos; pos = segment.find_first_of('&', pos + 1))
-                segment = segment.substr(0, pos) 
-                        + static_cast<char>(cast<int>(segment.substr(pos + 2, segment.find_first_of(';', pos) - pos - 2))) 
+                segment = segment.substr(0, pos)
+                        + static_cast<char>(cast<int>(segment.substr(pos + 2, segment.find_first_of(';', pos) - pos - 2)))
                         + segment.substr(segment.find_first_of(';', pos) + 1);
             return segment;
         }
@@ -455,12 +453,12 @@ namespace alps {
         std::string archive::get_context() const {
             return current_;
         }
-    
+
         void archive::set_context(std::string const & context) {
             ALPS_HDF5_LOCK_MUTEX
             current_ = complete_path(context);
         }
-    
+
         std::string archive::complete_path(std::string path) const {
             if (path.size() > 1 && *path.rbegin() == '/')
                 path = path.substr(0, path.size() - 1);
@@ -477,7 +475,7 @@ namespace alps {
                 return ctx + (ctx.size() == 1 || !path.size() ? "" : "/") + path;
             }
         }
-    
+
         bool archive::is_data(std::string path) const {
             if (context_ == NULL)
                 throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
@@ -487,7 +485,7 @@ namespace alps {
             hid_t id = H5Dopen2(context_->file_id_, path.c_str(), H5P_DEFAULT);
             return id < 0 ? false : detail::check_data(id) != 0;
         }
-    
+
         bool archive::is_attribute(std::string path) const {
             if (context_ == NULL)
                 throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
@@ -496,7 +494,7 @@ namespace alps {
             ALPS_HDF5_FAKE_THREADSAFETY
             return detail::check_error(H5Aexists_by_name(context_->file_id_, path.substr(0, path.find_last_of('@')).c_str(), path.substr(path.find_last_of('@') + 1).c_str(), H5P_DEFAULT));
         }
-    
+
         bool archive::is_group(std::string path) const {
             if (context_ == NULL)
                 throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
@@ -506,7 +504,7 @@ namespace alps {
             hid_t id = H5Gopen2(context_->file_id_, path.c_str(), H5P_DEFAULT);
             return id < 0 ? false : detail::check_group(id) != 0;
         }
-    
+
         bool archive::is_scalar(std::string path) const {
             hid_t space_id;
             if (context_ == NULL)
@@ -549,7 +547,7 @@ namespace alps {
                 throw archive_error("error reading class " + path + ALPS_STACKTRACE);
             return type == H5S_NULL;
         }
-    
+
         bool archive::is_complex(std::string path) const {
             if (context_ == NULL)
                 throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
@@ -566,7 +564,7 @@ namespace alps {
             } else
                 return is_attribute(path + "/@__complex__") && is_scalar(path + "/@__complex__");
         }
-    
+
         std::vector<std::string> archive::list_children(std::string path) const {
             if (context_ == NULL)
                 throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
@@ -580,7 +578,7 @@ namespace alps {
             detail::check_error(H5Literate(group_id, H5_INDEX_NAME, H5_ITER_NATIVE, NULL, detail::list_children_visitor, &list));
             return list;
         }
-    
+
         std::vector<std::string> archive::list_attributes(std::string path) const {
             if (context_ == NULL)
                 throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
@@ -598,7 +596,7 @@ namespace alps {
                 throw path_not_found("The path '" + path + "' does not exist." + ALPS_STACKTRACE);
             return list;
         }
-    
+
         std::vector<std::size_t> archive::extent(std::string path) const {
             if (context_ == NULL)
                 throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
@@ -621,7 +619,7 @@ namespace alps {
             std::vector<std::size_t> extent(buffer.begin(), buffer.end());
             return extent;
         }
-    
+
         std::size_t archive::dimensions(std::string path) const {
             if (context_ == NULL)
                 throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
@@ -634,7 +632,7 @@ namespace alps {
                 return detail::check_error(H5Sget_simple_extent_dims(detail::space_type(H5Dget_space(data_id)), NULL, NULL));
             }
         }
-    
+
         void archive::create_group(std::string path) const {
             if (context_ == NULL)
                 throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
@@ -664,14 +662,14 @@ namespace alps {
                     detail::check_error(H5Pset_link_creation_order(prop_id, (H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED)));
                     detail::check_error(H5Pset_attr_creation_order(prop_id, (H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED)));
                     detail::check_group(H5Gcreate2(context_->file_id_, path.substr(0, pos).c_str(), H5P_DEFAULT, prop_id, H5P_DEFAULT));
-                }                
+                }
                 detail::property_type prop_id(H5Pcreate(H5P_GROUP_CREATE));
                 detail::check_error(H5Pset_link_creation_order(prop_id, (H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED)));
                 detail::check_error(H5Pset_attr_creation_order(prop_id, (H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED)));
                 detail::check_group(H5Gcreate2(context_->file_id_, path.c_str(), H5P_DEFAULT, prop_id, H5P_DEFAULT));
             }
         }
-    
+
         void archive::delete_data(std::string path) const {
             if (context_ == NULL)
                 throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
@@ -683,7 +681,7 @@ namespace alps {
             else if (is_group(path))
                 throw invalid_path("the path contains a group: " + path + ALPS_STACKTRACE);
         }
-    
+
         void archive::delete_group(std::string path) const  {
             if (context_ == NULL)
                 throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
@@ -695,7 +693,7 @@ namespace alps {
             else if (is_data(path))
                 throw invalid_path("the path contains a dataset: " + path + ALPS_STACKTRACE);
         }
-    
+
         void archive::delete_attribute(std::string path) const {
             if (context_ == NULL)
                 throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
@@ -704,7 +702,7 @@ namespace alps {
             // TODO: implement
             throw std::logic_error("Not implemented!" + ALPS_STACKTRACE);
         }
-    
+
         void archive::set_complex(std::string path) {
             if (context_ == NULL)
                 throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
@@ -720,11 +718,11 @@ namespace alps {
                     write(path + "/@__complex__", true);
             }
         }
-    
+
         detail::archive_proxy<archive> archive::operator[](std::string const & path) {
             return detail::archive_proxy<archive>(path, *this);
         }
-    
+
         #define ALPS_HDF5_READ_SCALAR_DATA_HELPER(U, T)                                                                                                                 \
             } else if (detail::check_error(                                                                                                                             \
                 H5Tequal(detail::type_type(H5Tcopy(native_id)), detail::type_type(detail::get_native_type(alps::detail::type_wrapper< U >::type())))                    \
@@ -793,7 +791,7 @@ namespace alps {
         #undef ALPS_HDF5_READ_SCALAR
         #undef ALPS_HDF5_READ_SCALAR_DATA_HELPER
         #undef ALPS_HDF5_READ_SCALAR_ATTRIBUTE_HELPER
-    
+
         #define ALPS_HDF5_READ_VECTOR_DATA_HELPER(U, T)                                                                                                                 \
             } else if (detail::check_error(                                                                                                                             \
                 H5Tequal(detail::type_type(H5Tcopy(native_id)), detail::type_type(detail::get_native_type(alps::detail::type_wrapper< U >::type())))                    \
@@ -921,7 +919,7 @@ namespace alps {
         ALPS_FOREACH_NATIVE_HDF5_TYPE(ALPS_HDF5_READ_VECTOR)
         #undef ALPS_HDF5_READ_VECTOR
         #undef ALPS_HDF5_READ_VECTOR_DATA_HELPER
-    
+
         #define ALPS_HDF5_WRITE_SCALAR(T)                                                                                                                               \
             void archive::write(std::string path, T value) const {                                                                                                      \
                 ALPS_HDF5_FAKE_THREADSAFETY                                                                                                                             \
@@ -967,7 +965,7 @@ namespace alps {
                             , H5P_DEFAULT                                                                                                                               \
                         );                                                                                                                                              \
                     }                                                                                                                                                   \
-                    detail::native_ptr_converter<boost::remove_cv<boost::remove_reference<T>::type>::type> converter(1);                                                \
+                    detail::native_ptr_converter<std::remove_cv<std::remove_reference<T>::type>::type> converter(1);                                                \
                     detail::check_error(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, converter.apply(&value)));                                            \
                     detail::check_data(data_id);                                                                                                                        \
                 } else {                                                                                                                                                \
@@ -1001,7 +999,7 @@ namespace alps {
                             , H5P_DEFAULT                                                                                                                               \
                             , H5P_DEFAULT                                                                                                                               \
                         );                                                                                                                                              \
-                    detail::native_ptr_converter<boost::remove_cv<boost::remove_reference<T>::type>::type> converter(1);                                                \
+                    detail::native_ptr_converter<std::remove_cv<std::remove_reference<T>::type>::type> converter(1);                                                \
                     detail::check_error(H5Awrite(data_id, type_id, converter.apply(&value)));                                                                           \
                     detail::attribute_type attr_id(data_id);                                                                                                            \
                     if (is_group(path.substr(0, path.find_last_of('@'))))                                                                                           \
@@ -1012,7 +1010,7 @@ namespace alps {
             }
         ALPS_FOREACH_NATIVE_HDF5_TYPE(ALPS_HDF5_WRITE_SCALAR)
         #undef ALPS_HDF5_WRITE_SCALAR
-    
+
         #define ALPS_HDF5_WRITE_VECTOR(T)                                                                                                                               \
             void archive::write(                                                                                                                                        \
                 std::string path, T const * value, std::vector<std::size_t> size, std::vector<std::size_t> chunk, std::vector<std::size_t> offset                       \
@@ -1076,7 +1074,7 @@ namespace alps {
                         if (data_id < 0) {                                                                                                                              \
                             detail::property_type prop_id(H5Pcreate(H5P_DATASET_CREATE));                                                                               \
                             detail::check_error(H5Pset_attr_creation_order(prop_id, (H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED)));                                  \
-                            if (boost::is_same< T , std::string>::value)                                                                                                \
+                            if (std::is_same< T , std::string>::value)                                                                                                \
                                 detail::check_error(data_id = H5Dcreate2(                                                                                               \
                                       context_->file_id_                                                                                                                \
                                     , path.c_str()                                                                                                                      \
@@ -1311,7 +1309,7 @@ namespace alps {
         std::string archive::file_key(std::string filename, bool memory) const {
             return (memory ? "m" : "_") + filename;
         }
-    
+
 #ifndef ALPS_SINGLE_THREAD
         boost::recursive_mutex archive::mutex_;
 #endif

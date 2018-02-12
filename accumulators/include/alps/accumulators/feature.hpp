@@ -17,6 +17,8 @@
 
 #include <boost/utility.hpp>
 
+#include <type_traits>
+
 #ifdef ALPS_HAVE_MPI
     #include <alps/accumulators/mpi.hpp>
 #endif
@@ -25,13 +27,14 @@ namespace alps {
     namespace accumulators {
 
         template<typename T, typename F> struct has_feature
-            : public boost::false_type
+            : std::false_type
         {};
 
         template<typename T> struct has_result_type {
             template<typename U> static char check(typename U::result_type *);
             template<typename U> static double check(...);
-            typedef boost::integral_constant<bool, sizeof(char) == sizeof(check<T>(0))> type;
+            typedef std::integral_constant<bool, sizeof(char) == sizeof(check<T>(0))> type;
+            constexpr static bool value = type::value;
         };
 
         #define NUMERIC_FUNCTION_OPERATOR(OP_NAME, OP, OP_TOKEN)                                                                               \
@@ -39,9 +42,9 @@ namespace alps {
                 using ::alps::numeric:: OP_NAME ;                                                                                         \
                 template<typename T, typename U> struct has_operator_ ## OP_TOKEN ## _impl {                                                   \
                     template<typename R> static char helper(R);                                                                                \
-                    template<typename C, typename D> static char check(boost::integral_constant<std::size_t, sizeof(helper(C() OP D()))>*);    \
+                    template<typename C, typename D> static char check(std::integral_constant<std::size_t, sizeof(helper(C() OP D()))>*);    \
                     template<typename C, typename D> static double check(...);                                                                 \
-                    typedef boost::integral_constant<bool, sizeof(char) == sizeof(check<T, U>(0))> type;                                       \
+                    typedef std::integral_constant<bool, sizeof(char) == sizeof(check<T, U>(0))> type;                                       \
                 };                                                                                                                             \
             }                                                                                                                                  \
             template<typename T, typename U> struct has_operator_ ## OP_TOKEN : public detail::has_operator_ ## OP_TOKEN ## _impl<T, U> {};
@@ -66,7 +69,7 @@ namespace alps {
                 typedef typename B::scalar_result_type parent_scalar_result_type_;
                 typedef R<scalar_type_, F, parent_scalar_result_type_> this_scalar_result_type_;
                 public:
-                typedef typename boost::mpl::if_<alps::is_scalar<T>,
+                typedef typename std::conditional<alps::is_scalar<T>::value,
                                                  void,
                                                  this_scalar_result_type_>::type type;
             };
@@ -76,7 +79,7 @@ namespace alps {
 
             template<typename T> struct ResultBase {
                 typedef T value_type;
-                typedef typename boost::mpl::if_<alps::is_scalar<T>,
+                typedef typename std::conditional<alps::is_scalar<T>::value,
                                                  void,
                                                  ResultBase<typename alps::numeric::scalar<T>::type>
                                                 >::type scalar_result_type;
@@ -169,7 +172,7 @@ namespace alps {
                         , U const & arg
                         , U & res
                         , Op op
-                        , typename boost::enable_if<typename boost::is_scalar<typename alps::hdf5::scalar_type<U>::type>::type, int>::type root
+                        , typename std::enable_if<std::is_scalar<typename alps::hdf5::scalar_type<U>::type>::value, int>::type root
                     ) {
                         alps::alps_mpi::reduce(comm, arg, res, op, root);
                     }
@@ -178,7 +181,7 @@ namespace alps {
                         , U const &
                         , U &
                         , Op
-                        , typename boost::disable_if<typename boost::is_scalar<typename alps::hdf5::scalar_type<U>::type>::type, int>::type
+                        , typename std::enable_if<!std::is_scalar<typename alps::hdf5::scalar_type<U>::type>::value, int>::type
                     ) {
                         throw std::logic_error("No alps::mpi::reduce available for this type " + std::string(typeid(U).name()) + ALPS_STACKTRACE);
                     }
@@ -187,7 +190,7 @@ namespace alps {
                           alps::mpi::communicator const & comm
                         , U const & arg
                         , Op op
-                        , typename boost::enable_if<typename boost::is_scalar<typename alps::hdf5::scalar_type<U>::type>::type, int>::type root
+                        , typename std::enable_if<std::is_scalar<typename alps::hdf5::scalar_type<U>::type>::value, int>::type root
                     ) {
                         alps::alps_mpi::reduce(comm, arg, op, root);
                     }
@@ -195,7 +198,7 @@ namespace alps {
                           alps::mpi::communicator const &
                         , U const &
                         , Op
-                        , typename boost::disable_if<typename boost::is_scalar<typename alps::hdf5::scalar_type<U>::type>::type, int>::type
+                        , typename std::enable_if<!std::is_scalar<typename alps::hdf5::scalar_type<U>::type>::value, int>::type
                     ) {
                         throw std::logic_error("No alps::mpi::reduce available for this type " + std::string(typeid(U).name()) + ALPS_STACKTRACE);
                     }
@@ -210,8 +213,8 @@ namespace alps {
 
             template<typename A, typename F, typename B> class DerivedWrapper {};
 
-            template<typename T> struct is_accumulator : public boost::false_type {};
-            template<typename T, typename tag, typename B> struct is_accumulator<Accumulator<T, tag, B> > : public boost::true_type {};
+            template<typename T> struct is_accumulator : public std::false_type {};
+            template<typename T, typename tag, typename B> struct is_accumulator<Accumulator<T, tag, B> > : public std::true_type {};
 
         }
     }

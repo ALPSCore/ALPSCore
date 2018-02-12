@@ -12,7 +12,7 @@
 #include <stdexcept>
 #include <iostream>
 #include <cmath>
-#include <boost/type_traits/is_same.hpp>
+#include <type_traits>
 #include <boost/optional.hpp>
 
 /// Custom value types for accumulators: must be defined before inclusion of "config.hpp"
@@ -81,12 +81,12 @@ class my_custom_type {
 
     /// Accessor to inspect the stored value
     T get_my_value() const { return this->value(); }
-    
+
     /// "Constituent" type (for archiving and MPI). The "content" of the object should be of the "constituent" type!
     typedef T my_constituent_type;
 
     // "Math" Scalar type: should behave as a scalar type, with arithmetics and conversion from scalar types.
-    // (NOTE: it also has to be a C++ scalar, from the point of view of boost::is_scalar!)
+    // (NOTE: it also has to be a C++ scalar, from the point of view of std::is_scalar!)
     typedef T my_scalar_type; // happens to be the same as T in this implementation
 
     // "Element type" (as a sequence)
@@ -94,10 +94,10 @@ class my_custom_type {
 
     /// Default constructor, leaving the object in an **initialized** state @REQUIRED
     my_custom_type() : my_value_(T()) { }
-    
-    
+
+
     // If it is a sequence and the default template specializations are used, the following 3 needs to be implemented:
-    
+
     /// Size of the sequence @REQUIRED_SEQUENCE
     std::size_t size() const { return 1; }
 
@@ -138,7 +138,7 @@ class my_custom_type {
         this->value() += rhs.value();
         return *this;
     }
-    
+
     /// Divide operator with scalar_type<my_custom_type> at RHS. @REQUIRED (for many calculations)
     my_custom_type operator/(const my_scalar_type& c) const {
         my_custom_type r=*this;
@@ -199,7 +199,7 @@ class my_custom_type {
         r.value() += s;
         return r;
     }
-    
+
     /// Subtract operator with scalar @REQUIRED (semantics: subtracts scaled identity custom_type)
     my_custom_type operator-(const my_scalar_type& s) const {
         my_custom_type r=*this;
@@ -271,15 +271,15 @@ my_custom_type<T> operator/(const typename my_custom_type<T>::my_scalar_type& lh
 namespace alps {
     /// Declare that the type is a sequence, despite a possible absence of value_type @REQUIRED
     template <typename T>
-    struct is_sequence< my_custom_type<T> > : public boost::true_type {};
-    
+    struct is_sequence< my_custom_type<T> > : public std::true_type {};
+
     /// Declare the element type @REQUIRED
     template <typename T>
     struct element_type< my_custom_type<T> > {
         typedef typename my_custom_type<T>::my_element_type type;
     };
-    
-    
+
+
     namespace numeric {
         // /// Setting "negative" values to zero @REQUIRED (for autocorrelation). Already implemented by ALPSCore for sequences.
         // /** NOTE: Has to be done before including "accumulators.hpp" */
@@ -288,7 +288,7 @@ namespace alps {
         // {
         //     throw std::logic_error("set_negative_0() value is not yet implemented for this type");
         // }
-        
+
         namespace {
             inline std::runtime_error not_implemented(const std::string& fname) {
                 return std::runtime_error("Function "+fname+"() is not implemented for this type.");
@@ -346,7 +346,7 @@ namespace alps {
         /// Specialization of alps::hdf5::is_continuous<T> for the custom_type<...>
         template <typename T>
         struct is_continuous< my_custom_type<T> >
-            : public boost::false_type {}; // the type is NOT continuous: an array of this type does not contain array of T!
+            : public std::false_type {}; // the type is NOT continuous: an array of this type does not contain array of T!
 
         namespace detail {
             /// Specialization of get_pointer<custom_type>
@@ -356,7 +356,7 @@ namespace alps {
                     return get_pointer(x.value());
                 }
             };
-            
+
             /// Specialization of get_pointer<const custom_type>
             template<typename T> struct get_pointer< const my_custom_type<T> > {
                 static const typename my_custom_type<T>::my_constituent_type* apply(const my_custom_type<T>& x) {
@@ -364,7 +364,7 @@ namespace alps {
                     return get_pointer(x.value());
                 }
             };
-            
+
             /// Specialization of get_extent<custom_type>
             template<typename T> struct get_extent< my_custom_type<T> > {
                 static std::vector<std::size_t> apply(const my_custom_type<T>& /*x*/) {
@@ -373,7 +373,7 @@ namespace alps {
                     return ext;
                 }
             };
-            
+
             /// Specialization of set_extent<custom_type>
             template<typename T> struct set_extent< my_custom_type<T> > {
                 static void apply(const my_custom_type<T>& /*x*/, const std::vector<std::size_t>& ext) {
@@ -393,7 +393,7 @@ namespace alps {
             };
 
         } // detail::
-  
+
         /// Overload of load() for the custom_type<...>
         template <typename T>
         void load(archive& ar, const std::string& path,
@@ -436,7 +436,7 @@ namespace alps {
             ar[path+"/@c++_type"]="my_custom_type";
         }
     } // hdf5::
-    
+
     namespace numeric {
         /// This must be specialized to give the notion of "infinity" (for "undefined" error bars)
         /** The type should be default-constructible and convertible to custom_type */
@@ -448,7 +448,7 @@ namespace alps {
                 return value_type::inf();
             }
         };
-    
+
     } // numeric::
 
 } // alps::

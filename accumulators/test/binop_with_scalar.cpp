@@ -10,7 +10,7 @@
 
 
 #include <vector>
-#include <boost/type_traits/is_same.hpp>
+#include <type_traits>
 #include "gtest/gtest.h"
 
 #include "alps/accumulators.hpp"
@@ -29,7 +29,7 @@ class AccumulatorVSBinaryOpTest : public ::testing::Test {
     typedef typename TGEN::scalar_data_type scalar_data_type;
     typedef typename TGEN::vector_data_type vector_data_type;
     // Ugly, but should work
-    static const bool is_mean_acc=boost::is_same<alps::accumulators::MeanAccumulator<scalar_data_type>, scalar_acc_type>::value;
+    static const bool is_mean_acc=std::is_same<alps::accumulators::MeanAccumulator<scalar_data_type>, scalar_acc_type>::value;
 
   private:
     // This will generate 2 pairs of accumulators.

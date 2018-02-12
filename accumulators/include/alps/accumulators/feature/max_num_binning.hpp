@@ -27,10 +27,9 @@
 
 #include <boost/utility.hpp>
 #include <boost/function.hpp>
-#include <boost/type_traits/is_scalar.hpp>
-#include <boost/type_traits/is_integral.hpp>
 
 #include <stdexcept>
+#include <type_traits>
 
 namespace alps {
     namespace accumulators {
@@ -96,9 +95,10 @@ namespace alps {
 
         template<typename T> struct has_feature<T, max_num_binning_tag> {
             template<typename R, typename C> static char helper(R(C::*)() const);
-            template<typename C> static char check(boost::integral_constant<std::size_t, sizeof(helper(&C::max_num_binning))>*);
+            template<typename C> static char check(std::integral_constant<std::size_t, sizeof(helper(&C::max_num_binning))>*);
             template<typename C> static double check(...);
-            typedef boost::integral_constant<bool, sizeof(char) == sizeof(check<T>(0))> type;
+            typedef std::integral_constant<bool, sizeof(char) == sizeof(check<T>(0))> type;
+            constexpr static bool value = type::value;
         };
 
         template<typename T> typename max_num_binning_type<T>::type max_num_binning(T const & arg) {
@@ -111,14 +111,14 @@ namespace alps {
 
         namespace detail {
 
-            template<typename A> typename boost::enable_if<
-                  typename has_feature<A, max_num_binning_tag>::type
+            template<typename A> typename std::enable_if<
+                  has_feature<A, max_num_binning_tag>::value
                 , typename max_num_binning_type<A>::type
             >::type max_num_binning_impl(A const & acc) {
                 return max_num_binning(acc);
             }
-            template<typename A> typename boost::disable_if<
-                  typename has_feature<A, max_num_binning_tag>::type
+            template<typename A> typename std::enable_if<
+                  !has_feature<A, max_num_binning_tag>::value
                 , typename max_num_binning_type<A>::type
             >::type max_num_binning_impl(A const & /*acc*/) {
                 throw std::runtime_error(std::string(typeid(A).name()) + " has no max_num_binning-method" + ALPS_STACKTRACE);
@@ -128,14 +128,14 @@ namespace alps {
             template<typename A, typename OP> void transform_impl(
                   A & acc
                 , OP op
-                , typename boost::enable_if<typename has_feature<A, max_num_binning_tag>::type, int>::type = 0
+                , typename std::enable_if<has_feature<A, max_num_binning_tag>::value, int>::type = 0
             ) {
                 acc.transform(op);
             }
             template<typename A, typename OP> void transform_impl(
                   A & /*acc*/
                 , OP /*op*/
-                , typename boost::disable_if<typename has_feature<A, max_num_binning_tag>::type, int>::type = 0
+                , typename std::enable_if<!has_feature<A, max_num_binning_tag>::value, int>::type = 0
             ) {
                 throw std::runtime_error(std::string(typeid(A).name()) + " has no transform-method" + ALPS_STACKTRACE);
             }
@@ -166,7 +166,7 @@ namespace alps {
                     , m_mn_bins(arg.m_mn_bins)
                 {}
 
-                template<typename ArgumentPack> Accumulator(ArgumentPack const & args, typename boost::disable_if<is_accumulator<ArgumentPack>, int>::type = 0)
+                template<typename ArgumentPack> Accumulator(ArgumentPack const & args, typename std::enable_if<!is_accumulator<ArgumentPack>::value, int>::type = 0)
                     : B(args)
                     , m_mn_max_number(args[max_bin_number | 128])
                     , m_mn_elements_in_bin(0)
@@ -412,7 +412,7 @@ namespace alps {
                 {}
 
                 // copy constructor
-                template<typename A> Result(A const & acc, typename boost::enable_if<boost::is_base_of<ResultBase<T>, A>, int>::type = 0)
+                template<typename A> Result(A const & acc, typename std::enable_if<std::is_base_of<ResultBase<T>, A>::value, int>::type = 0)
                     : B(acc)
                     , m_mn_max_number(acc.m_mn_max_number)
                     , m_mn_elements_in_bin(acc.m_mn_elements_in_bin)
@@ -426,7 +426,7 @@ namespace alps {
                     , m_mn_jackknife_bins(acc.m_mn_jackknife_bins)
                 {}
 
-                template<typename A> Result(A const & acc, typename boost::disable_if<boost::is_base_of<ResultBase<T>, A>, int>::type = 0)
+                template<typename A> Result(A const & acc, typename std::enable_if<!std::is_base_of<ResultBase<T>, A>::value, int>::type = 0)
                     : B(acc)
                     , m_mn_max_number(detail::max_num_binning_impl(acc).max_number())
                     , m_mn_elements_in_bin(detail::max_num_binning_impl(acc).num_elements())
@@ -465,7 +465,7 @@ namespace alps {
                 }
 
                 template <typename A>
-                typename boost::enable_if<typename has_feature<A, max_num_binning_tag>::type,
+                typename std::enable_if<has_feature<A, max_num_binning_tag>::value,
                                           typename covariance_type<B>::type
                                          >::type covariance(A const & obs) const
                 {
@@ -500,11 +500,11 @@ namespace alps {
                 }
 
                 // Adapted from http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Covariance
-                // It is a two-pass algorith, which first calculates estimates for the mean and then performs
+                // It is a two-pass algorithm, which first calculates estimates for the mean and then performs
                 // the stable algorithm on the residuals. According to literature and local authorities, this
                 // is the most accurate and stable way to calculate variances.
-                template <typename A> typename boost::enable_if<
-                    typename has_feature<A, max_num_binning_tag>::type, typename covariance_type<B>::type
+                template <typename A> typename std::enable_if<
+                    has_feature<A, max_num_binning_tag>::value, typename covariance_type<B>::type
                     >::type accurate_covariance(A const & obs) const {
                     using alps::numeric::operator+;
                     using alps::numeric::operator-;
@@ -800,13 +800,13 @@ namespace alps {
                 }
 
 #define NUMERIC_FUNCTION_OPERATOR(OP_NAME, OPEQ_NAME, OP, OP_TOKEN, OP_STD) \
-                template<typename U> void aug ## OP_TOKEN (U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) { \
+                template<typename U> void aug ## OP_TOKEN (U const & arg, typename std::enable_if<!std::is_scalar<U>::value, int>::type = 0) { \
                     typedef typename value_type<B>::type self_value_type; \
                     typedef typename value_type<U>::type arg_value_type; \
                     transform(boost::function<self_value_type(self_value_type, arg_value_type)>( OP_STD <self_value_type, arg_value_type, self_value_type>()), arg); \
                     B:: OPEQ_NAME (arg);                                \
                 }                                                       \
-                template<typename U> void aug ## OP_TOKEN (U const & arg, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) { \
+                template<typename U> void aug ## OP_TOKEN (U const & arg, typename std::enable_if<std::is_scalar<U>::value, int>::type = 0) { \
                     using alps::numeric:: OP_NAME ;                     \
                     typedef typename mean_type<B>::type mean_type;      \
                     generate_jackknife();                               \

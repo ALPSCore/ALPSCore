@@ -15,10 +15,6 @@
 
 #include <alps/hdf5/archive.hpp>
 
-#include <boost/type_traits/is_scalar.hpp>
-#include <boost/type_traits/is_convertible.hpp>
-#include <boost/type_traits/is_same.hpp>
-
 #include <boost/shared_ptr.hpp>
 
 #include <boost/variant/variant.hpp>
@@ -48,11 +44,11 @@ namespace alps {
 
             typedef typename make_variant_type<ALPS_ACCUMULATOR_VALUE_TYPES>::type variant_type;
 
-            template<typename T, typename A> struct is_valid_argument : public std::conditional<
-                    boost::is_scalar<A>::value
-                  , typename boost::is_convertible<T, A>::type
-                  , typename boost::is_same<T, A>::type
-            > {};
+            template<typename T, typename A> struct is_valid_argument : std::conditional<
+                    std::is_scalar<A>::value
+                  , typename std::is_convertible<T, A>::type
+                  , typename std::is_same<T, A>::type
+            >::type {};
 
             /// Check if LHS and RHS result types are allowed in binary OP
             /** @param LHSWT: left-hand side wrapper type
@@ -60,7 +56,7 @@ namespace alps {
             */
             template <typename LHSWT, typename RHSWT>
             struct is_compatible_op
-                : boost::is_same<typename alps::numeric::scalar<typename LHSWT::value_type>::type,
+                : std::is_same<typename alps::numeric::scalar<typename LHSWT::value_type>::type,
                                  typename RHSWT::value_type>
             { };
         } // detail::
@@ -208,13 +204,13 @@ namespace alps {
             #define ALPS_ACCUMULATOR_PROPERTY_PROXY(PROPERTY, TYPE)                                                 \
                 private:                                                                                            \
                     template<typename T> struct PROPERTY ## _visitor: public boost::static_visitor<T> {             \
-                        template<typename X> T apply(typename boost::enable_if<                                     \
-                            typename detail::is_valid_argument<typename TYPE <X>::type, T>::type, X const &         \
+                        template<typename X> T apply(typename std::enable_if<                                     \
+                            detail::is_valid_argument<typename TYPE <X>::type, T>::value, X const &         \
                         >::type arg) const {                                                                        \
                             return arg. PROPERTY ();                                                                \
                         }                                                                                           \
-                        template<typename X> T apply(typename boost::disable_if<                                    \
-                            typename detail::is_valid_argument<typename TYPE <X>::type, T>::type, X const &         \
+                        template<typename X> T apply(typename std::enable_if<!                                    \
+                            detail::is_valid_argument<typename TYPE <X>::type, T>::value, X const &         \
                         >::type /*arg*/) const {                                                                        \
                             throw std::logic_error(std::string("cannot convert: ")                                  \
                                 + typeid(typename TYPE <X>::type).name() + " to "                                   \
@@ -275,13 +271,13 @@ namespace alps {
             private:
                 template<typename T> struct transform_1_visitor: public boost::static_visitor<> {
                     transform_1_visitor(boost::function<T(T)> f) : op(f) {}
-                    template<typename X> void apply(typename boost::enable_if<
-                        typename detail::is_valid_argument<T, typename value_type<X>::type>::type, X &
+                    template<typename X> void apply(typename std::enable_if<
+                        detail::is_valid_argument<T, typename value_type<X>::type>::value, X &
                     >::type arg) const {
                         arg.transform(op);
                     }
-                    template<typename X> void apply(typename boost::disable_if<
-                        typename detail::is_valid_argument<T, typename value_type<X>::type>::type, X &
+                    template<typename X> void apply(typename std::enable_if<!
+                        detail::is_valid_argument<T, typename value_type<X>::type>::value, X &
                     >::type /*arg*/) const {
                         throw std::logic_error(std::string("cannot convert: ") + typeid(T).name() + " to " + typeid(typename value_type<X>::type).name() + ALPS_STACKTRACE);
                     }
@@ -337,14 +333,14 @@ namespace alps {
                         \
                         template<typename RHSWT>                        \
                         void apply(const RHSWT&, \
-                                   typename boost::disable_if<detail::is_compatible_op<LHSWT,RHSWT> >::type* =0) const { \
+                                   typename std::enable_if<!detail::is_compatible_op<LHSWT,RHSWT>::value >::type* =0) const { \
                             throw std::logic_error("only results with compatible value types are allowed in operators"   \
                                 + ALPS_STACKTRACE);                                                                 \
                         }                                               \
                           \
                         template<typename RHSWT>                        \
                         void apply(const RHSWT& rhs_value,                        \
-                                   typename boost::enable_if<detail::is_compatible_op<LHSWT,RHSWT> >::type* =0) { \
+                                   typename std::enable_if<detail::is_compatible_op<LHSWT,RHSWT>::value >::type* =0) { \
                             lhs_value AUGOP rhs_value;                                     \
                         }                                                                                           \
                           \
@@ -596,13 +592,13 @@ namespace alps {
             private:
                 template<typename T> struct call_1_visitor: public boost::static_visitor<> {
                     call_1_visitor(T const & v) : value(v) {}
-                    template<typename X> void apply(typename boost::enable_if<
-                        typename detail::is_valid_argument<T, typename value_type<X>::type>::type, X &
+                    template<typename X> void apply(typename std::enable_if<
+                        detail::is_valid_argument<T, typename value_type<X>::type>::value, X &
                     >::type arg) const {
                         arg(value);
                     }
-                    template<typename X> void apply(typename boost::disable_if<
-                        typename detail::is_valid_argument<T, typename value_type<X>::type>::type, X &
+                    template<typename X> void apply(typename std::enable_if<!
+                        detail::is_valid_argument<T, typename value_type<X>::type>::value, X &
                     >::type /*arg*/) const {
                         throw std::logic_error(std::string("cannot convert: ") + typeid(T).name() + " to " + typeid(typename value_type<X>::type).name() + ALPS_STACKTRACE);
                     }
@@ -743,13 +739,13 @@ namespace alps {
             #define ALPS_ACCUMULATOR_PROPERTY_PROXY(PROPERTY, TYPE)                                                 \
                 private:                                                                                            \
                     template<typename T> struct PROPERTY ## _visitor: public boost::static_visitor<T> {             \
-                        template<typename X> T apply(typename boost::enable_if<                                     \
-                            typename detail::is_valid_argument<typename TYPE <X>::type, T>::type, X const &         \
+                        template<typename X> T apply(typename std::enable_if<                                     \
+                            detail::is_valid_argument<typename TYPE <X>::type, T>::value, X const &         \
                         >::type arg) const {                                                                        \
                             return arg. PROPERTY ();                                                                \
                         }                                                                                           \
-                        template<typename X> T apply(typename boost::disable_if<                                    \
-                            typename detail::is_valid_argument<typename TYPE <X>::type, T>::type, X const &         \
+                        template<typename X> T apply(typename std::enable_if<!                                    \
+                            detail::is_valid_argument<typename TYPE <X>::type, T>::value, X const &         \
                         >::type /*arg*/) const {                                                                        \
                             throw std::logic_error(std::string("cannot convert: ")                                  \
                                 + typeid(typename TYPE <X>::type).name() + " to "                                   \

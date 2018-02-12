@@ -20,7 +20,7 @@ namespace alps {
                 /// Named-argument constructor: takes `name`, forwards the ArgumentPack to the wrapped accumulator constructor
                 template<typename ArgumentPack>
                 AccumulatorBase(const ArgumentPack& args,
-                                typename boost::disable_if<boost::is_base_of<AccumulatorBase,ArgumentPack>,int>::type =0)
+                                typename std::enable_if<!std::is_base_of<AccumulatorBase,ArgumentPack>::value,int>::type =0)
                     : name(args[accumulator_name])
                     , wrapper(new accumulator_wrapper(A(args)))
                 {}
@@ -28,7 +28,7 @@ namespace alps {
                 /// Copy constructor: clones the wrapped accumulator
                 template<typename ArgumentPack>
                 AccumulatorBase(const ArgumentPack& rhs,
-                                typename boost::enable_if<boost::is_base_of<AccumulatorBase,ArgumentPack>,int>::type =0)
+                                typename std::enable_if<std::is_base_of<AccumulatorBase,ArgumentPack>::value,int>::type =0)
                     : name(rhs.name),
                       wrapper(boost::shared_ptr<accumulator_wrapper>(rhs.wrapper->new_clone()))
                 { }

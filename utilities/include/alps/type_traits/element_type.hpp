@@ -10,41 +10,41 @@
 #define ALPS_TYPE_TRAITS_ELEMENT_TYPE_H
 
 #include <alps/type_traits/has_value_type.hpp>
-#include <boost/mpl/eval_if.hpp>
-#include <boost/mpl/bool.hpp>
- 
+
+#include <type_traits>
+
  namespace alps {
- 
+
 template <class T> struct element_type_recursive;
 
 namespace detail {
 
 template <class T, class F>
 struct element_type_helper {};
-  
+
  template <class T>
-struct element_type_helper<T,boost::mpl::false_> 
+struct element_type_helper<T,std::false_type>
 {
   typedef T type;
 };
 
 template <class T>
-struct element_type_helper<T,boost::mpl::true_> 
+struct element_type_helper<T,std::true_type>
 {
     typedef typename T::value_type type;
 };
 
 template <class T, class F>
 struct element_type_recursive_helper {};
-  
+
  template <class T>
-struct element_type_recursive_helper<T,boost::mpl::false_> 
+struct element_type_recursive_helper<T,std::false_type>
 {
   typedef T type;
 };
 
 template <class T>
-struct element_type_recursive_helper<T,boost::mpl::true_> 
+struct element_type_recursive_helper<T,std::true_type>
     : element_type_recursive<typename T::value_type>
 {
 };
@@ -61,5 +61,5 @@ template <class T>
  : public detail::element_type_recursive_helper<T,typename has_value_type<T>::type > {};
 
 }
- 
+
 #endif // ALPS_TYPE_TRAITS_ELEMENT_TYPE_H

@@ -23,10 +23,9 @@
 #include <alps/utilities/short_print.hpp>
 
 #include <boost/utility.hpp>
-#include <boost/type_traits/is_scalar.hpp>
-#include <boost/type_traits/is_integral.hpp>
 
 #include <stdexcept>
+#include <type_traits>
 
 namespace alps {
     namespace accumulators {
@@ -39,9 +38,10 @@ namespace alps {
         template<typename T> struct has_feature<T, error_tag> {
             template<typename R, typename C> static char helper(R(C::*)() const);
             template<typename R, typename C> static char helper(R(C::*)(std::size_t) const);
-            template<typename C> static char check(boost::integral_constant<std::size_t, sizeof(helper(&C::error))>*);
+            template<typename C> static char check(std::integral_constant<std::size_t, sizeof(helper(&C::error))>*);
             template<typename C> static double check(...);
-            typedef boost::integral_constant<bool, sizeof(char) == sizeof(check<T>(0))> type;
+            typedef std::integral_constant<bool, sizeof(char) == sizeof(check<T>(0))> type;
+            constexpr static bool value = type::value;
         };
 
         template<typename T> typename error_type<T>::type error(T const & arg) {
@@ -50,15 +50,15 @@ namespace alps {
 
         namespace detail {
 
-            template<typename A> typename boost::enable_if<
-                  typename has_feature<A, error_tag>::type
+            template<typename A> typename std::enable_if<
+                  has_feature<A, error_tag>::value
                 , typename error_type<A>::type
             >::type error_impl(A const & acc) {
                 return error(acc);
             }
 
-            template<typename A> typename boost::disable_if<
-                  typename has_feature<A, error_tag>::type
+            template<typename A> typename std::enable_if<
+                  !has_feature<A, error_tag>::value
                 , typename error_type<A>::type
             >::type error_impl(A const & /*acc*/) {
                 throw std::runtime_error(std::string(typeid(A).name()) + " has no error-method" + ALPS_STACKTRACE);
@@ -79,7 +79,7 @@ namespace alps {
 
                     Accumulator(Accumulator const & arg): B(arg), m_sum2(arg.m_sum2) {}
 
-                    template<typename ArgumentPack> Accumulator(ArgumentPack const & args, typename boost::disable_if<is_accumulator<ArgumentPack>, int>::type = 0)
+                    template<typename ArgumentPack> Accumulator(ArgumentPack const & args, typename std::enable_if<!is_accumulator<ArgumentPack>::value, int>::type = 0)
                         : B(args), m_sum2(T())
                     {}
 
@@ -134,7 +134,7 @@ namespace alps {
                     static bool can_load(hdf5::archive & ar) { // TODO: make archive const
                         using alps::hdf5::get_extent;
                         const char name[]="mean/error";
-                        const std::size_t ndim=boost::is_scalar<T>::value? 0 : get_extent(T()).size();
+                        const std::size_t ndim=std::is_scalar<T>::value? 0 : get_extent(T()).size();
                         return B::can_load(ar) &&
                                detail::archive_trait<error_type>::can_load(ar, name, ndim);
                     }
@@ -223,7 +223,7 @@ namespace alps {
                     static bool can_load(hdf5::archive & ar) { // TODO: make archive const
                         using alps::hdf5::get_extent;
                         const char name[]="mean/error";
-                        const std::size_t ndim=boost::is_scalar<T>::value? 0 : get_extent(T()).size();
+                        const std::size_t ndim=std::is_scalar<T>::value? 0 : get_extent(T()).size();
                         return B::can_load(ar) &&
                                detail::archive_trait<error_type>::can_load(ar, name, ndim);
                     }
@@ -310,13 +310,13 @@ namespace alps {
 
                     error_type m_error;
 
-                    template<typename U> void augaddsub (U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {
+                    template<typename U> void augaddsub (U const & arg, typename std::enable_if<!std::is_scalar<U>::value, int>::type = 0) {
                         using alps::numeric::operator+;
                         m_error = m_error + arg.error();
                     }
-                    template<typename U> void augaddsub (U const & /*arg*/, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {}
+                    template<typename U> void augaddsub (U const & /*arg*/, typename std::enable_if<std::is_scalar<U>::value, int>::type = 0) {}
 
-                    template<typename U> void augmul (U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {
+                    template<typename U> void augmul (U const & arg, typename std::enable_if<!std::is_scalar<U>::value, int>::type = 0) {
                         using alps::numeric::operator*;
                         using alps::numeric::operator+;
                         // FIXME? Originally: m_error = arg.mean() * m_error + this->mean() * arg.error();
@@ -324,20 +324,20 @@ namespace alps {
                         m_error = m_error * arg.mean() + this->mean() * arg.error();
                         B::operator*=(arg);
                     }
-                    template<typename U> void augmul (U const & arg, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {
+                    template<typename U> void augmul (U const & arg, typename std::enable_if<std::is_scalar<U>::value, int>::type = 0) {
                         using alps::numeric::operator*;
                         m_error = m_error * static_cast<error_scalar_type>(arg);
                         B::operator*=(arg);
                     }
 
-                    template<typename U> void augdiv (U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {
+                    template<typename U> void augdiv (U const & arg, typename std::enable_if<!std::is_scalar<U>::value, int>::type = 0) {
                         using alps::numeric::operator*;
                         using alps::numeric::operator/;
                         using alps::numeric::operator+;
                         m_error = m_error / arg.mean() + this->mean() * arg.error() / (arg.mean() * arg.mean());
                         B::operator/=(arg);
                     }
-                    template<typename U> void augdiv (U const & arg, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {
+                    template<typename U> void augdiv (U const & arg, typename std::enable_if<std::is_scalar<U>::value, int>::type = 0) {
                         using alps::numeric::operator/;
                         m_error = m_error / static_cast<error_scalar_type>(arg);
                         B::operator/=(arg);

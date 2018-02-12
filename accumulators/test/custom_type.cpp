@@ -8,6 +8,7 @@
 
 // For remove()
 #include <cstdio>
+#include <type_traits>
 
 // Must be included before accumulators.hpp
 #include "custom_type.hpp"
@@ -36,14 +37,14 @@ namespace alps {
                 operator value_type() const { return value(); }
                 value_type value() const { return value_type::generate(val_); }
             };
-        
-    
+
+
             // Data inquiry functions
             template <typename T>
             double get_value(const T& x) {
                 return x;
             }
-            
+
             template <typename T>
             double get_value(const my_custom_type<T>& x) {
                 return x.get_my_value();
@@ -69,21 +70,21 @@ struct CustomTypeAccumulatorTest : public testing::Test {
     typedef typename acc_type::accumulator_type raw_acc_type;
     typedef typename acc_type::result_type raw_result_type;
     typedef typename alps::accumulators::value_type<raw_acc_type>::type value_type;
-    
+
     typedef typename G::dbl_accumulator_gen_type dbl_acc_gen_type;
     typedef typename dbl_acc_gen_type::acc_type dbl_acc_type;
 
-    static const std::size_t NPOINTS=acc_gen_type::NPOINTS; 
-    
+    static const std::size_t NPOINTS=acc_gen_type::NPOINTS;
+
     acc_gen_type acc_gen;
     dbl_acc_gen_type dbl_acc_gen;
 
     // Ugly, but should work
-    static const bool is_mean_acc=boost::is_same<alps::accumulators::MeanAccumulator<value_type>,
+    static const bool is_mean_acc=std::is_same<alps::accumulators::MeanAccumulator<value_type>,
                                                  acc_type>::value;
-    static const bool is_nobin_acc=boost::is_same<alps::accumulators::NoBinningAccumulator<value_type>,
+    static const bool is_nobin_acc=std::is_same<alps::accumulators::NoBinningAccumulator<value_type>,
                                                   acc_type>::value;
-    
+
     static double tol() { return 5.E-3; }
 
     CustomTypeAccumulatorTest() {
@@ -230,7 +231,7 @@ struct CustomTypeAccumulatorTest : public testing::Test {
         EXPECT_NEAR(get_value(r["data"].autocorrelation<value_type>()),get_value(r1["data"].autocorrelation<value_type>()),1E-8);
     }
 
-#ifdef ALPS_HAVE_MPI                   
+#ifdef ALPS_HAVE_MPI
     void TestMpiMerge() {
         /* The idea is to verify that M processes running N points each
            accumulated together approximately the same data as a single process
@@ -245,7 +246,7 @@ struct CustomTypeAccumulatorTest : public testing::Test {
 
         for (int p=0; p<comm.size(); ++p) {
             typename acc_gen_type::number_generator_type number_generator;
-            
+
             for (std::size_t i=0; i<NPOINTS; ++i) {
                 total_acc << gen_data<value_type>(number_generator()).value();
             }
@@ -267,9 +268,9 @@ struct CustomTypeAccumulatorTest : public testing::Test {
         for (int i=0; i<comm.size(); ++i) {
             if (comm.rank() == i
                 && i==0 /* FIXME!! See issue #178 */) {
-                
+
                 EXPECT_EQ(rtot.count(), rw.count()) << "reported by rank " << i;
-                
+
                 EXPECT_NEAR(get_value(rtot.mean<value_type>()),
                             get_value(rw.mean<value_type>()),
                             mean_tol) << "reported by rank " << i;
@@ -278,8 +279,8 @@ struct CustomTypeAccumulatorTest : public testing::Test {
                     EXPECT_NEAR(get_value(rtot.error<value_type>()),
                                 get_value(rw.error<value_type>()),
                                 err_tol) << "reported by rank " << i;
-                
-                if (!(is_nobin_acc||is_mean_acc)) 
+
+                if (!(is_nobin_acc||is_mean_acc))
                     EXPECT_NEAR(get_value(rtot.autocorrelation<value_type>()),
                                 get_value(rw.autocorrelation<value_type>()),
                                 tau_tol) << "reported by rank " << i;
@@ -367,7 +368,7 @@ TEST(CustomTypeAccumulatorTest,DISABLED_saveArray) {
     dbl_custom_type x=gen_data<dbl_custom_type>(1.25);
     std::vector<dbl_custom_type> vx;
     std::vector<double> dx;
-    
+
     for (int i=0; i<10; ++i) {
         vx.push_back(gen_data<dbl_custom_type>(i+0.5));
         dx.push_back(i+0.75);
@@ -380,7 +381,7 @@ TEST(CustomTypeAccumulatorTest,DISABLED_saveArray) {
       ar["vector_custom"] << vx;
       std::cout << "Saving regular vector..." << std::endl;
       ar["vector_regular"] << dx;
-      
+
     }
     dbl_custom_type y;
     std::vector<dbl_custom_type> vy;
@@ -393,7 +394,7 @@ TEST(CustomTypeAccumulatorTest,DISABLED_saveArray) {
 
       my_custom_type<float> fy;
       EXPECT_THROW(ar["single_custom"] >> fy, std::runtime_error);
-      
+
       dbl_custom_type y1;
       EXPECT_THROW(ar["vector_regular"] >> y1, std::runtime_error);
     }
@@ -407,11 +408,11 @@ int main(int argc, char** argv)
    tweak(alps::mpi::communicator().rank(), argc, argv);
    ::testing::InitGoogleTest(&argc, argv);
    return RUN_ALL_TESTS();
-}    
+}
 #else
 int main(int argc, char** argv)
 {
    ::testing::InitGoogleTest(&argc, argv);
    return RUN_ALL_TESTS();
-}    
+}
 #endif

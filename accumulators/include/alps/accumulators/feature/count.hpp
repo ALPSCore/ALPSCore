@@ -19,6 +19,7 @@
 #include <boost/cstdint.hpp>
 
 #include <stdexcept>
+#include <type_traits>
 
 namespace alps {
     namespace accumulators {
@@ -32,9 +33,10 @@ namespace alps {
 
         template<typename T> struct has_feature<T, count_tag> {
             template<typename C> static char helper(typename count_type<T>::type (C::*)() const);
-            template<typename C> static char check(boost::integral_constant<std::size_t, sizeof(helper(&C::count))>*);
+            template<typename C> static char check(std::integral_constant<std::size_t, sizeof(helper(&C::count))>*);
             template<typename C> static double check(...);
-            typedef boost::integral_constant<bool, sizeof(char) == sizeof(check<T>(0))> type;
+            typedef std::integral_constant<bool, sizeof(char) == sizeof(check<T>(0))> type;
+            constexpr static bool value = type::value;
         };
 
         template<typename T> typename count_type<T>::type count(T const & arg) {
@@ -43,14 +45,14 @@ namespace alps {
 
         namespace detail {
 
-            template<typename A> typename boost::enable_if<
-                typename has_feature<A, count_tag>::type, typename count_type<A>::type
+            template<typename A> typename std::enable_if<
+                has_feature<A, count_tag>::value, typename count_type<A>::type
             >::type count_impl(A const & acc) {
                 return count(acc);
             }
 
-            template<typename A> typename boost::disable_if<
-                typename has_feature<A, count_tag>::type, typename count_type<A>::type
+            template<typename A> typename std::enable_if<
+                !has_feature<A, count_tag>::value, typename count_type<A>::type
             >::type count_impl(A const & acc) {
                 throw std::runtime_error(std::string(typeid(A).name()) + " has no count-method" + ALPS_STACKTRACE);
                 return typename count_type<A>::type();
@@ -124,48 +126,48 @@ namespace alps {
                 private:
 
                     // TODO: make macro ...
-                    template<typename U> void augadd(U const & arg, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {
+                    template<typename U> void augadd(U const & arg, typename std::enable_if<std::is_scalar<U>::value, int>::type = 0) {
                         if (m_count == 0)
                             throw std::runtime_error("The results needs measurements" + ALPS_STACKTRACE);
                         B::operator+=(arg);
                     }
-                    template<typename U> void augadd(U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {
+                    template<typename U> void augadd(U const & arg, typename std::enable_if<!std::is_scalar<U>::value, int>::type = 0) {
                         if (m_count == 0 || arg.count() == 0)
                             throw std::runtime_error("Both results needs measurements" + ALPS_STACKTRACE);
                         m_count = std::min(m_count,  arg.count());
                         B::operator+=(arg);
                     }
 
-                    template<typename U> void augsub(U const & arg, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {
+                    template<typename U> void augsub(U const & arg, typename std::enable_if<std::is_scalar<U>::value, int>::type = 0) {
                         if (m_count == 0)
                             throw std::runtime_error("The results needs measurements" + ALPS_STACKTRACE);
                         B::operator-=(arg);
                     }
-                    template<typename U> void augsub(U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {
+                    template<typename U> void augsub(U const & arg, typename std::enable_if<!std::is_scalar<U>::value, int>::type = 0) {
                         if (m_count == 0 || arg.count() == 0)
                             throw std::runtime_error("Both results needs measurements" + ALPS_STACKTRACE);
                         m_count = std::min(m_count,  arg.count());
                         B::operator-=(arg);
                     }
 
-                    template<typename U> void augmul(U const & arg, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {
+                    template<typename U> void augmul(U const & arg, typename std::enable_if<std::is_scalar<U>::value, int>::type = 0) {
                         if (m_count == 0)
                             throw std::runtime_error("The results needs measurements" + ALPS_STACKTRACE);
                         B::operator*=(arg);
                     }
-                    template<typename U> void augmul(U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {
+                    template<typename U> void augmul(U const & arg, typename std::enable_if<!std::is_scalar<U>::value, int>::type = 0) {
                         if (m_count == 0 || arg.count() == 0)
                             throw std::runtime_error("Both results needs measurements" + ALPS_STACKTRACE);
                         m_count = std::min(m_count,  arg.count());
                         B::operator*=(arg);
                     }
 
-                    template<typename U> void augdiv(U const & arg, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {
+                    template<typename U> void augdiv(U const & arg, typename std::enable_if<std::is_scalar<U>::value, int>::type = 0) {
                         if (m_count == 0)
                             throw std::runtime_error("The results needs measurements" + ALPS_STACKTRACE);
                         B::operator/=(arg);
                     }
-                    template<typename U> void augdiv(U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {
+                    template<typename U> void augdiv(U const & arg, typename std::enable_if<!std::is_scalar<U>::value, int>::type = 0) {
                         if (m_count == 0 || arg.count() == 0)
                             throw std::runtime_error("Both results needs measurements" + ALPS_STACKTRACE);
                         m_count = std::min(m_count,  arg.count());
@@ -185,7 +187,7 @@ namespace alps {
 
                     Accumulator(Accumulator const & arg): m_count(arg.m_count) {}
 
-                    template<typename ArgumentPack> Accumulator(ArgumentPack const & /*args*/, typename boost::disable_if<is_accumulator<ArgumentPack>, int>::type = 0)
+                    template<typename ArgumentPack> Accumulator(ArgumentPack const & /*args*/, typename std::enable_if<!is_accumulator<ArgumentPack>::value, int>::type = 0)
                         : m_count(count_type())
                     {}
 

@@ -29,13 +29,11 @@
 #include <alps/type_traits/change_value_type.hpp>
 
 #include <boost/utility.hpp>
-#include <boost/type_traits/is_scalar.hpp>
-#include <boost/type_traits/is_integral.hpp>
-#include <boost/type_traits/is_base_of.hpp>
 
 #include <limits>
 #include <stdexcept>
 #include <algorithm> // for std::min
+#include <type_traits>
 
 // DEBUG: to force boost assertion to be an exception, to work nicely with google test
 #define BOOST_ENABLE_ASSERT_HANDLER
@@ -69,7 +67,7 @@ namespace alps {
         struct binning_analysis_tag;
 
         template<typename T> struct autocorrelation_type
-            : public boost::mpl::if_<boost::is_integral<typename value_type<T>::type>, double, typename value_type<T>::type>
+            : public std::conditional<std::is_integral<typename value_type<T>::type>::value, double, typename value_type<T>::type>
         {};
 
         template<typename T> struct convergence_type {
@@ -78,9 +76,10 @@ namespace alps {
 
         template<typename T> struct has_feature<T, binning_analysis_tag> {
             template<typename R, typename C> static char helper(R(C::*)() const);
-            template<typename C> static char check(boost::integral_constant<std::size_t, sizeof(helper(&C::autocorrelation))>*);
+            template<typename C> static char check(std::integral_constant<std::size_t, sizeof(helper(&C::autocorrelation))>*);
             template<typename C> static double check(...);
-            typedef boost::integral_constant<bool, sizeof(char) == sizeof(check<T>(0))> type;
+            typedef std::integral_constant<bool, sizeof(char) == sizeof(check<T>(0))> type;
+            constexpr static bool value = type::value;
         };
 
         template<typename T> typename autocorrelation_type<T>::type autocorrelation(T const & arg) {
@@ -89,15 +88,15 @@ namespace alps {
 
         namespace detail {
 
-            template<typename A> typename boost::enable_if<
-                  typename has_feature<A, binning_analysis_tag>::type
+            template<typename A> typename std::enable_if<
+                  has_feature<A, binning_analysis_tag>::value
                 , typename autocorrelation_type<A>::type
             >::type autocorrelation_impl(A const & acc) {
                 return autocorrelation(acc);
             }
 
-            template<typename A> typename boost::disable_if<
-                  typename has_feature<A, binning_analysis_tag>::type
+            template<typename A> typename std::enable_if<
+                  !has_feature<A, binning_analysis_tag>::value
                 , typename autocorrelation_type<A>::type
             >::type autocorrelation_impl(A const & /*acc*/) {
                 throw std::runtime_error(std::string(typeid(A).name()) + " has no autocorrelation-method" + ALPS_STACKTRACE);
@@ -128,7 +127,7 @@ namespace alps {
                         , m_ac_count(arg.m_ac_count)
                     {}
 
-                    template<typename ArgumentPack> Accumulator(ArgumentPack const & args, typename boost::disable_if<is_accumulator<ArgumentPack>, int>::type = 0)
+                    template<typename ArgumentPack> Accumulator(ArgumentPack const & args, typename std::enable_if<!is_accumulator<ArgumentPack>::value, int>::type = 0)
                         : B(args)
                         , m_ac_sum()
                         , m_ac_sum2()
@@ -669,47 +668,49 @@ namespace alps {
 
                     /// Predicate metafunction: is U is related to self_type?
                     template <typename U> struct is_rel_type
-                        : public boost::mpl::or_< boost::is_same<U,self_type>, boost::is_base_of<U,self_type>, boost::is_base_of<self_type,U> > {};
+                        : public std::integral_constant<bool, std::is_same<U,self_type>::value ||
+                                                              std::is_base_of<U,self_type>::value ||
+                                                              std::is_base_of<self_type,U>::value > {};
 
                     /// Predicate metafunction: is U is related to self_type or is a scalar?
                     template <typename U> struct is_rel_or_scalar_type
-                        : public boost::mpl::or_< boost::is_scalar<U>, is_rel_type<U> > {};
+                        : public std::integral_constant<bool, std::is_scalar<U>::value || is_rel_type<U>::value> {};
 
 
-                    template<typename U> void augaddsub (U const & arg, typename boost::enable_if<is_rel_type<U>, int>::type = 0) {
+                    template<typename U> void augaddsub (U const & arg, typename std::enable_if<is_rel_type<U>::value, int>::type = 0) {
                         using alps::numeric::operator+;
                         for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
                             *it = *it + dynamic_cast<self_type const &>(arg).error(it - m_ac_errors.begin());
                     }
-                    template<typename U> void augaddsub (U const & arg, typename boost::disable_if<is_rel_or_scalar_type<U>, int>::type = 0) {
+                    template<typename U> void augaddsub (U const & arg, typename std::enable_if<!is_rel_or_scalar_type<U>::value, int>::type = 0) {
                         using alps::numeric::operator+;
                         for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
                             *it = *it + dynamic_cast<scalar_result_type const &>(arg).error(it - m_ac_errors.begin());
                     }
-                    template<typename U> void augaddsub (U const & /*arg*/, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {}
+                    template<typename U> void augaddsub (U const & /*arg*/, typename std::enable_if<std::is_scalar<U>::value, int>::type = 0) {}
 
-                    template<typename U> void augmul (U const & arg, typename boost::enable_if<is_rel_type<U>, int>::type = 0) {
+                    template<typename U> void augmul (U const & arg, typename std::enable_if<is_rel_type<U>::value, int>::type = 0) {
                         using alps::numeric::operator*;
                         using alps::numeric::operator+;
                         for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
                             *it = arg.mean() * *it + this->mean() * dynamic_cast<self_type const &>(arg).error(it - m_ac_errors.begin());
                         B::operator*=(arg);
                     }
-                    template<typename U> void augmul (U const & arg, typename boost::disable_if<is_rel_or_scalar_type<U>, int>::type = 0) {
+                    template<typename U> void augmul (U const & arg, typename std::enable_if<!is_rel_or_scalar_type<U>::value, int>::type = 0) {
                         using alps::numeric::operator*;
                         using alps::numeric::operator+;
                         for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
                             *it =  (*it)*arg.mean() + this->mean() * dynamic_cast<scalar_result_type const &>(arg).error(it - m_ac_errors.begin());
                         B::operator*=(arg);
                     }
-                    template<typename U> void augmul (U const & arg, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {
+                    template<typename U> void augmul (U const & arg, typename std::enable_if<std::is_scalar<U>::value, int>::type = 0) {
                         using alps::numeric::operator*;
                         for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
                             *it = *it * static_cast<error_scalar_type>(arg);
                         B::operator*=(arg);
                     }
 
-                    template<typename U> void augdiv (U const & arg, typename boost::enable_if<is_rel_type<U>, int>::type = 0) {
+                    template<typename U> void augdiv (U const & arg, typename std::enable_if<is_rel_type<U>::value, int>::type = 0) {
                         using alps::numeric::operator*;
                         using alps::numeric::operator/;
                         using alps::numeric::operator+;
@@ -717,7 +718,7 @@ namespace alps {
                             *it = *it / arg.mean() + this->mean() * dynamic_cast<self_type const &>(arg).error(it - m_ac_errors.begin()) / (arg.mean() * arg.mean());
                         B::operator/=(arg);
                     }
-                    template<typename U> void augdiv (U const & arg, typename boost::disable_if<is_rel_or_scalar_type<U>, int>::type = 0) {
+                    template<typename U> void augdiv (U const & arg, typename std::enable_if<!is_rel_or_scalar_type<U>::value, int>::type = 0) {
                         using alps::numeric::operator*;
                         using alps::numeric::operator/;
                         using alps::numeric::operator+;
@@ -725,7 +726,7 @@ namespace alps {
                             *it = *it / arg.mean() + this->mean() * dynamic_cast<scalar_result_type const &>(arg).error(it - m_ac_errors.begin()) / (arg.mean() * arg.mean());
                         B::operator/=(arg);
                     }
-                    template<typename U> void augdiv (U const & arg, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {
+                    template<typename U> void augdiv (U const & arg, typename std::enable_if<std::is_scalar<U>::value, int>::type = 0) {
                         using alps::numeric::operator/;
                         for (error_iterator it = m_ac_errors.begin(); it != m_ac_errors.end(); ++it)
                             *it = *it / static_cast<error_scalar_type>(arg);

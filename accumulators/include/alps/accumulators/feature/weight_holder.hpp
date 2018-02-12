@@ -19,6 +19,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include <stdexcept>
+#include <type_traits>
 
 namespace alps {
     namespace accumulators {
@@ -40,7 +41,7 @@ namespace alps {
 
                     Accumulator(Accumulator const & arg): B(arg), m_owner(arg.m_owner), m_weight(arg.m_weight) {}
 
-                    template<typename ArgumentPack> Accumulator(ArgumentPack const & args, typename boost::disable_if<is_accumulator<ArgumentPack>, int>::type = 0)
+                    template<typename ArgumentPack> Accumulator(ArgumentPack const & args, typename std::enable_if<!is_accumulator<ArgumentPack>::value, int>::type = 0)
                         : B(args), m_owner(true), m_weight(new ::alps::accumulators::derived_accumulator_wrapper<W>(W()))
                     {}
 
@@ -54,21 +55,21 @@ namespace alps {
                         B::operator()(val);
                     }
 
-                    template<typename X> typename boost::enable_if<typename boost::mpl::if_<
-                          typename boost::is_scalar<typename value_type<weight_type>::type>::type
-                        , typename boost::is_convertible<X, typename value_type<weight_type>::type>::type
-                        , typename boost::is_same<X, typename value_type<weight_type>::type>::type
-                    >::type>::type operator()(T const & val, X const & weight) {
+                    template<typename X> typename std::enable_if<std::conditional<
+                          std::is_scalar<typename value_type<weight_type>::type>::value
+                        , typename std::is_convertible<X, typename value_type<weight_type>::type>::type
+                        , typename std::is_same<X, typename value_type<weight_type>::type>::type
+                    >::value>::type operator()(T const & val, X const & weight) {
                         // TODO: how do we make sure, weight is updated only once?
                         B::operator()(val);
                         (m_weight->template extract<W>())(weight);
                     }
 
-                    template<typename X> typename boost::disable_if<typename boost::mpl::if_<
-                          typename boost::is_scalar<typename value_type<weight_type>::type>::type
-                        , typename boost::is_convertible<X, typename value_type<weight_type>::type>::type
-                        , typename boost::is_same<X, typename value_type<weight_type>::type>::type
-                    >::type>::type operator()(T const & /*val*/, X const & /*weight*/) {
+                    template<typename X> typename std::enable_if<!std::conditional<
+                          std::is_scalar<typename value_type<weight_type>::type>::value
+                        , typename std::is_convertible<X, typename value_type<weight_type>::type>::type
+                        , typename std::is_same<X, typename value_type<weight_type>::type>::type
+                    >::value>::type operator()(T const & /*val*/, X const & /*weight*/) {
                         throw std::runtime_error("Invalid type for binary call operator" + ALPS_STACKTRACE);
                     }
 

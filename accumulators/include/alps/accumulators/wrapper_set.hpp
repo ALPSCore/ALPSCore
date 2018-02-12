@@ -59,12 +59,6 @@ namespace alps {
                         for (typename wrapper_set<U>::const_iterator it = arg.begin(); it != arg.end(); ++it)
                             insert(it->first, it->second->result());
                     }
-                    // template <typename U> wrapper_set(wrapper_set<U> const & arg, typename boost::disable_if<boost::is_same<result_wrapper, U>, void *>::type = NULL) {
-                    //     for (typename wrapper_set<U>::const_iterator it = arg.begin(); it != arg.end(); ++it)
-                    //         insert(it->first, it->second->result());
-                    // }
-
-
 
                     wrapper_set() {
                         std::lock_guard<std::mutex> guard(m_types_mutex);

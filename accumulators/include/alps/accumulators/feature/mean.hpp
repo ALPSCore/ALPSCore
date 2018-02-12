@@ -22,10 +22,9 @@
 #include <alps/utilities/short_print.hpp>
 
 #include <boost/utility.hpp>
-#include <boost/type_traits/is_scalar.hpp>
-#include <boost/type_traits/is_integral.hpp>
 
 #include <stdexcept>
+#include <type_traits>
 
 namespace alps {
     namespace accumulators {
@@ -34,14 +33,15 @@ namespace alps {
         struct mean_tag;
 
         template<typename T> struct mean_type
-            : public boost::mpl::if_<boost::is_integral<typename value_type<T>::type>, double, typename value_type<T>::type>
+            : public std::conditional<std::is_integral<typename value_type<T>::type>::value, double, typename value_type<T>::type>
         {};
 
         template<typename T> struct has_feature<T, mean_tag> {
             template<typename R, typename C> static char helper(R(C::*)() const);
-            template<typename C> static char check(boost::integral_constant<std::size_t, sizeof(helper(&C::mean))>*);
+            template<typename C> static char check(std::integral_constant<std::size_t, sizeof(helper(&C::mean))>*);
             template<typename C> static double check(...);
-            typedef boost::integral_constant<bool, sizeof(char) == sizeof(check<T>(0))> type;
+            typedef std::integral_constant<bool, sizeof(char) == sizeof(check<T>(0))> type;
+            constexpr static bool value = type::value;
         };
 
         template<typename T> typename mean_type<T>::type mean(T const & arg) {
@@ -50,15 +50,15 @@ namespace alps {
 
         namespace detail {
 
-            template<typename A> typename boost::enable_if<
-                  typename has_feature<A, mean_tag>::type
+            template<typename A> typename std::enable_if<
+                  has_feature<A, mean_tag>::value
                 , typename mean_type<A>::type
             >::type mean_impl(A const & acc) {
                 return mean(acc);
             }
 
-            template<typename A> typename boost::disable_if<
-                  typename has_feature<A, mean_tag>::type
+            template<typename A> typename std::enable_if<
+                  !has_feature<A, mean_tag>::value
                 , typename mean_type<A>::type
             >::type mean_impl(A const & acc) {
                 throw std::runtime_error(std::string(typeid(A).name()) + " has no mean-method" + ALPS_STACKTRACE);
@@ -77,7 +77,7 @@ namespace alps {
                     Accumulator(): B(), m_sum(T()) {}
                     Accumulator(Accumulator const & arg): B(arg), m_sum(arg.m_sum) {}
 
-                    template<typename ArgumentPack> Accumulator(ArgumentPack const & args, typename boost::disable_if<is_accumulator<ArgumentPack>, int>::type = 0)
+                    template<typename ArgumentPack> Accumulator(ArgumentPack const & args, typename std::enable_if<!is_accumulator<ArgumentPack>::value, int>::type = 0)
                         : B(args), m_sum(T())
                     {}
 
@@ -125,7 +125,7 @@ namespace alps {
                     static bool can_load(hdf5::archive & ar) { // TODO: make archive const
                         using alps::hdf5::get_extent;
                         const char name[]="mean/value";
-                        const std::size_t ndim=boost::is_scalar<T>::value? 0 : get_extent(T()).size();
+                        const std::size_t ndim=std::is_scalar<T>::value? 0 : get_extent(T()).size();
                         return B::can_load(ar) &&
                                detail::archive_trait<mean_type>::can_load(ar, name, ndim);
                     }
@@ -217,7 +217,7 @@ namespace alps {
                     static bool can_load(hdf5::archive & ar) { // TODO: make archive const
                         using alps::hdf5::get_extent;
                         const char name[]="mean/value";
-                        const std::size_t ndim=boost::is_scalar<T>::value? 0 : get_extent(T()).size();
+                        const std::size_t ndim=std::is_scalar<T>::value? 0 : get_extent(T()).size();
                         return B::can_load(ar) &&
                                detail::archive_trait<mean_type>::can_load(ar, name, ndim);
                     }
@@ -281,13 +281,13 @@ namespace alps {
                     mean_type m_mean;
 
                     #define NUMERIC_FUNCTION_OPERATOR(OP_NAME, OPEQ_NAME, OP, OP_TOKEN)                                                                                         \
-                        template<typename U> void aug ## OP_TOKEN (U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {                             \
+                        template<typename U> void aug ## OP_TOKEN (U const & arg, typename std::enable_if<!std::is_scalar<U>::value, int>::type = 0) {                             \
                             using alps::numeric:: OP_NAME ;                                                                                                                     \
                             m_mean = m_mean OP arg.mean();                                                                                                                      \
                             B:: OPEQ_NAME (arg);                                                                                                                                \
                         }                                                                                                                                                       \
                        template<typename U> void aug ## OP_TOKEN (U const & arg,                                                                                                \
-                                                                  typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {                                              \
+                                                                  typename std::enable_if<std::is_scalar<U>::value, int>::type = 0) {                                              \
                             using alps::numeric:: OP_NAME ;                                                                                                                     \
                             m_mean = m_mean OP static_cast<typename alps::numeric::scalar<mean_type>::type>(arg); \
                             B:: OPEQ_NAME (arg);                                                                                                                                \
