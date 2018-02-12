@@ -8,7 +8,6 @@
 #include <cassert>
 #include <ostream>
 #include <memory>
-#include <mutex>
 
 namespace alps { namespace alea { namespace internal {
     class format_sentry;
@@ -164,7 +163,9 @@ protected:
     static int get_xindex()
     {
         // guaranteed to be distinct since for different iomanip's since their
-        // T will be different.
+        // T will be different. xalloc is threadsafe from C++14 onwards, however
+        // C++11 guarantees that static initialization is threadsafe, so we're
+        // fine.
         static int xindex = std::ios_base::xalloc();
         return xindex;
     }
@@ -172,6 +173,7 @@ protected:
 private:
     format_registry() = delete;
 };
+
 
 // explicitly disallow some built-in types
 
