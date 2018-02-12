@@ -6,8 +6,10 @@
 
 #pragma once
 
+#include <iostream>
 #include <string>
 #include <sstream>
+#include <vector>
 
 #include <hdf5.h>
 
@@ -22,6 +24,14 @@
 #else
     #define ALPS_HDF5_FAKE_THREADSAFETY ALPS_HDF5_LOCK_MUTEX
 #endif
+
+#define ALPS_HDF5_NATIVE_INTEGRAL_TYPES   \
+    char, signed char, unsigned char,     \
+    short, unsigned short,                \
+    int, unsigned, long, unsigned long,   \
+    long long, unsigned long long,        \
+    float, double, long double,           \
+    bool
 
 #define ALPS_HDF5_FOREACH_NATIVE_TYPE_INTEGRAL(CALLBACK, ARG)                                                                                                           \
     CALLBACK(char, ARG)                                                                                                                                                 \

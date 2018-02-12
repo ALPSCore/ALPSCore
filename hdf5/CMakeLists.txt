@@ -23,7 +23,13 @@ if (DocumentationOnly)
   return()
 endif()
 
-add_this_package(archive archivecontext archive_free archive_write archive_read)
+add_this_package(archive
+                 archivecontext
+                 archive_free
+                 archive_write
+                 archive_read
+                 archive_read_scalar_helpers
+                 archive_read_vector_helpers)
 
 add_boost()
 add_hdf5()
