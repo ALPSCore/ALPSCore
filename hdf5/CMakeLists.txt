@@ -1,6 +1,6 @@
-# 
+#
 # alps-hdf5 cmake configuration script.
-# 
+#
 
 cmake_minimum_required (VERSION 3.1)
 
@@ -23,7 +23,7 @@ if (DocumentationOnly)
   return()
 endif()
 
-add_this_package(archive)
+add_this_package(archive archivecontext archive_free archive_write archive_read)
 
 add_boost()
 add_hdf5()
