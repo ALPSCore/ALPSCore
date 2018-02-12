@@ -17,5 +17,6 @@
 #include <alps/hdf5/valarray.hpp>
 #include <alps/hdf5/shared_array.hpp>
 #include <alps/hdf5/boost_optional.hpp>
+#include <alps/hdf5/tensor.hpp>
 
 #endif //ALPS_HDF5_HPP

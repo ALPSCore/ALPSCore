@@ -422,7 +422,6 @@ namespace alps {
           if(new_size != size()) {
             throw std::invalid_argument("Wrong size. Can't reshape tensor.");
           }
-          storage_.data().resize(new_size);
           shape_ = shape;
           fill_acc_sizes();
         }
