@@ -36,7 +36,7 @@ function(alpscore_config_main_)
     endif()
 
     # Create a list of known components
-    set(known_components_ utilities hdf5 accumulators params mc gf alea)
+    set(known_components_ @ALPS_KNOWN_COMPONENTS@)
 
     # if no components required - search for everything
     if (NOT ALPSCore_FIND_COMPONENTS)
@@ -82,6 +82,7 @@ function(alpscore_config_main_)
     endif()
     
     set(ALPSCore_LIBRARIES ${ALPSCore_LIBRARIES} PARENT_SCOPE)
+    set(ALPSCore_COMPONENTS ${ALPSCore_FIND_COMPONENTS} PARENT_SCOPE)
 endfunction(alpscore_config_main_)
 
 
