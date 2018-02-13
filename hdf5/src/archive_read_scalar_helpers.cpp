@@ -6,7 +6,6 @@
 
 #include <alps/hdf5/archive.hpp>
 #include <alps/utilities/stacktrace.hpp>
-#include <alps/utilities/type_wrapper.hpp>
 #include <alps/utilities/cast.hpp>
 
 #include "common.hpp"
@@ -22,7 +21,7 @@ namespace alps {
             template<typename T, typename U, typename... UTail>
             inline bool hdf5_read_scalar_data_helper_impl(T & value, data_type const &data_id, type_type const &native_id, std::true_type) {
                 if (check_error(
-                    H5Tequal(type_type(H5Tcopy(native_id)), type_type(get_native_type(typename alps::detail::type_wrapper<U>::type())))
+                    H5Tequal(type_type(H5Tcopy(native_id)), type_type(get_native_type(U())))
                 ) > 0) {
                     U u;
                     check_error(H5Dread(data_id, native_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &u));
@@ -53,7 +52,7 @@ namespace alps {
             template<typename T, typename U, typename... UTail>
             inline bool hdf5_read_scalar_attribute_helper_impl(T & value, attribute_type const &attribute_id, type_type const &native_id, std::true_type) {
                 if (check_error(
-                    H5Tequal(type_type(H5Tcopy(native_id)), type_type(get_native_type(typename alps::detail::type_wrapper< U >::type())))
+                    H5Tequal(type_type(H5Tcopy(native_id)), type_type(get_native_type(U())))
                 ) > 0) {
                     U u;
                     check_error(H5Aread(attribute_id, native_id, &u));

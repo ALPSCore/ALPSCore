@@ -57,6 +57,8 @@ namespace alps {
         ALPS_FOREACH_NATIVE_HDF5_TYPE(ALPS_HDF5_IS_NATIVE_TYPE_CALLER)
 #undef ALPS_HDF5_IS_NATIVE_TYPE_CALLER
 
+#define ONLY_NATIVE(T,R) typename std::enable_if<is_native_type<T>::value, R>::type
+#define ONLY_NOT_NATIVE(T,R) typename std::enable_if<!is_native_type<T>::value, R>::type
 
         namespace detail {
             struct archivecontext;
@@ -85,7 +87,7 @@ namespace alps {
 
                 template<typename T> archive_proxy & operator=(T const & value);
                 template<typename T> archive_proxy & operator<<(T const & value);
-                template <typename T> archive_proxy & operator>>(T & value);
+                template<typename T> archive_proxy & operator>>(T & value);
 
                 std::string path_;
                 A ar_;
@@ -165,48 +167,42 @@ namespace alps {
 
                 detail::archive_proxy<archive> operator[](std::string const & path);
 
-                template<typename T> void read(
+                template<typename T> auto read(
                       std::string path
                     , T *
                     , std::vector<std::size_t>
                     , std::vector<std::size_t> = std::vector<std::size_t>()
-                ) const {
+                ) const -> ONLY_NOT_NATIVE(T, void) {
                     throw std::logic_error("Invalid type on path: " + path + ALPS_STACKTRACE);
                 }
 
-                template<typename T> void write(
+                template<typename T> auto write(
                       std::string path
                     , T const * value
                     , std::vector<std::size_t> size
                     , std::vector<std::size_t> chunk = std::vector<std::size_t>()
                     , std::vector<std::size_t> offset = std::vector<std::size_t>()
-                ) const {
+                ) const -> ONLY_NOT_NATIVE(T, void) {
                     throw std::logic_error("Invalid type on path: " + path + ALPS_STACKTRACE);
                 }
 
-                #define ALPS_HDF5_DEFINE_API(T)                                                                                                                        \
-                    void read(std::string path, T & value) const;                                                                                                      \
-                    void read(                                                                                                                                         \
-                          std::string path                                                                                                                             \
-                        , T * value                                                                                                                                    \
-                        , std::vector<std::size_t> chunk                                                                                                               \
-                        , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                 \
-                    ) const;                                                                                                                                           \
-                                                                                                                                                                       \
-                    void write(std::string path, T value) const;                                                                                                       \
-                    void write(                                                                                                                                        \
-                          std::string path                                                                                                                             \
-                        , T const * value, std::vector<std::size_t> size                                                                                               \
-                        , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                  \
-                        , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                 \
-                    ) const;
-                ALPS_FOREACH_NATIVE_HDF5_TYPE(ALPS_HDF5_DEFINE_API)
-                #undef ALPS_HDF5_DEFINE_API
+                template<typename T> auto read(std::string path, T & value) const -> ONLY_NATIVE(T, void);
 
-                #define ALPS_HDF5_IS_DATATYPE_IMPL_DECL(T)                                                                                                             \
-                    bool is_datatype_impl(std::string path, T) const;
-                ALPS_FOREACH_NATIVE_HDF5_TYPE(ALPS_HDF5_IS_DATATYPE_IMPL_DECL)
-                #undef ALPS_HDF5_IS_DATATYPE_IMPL_DECL
+                template<typename T> auto read(std::string path
+                                             , T * value
+                                             , std::vector<std::size_t> chunk
+                                             , std::vector<std::size_t> offset = std::vector<std::size_t>()
+                    ) const -> ONLY_NATIVE(T, void);
+
+                template<typename T> auto write(std::string path, T value) const -> ONLY_NATIVE(T, void);
+
+                template<typename T> auto write(std::string path
+                                              , T const * value, std::vector<std::size_t> size
+                                              , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+                                              , std::vector<std::size_t> offset = std::vector<std::size_t>()
+                    ) const -> ONLY_NATIVE(T, void);
+
+                template<typename T> auto is_datatype_impl(std::string path, T) const -> ONLY_NATIVE(T, bool);
 
             private:
 
@@ -335,30 +331,30 @@ namespace alps {
 
         #define ALPS_HDF5_DEFINE_FREE_FUNCTIONS(T)                                                                                                                     \
             template<> struct is_continuous< T >                                                                                                                       \
-                : public std::true_type                                                                                                                              \
+                : public std::true_type                                                                                                                                \
             {};                                                                                                                                                        \
             template<> struct is_continuous< T const >                                                                                                                 \
-                : public std::true_type                                                                                                                              \
+                : public std::true_type                                                                                                                                \
             {};                                                                                                                                                        \
                                                                                                                                                                        \
             namespace detail {                                                                                                                                         \
-                template<> struct is_vectorizable< T > {                                                                                                     \
+                template<> struct is_vectorizable< T > {                                                                                                               \
                     static bool apply(T const & value);                                                                                                                \
                 };                                                                                                                                                     \
-                template<> struct is_vectorizable< T const > {                                                                                               \
+                template<> struct is_vectorizable< T const > {                                                                                                         \
                     static bool apply(T & value);                                                                                                                      \
                 };                                                                                                                                                     \
                                                                                                                                                                        \
-                template<> struct get_pointer< T > {                                                                                                         \
+                template<> struct get_pointer< T > {                                                                                                                   \
                     static alps::hdf5::scalar_type< T >::type * apply( T & value);                                                                                     \
                 };                                                                                                                                                     \
                                                                                                                                                                        \
-                template<> struct get_pointer< T const > {                                                                                                   \
+                template<> struct get_pointer< T const > {                                                                                                             \
                     static alps::hdf5::scalar_type< T >::type const * apply( T const & value);                                                                         \
                 };                                                                                                                                                     \
             }                                                                                                                                                          \
                                                                                                                                                                        \
-            void save(                                                                                                                                       \
+            void save(                                                                                                                                                 \
                   archive & ar                                                                                                                                         \
                 , std::string const & path                                                                                                                             \
                 , T const & value                                                                                                                                      \
@@ -367,7 +363,7 @@ namespace alps {
                 , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                         \
             );                                                                                                                                                         \
                                                                                                                                                                        \
-            void load(                                                                                                                                       \
+            void load(                                                                                                                                                 \
                   archive & ar                                                                                                                                         \
                 , std::string const & path                                                                                                                             \
                 , T & value                                                                                                                                            \

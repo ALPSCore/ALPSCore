@@ -29,7 +29,8 @@ add_this_package(archive
                  archive_write
                  archive_read
                  archive_read_scalar_helpers
-                 archive_read_vector_helpers)
+                 archive_read_vector_data_helper
+                 archive_read_vector_attribute_helper)
 
 add_boost()
 add_hdf5()

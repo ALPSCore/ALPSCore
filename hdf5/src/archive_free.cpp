@@ -36,8 +36,7 @@ namespace alps {
             }
         }
 
-
-              #define ALPS_HDF5_IMPLEMENT_FREE_FUNCTIONS(T)                                                                                                                   \
+        #define ALPS_HDF5_IMPLEMENT_FREE_FUNCTIONS(T)                                                                                                                   \
             namespace detail {                                                                                                                                          \
                 alps::hdf5::scalar_type< T >::type * get_pointer< T >::apply( T & value) {                                                                              \
                     return &value;                                                                                                                                      \
@@ -47,22 +46,22 @@ namespace alps {
                     return &value;                                                                                                                                      \
                 }                                                                                                                                                       \
                                                                                                                                                                         \
-                bool is_vectorizable< T >::apply(T const &) {                                                                                                     \
+                bool is_vectorizable< T >::apply(T const &) {                                                                                                           \
                     return true;                                                                                                                                        \
                 }                                                                                                                                                       \
-                bool is_vectorizable< T const >::apply(T &) {                                                                                                     \
+                bool is_vectorizable< T const >::apply(T &) {                                                                                                           \
                     return true;                                                                                                                                        \
                 }                                                                                                                                                       \
             }                                                                                                                                                           \
                                                                                                                                                                         \
             void save(                                                                                                                                                  \
-                    archive & ar                                                                                                                                        \
+                  archive & ar                                                                                                                                        \
                 , std::string const & path                                                                                                                              \
                 , T const & value                                                                                                                                       \
                 , std::vector<std::size_t> size                                                                                                                         \
                 , std::vector<std::size_t> chunk                                                                                                                        \
                 , std::vector<std::size_t> offset                                                                                                                       \
-            ){                                                                                                                                                          \
+            ) {                                                                                                                                                          \
                 if (!size.size())                                                                                                                                       \
                     ar.write(path, value);                                                                                                                              \
                 else                                                                                                                                                    \
@@ -81,6 +80,7 @@ namespace alps {
                 else                                                                                                                                                    \
                     ar.read(path, get_pointer(value), chunk, offset);                                                                                                   \
             }
+
         ALPS_FOREACH_NATIVE_HDF5_TYPE(ALPS_HDF5_IMPLEMENT_FREE_FUNCTIONS)
         #undef ALPS_HDF5_IMPLEMENT_FREE_FUNCTIONS
 
@@ -99,30 +99,29 @@ namespace alps {
             };
         }
 
-        #define ALPS_HDF5_IS_DATATYPE_IMPL_IMPL(T)                                                                                                                      \
-            bool archive::is_datatype_impl(std::string path, T) const {                                                                                                 \
-                ALPS_HDF5_FAKE_THREADSAFETY                                                                                                                             \
-                hid_t type_id;                                                                                                                                          \
-                path = complete_path(path);                                                                                                                             \
-                if (context_ == NULL)                                                                                                                                   \
-                    throw archive_closed("the archive is closed" + ALPS_STACKTRACE);                                                                                    \
-                if (path.find_last_of('@') != std::string::npos && is_attribute(path)) {                                                                                \
-                    detail::attribute_type attr_id(detail::open_attribute(*this, context_->file_id_, path));                                                            \
-                    type_id = H5Aget_type(attr_id);                                                                                                                     \
-                } else if (path.find_last_of('@') == std::string::npos && is_data(path)) {                                                                              \
-                    detail::data_type data_id(H5Dopen2(context_->file_id_, path.c_str(), H5P_DEFAULT));                                                                 \
-                    type_id = H5Dget_type(data_id);                                                                                                                     \
-                } else                                                                                                                                                  \
-                    throw path_not_found("no valid path: " + path + ALPS_STACKTRACE);                                                                                   \
-                detail::type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND));                                                                               \
-                detail::check_type(type_id);                                                                                                                            \
-                {                                                                                                                                                       \
-                    ALPS_HDF5_LOCK_MUTEX                                                                                                                                \
-                    return detail::is_datatype_impl_compare< T >::apply(native_id);                                                                                     \
-                }                                                                                                                                                       \
+        template<typename T>
+        auto archive::is_datatype_impl(std::string path, T) const -> ONLY_NATIVE(T, bool) {
+            ALPS_HDF5_FAKE_THREADSAFETY
+            hid_t type_id;
+            path = complete_path(path);
+            if (context_ == NULL)
+                throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
+            if (path.find_last_of('@') != std::string::npos && is_attribute(path)) {
+                detail::attribute_type attr_id(detail::open_attribute(*this, context_->file_id_, path));
+                type_id = H5Aget_type(attr_id);
+            } else if (path.find_last_of('@') == std::string::npos && is_data(path)) {
+                detail::data_type data_id(H5Dopen2(context_->file_id_, path.c_str(), H5P_DEFAULT));
+                type_id = H5Dget_type(data_id);
+            } else
+                throw path_not_found("no valid path: " + path + ALPS_STACKTRACE);
+            detail::type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND));
+            detail::check_type(type_id);
+            {
+                ALPS_HDF5_LOCK_MUTEX
+                return detail::is_datatype_impl_compare< T >::apply(native_id);
             }
+        }
+        #define ALPS_HDF5_IS_DATATYPE_IMPL_IMPL(T) template bool archive::is_datatype_impl<T>(std::string, T) const;
         ALPS_FOREACH_NATIVE_HDF5_TYPE(ALPS_HDF5_IS_DATATYPE_IMPL_IMPL)
-        #undef ALPS_HDF5_IS_DATATYPE_IMPL_IMPL
-
     }
 }
