@@ -20,7 +20,13 @@ namespace alps { namespace alea {
     template <typename T> class batch_result;
 
     template <typename T>
-    void serialize(serializer &, const autocorr_result<T> &);
+    void serialize(serializer &, const std::string &, const autocorr_result<T> &);
+
+    template <typename T>
+    void deserialize(deserializer &, const std::string &, autocorr_result<T> &);
+
+    template <typename T>
+    std::ostream &operator<<(std::ostream &, const autocorr_result<T> &);
 }}
 
 // Actual declarations
@@ -89,6 +95,9 @@ public:
 
     /** Add scalar value to accumulator */
     autocorr_acc &operator<<(T o) { return *this << value_adapter<T>(o); }
+
+    /** Merge partial result into accumulator */
+    autocorr_acc &operator<<(const autocorr_result<T> &result);
 
     /** Returns sample size, i.e., number of accumulated data points */
     size_t count() const { return count_; }
@@ -172,7 +181,13 @@ public:
     void reduce(const reducer &r) { reduce(r, true, true); }
 
     /** Convert result to a permanent format (write to disk etc.) */
-    friend void serialize<>(serializer &, const autocorr_result &);
+    friend void serialize<>(serializer &, const std::string &, const autocorr_result &);
+
+    /** Convert result to a permanent format (write to disk etc.) */
+    friend void deserialize<>(deserializer &, const std::string &, autocorr_result &);
+
+    /** Write some info about the result to a stream */
+    friend std::ostream &operator<< <>(std::ostream &, const autocorr_result &);
 
     size_t find_level(size_t min_samples) const;
 

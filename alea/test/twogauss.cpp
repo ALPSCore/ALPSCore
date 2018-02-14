@@ -5,6 +5,7 @@
 #include <alps/alea/batch.hpp>
 
 #include <alps/alea/hdf5.hpp>
+#include <alps/alea/util/serializer.hpp>
 
 #include "gtest/gtest.h"
 #include "dataset.hpp"
@@ -92,7 +93,43 @@ public:
         alps::hdf5::archive ar("twogauss.hdf5", "w");
         alps::alea::hdf5_serializer ser(ar, "");
         result_type res = this->acc().finalize();
-        alps::alea::serialize(ser, res);
+        alps::alea::serialize(ser, "", res);
+    }
+
+    void test_sederialize()
+    {
+        {
+            alps::hdf5::archive ar("twogauss.hdf5", "w");
+            alps::alea::hdf5_serializer iser(ar, "");
+            alps::alea::util::debug_serializer ser(std::cerr, iser);
+            result_type res = this->acc().finalize();
+            alps::alea::serialize(ser, "", res);
+        }
+
+        {
+            alps::hdf5::archive ar("twogauss.hdf5", "r");
+            alps::alea::hdf5_serializer ser(ar, "");
+            result_type res2;
+
+            alps::alea::deserialize(ser, "", res2);
+            std::vector<value_type> obs_mean = res2.mean();
+            EXPECT_NEAR(twogauss_mean[0], obs_mean[0], 1e-6);
+            EXPECT_NEAR(twogauss_mean[1], obs_mean[1], 1e-6);
+        }
+    }
+
+    void test_merge()
+    {
+        result_type res = this->acc().result();
+        this->acc() << res;
+        res = this->acc().finalize();
+
+        std::cerr << alps::alea::PRINT_TERSE << res << "\n";
+        std::vector<value_type> obs_mean = res.mean();
+        EXPECT_NEAR(twogauss_mean[0], obs_mean[0], 1e-6);
+        EXPECT_NEAR(twogauss_mean[1], obs_mean[1], 1e-6);
+
+        std::cerr << alps::alea::PRINT_VERBOSE << res << "\n";
     }
 };
 
@@ -113,6 +150,10 @@ TYPED_TEST(twogauss_mean_case, test_finalize) { this->test_finalize(); }
 TYPED_TEST(twogauss_mean_case, test_lifecycle) { this->test_lifecycle(); }
 
 TYPED_TEST(twogauss_mean_case, test_serialize) { this->test_serialize(); }
+
+TYPED_TEST(twogauss_mean_case, test_sederialize) { this->test_sederialize(); }
+
+TYPED_TEST(twogauss_mean_case, test_merge) { this->test_merge(); }
 
 // VARIANCE
 

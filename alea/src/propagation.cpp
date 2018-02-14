@@ -13,7 +13,7 @@ typename eigen<T>::matrix jacobian(const transformer<T> &f, column<T> x, double 
     typename eigen<T>::matrix result(out_size, out_size);
     for (size_t j = 0; j != in_size; ++j) {
         x(j) += dx;
-        result.col(j) = typename eigen<T>::col(f(x));   // FIXME
+        result.col(j) = f(x);
         x(j) -= dx;
     }
     result.colwise() -= f(x);
@@ -44,7 +44,7 @@ batch_data<T> jackknife(const batch_data<T> &in, const transformer<T> &tf)
     for (size_t i = 0; i != in.num_batches(); ++i) {
         leaveout = (sum_batch - in.batch().col(i))
                                     / (sum_count - in.count()(i));
-        res.batch().col(i) = typename eigen<T>::col(tf(leaveout));
+        res.batch().col(i) = tf(leaveout);
     }
 
     // Sure this is colwise?

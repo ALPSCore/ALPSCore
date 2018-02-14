@@ -1,7 +1,9 @@
 #include <alps/alea/variance.hpp>
 #include <alps/alea/util.hpp>
+#include <alps/alea/serialize.hpp>
 
 #include <alps/alea/internal/util.hpp>
+#include <alps/alea/internal/format.hpp>
 
 namespace alps { namespace alea {
 
@@ -81,11 +83,30 @@ void var_acc<T,Str>::add(const computed<T> &source, size_t count,
                          var_acc<T,Str> *cascade)
 {
     internal::check_valid(*this);
-    source.add_to(sink<T>(current_.sum().data(), current_.size()));
+    source.add_to(view<T>(current_.sum().data(), current_.size()));
     current_.count() += count;
 
     if (current_.is_full())
         add_bundle(cascade);
+}
+
+template <typename T, typename Str>
+var_acc<T,Str> &var_acc<T,Str>::operator<<(const var_result<T,Str> &other)
+{
+    internal::check_valid(*this);
+    if (size() != other.size())
+        throw size_mismatch();
+
+    // NOTE partial sums are unchanged
+    // HACK we need this for "outwardly constant" manipulation
+    var_data<T,Str> &other_store = const_cast<var_data<T,Str> &>(other.store());
+    other_store.convert_to_sum();
+    store_->data() += other_store.data();
+    store_->data2() += other_store.data2();
+    store_->count() += other_store.count();
+    store_->count2() += other_store.count2();
+    other_store.convert_to_mean();
+    return *this;
 }
 
 template <typename T, typename Str>
@@ -171,10 +192,10 @@ void var_result<T,Str>::reduce(const reducer &r, bool pre_commit, bool post_comm
     internal::check_valid(*this);
     if (pre_commit) {
         store_->convert_to_sum();
-        r.reduce(sink<T>(store_->data().data(), store_->data().rows()));
-        r.reduce(sink<var_type>(store_->data2().data(), store_->data2().rows()));
-        r.reduce(sink<double>(&store_->count(), 1));
-        r.reduce(sink<double>(&store_->count2(), 1));
+        r.reduce(view<T>(store_->data().data(), store_->data().rows()));
+        r.reduce(view<var_type>(store_->data2().data(), store_->data2().rows()));
+        r.reduce(view<double>(&store_->count(), 1));
+        r.reduce(view<double>(&store_->count2(), 1));
     }
     if (pre_commit && post_commit) {
         r.commit();
@@ -194,17 +215,67 @@ template class var_result<std::complex<double>, elliptic_var>;
 
 
 template <typename T, typename Str>
-void serialize(serializer &s, const var_result<T,Str> &self)
+void serialize(serializer &s, const std::string &key, const var_result<T,Str> &self)
 {
     internal::check_valid(self);
-    s.write("count", make_adapter(self.count()));
-    s.write("observations", make_adapter(self.observations()));
-    s.write("mean/value", make_adapter(self.mean()));
-    s.write("mean/error", make_adapter(self.stderror()));
+    internal::serializer_sentry group(s, key);
+
+    serialize(s, "@size", self.store_->data_.size());
+    serialize(s, "count", self.store_->count_);
+    serialize(s, "count2", self.store_->count2_);
+    s.enter("mean");
+    serialize(s, "value", self.store_->data_);
+    serialize(s, "error", self.stderror());   // TODO temporary
+    s.exit();
+    serialize(s, "var", self.store_->data2_);
 }
 
-template void serialize(serializer &, const var_result<double, circular_var> &);
-template void serialize(serializer &, const var_result<std::complex<double>, circular_var> &);
-template void serialize(serializer &, const var_result<std::complex<double>, elliptic_var> &);
+template <typename T, typename Str>
+void deserialize(deserializer &s, const std::string &key, var_result<T,Str> &self)
+{
+    typedef typename var_result<T,Str>::var_type var_type;
+    internal::deserializer_sentry group(s, key);
+
+    // first deserialize the fundamentals and make sure that the target fits
+    size_t new_size;
+    deserialize(s, "@size", new_size);
+    if (!self.valid() || self.size() != new_size)
+        self.store_.reset(new var_data<T,Str>(new_size));
+
+    // deserialize data
+    deserialize(s, "count", self.store_->count_);
+    deserialize(s, "count2", self.store_->count2_);
+    s.enter("mean");
+    deserialize(s, "value", self.store_->data_);
+    s.read("error", ndview<var_type>(nullptr, &new_size, 1)); // discard
+    s.exit();
+    deserialize(s, "var", self.store_->data2_);
+}
+
+template void serialize(serializer &, const std::string &key, const var_result<double, circular_var> &);
+template void serialize(serializer &, const std::string &key, const var_result<std::complex<double>, circular_var> &);
+template void serialize(serializer &, const std::string &key, const var_result<std::complex<double>, elliptic_var> &);
+
+template void deserialize(deserializer &, const std::string &key, var_result<double, circular_var> &);
+template void deserialize(deserializer &, const std::string &key, var_result<std::complex<double>, circular_var> &);
+template void deserialize(deserializer &, const std::string &key, var_result<std::complex<double>, elliptic_var> &);
+
+
+template <typename T, typename Str>
+std::ostream &operator<<(std::ostream &str, const var_result<T,Str> &self)
+{
+    internal::check_valid(self);
+    internal::format_sentry sentry(str);
+    verbosity verb = internal::get_format(str, PRINT_TERSE);
+
+    if (verb == PRINT_VERBOSE)
+        str << "<X> = ";
+    str << self.mean() << " +- " << self.stderror();
+    return str;
+}
+
+template std::ostream &operator<<(std::ostream &, const var_result<double, circular_var> &);
+template std::ostream &operator<<(std::ostream &, const var_result<std::complex<double>, circular_var> &);
+template std::ostream &operator<<(std::ostream &, const var_result<std::complex<double>, elliptic_var> &);
 
 }}

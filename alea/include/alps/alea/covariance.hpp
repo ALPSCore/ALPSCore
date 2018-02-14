@@ -24,7 +24,13 @@ namespace alps { namespace alea {
     template <typename T> class batch_result;
 
     template <typename T, typename Str>
-    void serialize(serializer &, const cov_result<T,Str> &);
+    void serialize(serializer &, const std::string &, const cov_result<T,Str> &);
+
+    template <typename T, typename Str>
+    void deserialize(deserializer &, const std::string &, cov_result<T,Str> &);
+
+    template <typename T, typename Str>
+    std::ostream &operator<<(std::ostream &, const cov_result<T,Str> &);
 }}
 
 // Actual declarations
@@ -84,6 +90,11 @@ private:
     column<T> data_;
     cov_matrix_type data2_;
     double count_, count2_;
+
+    friend class cov_acc<T, Strategy>;
+    friend class cov_result<T, Strategy>;
+    friend void serialize<>(serializer &, const std::string &, const cov_result<T,Strategy> &);
+    friend void deserialize<>(deserializer &, const std::string &, cov_result<T,Strategy> &);
 };
 
 template <typename T, typename Strategy>
@@ -144,6 +155,9 @@ public:
 
     /** Add scalar value to accumulator */
     cov_acc &operator<<(T o) { return *this << value_adapter<T>(o); }
+
+    /** Merge partial result into accumulator */
+    cov_acc &operator<<(const cov_result<T,Strategy> &result);
 
     /** Returns sample size, i.e., number of accumulated data points */
     size_t count() const { return store_->count(); }
@@ -219,6 +233,9 @@ public:
     /** Returns sample size, i.e., number of accumulated data points */
     size_t count() const { return store_->count(); }
 
+    /** Returns sum of squared sample sizes */
+    size_t count2() const { return store_->count2(); }
+
     /** Returns average batch size */
     double batch_size() const { return store_->count2() / store_->count(); }
 
@@ -228,11 +245,15 @@ public:
     /** Returns sample mean */
     const column<T> &mean() const { return store_->data(); }
 
+    // TODO: this is essentially a weighted variance thing.  The weighted
+    // variance differs from the pooled on by a factor.  We should probably
+    // split the two things.
+
     /** Returns bias-corrected sample variance */
-    column<var_type> var() const { return store_->data2().diagonal().real(); }
+    column<var_type> var() const { return batch_size() * store_->data2().diagonal().real(); }
 
     /** Returns bias-corrected sample covariance matrix  */
-    const typename eigen<cov_type>::matrix &cov() const { return store_->data2(); }
+    typename eigen<cov_type>::matrix cov() const { return batch_size() * store_->data2(); }
 
     /** Returns bias-corrected standard error of the mean */
     column<var_type> stderror() const;
@@ -247,7 +268,13 @@ public:
     void reduce(const reducer &r) { reduce(r, true, true); }
 
     /** Convert result to a permanent format (write to disk etc.) */
-    friend void serialize<>(serializer &, const cov_result &);
+    friend void serialize<>(serializer &, const std::string &, const cov_result &);
+
+    /** Convert result from a permanent format (write to disk etc.) */
+    friend void deserialize<>(deserializer &, const std::string &, cov_result &);
+
+    /** Write some info about the result to a stream */
+    friend std::ostream &operator<< <>(std::ostream &, const cov_result &);
 
 protected:
     void reduce(const reducer &, bool do_pre_commit, bool do_post_commit);

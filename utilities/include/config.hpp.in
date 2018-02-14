@@ -9,6 +9,15 @@
 // ALPSCore version (defined since 1.0.0.1)
 #cmakedefine ALPSCORE_VERSION ${ALPSCORE_VERSION}
 
+// Available ALPSCore components
+#cmakedefine ALPS_HAVE_ALPS_UTILITIES
+#cmakedefine ALPS_HAVE_ALPS_HDF5
+#cmakedefine ALPS_HAVE_ALPS_ACCUMULATORS
+#cmakedefine ALPS_HAVE_ALPS_PARAMS
+#cmakedefine ALPS_HAVE_ALPS_MC
+#cmakedefine ALPS_HAVE_ALPS_GF
+#cmakedefine ALPS_HAVE_ALPS_ALEA
+
 //
 // C headers
 //
