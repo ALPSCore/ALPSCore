@@ -16,7 +16,7 @@
 namespace alps { namespace alea {
 
 class result;
-void serialize(serializer &, const result &);
+void serialize(serializer &, const std::string &, const result &);
 
 }}
 
