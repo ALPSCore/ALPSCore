@@ -93,18 +93,19 @@ struct serialize_visitor
 {
     typedef bool result_type;
 
-    serialize_visitor(serializer &s) : s_(s) { }
+    serialize_visitor(serializer &s, const std::string &key) : s_(s), key_(key) { }
 
     // default case
     template <typename Res>
     bool operator() (const Res &res) const
     {
-        serialize(s_, res);
+        serialize(s_, key_, res);
         return false;     // the visitor mechanism does not allow void returns
     }
 
 private:
     serializer &s_;
+    const std::string &key_;
 };
 
 bool result::valid() const
@@ -146,9 +147,9 @@ template eigen<double>::matrix result::cov<double, circular_var>() const;
 template eigen<std::complex<double> >::matrix result::cov<std::complex<double>, circular_var>() const;
 template eigen<complex_op<double> >::matrix result::cov<std::complex<double>, elliptic_var>() const;
 
-void serialize(serializer &s, const result &result)
+void serialize(serializer &s, const std::string &key, const result &result)
 {
-    boost::apply_visitor(serialize_visitor(s), result.res_);
+    boost::apply_visitor(serialize_visitor(s, key), result.res_);
 }
 
 }}

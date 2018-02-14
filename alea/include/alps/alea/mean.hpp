@@ -19,7 +19,13 @@ namespace alps { namespace alea {
     template <typename T> class mean_result;
 
     template <typename T>
-    void serialize(serializer &, const mean_result<T> &);
+    void serialize(serializer &, const std::string &, const mean_result<T> &);
+
+    template <typename T>
+    void deserialize(deserializer &, const std::string &, mean_result<T> &);
+
+    template <typename T>
+    std::ostream &operator<<(std::ostream &, const mean_result<T> &);
 }}
 
 // Actual declarations
@@ -67,6 +73,11 @@ public:
 private:
     column<T> data_;
     size_t count_;
+
+    friend class mean_acc<T>;
+    friend class mean_result<T>;
+    friend void serialize<>(serializer &, const std::string &, const mean_result<T> &);
+    friend void deserialize<>(deserializer &, const std::string &, mean_result<T> &);
 };
 
 template <typename T>
@@ -114,6 +125,9 @@ public:
 
     /** Add scalar value to accumulator */
     mean_acc &operator<<(T o) { return *this << value_adapter<T>(o); }
+
+    /** Merge partial result into accumulator */
+    mean_acc &operator<<(const mean_result<T> &result);
 
     /** Returns sample size, i.e., number of accumulated data points */
     size_t count() const { return store_->count(); }
@@ -187,7 +201,13 @@ public:
     void reduce(const reducer &r) { return reduce(r, true, true); }
 
     /** Convert result to a permanent format (write to disk etc.) */
-    friend void serialize<>(serializer &, const mean_result &);
+    friend void serialize<>(serializer &, const std::string &, const mean_result &);
+
+    /** Reresult to a permanent format (write to disk etc.) */
+    friend void deserialize<>(deserializer &, const std::string &, mean_result &);
+
+    /** Write some info about the result to a stream */
+    friend std::ostream &operator<< <>(std::ostream &, const mean_result &);
 
 protected:
     void reduce(const reducer &, bool do_pre_commit, bool do_post_commit);

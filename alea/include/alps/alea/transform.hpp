@@ -61,6 +61,7 @@ typename std::enable_if<traits<InResult>::HAVE_COV, cov_result<T> >::type transf
     res.store().data() = tf(in.mean());
     res.store().data2() = jac * in.cov() * jac.adjoint();
     res.store().count() = in.count();
+    res.store().count2() = in.count2();
     return res;
 }
 
@@ -86,6 +87,7 @@ typename std::enable_if<!traits<InResult>::HAVE_COV, cov_result<T>>::type transf
     res.store().data() = tf(in.mean());
     res.store().data2() = jac * in.var().asDiagonal() * jac.adjoint();
     res.store().count() = in.count();
+    res.store().count2() = in.count2();
     return res;
 }
 

@@ -47,7 +47,7 @@ struct mpi_reducer
             throw std::runtime_error("Unable to use in-place communication");
     }
 
-    reducer_setup get_setup() const
+    reducer_setup get_setup() const override
     {
         reducer_setup mpi_setup = { (size_t) comm_.rank(),
                                     (size_t) comm_.size(),
@@ -55,11 +55,18 @@ struct mpi_reducer
         return mpi_setup;
     }
 
-    void reduce(sink<double> data) const { inplace_reduce(data); }
+    long get_max(long data) const override
+    {
+        mpi::checked(MPI_Allreduce(MPI_IN_PLACE, &data, 1, MPI_LONG,
+                                   MPI_MAX, comm_));
+        return data;
+    }
 
-    void reduce(sink<long> data) const { inplace_reduce(data); }
+    void reduce(view<double> data) const override { inplace_reduce(data); }
 
-    void commit() const { }
+    void reduce(view<long> data) const override { inplace_reduce(data); }
+
+    void commit() const override { }
 
     const mpi::communicator &comm() const { return comm_; }
 
@@ -69,7 +76,7 @@ struct mpi_reducer
 
 protected:
     template <typename T>
-    void inplace_reduce(sink<T> data) const
+    void inplace_reduce(view<T> data) const
     {
         // NO-OP in the case of empty data (strange though)
         if (data.size() == 0)

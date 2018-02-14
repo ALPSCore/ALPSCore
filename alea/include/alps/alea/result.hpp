@@ -66,7 +66,7 @@ public:
     typename eigen<typename bind<Str,T>::cov_type>::matrix cov() const;
 
     /** Convert result to a permanent format (write to disk etc.) */
-    friend void serialize(serializer &, const result &);
+    friend void serialize(serializer &, const std::string &, const result &);
 
 private:
     typedef boost::variant<

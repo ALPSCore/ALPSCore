@@ -7,7 +7,7 @@ static const double twogauss_var[2] = { 0.01020943,  0.06409987 };
 static const double twogauss_stderr[2] = { 0.00580469,  0.01454478 };
 static const size_t twogauss_count = 303;
 
-static const double twogauss_block40_var[2] = { 0.000353196237,  0.001940527539 };
+static const double twogauss_block40_var[2] = { 0.0136720748288,  0.0751169884711 };
 static const double twogauss_block40_stderr[2] = { 0.006717317855,  0.015745185074 };
 static const double twogauss_block40_count = 303.*303/(7.*40*40 + 23*23);
 

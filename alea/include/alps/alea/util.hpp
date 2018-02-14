@@ -49,4 +49,14 @@ struct eigen
     typedef typename Eigen::Map<const matrix, Eigen::Unaligned> const_matrix_map;
 };
 
+/** Verbosity for printing */
+enum verbosity {
+    PRINT_TERSE,
+    PRINT_VERBOSE,
+    PRINT_DEBUG
+};
+
+/** Changes the verbosity level for printing */
+std::ostream &operator<<(std::ostream &stream, verbosity verb);
+
 }}

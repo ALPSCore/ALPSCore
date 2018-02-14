@@ -23,6 +23,49 @@ TEST(reducer, setup)
     EXPECT_EQ(comm.rank() == 0, setup.have_result);
 }
 
+TEST(reducer, get_max)
+{
+    alps::mpi::communicator comm;
+    alps::alea::mpi_reducer red(comm, 0);
+    alps::alea::reducer_setup setup = red.get_setup();
+
+    EXPECT_EQ(setup.count, (unsigned)red.get_max(setup.pos) + 1);
+}
+
+TEST(autocorr, asymmetry)
+{
+    alps::alea::autocorr_acc<double> acc_(2);
+    alps::alea::mpi_reducer red_(alps::mpi::communicator(), 0);
+    alps::alea::reducer_setup setup = red_.get_setup();
+
+    if (setup.count < 2)
+        return;     // nothing
+
+    EXPECT_LT(setup.count, 32u);
+    size_t mask = setup.pos == 0 ? (1 << (setup.count - 1)) - 1 : (1 << setup.pos) - 1;
+    size_t sel = setup.pos == 0 ? 0 : 1 << (setup.pos - 1);
+
+    std::vector<double> curr(2);
+    for (size_t i = 0; i != twogauss_count; ++i) {
+        if ((i & mask) != sel)
+            continue;
+        //std::cerr << "T " << setup.pos << " " << i << std::endl;
+
+        std::copy(twogauss_data[i], twogauss_data[i+1], curr.begin());
+        acc_ << curr;
+    }
+
+    alps::alea::autocorr_result<double> result = acc_.result();
+    result.reduce(red_);
+
+    EXPECT_EQ(setup.have_result, result.valid());
+    if (setup.have_result) {
+        std::vector<double> obs_mean = result.mean();
+        EXPECT_NEAR(obs_mean[0], twogauss_mean[0], 1e-6);
+        EXPECT_NEAR(obs_mean[1], twogauss_mean[1], 1e-6);
+    }
+}
+
 template <typename Acc>
 class mpi_twogauss_case
     : public ::testing::Test
@@ -63,7 +106,6 @@ private:
     Acc acc_;
     alps::alea::mpi_reducer red_;
 };
-
 
 typedef ::testing::Types<
       alps::alea::mean_acc<double>

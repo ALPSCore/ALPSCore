@@ -1,6 +1,9 @@
 #include <alps/alea/covariance.hpp>
+#include <alps/alea/serialize.hpp>
+
 #include <alps/alea/internal/outer.hpp>
 #include <alps/alea/internal/util.hpp>
+#include <alps/alea/internal/format.hpp>
 
 namespace alps { namespace alea {
 
@@ -79,11 +82,30 @@ template <typename T, typename Str>
 void cov_acc<T,Str>::add(const computed<value_type> &source, size_t count)
 {
     internal::check_valid(*this);
-    source.add_to(sink<T>(current_.sum().data(), current_.size()));
+    source.add_to(view<T>(current_.sum().data(), current_.size()));
     current_.count() += count;
 
     if (current_.is_full())
         add_bundle();
+}
+
+template <typename T, typename Str>
+cov_acc<T,Str> &cov_acc<T,Str>::operator<<(const cov_result<T,Str> &other)
+{
+    internal::check_valid(*this);
+    if (size() != other.size())
+        throw size_mismatch();
+
+    // NOTE partial sums are unchanged
+    // HACK we need this for "outwardly constant" manipulation
+    cov_data<T,Str> &other_store = const_cast<cov_data<T,Str> &>(other.store());
+    other_store.convert_to_sum();
+    store_->data() += other_store.data();
+    store_->data2() += other_store.data2();
+    store_->count() += other_store.count();
+    store_->count2() += other_store.count2();
+    other_store.convert_to_mean();
+    return *this;
 }
 
 template <typename T, typename Str>
@@ -167,10 +189,10 @@ void cov_result<T,Str>::reduce(const reducer &r, bool pre_commit, bool post_comm
 
     if (pre_commit) {
         store_->convert_to_sum();
-        r.reduce(sink<T>(store_->data().data(), store_->data().rows()));
-        r.reduce(sink<cov_type>(store_->data2().data(), store_->data2().size()));
-        r.reduce(sink<double>(&store_->count(), 1));
-        r.reduce(sink<double>(&store_->count2(), 1));
+        r.reduce(view<T>(store_->data().data(), store_->data().rows()));
+        r.reduce(view<cov_type>(store_->data2().data(), store_->data2().size()));
+        r.reduce(view<double>(&store_->count(), 1));
+        r.reduce(view<double>(&store_->count2(), 1));
     }
     if (pre_commit && post_commit) {
         r.commit();
@@ -190,23 +212,68 @@ template class cov_result<std::complex<double>, elliptic_var>;
 
 
 template <typename T, typename Str>
-void serialize(serializer &s, const cov_result<T,Str> &self)
+void serialize(serializer &s, const std::string &key, const cov_result<T,Str> &self)
 {
     internal::check_valid(self);
-    s.write("count", make_adapter(self.count()));
-    s.write("obs", make_adapter(self.observations()));
-    s.write("mean/value", make_adapter(self.mean()));
-    s.write("mean/error", make_adapter(self.stderror()));
+    internal::serializer_sentry group(s, key);
 
-    // FIXME: flattened
-    typedef typename traits<cov_result<T,Str>>::cov_type cov_type;
-    typename eigen<cov_type>::matrix cov_mat = self.cov();
-    typename eigen<cov_type>::col_map cov_map(cov_mat.data(), cov_mat.size());
-    s.write("cov/value", make_adapter(cov_map));
+    serialize(s, "@size", self.store_->data_.size());
+    serialize(s, "count", self.store_->count_);
+    serialize(s, "count2", self.store_->count2_);
+    s.enter("mean");
+    serialize(s, "value", self.store_->data_);
+    serialize(s, "error", self.stderror());   // TODO temporary
+    s.exit();
+    serialize(s, "cov", self.store_->data2_);
 }
 
-template void serialize(serializer &, const cov_result<double, circular_var> &);
-template void serialize(serializer &, const cov_result<std::complex<double>, circular_var> &);
-template void serialize(serializer &, const cov_result<std::complex<double>, elliptic_var> &);
+template <typename T, typename Str>
+void deserialize(deserializer &s, const std::string &key, cov_result<T,Str> &self)
+{
+    typedef typename cov_result<T,Str>::var_type var_type;
+    internal::deserializer_sentry group(s, key);
+
+    // first deserialize the fundamentals and make sure that the target fits
+    size_t new_size;
+    deserialize(s, "@size", new_size);
+    if (!self.valid() || self.size() != new_size)
+        self.store_.reset(new cov_data<T,Str>(new_size));
+
+    // deserialize data
+    deserialize(s, "count", self.store_->count_);
+    deserialize(s, "count2", self.store_->count2_);
+    s.enter("mean");
+    deserialize(s, "value", self.store_->data_);
+    s.read("error", ndview<var_type>(nullptr, &new_size, 1)); // discard
+    s.exit();
+    deserialize(s, "cov", self.store_->data2_);
+}
+
+template void serialize(serializer &, const std::string &key, const cov_result<double, circular_var> &);
+template void serialize(serializer &, const std::string &key, const cov_result<std::complex<double>, circular_var> &);
+template void serialize(serializer &, const std::string &key, const cov_result<std::complex<double>, elliptic_var> &);
+
+template void deserialize(deserializer &, const std::string &key, cov_result<double, circular_var> &);
+template void deserialize(deserializer &, const std::string &key, cov_result<std::complex<double>, circular_var> &);
+template void deserialize(deserializer &, const std::string &key, cov_result<std::complex<double>, elliptic_var> &);
+
+
+template <typename T, typename Str>
+std::ostream &operator<<(std::ostream &str, const cov_result<T,Str> &self)
+{
+    internal::format_sentry sentry(str);
+    verbosity verb = internal::get_format(str, PRINT_TERSE);
+
+    if (verb == PRINT_VERBOSE)
+        str << "<X> = ";
+    str << self.mean() << " +- " << self.stderror();
+    if (verb == PRINT_VERBOSE)
+        str << "\nSigma = " << self.cov();
+    return str;
+}
+
+template std::ostream &operator<<(std::ostream &, const cov_result<double, circular_var> &);
+template std::ostream &operator<<(std::ostream &, const cov_result<std::complex<double>, circular_var> &);
+template std::ostream &operator<<(std::ostream &, const cov_result<std::complex<double>, elliptic_var> &);
 
 }} /* namespace alps::alea */
