@@ -1,6 +1,6 @@
-# 
+#
 # alps-accumulators cmake configuration script.
-# 
+#
 
 cmake_minimum_required (VERSION 3.1)
 
@@ -24,7 +24,10 @@ if (DocumentationOnly)
   return()
 endif()
 
-add_this_package(accumulator accumulators wrapper_set)
+add_this_package(accumulators
+                 accumulator_wrapper
+                 result_wrapper
+                 wrapper_set)
 
 add_boost()
 add_hdf5()
