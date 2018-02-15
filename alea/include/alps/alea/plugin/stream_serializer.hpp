@@ -22,13 +22,11 @@ namespace alps { namespace alea {
  * stream_serializer
  *
  * This class establishes connection between the ALEA serialization
- * interface and Boost/HPX serialization frameworks. Its instances
- * are used in free functions save() and load() (see below) that are
- * called upon Boost/HPX (de)serialization of ALEA *_result<T> types.
+ * interface and Boost/HPX serialization frameworks. Its instance
+ * is used in free function save() (see below) that is called upon
+ * Boost/HPX serialization of ALEA *_result<T> types.
  */
-template <typename Archive> class stream_serializer
-    : public serializer
-    , public deserializer
+template <typename Archive> class stream_serializer : public serializer
 {
 
 public:
@@ -64,7 +62,52 @@ public:
         do_write(data_view);
     }
 
+protected:
+
+    template <typename T> void do_write(const ndview<const T> &data_view)
+    {
+        const size_t * shape = data_view.shape();
+        size_t size = compute_size(shape, data_view.ndim());
+
+        const T * data = data_view.data();
+        for(long n = 0; n < size; ++n)
+            ar_ << *(data + n);
+    }
+
+    static size_t compute_size(const size_t *shape, size_t ndim)
+    {
+        return std::accumulate(shape, shape + ndim, 1, std::multiplies<size_t>());
+    }
+
+private:
+
+    Archive &ar_;
+};
+
+/**
+ * stream_serializer
+ *
+ * This class establishes connection between the ALEA serialization
+ * interface and Boost/HPX serialization frameworks. Its instance
+ * is used in free function load() (see below) that is called upon
+ * Boost/HPX deserialization of ALEA *_result<T> types.
+ */
+template <typename Archive> class stream_deserializer : public deserializer
+{
+
+public:
+
+    stream_deserializer(Archive &ar) : ar_(ar) {}
+
+    // Common methods
+
+    // Nothing to be done here: streams have no notion of groups
+    void enter(const std::string &) override {}
+    void exit() override {}
+
     // Deserialization methods
+
+    // Key names are irrelevant
 
     std::vector<size_t> get_shape(const std::string &key) override
     {
@@ -94,16 +137,6 @@ public:
 
 protected:
 
-    template <typename T> void do_write(const ndview<const T> &data_view)
-    {
-        const size_t * shape = data_view.shape();
-        size_t size = compute_size(shape, data_view.ndim());
-
-        const T * data = data_view.data();
-        for(long n = 0; n < size; ++n)
-            ar_ << *(data + n);
-    }
-
     template <typename T> void do_read(ndview<T> &data_view)
     {
         const size_t * shape = data_view.shape();
@@ -130,7 +163,6 @@ private:
     Archive &ar_;
 };
 
-
 /**
  * This method will be called by Boost/HPX Serialization libraries
  * when serialization of an ALEA result type is requested.
@@ -149,7 +181,7 @@ save(Archive &ar, const T &r, const unsigned int) {
 template <typename Archive, typename T>
 typename std::enable_if<is_alea_result<T>::value, void>::type
 load(Archive &ar, T &r, const unsigned int) {
-    stream_serializer<Archive> ser(ar);
+    stream_deserializer<Archive> ser(ar);
     deserialize(ser, "", r);
 }
 
