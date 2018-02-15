@@ -26,7 +26,8 @@ endif()
 
 add_this_package(accumulator_wrapper
                  result_wrapper
-                 wrapper_set)
+                 wrapper_set
+                 wrapper_set_hdf5)
 
 add_boost()
 add_hdf5()

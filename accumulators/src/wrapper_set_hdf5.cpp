@@ -4,43 +4,48 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-//#include <alps/accumulators/wrapper_set.hpp>
+#include <boost/preprocessor/tuple/to_seq.hpp>
+#include <boost/preprocessor/seq/for_each.hpp>
+
+#include <alps/config.hpp>
+
+#include <alps/accumulators/wrapper_set.hpp>
 #include <alps/accumulators.hpp>
 
 #include <alps/hdf5/vector.hpp>
 
+#define ALPS_ACCUMULATOR_VALUE_TYPES_SEQ BOOST_PP_TUPLE_TO_SEQ(ALPS_ACCUMULATOR_VALUE_TYPES_SIZE, (ALPS_ACCUMULATOR_VALUE_TYPES))
+
 namespace alps {
     namespace accumulators {
-        namespace detail {
-            void register_predefined_serializable_types() {
-                #define ALPS_ACCUMULATOR_REGISTER_ACCUMULATOR(A)                                                    \
-                    accumulator_set::register_serializable_type_nolock<A::accumulator_type>();                         \
-                    result_set::register_serializable_type_nolock<A::result_type>();
+         namespace detail {
 
-                #define ALPS_ACCUMULATOR_REGISTER_TYPE(T)                                                           \
-                    ALPS_ACCUMULATOR_REGISTER_ACCUMULATOR(MeanAccumulator<T>)                                       \
-                    ALPS_ACCUMULATOR_REGISTER_ACCUMULATOR(NoBinningAccumulator<T>)                                  \
-                    ALPS_ACCUMULATOR_REGISTER_ACCUMULATOR(LogBinningAccumulator<T>)                                 \
-                    ALPS_ACCUMULATOR_REGISTER_ACCUMULATOR(FullBinningAccumulator<T>)
+            template<typename T> struct serializable_type {
+                virtual ~serializable_type() {}
+                virtual std::size_t rank() const = 0;
+                virtual bool can_load(hdf5::archive & ar) const = 0;
+                virtual T * create(hdf5::archive & ar) const = 0;
+            };
 
-                // TODO: use ALPS_ACCUMULATOR_VALUE_TYPES and iterate over it
-                ALPS_ACCUMULATOR_REGISTER_TYPE(float)
-                ALPS_ACCUMULATOR_REGISTER_TYPE(double)
-                ALPS_ACCUMULATOR_REGISTER_TYPE(long double)
-                ALPS_ACCUMULATOR_REGISTER_TYPE(std::vector<float>)
-                ALPS_ACCUMULATOR_REGISTER_TYPE(std::vector<double>)
-                ALPS_ACCUMULATOR_REGISTER_TYPE(std::vector<long double>)
+            template<typename T, typename A> struct serializable_type_impl : public serializable_type<T> {
+                std::size_t rank() const {
+                    return A::rank();
+                }
+                bool can_load(hdf5::archive & ar) const {
+                    return A::can_load(ar);
+                }
+                T * create(hdf5::archive & /*ar*/) const {
+                    return new T(A());
+                }
+            };
 
-                #undef ALPS_ACCUMULATOR_REGISTER_TYPE
-                #undef ALPS_ACCUMULATOR_REGISTER_ACCUMULATOR
-            }
+            void register_predefined_serializable_types();
         }
 
         namespace impl {
-
             /// Register a serializable type, without locking
             template<typename T> template<typename A> void wrapper_set<T>::register_serializable_type_nolock() {
-                m_types.push_back(boost::shared_ptr<T>(new T(A())));
+                m_types.push_back(boost::shared_ptr<detail::serializable_type<T> >(new detail::serializable_type_impl<T, A>));
                 for (std::size_t i = m_types.size(); i > 1 && m_types[i - 1]->rank() > m_types[i - 2]->rank(); --i)
                     m_types[i - 1].swap(m_types[i - 2]);
             }
@@ -51,6 +56,28 @@ namespace alps {
                 if (m_types.empty()) detail::register_predefined_serializable_types();
                 register_serializable_type_nolock<A>();
             }
+        }
+
+        namespace detail {
+            void register_predefined_serializable_types() {
+                #define ALPS_ACCUMULATOR_REGISTER_ACCUMULATOR(A)                                                    \
+                    accumulator_set::register_serializable_type_nolock<A::accumulator_type>();                      \
+                    result_set::register_serializable_type_nolock<A::result_type>();
+
+                #define ALPS_ACCUMULATOR_REGISTER_TYPE(r, data, T)                                                  \
+                    ALPS_ACCUMULATOR_REGISTER_ACCUMULATOR(MeanAccumulator<T>)                                       \
+                    ALPS_ACCUMULATOR_REGISTER_ACCUMULATOR(NoBinningAccumulator<T>)                                  \
+                    ALPS_ACCUMULATOR_REGISTER_ACCUMULATOR(LogBinningAccumulator<T>)                                 \
+                    ALPS_ACCUMULATOR_REGISTER_ACCUMULATOR(FullBinningAccumulator<T>)
+
+                BOOST_PP_SEQ_FOR_EACH(ALPS_ACCUMULATOR_REGISTER_TYPE, ~, ALPS_ACCUMULATOR_VALUE_TYPES_SEQ)
+
+                #undef ALPS_ACCUMULATOR_REGISTER_TYPE
+                #undef ALPS_ACCUMULATOR_REGISTER_ACCUMULATOR
+            }
+        }
+
+        namespace impl {
 
             template<typename T>
             void wrapper_set<T>::save(hdf5::archive & ar) const {
@@ -83,8 +110,10 @@ namespace alps {
                 }
             }
 
-            template class wrapper_set<accumulator_wrapper>;
-            //template class wrapper_set<result_wrapper>;
+            template void wrapper_set<accumulator_wrapper>::save(hdf5::archive &) const;
+            template void wrapper_set<result_wrapper>::save(hdf5::archive &) const;
+            template void wrapper_set<accumulator_wrapper>::load(hdf5::archive &);
+            template void wrapper_set<result_wrapper>::load(hdf5::archive &);
         }
     }
 }

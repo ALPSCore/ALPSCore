@@ -7,39 +7,19 @@
 #pragma once
 
 #include <alps/config.hpp>
-#include <alps/hdf5/vector.hpp>
 #include <alps/hdf5/archive.hpp>
 
 #include <boost/shared_ptr.hpp>
 #include <mutex>
 
-
 namespace alps {
     namespace accumulators {
 
-         namespace detail {
+        class accumulator_wrapper;
+        class result_wrapper;
 
-            template<typename T> struct serializable_type {
-                virtual ~serializable_type() {}
-                virtual std::size_t rank() const = 0;
-                virtual bool can_load(hdf5::archive & ar) const = 0;
-                virtual T * create(hdf5::archive & ar) const = 0;
-            };
-
-            template<typename T, typename A> struct serializable_type_impl : public serializable_type<T> {
-                std::size_t rank() const {
-                    return A::rank();
-                }
-                bool can_load(hdf5::archive & ar) const {
-                    return A::can_load(ar);
-                }
-                T * create(hdf5::archive & /*ar*/) const {
-                    return new T(A());
-                }
-            };
-
-            void register_predefined_serializable_types();
-
+        namespace detail {
+            template<typename T> struct serializable_type;
         }
 
         namespace impl {
@@ -52,110 +32,40 @@ namespace alps {
                     typedef typename std::map<std::string, boost::shared_ptr<T> >::iterator iterator;
                     typedef typename std::map<std::string, boost::shared_ptr<T> >::const_iterator const_iterator;
 
-
-
                     // TODO: make trait ... to disable for result_wrapper
                     template <typename U> wrapper_set(wrapper_set<U> const & arg) {
                         for (typename wrapper_set<U>::const_iterator it = arg.begin(); it != arg.end(); ++it)
                             insert(it->first, it->second->result());
                     }
 
-                    wrapper_set() {
-                        std::lock_guard<std::mutex> guard(m_types_mutex);
-                        if (m_types.empty()) {
-                            detail::register_predefined_serializable_types();
-                        }
-                    }
+                    wrapper_set();
                     wrapper_set(wrapper_set const &) {} // TODO: how do we handle that?
 
-                    T & operator[](std::string const & name) {
-                        if (!has(name))
-                            m_storage.insert(make_pair(name, boost::shared_ptr<T>(new T())));
-                        return *(m_storage.find(name)->second);
-                    }
+                    T & operator[](std::string const & name);
+                    T const & operator[](std::string const & name) const;
 
-                    T const & operator[](std::string const & name) const {
-                        if (!has(name))
-                            throw std::out_of_range("No observable found with the name: " + name + ALPS_STACKTRACE);
-                        return *(m_storage.find(name)->second);
-                    }
+                    bool has(std::string const & name) const;
 
-                    bool has(std::string const & name) const{
-                        return m_storage.find(name) != m_storage.end();
-                    }
-
-                    void insert(std::string const & name, boost::shared_ptr<T> ptr){
-                        if (has(name))
-                            throw std::out_of_range("There exists already an accumulator with the name: " + name + ALPS_STACKTRACE);
-                        m_storage.insert(make_pair(name, ptr));
-                    }
+                    void insert(std::string const & name, boost::shared_ptr<T> ptr);
 
                     std::size_t size() const {
                         return m_storage.size();
                     }
 
-                    void save(hdf5::archive & ar) const {
-                        ar.create_group("");
-                        for(const_iterator it = begin(); it != end(); ++it) {
-                            if (it->second->count()!=0) {
-                                ar[it->first] = *(it->second);
-                            }
-                        }
-                    }
-
-                    void load(hdf5::archive & ar) {
-                        std::lock_guard<std::mutex> guard(m_types_mutex);
-                        std::vector<std::string> list = ar.list_children("");
-                        for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
-                            ar.set_context(*it);
-                            for (typename std::vector<boost::shared_ptr<detail::serializable_type<T> > >::const_iterator jt = m_types.begin()
-                                ; jt != m_types.end()
-                                ; ++jt
-                            )
-                                if ((*jt)->can_load(ar)) {
-                                    operator[](*it) = boost::shared_ptr<T>((*jt)->create(ar));
-                                    break;
-                                }
-                            if (!has(*it))
-                                throw std::logic_error("The Accumulator/Result " + *it + " cannot be unserilized" + ALPS_STACKTRACE);
-                            operator[](*it).load(ar);
-                            ar.set_context("..");
-                        }
-                    }
+                    void save(hdf5::archive & ar) const;
+                    void load(hdf5::archive & ar);
 
                     /// Register a serializable type, without locking
-                    template<typename A> static void register_serializable_type_nolock() {
-                        m_types.push_back(boost::shared_ptr<detail::serializable_type<T> >(new detail::serializable_type_impl<T, A>));
-                        for (std::size_t i = m_types.size(); i > 1 && m_types[i - 1]->rank() > m_types[i - 2]->rank(); --i)
-                            m_types[i - 1].swap(m_types[i - 2]);
-                    }
-
+                    template<typename A> static void register_serializable_type_nolock();
                     /// Register a user-defined serializable type
-                    template<typename A> static void register_serializable_type() {
-                        std::lock_guard<std::mutex> guard(m_types_mutex);
-                        if (m_types.empty()) detail::register_predefined_serializable_types();
-                        register_serializable_type_nolock<A>();
-                    }
+                    template<typename A> static void register_serializable_type();
 
                     /// Merge another accumulator/result set into this one. @param rhs the set to merge.
-                    void merge(wrapper_set const &rhs) {
-                        iterator it1 = this->begin();
-                        const_iterator it2 = rhs.begin();
-                        for(; it1 != end(); ++it1, ++it2) {
-                            if (it1->first != it2 ->first) throw std::logic_error("Can't merge" + it1->first + " and " + it2->first);
-                            it1->second->merge(*(it2->second));
-                        }
-                    }
+                    void merge(wrapper_set const &rhs);
 
-                    void print(std::ostream & os) const {
-                        for(const_iterator it = begin(); it != end(); ++it)
-                            os << it->first << ": " << *(it->second) << std::endl;
-                    }
+                    void print(std::ostream & os) const;
 
-                    void reset() {
-                        for(iterator it = begin(); it != end(); ++it)
-                            it->second->reset();
-                    }
+                    void reset();
 
                     iterator begin() { return m_storage.begin(); }
                     iterator end() { return m_storage.end(); }
@@ -177,7 +87,10 @@ namespace alps {
                 arg.print(os);
                 return os;
             }
-        }
 
+            // Will be instantiated in wrapper_set.cpp and wrapper_set_hdf5.cpp
+            extern template class wrapper_set<accumulator_wrapper>;
+            extern template class wrapper_set<result_wrapper>;
+        }
     }
 }
