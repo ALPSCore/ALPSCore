@@ -5,7 +5,6 @@
 
 #include <vector>
 #include <queue>
-#include <cstdint>
 
 // Mock class that emulates Boost/HPX serialization archive
 class MockArchive {
@@ -73,14 +72,14 @@ private:
 
     template<typename T>
     void store_fundamental(T x) {
-        std::int8_t* p = reinterpret_cast<std::int8_t*>(&x);
+        unsigned char* p = reinterpret_cast<unsigned char*>(&x);
         for(int n = 0; n < sizeof(T); ++n)
             buf.push(*(p + n));
     }
 
     template<typename T>
     void extract_fundamental(T &x) {
-        std::int8_t* p = reinterpret_cast<std::int8_t*>(&x);
+        unsigned char* p = reinterpret_cast<unsigned char*>(&x);
         for(int n = 0; n < sizeof(T); ++n) {
             *(p + n) = buf.front();
             buf.pop();
@@ -88,8 +87,34 @@ private:
     }
 
     // FIFO container with raw byte representation of stored values
-    std::queue<std::int8_t> buf;
+    std::queue<unsigned char> buf;
 };
+
+TEST(twogauss_serialize_case, MockArchive) {
+    MockArchive archive;
+
+    archive << (double)3.14
+            << (long)-123456
+            << (unsigned long)7890
+            << std::complex<double>(0.5,0.75)
+            << alps::alea::complex_op<double>(1, 2, 3, 4);
+
+    double x = 0;
+    archive >> x;
+    EXPECT_EQ(3.14, x);
+    long l = 0;
+    archive >> l;
+    EXPECT_EQ(-123456, l);
+    unsigned long ul = 0;
+    archive >> ul;
+    EXPECT_EQ(7890, ul);
+    std::complex<double> c = 0;
+    archive >> c;
+    EXPECT_EQ(std::complex<double>(0.5,0.75), c);
+    alps::alea::complex_op<double> co(0, 0, 0, 0);
+    archive >> co;
+    EXPECT_EQ(alps::alea::complex_op<double>(1, 2, 3, 4), co);
+}
 
 template <typename Acc>
 class twogauss_serialize_case

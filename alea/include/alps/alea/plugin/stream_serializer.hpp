@@ -85,7 +85,7 @@ private:
 };
 
 /**
- * stream_serializer
+ * stream_deserializer
  *
  * This class establishes connection between the ALEA serialization
  * interface and Boost/HPX serialization frameworks. Its instance
