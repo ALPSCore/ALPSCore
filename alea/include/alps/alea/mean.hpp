@@ -203,11 +203,15 @@ public:
     /** Convert result to a permanent format (write to disk etc.) */
     friend void serialize<>(serializer &, const std::string &, const mean_result &);
 
-    /** Reresult to a permanent format (write to disk etc.) */
+    /** Result to a permanent format (write to disk etc.) */
     friend void deserialize<>(deserializer &, const std::string &, mean_result &);
 
     /** Write some info about the result to a stream */
     friend std::ostream &operator<< <>(std::ostream &, const mean_result &);
+
+    /** Check if this result is identical to another */
+    bool operator==(const mean_result &other) const;
+    bool operator!=(const mean_result &other) const { return !operator==(other); }
 
 protected:
     void reduce(const reducer &, bool do_pre_commit, bool do_post_commit);

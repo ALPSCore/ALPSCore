@@ -179,6 +179,15 @@ var_result<T,Str> &var_result<T,Str>::operator=(const var_result &other)
     return *this;
 }
 
+template <typename T, typename Strategy>
+bool var_result<T,Strategy>::operator==(const var_result &other) const
+{
+    return count() == other.count()
+        && count2() == other.count2()
+        && store().data() == other.store().data()
+        && store().data2() == other.store().data2();
+}
+
 template <typename T, typename Str>
 column<typename var_result<T,Str>::var_type> var_result<T,Str>::stderror() const
 {

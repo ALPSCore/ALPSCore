@@ -231,6 +231,10 @@ public:
     /** Write some info about the result to a stream */
     friend std::ostream &operator<< <>(std::ostream &, const batch_result &);
 
+    /** Check if this result is identical to another */
+    bool operator==(const batch_result &other) const;
+    bool operator!=(const batch_result &other) const { return !operator==(other); }
+
 protected:
     void reduce(const reducer &r, bool do_pre_commit, bool do_post_commit);
 

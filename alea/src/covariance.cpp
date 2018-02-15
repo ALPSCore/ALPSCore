@@ -175,6 +175,15 @@ cov_result<T,Str> &cov_result<T,Str>::operator=(const cov_result &other)
     return *this;
 }
 
+template <typename T, typename Strategy>
+bool cov_result<T,Strategy>::operator==(const cov_result &other) const
+{
+    return count() == other.count()
+        && count2() == other.count2()
+        && store().data() == other.store().data()
+        && store().data2() == other.store().data2();
+}
+
 template <typename T, typename Str>
 column<typename cov_result<T,Str>::var_type> cov_result<T,Str>::stderror() const
 {

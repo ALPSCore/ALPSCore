@@ -104,6 +104,16 @@ void autocorr_acc<T>::finalize_to(autocorr_result<T> &result)
 template class autocorr_acc<double>;
 template class autocorr_acc<std::complex<double> >;
 
+template <typename T>
+bool autocorr_result<T>::operator==(const autocorr_result &other) const
+{
+    if(nlevel() != other.nlevel()) return false;
+    for(size_t i = 0; i < nlevel(); ++i) {
+        if(level(i) != other.level(i))
+            return false;
+    }
+    return true;
+}
 
 template <typename T>
 size_t autocorr_result<T>::batch_size(size_t i) const

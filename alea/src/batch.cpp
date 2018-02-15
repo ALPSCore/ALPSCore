@@ -175,6 +175,13 @@ batch_result<T> &batch_result<T>::operator=(const batch_result &other)
 }
 
 template <typename T>
+bool batch_result<T>::operator==(const batch_result &other) const
+{
+    return count() == other.count()
+        && store().batch() == other.store().batch();
+}
+
+template <typename T>
 column<T> batch_result<T>::mean() const
 {
     return store_->batch().rowwise().sum() / count();

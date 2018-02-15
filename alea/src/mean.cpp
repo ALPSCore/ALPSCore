@@ -123,6 +123,12 @@ mean_result<T> &mean_result<T>::operator=(const mean_result &other)
 }
 
 template <typename T>
+bool mean_result<T>::operator==(const mean_result &other) const {
+    return count() == other.count()
+        && store().data() == other.store().data();
+}
+
+template <typename T>
 void mean_result<T>::reduce(const reducer &r, bool pre_commit, bool post_commit)
 {
     internal::check_valid(*this);

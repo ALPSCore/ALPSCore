@@ -269,6 +269,10 @@ public:
     /** Write some info about the result to a stream */
     friend std::ostream &operator<< <>(std::ostream &, const var_result &);
 
+    /** Check if this result is identical to another */
+    bool operator==(const var_result &other) const;
+    bool operator!=(const var_result &other) const { return !operator==(other); }
+
 protected:
     void reduce(const reducer &, bool do_pre_commit, bool do_post_commit);
 

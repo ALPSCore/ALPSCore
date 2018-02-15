@@ -199,6 +199,10 @@ public:
 
     level_result_type &level(size_t i) { return level_[i]; }
 
+    /** Check if this result is identical to another */
+    bool operator==(const autocorr_result &other) const;
+    bool operator!=(const autocorr_result &other) const { return !operator==(other); }
+
 protected:
     void reduce(const reducer &r, bool do_pre_commit, bool do_post_commit);
 
