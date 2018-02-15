@@ -285,6 +285,11 @@ private:
     friend class cov_acc<T,Strategy>;
 };
 
+template<typename T> struct is_alea_result<cov_result<T, circular_var>> :
+    std::true_type {};
+template<typename T> struct is_alea_result<cov_result<T, elliptic_var>> :
+    std::true_type {};
+
 template <typename T, typename Strategy>
 struct traits< cov_result<T,Strategy> >
 {

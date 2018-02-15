@@ -218,6 +218,8 @@ private:
     friend class mean_acc<T>;
 };
 
+template<typename T> struct is_alea_result<mean_result<T>> : std::true_type {};
+
 template <typename T>
 struct traits< mean_result<T> >
 {

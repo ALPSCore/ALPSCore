@@ -240,6 +240,8 @@ private:
     friend class batch_acc<T>;
 };
 
+template<typename T> struct is_alea_result<batch_result<T>> : std::true_type {};
+
 template <typename T>
 struct traits< batch_result<T> >
 {

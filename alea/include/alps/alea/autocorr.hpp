@@ -209,6 +209,8 @@ private:
     friend class autocorr_acc<T>;
 };
 
+template<typename T> struct is_alea_result<autocorr_result<T>> : std::true_type {};
+
 template <typename T>
 struct traits< autocorr_result<T> >
 {

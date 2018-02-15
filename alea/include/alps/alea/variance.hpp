@@ -279,6 +279,11 @@ private:
     friend class autocorr_result<T>;
 };
 
+template<typename T> struct is_alea_result<var_result<T, circular_var>> :
+    std::true_type {};
+template<typename T> struct is_alea_result<var_result<T, elliptic_var>> :
+    std::true_type {};
+
 template <typename T, typename Strategy>
 struct traits< var_result<T,Strategy> >
 {
