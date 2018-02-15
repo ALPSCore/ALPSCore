@@ -24,8 +24,7 @@ if (DocumentationOnly)
   return()
 endif()
 
-add_this_package(accumulators
-                 accumulator_wrapper
+add_this_package(accumulator_wrapper
                  result_wrapper
                  wrapper_set)
 

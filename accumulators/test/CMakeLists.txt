@@ -13,7 +13,6 @@ set (test_src
     divide_accumulators
     unary_ops
     mean
-    mean_wrapped
     merge
     mult_by_constant
     weighted
