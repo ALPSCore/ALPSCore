@@ -222,6 +222,8 @@ void deserialize(deserializer &s, const std::string &key, autocorr_result<T> &se
     internal::deserializer_sentry group(s, key);
 
     // first deserialize the fundamentals and make sure that the target fits
+    size_t new_size = 1;
+    s.read("@size", ndview<size_t>(nullptr, &new_size, 1)); // discard
     size_t new_nlevel;
     deserialize(s, "@nlevel", new_nlevel);
     self.level_.resize(new_nlevel);
@@ -232,7 +234,7 @@ void deserialize(deserializer &s, const std::string &key, autocorr_result<T> &se
     s.exit();
 
     s.enter("mean");
-    size_t new_size = self.size();
+    new_size = self.size();
     s.read("value", ndview<T>(nullptr, &new_size, 1)); // discard
     s.read("error", ndview<var_type>(nullptr, &new_size, 1)); // discard
     s.exit();
