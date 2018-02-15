@@ -461,7 +461,7 @@ namespace alps {
           std::array<size_t, N_> new_shape = get_sizes(std::make_tuple(meshes...));
           size_t new_size = std::accumulate(new_shape.begin(), new_shape.end(), size_t(1), std::multiplies<size_t>());
           if(data_.size() != new_size) {
-            throw std::invalid_argument("The total size of resulting Green's function should be the same as before.");
+            throw std::invalid_argument("The total size of resulting Green's function view should be the same as before.");
           }
           data_.reshape(new_shape);
           meshes_ = std::make_tuple(meshes...);

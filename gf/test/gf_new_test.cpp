@@ -326,7 +326,7 @@ TEST(GreensFunction, Reshape) {
   greenf<double, alps::gf::matsubara_positive_mesh, alps::gf::index_mesh, alps::gf::index_mesh > g1(x, y, z);
   greenf<double, alps::gf::matsubara_positive_mesh, alps::gf::index_mesh, alps::gf::index_mesh > g2;
   ASSERT_TRUE(g2.data().size() == 0);
-  std::array<size_t, 3> shape{{0}};
+  std::array<size_t, 3> shape{{}};
   ASSERT_TRUE(g2.data().shape() == shape);
   g2.reshape(x, y, z);
   ASSERT_TRUE(g2.data().shape() == g1.data().shape());
