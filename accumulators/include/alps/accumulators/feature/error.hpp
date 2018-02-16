@@ -169,26 +169,21 @@ namespace alps {
                     void negate();
                     void inverse();
 
-                    #define NUMERIC_FUNCTION_DECLARATION(FUNCTION_NAME)             \
-                        void FUNCTION_NAME ();
-
-                    NUMERIC_FUNCTION_DECLARATION(sin)
-                    NUMERIC_FUNCTION_DECLARATION(cos)
-                    NUMERIC_FUNCTION_DECLARATION(tan)
-                    NUMERIC_FUNCTION_DECLARATION(sinh)
-                    NUMERIC_FUNCTION_DECLARATION(cosh)
-                    NUMERIC_FUNCTION_DECLARATION(tanh)
-                    NUMERIC_FUNCTION_DECLARATION(asin)
-                    NUMERIC_FUNCTION_DECLARATION(acos)
-                    NUMERIC_FUNCTION_DECLARATION(atan)
-                    NUMERIC_FUNCTION_DECLARATION(sq)
-                    NUMERIC_FUNCTION_DECLARATION(sqrt)
-                    NUMERIC_FUNCTION_DECLARATION(cb)
-                    NUMERIC_FUNCTION_DECLARATION(cbrt)
-                    NUMERIC_FUNCTION_DECLARATION(exp)
-                    NUMERIC_FUNCTION_DECLARATION(log)
-
-                    #undef NUMERIC_FUNCTION_DECLARATION
+                    void sin();
+                    void cos();
+                    void tan();
+                    void sinh();
+                    void cosh();
+                    void tanh();
+                    void asin();
+                    void acos();
+                    void atan();
+                    void sq();
+                    void sqrt();
+                    void cb();
+                    void cbrt();
+                    void exp();
+                    void log();
 
                 private:
 

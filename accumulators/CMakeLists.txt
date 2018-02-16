@@ -31,7 +31,8 @@ add_this_package(namedaccumulators
                  wrapper_set_hdf5
                  feature/count
                  feature/mean
-                 feature/error)
+                 feature/error
+                 feature/binning_analysis)
 
 add_boost()
 add_hdf5()
