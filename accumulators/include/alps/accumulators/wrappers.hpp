@@ -80,8 +80,8 @@ namespace alps {
                    if T is a non-scalar type, and `wrapped_value_type=void*` if T is a scalar type.
                 */
                 template <typename X> struct wrap_value_type:
-                    public boost::mpl::if_<
-                        alps::is_scalar<X>,
+                    public std::conditional<
+                        alps::is_scalar<X>::value,
                         void*,
                         base_wrapper<typename alps::numeric::scalar<X>::type> const & > {};
 
