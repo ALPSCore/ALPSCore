@@ -49,6 +49,7 @@ public:
       extract_fundamental(r);
       extract_fundamental(i);
       x = std::complex<double>(r, i);
+      return *this;
     }
 
     // Extract complex_op<T>
