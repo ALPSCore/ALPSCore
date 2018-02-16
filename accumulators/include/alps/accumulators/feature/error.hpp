@@ -83,61 +83,21 @@ namespace alps {
                         : B(args), m_sum2(T())
                     {}
 
-                    error_type const error() const {
-                        using std::sqrt;
-                        using alps::numeric::sqrt;
-                        using alps::numeric::operator/;
-                        using alps::numeric::operator-;
-                        using alps::numeric::operator*;
-
-                        // TODO: make library for scalar type
-                        error_scalar_type cnt = B::count();
-                        const error_scalar_type one=1;
-                        if (cnt<=one) return alps::numeric::inf<error_type>(m_sum2);
-                        return sqrt((m_sum2 / cnt - B::mean() * B::mean()) / (cnt - one));
-                    }
+                    error_type const error() const;
 
                     using B::operator();
-                    void operator()(T const & val) {
-                        using alps::numeric::operator*;
-                        using alps::numeric::operator+=;
-                        using alps::numeric::check_size;
-
-                        B::operator()(val);
-                        check_size(m_sum2, val);
-                        m_sum2 += val * val;
-                    }
+                    void operator()(T const & val);
 
                     template<typename S> void print(S & os, bool terse=false) const {
                         B::print(os, terse);
                         os << " +/-" << alps::short_print(error());
                     }
 
-                    void save(hdf5::archive & ar) const {
-                        B::save(ar);
-                        ar["mean/error"] = error();
-                    }
-
-                    void load(hdf5::archive & ar) { // TODO: make archive const
-                        using alps::numeric::operator*;
-                        using alps::numeric::operator+;
-
-                        B::load(ar);
-                        error_type error;
-                        ar["mean/error"] >> error;
-                        // TODO: make library for scalar type
-                        error_scalar_type cnt = B::count();
-                        m_sum2 = (error * error * (cnt - static_cast<error_scalar_type>(1)) + B::mean() * B::mean()) * cnt;
-                    }
+                    void save(hdf5::archive & ar) const;
+                    void load(hdf5::archive & ar);
 
                     static std::size_t rank() { return B::rank() + 1; }
-                    static bool can_load(hdf5::archive & ar) { // TODO: make archive const
-                        using alps::hdf5::get_extent;
-                        const char name[]="mean/error";
-                        const std::size_t ndim=std::is_scalar<T>::value? 0 : get_extent(T()).size();
-                        return B::can_load(ar) &&
-                               detail::archive_trait<error_type>::can_load(ar, name, ndim);
-                    }
+                    static bool can_load(hdf5::archive & ar);
 
                     void reset() {
                         B::reset();
@@ -159,24 +119,11 @@ namespace alps {
                     void collective_merge(
                           alps::mpi::communicator const & comm
                         , int root
-                    ) {
-                        if (comm.rank() == root) {
-                            B::collective_merge(comm, root);
-                            B::reduce_if(comm, T(m_sum2), m_sum2, std::plus<typename alps::hdf5::scalar_type<T>::type>(), root);
-                        } else
-                            const_cast<Accumulator<T, error_tag, B> const *>(this)->collective_merge(comm, root);
-                    }
-
+                    );
                     void collective_merge(
                           alps::mpi::communicator const & comm
                         , int root
-                    ) const {
-                        B::collective_merge(comm, root);
-                        if (comm.rank() == root)
-                            throw std::runtime_error("A const object cannot be root" + ALPS_STACKTRACE);
-                        else
-                            B::reduce_if(comm, m_sum2, std::plus<typename alps::hdf5::scalar_type<T>::type>(), root);
-                    }
+                    ) const;
 #endif
 
                 private:
@@ -209,102 +156,39 @@ namespace alps {
                         os << " +/-" << alps::short_print(error());
                     }
 
-                    void save(hdf5::archive & ar) const {
-                        B::save(ar);
-                        ar["mean/error"] = error();
-                    }
-
-                    void load(hdf5::archive & ar) {
-                        B::load(ar);
-                        ar["mean/error"] >> m_error;
-                    }
+                    void save(hdf5::archive & ar) const;
+                    void load(hdf5::archive & ar);
 
                     static std::size_t rank() { return B::rank() + 1; }
-                    static bool can_load(hdf5::archive & ar) { // TODO: make archive const
-                        using alps::hdf5::get_extent;
-                        const char name[]="mean/error";
-                        const std::size_t ndim=std::is_scalar<T>::value? 0 : get_extent(T()).size();
-                        return B::can_load(ar) &&
-                               detail::archive_trait<error_type>::can_load(ar, name, ndim);
-                    }
+                    static bool can_load(hdf5::archive & ar);
 
                     template<typename U> void operator+=(U const & arg) { augaddsub(arg); B::operator+=(arg); }
                     template<typename U> void operator-=(U const & arg) { augaddsub(arg); B::operator-=(arg); }
                     template<typename U> void operator*=(U const & arg) { augmul(arg); }
                     template<typename U> void operator/=(U const & arg) { augdiv(arg); }
-                    void negate() {
-                        B::negate();
-                    }
-                    void inverse() {
-                        using alps::numeric::operator*;
-                        using alps::numeric::operator/;
-                        m_error = this->error() / (this->mean() * this->mean());
-                        B::inverse();
+                    void negate();
+                    void inverse();
 
-                    }
+                    #define NUMERIC_FUNCTION_DECLARATION(FUNCTION_NAME)             \
+                        void FUNCTION_NAME ();
 
-                    #define NUMERIC_FUNCTION_USING                                  \
-                        using alps::numeric::sq;                                    \
-                        using alps::numeric::cbrt;                                  \
-                        using alps::numeric::cb;                                    \
-                        using std::sqrt;                                            \
-                        using alps::numeric::sqrt;                                  \
-                        using std::exp;                                             \
-                        using alps::numeric::exp;                                   \
-                        using std::log;                                             \
-                        using alps::numeric::log;                                   \
-                        using std::abs;                                             \
-                        using alps::numeric::abs;                                   \
-                        using std::pow;                                             \
-                        using alps::numeric::pow;                                   \
-                        using std::sin;                                             \
-                        using alps::numeric::sin;                                   \
-                        using std::cos;                                             \
-                        using alps::numeric::cos;                                   \
-                        using std::tan;                                             \
-                        using alps::numeric::tan;                                   \
-                        using std::sinh;                                            \
-                        using alps::numeric::sinh;                                  \
-                        using std::cosh;                                            \
-                        using alps::numeric::cosh;                                  \
-                        using std::tanh;                                            \
-                        using alps::numeric::tanh;                                  \
-                        using std::asin;                                            \
-                        using alps::numeric::asin;                                  \
-                        using std::acos;                                            \
-                        using alps::numeric::acos;                                  \
-                        using std::atan;                                            \
-                        using alps::numeric::atan;                                  \
-                        using alps::numeric::operator+;                             \
-                        using alps::numeric::operator-;                             \
-                        using alps::numeric::operator*;                             \
-                        using alps::numeric::operator/;
+                    NUMERIC_FUNCTION_DECLARATION(sin)
+                    NUMERIC_FUNCTION_DECLARATION(cos)
+                    NUMERIC_FUNCTION_DECLARATION(tan)
+                    NUMERIC_FUNCTION_DECLARATION(sinh)
+                    NUMERIC_FUNCTION_DECLARATION(cosh)
+                    NUMERIC_FUNCTION_DECLARATION(tanh)
+                    NUMERIC_FUNCTION_DECLARATION(asin)
+                    NUMERIC_FUNCTION_DECLARATION(acos)
+                    NUMERIC_FUNCTION_DECLARATION(atan)
+                    NUMERIC_FUNCTION_DECLARATION(sq)
+                    NUMERIC_FUNCTION_DECLARATION(sqrt)
+                    NUMERIC_FUNCTION_DECLARATION(cb)
+                    NUMERIC_FUNCTION_DECLARATION(cbrt)
+                    NUMERIC_FUNCTION_DECLARATION(exp)
+                    NUMERIC_FUNCTION_DECLARATION(log)
 
-                    #define NUMERIC_FUNCTION_IMPLEMENTATION(FUNCTION_NAME, ERROR)    \
-                        void FUNCTION_NAME () {                                      \
-                            B:: FUNCTION_NAME ();                                    \
-                            NUMERIC_FUNCTION_USING                                   \
-                            m_error = ERROR ;                                        \
-                        }
-
-                    NUMERIC_FUNCTION_IMPLEMENTATION(sin, abs(cos(this->mean()) * m_error))
-                    NUMERIC_FUNCTION_IMPLEMENTATION(cos, abs(-sin(this->mean()) * m_error))
-                    NUMERIC_FUNCTION_IMPLEMENTATION(tan, abs(error_scalar_type(1) / (cos(this->mean()) * cos(this->mean())) * m_error))
-                    NUMERIC_FUNCTION_IMPLEMENTATION(sinh, abs(cosh(this->mean()) * m_error))
-                    NUMERIC_FUNCTION_IMPLEMENTATION(cosh, abs(sinh(this->mean()) * m_error))
-                    NUMERIC_FUNCTION_IMPLEMENTATION(tanh, abs(error_scalar_type(1) / (cosh(this->mean()) * cosh(this->mean())) * m_error))
-                    NUMERIC_FUNCTION_IMPLEMENTATION(asin, abs(error_scalar_type(1) / sqrt(- this->mean() * this->mean() + error_scalar_type(1)) * m_error))
-                    NUMERIC_FUNCTION_IMPLEMENTATION(acos, abs(error_scalar_type(-1) / sqrt(-this->mean() * this->mean() + error_scalar_type(1) ) * m_error))
-                    NUMERIC_FUNCTION_IMPLEMENTATION(atan, abs(error_scalar_type(1) / (this->mean() * this->mean() +error_scalar_type(1) ) * m_error))
-                    // abs does not change the error, so nothing has to be done ...
-                    NUMERIC_FUNCTION_IMPLEMENTATION(sq, abs(this->mean() * m_error * error_scalar_type(2)))
-                    NUMERIC_FUNCTION_IMPLEMENTATION(sqrt, abs(m_error / (sqrt(this->mean()) * error_scalar_type(2) )))
-                    NUMERIC_FUNCTION_IMPLEMENTATION(cb, abs( sq(this->mean()) * m_error * error_scalar_type(3) ))
-                    NUMERIC_FUNCTION_IMPLEMENTATION(cbrt, abs(m_error / ( sq( cbrt(this->mean()) )*error_scalar_type(3) )))
-                    NUMERIC_FUNCTION_IMPLEMENTATION(exp, exp(this->mean()) * m_error)
-                    NUMERIC_FUNCTION_IMPLEMENTATION(log, abs(m_error / this->mean()))
-
-                    #undef NUMERIC_FUNCTION_IMPLEMENTATION
+                    #undef NUMERIC_FUNCTION_DECLARATION
 
                 private:
 
