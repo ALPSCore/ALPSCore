@@ -29,7 +29,8 @@ add_this_package(namedaccumulators
                  result_wrapper
                  wrapper_set
                  wrapper_set_hdf5
-                 feature/count)
+                 feature/count
+                 feature/mean)
 
 add_boost()
 add_hdf5()
