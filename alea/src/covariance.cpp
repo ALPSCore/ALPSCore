@@ -176,13 +176,19 @@ cov_result<T,Str> &cov_result<T,Str>::operator=(const cov_result &other)
 }
 
 template <typename T, typename Strategy>
-bool cov_result<T,Strategy>::operator==(const cov_result &other) const
+bool operator==(const cov_result<T,Strategy> &r1, const cov_result<T,Strategy> &r2)
 {
-    return count() == other.count()
-        && count2() == other.count2()
-        && store().data() == other.store().data()
-        && store().data2() == other.store().data2();
+    return r1.count() == r2.count()
+        && r1.count2() == r2.count2()
+        && r1.store().data() == r2.store().data()
+        && r1.store().data2() == r2.store().data2();
 }
+
+template bool operator==(const cov_result<double> &r1, const cov_result<double> &r2);
+template bool operator==(const cov_result<std::complex<double>, circular_var> &r1,
+                         const cov_result<std::complex<double>, circular_var> &r2);
+template bool operator==(const cov_result<std::complex<double>, elliptic_var> &r1,
+                         const cov_result<std::complex<double>, elliptic_var> &r2);
 
 template <typename T, typename Str>
 column<typename cov_result<T,Str>::var_type> cov_result<T,Str>::stderror() const

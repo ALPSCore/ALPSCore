@@ -199,10 +199,6 @@ public:
 
     level_result_type &level(size_t i) { return level_[i]; }
 
-    /** Check if this result is identical to another */
-    bool operator==(const autocorr_result &other) const;
-    bool operator!=(const autocorr_result &other) const { return !operator==(other); }
-
 protected:
     void reduce(const reducer &r, bool do_pre_commit, bool do_post_commit);
 
@@ -212,6 +208,15 @@ private:
 
     friend class autocorr_acc<T>;
 };
+
+/** Check if two results are identical */
+template <typename T>
+bool operator==(const autocorr_result<T> &r1, const autocorr_result<T> &r2);
+template <typename T>
+bool operator!=(const autocorr_result<T> &r1, const autocorr_result<T> &r2)
+{
+    return !operator==(r1, r2);
+}
 
 template<typename T> struct is_alea_result<autocorr_result<T>> : std::true_type {};
 

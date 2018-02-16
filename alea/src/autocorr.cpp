@@ -105,15 +105,20 @@ template class autocorr_acc<double>;
 template class autocorr_acc<std::complex<double> >;
 
 template <typename T>
-bool autocorr_result<T>::operator==(const autocorr_result &other) const
+bool operator==(const autocorr_result<T> &r1, const autocorr_result<T> &r2)
 {
-    if(nlevel() != other.nlevel()) return false;
-    for(size_t i = 0; i < nlevel(); ++i) {
-        if(level(i) != other.level(i))
+    if(r1.nlevel() != r2.nlevel()) return false;
+    for(size_t i = 0; i < r1.nlevel(); ++i) {
+        if(r1.level(i) != r2.level(i))
             return false;
     }
     return true;
 }
+
+template bool operator==(const autocorr_result<double> &r1,
+                         const autocorr_result<double> &r2);
+template bool operator==(const autocorr_result<std::complex<double>> &r1,
+                         const autocorr_result<std::complex<double>> &r2);
 
 template <typename T>
 size_t autocorr_result<T>::batch_size(size_t i) const

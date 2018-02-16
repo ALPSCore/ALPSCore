@@ -209,10 +209,6 @@ public:
     /** Write some info about the result to a stream */
     friend std::ostream &operator<< <>(std::ostream &, const mean_result &);
 
-    /** Check if this result is identical to another */
-    bool operator==(const mean_result &other) const;
-    bool operator!=(const mean_result &other) const { return !operator==(other); }
-
 protected:
     void reduce(const reducer &, bool do_pre_commit, bool do_post_commit);
 
@@ -221,6 +217,15 @@ private:
 
     friend class mean_acc<T>;
 };
+
+/** Check if two results are identical */
+template <typename T>
+bool operator==(const mean_result<T> &r1, const mean_result<T> &r2);
+template <typename T>
+bool operator!=(const mean_result<T> &r1, const mean_result<T> &r2)
+{
+    return !operator==(r1, r2);
+}
 
 template<typename T> struct is_alea_result<mean_result<T>> : std::true_type {};
 

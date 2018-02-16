@@ -175,11 +175,16 @@ batch_result<T> &batch_result<T>::operator=(const batch_result &other)
 }
 
 template <typename T>
-bool batch_result<T>::operator==(const batch_result &other) const
+bool operator==(const batch_result<T> &r1, const batch_result<T> &r2)
 {
-    return count() == other.count()
-        && store().batch() == other.store().batch();
+    return r1.count() == r2.count()
+        && r1.store().batch() == r2.store().batch();
 }
+
+template bool operator==(const batch_result<double> &r1,
+                         const batch_result<double> &r2);
+template bool operator==(const batch_result<std::complex<double>> &r1,
+                         const batch_result<std::complex<double>> &r2);
 
 template <typename T>
 column<T> batch_result<T>::mean() const

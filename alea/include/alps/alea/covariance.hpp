@@ -276,10 +276,6 @@ public:
     /** Write some info about the result to a stream */
     friend std::ostream &operator<< <>(std::ostream &, const cov_result &);
 
-    /** Check if this result is identical to another */
-    bool operator==(const cov_result &other) const;
-    bool operator!=(const cov_result &other) const { return !operator==(other); }
-
 protected:
     void reduce(const reducer &, bool do_pre_commit, bool do_post_commit);
 
@@ -288,6 +284,15 @@ private:
 
     friend class cov_acc<T,Strategy>;
 };
+
+/** Check if two results are identical */
+template <typename T, typename Strategy>
+bool operator==(const cov_result<T, Strategy> &r1, const cov_result<T, Strategy> &r2);
+template <typename T, typename Strategy>
+bool operator!=(const cov_result<T, Strategy> &r1, const cov_result<T, Strategy> &r2)
+{
+    return !operator==(r1, r2);
+}
 
 template<typename T> struct is_alea_result<cov_result<T, circular_var>> :
     std::true_type {};
