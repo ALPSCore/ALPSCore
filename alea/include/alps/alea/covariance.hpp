@@ -118,7 +118,7 @@ template <typename T, typename Strategy=circular_var>
 class cov_acc
 {
 public:
-    typedef T value_type;
+    using value_type = T;
     typedef typename bind<Strategy, T>::var_type var_type;
     typedef typename bind<Strategy, T>::cov_type cov_type;
     typedef typename eigen<cov_type>::matrix cov_matrix_type;
@@ -143,18 +143,7 @@ public:
     size_t batch_size() const { return current_.target(); }
 
     /** Add computed vector to the accumulator */
-    cov_acc &operator<<(const computed<T> &src) { add(src, 1); return *this; }
-
-    /** Add Eigen vector-valued expression to accumulator */
-    template <typename Derived>
-    cov_acc &operator<<(const Eigen::DenseBase<Derived> &o)
-    { return *this << eigen_adapter<T,Derived>(o); }
-
-    /** Add `std::vector` to accumulator */
-    cov_acc &operator<<(const std::vector<T> &o) { return *this << vector_adapter<T>(o); }
-
-    /** Add scalar value to accumulator */
-    cov_acc &operator<<(T o) { return *this << value_adapter<T>(o); }
+    cov_acc& operator<<(const computed<T>& src){ add(src, 1); return *this; }
 
     /** Merge partial result into accumulator */
     cov_acc &operator<<(const cov_result<T,Strategy> &result);
@@ -294,6 +283,10 @@ bool operator!=(const cov_result<T, Strategy> &r1, const cov_result<T, Strategy>
     return !operator==(r1, r2);
 }
 
+template<typename T> struct is_alea_acc<cov_acc<T, circular_var>> :
+    std::true_type {};
+template<typename T> struct is_alea_acc<cov_acc<T, elliptic_var>> :
+    std::true_type {};
 template<typename T> struct is_alea_result<cov_result<T, circular_var>> :
     std::true_type {};
 template<typename T> struct is_alea_result<cov_result<T, elliptic_var>> :

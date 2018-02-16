@@ -66,7 +66,7 @@ template <typename T>
 class autocorr_acc
 {
 public:
-    typedef T value_type;
+    using value_type = T;
     typedef typename bind<circular_var, T>::var_type var_type;
     typedef var_acc<T, circular_var> level_acc_type;
 
@@ -83,18 +83,7 @@ public:
     size_t size() const { return size_; }
 
     /** Add computed vector to the accumulator */
-    autocorr_acc &operator<<(const computed<T> &src) { add(src, 1); return *this; }
-
-    /** Add Eigen vector-valued expression to accumulator */
-    template <typename Derived>
-    autocorr_acc &operator<<(const Eigen::DenseBase<Derived> &o)
-    { return *this << eigen_adapter<T,Derived>(o); }
-
-    /** Add `std::vector` to accumulator */
-    autocorr_acc &operator<<(const std::vector<T> &o) { return *this << vector_adapter<T>(o); }
-
-    /** Add scalar value to accumulator */
-    autocorr_acc &operator<<(T o) { return *this << value_adapter<T>(o); }
+    autocorr_acc& operator<<(const computed<T>& src){ add(src, 1); return *this; }
 
     /** Merge partial result into accumulator */
     autocorr_acc &operator<<(const autocorr_result<T> &result);
@@ -218,6 +207,7 @@ bool operator!=(const autocorr_result<T> &r1, const autocorr_result<T> &r2)
     return !operator==(r1, r2);
 }
 
+template<typename T> struct is_alea_acc<autocorr_acc<T>> : std::true_type {};
 template<typename T> struct is_alea_result<autocorr_result<T>> : std::true_type {};
 
 template <typename T>

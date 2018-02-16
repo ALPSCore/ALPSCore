@@ -118,7 +118,7 @@ template <typename T, typename Strategy=circular_var>
 class var_acc
 {
 public:
-    typedef typename bind<Strategy, T>::value_type value_type;
+    using value_type = T;
     typedef typename bind<Strategy, T>::var_type var_type;
 
 public:
@@ -143,17 +143,6 @@ public:
     /** Add computed vector to the accumulator */
     var_acc &operator<<(const computed<T> &src) { add(src, 1, nullptr); return *this; }
 
-    /** Add Eigen vector-valued expression to accumulator */
-    template <typename Derived>
-    var_acc &operator<<(const Eigen::DenseBase<Derived> &o)
-    { return *this << eigen_adapter<T,Derived>(o); }
-
-    /** Add `std::vector` to accumulator */
-    var_acc &operator<<(const std::vector<T> &o) { return *this << vector_adapter<T>(o); }
-
-    /** Add scalar value to accumulator */
-    var_acc &operator<<(T o) { return *this << value_adapter<T>(o); }
-
     /** Merge partial result into accumulator */
     var_acc &operator<<(const var_result<T,Strategy> &result);
 
@@ -171,7 +160,7 @@ public:
     /** Return backend object used for storing estimands */
     const var_data<T,Strategy> &store() const { return *store_; }
 
-protected:
+  protected:
     void add(const computed<T> &source, size_t count, var_acc *cascade);
 
     void add_bundle(var_acc *cascade);
@@ -288,6 +277,10 @@ bool operator!=(const var_result<T, Strategy> &r1, const var_result<T, Strategy>
     return !operator==(r1, r2);
 }
 
+template<typename T> struct is_alea_acc<var_acc<T, circular_var>> :
+    std::true_type {};
+template<typename T> struct is_alea_acc<var_acc<T, elliptic_var>> :
+    std::true_type {};
 template<typename T> struct is_alea_result<var_result<T, circular_var>> :
     std::true_type {};
 template<typename T> struct is_alea_result<var_result<T, elliptic_var>> :
