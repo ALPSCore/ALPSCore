@@ -7,17 +7,17 @@
 #include <queue>
 
 // Mock class that emulates Boost/HPX serialization archive
-class MockArchive {
+class mock_archive {
 
 public:
 
-    MockArchive() {}
+    mock_archive() {}
 
     // Store simple types
-    MockArchive & operator<<(double x) { store_fundamental(x); return *this; }
-    MockArchive & operator<<(long x) { store_fundamental(x); return *this; }
-    MockArchive & operator<<(unsigned long x) { store_fundamental(x); return *this; }
-    MockArchive & operator<<(std::complex<double> x)
+    mock_archive & operator<<(double x) { store_fundamental(x); return *this; }
+    mock_archive & operator<<(long x) { store_fundamental(x); return *this; }
+    mock_archive & operator<<(unsigned long x) { store_fundamental(x); return *this; }
+    mock_archive & operator<<(std::complex<double> x)
     {
         *this << x.real() << x.imag();
         return *this;
@@ -25,7 +25,7 @@ public:
 
     // Store complex_op<T>
     template<typename T>
-    MockArchive & operator<<(const alps::alea::complex_op<T> &x)
+    mock_archive & operator<<(const alps::alea::complex_op<T> &x)
     {
         *this << x.rere() << x.reim() << x.imre() << x.imim();
         return *this;
@@ -33,7 +33,7 @@ public:
 
     // Store ALEA results
     template <typename T>
-    typename std::enable_if<alps::alea::is_alea_result<T>::value, MockArchive &>::type
+    typename std::enable_if<alps::alea::is_alea_result<T>::value, mock_archive &>::type
     operator<<(const T &result)
     {
         save(*this, result, 0);
@@ -41,10 +41,10 @@ public:
     }
 
     // Extract simple types
-    MockArchive & operator>>(double &x) { extract_fundamental(x); return *this; }
-    MockArchive & operator>>(long &x) { extract_fundamental(x); return *this; }
-    MockArchive & operator>>(unsigned long &x) { extract_fundamental(x); return *this; }
-    MockArchive & operator>>(std::complex<double> &x) {
+    mock_archive & operator>>(double &x) { extract_fundamental(x); return *this; }
+    mock_archive & operator>>(long &x) { extract_fundamental(x); return *this; }
+    mock_archive & operator>>(unsigned long &x) { extract_fundamental(x); return *this; }
+    mock_archive & operator>>(std::complex<double> &x) {
       double r, i;
       extract_fundamental(r);
       extract_fundamental(i);
@@ -54,7 +54,7 @@ public:
 
     // Extract complex_op<T>
     template<typename T>
-    MockArchive & operator>>(alps::alea::complex_op<T> &x)
+    mock_archive & operator>>(alps::alea::complex_op<T> &x)
     {
         *this >> x.rere() >> x.reim() >> x.imre() >> x.imim();
         return *this;
@@ -62,7 +62,7 @@ public:
 
     // Extract ALEA results
     template <typename T>
-    typename std::enable_if<alps::alea::is_alea_result<T>::value, MockArchive &>::type
+    typename std::enable_if<alps::alea::is_alea_result<T>::value, mock_archive &>::type
     operator>>(T &result)
     {
         load(*this, result, 0);
@@ -91,8 +91,8 @@ private:
     std::queue<unsigned char> buf;
 };
 
-TEST(twogauss_serialize_case, MockArchive) {
-    MockArchive archive;
+TEST(twogauss_serialize_case, mock_archive) {
+    mock_archive archive;
 
     archive << (double)3.14
             << (long)-123456
@@ -134,7 +134,7 @@ public:
             in_acc << std::vector<value_type>{twogauss_data[i][0], twogauss_data[i][1]};
         auto in = in_acc.result();
 
-        MockArchive archive;
+        mock_archive archive;
         archive << in; // serialize
 
         Acc out_acc(2);
