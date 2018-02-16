@@ -74,14 +74,14 @@ private:
     template<typename T>
     void store_fundamental(T x) {
         unsigned char* p = reinterpret_cast<unsigned char*>(&x);
-        for(int n = 0; n < sizeof(T); ++n)
+        for(size_t n = 0; n < sizeof(T); ++n)
             buf.push(*(p + n));
     }
 
     template<typename T>
     void extract_fundamental(T &x) {
         unsigned char* p = reinterpret_cast<unsigned char*>(&x);
-        for(int n = 0; n < sizeof(T); ++n) {
+        for(size_t n = 0; n < sizeof(T); ++n) {
             *(p + n) = buf.front();
             buf.pop();
         }
