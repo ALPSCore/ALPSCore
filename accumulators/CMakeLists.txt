@@ -24,7 +24,8 @@ if (DocumentationOnly)
   return()
 endif()
 
-add_this_package(accumulator_wrapper
+add_this_package(namedaccumulators
+                 accumulator_wrapper
                  result_wrapper
                  wrapper_set
                  wrapper_set_hdf5)

@@ -83,8 +83,8 @@ namespace alps {
                     (required (_accumulator_name, (std::string)))
             )
 
-            MeanAccumulator& operator=(const MeanAccumulator& rhs) { return static_cast<MeanAccumulator&>(*this=rhs); }
-            MeanAccumulator(const MeanAccumulator& rhs) : detail::AccumulatorBase<accumulator_type>(rhs) {}
+            MeanAccumulator& operator=(const MeanAccumulator& rhs);
+            MeanAccumulator(const MeanAccumulator& rhs);
         };
 
         template<typename T> struct NoBinningAccumulator : public detail::AccumulatorBase<
@@ -98,11 +98,8 @@ namespace alps {
                 accumulator_keywords,
                     (required (_accumulator_name, (std::string)))
             )
-            NoBinningAccumulator& operator=(const NoBinningAccumulator& rhs)
-            {
-                return static_cast<NoBinningAccumulator&>(*this=rhs);
-            }
-            NoBinningAccumulator(const NoBinningAccumulator& rhs) : detail::AccumulatorBase<accumulator_type>(rhs) {}
+            NoBinningAccumulator& operator=(const NoBinningAccumulator& rhs);
+            NoBinningAccumulator(const NoBinningAccumulator& rhs);
         };
 
         template<typename T> struct LogBinningAccumulator : public detail::AccumulatorBase<
@@ -116,15 +113,12 @@ namespace alps {
                 accumulator_keywords,
                     (required (_accumulator_name, (std::string)))
             )
-            LogBinningAccumulator& operator=(const LogBinningAccumulator& rhs)
-            {
-                return static_cast<LogBinningAccumulator&>(*this=rhs);
-            }
-            LogBinningAccumulator(const LogBinningAccumulator& rhs) : detail::AccumulatorBase<accumulator_type>(rhs) {}
+            LogBinningAccumulator& operator=(const LogBinningAccumulator& rhs);
+            LogBinningAccumulator(const LogBinningAccumulator& rhs);
             /// Data type corresponding to autocorrelation
             typedef typename autocorrelation_type<accumulator_type>::type autocorrelation_type;
             /// Returns autocorrelation for this accumulator.
-            autocorrelation_type tau() const { return this->wrapper->template extract<accumulator_type>().autocorrelation(); }
+            autocorrelation_type tau() const;
         };
 
         template<typename T> struct FullBinningAccumulator : public detail::AccumulatorBase<
@@ -141,23 +135,17 @@ namespace alps {
                         (_max_bin_number, (std::size_t))
                     )
             )
-            FullBinningAccumulator& operator=(const FullBinningAccumulator& rhs)
-            {
-                return static_cast<FullBinningAccumulator&>(*this=rhs);
-            }
-            FullBinningAccumulator(const FullBinningAccumulator& rhs) : detail::AccumulatorBase<accumulator_type>(rhs) {}
+            FullBinningAccumulator& operator=(const FullBinningAccumulator& rhs);
+            FullBinningAccumulator(const FullBinningAccumulator& rhs);
 
             /// Data type corresponding to autocorrelation
             typedef typename autocorrelation_type<accumulator_type>::type autocorrelation_type;
             /// Returns autocorrelation for this accumulator.
-            autocorrelation_type tau() const { return this->wrapper->template extract<accumulator_type>().autocorrelation(); }
+            autocorrelation_type tau() const;
         };
 
         #define ALPS_ACCUMULATOR_REGISTER_OPERATOR(A)                                                               \
-            template<typename T> inline accumulator_set & operator<<(accumulator_set & set, const A <T> & arg) {    \
-                set.insert(arg.name, arg.wrapper);                                                                  \
-                return set;                                                                                         \
-            }
+            template<typename T> accumulator_set & operator<<(accumulator_set & set, const A <T> & arg);
 
         ALPS_ACCUMULATOR_REGISTER_OPERATOR(MeanAccumulator)
         ALPS_ACCUMULATOR_REGISTER_OPERATOR(NoBinningAccumulator)
