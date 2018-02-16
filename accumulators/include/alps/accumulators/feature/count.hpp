@@ -9,13 +9,10 @@
 #include <alps/config.hpp>
 
 #include <alps/accumulators/feature.hpp>
-#include <alps/accumulators/parameter.hpp>
 
 #include <alps/hdf5/archive.hpp>
-#include <alps/utilities/stacktrace.hpp>
 #include <alps/utilities/short_print.hpp>
 
-#include <boost/utility.hpp>
 #include <boost/cstdint.hpp>
 
 #include <stdexcept>
@@ -80,9 +77,7 @@ namespace alps {
                         return m_count;
                     }
 
-                    void operator()(T const &) {
-                        throw std::runtime_error("No values can be added to a result" + ALPS_STACKTRACE);
-                    }
+                    void operator()(T const &);
 
                     template<typename W> void operator()(T const &, W) {
                         throw std::runtime_error("No values can be added to a result" + ALPS_STACKTRACE);
@@ -92,36 +87,18 @@ namespace alps {
                         os << " #" << alps::short_print(count());
                     }
 
-                    void save(hdf5::archive & ar) const {
-                        if (m_count==0) {
-                            throw std::logic_error("Attempt to save an empty result" + ALPS_STACKTRACE);
-                        }
-                        ar["count"] = m_count;
-                    }
-
-                    void load(hdf5::archive & ar) {
-                        count_type cnt;
-                        ar["count"] >> cnt;
-                        if (cnt==0) {
-                            throw std::runtime_error("Malformed archive containing an empty result"
-                                                     + ALPS_STACKTRACE);
-                        }
-                        m_count=cnt;
-                    }
+                    void save(hdf5::archive & ar) const;
+                    void load(hdf5::archive & ar);
 
                     static std::size_t rank() { return 1; }
-                    static bool can_load(hdf5::archive & ar) { // TODO: make archive const
-                        return ar.is_data("count");
-                    }
+                    static bool can_load(hdf5::archive & ar);
 
                     template<typename U> void operator+=(U const & arg) { augadd(arg); }
                     template<typename U> void operator-=(U const & arg) { augsub(arg); }
                     template<typename U> void operator*=(U const & arg) { augmul(arg); }
                     template<typename U> void operator/=(U const & arg) { augdiv(arg); }
 
-                    inline void reset() {
-                        throw std::runtime_error("A result cannot be reseted" + ALPS_STACKTRACE);
-                    }
+                    void reset();
 
                 private:
 
@@ -206,27 +183,11 @@ namespace alps {
                         os << " #" << alps::short_print(count());
                     }
 
-                    void save(hdf5::archive & ar) const {
-                        if (m_count==0) {
-                            throw std::logic_error("Attempt to save an empty accumulator" + ALPS_STACKTRACE);
-                        }
-                        ar["count"] = m_count;
-                    }
-
-                    void load(hdf5::archive & ar) { // TODO: make archive const
-                        count_type cnt;
-                        ar["count"] >> cnt;
-                        if (cnt==0) {
-                            throw std::runtime_error("Malformed archive containing an empty accumulator"
-                                                     + ALPS_STACKTRACE);
-                        }
-                        m_count=cnt;
-                    }
+                    void save(hdf5::archive & ar) const;
+                    void load(hdf5::archive & ar);
 
                     static std::size_t rank() { return 1; }
-                    static bool can_load(const hdf5::archive & ar) {
-                        return ar.is_data("count");
-                    }
+                    static bool can_load(const hdf5::archive & ar);
 
                     inline void reset() {
                         m_count = 0;
@@ -243,21 +204,11 @@ namespace alps {
                     void collective_merge(
                           alps::mpi::communicator const & comm
                         , int root
-                    ) {
-                        if (comm.rank() == root)
-                            alps::alps_mpi::reduce(comm, m_count, m_count, std::plus<count_type>(), root);
-                        else
-                            const_cast<Accumulator<T, count_tag, B> const *>(this)->collective_merge(comm, root);
-                    }
+                    );
                     void collective_merge(
                           alps::mpi::communicator const & comm
                         , int root
-                    ) const {
-                        if (comm.rank() == root)
-                            throw std::runtime_error("A const object cannot be root" + ALPS_STACKTRACE);
-                        else
-                            alps::alps_mpi::reduce(comm, m_count, std::plus<count_type>(), root);
-                    }
+                    ) const;
 #endif
 
                 private:
