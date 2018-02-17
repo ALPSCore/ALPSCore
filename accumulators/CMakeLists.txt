@@ -29,6 +29,7 @@ add_this_package(namedaccumulators
                  result_wrapper
                  wrapper_set
                  wrapper_set_hdf5
+                 mpi
                  feature/count
                  feature/mean
                  feature/error
