@@ -34,11 +34,6 @@
 #include <algorithm> // for std::min
 #include <type_traits>
 
-#include <boost/preprocessor/tuple/to_seq.hpp>
-#include <boost/preprocessor/seq/for_each.hpp>
-
-#define ALPS_ACCUMULATOR_VALUE_TYPES_SEQ BOOST_PP_TUPLE_TO_SEQ(ALPS_ACCUMULATOR_VALUE_TYPES_SIZE, (ALPS_ACCUMULATOR_VALUE_TYPES))
-
 namespace alps {
     namespace accumulators {
         // this should be called namespace tag { struct binning_analysis; }

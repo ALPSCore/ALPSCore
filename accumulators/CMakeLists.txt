@@ -32,7 +32,8 @@ add_this_package(namedaccumulators
                  feature/count
                  feature/mean
                  feature/error
-                 feature/binning_analysis)
+                 feature/binning_analysis
+                 feature/max_num_binning)
 
 add_boost()
 add_hdf5()
