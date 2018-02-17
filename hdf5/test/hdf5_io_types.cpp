@@ -245,17 +245,17 @@ template<typename T, typename U> class cast_type : public cast_type_base<T, U> {
             initialize(base_type::t);
         }
         bool operator==(cast_type<T, U> const & v) const {
-            return compare(v, typename boost::mpl::and_<
-                  typename boost::mpl::or_<typename std::is_same<T, double>::type, typename std::is_same<T, float>::type>::type
-                , typename boost::mpl::or_<typename std::is_same<U, double>::type, typename std::is_same<U, float>::type>::type
-            >::type());
+            return compare(v, std::integral_constant<bool,
+                  (std::is_same<T, double>::value || std::is_same<T, float>::value) &&
+                  (std::is_same<U, double>::value || std::is_same<U, float>::value)
+            >());
         }
     private:
-        bool compare(cast_type<T, U> const & v, boost::mpl::true_) const {
+        bool compare(cast_type<T, U> const & v, std::true_type) const {
             U diff = (base_type::has_u ? base_type::u : alps::cast<U>(base_type::t)) - (v.has_u ? v.u : alps::cast<U>(v.t));
             return (diff > 0 ? diff : -diff) / ((base_type::has_u ? base_type::u : alps::cast<U>(base_type::t)) + (v.has_u ? v.u : alps::cast<U>(v.t))) / 2 < 1e-4;
         }
-        bool compare(cast_type<T, U> const & v, boost::mpl::false_) const {
+        bool compare(cast_type<T, U> const & v, std::false_type) const {
             return (base_type::has_u ? base_type::u : alps::cast<U>(base_type::t)) == (v.has_u ? v.u : alps::cast<U>(v.t));
         }
 };
@@ -1065,7 +1065,7 @@ template<typename base_type> struct hdf5_test {
 };
 
 template<typename T> struct hdf5_test<boost::shared_array<T> > {
-    static bool write(std::string const & filename, boost::mpl::false_) {
+    static bool write(std::string const & filename, std::false_type) {
         std::size_t length = MATRIX_SIZE;
         std::vector<std::size_t> size_1(1, MATRIX_SIZE);
         boost::shared_array<T> write_1_value(new T[MATRIX_SIZE]);
@@ -1110,48 +1110,49 @@ template<typename T> struct hdf5_test<boost::shared_array<T> > {
             ;
         }
     }
-    static bool overwrite(std::string const & filename, boost::mpl::false_) {
+    static bool overwrite(std::string const & filename, std::false_type) {
         // TODO: implement test for write type A and overwrite with type B
         return true;
     }
 };
 
 // TODO: this should be possible
-template<typename T> struct skip_attribute: public boost::mpl::false_ {};
+template<typename T> struct skip_attribute: public std::false_type {};
 
-template<typename T> struct skip_attribute<userdefined_class<T> >: public boost::mpl::true_ {};
-template<typename T, typename U> struct skip_attribute<cast_type<T, U> >: public boost::mpl::true_ {};
-template<> struct skip_attribute<enum_type>: public boost::mpl::true_ {};
+template<typename T> struct skip_attribute<userdefined_class<T> >: public std::true_type {};
+template<typename T, typename U> struct skip_attribute<cast_type<T, U> >: public std::true_type {};
+template<> struct skip_attribute<enum_type>: public std::true_type {};
 
-template<> struct skip_attribute<std::vector<bool> >: public boost::mpl::true_ {};
-template<typename T> struct skip_attribute<std::vector<std::vector<T> > >: public boost::mpl::true_ {};
-template<typename T> struct skip_attribute<std::valarray<std::vector<T> > >: public boost::mpl::true_ {};
-template<typename T> struct skip_attribute<std::vector<std::valarray<T> > >: public boost::mpl::true_ {};
-template<typename T> struct skip_attribute<std::valarray<std::valarray<T> > >: public boost::mpl::true_ {};
+template<> struct skip_attribute<std::vector<bool> >: public std::true_type {};
+template<typename T> struct skip_attribute<std::vector<std::vector<T> > >: public std::true_type {};
+template<typename T> struct skip_attribute<std::valarray<std::vector<T> > >: public std::true_type {};
+template<typename T> struct skip_attribute<std::vector<std::valarray<T> > >: public std::true_type {};
+template<typename T> struct skip_attribute<std::valarray<std::valarray<T> > >: public std::true_type {};
 
-template<typename T, std::size_t N> struct skip_attribute<boost::array<std::vector<T>, N> >: public boost::mpl::true_ {};
+template<typename T, std::size_t N> struct skip_attribute<boost::array<std::vector<T>, N> >: public std::true_type {};
 
-template<typename T, std::size_t N, typename A> struct skip_attribute<std::vector<boost::multi_array<T, N, A> > >: public boost::mpl::true_ {};
-// template<typename T, std::size_t N, typename A> struct skip_attribute<std::vector<alps::multi_array<T, N, A> > >: public boost::mpl::true_ {};
+template<typename T, std::size_t N, typename A> struct skip_attribute<std::vector<boost::multi_array<T, N, A> > >: public std::true_type {};
+// template<typename T, std::size_t N, typename A> struct skip_attribute<std::vector<alps::multi_array<T, N, A> > >: public std::true_type {};
 
-template<typename T, std::size_t N, typename A> struct skip_attribute<boost::multi_array<T, N, A> * >: public boost::mpl::true_ {};
-// template<typename T, std::size_t N, typename A> struct skip_attribute<alps::multi_array<T, N, A> * >: public boost::mpl::true_ {};
+template<typename T, std::size_t N, typename A> struct skip_attribute<boost::multi_array<T, N, A> * >: public std::true_type {};
+// template<typename T, std::size_t N, typename A> struct skip_attribute<alps::multi_array<T, N, A> * >: public std::true_type {};
 
 template <
     typename T0, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9
-> struct skip_attribute<std::vector<boost::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> > >: public boost::mpl::true_ {};
+> struct skip_attribute<std::vector<boost::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> > >: public std::true_type {};
 
-// template <typename T, typename M> struct skip_attribute<alps::numeric::matrix<T, M> > : public boost::mpl::true_ {};
+// template <typename T, typename M> struct skip_attribute<alps::numeric::matrix<T, M> > : public std::true_type {};
 
 template<typename T> struct skip_attribute<T *>: public skip_attribute<T> {};
 template<typename T> struct skip_attribute<std::vector<T> >: public skip_attribute<T> {};
 template<typename T> struct skip_attribute<std::valarray<T> >: public skip_attribute<T> {};
-template<typename T, typename U> struct skip_attribute<std::pair<T, U> >: public boost::mpl::or_<skip_attribute<T>, skip_attribute<U> >::type {};
+template<typename T, typename U> struct skip_attribute<std::pair<T, U> >:
+    public std::integral_constant<bool, skip_attribute<T>::value || skip_attribute<U>::value > {};
 
 template<typename T> struct skip_attribute<std::pair<T *, std::vector<std::size_t> > >: public skip_attribute<T> {};
-template<typename T> struct skip_attribute<std::pair<std::vector<T> *, std::vector<std::size_t> > >: public boost::mpl::true_ {};
-template<typename T, std::size_t N, typename A> struct skip_attribute<std::pair<boost::multi_array<T, N, A> *, std::vector<std::size_t> > >: public boost::mpl::true_ {};
-// template<typename T, std::size_t N, typename A> struct skip_attribute<std::pair<alps::multi_array<T, N, A> *, std::vector<std::size_t> > >: public boost::mpl::true_ {};
+template<typename T> struct skip_attribute<std::pair<std::vector<T> *, std::vector<std::size_t> > >: public std::true_type {};
+template<typename T, std::size_t N, typename A> struct skip_attribute<std::pair<boost::multi_array<T, N, A> *, std::vector<std::size_t> > >: public std::true_type {};
+// template<typename T, std::size_t N, typename A> struct skip_attribute<std::pair<alps::multi_array<T, N, A> *, std::vector<std::size_t> > >: public std::true_type {};
 
 template<typename T> struct skip_attribute<boost::shared_array<T> >: public skip_attribute<T> {};
 
