@@ -59,24 +59,6 @@ namespace alps {
             // Explicit instantiations
             template class wrapper_set<accumulator_wrapper>;
             template class wrapper_set<result_wrapper>;
-
-            //
-            // These methods are valid only for T = accumulator_wrapper
-            //
-
-            template<> void wrapper_set<accumulator_wrapper>::merge(wrapper_set const &rhs) {
-                iterator it1 = this->begin();
-                const_iterator it2 = rhs.begin();
-                for(; it1 != end(); ++it1, ++it2) {
-                    if (it1->first != it2 ->first) throw std::logic_error("Can't merge" + it1->first + " and " + it2->first);
-                    it1->second->merge(*(it2->second));
-                }
-            }
-
-            template<> void wrapper_set<accumulator_wrapper>::reset() {
-                for(iterator it = begin(); it != end(); ++it)
-                    it->second->reset();
-            }
         }
     }
 }

@@ -60,12 +60,7 @@ namespace alps {
                     /// Register a user-defined serializable type
                     template<typename A> static void register_serializable_type();
 
-                    /// Merge another accumulator/result set into this one. @param rhs the set to merge.
-                    void merge(wrapper_set const &rhs);
-
                     void print(std::ostream & os) const;
-
-                    void reset();
 
                     iterator begin() { return m_storage.begin(); }
                     iterator end() { return m_storage.end(); }
@@ -74,6 +69,29 @@ namespace alps {
                     const_iterator end() const { return m_storage.end(); }
 
                     void clear() { m_storage.clear(); }
+
+                    //
+                    // These methods are valid only for T = accumulator_wrapper
+                    //
+
+                    /// Merge another accumulator/result set into this one. @param rhs the set to merge.
+                    template<typename U = T>
+                    typename std::enable_if<std::is_same<U, accumulator_wrapper>::value>::type
+                    merge(wrapper_set const &rhs) {
+                        iterator it1 = this->begin();
+                        const_iterator it2 = rhs.begin();
+                        for(; it1 != end(); ++it1, ++it2) {
+                            if (it1->first != it2 ->first) throw std::logic_error("Can't merge" + it1->first + " and " + it2->first);
+                            it1->second->merge(*(it2->second));
+                        }
+                    }
+
+                    template<typename U = T>
+                    typename std::enable_if<std::is_same<U, accumulator_wrapper>::value>::type
+                    reset() {
+                        for(iterator it = begin(); it != end(); ++it)
+                            it->second->reset();
+                    }
 
                 private:
                     std::map<std::string, boost::shared_ptr<T> > m_storage;
