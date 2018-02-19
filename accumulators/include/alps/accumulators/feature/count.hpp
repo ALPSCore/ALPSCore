@@ -105,48 +105,48 @@ namespace alps {
                     // TODO: make macro ...
                     template<typename U> void augadd(U const & arg, typename std::enable_if<std::is_scalar<U>::value, int>::type = 0) {
                         if (m_count == 0)
-                            throw std::runtime_error("The results needs measurements" + ALPS_STACKTRACE);
+                            throw std::runtime_error("The results need measurements" + ALPS_STACKTRACE);
                         B::operator+=(arg);
                     }
                     template<typename U> void augadd(U const & arg, typename std::enable_if<!std::is_scalar<U>::value, int>::type = 0) {
                         if (m_count == 0 || arg.count() == 0)
-                            throw std::runtime_error("Both results needs measurements" + ALPS_STACKTRACE);
+                            throw std::runtime_error("Both results need measurements" + ALPS_STACKTRACE);
                         m_count = std::min(m_count,  arg.count());
                         B::operator+=(arg);
                     }
 
                     template<typename U> void augsub(U const & arg, typename std::enable_if<std::is_scalar<U>::value, int>::type = 0) {
                         if (m_count == 0)
-                            throw std::runtime_error("The results needs measurements" + ALPS_STACKTRACE);
+                            throw std::runtime_error("The results need measurements" + ALPS_STACKTRACE);
                         B::operator-=(arg);
                     }
                     template<typename U> void augsub(U const & arg, typename std::enable_if<!std::is_scalar<U>::value, int>::type = 0) {
                         if (m_count == 0 || arg.count() == 0)
-                            throw std::runtime_error("Both results needs measurements" + ALPS_STACKTRACE);
+                            throw std::runtime_error("Both results need measurements" + ALPS_STACKTRACE);
                         m_count = std::min(m_count,  arg.count());
                         B::operator-=(arg);
                     }
 
                     template<typename U> void augmul(U const & arg, typename std::enable_if<std::is_scalar<U>::value, int>::type = 0) {
                         if (m_count == 0)
-                            throw std::runtime_error("The results needs measurements" + ALPS_STACKTRACE);
+                            throw std::runtime_error("The results need measurements" + ALPS_STACKTRACE);
                         B::operator*=(arg);
                     }
                     template<typename U> void augmul(U const & arg, typename std::enable_if<!std::is_scalar<U>::value, int>::type = 0) {
                         if (m_count == 0 || arg.count() == 0)
-                            throw std::runtime_error("Both results needs measurements" + ALPS_STACKTRACE);
+                            throw std::runtime_error("Both results need measurements" + ALPS_STACKTRACE);
                         m_count = std::min(m_count,  arg.count());
                         B::operator*=(arg);
                     }
 
                     template<typename U> void augdiv(U const & arg, typename std::enable_if<std::is_scalar<U>::value, int>::type = 0) {
                         if (m_count == 0)
-                            throw std::runtime_error("The results needs measurements" + ALPS_STACKTRACE);
+                            throw std::runtime_error("The results need measurements" + ALPS_STACKTRACE);
                         B::operator/=(arg);
                     }
                     template<typename U> void augdiv(U const & arg, typename std::enable_if<!std::is_scalar<U>::value, int>::type = 0) {
                         if (m_count == 0 || arg.count() == 0)
-                            throw std::runtime_error("Both results needs measurements" + ALPS_STACKTRACE);
+                            throw std::runtime_error("Both results need measurements" + ALPS_STACKTRACE);
                         m_count = std::min(m_count,  arg.count());
                         B::operator/=(arg);
                     }

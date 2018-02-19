@@ -142,7 +142,7 @@ namespace alps {
                         throw std::runtime_error("The Function operator /= is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
                     }
                     void negate() {
-                        throw std::runtime_error("The Function gegate is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
+                        throw std::runtime_error("The Function negate is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
                     }
                     void inverse() {
                         throw std::runtime_error("The Function inverse is not implemented for accumulators, only for results" + ALPS_STACKTRACE);

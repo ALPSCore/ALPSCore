@@ -106,7 +106,7 @@ namespace alps {
             private:
                 template<typename T> struct get_visitor: public boost::static_visitor<> {
                     template<typename X> void operator()(X const & /*arg*/) {
-                        throw std::runtime_error(std::string("Canot cast observable") + typeid(X).name() + " to base type: " + typeid(T).name() + ALPS_STACKTRACE);
+                        throw std::runtime_error(std::string("Cannot cast observable") + typeid(X).name() + " to base type: " + typeid(T).name() + ALPS_STACKTRACE);
                     }
                     void operator()(typename detail::add_base_wrapper_pointer<T>::type const & arg) { value = arg; }
                     typename detail::add_base_wrapper_pointer<T>::type value;
@@ -476,7 +476,7 @@ namespace alps {
             private:
                 template<typename T> struct get_visitor: public boost::static_visitor<> {
                     template<typename X> void operator()(X const & /*arg*/) {
-                        throw std::runtime_error(std::string("Canot cast observable") + typeid(X).name() + " to base type: " + typeid(T).name() + ALPS_STACKTRACE);
+                        throw std::runtime_error(std::string("Cannot cast observable") + typeid(X).name() + " to base type: " + typeid(T).name() + ALPS_STACKTRACE);
                     }
                     void operator()(typename detail::add_base_wrapper_pointer<T>::type const & arg) { value = arg; }
                     typename detail::add_base_wrapper_pointer<T>::type value;
