@@ -12,8 +12,8 @@
 #include <alps/type_traits/average_type.hpp>
 #include <alps/type_traits/element_type.hpp>
 #include <alps/type_traits/is_sequence.hpp>
-#include <boost/mpl/if.hpp>
 
+#include <type_traits>
 
 namespace alps {
 
@@ -26,12 +26,12 @@ namespace alps {
             }
         };
     }
-    
+
 template <class T>
 struct covariance_type
 {
- typedef typename boost::mpl::if_<
-     is_sequence<T>,
+ typedef typename std::conditional<
+     is_sequence<T>::value,
      detail::matrix_covariance_type<
        typename average_type<typename element_type<T>::type>::type
      >,

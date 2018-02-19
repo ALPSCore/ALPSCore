@@ -4,27 +4,23 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_ACCUMULATOR_WRAPPER_HPP
-#define ALPS_ACCUMULATOR_WRAPPER_HPP
+#pragma once
 
 #include <alps/config.hpp>
 
 #include <alps/accumulators/feature/mean.hpp>
 #include <alps/accumulators/feature/error.hpp>
 #include <alps/accumulators/feature/count.hpp>
-// #include <alps/accumulators/feature/weight.hpp>
 #include <alps/accumulators/feature/max_num_binning.hpp>
 #include <alps/accumulators/feature/binning_analysis.hpp>
 
 #include <alps/hdf5/archive.hpp>
 
-#include <boost/mpl/vector.hpp>
 #include <boost/variant/variant.hpp>
 #include <boost/variant/apply_visitor.hpp>
 
-#include <boost/mpl/if.hpp>
-
 #include <typeinfo>
+#include <type_traits>
 #include <stdexcept>
 
 namespace alps {
@@ -36,22 +32,17 @@ namespace alps {
             template<typename T> struct value_wrapper {
                 typedef T value_type;
             };
-
-            // typedef boost::make_variant_over<
-            //     boost::mpl::vector<ALPS_ACCUMULATOR_VALUE_TYPES>
-            // >::type weight_variant_type;
-
         }
 
-        template<typename T> class base_wrapper : public 
-            // impl::BaseWrapper<T, weight_tag, 
-            impl::BaseWrapper<T, max_num_binning_tag, 
-            impl::BaseWrapper<T, binning_analysis_tag, 
-            impl::BaseWrapper<T, error_tag, 
-            impl::BaseWrapper<T, mean_tag, 
-            impl::BaseWrapper<T, count_tag, 
+        template<typename T> class base_wrapper : public
+            // impl::BaseWrapper<T, weight_tag,
+            impl::BaseWrapper<T, max_num_binning_tag,
+            impl::BaseWrapper<T, binning_analysis_tag,
+            impl::BaseWrapper<T, error_tag,
+            impl::BaseWrapper<T, mean_tag,
+            impl::BaseWrapper<T, count_tag,
             detail::value_wrapper<T>
-        // > 
+        // >
         > > > > > {
 
             public:
@@ -89,15 +80,15 @@ namespace alps {
                    if T is a non-scalar type, and `wrapped_value_type=void*` if T is a scalar type.
                 */
                 template <typename X> struct wrap_value_type:
-                    public boost::mpl::if_<
-                        alps::is_scalar<X>,
+                    public std::conditional<
+                        alps::is_scalar<X>::value,
                         void*,
                         base_wrapper<typename alps::numeric::scalar<X>::type> const & > {};
-                
+
             protected:
                 /// Either wrapped scalar<T>::type or unwrapped void*, depending on T
                 typedef typename wrap_value_type<T>::type wrapped_scalar_value_type;
-                
+
             public:
 
                 virtual void operator+=(base_wrapper const &) = 0;
@@ -109,8 +100,8 @@ namespace alps {
                 virtual void operator-=(wrapped_scalar_value_type) = 0;
                 virtual void operator*=(wrapped_scalar_value_type) = 0;
                 virtual void operator/=(wrapped_scalar_value_type) = 0;
-            
-          
+
+
                 // These virtual functions accept `long double`: it's the "widest" RHS scalar type.
                 virtual void operator+=(long double) = 0;
                 virtual void operator-=(long double) = 0;
@@ -147,44 +138,44 @@ namespace alps {
             };
         }
 
-        template<typename A> class derived_wrapper : public 
-            // impl::DerivedWrapper<A, weight_tag, 
-            impl::DerivedWrapper<A, max_num_binning_tag, 
-            impl::DerivedWrapper<A, binning_analysis_tag, 
-            impl::DerivedWrapper<A, error_tag, 
-            impl::DerivedWrapper<A, mean_tag, 
-            impl::DerivedWrapper<A, count_tag, 
+        template<typename A> class derived_wrapper : public
+            // impl::DerivedWrapper<A, weight_tag,
+            impl::DerivedWrapper<A, max_num_binning_tag,
+            impl::DerivedWrapper<A, binning_analysis_tag,
+            impl::DerivedWrapper<A, error_tag,
+            impl::DerivedWrapper<A, mean_tag,
+            impl::DerivedWrapper<A, count_tag,
         detail::foundation_wrapper<A>
-        // > 
+        // >
         > > > > > {
 
             typedef typename detail::value_wrapper<typename value_type<A>::type>::value_type value_type;
-            
+
             public:
                 derived_wrapper()
-                    : 
-                        // impl::DerivedWrapper<A, weight_tag, 
-                        impl::DerivedWrapper<A, max_num_binning_tag, 
-                        impl::DerivedWrapper<A, binning_analysis_tag, 
-                        impl::DerivedWrapper<A, error_tag, 
-                        impl::DerivedWrapper<A, mean_tag, 
-                        impl::DerivedWrapper<A, count_tag, 
-                    detail::foundation_wrapper<A> 
-                    // > 
-                    > > > > >() 
+                    :
+                        // impl::DerivedWrapper<A, weight_tag,
+                        impl::DerivedWrapper<A, max_num_binning_tag,
+                        impl::DerivedWrapper<A, binning_analysis_tag,
+                        impl::DerivedWrapper<A, error_tag,
+                        impl::DerivedWrapper<A, mean_tag,
+                        impl::DerivedWrapper<A, count_tag,
+                    detail::foundation_wrapper<A>
+                    // >
+                    > > > > >()
                 {}
 
                 derived_wrapper(A const & arg)
-                    : 
-                        // impl::DerivedWrapper<A, weight_tag, 
-                        impl::DerivedWrapper<A, max_num_binning_tag, 
-                        impl::DerivedWrapper<A, binning_analysis_tag, 
-                        impl::DerivedWrapper<A, error_tag, 
-                        impl::DerivedWrapper<A, mean_tag, 
-                        impl::DerivedWrapper<A, count_tag, 
-                    detail::foundation_wrapper<A> 
-                    // > 
-                    > > > > >(arg) 
+                    :
+                        // impl::DerivedWrapper<A, weight_tag,
+                        impl::DerivedWrapper<A, max_num_binning_tag,
+                        impl::DerivedWrapper<A, binning_analysis_tag,
+                        impl::DerivedWrapper<A, error_tag,
+                        impl::DerivedWrapper<A, mean_tag,
+                        impl::DerivedWrapper<A, count_tag,
+                    detail::foundation_wrapper<A>
+                    // >
+                    > > > > >(arg)
                 {}
 
                 A & extract() {
@@ -199,11 +190,11 @@ namespace alps {
                 }
 
             public:
-                void save(hdf5::archive & ar) const { 
-                    ar[""] = this->m_data; 
+                void save(hdf5::archive & ar) const {
+                    ar[""] = this->m_data;
                    }
-                void load(hdf5::archive & ar) { 
-                    ar[""] >> this->m_data; 
+                void load(hdf5::archive & ar) {
+                    ar[""] >> this->m_data;
                 }
 
                 void print(std::ostream & os, bool terse) const {
@@ -245,10 +236,10 @@ namespace alps {
 
                 derived_result_wrapper(A const & arg): derived_wrapper<A>(arg) {}
 
-                base_wrapper<typename value_type<A>::type> * clone() const { 
-                    return new derived_result_wrapper<A>(this->m_data); 
+                base_wrapper<typename value_type<A>::type> * clone() const {
+                    return new derived_result_wrapper<A>(this->m_data);
                 }
-                base_wrapper<typename value_type<A>::type> * result() const { 
+                base_wrapper<typename value_type<A>::type> * result() const {
                     throw std::runtime_error(std::string("A result(") + typeid(A).name() + ") cannot be converted to a result" + ALPS_STACKTRACE);
                     return NULL;
                 }
@@ -308,7 +299,7 @@ namespace alps {
 
                 #undef FUNCTION_PROXY
         };
-        
+
         template<typename T, typename A> derived_result_wrapper<A> operator/(T arg, derived_result_wrapper<A> res) {
             return arg * res.inverse();
         }
@@ -320,11 +311,11 @@ namespace alps {
                 derived_accumulator_wrapper(): derived_wrapper<A>() {}
 
                 derived_accumulator_wrapper(A const & arg): derived_wrapper<A>(arg) {}
-                
+
                 base_wrapper<typename value_type<A>::type> * clone() const {
-                    return new derived_accumulator_wrapper<A>(this->m_data); 
+                    return new derived_accumulator_wrapper<A>(this->m_data);
                 }
-                base_wrapper<typename value_type<A>::type> * result() const { 
+                base_wrapper<typename value_type<A>::type> * result() const {
                     return result_impl<A>();
                 }
 
@@ -353,7 +344,7 @@ namespace alps {
                 void operator/=(long double) {
                     throw std::runtime_error("The operator /= is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
                 }
-            
+
                 void operator+=(wrapped_scalar_value_type /*arg*/) {
                     throw std::runtime_error("The Operator += is not implemented for accumulators, only for results" + ALPS_STACKTRACE);
                 }
@@ -399,10 +390,10 @@ namespace alps {
 
             private:
 
-                template<typename T> typename boost::enable_if<typename has_result_type<T>::type, base_wrapper<typename value_type<A>::type> *>::type result_impl() const {
+                template<typename T> typename std::enable_if<has_result_type<T>::value, base_wrapper<typename value_type<A>::type> *>::type result_impl() const {
                     return new derived_result_wrapper<typename A::result_type>(this->m_data);
                 }
-                template<typename T> typename boost::disable_if<typename has_result_type<T>::type, base_wrapper<typename value_type<A>::type> *>::type result_impl() const {
+                template<typename T> typename std::enable_if<!has_result_type<T>::value, base_wrapper<typename value_type<A>::type> *>::type result_impl() const {
                     throw std::runtime_error(std::string("The type ") + typeid(A).name() + " has no result_type" + ALPS_STACKTRACE);
                     return NULL;
                 }
@@ -410,5 +401,3 @@ namespace alps {
         };
     }
 }
-
- #endif

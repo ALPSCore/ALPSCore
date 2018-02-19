@@ -12,32 +12,31 @@
 #include <alps/type_traits/is_sequence.hpp>
 #include <alps/type_traits/covariance_type.hpp>
 
-#include <boost/utility/enable_if.hpp>
-
 #include <complex>
+#include <type_traits>
 
 namespace alps { namespace numeric {
 
 template <class T>
-inline 
-typename boost::disable_if<is_sequence<T>,typename covariance_type<T>::type>::type 
-outer_product(T a, T b) 
+inline
+typename std::enable_if<!is_sequence<T>::value,typename covariance_type<T>::type>::type
+outer_product(T a, T b)
 {
   return a*b;
 }
 
 
 template <class T>
-inline std::complex<T> outer_product(std::complex<T> const& a, std::complex<T> const& b) 
+inline std::complex<T> outer_product(std::complex<T> const& a, std::complex<T> const& b)
 {
   return std::conj(a)*b;
 }
 
 
 template <class T>
-inline 
-typename boost::enable_if<is_sequence<T>,typename covariance_type<T>::type>::type 
-outer_product(T a, T b) 
+inline
+typename std::enable_if<is_sequence<T>::value,typename covariance_type<T>::type>::type
+outer_product(T a, T b)
 {
     throw std::logic_error("Outer product beween vectors is not implemented. "
                            "Please use the new ALEA library if you need vector-vector covariance!");

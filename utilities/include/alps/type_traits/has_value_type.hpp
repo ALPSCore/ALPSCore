@@ -9,13 +9,16 @@
 #ifndef ALPS_TYPE_TRAITS_HAS_VALUE_TYPE_H
 #define ALPS_TYPE_TRAITS_HAS_VALUE_TYPE_H
 
-#include <boost/mpl/has_xxx.hpp>
-
-// maybe we can automate this by checking for the existence of a value_type member
+#include <type_traits>
 
 namespace alps {
 
-BOOST_MPL_HAS_XXX_TRAIT_DEF(value_type)
+template<typename T> struct has_value_type {
+    template<typename U> static char check(typename U::value_type *);
+    template<typename U> static double check(...);
+    typedef std::integral_constant<bool, sizeof(char) == sizeof(check<T>(0))> type;
+    constexpr static bool value = type::value;
+};
 
 } // end namespace alps
 

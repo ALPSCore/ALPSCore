@@ -26,7 +26,7 @@ namespace alps {
         {};
 
         template<typename T> struct has_complex_elements<std::complex<T> >
-            : public boost::true_type
+            : public std::true_type
         {};
 
         namespace detail {
@@ -58,7 +58,7 @@ namespace alps {
                     return get_pointer(*reinterpret_cast<typename scalar_type<std::complex<T> >::type *> (&value));
                 }
             };
-        
+
             template<typename T> struct get_pointer<std::complex<T> const> {
                 static typename scalar_type<std::complex<T> >::type const * apply(std::complex<T> const & value) {
                     using alps::hdf5::get_pointer;
