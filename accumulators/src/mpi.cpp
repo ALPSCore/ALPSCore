@@ -265,7 +265,7 @@
                 template void reduce(const communicator &, std::vector<std::vector<T>> const&, std::plus<T>, int);                                \
                 template void reduce(const communicator &, std::vector<std::vector<T>> const&, std::vector<std::vector<T>>&, std::plus<T>, int);
 
-            ALPS_INST_MPI_REDUCE(std::size_t)
+            ALPS_INST_MPI_REDUCE(boost::uint64_t)
             ALPS_INST_MPI_REDUCE(float)
             ALPS_INST_MPI_REDUCE(double)
             ALPS_INST_MPI_REDUCE(long double)
