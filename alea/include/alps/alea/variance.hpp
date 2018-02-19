@@ -160,7 +160,7 @@ public:
     /** Return backend object used for storing estimands */
     const var_data<T,Strategy> &store() const { return *store_; }
 
-  protected:
+protected:
     void add(const computed<T> &source, size_t count, var_acc *cascade);
 
     void add_bundle(var_acc *cascade);
