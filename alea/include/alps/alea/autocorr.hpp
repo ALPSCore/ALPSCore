@@ -209,6 +209,17 @@ private:
     friend class autocorr_acc<T>;
 };
 
+/** Check if two results are identical */
+template <typename T>
+bool operator==(const autocorr_result<T> &r1, const autocorr_result<T> &r2);
+template <typename T>
+bool operator!=(const autocorr_result<T> &r1, const autocorr_result<T> &r2)
+{
+    return !operator==(r1, r2);
+}
+
+template<typename T> struct is_alea_result<autocorr_result<T>> : std::true_type {};
+
 template <typename T>
 struct traits< autocorr_result<T> >
 {

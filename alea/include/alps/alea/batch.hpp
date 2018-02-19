@@ -240,6 +240,17 @@ private:
     friend class batch_acc<T>;
 };
 
+/** Check if two results are identical */
+template <typename T>
+bool operator==(const batch_result<T> &r1, const batch_result<T> &r2);
+template <typename T>
+bool operator!=(const batch_result<T> &r1, const batch_result<T> &r2)
+{
+    return !operator==(r1, r2);
+}
+
+template<typename T> struct is_alea_result<batch_result<T>> : std::true_type {};
+
 template <typename T>
 struct traits< batch_result<T> >
 {

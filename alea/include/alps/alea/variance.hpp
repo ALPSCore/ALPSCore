@@ -279,6 +279,20 @@ private:
     friend class autocorr_result<T>;
 };
 
+/** Check if two results are identical */
+template <typename T, typename Strategy>
+bool operator==(const var_result<T, Strategy> &r1, const var_result<T, Strategy> &r2);
+template <typename T, typename Strategy>
+bool operator!=(const var_result<T, Strategy> &r1, const var_result<T, Strategy> &r2)
+{
+    return !operator==(r1, r2);
+}
+
+template<typename T> struct is_alea_result<var_result<T, circular_var>> :
+    std::true_type {};
+template<typename T> struct is_alea_result<var_result<T, elliptic_var>> :
+    std::true_type {};
+
 template <typename T, typename Strategy>
 struct traits< var_result<T,Strategy> >
 {
