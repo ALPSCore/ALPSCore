@@ -67,8 +67,8 @@ class autocorr_acc
 {
 public:
     using value_type = T;
-    typedef typename bind<circular_var, T>::var_type var_type;
-    typedef var_acc<T, circular_var> level_acc_type;
+    using var_type = typename bind<circular_var, T>::var_type;
+    using level_acc_type = var_acc<T, circular_var>;
 
 public:
     autocorr_acc(size_t size=1, size_t batch_size=1, size_t granularity=2);

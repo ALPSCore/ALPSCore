@@ -119,9 +119,9 @@ class cov_acc
 {
 public:
     using value_type = T;
-    typedef typename bind<Strategy, T>::var_type var_type;
-    typedef typename bind<Strategy, T>::cov_type cov_type;
-    typedef typename eigen<cov_type>::matrix cov_matrix_type;
+    using var_type = typename bind<Strategy, T>::var_type;
+    using cov_type =  typename bind<Strategy, T>::cov_type;
+    using cov_matrix_type = typename eigen<cov_type>::matrix;
 
 public:
     cov_acc(size_t size=1, size_t bundle_size=1);

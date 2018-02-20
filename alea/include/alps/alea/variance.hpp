@@ -119,7 +119,7 @@ class var_acc
 {
 public:
     using value_type = T;
-    typedef typename bind<Strategy, T>::var_type var_type;
+    using var_type = typename bind<Strategy, T>::var_type;
 
 public:
     var_acc(size_t size=1, size_t bundle_size=1);
