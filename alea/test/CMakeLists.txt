@@ -4,6 +4,7 @@ set (test_src
      twogauss
      galois
      transform
+     stream_serializer
     )
 
 #add tests for MPI

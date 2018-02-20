@@ -104,6 +104,21 @@ void autocorr_acc<T>::finalize_to(autocorr_result<T> &result)
 template class autocorr_acc<double>;
 template class autocorr_acc<std::complex<double> >;
 
+template <typename T>
+bool operator==(const autocorr_result<T> &r1, const autocorr_result<T> &r2)
+{
+    if(r1.nlevel() != r2.nlevel()) return false;
+    for(size_t i = 0; i < r1.nlevel(); ++i) {
+        if(r1.level(i) != r2.level(i))
+            return false;
+    }
+    return true;
+}
+
+template bool operator==(const autocorr_result<double> &r1,
+                         const autocorr_result<double> &r2);
+template bool operator==(const autocorr_result<std::complex<double>> &r1,
+                         const autocorr_result<std::complex<double>> &r2);
 
 template <typename T>
 size_t autocorr_result<T>::batch_size(size_t i) const
@@ -212,6 +227,8 @@ void deserialize(deserializer &s, const std::string &key, autocorr_result<T> &se
     internal::deserializer_sentry group(s, key);
 
     // first deserialize the fundamentals and make sure that the target fits
+    size_t new_size = 1;
+    s.read("@size", ndview<size_t>(nullptr, &new_size, 0)); // discard
     size_t new_nlevel;
     deserialize(s, "@nlevel", new_nlevel);
     self.level_.resize(new_nlevel);
@@ -222,7 +239,7 @@ void deserialize(deserializer &s, const std::string &key, autocorr_result<T> &se
     s.exit();
 
     s.enter("mean");
-    size_t new_size = self.size();
+    new_size = self.size();
     s.read("value", ndview<T>(nullptr, &new_size, 1)); // discard
     s.read("error", ndview<var_type>(nullptr, &new_size, 1)); // discard
     s.exit();

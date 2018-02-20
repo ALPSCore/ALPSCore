@@ -203,7 +203,7 @@ public:
     /** Convert result to a permanent format (write to disk etc.) */
     friend void serialize<>(serializer &, const std::string &, const mean_result &);
 
-    /** Reresult to a permanent format (write to disk etc.) */
+    /** Result to a permanent format (write to disk etc.) */
     friend void deserialize<>(deserializer &, const std::string &, mean_result &);
 
     /** Write some info about the result to a stream */
@@ -217,6 +217,17 @@ private:
 
     friend class mean_acc<T>;
 };
+
+/** Check if two results are identical */
+template <typename T>
+bool operator==(const mean_result<T> &r1, const mean_result<T> &r2);
+template <typename T>
+bool operator!=(const mean_result<T> &r1, const mean_result<T> &r2)
+{
+    return !operator==(r1, r2);
+}
+
+template<typename T> struct is_alea_result<mean_result<T>> : std::true_type {};
 
 template <typename T>
 struct traits< mean_result<T> >
