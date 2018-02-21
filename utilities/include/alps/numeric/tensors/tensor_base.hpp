@@ -406,6 +406,14 @@ namespace alps {
         /// sizes for each dimension
         const std::array < size_t, Dim > &shape() const { return shape_; };
 
+        /// reshape with index list
+        template<typename Ind, typename ...Inds>
+        typename std::enable_if<std::numeric_limits<Ind>::is_integer>::type reshape(Ind ind, Inds...inds) {
+          static_assert(sizeof...(Inds) + 1 == Dim, "New shape should have the same dimension.");
+          std::array<size_t, Dim> shape = {{size_t(ind), size_t(inds)...}};
+          reshape(shape);
+        }
+
         /// reshape tensor object
         template<typename X = Container>
         typename std::enable_if<std::is_same < X, data_storage < T > >::value, void>::type reshape(const std::array<size_t, Dim>& shape) {

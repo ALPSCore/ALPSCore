@@ -315,7 +315,7 @@ namespace alps {
                                   std::is_convertible < RHS_GF, generic_gf<data_view>>::value, gf_type & >::type
         operator+=(const RHS_GF &rhs) {
           throw_if_empty();
-          data_ += rhs.data_;
+          data_ += rhs.data();
           return *this;
         }
 
@@ -341,7 +341,7 @@ namespace alps {
                                   std::is_convertible < RHS_GF, generic_gf<data_view>>::value, gf_type & >::type
         operator-=(const RHS_GF &rhs) {
           throw_if_empty();
-          data_ -= rhs.data_;
+          data_ -= rhs.data();
           return *this;
         }
 
@@ -449,19 +449,13 @@ namespace alps {
         }
 
         // reshape green's function
-        template<typename St = Storage>
-        typename std::enable_if<std::is_same<data_storage, St>::value>::type reshape(MESHES...meshes) {
-          data_.reshape(get_sizes(std::make_tuple(meshes...)));
-          meshes_ = std::make_tuple(meshes...);
-          empty_ = false;
-        }
-
-        template<typename St = Storage>
-        typename std::enable_if<std::is_same<data_view   , St>::value>::type reshape(MESHES...meshes) {
+        void reshape(MESHES...meshes) {
           std::array<size_t, N_> new_shape = get_sizes(std::make_tuple(meshes...));
           size_t new_size = std::accumulate(new_shape.begin(), new_shape.end(), size_t(1), std::multiplies<size_t>());
-          if(data_.size() != new_size) {
-            throw std::invalid_argument("The total size of resulting Green's function view should be the same as before.");
+          if(std::is_same<data_view, Storage>::value) {
+            if (data_.size() != new_size) {
+              throw std::invalid_argument("The total size of resulting Green's function view should be the same as before.");
+            }
           }
           data_.reshape(new_shape);
           meshes_ = std::make_tuple(meshes...);
