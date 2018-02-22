@@ -10,8 +10,6 @@
 
 #ifdef ALPS_HAVE_MPI
 
-    #include <alps/hdf5.hpp>
-
     #include <alps/utilities/boost_mpi.hpp>
 
     namespace alps {
@@ -24,4 +22,3 @@
     } // alps::
 
 #endif
-
