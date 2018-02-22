@@ -16,14 +16,6 @@
 // FIXME: remove together with deprecated methods
 #include <alps/utilities/deprecated.hpp>
 
-
-#include <boost/mpl/and.hpp>
-#include <boost/utility/enable_if.hpp>
-#include <boost/type_traits/integral_constant.hpp>
-#include <boost/type_traits/is_same.hpp>
-#include <boost/type_traits/is_array.hpp>
-#include <boost/type_traits/remove_all_extents.hpp>
-
 #ifndef ALPS_SINGLE_THREAD
 
 #include <boost/thread.hpp>
@@ -33,6 +25,7 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <type_traits>
 #include <numeric>
 
 #define ALPS_FOREACH_NATIVE_HDF5_TYPE(CALLBACK)                                                                                                                        \
@@ -58,12 +51,14 @@ namespace alps {
 
         /// Inherits from `true_type` if `T` is a native type, from `false_type` otherwise
         template <typename T>
-        struct is_native_type : public boost::false_type {};
+        struct is_native_type : public std::false_type {};
 #define ALPS_HDF5_IS_NATIVE_TYPE_CALLER(__type__)    \
-        template <> struct is_native_type<__type__> : public boost::true_type {};
+        template <> struct is_native_type<__type__> : public std::true_type {};
         ALPS_FOREACH_NATIVE_HDF5_TYPE(ALPS_HDF5_IS_NATIVE_TYPE_CALLER)
 #undef ALPS_HDF5_IS_NATIVE_TYPE_CALLER
 
+#define ONLY_NATIVE(T,R) typename std::enable_if<is_native_type<T>::value, R>::type
+#define ONLY_NOT_NATIVE(T,R) typename std::enable_if<!is_native_type<T>::value, R>::type
 
         namespace detail {
             struct archivecontext;
@@ -92,7 +87,7 @@ namespace alps {
 
                 template<typename T> archive_proxy & operator=(T const & value);
                 template<typename T> archive_proxy & operator<<(T const & value);
-                template <typename T> archive_proxy & operator>>(T & value);
+                template<typename T> archive_proxy & operator>>(T & value);
 
                 std::string path_;
                 A ar_;
@@ -106,11 +101,11 @@ namespace alps {
             // FIXME: MAKE private:
             public:
                 typedef enum {
-                    READ = 0x00, 
-                    WRITE = 0x01, 
-                    REPLACE = 0x02, 
-                    COMPRESS = 0x04, 
-                    MEMORY = 0x10 
+                    READ = 0x00,
+                    WRITE = 0x01,
+                    REPLACE = 0x02,
+                    COMPRESS = 0x04,
+                    MEMORY = 0x10
                 } properties;
 
             public:
@@ -172,48 +167,42 @@ namespace alps {
 
                 detail::archive_proxy<archive> operator[](std::string const & path);
 
-                template<typename T> void read(
+                template<typename T> auto read(
                       std::string path
                     , T *
                     , std::vector<std::size_t>
                     , std::vector<std::size_t> = std::vector<std::size_t>()
-                ) const {
+                ) const -> ONLY_NOT_NATIVE(T, void) {
                     throw std::logic_error("Invalid type on path: " + path + ALPS_STACKTRACE);
                 }
 
-                template<typename T> void write(
+                template<typename T> auto write(
                       std::string path
                     , T const * value
                     , std::vector<std::size_t> size
                     , std::vector<std::size_t> chunk = std::vector<std::size_t>()
                     , std::vector<std::size_t> offset = std::vector<std::size_t>()
-                ) const {
+                ) const -> ONLY_NOT_NATIVE(T, void) {
                     throw std::logic_error("Invalid type on path: " + path + ALPS_STACKTRACE);
                 }
 
-                #define ALPS_HDF5_DEFINE_API(T)                                                                                                                        \
-                    void read(std::string path, T & value) const;                                                                                                      \
-                    void read(                                                                                                                                         \
-                          std::string path                                                                                                                             \
-                        , T * value                                                                                                                                    \
-                        , std::vector<std::size_t> chunk                                                                                                               \
-                        , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                 \
-                    ) const;                                                                                                                                           \
-                                                                                                                                                                       \
-                    void write(std::string path, T value) const;                                                                                                       \
-                    void write(                                                                                                                                        \
-                          std::string path                                                                                                                             \
-                        , T const * value, std::vector<std::size_t> size                                                                                               \
-                        , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                  \
-                        , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                 \
-                    ) const;
-                ALPS_FOREACH_NATIVE_HDF5_TYPE(ALPS_HDF5_DEFINE_API)
-                #undef ALPS_HDF5_DEFINE_API
+                template<typename T> auto read(std::string path, T & value) const -> ONLY_NATIVE(T, void);
 
-                #define ALPS_HDF5_IS_DATATYPE_IMPL_DECL(T)                                                                                                             \
-                    bool is_datatype_impl(std::string path, T) const;
-                ALPS_FOREACH_NATIVE_HDF5_TYPE(ALPS_HDF5_IS_DATATYPE_IMPL_DECL)
-                #undef ALPS_HDF5_IS_DATATYPE_IMPL_DECL
+                template<typename T> auto read(std::string path
+                                             , T * value
+                                             , std::vector<std::size_t> chunk
+                                             , std::vector<std::size_t> offset = std::vector<std::size_t>()
+                    ) const -> ONLY_NATIVE(T, void);
+
+                template<typename T> auto write(std::string path, T value) const -> ONLY_NATIVE(T, void);
+
+                template<typename T> auto write(std::string path
+                                              , T const * value, std::vector<std::size_t> size
+                                              , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+                                              , std::vector<std::size_t> offset = std::vector<std::size_t>()
+                    ) const -> ONLY_NATIVE(T, void);
+
+                template<typename T> auto is_datatype_impl(std::string path, T) const -> ONLY_NATIVE(T, bool);
 
             private:
 
@@ -231,7 +220,7 @@ namespace alps {
         };
 
         template<typename T> struct is_continuous
-            : public boost::false_type
+            : public std::false_type
         {};
 
         template<typename T> struct is_content_continuous
@@ -239,9 +228,9 @@ namespace alps {
         {};
 
         template<typename T> struct has_complex_elements
-            : public boost::false_type
+            : public std::false_type
         {};
-        
+
         template<typename T> struct scalar_type {
             typedef T type;
         };
@@ -257,7 +246,7 @@ namespace alps {
             template<typename T> struct set_extent {
                  static void apply(T &, std::vector<std::size_t> const &) {}
             };
-            
+
             #define ALPS_HDF5_DEFINE_SET_EXTENT(T)                                                                                                                  \
                 template<> struct set_extent<T> {                                                                                                                   \
                     static void apply(T &, std::vector<std::size_t> const & extent) {                                                                               \
@@ -342,30 +331,30 @@ namespace alps {
 
         #define ALPS_HDF5_DEFINE_FREE_FUNCTIONS(T)                                                                                                                     \
             template<> struct is_continuous< T >                                                                                                                       \
-                : public boost::true_type                                                                                                                              \
+                : public std::true_type                                                                                                                                \
             {};                                                                                                                                                        \
             template<> struct is_continuous< T const >                                                                                                                 \
-                : public boost::true_type                                                                                                                              \
+                : public std::true_type                                                                                                                                \
             {};                                                                                                                                                        \
                                                                                                                                                                        \
             namespace detail {                                                                                                                                         \
-                template<> struct is_vectorizable< T > {                                                                                                     \
+                template<> struct is_vectorizable< T > {                                                                                                               \
                     static bool apply(T const & value);                                                                                                                \
                 };                                                                                                                                                     \
-                template<> struct is_vectorizable< T const > {                                                                                               \
+                template<> struct is_vectorizable< T const > {                                                                                                         \
                     static bool apply(T & value);                                                                                                                      \
                 };                                                                                                                                                     \
                                                                                                                                                                        \
-                template<> struct get_pointer< T > {                                                                                                         \
+                template<> struct get_pointer< T > {                                                                                                                   \
                     static alps::hdf5::scalar_type< T >::type * apply( T & value);                                                                                     \
                 };                                                                                                                                                     \
                                                                                                                                                                        \
-                template<> struct get_pointer< T const > {                                                                                                   \
+                template<> struct get_pointer< T const > {                                                                                                             \
                     static alps::hdf5::scalar_type< T >::type const * apply( T const & value);                                                                         \
                 };                                                                                                                                                     \
             }                                                                                                                                                          \
                                                                                                                                                                        \
-            void save(                                                                                                                                       \
+            void save(                                                                                                                                                 \
                   archive & ar                                                                                                                                         \
                 , std::string const & path                                                                                                                             \
                 , T const & value                                                                                                                                      \
@@ -374,7 +363,7 @@ namespace alps {
                 , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                         \
             );                                                                                                                                                         \
                                                                                                                                                                        \
-            void load(                                                                                                                                       \
+            void load(                                                                                                                                                 \
                   archive & ar                                                                                                                                         \
                 , std::string const & path                                                                                                                             \
                 , T & value                                                                                                                                            \
@@ -393,7 +382,7 @@ namespace alps {
                 {}
 
                 make_pvp_proxy(make_pvp_proxy<T> const & arg)
-                    : path_(arg.path_), value_(arg.value_) 
+                    : path_(arg.path_), value_(arg.value_)
                 {}
 
                 std::string path_;
@@ -402,8 +391,8 @@ namespace alps {
 
         }
 
-        template <typename T> typename boost::enable_if<
-              has_complex_elements<typename alps::detail::remove_cvr<T>::type>
+        template <typename T> typename std::enable_if<
+              has_complex_elements<typename alps::detail::remove_cvr<T>::type>::value
             , archive &
         >::type operator<< (archive & ar, detail::make_pvp_proxy<T> const & proxy) {
             save(ar, proxy.path_, proxy.value_);
@@ -411,8 +400,8 @@ namespace alps {
             return ar;
         }
 
-        template <typename T> typename boost::disable_if<
-              has_complex_elements<typename alps::detail::remove_cvr<T>::type>
+        template <typename T> typename std::enable_if<
+              !has_complex_elements<typename alps::detail::remove_cvr<T>::type>::value
             , archive &
         >::type operator<< (archive & ar, detail::make_pvp_proxy<T> const & proxy) {
             save(ar, proxy.path_, proxy.value_);
@@ -425,22 +414,22 @@ namespace alps {
         }
     }
 
-    template <typename T> typename boost::disable_if<typename boost::mpl::and_<
-          typename boost::is_same<typename alps::detail::remove_cvr<typename boost::remove_all_extents<T>::type>::type, char>::type
-        , typename boost::is_array<T>::type
-    >::type, hdf5::detail::make_pvp_proxy<T &> >::type make_pvp(std::string const & path, T & value) {
+    template <typename T> typename std::enable_if<!(
+          std::is_same<typename alps::detail::remove_cvr<typename std::remove_all_extents<T>::type>::type, char>::value
+       && std::is_array<T>::value)
+       , hdf5::detail::make_pvp_proxy<T &> >::type make_pvp(std::string const & path, T & value) {
         return hdf5::detail::make_pvp_proxy<T &>(path, value);
     }
-    template <typename T> typename boost::disable_if<typename boost::mpl::and_<
-          typename boost::is_same<typename alps::detail::remove_cvr<typename boost::remove_all_extents<T>::type>::type, char>::type
-        , typename boost::is_array<T>::type
-    >::type, hdf5::detail::make_pvp_proxy<T const &> >::type make_pvp(std::string const & path, T const & value) {
+    template <typename T> typename std::enable_if<!(
+          std::is_same<typename alps::detail::remove_cvr<typename std::remove_all_extents<T>::type>::type, char>::value
+       && std::is_array<T>::value)
+       , hdf5::detail::make_pvp_proxy<T const &> >::type make_pvp(std::string const & path, T const & value) {
         return hdf5::detail::make_pvp_proxy<T const &>(path, value);
     }
-    template <typename T> typename boost::enable_if<typename boost::mpl::and_<
-          typename boost::is_same<typename alps::detail::remove_cvr<typename boost::remove_all_extents<T>::type>::type, char>::type
-        , typename boost::is_array<T>::type
-    >::type, hdf5::detail::make_pvp_proxy<std::string const> >::type make_pvp(std::string const & path, T const & value) {
+    template <typename T> typename std::enable_if<
+          std::is_same<typename alps::detail::remove_cvr<typename std::remove_all_extents<T>::type>::type, char>::value
+       && std::is_array<T>::value
+       , hdf5::detail::make_pvp_proxy<std::string const> >::type make_pvp(std::string const & path, T const & value) {
         return hdf5::detail::make_pvp_proxy<std::string const>(path, value);
     }
 
@@ -455,7 +444,7 @@ namespace alps {
             template<typename A> template<typename T> archive_proxy<A> & archive_proxy<A>::operator<<(T const & value) {
                 return *this = value;
             }
-            
+
             template<typename A> template <typename T> archive_proxy<A> & archive_proxy<A>::operator>> (T & value) {
                 ar_ >> make_pvp(path_, value);
                 return *this;

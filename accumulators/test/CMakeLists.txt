@@ -13,7 +13,6 @@ set (test_src
     divide_accumulators
     unary_ops
     mean
-    mean_wrapped
     merge
     mult_by_constant
     weighted
@@ -39,7 +38,7 @@ set (test_src
 if(ALPS_HAVE_MPI)
   set (test_src_mpi
     mpi_merge
-    mpi_merge_uneven    
+    mpi_merge_uneven
     zero_vector_mpi
     )
 endif()
@@ -51,5 +50,3 @@ endforeach(test)
 foreach(test ${test_src_mpi})
     alps_add_gtest(${test} NOMAIN PARTEST)
 endforeach(test)
-
-alps_add_gtest(custom_type NOMAIN PARTEST)

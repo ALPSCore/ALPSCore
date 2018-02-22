@@ -82,7 +82,7 @@ template <typename T>
 class batch_acc
 {
 public:
-    typedef T value_type;
+    using value_type = T;
 
 public:
     batch_acc(size_t size=1, size_t num_batches=256, size_t base_size=1);
@@ -104,18 +104,7 @@ public:
     size_t num_batches() const { return num_batches_; }
 
     /** Add computed vector to the accumulator */
-    batch_acc &operator<<(const computed<T> &src) { add(src, 1); return *this; }
-
-    /** Add Eigen vector-valued expression to accumulator */
-    template <typename Derived>
-    batch_acc &operator<<(const Eigen::DenseBase<Derived> &o)
-    { return *this << eigen_adapter<T,Derived>(o); }
-
-    /** Add `std::vector` to accumulator */
-    batch_acc &operator<<(const std::vector<T> &o) { return *this << vector_adapter<T>(o); }
-
-    /** Add scalar value to accumulator */
-    batch_acc &operator<<(T o) { return *this << value_adapter<T>(o); }
+    batch_acc& operator<<(const computed<T>& src){ add(src, 1); return *this; }
 
     /** Merge partial result into accumulator */
     batch_acc &operator<<(const batch_result<T> &result);
@@ -249,6 +238,7 @@ bool operator!=(const batch_result<T> &r1, const batch_result<T> &r2)
     return !operator==(r1, r2);
 }
 
+template<typename T> struct is_alea_acc<batch_acc<T>> : std::true_type {};
 template<typename T> struct is_alea_result<batch_result<T>> : std::true_type {};
 
 template <typename T>

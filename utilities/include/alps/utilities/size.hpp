@@ -10,20 +10,21 @@
 #define ALPS_UTILITY_SIZE_HPP
 
 #include <alps/type_traits/is_sequence.hpp>
-#include <boost/utility/enable_if.hpp>
+
+#include <type_traits>
 
 namespace alps {
 
 template <class T>
-inline typename boost::disable_if<is_sequence<T>,std::size_t>::type
-size(T const&) 
+inline typename std::enable_if<!is_sequence<T>::value,std::size_t>::type
+size(T const&)
 {
   return 1;
 }
 
 template <class T>
-inline typename boost::enable_if<is_sequence<T>,std::size_t>::type
-size(T const& a) 
+inline typename std::enable_if<is_sequence<T>::value,std::size_t>::type
+size(T const& a)
 {
   return a.size();
 }
