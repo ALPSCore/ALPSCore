@@ -10,6 +10,7 @@
 #include <alps/config.hpp>
 
 #include <alps/accumulators/feature/error.hpp>
+#include <alps/hdf5/vector.hpp>
 
 #define ALPS_ACCUMULATOR_VALUE_TYPES_SEQ BOOST_PP_TUPLE_TO_SEQ(ALPS_ACCUMULATOR_VALUE_TYPES_SIZE, (ALPS_ACCUMULATOR_VALUE_TYPES))
 
