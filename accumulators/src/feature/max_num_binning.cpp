@@ -6,6 +6,7 @@
 
 #include <alps/accumulators/feature/max_num_binning.hpp>
 #include <alps/accumulators/feature/binning_analysis.hpp>
+#include <alps/hdf5/vector.hpp>
 
 #include <boost/preprocessor/tuple/to_seq.hpp>
 #include <boost/preprocessor/seq/for_each.hpp>
