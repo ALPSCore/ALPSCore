@@ -27,7 +27,7 @@ namespace alps{ namespace hdf5 {
 namespace alps {
     namespace params_ns {
         namespace detail {
-            
+
             // Have namespaces handy
             namespace mpl=::boost::mpl;
             namespace mplh=::boost::mpl::placeholders;
@@ -49,7 +49,7 @@ namespace alps {
                                  float,
                                  double,
                                  std::string> dict_scalar_types;
-            
+
             // // List of allowed pairs:  (removed until clarification)
             // typedef mpl::transform< dict_scalar_types, std::pair<std::string, mplh::_1> >::type dict_pair_types;
 
@@ -67,7 +67,7 @@ namespace alps {
                 >::type dict_all_types;
             // This list includes std::pair, removed until clarification
             // typedef mpl::push_front<
-            //     copy_to_front<dict_scalar_types, 
+            //     copy_to_front<dict_scalar_types,
             //                   copy_to_front<dict_vector_types, dict_pair_types>::type
             //                  >::type,
             //     None
@@ -78,7 +78,7 @@ namespace alps {
             // (FIXME?: this is linear compile-time complexity; we can use per-type traits instead)
             template <typename T>
             struct is_supported : public boost::mpl::contains<dict_all_types, T> {};
-            
+
             /** Unique pretty-printable names for all supported types */
 
             template <typename T>
@@ -98,7 +98,7 @@ namespace alps {
             struct type_info< std::vector<T> > {
                 static std::string pretty_name() { return "std::vector<"+type_info<T>::pretty_name()+">"; }
             };
-            
+
         } // ::detail
     } // ::params_ns
 }// ::alps

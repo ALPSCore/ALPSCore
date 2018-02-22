@@ -11,7 +11,7 @@
 #include <alps/hdf5/archive.hpp>
 #include <alps/hdf5/vector.hpp>
 
-#include <boost/type_traits/is_same.hpp>
+#include <type_traits>
 #include <gtest/gtest.h>
 
 namespace h5=alps::hdf5;
@@ -20,14 +20,14 @@ template <typename T>
 void testNative(const char* name_of_type) {
     typedef h5::is_native_type<T> test_type;
     EXPECT_TRUE(+test_type::value) << name_of_type;
-    EXPECT_TRUE((boost::is_same<typename test_type::type, boost::true_type>::value)) << name_of_type;
+    EXPECT_TRUE((std::is_same<typename test_type::type, std::true_type>::value)) << name_of_type;
 }
-    
+
 template <typename T>
 void testNotNative(const char* name_of_type) {
     typedef h5::is_native_type<T> test_type;
     EXPECT_FALSE(+test_type::value) << name_of_type;
-    EXPECT_TRUE((boost::is_same<typename test_type::type, boost::false_type>::value)) << name_of_type;
+    EXPECT_TRUE((std::is_same<typename test_type::type, std::false_type>::value)) << name_of_type;
 }
 
 TEST(Hdf5NativeTypeTest, native) {

@@ -10,19 +10,13 @@
    NOT TO BE INCLUDED DIRECTLY!
 */
 
-#include <boost/type_traits/is_integral.hpp>
-#include <boost/type_traits/is_signed.hpp>
-#include <boost/type_traits/is_unsigned.hpp>
-#include <boost/type_traits/is_floating_point.hpp>
-#include <boost/type_traits/make_unsigned.hpp>
-#include <boost/type_traits/make_signed.hpp>
-#include <boost/integer_traits.hpp>
-
 #include <alps/utilities/short_print.hpp> // for streaming of vectors
 #include <boost/type_index.hpp> // for pretty-printing user types in error messages
+#include <boost/integer_traits.hpp>
 
 #include <boost/static_assert.hpp> // FIXME:C++11 replace by std feature
-#include <boost/core/enable_if.hpp> // FIXME:C++11 replace by std feature
+
+#include <type_traits>
 
 // namespace std {
 //     // Printing of a vector
@@ -55,33 +49,33 @@ namespace alps {
 
         namespace detail {
             template <bool V> struct yes_no {};
-            template <> struct yes_no<true> : public boost::true_type { typedef bool yes; };
-            template <> struct yes_no<false> : public boost::false_type { typedef bool no; };
+            template <> struct yes_no<true> : public std::true_type { typedef bool yes; };
+            template <> struct yes_no<false> : public std::false_type { typedef bool no; };
 
             template <typename T>
-            struct is_bool : public yes_no<boost::is_same<T,bool>::value> {};
+            struct is_bool : public yes_no<std::is_same<T,bool>::value> {};
 
             // bool type is NOT integral for the purposes of this code
             template <typename T>
-            struct is_integral : public yes_no<boost::is_integral<T>::value && !is_bool<T>::value> {};
+            struct is_integral : public yes_no<std::is_integral<T>::value && !is_bool<T>::value> {};
 
             // type is allowed: bool, integral, char* or other supported
             // FIXME: should use `is_convertible`. Postponed till simplification refactoring
             template <typename T>
             struct is_allowed : public yes_no<
                 is_bool<T>::value
-                || boost::is_same<char*, T>::value
-                || boost::is_same<const char*, T>::value
+                || std::is_same<char*, T>::value
+                || std::is_same<const char*, T>::value
                 || is_integral<T>::value
                 || is_supported<T>::value> {};
 
             // signed value: integral and signed
             template <typename T>
-            struct is_signed : public yes_no<boost::is_signed<T>::value && is_integral<T>::value> {};
+            struct is_signed : public yes_no<std::is_signed<T>::value && is_integral<T>::value> {};
 
             // unsigned value: integral and unsigned
             template <typename T>
-            struct is_unsigned : public yes_no<boost::is_unsigned<T>::value && is_integral<T>::value> {};
+            struct is_unsigned : public yes_no<std::is_unsigned<T>::value && is_integral<T>::value> {};
 
             // meta-predicate: conversion bool->integral
             template <typename FROM, typename TO>
@@ -104,7 +98,7 @@ namespace alps {
             // meta-predicate: conversion integral->floating_point
             template <typename FROM, typename TO>
             struct is_intgl_to_fp
-                : public yes_no<is_integral<FROM>::value && boost::is_floating_point<TO>::value>
+                : public yes_no<is_integral<FROM>::value && std::is_floating_point<TO>::value>
             {};
 
             // meta-predicate: general conversion, not caught by other ones
@@ -145,9 +139,9 @@ namespace alps {
             // meta-predicate: floating-point conversion between different types
             template <typename A, typename B>
             struct is_fp_conv
-                : public yes_no< boost::is_floating_point<A>::value &&
-                                 boost::is_floating_point<B>::value &&
-                                 !boost::is_same<A,B>::value>
+                : public yes_no< std::is_floating_point<A>::value &&
+                                 std::is_floating_point<B>::value &&
+                                 !std::is_same<A,B>::value>
             {};
 
             // meta-predicate: other comparison
@@ -196,7 +190,7 @@ namespace alps {
                     /// Extracting unsigned integral type to an integral type
                     template <typename RHS_T>
                     LHS_T apply(const RHS_T& val, typename is_unsig_to_intgl<RHS_T,LHS_T>::yes =true) const {
-                        typedef typename boost::make_unsigned<LHS_T>::type U_LHS_T;
+                        typedef typename std::make_unsigned<LHS_T>::type U_LHS_T;
                         const U_LHS_T max_num=boost::integer_traits<LHS_T>::const_max; // always possible
                         // compare 2 unsigned
                         if (val>max_num)
@@ -207,9 +201,9 @@ namespace alps {
                     /// Extracting signed integral type to an integral type
                     template <typename RHS_T>
                     LHS_T apply(const RHS_T& val, typename is_sig_to_intgl<RHS_T,LHS_T>::yes =true) const {
-                        typedef typename boost::make_signed<LHS_T>::type S_LHS_T;
-                        typedef typename boost::make_unsigned<LHS_T>::type U_LHS_T;
-                        typedef typename boost::make_unsigned<RHS_T>::type U_RHS_T;
+                        typedef typename std::make_signed<LHS_T>::type S_LHS_T;
+                        typedef typename std::make_unsigned<LHS_T>::type U_LHS_T;
+                        typedef typename std::make_unsigned<RHS_T>::type U_RHS_T;
 
                         const S_LHS_T min_num=boost::integer_traits<LHS_T>::const_min; // always possible
 
@@ -326,7 +320,7 @@ namespace alps {
                     /// Invoked when a signed bound type is compared with an unsigned type
                     template <typename LHS_T>
                     int apply(const LHS_T& lhs, const RHS_T& rhs, typename is_signed_unsigned<LHS_T,RHS_T>::yes =true) const {
-                        typedef typename boost::make_unsigned<LHS_T>::type U_LHS_T;
+                        typedef typename std::make_unsigned<LHS_T>::type U_LHS_T;
                         if (lhs<0) return -1;
                         // lhs is non-negative..
                         U_LHS_T u_lhs=static_cast<U_LHS_T>(lhs); // always valid for lhs>=0
@@ -413,7 +407,7 @@ namespace alps {
         }
 
         // template <typename T,
-        //           typename boost::enable_if<detail::is_allowed<T>, int> =0>
+        //           typename std::enable_if<detail::is_allowed<T>::value, int> =0>
         // inline dict_value::operator T() const {
         //     // BOOST_STATIC_ASSERT_MSG(detail::is_allowed<T>::value, "The type is not supported by the dictionary");
         //     return as<T>();

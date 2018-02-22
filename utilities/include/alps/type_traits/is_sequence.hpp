@@ -10,8 +10,8 @@
 #define ALPS_TYPE_TRAITS_IS_SEQUENCE_H
 
 #include <alps/config.hpp>
-#include <boost/mpl/bool.hpp>
 #include <alps/type_traits/has_value_type.hpp>
+#include <type_traits>
 #include <valarray>
 #include <vector>
 #include <complex>
@@ -21,16 +21,16 @@
 namespace alps {
 
 template <class T>
-struct is_sequence : public alps::has_value_type<T> {};
+struct is_sequence : alps::has_value_type<T> {};
 
 template <class T>
-struct is_sequence<std::valarray<T> > : public boost::mpl::true_ {};
+struct is_sequence<std::valarray<T> > : std::true_type {};
 
 template <class T>
-struct is_sequence<std::complex<T> > : public boost::mpl::false_ {};
- 
+struct is_sequence<std::complex<T> > : std::false_type {};
+
 template <>
-struct is_sequence<std::string> : public boost::mpl::false_ {};
+struct is_sequence<std::string> : std::false_type {};
 
 } // end namespace alps
 

@@ -5,7 +5,7 @@
  */
 
 /** @file dictionary.cpp
-    
+
     @brief Tests the behaviour of dictionary
 */
 
@@ -13,9 +13,8 @@
 #include <gtest/gtest.h>
 
 
-// #include <boost/utility.hpp> // for enable_if<>
-#include <boost/type_traits/is_same.hpp>
-using boost::is_same;
+#include <type_traits>
+using std::is_same;
 
 #include <boost/integer_traits.hpp>
 using boost::integer_traits;
@@ -32,8 +31,8 @@ namespace aptest=ap::testing;
 static inline bool is_near_dbl(double a, double b) { return alps::testing::is_near<double>(a,b); }
 static inline bool is_near_flt(float a, float b) { return alps::testing::is_near<float>(a,b); }
 
-#define EXPECT_FLT_EQ(_a_,_b_) EXPECT_PRED2(is_near_flt, _a_,_b_) 
-#define EXPECT_DBL_EQ(_a_,_b_) EXPECT_PRED2(is_near_dbl, _a_,_b_) 
+#define EXPECT_FLT_EQ(_a_,_b_) EXPECT_PRED2(is_near_flt, _a_,_b_)
+#define EXPECT_DBL_EQ(_a_,_b_) EXPECT_PRED2(is_near_dbl, _a_,_b_)
 
 class DictionaryTest0 : public ::testing::Test {
     protected:
@@ -54,7 +53,7 @@ TEST_F(DictionaryTest0, access) {
     EXPECT_FALSE(cdict_.empty());
     EXPECT_EQ(1ul, cdict_.size());
     EXPECT_TRUE(dict_["name"].empty());
-    
+
     EXPECT_TRUE(dict_["name2"].empty());
     EXPECT_FALSE(cdict_.empty());
     EXPECT_EQ(2ul, cdict_.size());
@@ -81,7 +80,7 @@ TEST_F(DictionaryTest0, constAccess) {
 TEST_F(DictionaryTest0, exists) {
     EXPECT_FALSE(cdict_.exists("name"));
     EXPECT_EQ(0u, cdict_.size());
-    
+
     dict_["name"];
     EXPECT_FALSE(cdict_.exists("name"));
 
@@ -108,7 +107,7 @@ TEST_F(DictionaryTest0, swapDict) {
 
     using std::swap;
     swap(dict_, dict2);
-    
+
     EXPECT_EQ(2u, cdict_.size());
     EXPECT_EQ(2u, dict2.size());
 
@@ -121,14 +120,14 @@ TEST_F(DictionaryTest0, swapDict) {
 TEST_F(DictionaryTest0, assignDict) {
     dict_["name"]="value";
     dict_["int"]=123;
-    
+
     dictionary dict2;
     const dictionary& cdict2=dict2;
     dict2["other_name"]="other value";
     dict2["int"]=9999;
 
     dict2=cdict_;
-    
+
     EXPECT_NE(&cdict_, &cdict2);
     EXPECT_EQ(cdict_, cdict2);
 }
@@ -136,9 +135,9 @@ TEST_F(DictionaryTest0, assignDict) {
 TEST_F(DictionaryTest0, copyCtor) {
     dict_["name"]="value";
     dict_["int"]=123;
-    
+
     dictionary dict2=dict_;
-    
+
     EXPECT_NE(&cdict_, &dict2);
     EXPECT_EQ(cdict_, dict2);
 }
@@ -187,7 +186,7 @@ TEST_F(DictionaryTest0, storeCharPtrGetString) {
 TEST_F(DictionaryTest0, storeStringGetCharPtr) {
     const std::string expected="Hello, world!";
     dict_["name"]=expected;
-    
+
     const char* actual=0;
     EXPECT_THROW(actual=cdict_["name"], de::type_mismatch);
     EXPECT_EQ(0, actual);
@@ -207,7 +206,7 @@ class DictionaryTestIntegrals : public ::testing::Test {
     static const int  neg_int=  integer_traits<int>::const_min+7;
     static const int  pos_int=  integer_traits<int>::const_max-7;
     static const long pos_long= integer_traits<long>::const_max-5;
-    
+
     static const unsigned int pos_uint=   integer_traits<unsigned int>::const_max-9;
     static const unsigned long pos_ulong= integer_traits<unsigned long>::const_max-10;
 
@@ -219,17 +218,17 @@ class DictionaryTestIntegrals : public ::testing::Test {
         // suffix "_is" means "integer size" (that is, value small enough to fit into signed integer)
         // suffix "_uis" means "unsigned integer size"
         // suffix "_ls" means "long size"
-        
+
         dict_["neg_long"]= +neg_long;
 
         dict_["neg_int"]= +neg_int;
         dict_["neg_long_is"]= static_cast<long>(+neg_int);
-        
+
         dict_["pos_int"]= +pos_int;
         dict_["uint_is"]= static_cast<unsigned int>(+pos_int);
         dict_["pos_long_is"]= static_cast<long>(+pos_int);
         dict_["ulong_is"]= static_cast<unsigned long>(+pos_int);
-        
+
         dict_["uint"]= +pos_uint;
         dict_["pos_long_uis"]= static_cast<long>(+pos_uint);
         dict_["ulong_uis"]= static_cast<unsigned long>(+pos_uint);
@@ -264,7 +263,7 @@ TEST_F(DictionaryTestIntegrals, toUlong) {
 
     actual=cdict_["ulong_is"];
     EXPECT_EQ(0u, actual-pos_int);
-        
+
     actual=cdict_["uint"];
     EXPECT_EQ(0u, actual-pos_uint);
 
@@ -292,13 +291,13 @@ TEST_F(DictionaryTestIntegrals, toLong) {
 
     actual=cdict_["neg_long"];
     EXPECT_EQ(0u, actual-neg_long);
-        
+
     actual=cdict_["neg_int"];
     EXPECT_EQ(0u, actual-neg_int);
 
     actual=cdict_["neg_long_is"];
     EXPECT_EQ(0u, actual-neg_int);
-        
+
     actual=cdict_["pos_int"];
     EXPECT_EQ(0u, actual-pos_int);
 
@@ -310,7 +309,7 @@ TEST_F(DictionaryTestIntegrals, toLong) {
 
     actual=cdict_["ulong_is"];
     EXPECT_EQ(0u, actual-pos_int);
-        
+
     actual=cdict_["uint"];
     EXPECT_EQ(0u, actual-pos_uint);
 
@@ -361,7 +360,7 @@ TEST_F(DictionaryTestIntegrals, toUint) {
 
     actual=cdict_["ulong_is"];
     EXPECT_EQ(0u, actual-pos_int);
-        
+
     actual=cdict_["uint"];
     EXPECT_EQ(0u, actual-pos_uint);
 
@@ -402,7 +401,7 @@ TEST_F(DictionaryTestIntegrals, toInt) {
 
     actual=cdict_["neg_long_is"];
     EXPECT_EQ(0, actual-neg_int);
-        
+
     actual=cdict_["pos_int"];
     EXPECT_EQ(0, actual-pos_int);
 
@@ -423,13 +422,13 @@ TEST_F(DictionaryTestIntegrals, toFloat) {
 
     actual=cdict_["neg_long"];
     EXPECT_FLT_EQ(float(+neg_long), actual);
-        
+
     actual=cdict_["neg_int"];
     EXPECT_FLT_EQ(+neg_int, actual);
 
     actual=cdict_["neg_long_is"];
     EXPECT_FLT_EQ(+neg_int, actual);
-        
+
     actual=cdict_["pos_int"];
     EXPECT_FLT_EQ(+pos_int, actual);
 
@@ -441,7 +440,7 @@ TEST_F(DictionaryTestIntegrals, toFloat) {
 
     actual=cdict_["ulong_is"];
     EXPECT_FLT_EQ(+pos_int, actual);
-        
+
     actual=cdict_["uint"];
     EXPECT_FLT_EQ(+pos_uint, actual);
 
@@ -467,13 +466,13 @@ TEST_F(DictionaryTestIntegrals, toDouble) {
 
     actual=cdict_["neg_long"];
     EXPECT_DBL_EQ(+neg_long, actual);
-        
+
     actual=cdict_["neg_int"];
     EXPECT_DBL_EQ(+neg_int, actual);
 
     actual=cdict_["neg_long_is"];
     EXPECT_DBL_EQ(+neg_int, actual);
-        
+
     actual=cdict_["pos_int"];
     EXPECT_DBL_EQ(+pos_int, actual);
 
@@ -485,7 +484,7 @@ TEST_F(DictionaryTestIntegrals, toDouble) {
 
     actual=cdict_["ulong_is"];
     EXPECT_DBL_EQ(+pos_int, actual);
-        
+
     actual=cdict_["uint"];
     EXPECT_DBL_EQ(+pos_uint, actual);
 
@@ -536,7 +535,7 @@ class DictionaryTest : public ::testing::Test {
     protected:
     dictionary dict_;
     const dictionary& cdict_;
-    
+
     typedef aptest::data_trait<T> trait;
     // typedef typename trait::larger_type larger_type;
     // typedef typename trait::smaller_type smaller_type;
@@ -570,7 +569,7 @@ class DictionaryTest : public ::testing::Test {
         const T actual=static_cast<T>(cdict_["name"]);
         EXPECT_EQ(expected, actual) << "Explicit conversion";
     }
-    
+
     // assignment is done in ctor; check if it worked
     template <typename X>
     void explicitAssignSameType(typename is_string_or_vec<X>::yes =true) {
@@ -581,21 +580,21 @@ class DictionaryTest : public ::testing::Test {
           EXPECT_EQ(expected, actual) << "Explicit conversion";
         */
     }
-    
+
 
     void implicitAssignSameType() {
         const T expected=trait::get(false);
         const T actual=cdict_["name"];
         EXPECT_EQ(expected, actual) << "Implicit conversion";
     }
-    
+
 
     void asSameType() {
         const T expected=trait::get(false);
         const T actual=cdict_["name"].template as<T>();
         EXPECT_EQ(expected, actual) << "Shortcut conversion";
     }
-    
+
 
     void reassignSameType() {
         const T expected=trait::get(true);
@@ -629,7 +628,7 @@ class DictionaryTest : public ::testing::Test {
         ASSERT_THROW(actual=cdict_["none"].template as<T>(), de::uninitialized_value);
         EXPECT_EQ(expected,actual);
     }
-    
+
     void setToNone() {
         dict_["name"].clear();
         EXPECT_TRUE(cdict_["name"].empty());
@@ -645,12 +644,12 @@ class DictionaryTest : public ::testing::Test {
         EXPECT_TRUE(is_int<T>::value==cdict_.exists<int>("name"));
         EXPECT_TRUE(is_string<T>::value==cdict_.exists<std::string>("name"));
     }
-        
-    
+
+
     void checkType() {
         EXPECT_TRUE(cdict_["name"].template isType<T>());
         EXPECT_FALSE(cdict_["name"].template isType<ap::dict_value::None>());
-        
+
         EXPECT_TRUE(is_int<T>::value==cdict_["name"]. template isType<int>());
         EXPECT_TRUE(is_string<T>::value==cdict_["name"]. template isType<std::string>());
 
@@ -740,7 +739,7 @@ class DictionaryTestIntegral2 : public ::testing::Test {
     protected:
     dictionary dict_;
     const dictionary& cdict_;
-    
+
     typedef aptest::data_trait<T> trait;
 
     public:
@@ -772,7 +771,7 @@ class DictionaryTestIntegral2 : public ::testing::Test {
         T actual=expected;
         EXPECT_THROW(actual=dict_["float"], de::type_mismatch);
         EXPECT_EQ(expected, actual);
-        
+
         EXPECT_THROW(actual=dict_["double"], de::type_mismatch);
         EXPECT_EQ(expected, actual);
     }
@@ -806,7 +805,7 @@ class DictionaryTestNonnumeric : public ::testing::Test {
     protected:
     dictionary dict_;
     const dictionary& cdict_;
-    
+
     typedef aptest::data_trait<T> trait;
 
     public:

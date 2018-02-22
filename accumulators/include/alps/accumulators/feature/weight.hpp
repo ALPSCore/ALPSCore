@@ -4,8 +4,7 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_ACCUMULATOR_WEIGHT_HPP
-#define ALPS_ACCUMULATOR_WEIGHT_HPP
+#pragma once
 
 #include <alps/accumulators/feature.hpp>
 #include <alps/accumulators/parameter.hpp>
@@ -18,6 +17,7 @@
 #include <boost/utility.hpp>
 
 #include <stdexcept>
+#include <type_traits>
 
 namespace alps {
     namespace accumulators {
@@ -30,9 +30,10 @@ namespace alps {
 
         template<typename T> struct has_feature<T, weight_tag> {
             template<typename R, typename C> static char helper(R(C::*)() const);
-            template<typename C> static char check(boost::integral_constant<std::size_t, sizeof(helper(&C::owns_weight))>*);
+            template<typename C> static char check(std::integral_constant<std::size_t, sizeof(helper(&C::owns_weight))>*);
             template<typename C> static double check(...);
-            typedef boost::integral_constant<bool, sizeof(char) == sizeof(check<T>(0))> type;
+            typedef std::integral_constant<bool, sizeof(char) == sizeof(check<T>(0))> type;
+            constexpr static bool value = type::value;
         };
 
         namespace detail {
@@ -55,15 +56,15 @@ namespace alps {
 
         namespace detail {
 
-            template<typename A> typename boost::enable_if<
-                  typename has_feature<A, weight_tag>::type
+            template<typename A> typename std::enable_if<
+                  has_feature<A, weight_tag>::value
                 , base_wrapper<typename value_type<A>::type> const *
             >::type weight_impl(A const & acc) {
                 return weight(acc);
             }
 
-            template<typename A> typename boost::disable_if<
-                  typename has_feature<A, weight_tag>::type
+            template<typename A> typename std::enable_if<
+                  !has_feature<A, weight_tag>::value
                 , base_wrapper<typename value_type<A>::type> const *
             >::type weight_impl(A const &) {
                 throw std::runtime_error(std::string(typeid(A).name()) + " has no weight-method" + ALPS_STACKTRACE);
@@ -85,11 +86,9 @@ namespace alps {
                     DerivedWrapper(T const & arg): B(arg) {}
 
                     bool has_weight() const { return has_feature<T, weight_tag>::type::value; }
-                    base_wrapper<typename value_type<T>::type> const * weight() const { return detail::weight_impl(this->m_data); } 
+                    base_wrapper<typename value_type<T>::type> const * weight() const { return detail::weight_impl(this->m_data); }
             };
 
         }
     }
 }
-
- #endif

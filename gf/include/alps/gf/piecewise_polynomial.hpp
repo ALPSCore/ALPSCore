@@ -9,6 +9,7 @@
 
 #include <complex>
 #include <cmath>
+#include <type_traits>
 #include <vector>
 #include <cassert>
 #include <boost/multi_array.hpp>
@@ -40,7 +41,7 @@ namespace alps {
              * @return   conj(a) * b
              */
             template<class T>
-            typename boost::enable_if<boost::is_floating_point<T>, T>::type
+            typename std::enable_if<boost::is_floating_point<T>::value, T>::type
             outer_product(T a, T b) {
                 return a * b;
             }
@@ -52,7 +53,7 @@ namespace alps {
             }
 
             template<class T>
-            typename boost::enable_if<boost::is_floating_point<T>, T>::type
+            typename std::enable_if<boost::is_floating_point<T>::value, T>::type
             conjg(T a) {
                 return a;
             }
