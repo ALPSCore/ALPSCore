@@ -20,6 +20,7 @@
 #include <type_traits>
 
 #ifdef ALPS_HAVE_MPI
+    #include <alps/hdf5/archive.hpp>
     #include <alps/accumulators/mpi.hpp>
 #endif
 
@@ -219,4 +220,3 @@ namespace alps {
         }
     }
 }
-
