@@ -118,8 +118,8 @@ template <typename T, typename Strategy=circular_var>
 class var_acc
 {
 public:
-    typedef typename bind<Strategy, T>::value_type value_type;
-    typedef typename bind<Strategy, T>::var_type var_type;
+    using value_type = T;
+    using var_type = typename bind<Strategy, T>::var_type;
 
 public:
     var_acc(size_t size=1, size_t bundle_size=1);
@@ -142,17 +142,6 @@ public:
 
     /** Add computed vector to the accumulator */
     var_acc &operator<<(const computed<T> &src) { add(src, 1, nullptr); return *this; }
-
-    /** Add Eigen vector-valued expression to accumulator */
-    template <typename Derived>
-    var_acc &operator<<(const Eigen::DenseBase<Derived> &o)
-    { return *this << eigen_adapter<T,Derived>(o); }
-
-    /** Add `std::vector` to accumulator */
-    var_acc &operator<<(const std::vector<T> &o) { return *this << vector_adapter<T>(o); }
-
-    /** Add scalar value to accumulator */
-    var_acc &operator<<(T o) { return *this << value_adapter<T>(o); }
 
     /** Merge partial result into accumulator */
     var_acc &operator<<(const var_result<T,Strategy> &result);
@@ -278,6 +267,24 @@ private:
     friend class var_acc<T,Strategy>;
     friend class autocorr_result<T>;
 };
+
+/** Check if two results are identical */
+template <typename T, typename Strategy>
+bool operator==(const var_result<T, Strategy> &r1, const var_result<T, Strategy> &r2);
+template <typename T, typename Strategy>
+bool operator!=(const var_result<T, Strategy> &r1, const var_result<T, Strategy> &r2)
+{
+    return !operator==(r1, r2);
+}
+
+template<typename T> struct is_alea_acc<var_acc<T, circular_var>> :
+    std::true_type {};
+template<typename T> struct is_alea_acc<var_acc<T, elliptic_var>> :
+    std::true_type {};
+template<typename T> struct is_alea_result<var_result<T, circular_var>> :
+    std::true_type {};
+template<typename T> struct is_alea_result<var_result<T, elliptic_var>> :
+    std::true_type {};
 
 template <typename T, typename Strategy>
 struct traits< var_result<T,Strategy> >

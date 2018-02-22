@@ -123,6 +123,18 @@ mean_result<T> &mean_result<T>::operator=(const mean_result &other)
 }
 
 template <typename T>
+bool operator==(const mean_result<T> &r1, const mean_result<T> &r2)
+{
+    return r1.count() == r2.count()
+        && r1.store().data() == r2.store().data();
+}
+
+template bool operator==(const mean_result<double> &r1,
+                         const mean_result<double> &r2);
+template bool operator==(const mean_result<std::complex<double>> &r1,
+                         const mean_result<std::complex<double>> &r2);
+
+template <typename T>
 void mean_result<T>::reduce(const reducer &r, bool pre_commit, bool post_commit)
 {
     internal::check_valid(*this);

@@ -179,6 +179,21 @@ var_result<T,Str> &var_result<T,Str>::operator=(const var_result &other)
     return *this;
 }
 
+template <typename T, typename Strategy>
+bool operator==(const var_result<T, Strategy> &r1, const var_result<T, Strategy> &r2)
+{
+    return r1.count() == r2.count()
+        && r1.count2() == r2.count2()
+        && r1.store().data() == r2.store().data()
+        && r1.store().data2() == r2.store().data2();
+}
+
+template bool operator==(const var_result<double> &r1, const var_result<double> &r2);
+template bool operator==(const var_result<std::complex<double>, circular_var> &r1,
+                         const var_result<std::complex<double>, circular_var> &r2);
+template bool operator==(const var_result<std::complex<double>, elliptic_var> &r1,
+                         const var_result<std::complex<double>, elliptic_var> &r2);
+
 template <typename T, typename Str>
 column<typename var_result<T,Str>::var_type> var_result<T,Str>::stderror() const
 {

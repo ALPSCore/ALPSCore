@@ -36,6 +36,12 @@ struct weight_mismatch : public std::exception { };
 template <typename T>
 struct traits;
 
+// Metafunction to detect ALEA accumulator types
+template<typename T> struct is_alea_acc : std::false_type {};
+
+// Metafunction to detect ALEA result types
+template<typename T> struct is_alea_result : std::false_type {};
+
 /**
  * Data view as a thin wrapper around a continuous array.
  *
