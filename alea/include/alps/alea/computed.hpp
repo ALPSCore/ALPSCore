@@ -11,6 +11,7 @@
 #include <complex>
 
 #include <vector>
+#include <array>
 #include <Eigen/Dense>
 
 #include <alps/alea/core.hpp>
@@ -21,6 +22,7 @@
 namespace alps { namespace alea {
     template <typename T> class value_adapter;
     template <typename T> class vector_adapter;
+    template <typename T, size_t N> class array_adapter;
     template <typename T, typename Derived> class eigen_adapter;
 }}
 
@@ -39,6 +41,11 @@ template <typename T>
 vector_adapter<T> make_adapter(const std::vector<T> &v)
 {
     return vector_adapter<T>(v);
+}
+
+template<typename T, size_t N>
+array_adapter<T,N> make_array_adapter(const std::array<T, N> &a){
+  return array_adapter<T,N>(a);
 }
 
 template <typename T>
@@ -109,6 +116,28 @@ private:
     const std::vector<T> &in_;
 };
 
+template <typename T, size_t N> class array_adapter : public computed<T> {
+public:
+  typedef T value_type;
+
+public:
+  array_adapter(const std::array<T, N> &in) : in_(in) {}
+
+  size_t size() const { return in_.size(); }
+
+  void add_to(view<T> out) const {
+    if (out.size() != in_.size())
+      throw size_mismatch();
+    for (size_t i = 0; i != in_.size(); ++i)
+      out.data()[i] += in_[i];
+  }
+
+  ~array_adapter() {}
+
+private:
+  const std::array<T, N> &in_;
+};
+
 template <typename T, typename Derived>
 class eigen_adapter
     : public computed<T>
@@ -177,5 +206,33 @@ private:
     adder_type adder_;
     size_t size_;
 };
+
+/** Add scalar value to accumulator */
+template<typename AccType>
+typename std::enable_if<is_alea_acc<AccType>::value, AccType&>::type
+operator<<(AccType& acc, const typename AccType::value_type& v){
+  return acc << value_adapter<typename AccType::value_type>(v);
+}
+
+/** Add Eigen vector-valued expression to accumulator */
+template<typename AccType, typename Derived>
+typename std::enable_if<is_alea_acc<AccType>::value, AccType&>::type
+operator<<(AccType& acc, const Eigen::DenseBase<Derived>& v){
+  return acc << eigen_adapter<typename AccType::value_type, Derived>(v);
+}
+
+/** Add `std::vector` to accumulator */
+template<typename AccType>
+typename std::enable_if<is_alea_acc<AccType>::value, AccType&>::type
+operator<<(AccType& acc, const std::vector<typename AccType::value_type>& v){
+  return acc << vector_adapter<typename AccType::value_type>(v);
+}
+
+/** Add `std::array` to accumulator */
+template<typename AccType, size_t N>
+typename std::enable_if<is_alea_acc<AccType>::value, AccType&>::type
+operator<<(AccType& acc, const std::array<typename AccType::value_type, N>& v){
+  return acc << array_adapter<typename AccType::value_type, N>(v);
+}
 
 }}
