@@ -22,12 +22,8 @@ addons:
 install: true
 
 env:
-  - ENABLE_MPI=ON CC=mpicc CXX=mpic++
+  - ENABLE_MPI=ON OMPI_CC="$CC" OMPI_CXX="$CXX" CC=mpicc CXX=mpic++
   - ENABLE_MPI=OFF
-
-before_script:
-  - export OMPI_CC=${CC}
-  - export OMPI_CXX=${CXX}
 
 script:
   # Stop on first error
