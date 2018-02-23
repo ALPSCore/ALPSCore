@@ -469,3 +469,13 @@ TEST(TensorTest, ConstTensor) {
   const tensor <double, 3> & Y = X;
   Y( 1 ) ( 1 );
 }
+
+TEST(TensorTest, Reshape) {
+  size_t N = 10;
+  tensor <double, 3> X(N, N, N);
+  std::array<size_t, 3> shape{1,100,5};
+  X.reshape(shape);
+  ASSERT_TRUE(X.shape()[0] == 1 && X.shape()[1] == 100 && X.shape()[2] == 5);
+  X.reshape(10,10,10);
+  ASSERT_TRUE(X.shape()[0] == 10 && X.shape()[1] == 10 && X.shape()[2] == 10);
+}

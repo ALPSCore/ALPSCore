@@ -18,6 +18,7 @@
 #include <Eigen/Dense>
 
 #include <alps/type_traits/index_sequence.hpp>
+#include <alps/type_traits/are_all_integrals.hpp>
 #include <alps/numeric/tensors/data_view.hpp>
 
 
@@ -408,7 +409,7 @@ namespace alps {
 
         /// reshape with index list
         template<typename Ind, typename ...Inds>
-        typename std::enable_if<std::numeric_limits<Ind>::is_integer>::type reshape(Ind ind, Inds...inds) {
+        typename std::enable_if<are_all_integrals<Ind, Inds...>::value>::type reshape(Ind ind, Inds...inds) {
           static_assert(sizeof...(Inds) + 1 == Dim, "New shape should have the same dimension.");
           std::array<size_t, Dim> shape = {{size_t(ind), size_t(inds)...}};
           reshape(shape);
