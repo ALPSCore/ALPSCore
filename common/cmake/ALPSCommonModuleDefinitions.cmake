@@ -142,6 +142,12 @@ endmacro(add_hdf5)
 # Usage: add_alps_package(pkgname1 pkgname2...)
 # Sets variable ${PROJECT_NAME}_DEPENDS
 macro(add_alps_package)
+    foreach(pkg_ ${ARGV})
+      list(FIND ALPS_MODULES_DISABLE ${pkg_} disabled_index_)
+      if (NOT disabled_index_ EQUAL -1)
+        message(FATAL_ERROR "Module ${PROJECT_NAME} depends on ${pkg_} which is disabled.")
+      endif()
+    endforeach()
     list(APPEND ${PROJECT_NAME}_DEPENDS ${ARGV})
     foreach(pkg_ ${ARGV})
         if (DEFINED ALPS_GLOBAL_BUILD)
@@ -169,6 +175,7 @@ endmacro(add_alps_package)
 # After `EXTRA`, `extra_srcs` are added verbatim
 # Defines ${PROJECT_NAME} target
 # Exports alps::${PROJECT_NAME} target
+# Defines internal cache variable ALPS_HAVE_ALPS_${MODULE} (where MODULE=upcase(PROJECT_NAME))
 function(add_this_package)
   include(CMakeParseArguments)
   cmake_parse_arguments(THIS_PACKAGE "" "" "EXTRA" ${ARGV})
@@ -208,6 +215,10 @@ function(add_this_package)
     endif()
   endif(ALPS_HAVE_MPI)
 
+  string(REPLACE "alps-" "" upcase_project_name_ ${PROJECT_NAME})
+  string(TOUPPER ${upcase_project_name_} upcase_project_name_)
+  set(ALPS_HAVE_ALPS_${upcase_project_name_} 1 CACHE INTERNAL "")
+  
   install(TARGETS ${PROJECT_NAME} 
           EXPORT ${PROJECT_NAME} 
           LIBRARY DESTINATION lib

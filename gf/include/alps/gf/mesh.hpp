@@ -6,9 +6,9 @@
 #pragma once
 #include <complex>
 #include <cassert>
+#include <type_traits>
 #include <boost/multi_array.hpp>
 #include <boost/operators.hpp>
-#include <boost/type_traits/integral_constant.hpp>
 
 #include <alps/hdf5/archive.hpp>
 #include <alps/hdf5/complex.hpp>

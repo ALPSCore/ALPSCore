@@ -1,0 +1,50 @@
+language: cpp
+sudo: required
+dist: trusty
+
+compiler:
+  - gcc
+  - clang
+
+addons:
+  apt:
+    sources:
+      # Boost 1.58
+      - sourceline: ppa:kzemek/boost
+    packages:
+      - libboost1.58-dev
+      - openmpi-bin
+      - openmpi-common
+      - openmpi-doc
+      - libopenmpi-dev
+      - libhdf5-serial-dev
+
+install: true
+
+env:
+  - ENABLE_MPI=ON ALPS_CC=mpicc ALPS_CXX=mpic++
+  - ENABLE_MPI=OFF
+
+before_script:
+  - export OMPI_CC=${CC}
+  - export OMPI_CXX=${CXX}
+
+script:
+  # Stop on first error
+  - set -e
+
+  # Build ALPSCore
+  - mkdir build
+  - mkdir install
+  - cd build
+  - |
+    cmake ..                                              \
+    -DCMAKE_BUILD_TYPE=Debug                              \
+    -DCMAKE_C_COMPILER=${ALPS_CC:-${CC}}                  \
+    -DCMAKE_CXX_COMPILER=${ALPS_CXX:-${CXX}}              \
+    -DCMAKE_INSTALL_PREFIX=$TRAVIS_BUILD_DIR/installed    \
+    -DALPS_INSTALL_EIGEN=true                             \
+    -DENABLE_MPI=$ENABLE_MPI
+  - make -j3
+  - make test
+  - make install

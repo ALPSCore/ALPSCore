@@ -38,6 +38,7 @@
 #define ALPS_PARAMS_DICT_VALUE_HPP_a8ecbead92aa4a1995f43adfc6d0aae0
 
 #include <iosfwd>
+#include <type_traits>
 #include <stdexcept>
 
 #include <boost/variant/variant.hpp>
@@ -57,7 +58,7 @@ namespace alps {
         namespace detail {
             template <typename> struct is_allowed;
         }
-        
+
         class dict_value {
           public:
 
@@ -73,10 +74,10 @@ namespace alps {
             /// Constructs the empty nameless value
             // FIXME: This is used only for MPI and must be changed
             dict_value(): name_("NO_NAME"), val_() {}
-            
+
             /// Constructs the empty value
             explicit dict_value(const std::string& name): name_(name), val_() {}
-            
+
             /// whether the value contains None
             bool empty() const;
 
@@ -87,19 +88,19 @@ namespace alps {
             /// Assignment operator (with conversion)
             template <typename T>
             const T& operator=(const T& rhs);
-            
+
             /// Assignment operator (with conversion from `const char*`)
             const char* operator=(const char* rhs);
-            
+
             /// Shortcut for explicit conversion to a target type
             template <typename T>
             T as() const;
-            
+
             /// Conversion to a target type, explicit or implicit
             template <typename T
 #ifndef BOOST_NO_CXX11_FUNCTION_TEMPLATE_DEFAULT_ARGS
-                      ,typename boost::enable_if<detail::is_allowed<T>, int>::type =0
-#endif                      
+                      ,typename std::enable_if<detail::is_allowed<T>::value, int>::type =0
+#endif
                       >
             inline operator T() const {
                 // BOOST_STATIC_ASSERT_MSG(detail::is_allowed<T>::value, "The type is not supported by the dictionary");
@@ -126,7 +127,7 @@ namespace alps {
 
             /// Saves the value to an archive
             void save(alps::hdf5::archive& ar) const;
-            
+
             /// Loads the value from an archive
             void load(alps::hdf5::archive& ar);
 
@@ -134,20 +135,20 @@ namespace alps {
             /** @param visitor functor should be callable as `R result=visitor(bound_value_const_ref)`
 
                 The functor type `F` must define typename `F::result_type`.
-             */ 
+             */
             template <typename F>
             typename F::result_type apply_visitor(F& visitor) const;
-            
+
             /// Const-access visitor to the bound value
             /** @param visitor functor should be callable as `R result=visitor(bound_value_const_ref)`
 
                 The functor type `F` must define typename `F::result_type`.
-             */ 
+             */
             template <typename F>
             typename F::result_type apply_visitor(const F& visitor) const;
-            
+
             /// Print the value, possibly together with type, in a human-readable format
-            friend 
+            friend
             std::ostream& print(std::ostream&, const dict_value&, bool terse);
 
 #ifdef ALPS_HAVE_MPI
@@ -159,7 +160,7 @@ namespace alps {
         inline std::ostream& operator<<(std::ostream& os, const dict_value& dv) {
             return print(os, dv, false);
         }
-        
+
     } // params_ns::
 } // alps::
 

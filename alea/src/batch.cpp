@@ -1,7 +1,10 @@
 #include <alps/alea/batch.hpp>
 #include <alps/alea/variance.hpp>
 #include <alps/alea/covariance.hpp>
+#include <alps/alea/serialize.hpp>
+
 #include <alps/alea/internal/util.hpp>
+#include <alps/alea/internal/format.hpp>
 
 #include <numeric>
 
@@ -89,8 +92,25 @@ void batch_acc<T>::add(const computed<T> &source, size_t count)
         next_batch();
 
     // Since Eigen matrix are column-major, we can just pass the pointer
-    source.add_to(sink<T>(store_->batch().col(cursor_.current()).data(), size()));
+    source.add_to(view<T>(store_->batch().col(cursor_.current()).data(), size()));
     store_->count()(cursor_.current()) += count;
+}
+
+template <typename T>
+batch_acc<T> &batch_acc<T>::operator<<(const batch_result<T> &other)
+{
+    internal::check_valid(*this);
+    if (size() != other.size())
+        throw size_mismatch();
+    // TODO this is not strictly speaking necessary when done properly
+    if (num_batches() != other.num_batches())
+        throw size_mismatch();
+
+    // FIXME: this is a terrible idea because it mixes two time series
+    batch_data<T> &other_store = const_cast<batch_data<T> &>(other.store());
+    store_->batch() += other_store.batch();
+    store_->count() += other_store.count();
+    return *this;
 }
 
 template <typename T>
@@ -155,6 +175,18 @@ batch_result<T> &batch_result<T>::operator=(const batch_result &other)
 }
 
 template <typename T>
+bool operator==(const batch_result<T> &r1, const batch_result<T> &r2)
+{
+    return r1.count() == r2.count()
+        && r1.store().batch() == r2.store().batch();
+}
+
+template bool operator==(const batch_result<double> &r1,
+                         const batch_result<double> &r2);
+template bool operator==(const batch_result<std::complex<double>> &r1,
+                         const batch_result<std::complex<double>> &r2);
+
+template <typename T>
 column<T> batch_result<T>::mean() const
 {
     return store_->batch().rowwise().sum() / count();
@@ -174,7 +206,7 @@ column<typename bind<Str,T>::var_type> batch_result<T>::var() const
 
 template <typename T>
 template <typename Str>
-column<typename bind<Str,T>::cov_type> batch_result<T>::cov() const
+typename eigen<typename bind<Str,T>::cov_type>::matrix batch_result<T>::cov() const
 {
     cov_acc<T, Str> aux_acc(store_->size());
     for (size_t i = 0; i != store_->num_batches(); ++i)
@@ -199,8 +231,8 @@ void batch_result<T>::reduce(const reducer &r, bool pre_commit, bool post_commit
     // FIXME this is bad since it mixes bins
     internal::check_valid(*this);
     if (pre_commit) {
-        r.reduce(sink<T>(store_->batch().data(), store_->batch().size()));
-        r.reduce(sink<size_t>(store_->count().data(), store_->num_batches()));
+        r.reduce(view<T>(store_->batch().data(), store_->batch().size()));
+        r.reduce(view<size_t>(store_->count().data(), store_->num_batches()));
     }
     if (pre_commit && post_commit) {
         r.commit();
@@ -216,29 +248,84 @@ template column<double> batch_result<double>::var<circular_var>() const;
 template column<double> batch_result<std::complex<double> >::var<circular_var>() const;
 template column<complex_op<double> > batch_result<std::complex<double> >::var<elliptic_var>() const;
 
-template column<double> batch_result<double>::cov< circular_var>() const;
-template column<std::complex<double> > batch_result<std::complex<double> >::cov<circular_var>() const;
-template column<complex_op<double> > batch_result<std::complex<double> >::cov<elliptic_var>() const;
+template eigen<double>::matrix batch_result<double>::cov< circular_var>() const;
+template eigen<std::complex<double>>::matrix batch_result<std::complex<double> >::cov<circular_var>() const;
+template eigen<complex_op<double> >::matrix batch_result<std::complex<double> >::cov<elliptic_var>() const;
 
 template class batch_result<double>;
 template class batch_result<std::complex<double> >;
 
 
 template <typename T>
-void serialize(serializer &s, const batch_result<T> &self)
+void serialize(serializer &s, const std::string &key, const batch_result<T> &self)
 {
     internal::check_valid(self);
-    s.write("count", make_adapter(self.count()));
-    s.write("mean/value", make_adapter(self.mean()));
-    s.write("mean/error", make_adapter(self.stderror()));
+    internal::serializer_sentry group(s, key);
 
-    // FIXME flattened
-    typename eigen<T>::col_map batch_map(self.store_->batch().data(), self.store_->batch().size());
-    s.write("batch/count", make_adapter(self.store_->count().transpose()));
-    s.write("batch/sum", make_adapter(batch_map));
+    serialize(s, "@size", self.size());
+    serialize(s, "@num_batches", self.store().num_batches());
+
+    s.enter("batch");
+    serialize(s, "count", self.store().count());
+    serialize(s, "sum", self.store().batch());
+    s.exit();
+
+    s.enter("mean");
+    serialize(s, "value", self.mean());
+    serialize(s, "error", self.stderror());
+    s.exit();
 }
 
-template void serialize(serializer &, const batch_result<double> &);
-template void serialize(serializer &, const batch_result<std::complex<double>> &);
+template <typename T>
+void deserialize(deserializer &s, const std::string &key, batch_result<T> &self)
+{
+    typedef typename bind<circular_var, T>::var_type var_type;
+    internal::deserializer_sentry group(s, key);
+
+    // first deserialize the fundamentals and make sure that the target fits
+    size_t new_size, new_nbatches;
+    deserialize(s, "@size", new_size);
+    deserialize(s, "@num_batches", new_nbatches);
+    if (!self.valid() || self.size() != new_size || self.store().num_batches() != new_nbatches)
+        self.store_.reset(new batch_data<T>(new_size, new_nbatches));
+
+    // deserialize data
+    s.enter("batch");
+    deserialize(s, "count", self.store().count());
+    deserialize(s, "sum", self.store().batch());
+    s.exit();
+
+    s.enter("mean");
+    s.read("value", ndview<T>(nullptr, &new_size, 1)); // discard
+    s.read("error", ndview<var_type>(nullptr, &new_size, 1)); // discard
+    s.exit();
+}
+
+template void serialize(serializer &, const std::string &key, const batch_result<double> &);
+template void serialize(serializer &, const std::string &key, const batch_result<std::complex<double>> &);
+
+template void deserialize(deserializer &, const std::string &key, batch_result<double> &);
+template void deserialize(deserializer &, const std::string &key, batch_result<std::complex<double> > &);
+
+template <typename T>
+std::ostream &operator<<(std::ostream &str, const batch_result<T> &self)
+{
+    internal::check_valid(self);
+    internal::format_sentry sentry(str);
+    verbosity verb = internal::get_format(str, PRINT_TERSE);
+
+    if (verb == PRINT_VERBOSE)
+        str << "<X> = ";
+    str << self.mean() << " +- " << self.stderror();
+
+    if (verb == PRINT_VERBOSE) {
+        str << "\n<Xi> = " << self.store().batch()
+            << "\nNi = " << self.store().count();
+    }
+    return str;
+}
+
+template std::ostream &operator<<(std::ostream &, const batch_result<double> &);
+template std::ostream &operator<<(std::ostream &, const batch_result<std::complex<double>> &);
 
 }} /* namespace alps::alea */

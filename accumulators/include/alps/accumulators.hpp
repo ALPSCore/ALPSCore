@@ -4,10 +4,7 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_ACCUMULATORS_HPP
-#define ALPS_ACCUMULATORS_HPP
+#pragma once
 
 #include <alps/accumulators/accumulator.hpp>
 #include <alps/accumulators/namedaccumulators.hpp>
-
-#endif

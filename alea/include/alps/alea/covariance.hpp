@@ -24,7 +24,13 @@ namespace alps { namespace alea {
     template <typename T> class batch_result;
 
     template <typename T, typename Str>
-    void serialize(serializer &, const cov_result<T,Str> &);
+    void serialize(serializer &, const std::string &, const cov_result<T,Str> &);
+
+    template <typename T, typename Str>
+    void deserialize(deserializer &, const std::string &, cov_result<T,Str> &);
+
+    template <typename T, typename Str>
+    std::ostream &operator<<(std::ostream &, const cov_result<T,Str> &);
 }}
 
 // Actual declarations
@@ -84,6 +90,11 @@ private:
     column<T> data_;
     cov_matrix_type data2_;
     double count_, count2_;
+
+    friend class cov_acc<T, Strategy>;
+    friend class cov_result<T, Strategy>;
+    friend void serialize<>(serializer &, const std::string &, const cov_result<T,Strategy> &);
+    friend void deserialize<>(deserializer &, const std::string &, cov_result<T,Strategy> &);
 };
 
 template <typename T, typename Strategy>
@@ -107,10 +118,10 @@ template <typename T, typename Strategy=circular_var>
 class cov_acc
 {
 public:
-    typedef T value_type;
-    typedef typename bind<Strategy, T>::var_type var_type;
-    typedef typename bind<Strategy, T>::cov_type cov_type;
-    typedef typename eigen<cov_type>::matrix cov_matrix_type;
+    using value_type = T;
+    using var_type = typename bind<Strategy, T>::var_type;
+    using cov_type =  typename bind<Strategy, T>::cov_type;
+    using cov_matrix_type = typename eigen<cov_type>::matrix;
 
 public:
     cov_acc(size_t size=1, size_t bundle_size=1);
@@ -132,18 +143,10 @@ public:
     size_t batch_size() const { return current_.target(); }
 
     /** Add computed vector to the accumulator */
-    cov_acc &operator<<(const computed<T> &src) { add(src, 1); return *this; }
+    cov_acc& operator<<(const computed<T>& src){ add(src, 1); return *this; }
 
-    /** Add Eigen vector-valued expression to accumulator */
-    template <typename Derived>
-    cov_acc &operator<<(const Eigen::DenseBase<Derived> &o)
-    { return *this << eigen_adapter<T,Derived>(o); }
-
-    /** Add `std::vector` to accumulator */
-    cov_acc &operator<<(const std::vector<T> &o) { return *this << vector_adapter<T>(o); }
-
-    /** Add scalar value to accumulator */
-    cov_acc &operator<<(T o) { return *this << value_adapter<T>(o); }
+    /** Merge partial result into accumulator */
+    cov_acc &operator<<(const cov_result<T,Strategy> &result);
 
     /** Returns sample size, i.e., number of accumulated data points */
     size_t count() const { return store_->count(); }
@@ -219,6 +222,9 @@ public:
     /** Returns sample size, i.e., number of accumulated data points */
     size_t count() const { return store_->count(); }
 
+    /** Returns sum of squared sample sizes */
+    size_t count2() const { return store_->count2(); }
+
     /** Returns average batch size */
     double batch_size() const { return store_->count2() / store_->count(); }
 
@@ -228,11 +234,15 @@ public:
     /** Returns sample mean */
     const column<T> &mean() const { return store_->data(); }
 
+    // TODO: this is essentially a weighted variance thing.  The weighted
+    // variance differs from the pooled on by a factor.  We should probably
+    // split the two things.
+
     /** Returns bias-corrected sample variance */
-    column<var_type> var() const { return store_->data2().diagonal().real(); }
+    column<var_type> var() const { return batch_size() * store_->data2().diagonal().real(); }
 
     /** Returns bias-corrected sample covariance matrix  */
-    const typename eigen<cov_type>::matrix &cov() const { return store_->data2(); }
+    typename eigen<cov_type>::matrix cov() const { return batch_size() * store_->data2(); }
 
     /** Returns bias-corrected standard error of the mean */
     column<var_type> stderror() const;
@@ -247,7 +257,13 @@ public:
     void reduce(const reducer &r) { reduce(r, true, true); }
 
     /** Convert result to a permanent format (write to disk etc.) */
-    friend void serialize<>(serializer &, const cov_result &);
+    friend void serialize<>(serializer &, const std::string &, const cov_result &);
+
+    /** Convert result from a permanent format (write to disk etc.) */
+    friend void deserialize<>(deserializer &, const std::string &, cov_result &);
+
+    /** Write some info about the result to a stream */
+    friend std::ostream &operator<< <>(std::ostream &, const cov_result &);
 
 protected:
     void reduce(const reducer &, bool do_pre_commit, bool do_post_commit);
@@ -257,6 +273,24 @@ private:
 
     friend class cov_acc<T,Strategy>;
 };
+
+/** Check if two results are identical */
+template <typename T, typename Strategy>
+bool operator==(const cov_result<T, Strategy> &r1, const cov_result<T, Strategy> &r2);
+template <typename T, typename Strategy>
+bool operator!=(const cov_result<T, Strategy> &r1, const cov_result<T, Strategy> &r2)
+{
+    return !operator==(r1, r2);
+}
+
+template<typename T> struct is_alea_acc<cov_acc<T, circular_var>> :
+    std::true_type {};
+template<typename T> struct is_alea_acc<cov_acc<T, elliptic_var>> :
+    std::true_type {};
+template<typename T> struct is_alea_result<cov_result<T, circular_var>> :
+    std::true_type {};
+template<typename T> struct is_alea_result<cov_result<T, elliptic_var>> :
+    std::true_type {};
 
 template <typename T, typename Strategy>
 struct traits< cov_result<T,Strategy> >

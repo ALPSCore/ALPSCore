@@ -1,6 +1,8 @@
 #include <alps/alea/autocorr.hpp>
+#include <alps/alea/serialize.hpp>
 
 #include <alps/alea/internal/util.hpp>
+#include <alps/alea/internal/format.hpp>
 
 namespace alps { namespace alea {
 
@@ -49,6 +51,23 @@ void autocorr_acc<T>::add(const computed<T> &source, size_t count)
 }
 
 template <typename T>
+autocorr_acc<T> &autocorr_acc<T>::operator<<(const autocorr_result<T> &other)
+{
+    internal::check_valid(*this);
+
+    // ensure we have enough levels to hold other data
+    for (size_t i = nlevel(); i < other.nlevel(); ++i)
+        level_.push_back(var_acc<T>(size_, batch_size_));
+
+    // merge the levels
+    // FIXME handle the highers other level by doing proper mergin
+    for (size_t i = 0; i != other.nlevel(); ++i)
+        level_[i] << other.level(i);
+
+    return *this;
+}
+
+template <typename T>
 autocorr_result<T> autocorr_acc<T>::result() const
 {
     internal::check_valid(*this);
@@ -85,6 +104,21 @@ void autocorr_acc<T>::finalize_to(autocorr_result<T> &result)
 template class autocorr_acc<double>;
 template class autocorr_acc<std::complex<double> >;
 
+template <typename T>
+bool operator==(const autocorr_result<T> &r1, const autocorr_result<T> &r2)
+{
+    if(r1.nlevel() != r2.nlevel()) return false;
+    for(size_t i = 0; i < r1.nlevel(); ++i) {
+        if(r1.level(i) != r2.level(i))
+            return false;
+    }
+    return true;
+}
+
+template bool operator==(const autocorr_result<double> &r1,
+                         const autocorr_result<double> &r2);
+template bool operator==(const autocorr_result<std::complex<double>> &r1,
+                         const autocorr_result<std::complex<double>> &r2);
 
 template <typename T>
 size_t autocorr_result<T>::batch_size(size_t i) const
@@ -131,11 +165,7 @@ column<typename autocorr_result<T>::var_type> autocorr_result<T>::tau() const
     const column<var_type> &var0 = level_[0].var();
     const column<var_type> &varn = level_[lvl].var();
 
-    // The factor `n` comes from the fact that the variance of an n-element mean
-    // estimator has tighter variance by the CLT; it can be dropped if one
-    // performs the batch sum rather than the batch mean.
-    double fact = 0.5 * level_[0].observations() / level_[lvl].observations();
-    return (fact * varn.array() / var0.array() - 0.5).matrix();
+    return (0.5 * varn.array() / var0.array() - 0.5).matrix();
 }
 
 template <typename T>
@@ -144,7 +174,11 @@ void autocorr_result<T>::reduce(const reducer &r, bool pre_commit, bool post_com
     internal::check_valid(*this);
 
     if (pre_commit) {
-        // initialize reduction
+        // initialize reduction: we may need to amend the number of levels
+        size_t needs_levels = r.get_max(nlevel());
+        for (size_t i = nlevel(); i != needs_levels; ++i)
+            level_.push_back(level_result_type(var_data<T>(size())));
+
         // TODO: figure out if this is statistically sound
         for (size_t i = 0; i != nlevel(); ++i)
             level_[i].reduce(r, true, false);
@@ -168,25 +202,76 @@ template class autocorr_result<std::complex<double> >;
 
 
 template <typename T>
-void serialize(serializer &s, const autocorr_result<T> &self)
+void serialize(serializer &s, const std::string &key, const autocorr_result<T> &self)
 {
     internal::check_valid(self);
-    s.write("count", make_adapter(self.count()));
-    s.write("mean/value", make_adapter(self.mean()));
-    s.write("mean/error", make_adapter(self.stderror()));
+    internal::serializer_sentry group(s, key);
+    serialize(s, "@size", self.size());
+    serialize(s, "@nlevel", self.nlevel());
 
-    typedef typename traits<autocorr_result<T>>::var_type var_type;
-    typename eigen<var_type>::matrix level_var(self.size(), self.nlevel());
-    for (size_t l = 0; l != self.nlevel(); ++l)
-        level_var.col(l) = self.level_[l].var();
+    s.enter("level");
+    for (size_t i = 0; i != self.nlevel(); ++i)
+        serialize(s, std::to_string(i), self.level_[i]);
+    s.exit();
 
-    // FIXME flattened
-    typename eigen<var_type>::col_map var_map(level_var.data(), level_var.size());
-    s.write("levels/var/value", make_adapter(var_map));
+    s.enter("mean");
+    serialize(s, "value", self.mean());
+    serialize(s, "error", self.stderror());
+    s.exit();
 }
 
-template void serialize(serializer &, const autocorr_result<double> &);
-template void serialize(serializer &, const autocorr_result<std::complex<double>> &);
+template <typename T>
+void deserialize(deserializer &s, const std::string &key, autocorr_result<T> &self)
+{
+    typedef typename autocorr_result<T>::var_type var_type;
+    internal::deserializer_sentry group(s, key);
+
+    // first deserialize the fundamentals and make sure that the target fits
+    size_t new_size = 1;
+    s.read("@size", ndview<size_t>(nullptr, &new_size, 0)); // discard
+    size_t new_nlevel;
+    deserialize(s, "@nlevel", new_nlevel);
+    self.level_.resize(new_nlevel);
+
+    s.enter("level");
+    for (size_t i = 0; i != self.nlevel(); ++i)
+        deserialize(s, std::to_string(i), self.level_[i]);
+    s.exit();
+
+    s.enter("mean");
+    new_size = self.size();
+    s.read("value", ndview<T>(nullptr, &new_size, 1)); // discard
+    s.read("error", ndview<var_type>(nullptr, &new_size, 1)); // discard
+    s.exit();
+}
+
+template void serialize(serializer &, const std::string &key, const autocorr_result<double> &);
+template void serialize(serializer &, const std::string &key, const autocorr_result<std::complex<double>> &);
+
+template void deserialize(deserializer &, const std::string &key, autocorr_result<double> &);
+template void deserialize(deserializer &, const std::string &key, autocorr_result<std::complex<double> > &);
+
+template <typename T>
+std::ostream &operator<<(std::ostream &str, const autocorr_result<T> &self)
+{
+    internal::check_valid(self);
+    internal::format_sentry sentry(str);
+    verbosity verb = internal::get_format(str, PRINT_TERSE);
+
+    if (verb == PRINT_VERBOSE)
+        str << "<X> = ";
+    str << self.mean() << " +- " << self.stderror();
+
+    if (verb == PRINT_VERBOSE) {
+        str << "\nLevels:" << PRINT_TERSE;
+        for (const var_result<T> &curr : self.level_)
+            str << "\n  " << curr;
+    }
+    return str;
+}
+
+template std::ostream &operator<<(std::ostream &, const autocorr_result<double> &);
+template std::ostream &operator<<(std::ostream &, const autocorr_result<std::complex<double>> &);
 
 }}
 

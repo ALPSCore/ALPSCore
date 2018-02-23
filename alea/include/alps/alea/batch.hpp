@@ -21,7 +21,13 @@ namespace alps { namespace alea {
     template <typename T> class batch_result;
 
     template <typename T>
-    void serialize(serializer &, const batch_result<T> &);
+    void serialize(serializer &, const std::string &, const batch_result<T> &);
+
+    template <typename T>
+    void deserialize(deserializer &, const std::string &, batch_result<T> &);
+
+    template <typename T>
+    std::ostream &operator<<(std::ostream &, const batch_result<T> &);
 }}
 
 // Actual declarations
@@ -76,7 +82,7 @@ template <typename T>
 class batch_acc
 {
 public:
-    typedef T value_type;
+    using value_type = T;
 
 public:
     batch_acc(size_t size=1, size_t num_batches=256, size_t base_size=1);
@@ -94,19 +100,14 @@ public:
     /** Number of components of the random vector (e.g., size of mean) */
     size_t size() const { return size_; }
 
+    /** Number of stores batches */
+    size_t num_batches() const { return num_batches_; }
+
     /** Add computed vector to the accumulator */
-    batch_acc &operator<<(const computed<T> &src) { add(src, 1); return *this; }
+    batch_acc& operator<<(const computed<T>& src){ add(src, 1); return *this; }
 
-    /** Add Eigen vector-valued expression to accumulator */
-    template <typename Derived>
-    batch_acc &operator<<(const Eigen::DenseBase<Derived> &o)
-    { return *this << eigen_adapter<T,Derived>(o); }
-
-    /** Add `std::vector` to accumulator */
-    batch_acc &operator<<(const std::vector<T> &o) { return *this << vector_adapter<T>(o); }
-
-    /** Add scalar value to accumulator */
-    batch_acc &operator<<(T o) { return *this << value_adapter<T>(o); }
+    /** Merge partial result into accumulator */
+    batch_acc &operator<<(const batch_result<T> &result);
 
     /** Returns sample size, i.e., total number of accumulated data points */
     size_t count() const { return store_->count().sum(); }
@@ -178,8 +179,14 @@ public:
     /** Number of components of the random vector (e.g., size of mean) */
     size_t size() const { return store_->size(); }
 
+    /** Number of stores batches */
+    size_t num_batches() const { return store_->num_batches(); }
+
     /** Returns sample size, i.e., total number of accumulated data points */
     size_t count() const { return store_->count().sum(); }
+
+    /** Returns sum of squared sample sizes */
+    double count2() const { return store_->count().squaredNorm(); }
 
     /** Returns sample mean */
     column<T> mean() const;
@@ -190,7 +197,7 @@ public:
 
     /** Returns bias-corrected sample covariance matrix for given strategy */
     template <typename Strategy=circular_var>
-    column<typename bind<Strategy,T>::cov_type> cov() const;
+    typename eigen<typename bind<Strategy,T>::cov_type>::matrix cov() const;
 
     /** Return standard error of the mean */
     column<typename bind<circular_var,T>::var_type> stderror() const;
@@ -205,7 +212,13 @@ public:
     void reduce(const reducer &r) { reduce(r, true, true); }
 
     /** Convert result to a permanent format (write to disk etc.) */
-    friend void serialize<>(serializer &, const batch_result &);
+    friend void serialize<>(serializer &, const std::string &, const batch_result &);
+
+    /** Convert result to a permanent format (write to disk etc.) */
+    friend void deserialize<>(deserializer &, const std::string &, batch_result &);
+
+    /** Write some info about the result to a stream */
+    friend std::ostream &operator<< <>(std::ostream &, const batch_result &);
 
 protected:
     void reduce(const reducer &r, bool do_pre_commit, bool do_post_commit);
@@ -215,6 +228,18 @@ private:
 
     friend class batch_acc<T>;
 };
+
+/** Check if two results are identical */
+template <typename T>
+bool operator==(const batch_result<T> &r1, const batch_result<T> &r2);
+template <typename T>
+bool operator!=(const batch_result<T> &r1, const batch_result<T> &r2)
+{
+    return !operator==(r1, r2);
+}
+
+template<typename T> struct is_alea_acc<batch_acc<T>> : std::true_type {};
+template<typename T> struct is_alea_result<batch_result<T>> : std::true_type {};
 
 template <typename T>
 struct traits< batch_result<T> >

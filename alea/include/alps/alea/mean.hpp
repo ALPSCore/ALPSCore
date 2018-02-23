@@ -19,7 +19,13 @@ namespace alps { namespace alea {
     template <typename T> class mean_result;
 
     template <typename T>
-    void serialize(serializer &, const mean_result<T> &);
+    void serialize(serializer &, const std::string &, const mean_result<T> &);
+
+    template <typename T>
+    void deserialize(deserializer &, const std::string &, mean_result<T> &);
+
+    template <typename T>
+    std::ostream &operator<<(std::ostream &, const mean_result<T> &);
 }}
 
 // Actual declarations
@@ -67,6 +73,11 @@ public:
 private:
     column<T> data_;
     size_t count_;
+
+    friend class mean_acc<T>;
+    friend class mean_result<T>;
+    friend void serialize<>(serializer &, const std::string &, const mean_result<T> &);
+    friend void deserialize<>(deserializer &, const std::string &, mean_result<T> &);
 };
 
 template <typename T>
@@ -86,6 +97,9 @@ template <typename T>
 class mean_acc
 {
 public:
+    using value_type = T;
+
+public:
     mean_acc(size_t size=1) : store_(new mean_data<T>(size)), size_(size) { }
 
     mean_acc(const mean_acc &other);
@@ -104,16 +118,8 @@ public:
     /** Add computed vector to the accumulator */
     mean_acc &operator<<(const computed<T> &src) { add(src, 1); return *this; }
 
-    /** Add Eigen vector-valued expression to accumulator */
-    template <typename Derived>
-    mean_acc &operator<<(const Eigen::DenseBase<Derived> &o)
-    { return *this << eigen_adapter<T,Derived>(o); }
-
-    /** Add `std::vector` to accumulator */
-    mean_acc &operator<<(const std::vector<T> &o) { return *this << vector_adapter<T>(o); }
-
-    /** Add scalar value to accumulator */
-    mean_acc &operator<<(T o) { return *this << value_adapter<T>(o); }
+    /** Merge partial result into accumulator */
+    mean_acc &operator<<(const mean_result<T> &result);
 
     /** Returns sample size, i.e., number of accumulated data points */
     size_t count() const { return store_->count(); }
@@ -146,7 +152,6 @@ struct traits< mean_acc<T> >
 
 extern template class mean_acc<double>;
 extern template class mean_acc<std::complex<double> >;
-
 
 /**
  * Result of a mean accumulation
@@ -187,7 +192,13 @@ public:
     void reduce(const reducer &r) { return reduce(r, true, true); }
 
     /** Convert result to a permanent format (write to disk etc.) */
-    friend void serialize<>(serializer &, const mean_result &);
+    friend void serialize<>(serializer &, const std::string &, const mean_result &);
+
+    /** Result to a permanent format (write to disk etc.) */
+    friend void deserialize<>(deserializer &, const std::string &, mean_result &);
+
+    /** Write some info about the result to a stream */
+    friend std::ostream &operator<< <>(std::ostream &, const mean_result &);
 
 protected:
     void reduce(const reducer &, bool do_pre_commit, bool do_post_commit);
@@ -197,6 +208,18 @@ private:
 
     friend class mean_acc<T>;
 };
+
+/** Check if two results are identical */
+template <typename T>
+bool operator==(const mean_result<T> &r1, const mean_result<T> &r2);
+template <typename T>
+bool operator!=(const mean_result<T> &r1, const mean_result<T> &r2)
+{
+    return !operator==(r1, r2);
+}
+
+template<typename T> struct is_alea_acc<mean_acc<T>> : std::true_type {};
+template<typename T> struct is_alea_result<mean_result<T>> : std::true_type {};
 
 template <typename T>
 struct traits< mean_result<T> >

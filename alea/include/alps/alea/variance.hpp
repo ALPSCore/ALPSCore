@@ -27,7 +27,13 @@ namespace alps { namespace alea {
     template <typename T> class batch_result;
 
     template <typename T, typename Str>
-    void serialize(serializer &, const var_result<T,Str> &);
+    void serialize(serializer &, const std::string &, const var_result<T,Str> &);
+
+    template <typename T, typename Str>
+    void deserialize(deserializer &, const std::string &, var_result<T,Str> &);
+
+    template <typename T, typename Str>
+    std::ostream &operator<<(std::ostream &, const var_result<T,Str> &);
 }}
 
 // Actual declarations
@@ -86,6 +92,11 @@ private:
     column<T> data_;
     column<var_type> data2_;
     double count_, count2_;
+
+    friend class var_acc<T, Strategy>;
+    friend class var_result<T, Strategy>;
+    friend void serialize<>(serializer &, const std::string &, const var_result<T,Strategy> &);
+    friend void deserialize<>(deserializer &, const std::string &, var_result<T,Strategy> &);
 };
 
 template <typename T, typename Strategy>
@@ -107,8 +118,8 @@ template <typename T, typename Strategy=circular_var>
 class var_acc
 {
 public:
-    typedef typename bind<Strategy, T>::value_type value_type;
-    typedef typename bind<Strategy, T>::var_type var_type;
+    using value_type = T;
+    using var_type = typename bind<Strategy, T>::var_type;
 
 public:
     var_acc(size_t size=1, size_t bundle_size=1);
@@ -132,16 +143,8 @@ public:
     /** Add computed vector to the accumulator */
     var_acc &operator<<(const computed<T> &src) { add(src, 1, nullptr); return *this; }
 
-    /** Add Eigen vector-valued expression to accumulator */
-    template <typename Derived>
-    var_acc &operator<<(const Eigen::DenseBase<Derived> &o)
-    { return *this << eigen_adapter<T,Derived>(o); }
-
-    /** Add `std::vector` to accumulator */
-    var_acc &operator<<(const std::vector<T> &o) { return *this << vector_adapter<T>(o); }
-
-    /** Add scalar value to accumulator */
-    var_acc &operator<<(T o) { return *this << value_adapter<T>(o); }
+    /** Merge partial result into accumulator */
+    var_acc &operator<<(const var_result<T,Strategy> &result);
 
     /** Returns sample size, i.e., number of accumulated data points */
     size_t count() const { return store_->count(); }
@@ -218,14 +221,21 @@ public:
     /** Returns sample size, i.e., number of accumulated data points */
     size_t count() const { return store_->count(); }
 
+    /** Returns sum of squared sample sizes */
+    size_t count2() const { return store_->count2(); }
+
     /** Returns effective number of observations */
     double observations() const { return count() / batch_size(); }
 
     /** Returns sample mean */
     const column<T> &mean() const { return store_->data(); }
 
+    // TODO: this is essentially a weighted variance thing.  The weighted
+    // variance differs from the pooled on by a factor.  We should probably
+    // split the two things.
+
     /** Returns bias-corrected sample variance */
-    const column<var_type> &var() const { return store_->data2(); }
+    column<var_type> var() const { return batch_size() * store_->data2(); }
 
     /** Returns bias-corrected standard error of the mean */
     column<var_type> stderror() const;
@@ -240,7 +250,13 @@ public:
     void reduce(const reducer &r) { reduce(r, true, true); }
 
     /** Convert result to a permanent format (write to disk etc.) */
-    friend void serialize<>(serializer &, const var_result &);
+    friend void serialize<>(serializer &, const std::string &, const var_result &);
+
+    /** Convert result from a permanent format (write to disk etc.) */
+    friend void deserialize<>(deserializer &, const std::string &, var_result &);
+
+    /** Write some info about the result to a stream */
+    friend std::ostream &operator<< <>(std::ostream &, const var_result &);
 
 protected:
     void reduce(const reducer &, bool do_pre_commit, bool do_post_commit);
@@ -251,6 +267,24 @@ private:
     friend class var_acc<T,Strategy>;
     friend class autocorr_result<T>;
 };
+
+/** Check if two results are identical */
+template <typename T, typename Strategy>
+bool operator==(const var_result<T, Strategy> &r1, const var_result<T, Strategy> &r2);
+template <typename T, typename Strategy>
+bool operator!=(const var_result<T, Strategy> &r1, const var_result<T, Strategy> &r2)
+{
+    return !operator==(r1, r2);
+}
+
+template<typename T> struct is_alea_acc<var_acc<T, circular_var>> :
+    std::true_type {};
+template<typename T> struct is_alea_acc<var_acc<T, elliptic_var>> :
+    std::true_type {};
+template<typename T> struct is_alea_result<var_result<T, circular_var>> :
+    std::true_type {};
+template<typename T> struct is_alea_result<var_result<T, elliptic_var>> :
+    std::true_type {};
 
 template <typename T, typename Strategy>
 struct traits< var_result<T,Strategy> >

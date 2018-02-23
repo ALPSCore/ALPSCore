@@ -9,7 +9,7 @@
 #ifndef ALPS_NUMERIC_REAL_HPP
 #define ALPS_NUMERIC_REAL_HPP
 
-#include <boost/type_traits/is_fundamental.hpp>
+#include <type_traits>
 #include <boost/static_assert.hpp>
 #include <algorithm>
 #include <complex>
@@ -44,7 +44,7 @@ struct real_type<std::vector<T> >
 template <class T> inline typename real_type<T>::type real(T );
 
 namespace detail {
-    
+
     // generic hook
     template <typename T>
     struct real_hook;
@@ -78,7 +78,7 @@ namespace detail {
     struct real_hook<std::complex<T> >{
         static inline T apply(std::complex<T> const& x)
         {
-            BOOST_STATIC_ASSERT((boost::is_fundamental<T>::value));
+            BOOST_STATIC_ASSERT((std::is_fundamental<T>::value));
             return std::real(x);
         }
     };
@@ -88,7 +88,7 @@ namespace detail {
     struct real_hook<std::vector<T> >{
         static inline std::vector<T> const& apply(std::vector<T> const& x)
         {
-            BOOST_STATIC_ASSERT((boost::is_fundamental<T>::value));
+            BOOST_STATIC_ASSERT((std::is_fundamental<T>::value));
             return x;
         }
     };
@@ -103,13 +103,13 @@ namespace detail {
               return re;
         }
     };
-    
+
     // overload for std::vector<std::vector>
     template <typename T>
     struct real_hook<std::vector<std::vector<T> > >{
         static inline std::vector<std::vector<T> > const& apply(std::vector<std::vector<T> > const& x)
         {
-            BOOST_STATIC_ASSERT((boost::is_fundamental<T>::value));
+            BOOST_STATIC_ASSERT((std::is_fundamental<T>::value));
             return x;
         }
     };
@@ -124,14 +124,14 @@ namespace detail {
             return re;
         }
     };
-    
+
 } // end namespace detail
 
 
 template <class T>
 inline typename real_type<T>::type real(T x)
 {
-    return detail::real_impl<T, boost::is_fundamental<T>::value>::apply(x);
+    return detail::real_impl<T, std::is_fundamental<T>::value>::apply(x);
 }
 
 

@@ -1,8 +1,10 @@
 #include <alps/alea/mean.hpp>
 #include <alps/alea/util.hpp>
 #include <alps/alea/computed.hpp>
+#include <alps/alea/serialize.hpp>
 
 #include <alps/alea/internal/util.hpp>
+#include <alps/alea/internal/format.hpp>
 
 namespace alps { namespace alea {
 
@@ -48,8 +50,24 @@ template <typename T>
 void mean_acc<T>::add(const computed<T> &source, size_t count)
 {
     internal::check_valid(*this);
-    source.add_to(sink<T>(store_->data().data(), size()));
+    source.add_to(view<T>(store_->data().data(), size()));
     store_->count() += count;
+}
+
+template <typename T>
+mean_acc<T> &mean_acc<T>::operator<<(const mean_result<T> &other)
+{
+    internal::check_valid(*this);
+    if (size() != other.size())
+        throw size_mismatch();
+
+    // HACK we need this for "outwardly constant" manipulation
+    mean_data<T> &other_store = const_cast<mean_data<T> &>(other.store());
+    other_store.convert_to_sum();
+    store_->data() += other_store.data();
+    store_->count() += other_store.count();
+    other_store.convert_to_mean();
+    return *this;
 }
 
 template <typename T>
@@ -105,13 +123,25 @@ mean_result<T> &mean_result<T>::operator=(const mean_result &other)
 }
 
 template <typename T>
+bool operator==(const mean_result<T> &r1, const mean_result<T> &r2)
+{
+    return r1.count() == r2.count()
+        && r1.store().data() == r2.store().data();
+}
+
+template bool operator==(const mean_result<double> &r1,
+                         const mean_result<double> &r2);
+template bool operator==(const mean_result<std::complex<double>> &r1,
+                         const mean_result<std::complex<double>> &r2);
+
+template <typename T>
 void mean_result<T>::reduce(const reducer &r, bool pre_commit, bool post_commit)
 {
     internal::check_valid(*this);
     if (pre_commit) {
         store_->convert_to_sum();
-        r.reduce(sink<T>(store_->data().data(), store_->data().rows()));
-        r.reduce(sink<size_t>(&store_->count(), 1));
+        r.reduce(view<T>(store_->data().data(), store_->data().rows()));
+        r.reduce(view<size_t>(&store_->count(), 1));
     }
     if (pre_commit && post_commit) {
         r.commit();
@@ -130,14 +160,58 @@ template class mean_result<std::complex<double> >;
 
 
 template <typename T>
-void serialize(serializer &s, const mean_result<T> &self)
+void serialize(serializer &s, const std::string &key, const mean_result<T> &self)
 {
     internal::check_valid(self);
-    s.write("count", make_adapter(self.count()));
-    s.write("mean/value", make_adapter(self.mean()));
+    internal::serializer_sentry group(s, key);
+
+    serialize(s, "@size", self.store_->data_.size());
+    serialize(s, "count", self.store_->count_);
+    s.enter("mean");
+    serialize(s, "value", self.store_->data_);
+    s.exit();
 }
 
-template void serialize(serializer &, const mean_result<double> &);
-template void serialize(serializer &, const mean_result<std::complex<double> > &);
+template <typename T>
+void deserialize(deserializer &s, const std::string &key, mean_result<T> &self)
+{
+    internal::deserializer_sentry group(s, key);
+
+    // first deserialize the fundamentals and make sure that the target fits
+    size_t new_size;
+    deserialize(s, "@size", new_size);
+    if (!self.valid() || self.size() != new_size)
+        self.store_.reset(new mean_data<T>(new_size));
+
+    // deserialize data
+    deserialize(s, "count", self.store_->count_);
+    s.enter("mean");
+    deserialize(s, "value", self.store_->data_);
+    s.exit();
+}
+
+template void serialize(serializer &, const std::string &, const mean_result<double> &);
+template void serialize(serializer &, const std::string &, const mean_result<std::complex<double> > &);
+
+template void deserialize(deserializer &, const std::string &, mean_result<double> &);
+template void deserialize(deserializer &, const std::string &, mean_result<std::complex<double> > &);
+
+
+template <typename T>
+std::ostream &operator<<(std::ostream &str, const mean_result<T> &self)
+{
+    internal::check_valid(self);
+    internal::format_sentry sentry(str);
+    verbosity verb = internal::get_format(str, PRINT_TERSE);
+
+    if (verb == PRINT_VERBOSE)
+        str << "<X> = ";
+    str << self.mean();
+    return str;
+}
+
+template std::ostream &operator<<(std::ostream &, const mean_result<double> &);
+template std::ostream &operator<<(std::ostream &, const mean_result<std::complex<double>> &);
+
 
 }} /* namespace alps::alea */

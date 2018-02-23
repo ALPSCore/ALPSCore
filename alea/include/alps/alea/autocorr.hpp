@@ -20,7 +20,13 @@ namespace alps { namespace alea {
     template <typename T> class batch_result;
 
     template <typename T>
-    void serialize(serializer &, const autocorr_result<T> &);
+    void serialize(serializer &, const std::string &, const autocorr_result<T> &);
+
+    template <typename T>
+    void deserialize(deserializer &, const std::string &, autocorr_result<T> &);
+
+    template <typename T>
+    std::ostream &operator<<(std::ostream &, const autocorr_result<T> &);
 }}
 
 // Actual declarations
@@ -60,9 +66,9 @@ template <typename T>
 class autocorr_acc
 {
 public:
-    typedef T value_type;
-    typedef typename bind<circular_var, T>::var_type var_type;
-    typedef var_acc<T, circular_var> level_acc_type;
+    using value_type = T;
+    using var_type = typename bind<circular_var, T>::var_type;
+    using level_acc_type = var_acc<T, circular_var>;
 
 public:
     autocorr_acc(size_t size=1, size_t batch_size=1, size_t granularity=2);
@@ -77,18 +83,10 @@ public:
     size_t size() const { return size_; }
 
     /** Add computed vector to the accumulator */
-    autocorr_acc &operator<<(const computed<T> &src) { add(src, 1); return *this; }
+    autocorr_acc& operator<<(const computed<T>& src){ add(src, 1); return *this; }
 
-    /** Add Eigen vector-valued expression to accumulator */
-    template <typename Derived>
-    autocorr_acc &operator<<(const Eigen::DenseBase<Derived> &o)
-    { return *this << eigen_adapter<T,Derived>(o); }
-
-    /** Add `std::vector` to accumulator */
-    autocorr_acc &operator<<(const std::vector<T> &o) { return *this << vector_adapter<T>(o); }
-
-    /** Add scalar value to accumulator */
-    autocorr_acc &operator<<(T o) { return *this << value_adapter<T>(o); }
+    /** Merge partial result into accumulator */
+    autocorr_acc &operator<<(const autocorr_result<T> &result);
 
     /** Returns sample size, i.e., number of accumulated data points */
     size_t count() const { return count_; }
@@ -172,7 +170,13 @@ public:
     void reduce(const reducer &r) { reduce(r, true, true); }
 
     /** Convert result to a permanent format (write to disk etc.) */
-    friend void serialize<>(serializer &, const autocorr_result &);
+    friend void serialize<>(serializer &, const std::string &, const autocorr_result &);
+
+    /** Convert result to a permanent format (write to disk etc.) */
+    friend void deserialize<>(deserializer &, const std::string &, autocorr_result &);
+
+    /** Write some info about the result to a stream */
+    friend std::ostream &operator<< <>(std::ostream &, const autocorr_result &);
 
     size_t find_level(size_t min_samples) const;
 
@@ -193,6 +197,18 @@ private:
 
     friend class autocorr_acc<T>;
 };
+
+/** Check if two results are identical */
+template <typename T>
+bool operator==(const autocorr_result<T> &r1, const autocorr_result<T> &r2);
+template <typename T>
+bool operator!=(const autocorr_result<T> &r1, const autocorr_result<T> &r2)
+{
+    return !operator==(r1, r2);
+}
+
+template<typename T> struct is_alea_acc<autocorr_acc<T>> : std::true_type {};
+template<typename T> struct is_alea_result<autocorr_result<T>> : std::true_type {};
 
 template <typename T>
 struct traits< autocorr_result<T> >

@@ -4,8 +4,7 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_ACCUMULATOR_PARAMETER_HPP
-#define ALPS_ACCUMULATOR_PARAMETER_HPP
+#pragma once
 
 #include <boost/parameter.hpp>
 
@@ -17,4 +16,3 @@ namespace alps {
 
     }
 }
-#endif
