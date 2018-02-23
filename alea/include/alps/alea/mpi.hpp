@@ -79,7 +79,7 @@ protected:
         MPI_Datatype dtype_tag = alps::mpi::get_mpi_datatype(T());
 
         // In-place requires special value for sendbuf, but only on root
-#if OMPI_MAJOR_VERSION <= 1 && (OMPI_MINOR_VERSION < 7 || (OMPI_MINOR_VERSION == 7 && OMPI_RELEASE_VERSION <3 ))
+#if defined OMPI_MPI_H && OMPI_MAJOR_VERSION <= 1 && (OMPI_MINOR_VERSION < 7 || (OMPI_MINOR_VERSION == 7 && OMPI_RELEASE_VERSION <3 ))
         void *sendbuf = am_root() ? MPI_IN_PLACE : data.data();
 #else
         const void *sendbuf = am_root() ? MPI_IN_PLACE : data.data();
