@@ -317,3 +317,20 @@ TEST(GreensFunction, ConstRef) {
   }
 }
 
+TEST(GreensFunction, Reshape) {
+  alps::gf::matsubara_positive_mesh x(100, 10);
+  alps::gf::index_mesh y(10);
+  alps::gf::index_mesh y2(1);
+  alps::gf::index_mesh z(10);
+  alps::gf::index_mesh z2(100);
+  greenf<double, alps::gf::matsubara_positive_mesh, alps::gf::index_mesh, alps::gf::index_mesh > g1(x, y, z);
+  greenf<double, alps::gf::matsubara_positive_mesh, alps::gf::index_mesh, alps::gf::index_mesh > g2;
+  ASSERT_TRUE(g2.data().size() == 0);
+  std::array<size_t, 3> shape{{}};
+  ASSERT_TRUE(g2.data().shape() == shape);
+  g2.reshape(x, y, z);
+  ASSERT_TRUE(g2.data().shape() == g1.data().shape());
+  ASSERT_NO_THROW(g2(alps::gf::matsubara_positive_mesh::index_type(0)).reshape(y2, z2));
+  ASSERT_THROW(g2(alps::gf::matsubara_positive_mesh::index_type(0)).reshape(y, z2), std::invalid_argument);
+}
+

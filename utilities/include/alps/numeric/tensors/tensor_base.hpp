@@ -18,6 +18,7 @@
 #include <Eigen/Dense>
 
 #include <alps/type_traits/index_sequence.hpp>
+#include <alps/type_traits/are_all_integrals.hpp>
 #include <alps/numeric/tensors/data_view.hpp>
 
 
@@ -406,6 +407,14 @@ namespace alps {
         /// sizes for each dimension
         const std::array < size_t, Dim > &shape() const { return shape_; };
 
+        /// reshape with index list
+        template<typename ...Inds>
+        typename std::enable_if<are_all_integrals<Inds...>::value>::type reshape(Inds...inds) {
+          static_assert(sizeof...(Inds) == Dim, "New shape should have the same dimension.");
+          std::array<size_t, Dim> shape = {{size_t(inds)...}};
+          reshape(shape);
+        }
+
         /// reshape tensor object
         template<typename X = Container>
         typename std::enable_if<std::is_same < X, data_storage < T > >::value, void>::type reshape(const std::array<size_t, Dim>& shape) {
@@ -422,7 +431,6 @@ namespace alps {
           if(new_size != size()) {
             throw std::invalid_argument("Wrong size. Can't reshape tensor.");
           }
-          storage_.data().resize(new_size);
           shape_ = shape;
           fill_acc_sizes();
         }

@@ -5,6 +5,7 @@
  */
 
 #include <alps/accumulators/mpi.hpp>
+#include <alps/hdf5.hpp>
 
 #ifdef ALPS_HAVE_MPI
 
