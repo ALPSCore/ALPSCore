@@ -87,7 +87,7 @@ protected:
 
         // In-place requires special value for sendbuf, but only on root
         const void *sendbuf = am_root() ? MPI_IN_PLACE : data.data();
-        mpi::checked(MPI_Reduce(sendbuf, data.data(), data.size(), dtype_tag,
+        mpi::checked(MPI_Reduce(const_cast<void*>(sendbuf), data.data(), data.size(), dtype_tag,
                                 MPI_SUM, root_, comm_));
     }
 
