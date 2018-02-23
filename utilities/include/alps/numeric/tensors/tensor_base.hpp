@@ -408,10 +408,10 @@ namespace alps {
         const std::array < size_t, Dim > &shape() const { return shape_; };
 
         /// reshape with index list
-        template<typename Ind, typename ...Inds>
-        typename std::enable_if<are_all_integrals<Ind, Inds...>::value>::type reshape(Ind ind, Inds...inds) {
-          static_assert(sizeof...(Inds) + 1 == Dim, "New shape should have the same dimension.");
-          std::array<size_t, Dim> shape = {{size_t(ind), size_t(inds)...}};
+        template<typename ...Inds>
+        typename std::enable_if<are_all_integrals<Inds...>::value>::type reshape(Inds...inds) {
+          static_assert(sizeof...(Inds) == Dim, "New shape should have the same dimension.");
+          std::array<size_t, Dim> shape = {{size_t(inds)...}};
           reshape(shape);
         }
 

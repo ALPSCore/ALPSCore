@@ -5,6 +5,8 @@
 #ifndef ALPSCORE_ARE_ALL_INTEGRALS_H
 #define ALPSCORE_ARE_ALL_INTEGRALS_H
 
+#include <type_traits>
+
 template<typename I0, typename... I> struct are_all_integrals :
     std::integral_constant<bool, std::is_integral<I0>::value && are_all_integrals<I...>::value>
 {};
