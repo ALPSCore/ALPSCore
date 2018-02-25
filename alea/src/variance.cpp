@@ -44,8 +44,6 @@ void var_data<T,Str>::convert_to_mean()
 
     // HACK: this is written in out-of-place notation to work around Eigen
     data2_ = data2_ / nunbiased;
-
-    std::cerr << data_ << "\n" << data2_ << "\n";
 }
 
 template <typename T, typename Str>
