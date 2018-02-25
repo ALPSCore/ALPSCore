@@ -4,8 +4,7 @@ set (test_src
      twogauss
      galois
      transform
-     # Reenable when #462 is fixed
-     #stream_serializer
+     stream_serializer
     )
 
 #add tests for MPI

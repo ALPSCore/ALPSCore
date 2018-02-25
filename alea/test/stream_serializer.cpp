@@ -132,7 +132,9 @@ public:
         Acc in_acc(2);
         for (size_t i = 0; i != twogauss_count; ++i)
             in_acc << std::vector<value_type>{twogauss_data[i][0], twogauss_data[i][1]};
+
         auto in = in_acc.result();
+        std::cerr << alps::alea::PRINT_VERBOSE << "\nin\n" << in;
 
         mock_archive archive;
         archive << in; // serialize
@@ -142,6 +144,7 @@ public:
 
         archive >> out; // deserialize
 
+        std::cerr << alps::alea::PRINT_VERBOSE << "\nout\n" << out << "\n";
         EXPECT_EQ(in, out);
     }
 };
