@@ -47,16 +47,18 @@ batch_data<T> jackknife(const batch_data<T> &in, const transformer<T> &tf)
         res.batch().col(i) = tf(leaveout);
     }
 
-    // Sure this is colwise?
+    res.count() = in.count();
+
+    // Since sum_count and res.count().array() are unsigned values,
+    // (res.count().array() - sum_count) would be an array with huge positive elements.
     res.batch().array().rowwise() *=
-                        (res.count().array() - sum_count).template cast<T>();
+                        -(sum_count - res.count().array()).template cast<T>();
 
     // compute transform of mean
     sum_batch /= sum_count;
     column<T> mean_result = tf(sum_batch);
     res.batch().colwise() += mean_result * sum_count;
 
-    res.count() = in.count();
     return res;
 }
 
