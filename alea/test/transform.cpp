@@ -144,3 +144,35 @@ TEST(twogauss, rotate)
     // check if covariance is commutative
     ALPS_EXPECT_NEAR(norm_res_ret.cov(), rot_res.cov(), 1e-6);
 }
+
+template<typename T>
+struct transformer_ratio : public alps::alea::transformer<T>
+{
+    alps::alea::column<T> operator() (const alps::alea::column<T> &in) const override {
+        alps::alea::column<T> res(1);
+        res(0) = in(0) / in(1);
+        return res;
+    }
+    size_t in_size() const override { return 2; }
+    size_t out_size() const override { return 1; }
+    bool is_linear() const override { return false; }
+};
+
+TEST(twogauss, ratio) {
+    alps::alea::batch_acc<double> acc(2);
+
+    for (size_t i = 0; i != twogauss_count; ++i) {
+        Eigen::Map<Eigen::Vector2d> dat((double *)twogauss_data[i], 2);
+        acc << alps::alea::column<double>(dat);
+    }
+
+    alps::alea::batch_result<double> res = acc.finalize();
+
+    transformer_ratio<double> tf;
+    alps::alea::batch_result<double> ratio_res_ret =
+                alps::alea::transform(alps::alea::jackknife_prop(), tf, res);
+
+    EXPECT_NEAR(ratio_res_ret.mean()[0],
+                twogauss_mean[0] / twogauss_mean[1],
+                ratio_res_ret.stderror()[0]);
+}
