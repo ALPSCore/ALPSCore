@@ -172,5 +172,7 @@ TEST(twogauss, ratio) {
     alps::alea::batch_result<double> ratio_res_ret =
                 alps::alea::transform(alps::alea::jackknife_prop(), tf, res);
 
-    EXPECT_NEAR(ratio_res_ret.mean()[0], twogauss_mean[0] / twogauss_mean[1], 1e-6);
+    EXPECT_NEAR(ratio_res_ret.mean()[0],
+                twogauss_mean[0] / twogauss_mean[1],
+                ratio_res_ret.stderror()[0]);
 }
