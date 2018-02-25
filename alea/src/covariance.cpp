@@ -5,6 +5,8 @@
 #include <alps/alea/internal/util.hpp>
 #include <alps/alea/internal/format.hpp>
 
+#include <limits>
+
 namespace alps { namespace alea {
 
 template <typename T, typename Str>
