@@ -24,6 +24,12 @@ void mean_data<T>::convert_to_mean()
 template <typename T>
 void mean_data<T>::convert_to_sum()
 {
+    // Has to be handled explicitly because of the NaNs
+    if (count_ == 0) {
+        reset();
+        return;
+    }
+
     data_ *= count_;
 }
 

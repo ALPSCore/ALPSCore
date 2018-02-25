@@ -5,8 +5,6 @@
 #include <alps/alea/internal/util.hpp>
 #include <alps/alea/internal/format.hpp>
 
-#include <limits>
-
 namespace alps { namespace alea {
 
 template <typename T, typename Str>
@@ -36,13 +34,11 @@ void cov_data<T,Str>::convert_to_mean()
     // However, data2_ is 0 in this case as well, so we need to handle it
     // specially to avoid 0/0 = nan while propagating intrinsic NaN's.
     const double nunbiased = count_ - count2_/count_;
-    if (nunbiased == 0) {
-        const cov_type tiny = std::numeric_limits<typename make_real<T>::type>::min();
-        data2_.array() += tiny;
-    }
-
-    // HACK: this is written in out-of-place notation to work around Eigen
-    data2_ = data2_ / nunbiased;
+    if (nunbiased == 0)
+        data2_ = data2_.array().isNaN().select(data2_, INFINITY);
+    else
+        // HACK: this is written in out-of-place notation to work around Eigen
+        data2_ = data2_ / nunbiased;
 }
 
 template <typename T, typename Str>
@@ -55,10 +51,9 @@ void cov_data<T,Str>::convert_to_sum()
     }
 
     // Care must be taken again for zero unbiased info since inf/0 is NaN.
-    // TODO: propagate intrinsic NaNs properly here too
     const double nunbiased = count_ - count2_/count_;
     if (nunbiased == 0)
-        data2_.fill(0);
+        data2_ = data2_.array().isNaN().select(data2_, 0);
     else
         data2_ = data2_ * nunbiased;
 
