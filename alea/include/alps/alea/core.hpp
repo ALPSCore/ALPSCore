@@ -11,6 +11,7 @@
 #include <complex>
 #include <string>
 #include <vector>
+#include <initializer_list>
 
 #include <Eigen/Dense>
 
@@ -190,6 +191,14 @@ public:
     column() : Eigen::Matrix<T, Eigen::Dynamic, 1>() {}
 
     column(size_t size) : Eigen::Matrix<T, Eigen::Dynamic, 1>(size) {}
+
+    column(std::initializer_list<T> l) : column(l.size()) {
+      size_t i = 0;
+      for (auto x : l) {
+        this->Eigen::Matrix<T,Eigen::Dynamic,1>::operator()(i) = x;
+        ++i;
+      }
+    }
 
     template <typename OtherDerived>
     column(const Eigen::MatrixBase<OtherDerived>& other)
