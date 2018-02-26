@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -53,7 +53,7 @@ class AccumulatorTest : public ::testing::Test {
         EXPECT_NEAR(expected, val, 1.E-3) << "Scalar " << msg
                                           << " is incorrect in MPI rank " << rank;
     }
-    
+
     // compare vector values
     template <typename T>
     void compare_values(double expected, const std::vector<T>& val, const char* msg, int rank) const
@@ -98,7 +98,7 @@ class AccumulatorTest : public ::testing::Test {
             compare_values(expected_err, res.error<value_type>(), "error", comm.rank());
         }
     }
-  
+
     // the same test for an individual accumulator
     void TestIndividual(const std::vector<unsigned>& nsamples, const alps::mpi::communicator& comm)
     {
@@ -174,5 +174,4 @@ int main(int argc, char** argv)
    tweak(alps::mpi::communicator().rank(), argc, argv);
    ::testing::InitGoogleTest(&argc, argv);
    return RUN_ALL_TESTS();
-}    
-
+}

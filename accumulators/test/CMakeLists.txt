@@ -1,14 +1,18 @@
 include(ALPSEnableTests)
 
+if (HDF5_VERSION VERSION_LESS 1.10)
+  add_definitions("-DALPS_HDF5_1_8")
+endif()
+
 set (test_src
     testharness
+    acc_check_eigen
     get_results
     add_accumulators
     count
     divide_accumulators
     unary_ops
     mean
-    mean_wrapped
     merge
     mult_by_constant
     weighted
@@ -24,6 +28,7 @@ set (test_src
     binop_mixed_faildemo
     single_accumulator
     autocorrelation
+    concurrent_access
     print
     scalar_result_type
     negative_error # FIXME!! Incorporate in the corresponding test
@@ -46,5 +51,3 @@ endforeach(test)
 foreach(test ${test_src_mpi})
     alps_add_gtest(${test} NOMAIN PARTEST)
 endforeach(test)
-
-alps_add_gtest(custom_type NOMAIN PARTEST)

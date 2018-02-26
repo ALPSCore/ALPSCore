@@ -1,8 +1,8 @@
 diff -Bb -u -r ../simple_mc/CMakeLists.txt ./CMakeLists.txt
---- ../simple_mc/CMakeLists.txt	2015-05-06 14:05:43.475135320 -0400
-+++ ./CMakeLists.txt	2016-09-21 20:04:41.380258429 -0400
+--- ../simple_mc/CMakeLists.txt	2017-11-06 10:24:45.705674940 -0500
++++ ./CMakeLists.txt	2017-11-06 10:24:45.705674940 -0500
 @@ -1,5 +1,5 @@
- cmake_minimum_required(VERSION 2.8.12)
+ cmake_minimum_required(VERSION 3.0)
 -project(simple_mc CXX)
 +project(simple_mc_mpi CXX)
  
@@ -10,7 +10,7 @@ diff -Bb -u -r ../simple_mc/CMakeLists.txt ./CMakeLists.txt
  # aware of ALPSCore location
 @@ -13,5 +13,10 @@
  # Otherwise, point ALPSCore_DIR environment variable to the ALPScore installation tree.
- find_package(ALPSCore REQUIRED mc accumulators params)
+ find_package(ALPSCore 1.0 REQUIRED mc accumulators params)
  
 +# Check if your ALPSCore is compiled with MPI support.
 +if (NOT ALPSCore_HAS_MPI)
@@ -19,11 +19,9 @@ diff -Bb -u -r ../simple_mc/CMakeLists.txt ./CMakeLists.txt
 +
  # Use ALPSCore_LIBRARIES variable to link to ALPSCore 
  target_link_libraries(${PROJECT_NAME} ${ALPSCore_LIBRARIES})
-Only in .: .#diff_with_sequential.diff
-Only in .: diff_with_sequential.diff
 diff -Bb -u -r ../simple_mc/main.cpp ./main.cpp
---- ../simple_mc/main.cpp	2016-09-22 09:14:35.087862091 -0400
-+++ ./main.cpp	2016-09-22 09:16:47.319855928 -0400
+--- ../simple_mc/main.cpp	2017-04-19 19:51:48.934450404 -0400
++++ ./main.cpp	2017-04-19 19:51:48.934450404 -0400
 @@ -9,6 +9,7 @@
  #include <alps/mc/api.hpp>
  #include <alps/mc/mcbase.hpp>
@@ -34,7 +32,7 @@ diff -Bb -u -r ../simple_mc/main.cpp ./main.cpp
  // We extend alps::mcbase, which is the base class of all Monte Carlo simulations.
 @@ -85,9 +86,17 @@
   */
- int main(int argc, char* argv[])
+ int main(int argc, char** argv)
  {
 +    // Use the MPI adapter class instead of the original class:
 +    typedef alps::mcmpiadapter<my_sim_type> my_sim_type;
@@ -46,8 +44,8 @@ diff -Bb -u -r ../simple_mc/main.cpp ./main.cpp
 +    
      // Creates the parameters for the simulation
      std::cout << "Initializing parameters..." << std::endl;
--    alps::parameters_type<my_sim_type>::type params(argc, (const char**)argv);
-+    alps::parameters_type<my_sim_type>::type params(argc, (const char**)argv, comm);
+-    alps::parameters_type<my_sim_type>::type params(argc, argv);
++    alps::parameters_type<my_sim_type>::type params(argc, argv, comm);
  
      // Define the parameters for our simulation, including the ones for the
      // base class

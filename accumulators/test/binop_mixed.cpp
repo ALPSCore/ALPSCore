@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -49,7 +49,7 @@ class AccumulatorMixedBinaryTest : public ::testing::Test {
     double exp_scalar_right_mean_;
     // double exp_scalar_left_err_;
     // double exp_scalar_right_err_;
-    
+
     aa::accumulator_set aset_;
     boost::shared_ptr<aa::result_set> rset_p_;
 
@@ -65,8 +65,8 @@ class AccumulatorMixedBinaryTest : public ::testing::Test {
     {
         aset_ << left_acc_type("left")
             << right_acc_type("right");
-        
-        for (int i=0; i<NPOINTS; ++i) {
+
+        for (size_t i=0; i<NPOINTS; ++i) {
             double v=scalar_gen_(); // both accs have the same sequence of values (FIXME?)
             aset_["left"] << aat::gen_data<value_type>(v).value();
             aset_["right"] << aat::gen_data<value_type>(v).value();
@@ -84,8 +84,8 @@ class AccumulatorMixedBinaryTest : public ::testing::Test {
     void _name_() {                                                     \
         typedef typename left_acc_type::result_type left_raw_res_type;  \
         typedef typename right_acc_type::result_type right_raw_res_type; \
-        aa::result_wrapper r=aa::cast<left_raw_res_type,                \
-                                      right_raw_res_type>(result("left")) _op_ result("right"); \
+        aa::result_wrapper r=aa::cast_raw<left_raw_res_type,                \
+                                          right_raw_res_type>(result("left")) _op_ result("right"); \
                                                                         \
         value_type xmean=r.mean<value_type>();                          \
         value_type expected_mean=aat::gen_data<value_type>(exp_scalar_left_mean_ _op_ exp_scalar_right_mean_); \

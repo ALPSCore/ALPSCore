@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -49,6 +49,11 @@ namespace alps {
         template <typename T>
         inline void broadcast(const communicator& comm, std::vector<T>& vec, int root)
         {
+            std::size_t root_sz=vec.size();
+            broadcast(comm, root_sz, root);
+            if (comm.rank() != root) {
+                vec.resize(root_sz);
+            }
             broadcast(comm, &vec[0], vec.size(), root);
         }
       

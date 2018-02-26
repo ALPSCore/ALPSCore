@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -21,13 +21,13 @@ TEST(AccumulatorMixedBinaryTest,add)
 
     typedef left_acc_type::result_type left_raw_res_type;
     typedef right_acc_type::result_type right_raw_res_type;
-    
+
     accumulator_set aset;
     aset << left_acc_type("left")
          << right_acc_type("right");
     aset["left"] << 1.;
     aset["left"] << 1.;
-    
+
     aset["right"] << 1.;
     aset["right"] << 1.;
 
@@ -35,13 +35,13 @@ TEST(AccumulatorMixedBinaryTest,add)
     result_wrapper& left=rset["left"];
     result_wrapper& right=rset["right"];
 
-    result_wrapper left1=alps::accumulators::cast<left_raw_res_type,right_raw_res_type>(left);
+    result_wrapper left1=alps::accumulators::cast_raw<left_raw_res_type,right_raw_res_type>(left);
     // Does not compile, as expected:
-    // result_wrapper right1=alps::accumulators::cast<right_raw_res_type,left_raw_res_type>(right);
+    // result_wrapper right1=alps::accumulators::cast_raw<right_raw_res_type,left_raw_res_type>(right);
 
     // Alternatively:
     result_wrapper left2=alps::accumulators::cast<NoBinningAccumulator,MeanAccumulator>(left);
-    
+
     const result_wrapper r1=left1+right;
     const result_wrapper r2=left2+right;
     double xmean1=r1.mean<double>();

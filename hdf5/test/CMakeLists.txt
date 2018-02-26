@@ -9,6 +9,7 @@ set (test_src
     hdf5_exceptions
     hdf5_memory
     hdf5_misc
+    hdf5_native_type    
     hdf5_multiarchive
     hdf5_pair
     hdf5_real_complex
@@ -20,6 +21,7 @@ set (test_src
     hdf5_io_types
     hdf5_attributes
     hdf5_omp #this one was commented out. Any idea why?
+    hdf5_tensor
     )
 
 if (ExtensiveTesting)

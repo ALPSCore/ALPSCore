@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -34,6 +34,7 @@ namespace alps {
         DEFINE_ALPS_HDF5_EXCEPTION(path_not_found)
         DEFINE_ALPS_HDF5_EXCEPTION(wrong_type)
         DEFINE_ALPS_HDF5_EXCEPTION(wrong_mode)
+        DEFINE_ALPS_HDF5_EXCEPTION(wrong_dimensions)
         #undef DEFINE_ALPS_HDF5_EXCEPTION
     }
 };

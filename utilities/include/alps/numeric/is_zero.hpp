@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -9,9 +9,8 @@
 #ifndef ALPS_NUMERIC_IS_ZERO_HPP
 #define ALPS_NUMERIC_IS_ZERO_HPP
 
-#include <boost/type_traits.hpp>
-#include <boost/utility/enable_if.hpp>
 #include <cmath>
+#include <type_traits>
 
 namespace alps { namespace numeric {
 
@@ -53,13 +52,13 @@ template<class T> struct precision<T, 4>
 /// \return returns true if the value is zero
 template<unsigned int N, class T>
 inline bool is_zero(T x,
-  typename boost::enable_if<boost::is_arithmetic<T> >::type* = 0,
-  typename boost::enable_if<boost::is_float<T> >::type* = 0)
+  typename std::enable_if<std::is_arithmetic<T>::value >::type* = 0,
+  typename std::enable_if<std::is_float<T>::value >::type* = 0)
 { return std::abs(x) < detail::precision<T, N>::epsilon(); }
 template<unsigned int N, class T>
 inline bool is_zero(T x,
-  typename boost::enable_if<boost::is_arithmetic<T> >::type* = 0,
-  typename boost::enable_if<boost::is_integral<T> >::type* = 0)
+  typename std::enable_if<std::is_arithmetic<T>::value >::type* = 0,
+  typename std::enable_if<std::is_integral<T>::value >::type* = 0)
 { return x == T(0); }
 
 namespace detail {
@@ -80,22 +79,22 @@ struct is_zero_helper<N, std::complex<T> >
 
 template<unsigned int N, class T>
 inline bool is_zero(const T& x,
-  typename boost::disable_if<boost::is_arithmetic<T> >::type* = 0)
+  typename std::enable_if<!std::is_arithmetic<T>::value >::type* = 0)
 { return detail::is_zero_helper<N, T>::result(x); }
 
 template<class T>
 inline bool is_zero(T x,
-  typename boost::enable_if<boost::is_arithmetic<T> >::type* = 0,
-  typename boost::enable_if<boost::is_float<T> >::type* = 0)
+  typename std::enable_if<std::is_arithmetic<T>::value >::type* = 0,
+  typename std::enable_if<std::is_float<T>::value >::type* = 0)
 { return std::abs(x) < detail::precision<T>::epsilon(); }
 template<class T>
 inline bool is_zero(T x,
-  typename boost::enable_if<boost::is_arithmetic<T> >::type* = 0,
-  typename boost::enable_if<boost::is_integral<T> >::type* = 0)
+  typename std::enable_if<std::is_arithmetic<T>::value >::type* = 0,
+  typename std::enable_if<std::is_integral<T>::value >::type* = 0)
 { return x == T(0); }
 template<class T>
 inline bool is_zero(const T& x,
-  typename boost::disable_if<boost::is_arithmetic<T> >::type* = 0)
+  typename std::enable_if<!std::is_arithmetic<T>::value >::type* = 0)
 { return x == T(0); }
 template<class T>
 inline bool is_zero(const std::complex<T>& x)

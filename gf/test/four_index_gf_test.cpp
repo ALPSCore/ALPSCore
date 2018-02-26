@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -81,8 +81,8 @@ TEST_F(FourIndexGFTest,Assign)
     
     gf2=gf;
     EXPECT_EQ(data, gf2(omega,i,j,sigma));
-    EXPECT_THROW(other_gf=gf, std::invalid_argument);
-    // EXPECT_EQ(data, other_gf(omega,i,j,sigma));
+    EXPECT_NO_THROW(other_gf=gf);
+    EXPECT_EQ(data, other_gf(omega,i,j,sigma));
 }
 
 
@@ -184,7 +184,8 @@ TEST_F(FourIndexGFTest, tail)
                              g::momentum_index_mesh(get_data_for_momentum_mesh()),
                              g::index_mesh(nspins*2));
     g::omega_k1_k2_sigma_gf_with_tail other_gft(other_gf);
-    EXPECT_THROW(other_gft=gft, std::invalid_argument);
+    EXPECT_NO_THROW(other_gft=gft);
+    EXPECT_EQ(gft, other_gft);
 }
 
 TEST_F(FourIndexGFTest, TailSaveLoad)
@@ -253,7 +254,7 @@ TEST_F(FourIndexGFTest,print)
 TEST_F(FourIndexGFTest, DefaultConstructive)
 {
     gf_type gf_empty;
-    EXPECT_THROW(gf_empty.norm(), std::runtime_error);
+    EXPECT_TRUE(gf_empty.is_empty());
     {
         alps::hdf5::archive oar("gf_4i_defconstr.h5","w");
         oar["/gf"] << gf;
@@ -262,5 +263,14 @@ TEST_F(FourIndexGFTest, DefaultConstructive)
         alps::hdf5::archive iar("gf_4i_defconstr.h5");
         iar["/gf"] >> gf_empty;
     }
-    EXPECT_NO_THROW(gf_empty.norm());
+    EXPECT_FALSE(gf_empty.is_empty());
 }
+
+#ifndef NDEBUG
+TEST_F(FourIndexGFTest, DefaultConstructiveAccess) {
+    gf_type gf_empty;
+    EXPECT_ANY_THROW(gf_empty.norm());
+    EXPECT_ANY_THROW(gf_empty*1.0);
+    EXPECT_ANY_THROW(-gf_empty);
+}
+#endif

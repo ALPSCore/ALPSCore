@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -10,6 +10,7 @@
 #include <alps/hdf5.hpp>
 #include <alps/utilities/cast.hpp>
 
+#include <type_traits>
 #include <valarray>
 #include <iterator>
 #include <algorithm>
@@ -22,10 +23,10 @@ namespace alps {
         };
 
         template<typename T> struct is_content_continuous<std::valarray<T> >
-            : public is_continuous<T> 
+            : public is_continuous<T>
         {};
 
-        template<typename T> struct has_complex_elements<std::valarray<T> > 
+        template<typename T> struct has_complex_elements<std::valarray<T> >
             : public has_complex_elements<typename alps::detail::remove_cvr<T>::type>
         {};
 
@@ -37,7 +38,7 @@ namespace alps {
                     std::vector<std::size_t> result(1, value.size());
                     if (value.size()) {
                         std::vector<std::size_t> extent(get_extent(const_cast<std::valarray<T> &>(value)[0]));
-                        if (!boost::is_scalar<T>::value)
+                        if (!std::is_scalar<T>::value)
                             for (std::size_t i = 1; i < value.size(); ++i)
                                 if (!std::equal(extent.begin(), extent.end(), get_extent(const_cast<std::valarray<T> &>(value)[i]).begin()))
                                     throw archive_error("no rectengual matrix" + ALPS_STACKTRACE);
@@ -54,7 +55,7 @@ namespace alps {
                     if (extent.size() > 1)
                         for(std::size_t i = 0; i < value.size(); ++i)
                             set_extent(value[i], std::vector<std::size_t>(extent.begin() + 1, extent.end()));
-                    else if (extent.size() == 0 && !boost::is_same<typename scalar_type<T>::type, T>::value)
+                    else if (extent.size() == 0 && !std::is_same<typename scalar_type<T>::type, T>::value)
                         throw archive_error("dimensions do not match" + ALPS_STACKTRACE);
                 }
             };
@@ -67,14 +68,14 @@ namespace alps {
                         if (!is_vectorizable(const_cast<std::valarray<T> &>(value)[0]))
                             return false;
                         std::vector<std::size_t> first(get_extent(const_cast<std::valarray<T> &>(value)[0]));
-                        if (!boost::is_scalar<T>::value) {
+                        if (!std::is_scalar<T>::value) {
                             for(std::size_t i = 0; i < value.size(); ++i)
                                 if (!is_vectorizable(const_cast<std::valarray<T> &>(value)[i])) {
                                     return false;
                                 } else {
                                     std::vector<std::size_t> size(get_extent(const_cast<std::valarray<T> &>(value)[i]));
                                     if (
-                                           first.size() != size.size() 
+                                           first.size() != size.size()
                                         || !std::equal(first.begin(), first.end(), size.begin())
                                     ) {
                                         return false;

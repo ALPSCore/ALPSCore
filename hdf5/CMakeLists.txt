@@ -1,8 +1,8 @@
-# 
+#
 # alps-hdf5 cmake configuration script.
-# 
+#
 
-cmake_minimum_required (VERSION 2.8.12)
+cmake_minimum_required (VERSION 3.1)
 
 # define project name
 project (alps-hdf5 CXX)
@@ -23,7 +23,14 @@ if (DocumentationOnly)
   return()
 endif()
 
-add_this_package(archive)
+add_this_package(archive
+                 archivecontext
+                 archive_free
+                 archive_write
+                 archive_read
+                 archive_read_scalar_helpers
+                 archive_read_vector_data_helper
+                 archive_read_vector_attribute_helper)
 
 add_boost()
 add_hdf5()

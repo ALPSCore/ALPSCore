@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -20,9 +20,9 @@ namespace alps {
               archive & ar
             , std::string const & path
             , std::pair<T, U> const & value
-            , std::vector<std::size_t> size = std::vector<std::size_t>()
-            , std::vector<std::size_t> chunk = std::vector<std::size_t>()
-            , std::vector<std::size_t> offset = std::vector<std::size_t>()
+            , std::vector<std::size_t> /*size*/ = std::vector<std::size_t>()
+            , std::vector<std::size_t> /*chunk*/ = std::vector<std::size_t>()
+            , std::vector<std::size_t> /*offset*/ = std::vector<std::size_t>()
         ) {
             save(ar, ar.complete_path(path) + "/0", value.first);
             if (has_complex_elements<typename alps::detail::remove_cvr<T>::type>::value)
@@ -36,8 +36,8 @@ namespace alps {
               archive & ar
             , std::string const & path
             , std::pair<T, U> & value
-            , std::vector<std::size_t> chunk = std::vector<std::size_t>()
-            , std::vector<std::size_t> offset = std::vector<std::size_t>()
+            , std::vector<std::size_t> /*chunk*/ = std::vector<std::size_t>()
+            , std::vector<std::size_t> /*offset*/ = std::vector<std::size_t>()
         ) {
             try {
                 load(ar, ar.complete_path(path) + "/0", value.first);

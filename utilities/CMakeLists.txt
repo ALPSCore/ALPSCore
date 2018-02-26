@@ -2,7 +2,7 @@
 # alps-utilities cmake configuration script.
 # 
 
-cmake_minimum_required (VERSION 2.8.12)
+cmake_minimum_required (VERSION 3.1)
 
 # define project name
 project (alps-utilities CXX)
@@ -35,9 +35,9 @@ add_this_package(
 )
 
 add_boost()
+add_eigen()
 
 add_testing()
 CHECK_INCLUDE_FILE(unistd.h ALPS_HAVE_UNISTD_H)
-gen_hpp_config()
 gen_pkg_config()
 gen_cfg_module()

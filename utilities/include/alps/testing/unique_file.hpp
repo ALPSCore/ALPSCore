@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -32,10 +32,10 @@ namespace alps {
                 @param prefix The file prefix
                 @param action Whether to delete file in dtor
             */
-            explicit unique_file(std::string prefix, action_type action=KEEP_AFTER);
+            explicit unique_file(const std::string& prefix, action_type action=KEEP_AFTER);
 
             /// Returns temporary file name
-            const std::string& name() { return name_; }
+            const std::string& name() const { return name_; }
 
             /// Closes and optionally deletes the file
             ~unique_file();

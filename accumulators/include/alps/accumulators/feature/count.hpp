@@ -1,25 +1,22 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#ifndef ALPS_ACCUMULATOR_COUNT_HPP
-#define ALPS_ACCUMULATOR_COUNT_HPP
+#pragma once
 
 #include <alps/config.hpp>
 
 #include <alps/accumulators/feature.hpp>
-#include <alps/accumulators/parameter.hpp>
 
 #include <alps/hdf5/archive.hpp>
-#include <alps/utilities/stacktrace.hpp>
 #include <alps/utilities/short_print.hpp>
 
-#include <boost/utility.hpp>
 #include <boost/cstdint.hpp>
 
 #include <stdexcept>
+#include <type_traits>
 
 namespace alps {
     namespace accumulators {
@@ -33,9 +30,10 @@ namespace alps {
 
         template<typename T> struct has_feature<T, count_tag> {
             template<typename C> static char helper(typename count_type<T>::type (C::*)() const);
-            template<typename C> static char check(boost::integral_constant<std::size_t, sizeof(helper(&C::count))>*);
+            template<typename C> static char check(std::integral_constant<std::size_t, sizeof(helper(&C::count))>*);
             template<typename C> static double check(...);
-            typedef boost::integral_constant<bool, sizeof(char) == sizeof(check<T>(0))> type;
+            typedef std::integral_constant<bool, sizeof(char) == sizeof(check<T>(0))> type;
+            constexpr static bool value = type::value;
         };
 
         template<typename T> typename count_type<T>::type count(T const & arg) {
@@ -44,14 +42,14 @@ namespace alps {
 
         namespace detail {
 
-            template<typename A> typename boost::enable_if<
-                typename has_feature<A, count_tag>::type, typename count_type<A>::type
+            template<typename A> typename std::enable_if<
+                has_feature<A, count_tag>::value, typename count_type<A>::type
             >::type count_impl(A const & acc) {
                 return count(acc);
             }
 
-            template<typename A> typename boost::disable_if<
-                typename has_feature<A, count_tag>::type, typename count_type<A>::type
+            template<typename A> typename std::enable_if<
+                !has_feature<A, count_tag>::value, typename count_type<A>::type
             >::type count_impl(A const & acc) {
                 throw std::runtime_error(std::string(typeid(A).name()) + " has no count-method" + ALPS_STACKTRACE);
                 return typename count_type<A>::type();
@@ -79,96 +77,76 @@ namespace alps {
                         return m_count;
                     }
 
-                    void operator()(T const &) {
-                        throw std::runtime_error("No values can be added to a result" + ALPS_STACKTRACE);
-                    }
+                    void operator()(T const &);
 
                     template<typename W> void operator()(T const &, W) {
                         throw std::runtime_error("No values can be added to a result" + ALPS_STACKTRACE);
                     }
 
-                    template<typename S> void print(S & os, bool terse=false) const {
+                    template<typename S> void print(S & os, bool /*terse*/=false) const {
                         os << " #" << alps::short_print(count());
                     }
 
-                    void save(hdf5::archive & ar) const {
-                        if (m_count==0) {
-                            throw std::logic_error("Attempt to save an empty result" + ALPS_STACKTRACE);
-                        }
-                        ar["count"] = m_count;
-                    }
-
-                    void load(hdf5::archive & ar) {
-                        count_type cnt;
-                        ar["count"] >> cnt;
-                        if (cnt==0) {
-                            throw std::runtime_error("Malformed archive containing an empty result"
-                                                     + ALPS_STACKTRACE);
-                        }
-                        m_count=cnt;
-                    }
+                    void save(hdf5::archive & ar) const;
+                    void load(hdf5::archive & ar);
 
                     static std::size_t rank() { return 1; }
-                    static bool can_load(hdf5::archive & ar) { // TODO: make archive const
-                        return ar.is_data("count");
-                    }
+                    static bool can_load(hdf5::archive & ar);
 
                     template<typename U> void operator+=(U const & arg) { augadd(arg); }
                     template<typename U> void operator-=(U const & arg) { augsub(arg); }
                     template<typename U> void operator*=(U const & arg) { augmul(arg); }
                     template<typename U> void operator/=(U const & arg) { augdiv(arg); }
 
-                    inline void reset() {
-                        throw std::runtime_error("A result cannot be reseted" + ALPS_STACKTRACE);
-                    }
+                    void reset();
 
                 private:
 
                     // TODO: make macro ...
-                    template<typename U> void augadd(U const & arg, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {
+                    template<typename U> void augadd(U const & arg, typename std::enable_if<std::is_scalar<U>::value, int>::type = 0) {
                         if (m_count == 0)
-                            throw std::runtime_error("The results needs measurements" + ALPS_STACKTRACE);
+                            throw std::runtime_error("The results need measurements" + ALPS_STACKTRACE);
                         B::operator+=(arg);
                     }
-                    template<typename U> void augadd(U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {
+                    template<typename U> void augadd(U const & arg, typename std::enable_if<!std::is_scalar<U>::value, int>::type = 0) {
                         if (m_count == 0 || arg.count() == 0)
-                            throw std::runtime_error("Both results needs measurements" + ALPS_STACKTRACE);
+                            throw std::runtime_error("Both results need measurements" + ALPS_STACKTRACE);
                         m_count = std::min(m_count,  arg.count());
                         B::operator+=(arg);
                     }
 
-                    template<typename U> void augsub(U const & arg, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {
+                    template<typename U> void augsub(U const & arg, typename std::enable_if<std::is_scalar<U>::value, int>::type = 0) {
                         if (m_count == 0)
-                            throw std::runtime_error("The results needs measurements" + ALPS_STACKTRACE);
+                            throw std::runtime_error("The results need measurements" + ALPS_STACKTRACE);
                         B::operator-=(arg);
                     }
-                    template<typename U> void augsub(U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {
+                    template<typename U> void augsub(U const & arg, typename std::enable_if<!std::is_scalar<U>::value, int>::type = 0) {
                         if (m_count == 0 || arg.count() == 0)
-                            throw std::runtime_error("Both results needs measurements" + ALPS_STACKTRACE);
+                            throw std::runtime_error("Both results need measurements" + ALPS_STACKTRACE);
                         m_count = std::min(m_count,  arg.count());
                         B::operator-=(arg);
                     }
 
-                    template<typename U> void augmul(U const & arg, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {
+                    template<typename U> void augmul(U const & arg, typename std::enable_if<std::is_scalar<U>::value, int>::type = 0) {
                         if (m_count == 0)
-                            throw std::runtime_error("The results needs measurements" + ALPS_STACKTRACE);
+                            throw std::runtime_error("The results need measurements" + ALPS_STACKTRACE);
                         B::operator*=(arg);
                     }
-                    template<typename U> void augmul(U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {
+                    template<typename U> void augmul(U const & arg, typename std::enable_if<!std::is_scalar<U>::value, int>::type = 0) {
                         if (m_count == 0 || arg.count() == 0)
-                            throw std::runtime_error("Both results needs measurements" + ALPS_STACKTRACE);
+                            throw std::runtime_error("Both results need measurements" + ALPS_STACKTRACE);
                         m_count = std::min(m_count,  arg.count());
                         B::operator*=(arg);
                     }
 
-                    template<typename U> void augdiv(U const & arg, typename boost::enable_if<boost::is_scalar<U>, int>::type = 0) {
+                    template<typename U> void augdiv(U const & arg, typename std::enable_if<std::is_scalar<U>::value, int>::type = 0) {
                         if (m_count == 0)
-                            throw std::runtime_error("The results needs measurements" + ALPS_STACKTRACE);
+                            throw std::runtime_error("The results need measurements" + ALPS_STACKTRACE);
                         B::operator/=(arg);
                     }
-                    template<typename U> void augdiv(U const & arg, typename boost::disable_if<boost::is_scalar<U>, int>::type = 0) {
+                    template<typename U> void augdiv(U const & arg, typename std::enable_if<!std::is_scalar<U>::value, int>::type = 0) {
                         if (m_count == 0 || arg.count() == 0)
-                            throw std::runtime_error("Both results needs measurements" + ALPS_STACKTRACE);
+                            throw std::runtime_error("Both results need measurements" + ALPS_STACKTRACE);
                         m_count = std::min(m_count,  arg.count());
                         B::operator/=(arg);
                     }
@@ -186,7 +164,7 @@ namespace alps {
 
                     Accumulator(Accumulator const & arg): m_count(arg.m_count) {}
 
-                    template<typename ArgumentPack> Accumulator(ArgumentPack const & args, typename boost::disable_if<is_accumulator<ArgumentPack>, int>::type = 0)
+                    template<typename ArgumentPack> Accumulator(ArgumentPack const & /*args*/, typename std::enable_if<!is_accumulator<ArgumentPack>::value, int>::type = 0)
                         : m_count(count_type())
                     {}
 
@@ -201,37 +179,21 @@ namespace alps {
                         throw std::runtime_error("Observable has no binary call operator" + ALPS_STACKTRACE);
                     }
 
-                    template<typename S> void print(S & os, bool terse=false) const {
+                    template<typename S> void print(S & os, bool /*terse*/=false) const {
                         os << " #" << alps::short_print(count());
                     }
 
-                    void save(hdf5::archive & ar) const {
-                        if (m_count==0) {
-                            throw std::logic_error("Attempt to save an empty accumulator" + ALPS_STACKTRACE);
-                        }
-                        ar["count"] = m_count;
-                    }
-
-                    void load(hdf5::archive & ar) { // TODO: make archive const
-                        count_type cnt;
-                        ar["count"] >> cnt;
-                        if (cnt==0) {
-                            throw std::runtime_error("Malformed archive containing an empty accumulator"
-                                                     + ALPS_STACKTRACE);
-                        }
-                        m_count=cnt;
-                    }
+                    void save(hdf5::archive & ar) const;
+                    void load(hdf5::archive & ar);
 
                     static std::size_t rank() { return 1; }
-                    static bool can_load(const hdf5::archive & ar) {
-                        return ar.is_data("count");
-                    }
+                    static bool can_load(const hdf5::archive & ar);
 
                     inline void reset() {
                         m_count = 0;
                     }
 
-              /// Merge the counter of the given accumulator of type A into this counter. @param rhs Accumulator to merge 
+              /// Merge the counter of the given accumulator of type A into this counter. @param rhs Accumulator to merge
               template <typename A>
               void merge(const A& rhs)
               {
@@ -242,21 +204,11 @@ namespace alps {
                     void collective_merge(
                           alps::mpi::communicator const & comm
                         , int root
-                    ) {
-                        if (comm.rank() == root)
-                            alps::alps_mpi::reduce(comm, m_count, m_count, std::plus<count_type>(), root);
-                        else
-                            const_cast<Accumulator<T, count_tag, B> const *>(this)->collective_merge(comm, root);
-                    }
+                    );
                     void collective_merge(
                           alps::mpi::communicator const & comm
                         , int root
-                    ) const {
-                        if (comm.rank() == root)
-                            throw std::runtime_error("A const object cannot be root" + ALPS_STACKTRACE);
-                        else
-                            alps::alps_mpi::reduce(comm, m_count, std::plus<count_type>(), root);
-                    }
+                    ) const;
 #endif
 
                 private:
@@ -282,5 +234,3 @@ namespace alps {
         }
     }
 }
-
- #endif

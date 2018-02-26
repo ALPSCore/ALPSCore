@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -36,7 +36,7 @@ namespace alps {
                 }
             };
 
-            template <int N, typename T> struct save_helper<N, T, boost::true_type> {
+            template <int N, typename T> struct save_helper<N, T, std::true_type> {
                 template <
                       typename A, typename T0, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9
                 > static void apply(
@@ -59,7 +59,7 @@ namespace alps {
                 }
             };
 
-            template <int N, typename T> struct load_helper<N, T, boost::true_type> {
+            template <int N, typename T> struct load_helper<N, T, std::true_type> {
                 template <
                       typename A, typename T0, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9
                 > static void apply(
@@ -80,34 +80,34 @@ namespace alps {
             , std::vector<std::size_t> chunk = std::vector<std::size_t>()
             , std::vector<std::size_t> offset = std::vector<std::size_t>()
         ) {
-            detail::save_helper<0, T0, typename boost::is_same<T0, boost::tuples::null_type>::type>::apply(
+            detail::save_helper<0, T0, typename std::is_same<T0, boost::tuples::null_type>::type>::apply(
                 ar, ar.complete_path(path) + "/0", value
             );
-            detail::save_helper<1, T1, typename boost::is_same<T1, boost::tuples::null_type>::type>::apply(
+            detail::save_helper<1, T1, typename std::is_same<T1, boost::tuples::null_type>::type>::apply(
                 ar, ar.complete_path(path) + "/1", value
             );
-            detail::save_helper<2, T2, typename boost::is_same<T2, boost::tuples::null_type>::type>::apply(
+            detail::save_helper<2, T2, typename std::is_same<T2, boost::tuples::null_type>::type>::apply(
                 ar, ar.complete_path(path) + "/2", value
             );
-            detail::save_helper<3, T3, typename boost::is_same<T3, boost::tuples::null_type>::type>::apply(
+            detail::save_helper<3, T3, typename std::is_same<T3, boost::tuples::null_type>::type>::apply(
                 ar, ar.complete_path(path) + "/3", value
             );
-            detail::save_helper<4, T4, typename boost::is_same<T4, boost::tuples::null_type>::type>::apply(
+            detail::save_helper<4, T4, typename std::is_same<T4, boost::tuples::null_type>::type>::apply(
                 ar, ar.complete_path(path) + "/4", value
             );
-            detail::save_helper<5, T5, typename boost::is_same<T5, boost::tuples::null_type>::type>::apply(
+            detail::save_helper<5, T5, typename std::is_same<T5, boost::tuples::null_type>::type>::apply(
                 ar, ar.complete_path(path) + "/5", value
             );
-            detail::save_helper<6, T6, typename boost::is_same<T6, boost::tuples::null_type>::type>::apply(
+            detail::save_helper<6, T6, typename std::is_same<T6, boost::tuples::null_type>::type>::apply(
                 ar, ar.complete_path(path) + "/6", value
             );
-            detail::save_helper<7, T7, typename boost::is_same<T7, boost::tuples::null_type>::type>::apply(
+            detail::save_helper<7, T7, typename std::is_same<T7, boost::tuples::null_type>::type>::apply(
                 ar, ar.complete_path(path) + "/7", value
             );
-            detail::save_helper<8, T8, typename boost::is_same<T8, boost::tuples::null_type>::type>::apply(
+            detail::save_helper<8, T8, typename std::is_same<T8, boost::tuples::null_type>::type>::apply(
                 ar, ar.complete_path(path) + "/8", value
             );
-            detail::save_helper<9, T9, typename boost::is_same<T9, boost::tuples::null_type>::type>::apply(
+            detail::save_helper<9, T9, typename std::is_same<T9, boost::tuples::null_type>::type>::apply(
                 ar, ar.complete_path(path) + "/9", value
             );
         }
@@ -121,16 +121,16 @@ namespace alps {
             , std::vector<std::size_t> chunk = std::vector<std::size_t>()
             , std::vector<std::size_t> offset = std::vector<std::size_t>()
         ) {
-            detail::load_helper<0, T0, typename boost::is_same<T0, boost::tuples::null_type>::type>::apply(ar, ar.complete_path(path) + "/0", value);
-            detail::load_helper<1, T1, typename boost::is_same<T1, boost::tuples::null_type>::type>::apply(ar, ar.complete_path(path) + "/1", value);
-            detail::load_helper<2, T2, typename boost::is_same<T2, boost::tuples::null_type>::type>::apply(ar, ar.complete_path(path) + "/2", value);
-            detail::load_helper<3, T3, typename boost::is_same<T3, boost::tuples::null_type>::type>::apply(ar, ar.complete_path(path) + "/3", value);
-            detail::load_helper<4, T4, typename boost::is_same<T4, boost::tuples::null_type>::type>::apply(ar, ar.complete_path(path) + "/4", value);
-            detail::load_helper<5, T5, typename boost::is_same<T5, boost::tuples::null_type>::type>::apply(ar, ar.complete_path(path) + "/5", value);
-            detail::load_helper<6, T6, typename boost::is_same<T6, boost::tuples::null_type>::type>::apply(ar, ar.complete_path(path) + "/6", value);  
-            detail::load_helper<7, T7, typename boost::is_same<T7, boost::tuples::null_type>::type>::apply(ar, ar.complete_path(path) + "/7", value);
-            detail::load_helper<8, T8, typename boost::is_same<T8, boost::tuples::null_type>::type>::apply(ar, ar.complete_path(path) + "/8", value);
-            detail::load_helper<9, T9, typename boost::is_same<T9, boost::tuples::null_type>::type>::apply(ar, ar.complete_path(path) + "/9", value);
+            detail::load_helper<0, T0, typename std::is_same<T0, boost::tuples::null_type>::type>::apply(ar, ar.complete_path(path) + "/0", value);
+            detail::load_helper<1, T1, typename std::is_same<T1, boost::tuples::null_type>::type>::apply(ar, ar.complete_path(path) + "/1", value);
+            detail::load_helper<2, T2, typename std::is_same<T2, boost::tuples::null_type>::type>::apply(ar, ar.complete_path(path) + "/2", value);
+            detail::load_helper<3, T3, typename std::is_same<T3, boost::tuples::null_type>::type>::apply(ar, ar.complete_path(path) + "/3", value);
+            detail::load_helper<4, T4, typename std::is_same<T4, boost::tuples::null_type>::type>::apply(ar, ar.complete_path(path) + "/4", value);
+            detail::load_helper<5, T5, typename std::is_same<T5, boost::tuples::null_type>::type>::apply(ar, ar.complete_path(path) + "/5", value);
+            detail::load_helper<6, T6, typename std::is_same<T6, boost::tuples::null_type>::type>::apply(ar, ar.complete_path(path) + "/6", value);
+            detail::load_helper<7, T7, typename std::is_same<T7, boost::tuples::null_type>::type>::apply(ar, ar.complete_path(path) + "/7", value);
+            detail::load_helper<8, T8, typename std::is_same<T8, boost::tuples::null_type>::type>::apply(ar, ar.complete_path(path) + "/8", value);
+            detail::load_helper<9, T9, typename std::is_same<T9, boost::tuples::null_type>::type>::apply(ar, ar.complete_path(path) + "/9", value);
         }
     }
 }

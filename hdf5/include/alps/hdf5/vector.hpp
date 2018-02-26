@@ -1,5 +1,6 @@
+
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -10,8 +11,7 @@
 #include <alps/hdf5/archive.hpp>
 #include <alps/utilities/cast.hpp>
 
-#include <boost/type_traits/is_scalar.hpp>
-
+#include <type_traits>
 #include <vector>
 #include <iterator>
 #include <algorithm>
@@ -24,13 +24,13 @@ namespace alps {
         };
 
         template<typename T, typename A> struct is_content_continuous<std::vector<T, A> >
-            : public is_continuous<T> 
+            : public is_continuous<T>
         {};
         template<typename A> struct is_content_continuous<std::vector<bool, A> >
-            : public boost::false_type
+            : public std::false_type
         {};
 
-        template<typename T, typename A> struct has_complex_elements<std::vector<T, A> > 
+        template<typename T, typename A> struct has_complex_elements<std::vector<T, A> >
             : public has_complex_elements<typename alps::detail::remove_cvr<typename std::vector<T, A>::value_type>::type>
         {};
 
@@ -42,7 +42,7 @@ namespace alps {
                     std::vector<std::size_t> result(1, value.size());
                     if (value.size()) {
                         std::vector<std::size_t> first(get_extent(value[0]));
-                        if (!boost::is_scalar<typename std::vector<T, A>::value_type>::value)
+                        if (!std::is_scalar<typename std::vector<T, A>::value_type>::value)
                             for(typename std::vector<T, A>::const_iterator it = value.begin() + 1; it != value.end(); ++it) {
                                 std::vector<std::size_t> size(get_extent(*it));
                                 if (
@@ -65,8 +65,8 @@ namespace alps {
                         for(typename std::vector<T, A>::iterator it = value.begin(); it != value.end(); ++it)
                             set_extent(*it, std::vector<std::size_t>(extent.begin() + 1, extent.end()));
                     else if (extent.size() == 1 && (
-                           (!boost::is_enum<T>::value && !boost::is_same<typename scalar_type<T>::type, T>::value)
-                        || (boost::is_enum<T>::value && is_continuous<T>::value && sizeof(T) != sizeof(typename scalar_type<T>::type))
+                           (!std::is_enum<T>::value && !std::is_same<typename scalar_type<T>::type, T>::value)
+                        || (std::is_enum<T>::value && is_continuous<T>::value && sizeof(T) != sizeof(typename scalar_type<T>::type))
                     ))
                         throw archive_error("dimensions do not match" + ALPS_STACKTRACE);
                 }
@@ -88,14 +88,14 @@ namespace alps {
                         if (!is_vectorizable(value[0]))
                             return false;
                         std::vector<std::size_t> first(get_extent(value[0]));
-                        if (!boost::is_scalar<typename std::vector<T, A>::value_type>::value) {
+                        if (!std::is_scalar<typename std::vector<T, A>::value_type>::value) {
                             for(typename std::vector<T, A>::const_iterator it = value.begin(); it != value.end(); ++it)
                                 if (!is_vectorizable(*it))
                                     return false;
                                 else {
                                     std::vector<std::size_t> size(get_extent(*it));
                                     if (
-                                           first.size() != size.size() 
+                                           first.size() != size.size()
                                         || !std::equal(first.begin(), first.end(), size.begin())
                                     )
                                         return false;
@@ -204,7 +204,7 @@ namespace alps {
                     ar.write(path, &elem, size, chunk, offset);
                 }
             }
-        }        
+        }
 
         template<typename T, typename A> void load(
               archive & ar

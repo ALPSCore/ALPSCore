@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -40,8 +40,8 @@ class AccumulatorTest : public ::testing::Test {
     accumulator_type acc;
     alps::mpi::communicator comm;
     int rank;
-    int npoints; //< number of points in this rank
-    int npoints_all; //< number of points in all ranks
+    unsigned int npoints; //< number of points in this rank
+    unsigned int npoints_all; //< number of points in all ranks
 
     AccumulatorTest(): gen(1.0), acc("data"), comm(), rank(comm.rank())
     {
@@ -49,10 +49,10 @@ class AccumulatorTest : public ::testing::Test {
         npoints=COUNT_RANK0 + COUNT_DIFF_PER_RANK*rank;
         npoints_all=np*(2*COUNT_RANK0 + COUNT_DIFF_PER_RANK*(np-1))/2;
     }
-    
+
     void merge_test()
     {
-        for (int i=0; i<npoints; ++i) {
+        for (unsigned int i=0; i<npoints; ++i) {
             acc << aact::gen_data<value_type>(gen(),VECSIZE).value();
         }
         acc.collective_merge(comm, master);
@@ -60,7 +60,7 @@ class AccumulatorTest : public ::testing::Test {
             // extract results
             const boost::shared_ptr<aac::result_wrapper> resptr=acc.result();
             const aac::result_wrapper& res=*resptr;
-            
+
             value_type expected_mean=aact::gen_data<value_type>(gen.mean(npoints_all), VECSIZE);
             value_type expected_error=aact::gen_data<value_type>(gen.error(npoints_all), VECSIZE);
             EXPECT_EQ(npoints_all, res.count());
@@ -102,4 +102,4 @@ int main(int argc, char** argv)
    tweak(alps::mpi::communicator().rank(), argc, argv);
    ::testing::InitGoogleTest(&argc, argv);
    return RUN_ALL_TESTS();
-}    
+}

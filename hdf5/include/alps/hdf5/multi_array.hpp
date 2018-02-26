@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -47,7 +47,7 @@ namespace alps {
                         std::vector<std::size_t> extent(get_extent(*value.data()));
                         for (std::size_t i = 1; i < value.num_elements(); ++i)
                             if (!std::equal(extent.begin(), extent.end(), get_extent(value.data()[i]).begin()))
-                                throw archive_error("no rectengual matrix");
+                                throw archive_error("no rectangular matrix");
                         std::copy(extent.begin(), extent.end(), std::back_inserter(result));
                     }
                     return result;
@@ -74,7 +74,7 @@ namespace alps {
                     template<std::size_t M> static void gen_extent(boost::multi_array<T, N, A> & value, boost::detail::multi_array::extent_gen<M> extents, std::vector<std::size_t> const & size) {
                         gen_extent(value, extents[size.front()], std::vector<std::size_t>(size.begin() + 1, size.end()));
                     }
-                    static void gen_extent(boost::multi_array<T, N, A> & value, typename boost::detail::multi_array::extent_gen<N> extents, std::vector<std::size_t> const & size) {
+                    static void gen_extent(boost::multi_array<T, N, A> & value, typename boost::detail::multi_array::extent_gen<N> extents, std::vector<std::size_t> const & /*size*/) {
                         value.resize(extents);
                     }
             };

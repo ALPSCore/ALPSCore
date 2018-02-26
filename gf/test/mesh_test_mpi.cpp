@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -52,6 +52,29 @@ TEST_F(MeshTest,MpiBcastMatsubara) {
     mesh_ptr->broadcast(alps::mpi::communicator(), MASTER);
 
     EXPECT_EQ(*mesh_ptr, ref_mesh) << "Failed at rank=" << rank_;
+}
+
+TEST_F(MeshTest,MpiBcastMatsubara2) {
+  typedef agf::matsubara_mesh<agf::mesh::POSITIVE_NEGATIVE> mesh_type_1;
+  typedef agf::matsubara_mesh<agf::mesh::POSITIVE_ONLY> mesh_type_2;
+  mesh_type_1 ref_mesh(5.0, 20,alps::gf::statistics::FERMIONIC);
+  mesh_type_1 same_mesh(1,1,alps::gf::statistics::FERMIONIC);
+  mesh_type_1 diff_stat(1,1,alps::gf::statistics::BOSONIC);
+  mesh_type_2 diff_mesh(1,1,alps::gf::statistics::FERMIONIC);
+  mesh_type_2 diff_mesh_stat(1,1,alps::gf::statistics::BOSONIC);
+  if(rank_ == MASTER) {
+    ref_mesh.broadcast(alps::mpi::communicator(), MASTER);
+    ref_mesh.broadcast(alps::mpi::communicator(), MASTER);
+    ref_mesh.broadcast(alps::mpi::communicator(), MASTER);
+    ref_mesh.broadcast(alps::mpi::communicator(), MASTER);
+  } else {
+    same_mesh.broadcast(alps::mpi::communicator(), MASTER);
+    EXPECT_EQ(same_mesh, ref_mesh);
+    diff_stat.broadcast(alps::mpi::communicator(), MASTER);
+    EXPECT_EQ(diff_stat, ref_mesh);
+    EXPECT_ANY_THROW(diff_mesh.broadcast(alps::mpi::communicator(), MASTER));
+    EXPECT_ANY_THROW(diff_mesh_stat.broadcast(alps::mpi::communicator(), MASTER));
+  }
 }
 
 TEST_F(MeshTest,MpiBcastITime) {

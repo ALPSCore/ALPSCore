@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -83,7 +83,7 @@ TEST_F(OneIndexGFTest,print)
   std::stringstream gf_stream_by_hand;
   gf_stream_by_hand<<matsubara_mesh(beta,nfreq);
   for(int i=0;i<nfreq;++i){
-    gf_stream_by_hand<<(2*i+1)*M_PI/beta<<" 0 0"<<std::endl;
+    gf_stream_by_hand<<(2*i+1)*M_PI/beta<<" 0 0 "<<std::endl;
   }
   EXPECT_EQ(gf_stream_by_hand.str(), gf_stream.str());
 }
@@ -126,9 +126,9 @@ TEST_F(OneIndexGFTest,Assign)
     
     gf2=gf;
     EXPECT_EQ(data, gf2(omega));
-    
-    EXPECT_THROW(other_gf=gf, std::invalid_argument);
-    // EXPECT_EQ(data, other_gf(omega));
+
+    EXPECT_NO_THROW(other_gf=gf);
+    EXPECT_EQ(data, other_gf(omega));
 }
 
 TEST_F(OneIndexGFTest, RealFreq) {
@@ -160,10 +160,10 @@ TEST_F(OneIndexGFTest, Legendre) {
     EXPECT_EQ(data2, other_gf(++il));
 }
 
-TEST_F(OneIndexGFTest, DefaultConstructive)
+TEST_F(OneIndexGFTest, DefaultConstructiveReadHDF5)
 {
     gf_type gf_empty;
-    EXPECT_THROW(gf_empty.norm(), std::runtime_error);
+    EXPECT_TRUE(gf_empty.is_empty());
     {
         alps::hdf5::archive oar("gf_1i_defconstr.h5","w");
         oar["/gf"] << gf;
@@ -172,5 +172,14 @@ TEST_F(OneIndexGFTest, DefaultConstructive)
         alps::hdf5::archive iar("gf_1i_defconstr.h5");
         iar["/gf"] >> gf_empty;
     }
-    EXPECT_NO_THROW(gf_empty.norm());
+    EXPECT_FALSE(gf_empty.is_empty());
 }
+
+#ifndef NDEBUG
+TEST_F(OneIndexGFTest, DefaultConstructiveAccess) {
+    gf_type gf_empty;
+    EXPECT_ANY_THROW(gf_empty.norm());
+    EXPECT_ANY_THROW(gf_empty*1.0);
+    EXPECT_ANY_THROW(-gf_empty);
+}
+#endif

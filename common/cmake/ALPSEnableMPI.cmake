@@ -45,7 +45,7 @@ C++ compiler version is: ${cxx_version}
 Depending on your platform this may lead to problems.")
         endif()
         set(ALPS_HAVE_MPI TRUE)
-        list(APPEND CMAKE_CXX_FLAGS ${MPI_CXX_COMPILE_FLAGS}) 
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MPI_CXX_COMPILE_FLAGS}") 
         message(STATUS "MPI : Using ${CMAKE_CXX_COMPILER}")
         if (MPI_CXX_COMPILE_FLAGS)	
             message(STATUS "MPI : with options ${MPI_CXX_COMPILE_FLAGS}")

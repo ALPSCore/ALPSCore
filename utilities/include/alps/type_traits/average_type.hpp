@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -9,8 +9,7 @@
 #ifndef ALPS_TYPE_TRAITS_AVERGAE_TYPE_H
 #define ALPS_TYPE_TRAITS_AVERGAE_TYPE_H
 
-#include <boost/type_traits/is_integral.hpp>
-#include <boost/mpl/if.hpp>
+#include <type_traits>
 #include <valarray>
 #include <vector>
 
@@ -19,8 +18,8 @@
 namespace alps {
 
 template <class T>
-struct average_type 
- : public boost::mpl::if_<boost::is_integral<T>,double,T> {};
+struct average_type
+ : public std::conditional<std::is_integral<T>::value,double,T> {};
 
 template <class T>
 struct average_type<std::valarray<T> > {

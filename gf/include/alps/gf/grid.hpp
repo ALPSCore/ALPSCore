@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -11,15 +11,12 @@
 #include <cmath>
 #include <vector>
 
-/**
- * @brief Grids definition for real frequency mesh
- */
 namespace alps {
   namespace gf {
+    /// Grids definitions for real frequency mesh
     namespace grid{
-/**
-             * Define a linear grid in real frequency
-             */
+
+      /// Linear grid in real frequency
       class linear_real_frequency_grid {
       private:
         /// lowest frequency in real frequency space
@@ -30,7 +27,7 @@ namespace alps {
         int n_;
       public:
         linear_real_frequency_grid(double emin, double emax, int n) : emin_(emin), emax_(emax), n_(n){};
-        void compute_points(std::vector<double> &points){
+        void compute_points(std::vector<double> &points) const {
           points.resize(n_);
           double step = (emax_ - emin_)/double(n_-1);
           for(int i = 0; i<n_; i++) {
@@ -38,9 +35,8 @@ namespace alps {
           }
         }
       };
-      /**
-       * Define Logarithmic grid in real frequency
-       */
+
+      /// Logarithmic grid in real frequency
       class logarithmic_real_frequency_grid {
       private:
         /// first step value
@@ -64,7 +60,7 @@ namespace alps {
           if (tmax<tmin)
             throw std::invalid_argument("the parameter tmax must be greater than tmin");
         };
-        void compute_points(std::vector<double> &points){
+        void compute_points(std::vector<double> &points) const {
           points.resize(nfreq_);
           double scale = std::log(t_max_ / t_min_) / ((float) ((nfreq_ / 2 - 1)));
           points[nfreq_ / 2] = c_;
@@ -79,6 +75,8 @@ namespace alps {
             points[nfreq_ / 2 + nfreq_ / 2] = c_ + t_min_ * std::exp(((float) (nfreq_/2 - 1)) * scale);
         }
       };
+
+      /// Quadratic grid in real frequency
       class quadratic_real_frequency_grid {
       private:
         /// number of frequency points
@@ -90,7 +88,7 @@ namespace alps {
             throw std::invalid_argument("the parameter spread must be greater than 1");
           spread_ = spread;
         }
-        void compute_points(std::vector<double> & points) {
+        void compute_points(std::vector<double> & points) const {
           points.resize(nfreq_);
           std::vector<double> temp(nfreq_);
           double t = 0;

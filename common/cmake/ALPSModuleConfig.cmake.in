@@ -6,15 +6,18 @@
 # FIXME: is not affected by @PROJECT_NAME@_LIBRARY
 
 foreach(dep_ @DEPENDS@)
-  include(${CMAKE_CURRENT_LIST_DIR}/../${dep_}/${dep_}.cmake)
+  find_package(${dep_} PATHS ${CMAKE_CURRENT_LIST_DIR}/../${dep_} NO_DEFAULT_PATH)
 endforeach()
 unset(dep_)
 
 include(${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@.cmake)
 
 set(@PROJECT_NAME@_HAS_MPI @ALPS_HAVE_MPI@)
-# set(@PROJECT_NAME@_LIBRARIES alps::@PROJECT_NAME@)
 set(@PROJECT_NAME@_LIBRARIES @EXPORTS@)
+
+if (NOT ALPSCore_HAS_EIGEN_VERSION)
+  set(ALPSCore_HAS_EIGEN_VERSION "@EIGEN3_VERSION@")
+endif()
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(@PROJECT_NAME@ DEFAULT_MSG @PROJECT_NAME@_LIBRARIES)

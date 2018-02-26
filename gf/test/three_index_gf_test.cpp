@@ -1,12 +1,11 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
 #include "gtest/gtest.h"
-#include "alps/gf/gf.hpp"
-#include "alps/gf/tail.hpp"
+#include <alps/gf/gf.hpp>
 #include "gf_test.hpp"
 
 class ThreeIndexGFTest : public ::testing::Test
@@ -253,14 +252,14 @@ TEST_F(ThreeIndexGFTest,Assign)
     gf2=gf;
     EXPECT_EQ(data, gf2(omega,i,sigma));
     
-    EXPECT_THROW(other_gf_beta=gf, std::invalid_argument);
-    // EXPECT_EQ(data, other_gf_beta(omega,i,sigma));
+    EXPECT_NO_THROW(other_gf_beta=gf);
+    EXPECT_EQ(data, other_gf_beta(omega,i,sigma));
     
-    EXPECT_THROW(other_gf_nfreq=gf, std::invalid_argument);
-    // EXPECT_EQ(data, other_gf_nfreq(omega,i,sigma));
+    EXPECT_NO_THROW(other_gf_nfreq=gf);
+    EXPECT_EQ(data, other_gf_nfreq(omega,i,sigma));
 
-    EXPECT_THROW(other_gf_nspins=gf, std::invalid_argument);
-    // EXPECT_EQ(data, other_gf_nspins(omega,i,sigma));
+    EXPECT_NO_THROW(other_gf_nspins=gf);
+    EXPECT_EQ(data, other_gf_nspins(omega,i,sigma));
 }
 
 
@@ -385,7 +384,7 @@ TEST_F(ThreeIndexGFTest, tailPrint)
 TEST_F(ThreeIndexGFTest, DefaultConstructive)
 {
     gf_type gf_empty;
-    EXPECT_THROW(gf_empty.norm(), std::runtime_error);
+    EXPECT_TRUE(gf_empty.is_empty());
     {
         alps::hdf5::archive oar("gf_3i_defconstr.h5","w");
         oar["/gf"] << gf;
@@ -394,5 +393,30 @@ TEST_F(ThreeIndexGFTest, DefaultConstructive)
         alps::hdf5::archive iar("gf_3i_defconstr.h5");
         iar["/gf"] >> gf_empty;
     }
-    EXPECT_NO_THROW(gf_empty.norm());
+    EXPECT_FALSE(gf_empty.is_empty());
 }
+
+TEST_F(ThreeIndexGFTest, DefaultConstructiveAssign)
+{
+    gf_type gf_empty;
+    gf_type gf_empty2;
+    gf_type gf_empty3 = gf;
+    EXPECT_TRUE(gf_empty.is_empty());
+    EXPECT_TRUE(gf_empty2.is_empty());
+    EXPECT_FALSE(gf_empty3.is_empty());
+    EXPECT_FALSE(gf_empty3.data().size()==0);
+    EXPECT_NO_THROW(gf_empty = gf_empty2);
+    EXPECT_NO_THROW(gf_empty3 = gf_empty);
+    EXPECT_TRUE(gf_empty.is_empty());
+    EXPECT_TRUE(gf_empty3.is_empty());
+    EXPECT_TRUE(gf_empty3.data().size()==0);
+}
+
+#ifndef NDEBUG
+TEST_F(ThreeIndexGFTest, DefaultConstructiveAccess) {
+    gf_type gf_empty;
+    EXPECT_ANY_THROW(gf_empty.norm());
+    EXPECT_ANY_THROW(gf_empty*1.0);
+    EXPECT_ANY_THROW(-gf_empty);
+}
+#endif

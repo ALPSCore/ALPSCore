@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -28,7 +28,7 @@ namespace alps {
             */
             template <typename A, template<typename> class AA>
             struct is_same_accumulator:
-                public boost::is_same<A,
+                public std::is_same<A,
                                       AA<typename value_type<typename A::accumulator_type>::type>
                                      >
             {};
@@ -39,7 +39,7 @@ namespace alps {
             inline void compare_near(const std::vector<T>& expected, const std::vector<T>& actual, double tol, const std::string& descr)
             {
                 EXPECT_EQ(expected.size(), actual.size()) << "Sizes of "+descr+" differ";
-                for (int i=0; i<expected.size(); ++i) {
+                for (size_t i=0; i<expected.size(); ++i) {
                     EXPECT_NEAR(expected.at(i), actual.at(i), tol) << "Element #"+boost::lexical_cast<std::string>(i)+" of "+descr+" differs";
                 }
             }
@@ -57,7 +57,7 @@ namespace alps {
                 double operator()() const { return drand48(); }
 
                 /// Expected mean of first n members
-                double mean(std::size_t n) const { return 0.5; }
+                double mean(std::size_t /*n*/) const { return 0.5; }
 
                 /// Expected error bar of first n members
                 double error(std::size_t n) const { return 1./(12*std::sqrt(n-1.)); }
@@ -70,17 +70,17 @@ namespace alps {
                 double operator()() const { return ini_; }
 
                 /// Expected mean of first n members
-                double mean(std::size_t n) const { return ini_; }
+                double mean(std::size_t /*n*/) const { return ini_; }
 
                 /// Expected error bar of first n members
-                double error(std::size_t n) const { return 0; }
+                double error(std::size_t /*n*/) const { return 0; }
             };
-                
+
             /// Functor class generating alternating data (0.5 +/- initialized; initialized=0.5 by default)
             struct AlternatingData {
                 double ini_;
                 mutable unsigned int step_;
-                
+
                 explicit AlternatingData(double ini=0.5) :ini_(ini), step_(0) { }
                 double operator()() const {
                     if (step_==0) {
@@ -107,7 +107,7 @@ namespace alps {
             struct LinearData {
                 double ini_;
                 mutable double val_;
-                
+
                 explicit LinearData(double ini=1) :ini_(ini), val_(0) { }
                 double operator()() const {
                     val_ += ini_;
@@ -139,7 +139,7 @@ namespace alps {
               public:
                 explicit CorrelatedData(double ini) : gen_(ini) { init_(); }
                 explicit CorrelatedData() : gen_() { init_(); }
-                
+
                 double operator()() const {
                     buf_[0]=std::accumulate(buf_+1,buf_+CORRL+1,gen_())/(CORRL+1);
                     double ret=buf_[0];
@@ -156,7 +156,7 @@ namespace alps {
 
 
             /// Class generating data points of a general (presumably scalar) type T
-            /** Usage: `T x=gen_data<T>(val,sz);` */ 
+            /** Usage: `T x=gen_data<T>(val,sz);` */
             // (a class is used to allow partial template specialization)
             template <typename T>
             struct gen_data {
@@ -168,14 +168,14 @@ namespace alps {
             };
 
             /// Class generating data points of vector<T>
-            /** Usage: `std::vector<T> v=gen_data<T>(T(val),sz);` */ 
+            /** Usage: `std::vector<T> v=gen_data<T>(T(val),sz);` */
             template <typename T>
             struct gen_data< std::vector<T> > {
                 typedef std::vector<T> value_type;
                 T val_;
                 unsigned int vsz_;
                 /// Generate a vector of size 3 by default.
-                gen_data(T val, unsigned int vsz =3) : val_(val), vsz_(vsz) {} 
+                gen_data(T val, unsigned int vsz =3) : val_(val), vsz_(vsz) {}
                 operator value_type() const { return value(); }
                 value_type value() const { return value_type(vsz_,val_); }
             };
@@ -188,7 +188,7 @@ namespace alps {
                 alps::accumulators::accumulator_set* measurements_ptr_;
                 const std::string name_;
                 NG number_generator;
-          
+
               public:
                 typedef A named_acc_type;
                 typedef typename alps::accumulators::value_type<typename named_acc_type::accumulator_type>::type value_type;
@@ -251,9 +251,9 @@ namespace alps {
                 std::string name() const { return name_; }
 
                 /// Returns the expected mean
-                double expected_mean() const { return number_generator.mean(NPOINTS); } 
+                double expected_mean() const { return number_generator.mean(NPOINTS); }
                 /// Returns the expected error
-                double expected_err() const { return number_generator.error(NPOINTS); } 
+                double expected_err() const { return number_generator.error(NPOINTS); }
             };
 
             /// Class to generate a pair of accumulators with identical data: A<T> and A<vector<T>>
@@ -360,7 +360,7 @@ namespace alps {
                     m <<    mean_acc_type(   mean_name)
                       <<   nobin_acc_type(  nobin_name)
                       <<  logbin_acc_type( logbin_name)
-                      << fullbin_acc_type(fullbin_name);                        
+                      << fullbin_acc_type(fullbin_name);
 
                     for (std::size_t i=0; i<NPOINTS; ++i) {
                         data_type sample=gen_data<data_type>(number_generator(), VSIZE);
@@ -444,14 +444,14 @@ namespace alps {
                     alps::accumulators::accumulator_set& m=*measurements_ptr_;
                     m << acc_type(acc_name);
 
-                    for (int i=0; i<NPOINTS; ++i) {
+                    for (size_t i=0; i<NPOINTS; ++i) {
                         data_type sample=gen_data<data_type>(number_generator(), VSIZE);
                         m[acc_name]  << sample;
                     }
                     results_ptr_=new alps::accumulators::result_set(m);
                 }
 
-              public:  
+              public:
                 /// Free the memory allocated in the constructor
                 virtual ~acc_one_correlated_gen()
                 {
@@ -504,7 +504,7 @@ namespace alps {
                 {
                     return accumulators()[acc_name];
                 }
-                
+
                 /// Returns extracted result as non-const
                 alps::accumulators::result_wrapper& result()
                 {
@@ -516,7 +516,7 @@ namespace alps {
                 {
                     return accumulators()[acc_name];
                 }
-                
+
                 /// Returns the expected mean
                 double expected_mean() const { return number_generator.mean(NPOINTS); }
                 /// Returns the expected error if uncorrelated

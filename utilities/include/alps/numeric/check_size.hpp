@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -10,13 +10,9 @@
 #include <alps/type_traits/is_sequence.hpp>
 #include <alps/utilities/stacktrace.hpp>
 
-// #include <alps/multi_array.hpp>
-
 #include <boost/array.hpp>
-#include <boost/mpl/or.hpp>
-#include <boost/mpl/and.hpp>
-#include <boost/utility/enable_if.hpp>
 
+#include <type_traits>
 #include <vector>
 #include <stdexcept>
 #include <algorithm>
@@ -26,12 +22,12 @@ namespace alps {
 
         namespace detail {
 
-            template <class X, class Y> 
-            inline typename boost::disable_if<boost::mpl::or_<is_sequence<X>,is_sequence<Y> >,void>::type 
+            template <class X, class Y>
+            inline typename std::enable_if<!(is_sequence<X>::value || is_sequence<Y>::value),void>::type
                 resize_same_as(X&, const Y&) {}
 
-            template <class X, class Y> 
-            inline typename boost::enable_if<boost::mpl::and_<is_sequence<X>,is_sequence<Y> >,void>::type
+            template <class X, class Y>
+            inline typename std::enable_if<is_sequence<X>::value && is_sequence<Y>::value,void>::type
             resize_same_as(X& a, const Y& y)  {
                 a.resize(y.size());
             }
@@ -41,7 +37,7 @@ namespace alps {
         }
 
         template<typename T, typename U>
-        inline void check_size(T & a, U const & b) {}
+        inline void check_size(T & /*a*/, U const & /*b*/) {}
 
         template<typename T, typename U>
         inline void check_size(std::vector<T> & a, std::vector<U> const & b) {
@@ -59,9 +55,6 @@ namespace alps {
         template<typename T, typename U, std::size_t N>
         inline void check_size(boost::array<T, N> & a, boost::array<U, N> const & b) {}
 
-        // template<typename T, typename U, std::size_t D>
-        // inline void check_size(alps::multi_array<T, D> & a, alps::multi_array<U, D> const & b) {}
-        
     }
 }
 

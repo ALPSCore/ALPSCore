@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -9,18 +9,18 @@
 #ifndef ALPS_TYPE_TRAITS_IS_COMPLEX_H
 #define ALPS_TYPE_TRAITS_IS_COMPLEX_H
 
-#include <boost/mpl/bool.hpp>
 #include <complex>
+#include <type_traits>
 
 // maybe we can automate this by checking for the existence of a value_type member
 
 namespace alps {
 
 template <class T>
-struct is_complex : public boost::mpl::false_ {};
+struct is_complex : std::false_type {};
 
 template <class T>
-struct is_complex<std::complex<T> > : public boost::mpl::true_ {};
+struct is_complex<std::complex<T> > : std::true_type {};
 
 } // end namespace alps
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -54,6 +54,12 @@ int main(int argc, char** argv)
     if (!par.exists("name")) {
         std::cout << "You must provide the name of the de-construction algorithm" << std::endl;
         par["help"] = true;
+    }
+    // This will validate that count and val have been given the proper datatype
+    else if (par.has_missing(std::cout)) {
+        par["help"] = true;
+        par.help_requested(std::cout);
+        return 1;
     }
     // The "count" parameter must be greater than zero
     if (par["count"].as<int>() <= 0) {

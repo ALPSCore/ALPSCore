@@ -1,13 +1,12 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
 /* $Id: obsvalue.h 3435 2009-11-28 14:45:38Z troyer $ */
 
-#ifndef ALPS_ALEA_CONVERGENCE_H
-#define ALPS_ALEA_CONVERGENCE_H
+#pragma once
 
 #include <alps/config.hpp>
 #include <string>
@@ -28,4 +27,3 @@ inline std::string convergence_to_text(int c)
 
 } // end namespace alps
 
-#endif // ALPS_ALEA_CONVERGENCE_H

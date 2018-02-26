@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -12,40 +12,34 @@
 #include <alps/type_traits/is_sequence.hpp>
 #include <alps/type_traits/covariance_type.hpp>
 
-#include <boost/utility/enable_if.hpp>
-
 #include <complex>
+#include <type_traits>
 
 namespace alps { namespace numeric {
 
 template <class T>
-inline 
-typename boost::disable_if<is_sequence<T>,typename covariance_type<T>::type>::type 
-outer_product(T a, T b) 
+inline
+typename std::enable_if<!is_sequence<T>::value,typename covariance_type<T>::type>::type
+outer_product(T a, T b)
 {
   return a*b;
 }
 
 
 template <class T>
-inline std::complex<T> outer_product(std::complex<T> const& a, std::complex<T> const& b) 
+inline std::complex<T> outer_product(std::complex<T> const& a, std::complex<T> const& b)
 {
   return std::conj(a)*b;
 }
 
 
 template <class T>
-inline 
-typename boost::enable_if<is_sequence<T>,typename covariance_type<T>::type>::type 
-outer_product(T a, T b) 
+inline
+typename std::enable_if<is_sequence<T>::value,typename covariance_type<T>::type>::type
+outer_product(T a, T b)
 {
-  typedef typename average_type<typename element_type<T>::type>::type value_type;
-  boost::numeric::ublas::vector<value_type> vec1(a.size()), vec2(b.size());
-  for (int i=0; i<a.size(); ++i)
-    vec1[i] = a[i];
-  for (int i=0; i<b.size(); ++i)
-    vec2[i] = b[i];
-  return boost::numeric::ublas::outer_prod(vec1, vec2);
+    throw std::logic_error("Outer product beween vectors is not implemented. "
+                           "Please use the new ALEA library if you need vector-vector covariance!");
 }
 
 } } // end namespace alps::numeric

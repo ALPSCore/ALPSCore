@@ -3,7 +3,7 @@
 #
 
 # Do not forget to adjust as needed!
-set(ALPSCORE_VERSION "1.0.0.1")
+set(ALPSCORE_VERSION "2.2.0")
 
 # Disable in-source builds
 if (${CMAKE_BINARY_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
@@ -41,8 +41,18 @@ mark_as_advanced(ALPS_DEBUG)
 # GF uses boost::multi_array, to supress extra checks we need to define extra flags,
 # otherwise codes will slow down to a crawl.
 if (NOT ALPS_DEBUG)
-  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DBOOST_DISABLE_ASSERTS")
-  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -DBOOST_DISABLE_ASSERTS")
+  if (NOT CMAKE_CXX_FLAGS_RELEASE MATCHES "(^| )-DBOOST_DISABLE_ASSERTS( |$)")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DBOOST_DISABLE_ASSERTS" CACHE STRING "ALPSCore Release compilation flags" FORCE)
+  endif()
+  if (NOT CMAKE_CXX_FLAGS_RELWITHDEBINFO MATCHES "(^| )-DBOOST_DISABLE_ASSERTS( |$)")
+    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -DBOOST_DISABLE_ASSERTS" CACHE STRING "ALPSCore Release-with-Debug-Info compilation flags" FORCE)
+  endif()
+  if (NOT CMAKE_CXX_FLAGS_MINSIZEREL MATCHES "(^| )-DBOOST_DISABLE_ASSERTS( |$)")
+    set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} -DBOOST_DISABLE_ASSERTS" CACHE STRING "ALPSCore Release-minimum-size-executables flags" FORCE)
+  endif()
+  if (NOT CMAKE_CXX_FLAGS_DEBUG MATCHES "(^| )-DALPS_GF_DEBUG( |$)")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DALPS_GF_DEBUG" CACHE STRING "ALPSCore Debug compilation flags" FORCE)
+  endif()
 endif()
 
 # Build static XOR shared 
@@ -108,7 +118,7 @@ macro(add_boost) # usage: add_boost(component1 component2...)
   if (ALPS_BUILD_SHARED)
     set(Boost_USE_STATIC_LIBS        OFF)
   endif()
-  find_package (Boost 1.54.0 COMPONENTS ${ARGV} REQUIRED)
+  find_package (Boost 1.56.0 COMPONENTS ${ARGV} REQUIRED)
   message(STATUS "Boost includes: ${Boost_INCLUDE_DIRS}" )
   message(STATUS "Boost libs: ${Boost_LIBRARIES}" )
   target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${Boost_INCLUDE_DIRS})
@@ -132,6 +142,12 @@ endmacro(add_hdf5)
 # Usage: add_alps_package(pkgname1 pkgname2...)
 # Sets variable ${PROJECT_NAME}_DEPENDS
 macro(add_alps_package)
+    foreach(pkg_ ${ARGV})
+      list(FIND ALPS_MODULES_DISABLE ${pkg_} disabled_index_)
+      if (NOT disabled_index_ EQUAL -1)
+        message(FATAL_ERROR "Module ${PROJECT_NAME} depends on ${pkg_} which is disabled.")
+      endif()
+    endforeach()
     list(APPEND ${PROJECT_NAME}_DEPENDS ${ARGV})
     foreach(pkg_ ${ARGV})
         if (DEFINED ALPS_GLOBAL_BUILD)
@@ -154,11 +170,15 @@ macro(add_alps_package)
     endforeach(pkg_)
 endmacro(add_alps_package) 
 
-# Usage: add_this_package(srcs...)
+# Usage: add_this_package(srcs... EXTRA extra_srcs...)
 # The `srcs` are source file names in directory "src/"
+# After `EXTRA`, `extra_srcs` are added verbatim
 # Defines ${PROJECT_NAME} target
 # Exports alps::${PROJECT_NAME} target
+# Defines internal cache variable ALPS_HAVE_ALPS_${MODULE} (where MODULE=upcase(PROJECT_NAME))
 function(add_this_package)
+  include(CMakeParseArguments)
+  cmake_parse_arguments(THIS_PACKAGE "" "" "EXTRA" ${ARGV})
    # This is needed to compile tests:
    include_directories(
      ${PROJECT_SOURCE_DIR}/include
@@ -166,10 +186,16 @@ function(add_this_package)
    )
   
   set(src_list_ "")
-  foreach(src_ ${ARGV})
+  foreach(src_ ${THIS_PACKAGE_UNPARSED_ARGUMENTS})
     list(APPEND src_list_ "src/${src_}.cpp")
   endforeach()
-  add_library(${PROJECT_NAME} ${src_list_})
+  add_library(${PROJECT_NAME} ${src_list_} ${THIS_PACKAGE_EXTRA})
+  if (ALPS_CXX_FEATURES)
+    target_compile_features(${PROJECT_NAME} PUBLIC ${ALPS_CXX_FEATURES})
+  endif()
+  if (ALPS_CXX_FLAGS)
+    set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY INTERFACE_COMPILE_OPTIONS ${ALPS_CXX_FLAGS})
+  endif()
   if (ALPS_BUILD_PIC) 
     set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
   endif()
@@ -189,6 +215,10 @@ function(add_this_package)
     endif()
   endif(ALPS_HAVE_MPI)
 
+  string(REPLACE "alps-" "" upcase_project_name_ ${PROJECT_NAME})
+  string(TOUPPER ${upcase_project_name_} upcase_project_name_)
+  set(ALPS_HAVE_ALPS_${upcase_project_name_} 1 CACHE INTERNAL "")
+  
   install(TARGETS ${PROJECT_NAME} 
           EXPORT ${PROJECT_NAME} 
           LIBRARY DESTINATION lib
@@ -220,10 +250,10 @@ macro(gen_documentation)
   endif(Documentation)
 endmacro(gen_documentation)
 
-macro(gen_hpp_config)
-  configure_file("${PROJECT_SOURCE_DIR}/include/config.hpp.in" "${PROJECT_BINARY_DIR}/include/alps/config.hpp")
-  install(FILES "${PROJECT_BINARY_DIR}/include/alps/config.hpp" DESTINATION include/alps) 
-endmacro(gen_hpp_config)
+function(gen_main_hpp_config)
+  configure_file("${CMAKE_SOURCE_DIR}/utilities/include/config.hpp.in" "${CMAKE_BINARY_DIR}/utilities/include/alps/config.hpp")
+  install(FILES "${CMAKE_BINARY_DIR}/utilities/include/alps/config.hpp" DESTINATION include/alps) 
+endfunction(gen_main_hpp_config)
 
 macro(gen_pkg_config)
   # Generate pkg-config file
@@ -234,11 +264,11 @@ endmacro(gen_pkg_config)
 # Function: generates main ALPSCore config
 function(gen_cfg_main)
   configure_file("${PROJECT_SOURCE_DIR}/common/cmake/ALPSCoreConfig.cmake.in" 
-                 "${PROJECT_BINARY_DIR}/ALPSCoreConfig.cmake" @ONLY)
+                 "${PROJECT_BINARY_DIR}/stage/ALPSCoreConfig.cmake" @ONLY)
   configure_file("${PROJECT_SOURCE_DIR}/common/cmake/ALPSCoreConfigVersion.cmake.in" 
-                 "${PROJECT_BINARY_DIR}/ALPSCoreConfigVersion.cmake" @ONLY)
-  install(FILES "${PROJECT_BINARY_DIR}/ALPSCoreConfig.cmake" DESTINATION "share/ALPSCore/")
-  install(FILES "${PROJECT_BINARY_DIR}/ALPSCoreConfigVersion.cmake" DESTINATION "share/ALPSCore/")
+                 "${PROJECT_BINARY_DIR}/stage/ALPSCoreConfigVersion.cmake" @ONLY)
+  install(FILES "${PROJECT_BINARY_DIR}/stage/ALPSCoreConfig.cmake" DESTINATION "share/ALPSCore/")
+  install(FILES "${PROJECT_BINARY_DIR}/stage/ALPSCoreConfigVersion.cmake" DESTINATION "share/ALPSCore/")
 endfunction()
 
 
@@ -263,31 +293,6 @@ function(gen_cfg_module)
         set(EXPORTS alps::${PROJECT_NAME})
     endif()
     configure_file("${PROJECT_SOURCE_DIR}/../common/cmake/ALPSModuleConfig.cmake.in" 
-                   "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" @ONLY)
-    install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" DESTINATION "share/${PROJECT_NAME}/")
-
-    # configure_file("${PROJECT_SOURCE_DIR}/../common/cmake/ALPSCoreConfig.cmake.in" 
-    #                "${PROJECT_BINARY_DIR}/ALPSCoreConfig.cmake" @ONLY)
-    # install(FILES "${PROJECT_BINARY_DIR}/ALPSCoreConfig.cmake" DESTINATION "share/ALPSCore/")
+                   "${PROJECT_BINARY_DIR}/stage/${PROJECT_NAME}Config.cmake" @ONLY)
+    install(FILES "${PROJECT_BINARY_DIR}/stage/${PROJECT_NAME}Config.cmake" DESTINATION "share/${PROJECT_NAME}/")
 endfunction()
-
-# # Requred parameters:
-# #  project_search_file_ : filename helping to identify the location of the project 
-# # Optional parameters:
-# #  HEADER_ONLY : the package does not contain libraries
-# #
-# function(gen_find_module project_search_file_)
-#   set(PROJECT_SEARCH_FILE ${project_search_file_})
-#   set (NOT_HEADER_ONLY true)
-#   foreach(arg ${ARGV})
-#     if (arg STREQUAL "HEADER_ONLY")
-#       set(NOT_HEADER_ONLY false)
-#     endif()
-#   endforeach()
-#   configure_file("${PROJECT_SOURCE_DIR}/../common/cmake/ALPSModuleConfig.cmake.in" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" @ONLY)
-#   # configure_file("${PROJECT_SOURCE_DIR}/../common/cmake/FindALPSModule.cmake.in" "${PROJECT_BINARY_DIR}/Find${PROJECT_NAME}.cmake" @ONLY)
-#   # install(FILES "${PROJECT_BINARY_DIR}/Find${PROJECT_NAME}.cmake" DESTINATION "share/cmake/Modules/")
-#   install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" DESTINATION "share/${PROJECT_NAME}/")
-#   install(FILES "${PROJECT_SOURCE_DIR}/../common/cmake/ALPSCoreConfig.cmake" DESTINATION "share/ALPSCore/")
-#   install(FILES "${PROJECT_SOURCE_DIR}/../common/cmake/FindALPSCore.cmake" DESTINATION "share/cmake/Modules/")
-# endfunction(gen_find_module)

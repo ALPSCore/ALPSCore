@@ -9,6 +9,15 @@
 // ALPSCore version (defined since 1.0.0.1)
 #cmakedefine ALPSCORE_VERSION ${ALPSCORE_VERSION}
 
+// Available ALPSCore components
+#cmakedefine ALPS_HAVE_ALPS_UTILITIES
+#cmakedefine ALPS_HAVE_ALPS_HDF5
+#cmakedefine ALPS_HAVE_ALPS_ACCUMULATORS
+#cmakedefine ALPS_HAVE_ALPS_PARAMS
+#cmakedefine ALPS_HAVE_ALPS_MC
+#cmakedefine ALPS_HAVE_ALPS_GF
+#cmakedefine ALPS_HAVE_ALPS_ALEA
+
 //
 // C headers
 //
@@ -112,14 +121,7 @@ using boost::uint_fast64_t;
 #define ALPS_ACCUMULATOR_BASIC_VALUE_TYPES float, double, long double, std::vector<float>, std::vector<double>, std::vector<long double>
 #define ALPS_ACCUMULATOR_BASIC_VALUE_TYPES_SIZE 6
 
-// Combine default and possible user-defined types
-
-#if defined(ALPS_ACCUMULATOR_USER_TYPES)
-#define         ALPS_ACCUMULATOR_VALUE_TYPES ALPS_ACCUMULATOR_BASIC_VALUE_TYPES, ALPS_ACCUMULATOR_USER_TYPES
-#define         ALPS_ACCUMULATOR_VALUE_TYPES_SIZE BOOST_PP_ADD(ALPS_ACCUMULATOR_BASIC_VALUE_TYPES_SIZE,ALPS_ACCUMULATOR_USER_TYPES_SIZE)
-#else /* ALPS_ACCUMULATOR_USER_TYPES */
-#define         ALPS_ACCUMULATOR_VALUE_TYPES ALPS_ACCUMULATOR_BASIC_VALUE_TYPES
-#define         ALPS_ACCUMULATOR_VALUE_TYPES_SIZE ALPS_ACCUMULATOR_BASIC_VALUE_TYPES_SIZE
-#endif /* ALPS_ACCUMULATOR_USER_TYPES */
+#define ALPS_ACCUMULATOR_VALUE_TYPES ALPS_ACCUMULATOR_BASIC_VALUE_TYPES
+#define ALPS_ACCUMULATOR_VALUE_TYPES_SIZE ALPS_ACCUMULATOR_BASIC_VALUE_TYPES_SIZE
 
 // #define ALPS_ACCUMULATOR_VALUE_TYPES double, std::vector<double>, alps::multi_array<double, 2>, alps::multi_array<double, 3>

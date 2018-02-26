@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -70,6 +70,7 @@ TEST_F(MpiTest, CommConstructDuplicate) {
         tmpcomm=comm;
     }
     EXPECT_TRUE(is_valid(newcomm_));
+    EXPECT_TRUE(tmpcomm!=MPI_COMM_NULL); // to pacify "unused variable" warning
     // This is undefined and will crash:
     // EXPECT_FALSE(is_valid(tmpcomm));
 }
@@ -115,6 +116,8 @@ TEST_F(MpiTest, CommAssignAttached) {
     EXPECT_EQ(newcomm_,comm_a1);
     EXPECT_TRUE(is_valid(comm_d1));
     EXPECT_TRUE(is_valid(comm_a1));
+
+    EXPECT_TRUE(mpicomm_d1!=MPI_COMM_NULL); // to pacify "unused variable" warning
     // and mpicomm_d1 (underlying MPI communicator for comm_d1) is not valid and may crash
     // EXPECT_FALSE(is_valid(mpicomm_d1));
 }
@@ -137,6 +140,8 @@ TEST_F(MpiTest, CommAssignDuplicated) {
     EXPECT_EQ(mpicomm_a2,comm_a1);
     EXPECT_TRUE(is_valid(comm_d1));
     EXPECT_TRUE(is_valid(comm_a1));
+
+    EXPECT_TRUE(mpicomm_d1!=MPI_COMM_NULL); // to pacify "unused variable" warning
     // and mpicomm_d1 (underlying MPI communicator for comm_d1) is not valid and may crash
     // EXPECT_FALSE(is_valid(mpicomm_d1));
 }

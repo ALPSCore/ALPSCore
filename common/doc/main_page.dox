@@ -20,11 +20,11 @@
  *
  *    + C++ compiler: g++ >= 4.2 OR Intel >= 10.0 OR Clang >= 3.2
  *
- *    + CMake >= 2.8.12
+ *    + CMake >= 3.1
  *
  *    + HDF5 library >=1.8
  *
- *    + Boost >= 1.54.0
+ *    + Boost >= 1.56.0
  *
  * 3. Building:
  *
@@ -45,7 +45,7 @@
  *     $ export ALPSCore_DIR=/install/dir/of/ALPSCore
  *     $ cd /your/project/
  *     $ cat >CMakeLists.txt
- *     cmake_minimum_required(VERSION 2.8.12)
+ *     cmake_minimum_required(VERSION 3.1)
  *     project(MyProject C CXX)
  *     find_package(ALPSCore REQUIRED)
  *     add_executable(my_program main.cpp)

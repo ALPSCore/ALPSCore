@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -13,6 +13,7 @@
 #include <boost/array.hpp>
 
 #include <vector>
+#include <type_traits>
 #include <iterator>
 #include <algorithm>
 
@@ -54,7 +55,7 @@ namespace alps {
                     if (extent.size() > 1)
                         for(typename boost::array<T, N>::iterator it = value.begin(); it != value.end(); ++it)
                             set_extent(*it, std::vector<std::size_t>(extent.begin() + 1, extent.end()));
-                    else if (extent.size() == 0 && !boost::is_same<typename scalar_type<T>::type, T>::value)
+                    else if (extent.size() == 0 && !std::is_same<typename scalar_type<T>::type, T>::value)
                         throw archive_error("dimensions do not match" + ALPS_STACKTRACE);
                 }
             };
@@ -73,7 +74,7 @@ namespace alps {
                             else {
                                 std::vector<std::size_t> size(get_extent(*it));
                                 if (
-                                       first.size() != size.size() 
+                                       first.size() != size.size()
                                     || !std::equal(first.begin(), first.end(), size.begin())
                                 )
                                     return false;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -15,9 +15,9 @@ namespace alps {
         template <typename T>
         void save(alps::hdf5::archive& ar, const std::string& path,
                   const boost::optional<T>& value,
-                  std::vector<std::size_t> size=std::vector<std::size_t>(),
-                  std::vector<std::size_t> chunk=std::vector<std::size_t>(),
-                  std::vector<std::size_t> offset=std::vector<std::size_t>())
+                  std::vector<std::size_t> /*size*/=std::vector<std::size_t>(),
+                  std::vector<std::size_t> /*chunk*/=std::vector<std::size_t>(),
+                  std::vector<std::size_t> /*offset*/=std::vector<std::size_t>())
         {
             if (ar.is_group(path)) ar.delete_group(path);
             if (!value) {
@@ -32,9 +32,9 @@ namespace alps {
         template <typename T>
         void load(alps::hdf5::archive& ar, const std::string& path,
                   boost::optional<T>& value,
-                  std::vector<std::size_t> size=std::vector<std::size_t>(),
-                  std::vector<std::size_t> chunk=std::vector<std::size_t>(),
-                  std::vector<std::size_t> offset=std::vector<std::size_t>())
+                  std::vector<std::size_t> /*size*/=std::vector<std::size_t>(),
+                  std::vector<std::size_t> /*chunk*/=std::vector<std::size_t>(),
+                  std::vector<std::size_t> /*offset*/=std::vector<std::size_t>())
         {
             bool is_empty=false;
             ar.read(path+"/@alps_hdf5_optional_empty", is_empty);

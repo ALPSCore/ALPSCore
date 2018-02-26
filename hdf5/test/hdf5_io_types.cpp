@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -21,6 +21,7 @@
 #include <numeric>
 #include <iostream>
 #include <algorithm>
+#include <type_traits>
 
 #include <boost/random.hpp>
 #include <boost/multi_array.hpp>
@@ -114,26 +115,26 @@ template<typename T, std::size_t N> void initialize(boost::array<T, N> & v) {
 }
 template<
     int N, typename T0, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9
-> void initialize_tuple_value(boost::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> & v, boost::false_type) {
+> void initialize_tuple_value(boost::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> & v, std::false_type) {
     using boost::get;
     initialize(get<N>(v));
 }
 template<
     int N, typename T0, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9
-> void initialize_tuple_value(boost::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> & v, boost::true_type) {}
+> void initialize_tuple_value(boost::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> & v, std::true_type) {}
 template<
     typename T0, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9
 > void initialize(boost::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> & v) {
-    initialize_tuple_value<0, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename boost::is_same<T0, boost::tuples::null_type>::type());
-    initialize_tuple_value<1, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename boost::is_same<T1, boost::tuples::null_type>::type());
-    initialize_tuple_value<2, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename boost::is_same<T2, boost::tuples::null_type>::type());
-    initialize_tuple_value<3, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename boost::is_same<T3, boost::tuples::null_type>::type());
-    initialize_tuple_value<4, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename boost::is_same<T4, boost::tuples::null_type>::type());
-    initialize_tuple_value<5, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename boost::is_same<T5, boost::tuples::null_type>::type());
-    initialize_tuple_value<6, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename boost::is_same<T6, boost::tuples::null_type>::type());
-    initialize_tuple_value<7, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename boost::is_same<T7, boost::tuples::null_type>::type());
-    initialize_tuple_value<8, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename boost::is_same<T8, boost::tuples::null_type>::type());
-    initialize_tuple_value<9, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename boost::is_same<T9, boost::tuples::null_type>::type());
+    initialize_tuple_value<0, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename std::is_same<T0, boost::tuples::null_type>::type());
+    initialize_tuple_value<1, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename std::is_same<T1, boost::tuples::null_type>::type());
+    initialize_tuple_value<2, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename std::is_same<T2, boost::tuples::null_type>::type());
+    initialize_tuple_value<3, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename std::is_same<T3, boost::tuples::null_type>::type());
+    initialize_tuple_value<4, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename std::is_same<T4, boost::tuples::null_type>::type());
+    initialize_tuple_value<5, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename std::is_same<T5, boost::tuples::null_type>::type());
+    initialize_tuple_value<6, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename std::is_same<T6, boost::tuples::null_type>::type());
+    initialize_tuple_value<7, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename std::is_same<T7, boost::tuples::null_type>::type());
+    initialize_tuple_value<8, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename std::is_same<T8, boost::tuples::null_type>::type());
+    initialize_tuple_value<9, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename std::is_same<T9, boost::tuples::null_type>::type());
 }
 template<typename T, typename A> void initialize(boost::multi_array<T, 1, A> & v) {
     v.resize(boost::extents[VECTOR_SIZE]);
@@ -198,7 +199,7 @@ template<typename T> class userdefined_class {
                 << alps::make_pvp("c", c)
             ;
         }
-        void load(alps::hdf5::archive & ar) { 
+        void load(alps::hdf5::archive & ar) {
             ar
                 >> alps::make_pvp("a", a)
                 >> alps::make_pvp("b", b)
@@ -226,7 +227,7 @@ template<typename T, typename U> class cast_type_base {
                 << alps::make_pvp("t", t)
             ;
         }
-        void load(alps::hdf5::archive & ar) { 
+        void load(alps::hdf5::archive & ar) {
             has_u = true;
             ar
                 >> alps::make_pvp("t", u)
@@ -244,17 +245,17 @@ template<typename T, typename U> class cast_type : public cast_type_base<T, U> {
             initialize(base_type::t);
         }
         bool operator==(cast_type<T, U> const & v) const {
-            return compare(v, typename boost::mpl::and_<
-                  typename boost::mpl::or_<typename boost::is_same<T, double>::type, typename boost::is_same<T, float>::type>::type
-                , typename boost::mpl::or_<typename boost::is_same<U, double>::type, typename boost::is_same<U, float>::type>::type
-            >::type());
+            return compare(v, std::integral_constant<bool,
+                  (std::is_same<T, double>::value || std::is_same<T, float>::value) &&
+                  (std::is_same<U, double>::value || std::is_same<U, float>::value)
+            >());
         }
     private:
-        bool compare(cast_type<T, U> const & v, boost::mpl::true_) const {
+        bool compare(cast_type<T, U> const & v, std::true_type) const {
             U diff = (base_type::has_u ? base_type::u : alps::cast<U>(base_type::t)) - (v.has_u ? v.u : alps::cast<U>(v.t));
             return (diff > 0 ? diff : -diff) / ((base_type::has_u ? base_type::u : alps::cast<U>(base_type::t)) + (v.has_u ? v.u : alps::cast<U>(v.t))) / 2 < 1e-4;
         }
-        bool compare(cast_type<T, U> const & v, boost::mpl::false_) const {
+        bool compare(cast_type<T, U> const & v, std::false_type) const {
             return (base_type::has_u ? base_type::u : alps::cast<U>(base_type::t)) == (v.has_u ? v.u : alps::cast<U>(v.t));
         }
 };
@@ -293,12 +294,6 @@ HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(std::deque, std::vector)
 HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(std::vector, std::deque)
 HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(std::deque, std::valarray)
 HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(std::valarray, std::deque)
-// HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(std::valarray, boost::numeric::ublas::vector)
-// HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(boost::numeric::ublas::vector, std::valarray)
-// HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(boost::numeric::ublas::vector, std::vector)
-// HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(std::vector, boost::numeric::ublas::vector)
-// HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(std::deque, boost::numeric::ublas::vector)
-// HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(boost::numeric::ublas::vector, std::deque)
 
 #undef HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE
 
@@ -332,9 +327,9 @@ namespace alps {
               alps::hdf5::archive & ar
             , std::string const & path
             , enum_type const & value
-            , std::vector<std::size_t> size = std::vector<std::size_t>()
-            , std::vector<std::size_t> chunk = std::vector<std::size_t>()
-            , std::vector<std::size_t> offset = std::vector<std::size_t>()
+            , std::vector<std::size_t> /*size*/ = std::vector<std::size_t>()
+            , std::vector<std::size_t> /*chunk*/ = std::vector<std::size_t>()
+            , std::vector<std::size_t> /*offset*/ = std::vector<std::size_t>()
         ) {
             switch (value) {
                 case PLUS: ar << alps::make_pvp(path, std::string("plus")); break;
@@ -345,8 +340,8 @@ namespace alps {
               alps::hdf5::archive & ar
             , std::string const & path
             , enum_type & value
-            , std::vector<std::size_t> chunk = std::vector<std::size_t>()
-            , std::vector<std::size_t> offset = std::vector<std::size_t>()
+            , std::vector<std::size_t> /*chunk*/ = std::vector<std::size_t>()
+            , std::vector<std::size_t> /*offset*/ = std::vector<std::size_t>()
         ) {
             std::string s;
             ar >> alps::make_pvp(path, s);
@@ -357,14 +352,14 @@ namespace alps {
             typedef boost::int_t<sizeof(enum_vec_type) * 8>::exact type;
         };
 
-        template<> struct is_continuous<enum_vec_type> : public boost::true_type {};
+        template<> struct is_continuous<enum_vec_type> : public std::true_type {};
 
-        template<> struct has_complex_elements<enum_vec_type> : public boost::false_type {};
+        template<> struct has_complex_elements<enum_vec_type> : public std::false_type {};
 
         namespace detail {
 
             template<> struct get_extent<enum_vec_type> {
-                static std::vector<std::size_t> apply(enum_vec_type const & value) {
+                static std::vector<std::size_t> apply(enum_vec_type const & /*value*/) {
                     return std::vector<std::size_t>();
                 }
             };
@@ -374,7 +369,7 @@ namespace alps {
             };
 
             template<> struct is_vectorizable<enum_vec_type> {
-                static bool apply(enum_vec_type const & value) {
+                static bool apply(enum_vec_type const & /*value*/) {
                     return true;
                 }
             };
@@ -384,7 +379,7 @@ namespace alps {
                     return reinterpret_cast<scalar_type<enum_vec_type>::type *>(&value);
                 }
             };
-        
+
             template<> struct get_pointer<enum_vec_type const> {
                 static scalar_type<enum_vec_type>::type const * apply(enum_vec_type const & value) {
                     return reinterpret_cast<scalar_type<enum_vec_type>::type const *>(&value);
@@ -407,7 +402,7 @@ namespace alps {
             }
             ar.write(path, (scalar_type<enum_vec_type>::type const *)get_pointer(value), size, chunk, offset);
         }
-        
+
         void load(
               alps::hdf5::archive & ar
             , std::string const & path
@@ -439,7 +434,7 @@ template<typename T> struct creator {
     template<typename X> static base_type special(X const &) { return base_type(); }
 };
 template<typename T> struct destructor {
-    static void apply(T & value) {}
+    static void apply(T & /*value*/) {}
 };
 template<typename T> bool equal(T const & a, T const & b) {
     return a == b;
@@ -455,7 +450,7 @@ template<typename T, typename A> struct creator< C < P ::multi_array<T, 1, A> > 
         );                                                                                         \
         for (std::size_t i = 0; i < VECTOR_SIZE; ++i)                                              \
             for (std::size_t j = 0; j < MATRIX_SIZE; ++j)                                          \
-                if (boost::is_scalar<T>::value)                                                    \
+                if (std::is_scalar<T>::value)                                                    \
                     initialize(value[i][j]);                                                       \
                 else                                                                               \
                     value[i][j] = creator<T>::random();                                            \
@@ -476,7 +471,7 @@ template<typename T, typename A> struct creator< C < P ::multi_array<T, 2, A> > 
         for (std::size_t i = 0; i < VECTOR_SIZE; ++i)                                              \
             for (std::size_t j = 0; j < MATRIX_SIZE; ++j)                                          \
                 for (std::size_t k = 0; k < MATRIX_SIZE; ++k)                                      \
-                    if (boost::is_scalar<T>::value)                                                \
+                    if (std::is_scalar<T>::value)                                                \
                         initialize(value[i][j][k]);                                                \
                     else                                                                           \
                         value[i][j][k] = creator<T>::random();                                     \
@@ -500,7 +495,7 @@ template<typename T, typename A> struct creator< C < P ::multi_array<T, 3, A> > 
             for (std::size_t j = 0; j < MATRIX_SIZE; ++j)                                          \
                 for (std::size_t k = 0; k < MATRIX_SIZE; ++k)                                      \
                     for (std::size_t l = 0; l < MATRIX_SIZE; ++l)                                  \
-                        if (boost::is_scalar<T>::value)                                            \
+                        if (std::is_scalar<T>::value)                                            \
                             initialize(value[i][j][k][l]);                                         \
                         else                                                                       \
                             value[i][j][k][l] = creator<T>::random();                              \
@@ -525,7 +520,7 @@ template<typename T, typename A> struct creator< C < P ::multi_array<T, 4, A> > 
                 for (std::size_t k = 0; k < MATRIX_SIZE; ++k)                                      \
                     for (std::size_t l = 0; l < MATRIX_SIZE; ++l)                                  \
                         for (std::size_t m = 0; m < MATRIX_SIZE; ++m)                              \
-                            if (boost::is_scalar<T>::value)                                        \
+                            if (std::is_scalar<T>::value)                                        \
                                 initialize(value[i][j][k][l][m]);                                  \
                             else                                                                   \
                                 value[i][j][k][l][m] = creator<T>::random();                       \
@@ -598,7 +593,7 @@ template<typename T> struct creator< C < alps::numeric::matrix<T> > > {         
         for (std::size_t i = 0; i < VECTOR_SIZE; ++i)                                              \
             for (std::size_t j = 0; j < MATRIX_SIZE; ++j)                                          \
                 for (std::size_t k = 0; k < MATRIX_SIZE; ++k)                                      \
-                    if (boost::is_scalar<T>::value)                                                \
+                    if (std::is_scalar<T>::value)                                                \
                         initialize(value[i](j, k));                                                \
                     else                                                                           \
                         value[i](j, k) = creator<T>::random();                                     \
@@ -616,7 +611,6 @@ HDF5_DEFINE_MULTI_ARRAY_TYPE(alps, C)*/
 HDF5_DEFINE_VECTOR_TYPE(std::vector)
 HDF5_DEFINE_VECTOR_TYPE(std::valarray)
 HDF5_DEFINE_VECTOR_TYPE(std::deque)
-// HDF5_DEFINE_VECTOR_TYPE(boost::numeric::ublas::vector)
 #undef HDF5_DEFINE_VECTOR_TYPE
 #undef HDF5_DEFINE_MULTI_ARRAY_TYPE
 
@@ -684,10 +678,10 @@ template<typename T, typename U> struct creator<std::pair<T *, std::vector<U> > 
         return value;
     }
     template<typename X> static base_type random(X const &) {
-        return std::make_pair(new typename boost::remove_const<T>::type[VECTOR_SIZE], std::vector<U>(1, VECTOR_SIZE)); 
+        return std::make_pair(new typename boost::remove_const<T>::type[VECTOR_SIZE], std::vector<U>(1, VECTOR_SIZE));
     }
     template<typename X> static base_type empty(X const &) {
-        return std::make_pair(static_cast<typename boost::remove_const<T>::type *>(NULL), std::vector<U>()); 
+        return std::make_pair(static_cast<typename boost::remove_const<T>::type *>(NULL), std::vector<U>());
     }
     template<typename X> static base_type special(X const &) {
         return std::make_pair(new typename boost::remove_const<T>::type[MATRIX_SIZE * MATRIX_SIZE * MATRIX_SIZE], std::vector<U>(3, MATRIX_SIZE));
@@ -715,7 +709,7 @@ template<typename T, typename U> bool equal(std::pair<T *, std::vector<U> > cons
         static base_type random() {                                                                                                                 \
             base_type value(boost::extents[VECTOR_SIZE]);                                                                                           \
             for (std::size_t i = 0; i < VECTOR_SIZE; ++i)                                                                                           \
-                if (boost::is_scalar<T>::value)                                                                                                     \
+                if (std::is_scalar<T>::value)                                                                                                     \
                     initialize(value[i]);                                                                                                           \
                 else                                                                                                                                \
                     value[i] = creator<T>::random();                                                                                                \
@@ -742,7 +736,7 @@ template<typename T, typename U> bool equal(std::pair<T *, std::vector<U> > cons
             base_type value(boost::extents[MATRIX_SIZE][MATRIX_SIZE]);                                                                              \
             for (std::size_t i = 0; i < MATRIX_SIZE; ++i)                                                                                           \
                 for (std::size_t j = 0; j < MATRIX_SIZE; ++j)                                                                                       \
-                    if (boost::is_scalar<T>::value)                                                                                                 \
+                    if (std::is_scalar<T>::value)                                                                                                 \
                         initialize(value[i][j]);                                                                                                    \
                     else                                                                                                                            \
                         value[i][j] = creator<T>::random();                                                                                         \
@@ -771,7 +765,7 @@ template<typename T, typename U> bool equal(std::pair<T *, std::vector<U> > cons
             for (std::size_t i = 0; i < MATRIX_SIZE; ++i)                                                                                           \
                 for (std::size_t j = 0; j < MATRIX_SIZE; ++j)                                                                                       \
                     for (std::size_t k = 0; k < MATRIX_SIZE; ++k)                                                                                   \
-                        if (boost::is_scalar<T>::value)                                                                                             \
+                        if (std::is_scalar<T>::value)                                                                                             \
                             initialize(value[i][j][k]);                                                                                             \
                         else                                                                                                                        \
                             value[i][j][k] = creator<T>::random();                                                                                  \
@@ -802,7 +796,7 @@ template<typename T, typename U> bool equal(std::pair<T *, std::vector<U> > cons
                 for (std::size_t j = 0; j < MATRIX_SIZE; ++j)                                                                                       \
                     for (std::size_t k = 0; k < MATRIX_SIZE; ++k)                                                                                   \
                         for (std::size_t l = 0; l < MATRIX_SIZE; ++l)                                                                               \
-                            if (boost::is_scalar<T>::value)                                                                                         \
+                            if (std::is_scalar<T>::value)                                                                                         \
                                 initialize(value[i][j][k][l]);                                                                                      \
                             else                                                                                                                    \
                                 value[i][j][k][l] = creator<T>::random();                                                                           \
@@ -828,31 +822,6 @@ template<typename T, typename U> bool equal(std::pair<T *, std::vector<U> > cons
 HDF5_DEFINE_MULTI_ARRAY_TYPE(boost)
 // HDF5_DEFINE_MULTI_ARRAY_TYPE(alps)
 
-// template<typename T> struct creator<boost::numeric::ublas::matrix<T, boost::numeric::ublas::column_major> > {
-//     typedef boost::numeric::ublas::matrix<T, boost::numeric::ublas::column_major> base_type;
-//     static base_type random() {
-//         base_type value (MATRIX_SIZE, MATRIX_SIZE);
-//         for (std::size_t i = 0; i < MATRIX_SIZE; ++i)
-//             for (std::size_t j = 0; j < MATRIX_SIZE; ++j)
-//                 if (boost::is_scalar<T>::value)
-//                     initialize(value(i, j));
-//                 else
-//                     value(i, j) = creator<T>::random();
-//         return value;
-//     }
-//     static base_type empty() { return base_type(MATRIX_SIZE, MATRIX_SIZE); }
-//     static base_type special() { return base_type(MATRIX_SIZE, MATRIX_SIZE); }
-//     template<typename X> static base_type random(X const &) { return base_type(MATRIX_SIZE, MATRIX_SIZE); }
-//     template<typename X> static base_type empty(X const &) { return base_type(MATRIX_SIZE, MATRIX_SIZE); }
-//     template<typename X> static base_type special(X const &) { return base_type(MATRIX_SIZE, MATRIX_SIZE); }
-// };
-// template<typename T> bool equal(boost::numeric::ublas::matrix<T, boost::numeric::ublas::column_major> const & a, boost::numeric::ublas::matrix<T, boost::numeric::ublas::column_major> const & b) {
-//     for (std::size_t i = 0; i < MATRIX_SIZE; ++i)
-//         for (std::size_t j = 0; j < MATRIX_SIZE; ++j)
-//             if (!equal(a(i, j), b(i, j)))
-//                 return false;
-//     return true;
-// }
 
 // template<typename T> struct creator<alps::numeric::matrix<T> > {
 //     typedef alps::numeric::matrix<T> base_type;
@@ -860,7 +829,7 @@ HDF5_DEFINE_MULTI_ARRAY_TYPE(boost)
 //         base_type value (MATRIX_SIZE, MATRIX_SIZE);
 //         for (std::size_t i = 0; i < MATRIX_SIZE; ++i)
 //             for (std::size_t j = 0; j < MATRIX_SIZE; ++j)
-//                 if (boost::is_scalar<T>::value)
+//                 if (std::is_scalar<T>::value)
 //                     initialize(value(i, j));
 //                 else
 //                     value(i, j) = creator<T>::random();
@@ -916,18 +885,11 @@ HDF5_DEFINE_VECTOR_VECTOR_TYPE(std::vector, std::vector)
 HDF5_DEFINE_VECTOR_VECTOR_TYPE(std::valarray, std::vector)
 HDF5_DEFINE_VECTOR_VECTOR_TYPE(std::vector, std::valarray)
 HDF5_DEFINE_VECTOR_VECTOR_TYPE(std::valarray, std::valarray)
-// HDF5_DEFINE_VECTOR_VECTOR_TYPE(std::valarray, boost::numeric::ublas::vector)
-// HDF5_DEFINE_VECTOR_VECTOR_TYPE(boost::numeric::ublas::vector, std::valarray)
-// HDF5_DEFINE_VECTOR_VECTOR_TYPE(boost::numeric::ublas::vector, boost::numeric::ublas::vector)
-// HDF5_DEFINE_VECTOR_VECTOR_TYPE(boost::numeric::ublas::vector, std::vector)
-// HDF5_DEFINE_VECTOR_VECTOR_TYPE(std::vector, boost::numeric::ublas::vector)
 HDF5_DEFINE_VECTOR_VECTOR_TYPE(std::deque, std::deque)
 HDF5_DEFINE_VECTOR_VECTOR_TYPE(std::deque, std::vector)
 HDF5_DEFINE_VECTOR_VECTOR_TYPE(std::vector, std::deque)
 HDF5_DEFINE_VECTOR_VECTOR_TYPE(std::valarray, std::deque)
 HDF5_DEFINE_VECTOR_VECTOR_TYPE(std::deque, std::valarray)
-// HDF5_DEFINE_VECTOR_VECTOR_TYPE(boost::numeric::ublas::vector, std::deque)
-// HDF5_DEFINE_VECTOR_VECTOR_TYPE(std::deque, boost::numeric::ublas::vector)
 #undef HDF5_DEFINE_VECTOR_VECTOR_TYPE
 
 #define HDF5_DEFINE_VECTOR_VECTOR_VECTOR_TYPE(C, D, E)                                                    \
@@ -982,7 +944,7 @@ template<typename T> bool equal(T * const & a, T * const & b, std::size_t size) 
 }
 
 template<typename base_type> struct hdf5_test {
-    static bool write(std::string const & filename, boost::true_type) {
+    static bool write(std::string const & filename, std::true_type) {
         std::vector<std::size_t> size_0;
         base_type* write_0_value = NULL;
         std::size_t length = MATRIX_SIZE;
@@ -1035,7 +997,7 @@ template<typename base_type> struct hdf5_test {
             ;
         }
     }
-    static bool write(std::string const & filename, boost::false_type) {
+    static bool write(std::string const & filename, std::false_type) {
         base_type random_write(creator<base_type>::random());
         base_type empty_write(creator<base_type>::empty());
         base_type special_write(creator<base_type>::special());
@@ -1103,7 +1065,7 @@ template<typename base_type> struct hdf5_test {
 };
 
 template<typename T> struct hdf5_test<boost::shared_array<T> > {
-    static bool write(std::string const & filename, boost::mpl::false_) {
+    static bool write(std::string const & filename, std::false_type) {
         std::size_t length = MATRIX_SIZE;
         std::vector<std::size_t> size_1(1, MATRIX_SIZE);
         boost::shared_array<T> write_1_value(new T[MATRIX_SIZE]);
@@ -1148,53 +1110,49 @@ template<typename T> struct hdf5_test<boost::shared_array<T> > {
             ;
         }
     }
-    static bool overwrite(std::string const & filename, boost::mpl::false_) {
+    static bool overwrite(std::string const & filename, std::false_type) {
         // TODO: implement test for write type A and overwrite with type B
         return true;
     }
 };
 
 // TODO: this should be possible
-template<typename T> struct skip_attribute: public boost::mpl::false_ {};
+template<typename T> struct skip_attribute: public std::false_type {};
 
-template<typename T> struct skip_attribute<userdefined_class<T> >: public boost::mpl::true_ {};
-template<typename T, typename U> struct skip_attribute<cast_type<T, U> >: public boost::mpl::true_ {};
-template<> struct skip_attribute<enum_type>: public boost::mpl::true_ {};
+template<typename T> struct skip_attribute<userdefined_class<T> >: public std::true_type {};
+template<typename T, typename U> struct skip_attribute<cast_type<T, U> >: public std::true_type {};
+template<> struct skip_attribute<enum_type>: public std::true_type {};
 
-template<> struct skip_attribute<std::vector<bool> >: public boost::mpl::true_ {};
-template<typename T> struct skip_attribute<std::vector<std::vector<T> > >: public boost::mpl::true_ {};
-template<typename T> struct skip_attribute<std::valarray<std::vector<T> > >: public boost::mpl::true_ {}; 
-template<typename T> struct skip_attribute<std::vector<std::valarray<T> > >: public boost::mpl::true_ {}; 
-template<typename T> struct skip_attribute<std::valarray<std::valarray<T> > >: public boost::mpl::true_ {};
-// template<typename T> struct skip_attribute<boost::numeric::ublas::vector<boost::numeric::ublas::vector<T> > >: public boost::mpl::true_ {};
-// template<typename T> struct skip_attribute<std::valarray<boost::numeric::ublas::vector<T> > >: public boost::mpl::true_ {};
-// template<typename T> struct skip_attribute<std::vector<boost::numeric::ublas::vector<T> > >: public boost::mpl::true_ {};
-// template<typename T> struct skip_attribute<boost::numeric::ublas::vector<std::vector<T> > >: public boost::mpl::true_ {};
-// template<typename T> struct skip_attribute<boost::numeric::ublas::vector<std::valarray<T> > >: public boost::mpl::true_ {};
+template<> struct skip_attribute<std::vector<bool> >: public std::true_type {};
+template<typename T> struct skip_attribute<std::vector<std::vector<T> > >: public std::true_type {};
+template<typename T> struct skip_attribute<std::valarray<std::vector<T> > >: public std::true_type {};
+template<typename T> struct skip_attribute<std::vector<std::valarray<T> > >: public std::true_type {};
+template<typename T> struct skip_attribute<std::valarray<std::valarray<T> > >: public std::true_type {};
 
-template<typename T, std::size_t N> struct skip_attribute<boost::array<std::vector<T>, N> >: public boost::mpl::true_ {};
+template<typename T, std::size_t N> struct skip_attribute<boost::array<std::vector<T>, N> >: public std::true_type {};
 
-template<typename T, std::size_t N, typename A> struct skip_attribute<std::vector<boost::multi_array<T, N, A> > >: public boost::mpl::true_ {};
-// template<typename T, std::size_t N, typename A> struct skip_attribute<std::vector<alps::multi_array<T, N, A> > >: public boost::mpl::true_ {};
+template<typename T, std::size_t N, typename A> struct skip_attribute<std::vector<boost::multi_array<T, N, A> > >: public std::true_type {};
+// template<typename T, std::size_t N, typename A> struct skip_attribute<std::vector<alps::multi_array<T, N, A> > >: public std::true_type {};
 
-template<typename T, std::size_t N, typename A> struct skip_attribute<boost::multi_array<T, N, A> * >: public boost::mpl::true_ {};
-// template<typename T, std::size_t N, typename A> struct skip_attribute<alps::multi_array<T, N, A> * >: public boost::mpl::true_ {};
+template<typename T, std::size_t N, typename A> struct skip_attribute<boost::multi_array<T, N, A> * >: public std::true_type {};
+// template<typename T, std::size_t N, typename A> struct skip_attribute<alps::multi_array<T, N, A> * >: public std::true_type {};
 
 template <
     typename T0, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9
-> struct skip_attribute<std::vector<boost::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> > >: public boost::mpl::true_ {};
+> struct skip_attribute<std::vector<boost::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> > >: public std::true_type {};
 
-// template <typename T, typename M> struct skip_attribute<alps::numeric::matrix<T, M> > : public boost::mpl::true_ {};
+// template <typename T, typename M> struct skip_attribute<alps::numeric::matrix<T, M> > : public std::true_type {};
 
 template<typename T> struct skip_attribute<T *>: public skip_attribute<T> {};
 template<typename T> struct skip_attribute<std::vector<T> >: public skip_attribute<T> {};
 template<typename T> struct skip_attribute<std::valarray<T> >: public skip_attribute<T> {};
-template<typename T, typename U> struct skip_attribute<std::pair<T, U> >: public boost::mpl::or_<skip_attribute<T>, skip_attribute<U> >::type {};
+template<typename T, typename U> struct skip_attribute<std::pair<T, U> >:
+    public std::integral_constant<bool, skip_attribute<T>::value || skip_attribute<U>::value > {};
 
 template<typename T> struct skip_attribute<std::pair<T *, std::vector<std::size_t> > >: public skip_attribute<T> {};
-template<typename T> struct skip_attribute<std::pair<std::vector<T> *, std::vector<std::size_t> > >: public boost::mpl::true_ {};
-template<typename T, std::size_t N, typename A> struct skip_attribute<std::pair<boost::multi_array<T, N, A> *, std::vector<std::size_t> > >: public boost::mpl::true_ {};
-// template<typename T, std::size_t N, typename A> struct skip_attribute<std::pair<alps::multi_array<T, N, A> *, std::vector<std::size_t> > >: public boost::mpl::true_ {};
+template<typename T> struct skip_attribute<std::pair<std::vector<T> *, std::vector<std::size_t> > >: public std::true_type {};
+template<typename T, std::size_t N, typename A> struct skip_attribute<std::pair<boost::multi_array<T, N, A> *, std::vector<std::size_t> > >: public std::true_type {};
+// template<typename T, std::size_t N, typename A> struct skip_attribute<std::pair<alps::multi_array<T, N, A> *, std::vector<std::size_t> > >: public std::true_type {};
 
 template<typename T> struct skip_attribute<boost::shared_array<T> >: public skip_attribute<T> {};
 
@@ -1205,13 +1163,13 @@ public:
   TypedTestEncapsulation(){
     alps::testing::unique_file ufile("hdf5_io_generic_test.h5.", alps::testing::unique_file::REMOVE_NOW);
     const std::string& filename = ufile.name();
-    
+
     result_ = true;
     if (IS_ATTRIBUTE && skip_attribute<XXXX >::value)
       std::cout << "SKIP" << std::endl;
     else {
       for (std::size_t i = 32; i && result_; --i){
-        result_=hdf5_test<typename boost::remove_pointer<XXXX>::type >::write(filename, typename boost::is_pointer< XXXX >::type());
+        result_=hdf5_test<typename boost::remove_pointer<XXXX>::type >::write(filename, typename std::is_pointer< XXXX >::type());
         EXPECT_TRUE(result_);
       }
       {
@@ -1219,7 +1177,7 @@ public:
         alps::hdf5::archive iar2(filename, SZIP_COMPRESS ? "ca" : "a");
         alps::hdf5::archive iar3 = iar1;
         for (std::size_t i = 32; i && result_; --i){
-          result_=hdf5_test<typename boost::remove_pointer< XXXX >::type >::overwrite(filename, typename boost::is_pointer< XXXX >::type());
+          result_=hdf5_test<typename boost::remove_pointer< XXXX >::type >::overwrite(filename, typename std::is_pointer< XXXX >::type());
           EXPECT_TRUE(result_);
         }
       }
@@ -1336,36 +1294,6 @@ enum_type *,enum_vec_type *,userdefined_class<double> *,cast_type<int, double> *
 typedef ::testing::Types<
 boost::shared_array<int>,boost::shared_array<short>,boost::shared_array<long>,boost::shared_array<float>,boost::shared_array<double>, boost::shared_array<std::size_t>,boost::shared_array<std::string>,boost::shared_array<std::complex<double> >,boost::shared_array<enum_type>,boost::shared_array<enum_vec_type>,boost::shared_array<userdefined_class<double> >,boost::shared_array<cast_type<int, double> >,boost::shared_array<cast_type<int, std::string> >,cast_type<std::vector<int>, std::valarray<int> >,std::pair<double, int>,std::pair<double, std::complex<double> >,std::pair<cast_type<int, std::string>, enum_type>,std::pair<enum_type, cast_type<int, double> >,std::pair<std::vector<cast_type<int, std::string> >, std::pair<double, int> >,std::pair<std::pair<std::vector<enum_type> *, std::vector<std::size_t> >, enum_type>,cast_type<std::valarray<int>, std::vector<int> >,cast_type<std::pair<int *, std::vector<std::size_t> >, std::vector<std::vector<std::vector<int> > > >,cast_type<std::pair<int *, std::vector<std::size_t> >, std::vector<std::vector<std::vector<double> > > >,std::pair<cast_type<std::vector<int>, std::valarray<long> > *, std::vector<std::size_t> >,cast_type<std::vector<int>, std::valarray<double> >,std::vector<std::size_t, std::allocator<std::size_t> >,std::vector<short, std::allocator<short> >,std::vector<int, std::allocator<int> >,std::vector<long, std::allocator<long> >,std::vector<float, std::allocator<float> >,std::vector<double, std::allocator<double> >,std::vector<std::complex<double>, std::allocator<std::complex<double> > >,std::vector<std::string, std::allocator<std::string> >,std::vector<std::vector<int, std::allocator<int> > >,std::vector<std::vector<double>, std::allocator<std::vector<double> > >,std::vector<std::vector<std::complex<double>, std::allocator<std::complex<double> > >, std::allocator<std::vector<std::complex<double>, std::allocator<std::complex<double> > > > >,std::vector<std::vector<std::string, std::allocator<std::string> >, std::allocator<std::vector<std::string, std::allocator<std::string> > > >,boost::array<int, 20>,boost::array<long double, 20>,boost::array<float, 20>,boost::array<unsigned long long, 20>,boost::array<boost::array<std::complex<double>, 20>, 20>,std::vector<boost::array<int, 4> >,boost::array<std::vector<int>, 4>,std::vector<boost::array<std::vector<int>, 4> >,boost::tuple<int, double, float, std::complex<double> >,std::vector<boost::tuple<char, bool, long long> > > hdf5RemainingTypes;
 
-/*#    "std::vector<std::vector<bool> >"
-#    "boost::numeric::ublas::vector<bool>"
-#    boost::numeric::ublas::vector<int> boost::numeric::ublas::vector<double> "boost::numeric::ublas::vector<std::complex<double> >"
-#    "std::vector<boost::numeric::ublas::vector<std::complex<double> > >"
-#    "boost::numeric::ublas::matrix<double, boost::numeric::ublas::column_major>" "boost::numeric::ublas::matrix<std::complex<double>, boost::numeric::ublas::column_major>"
-#    "cast_type<std::vector<int>, boost::numeric::ublas::vector<int> >"
-#    "cast_type<std::valarray<int>, boost::numeric::ublas::vector<int> >"
-#    "cast_type<boost::numeric::ublas::vector<int>, std::vector<int> >" "cast_type<boost::numeric::ublas::vector<int>, std::valarray<int> >"
-#    "cast_type<std::vector<int>, boost::numeric::ublas::vector<double> >"
-#    "std::vector<cast_type<std::vector<int>, boost::numeric::ublas::vector<double> > >"
-#    "alps::numeric::matrix<unsigned int>" alps::numeric::matrix<float> alps::numeric::matrix<double> "alps::numeric::matrix<std::complex<float> >" "alps::numeric::matrix<std::complex<double> >"
-#    "std::vector<alps::numeric::matrix<unsigned int> >" "std::vector<alps::numeric::matrix<float> >" "std::vector<alps::numeric::matrix<double> >"
-#    "std::vector<alps::numeric::matrix<std::complex<float> > >" "std::vector<alps::numeric::matrix<std::complex<double> > >"
-#    "alps::numeric::matrix<std::vector<double> >" "alps::numeric::matrix<std::vector<std::complex<float> > >" "alps::numeric::matrix<alps::numeric::matrix<int> >"
-#    "alps::numeric::matrix<alps::numeric::matrix<double> >" "alps::numeric::matrix<alps::numeric::matrix<std::complex<double> > >"
-#    "boost::multi_array<double, 1>" "boost::multi_array<int, 1>" "boost::multi_array<std::complex<double>, 1>" "boost::multi_array<std::string, 1>"
-#    "boost::multi_array<double, 2>" "boost::multi_array<int, 2>" "boost::multi_array<std::complex<double>, 2>" "boost::multi_array<std::string, 2>"
-#    "boost::multi_array<double, 3>" "boost::multi_array<int, 3>" "boost::multi_array<std::complex<double>, 3>" "boost::multi_array<std::string, 3>"
-#    "std::vector<boost::multi_array<double, 2> >" "std::vector<boost::multi_array<double, 3> >" "std::vector<boost::multi_array<double, 4> >"
-#    "std::pair<boost::multi_array<std::complex<double>, 3> *, std::vector<std::size_t> >" "boost::multi_array<std::complex<double>, 1> *"
-#    "alps::multi_array<double, 1>" "alps::multi_array<int, 1>" "alps::multi_array<std::complex<double>, 1>" "alps::multi_array<std::string, 1>"
-#    "alps::multi_array<double, 2>" "alps::multi_array<int, 2>" "alps::multi_array<std::complex<double>, 2>" "alps::multi_array<std::string, 2>"
-#    "alps::multi_array<double, 3>" "alps::multi_array<int, 3>" "alps::multi_array<std::complex<double>, 3>" "alps::multi_array<std::string, 3>"
-#    "std::vector<alps::multi_array<double, 2> >" "std::vector<alps::multi_array<double, 3> >" "std::vector<alps::multi_array<double, 4> >"
-#    "std::pair<alps::multi_array<std::complex<double>, 3> *, std::vector<std::size_t> >" "alps::multi_array<std::complex<double>, 1> *"
-
-
-double, int, unsigned int*/
-//> hdf5Types;
-
 TYPED_TEST_CASE(ScalarTypedTestEncapsulation, hdf5ScalarTypes);
 TYPED_TEST(ScalarTypedTestEncapsulation, TestTypes) {
   EXPECT_TRUE(this->result_);
@@ -1419,7 +1347,7 @@ TYPED_TEST(RemainingTypedTestEncapsulation, TestTypes) {
 
 
 
-// int main(int argc, char **argv) 
+// int main(int argc, char **argv)
 // {
 //     ::testing::InitGoogleTest(&argc, argv);
 //     return RUN_ALL_TESTS();

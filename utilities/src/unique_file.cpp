@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -10,7 +10,6 @@
 #include <cstdio>
 #include <vector>
 #include <stdexcept>
-#include <algorithm>
 
 // excerpt from <unistd.h>
 extern "C" int close(int); 
@@ -25,12 +24,12 @@ namespace alps {
          * @warning Current implementation actually creates a file and then closes it.
          * 
          */
-        unique_file::unique_file(std::string prefix, unique_file::action_type action) : action_(action)
+        unique_file::unique_file(const std::string& prefix, unique_file::action_type action) : action_(action)
         {
-            // we could save at least one copy, but this way it is easier:
-            prefix += "XXXXXX";
-            std::vector<char> strbuf(prefix.size()+1); // we need a modifiable char buffer
-            std::copy(prefix.c_str(), prefix.c_str()+prefix.size()+1, strbuf.begin());
+            // We need a modifiable 0-terminated char buffer
+            std::vector<char> strbuf(prefix.begin(), prefix.end());
+            strbuf.insert(strbuf.end(), 7, 'X');
+            strbuf.back()='\0';
 
             int fd=mkstemp(&strbuf[0]);
             if (fd==-1) {

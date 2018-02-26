@@ -1,13 +1,12 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
 /** @file archive_traits.hpp defines traits for the data types loadability */
 
-#ifndef ALPS_ACCUMULATOR_ARCHIVE_TRAITS_HPP
-#define ALPS_ACCUMULATOR_ARCHIVE_TRAITS_HPP
+#pragma once
 
 #include <alps/hdf5/archive.hpp>
 
@@ -32,14 +31,12 @@ namespace alps {
                     bool ok=ar.is_data(name) &&
                         !ar.is_attribute(name+"/@c++_type") && // plain types should not have the attribute
                         ar.is_datatype<scalar_type>(name) &&
-                        ((dim==0 && ar.is_scalar(name)) || 
+                        ((dim==0 && ar.is_scalar(name)) ||
                          (dim>0  && ar.dimensions(name)==dim));
                     return ok;
                 }
             };
-            
+
         } // detail::
     } // accumulators::
 } // alps::
-
-#endif /* ALPS_ACCUMULATOR_ARCHIVE_TRAITS_HPP*/

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -39,7 +39,7 @@ struct InfinityTest : public ::testing::Test {
         // using std::isinf;
         vector_type inf=alps::numeric::inf<vector_type>(vector_);
         ASSERT_EQ(vector_.size(), inf.size());
-        for (int i=0; i<inf.size(); ++i) {
+        for (size_t i=0; i<inf.size(); ++i) {
             EXPECT_TRUE((boost::math::isinf)(inf[i]));
         }
     }
@@ -48,9 +48,9 @@ struct InfinityTest : public ::testing::Test {
         // using std::isinf;
         vector_vector_type inf=alps::numeric::inf<vector_vector_type>(vector_vector_);
         ASSERT_EQ(vector_vector_.size(), inf.size());
-        for (int i=0; i<inf.size(); ++i) {
+        for (size_t i=0; i<inf.size(); ++i) {
             ASSERT_EQ(vector_vector_[i].size(), inf[i].size());
-            for (int j=0; j<inf[i].size(); ++j) {
+            for (size_t j=0; j<inf[i].size(); ++j) {
                 EXPECT_TRUE((boost::math::isinf)(inf[i][j]));
             }
         }

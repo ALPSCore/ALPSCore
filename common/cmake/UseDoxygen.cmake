@@ -93,8 +93,8 @@ if(DOXYGEN_FOUND AND DOXYFILE_IN_FOUND)
 		"${DOXYFILE_OUTPUT_DIR}/${DOXYFILE_HTML_DIR}")
 
 	add_custom_target(doxygen
-		COMMAND "${DOXYGEN_EXECUTABLE}"
-			"${DOXYFILE}" 
+                VERBATIM
+		COMMAND "${DOXYGEN_EXECUTABLE}" "${DOXYFILE}"
 		COMMENT "Writing documentation to ${DOXYFILE_OUTPUT_DIR}..."
 		WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 
@@ -134,11 +134,10 @@ if(DOXYGEN_FOUND AND DOXYFILE_IN_FOUND)
 
 
 	configure_file("${DOXYFILE_IN}" "${DOXYFILE}" @ONLY)
+        install(DIRECTORY ${DOXYFILE_OUTPUT_DIR}/ DESTINATION share/doc/ALPSCore MESSAGE_NEVER)
 
-	#get_target_property(DOC_TARGET doc TYPE)
-	#if(NOT DOC_TARGET)
 	if(NOT TARGET doc)
-		add_custom_target(doc)
+		add_custom_target(doc ALL)
 	endif()
 
 	add_dependencies(doc doxygen)

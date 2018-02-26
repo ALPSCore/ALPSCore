@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -9,6 +9,7 @@
 
 #include <complex>
 #include <cmath>
+#include <type_traits>
 #include <vector>
 #include <cassert>
 #include <boost/multi_array.hpp>
@@ -24,12 +25,10 @@
 #include "mpi_bcast.hpp"
 #endif
 
-/**
- * @brief Class representing a pieacewise polynomial and utilities
- */
 namespace alps {
     namespace gf {
 
+        /// Class representing a piecewise polynomial and utilities
         template<typename>
         class piecewise_polynomial;
 
@@ -42,7 +41,7 @@ namespace alps {
              * @return   conj(a) * b
              */
             template<class T>
-            typename boost::enable_if<boost::is_floating_point<T>, T>::type
+            typename std::enable_if<boost::is_floating_point<T>::value, T>::type
             outer_product(T a, T b) {
                 return a * b;
             }
@@ -54,7 +53,7 @@ namespace alps {
             }
 
             template<class T>
-            typename boost::enable_if<boost::is_floating_point<T>, T>::type
+            typename std::enable_if<boost::is_floating_point<T>::value, T>::type
             conjg(T a) {
                 return a;
             }
@@ -383,13 +382,13 @@ namespace alps {
             {
                 save(ar, ar.get_context());
             }
-            
+
             /// Load from HDF5
             void load(alps::hdf5::archive& ar)
             {
                 load(ar, ar.get_context());
             }
-            
+
 #ifdef ALPS_HAVE_MPI
             /// Broadcast
             void broadcast(const alps::mpi::communicator& comm, int root)

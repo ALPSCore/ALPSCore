@@ -1,15 +1,14 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 #pragma once
 #include <complex>
 #include <cassert>
+#include <type_traits>
 #include <boost/multi_array.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/operators.hpp>
-#include <boost/type_traits/integral_constant.hpp>
 
 #include <alps/hdf5/archive.hpp>
 #include <alps/hdf5/complex.hpp>
@@ -26,7 +25,7 @@
 
 namespace alps {
     namespace gf {
-    
+
         namespace statistics {
             enum statistics_type {
                 BOSONIC=0,
@@ -46,19 +45,19 @@ namespace alps {
             public:
             explicit generic_index(int i): index_(i) {}
             generic_index() : index_(0) {}
-      
+
             void operator=(int i) { index_=i; }
-      
+
             generic_index& operator++() { index_++; return *this; }
             generic_index& operator--() { index_--; return *this; }
-      
+
             generic_index& operator+=(int i) { index_+=i; return *this; }
             generic_index& operator-=(int i) { index_-=i; return *this; }
-      
+
             bool operator<(int x) const { return index_ <x; }
             bool operator>(int x) const { return index_ >x; }
             bool operator==(int x) const { return index_==x; }
-      
+
             int operator()() const { return index_; }
 
 #ifdef ALPS_HAVE_MPI
@@ -67,16 +66,18 @@ namespace alps {
             }
 #endif
         };
-    
-        //    template <typename T> bool operator==(int q, const generic_index<T> &p){ return p.operator==(q);}
         namespace mesh {
             enum frequency_positivity_type {
                 POSITIVE_NEGATIVE=0,
                 POSITIVE_ONLY=1
             };
         }
+        /// Common part of interface and implementation for GF meshes
         class base_mesh {
         public:
+            base_mesh() {}
+            base_mesh(const base_mesh& rhs) : points_(rhs.points_) {}
+            /// Const access to mesh points
             const std::vector<double> &points() const{return points_;}
         protected:
             // we do not want external functions be able to change a grid.
@@ -88,6 +89,8 @@ namespace alps {
         private:
             std::vector<double> points_;
         };
+
+        /// Mesh of real frequencies
         class real_frequency_mesh: public base_mesh{
             inline void throw_if_empty() const {
                 if (extent() == 0) {
@@ -97,9 +100,10 @@ namespace alps {
         public:
             typedef generic_index<real_frequency_mesh> index_type;
             real_frequency_mesh() {};
+            real_frequency_mesh(const real_frequency_mesh& rhs) : base_mesh(rhs) {}
 
             template<typename GRID>
-            explicit real_frequency_mesh(GRID grid)  {
+            explicit real_frequency_mesh(const GRID & grid)  {
                 grid.compute_points(_points());
             }
             int extent() const {return points().size();}
@@ -130,13 +134,13 @@ namespace alps {
             {
                 save(ar, ar.get_context());
             }
-            
+
             /// Load from HDF5
             void load(alps::hdf5::archive& ar)
             {
                 load(ar, ar.get_context());
             }
-            
+
             /// Comparison operators
             bool operator==(const real_frequency_mesh &mesh) const {
                 throw_if_empty();
@@ -152,7 +156,7 @@ namespace alps {
             void broadcast(const alps::mpi::communicator& comm, int root)
             {
                 using alps::mpi::broadcast;
-                throw_if_empty();
+                if(comm.rank() == root) throw_if_empty();
                 int size = extent();
                 broadcast(comm, size, root);
                 /// since real frequency mesh can be generated differently we should broadcast points
@@ -170,10 +174,10 @@ namespace alps {
         class matsubara_mesh : public base_mesh {
             double beta_;
             int nfreq_;
-      
+
             statistics::statistics_type statistics_;
             static const mesh::frequency_positivity_type positivity_=PTYPE;
-      
+
             //FIXME: we had this const, but that prevents copying.
             int offset_;
 
@@ -185,13 +189,15 @@ namespace alps {
 
             public:
             typedef generic_index<matsubara_mesh> index_type;
+            /// copy constructor
+            matsubara_mesh(const matsubara_mesh& rhs) : beta_(rhs.beta_), nfreq_(rhs.nfreq_), statistics_(rhs.statistics_), offset_(rhs.offset_) {check_range();compute_points();}
             matsubara_mesh():
                 beta_(0.0), nfreq_(0), statistics_(statistics::FERMIONIC), offset_(-1)
             {
             }
 
             matsubara_mesh(double b, int nfr, gf::statistics::statistics_type statistics=statistics::FERMIONIC):
-                beta_(b), nfreq_(nfr), statistics_(statistics), offset_((PTYPE==mesh::POSITIVE_ONLY)?0:nfr) {
+                beta_(b), nfreq_(nfr), statistics_(statistics), offset_((PTYPE==mesh::POSITIVE_ONLY)?0:nfr/2) {
                 check_range();
                 compute_points();
             }
@@ -208,7 +214,7 @@ namespace alps {
             /// Comparison operators
             bool operator==(const matsubara_mesh &mesh) const {
                 throw_if_empty();
-                return beta_==mesh.beta_ && nfreq_==mesh.nfreq_ && statistics_==mesh.statistics_;
+                return beta_==mesh.beta_ && nfreq_==mesh.nfreq_ && statistics_==mesh.statistics_ && offset_ == mesh.offset_;
             }
 
             /// Comparison operators
@@ -233,7 +239,7 @@ namespace alps {
                 swap(this->nfreq_, other.nfreq_);
                 base_mesh::swap(other);
             }
-          
+
             void save(alps::hdf5::archive& ar, const std::string& path) const
             {
                 throw_if_empty();
@@ -244,7 +250,7 @@ namespace alps {
                 ar[path+"/positive_only"] << int(positivity_);
                 ar[path+"/points"] << points();
             }
-      
+
             void load(alps::hdf5::archive& ar, const std::string& path)
             {
                 std::string kind;
@@ -252,18 +258,19 @@ namespace alps {
                 if (kind!="MATSUBARA") throw std::runtime_error("Attempt to read Matsubara mesh from non-Matsubara data, kind="+kind); // FIXME: specific exception
                 double nfr, beta;
                 int stat, posonly;
-        
+
                 ar[path+"/N"] >> nfr;
                 ar[path+"/statistics"] >> stat;
                 ar[path+"/beta"] >> beta;
                 ar[path+"/positive_only"] >> posonly;
-        
+
                 statistics_=statistics::statistics_type(stat);
                 if (mesh::frequency_positivity_type(posonly)!=positivity_) {
-                    throw std::invalid_argument("Attempt to read Matsubara mesh with the wrong positivity type "+boost::lexical_cast<std::string>(posonly) ); // FIXME: specific exception? Verbose positivity?
+                    throw std::invalid_argument("Attempt to read Matsubara mesh with the wrong positivity type "+std::to_string(posonly) ); // FIXME: specific exception? Verbose positivity?
                 };
                 beta_=beta;
                 nfreq_=nfr;
+                offset_ = ((PTYPE==mesh::POSITIVE_ONLY)?0:nfr/2);
                 check_range();
                 compute_points();
             }
@@ -273,26 +280,36 @@ namespace alps {
             {
                 save(ar, ar.get_context());
             }
-            
+
             /// Load from HDF5
             void load(alps::hdf5::archive& ar)
             {
                 load(ar, ar.get_context());
             }
-            
+
 #ifdef ALPS_HAVE_MPI
           void broadcast(const alps::mpi::communicator& comm, int root)
             {
                 using alps::mpi::broadcast;
-                throw_if_empty();
+                if(comm.rank() == root) throw_if_empty();
                 // FIXME: introduce (debug-only?) consistency check, like type checking? akin to load()?
                 broadcast(comm, beta_, root);
                 broadcast(comm, nfreq_, root);
+                int stat = int(statistics_);
+                broadcast(comm, stat, root);
+                statistics_ = statistics::statistics_type(stat);
+                int pos = int(positivity_);
+                broadcast(comm, pos, root);
+                if (mesh::frequency_positivity_type(pos)!=positivity_) {
+                  throw std::invalid_argument("Attempt to broadcast Matsubara mesh with the wrong positivity type "+std::to_string(pos) ); // FIXME: specific exception? Verbose positivity?
+                };
+                offset_ = ((PTYPE==mesh::POSITIVE_ONLY)?0:nfreq_);
+
                 try {
                     check_range();
                 } catch (const std::exception& exc) {
-                    // FIXME? Try to communiucate the error with all ranks, at least in debug mode?
                     int wrank=alps::mpi::communicator().rank();
+                    // FIXME? Try to communiucate the error with all ranks, at least in debug mode?
                     std::cerr << "matsubara_mesh<>::broadcast() exception at WORLD rank=" << wrank << std::endl
                               << exc.what()
                               << "\nAborting." << std::endl;
@@ -314,7 +331,7 @@ namespace alps {
                 throw_if_empty();
                 _points().resize(extent());
                 for(int i=0;i<nfreq_;++i){
-                    _points()[i]=(2*i+statistics_)*M_PI/beta_;
+                    _points()[i]=(2*(i-offset_)+statistics_)*M_PI/beta_;
                 }
             }
         };
@@ -354,6 +371,12 @@ namespace alps {
             {
             }
 
+            itime_mesh(const itime_mesh&rhs): beta_(rhs.beta_), ntau_(rhs.ntau_),
+                                              last_point_included_(rhs.last_point_included_), half_point_mesh_(rhs.half_point_mesh_), statistics_(rhs.statistics_){
+              compute_points();
+
+            }
+
             itime_mesh(double beta, int ntau): beta_(beta), ntau_(ntau), last_point_included_(true), half_point_mesh_(false), statistics_(statistics::FERMIONIC){
               compute_points();
 
@@ -365,14 +388,14 @@ namespace alps {
                 return idx();
             }
             int extent() const{return ntau_;}
-      
+
             /// Comparison operators
             bool operator==(const itime_mesh &mesh) const {
                 throw_if_empty();
                 return beta_==mesh.beta_ && ntau_==mesh.ntau_ && last_point_included_==mesh.last_point_included_ &&
                     half_point_mesh_ == mesh.half_point_mesh_ && statistics_==mesh.statistics_;
             }
-          
+
             ///Getter variables for members
             double beta() const{ return beta_;}
             statistics::statistics_type statistics() const{ return statistics_;}
@@ -395,7 +418,7 @@ namespace alps {
                 ar[path+"/last_point_included"] << int(last_point_included_);
                 ar[path+"/points"] << points_;
             }
-      
+
             void load(alps::hdf5::archive& ar, const std::string& path)
             {
                 std::string kind;
@@ -403,13 +426,13 @@ namespace alps {
                 if (kind!="IMAGINARY_TIME") throw std::runtime_error("Attempt to read Imaginary time mesh from non-itime data, kind="+kind); // FIXME: specific exception
                 double ntau, beta;
                 int stat, half_point_mesh, last_point_included;
-        
+
                 ar[path+"/N"] >> ntau;
                 ar[path+"/statistics"] >> stat;
                 ar[path+"/beta"] >> beta;
                 ar[path+"/half_point_mesh"] >> half_point_mesh;
                 ar[path+"/last_point_included"] >> last_point_included;
-        
+
                 statistics_=statistics::statistics_type(stat); // FIXME: check range
                 half_point_mesh_=half_point_mesh;
                 last_point_included_=last_point_included;
@@ -423,18 +446,18 @@ namespace alps {
             {
                 save(ar, ar.get_context());
             }
-            
+
             /// Load from HDF5
             void load(alps::hdf5::archive& ar)
             {
                 load(ar, ar.get_context());
             }
-            
+
 #ifdef ALPS_HAVE_MPI
           void broadcast(const alps::mpi::communicator& comm, int root)
             {
                 using alps::mpi::broadcast;
-                throw_if_empty();
+                if(comm.rank() == root) throw_if_empty();
                 // FIXME: introduce (debug-only?) consistency check, like type checking? akin to load()?
                 broadcast(comm, beta_, root);
                 broadcast(comm, ntau_, root);
@@ -485,6 +508,11 @@ namespace alps {
 
             public:
             typedef generic_index<power_mesh> index_type;
+
+            power_mesh(const power_mesh& rhs): beta_(rhs.beta_), power_(rhs.power_), uniform_(rhs.uniform_), statistics_(rhs.statistics_){
+              compute_points();
+              compute_weights();
+            }
 
             power_mesh(): beta_(0.0), ntau_(0), power_(0), uniform_(0), statistics_(statistics::FERMIONIC){
             }
@@ -562,18 +590,18 @@ namespace alps {
             {
                 save(ar, ar.get_context());
             }
-            
+
             /// Load from HDF5
             void load(alps::hdf5::archive& ar)
             {
                 load(ar, ar.get_context());
             }
-            
+
 #ifdef ALPS_HAVE_MPI
           void broadcast(const alps::mpi::communicator& comm, int root)
             {
                 using alps::mpi::broadcast;
-                throw_if_empty();
+                if(comm.rank() == root) throw_if_empty();
                 // FIXME: introduce (debug-only?) consistency check, like type checking? akin to load()?
                 broadcast(comm, beta_, root);
                 broadcast(comm, ntau_, root);
@@ -630,6 +658,16 @@ namespace alps {
         class momentum_realspace_index_mesh {
             public:
             typedef boost::multi_array<double,2> container_type;
+            momentum_realspace_index_mesh(const momentum_realspace_index_mesh& rhs) : points_(boost::extents[rhs.points_.shape()[0]][rhs.points_.shape()[1]]),
+                                                                                      kind_(rhs.kind_){
+              points_ = rhs.points_;
+            }
+            momentum_realspace_index_mesh& operator=(const momentum_realspace_index_mesh& rhs) {
+              points_.resize(boost::extents[rhs.points_.shape()[0]][rhs.points_.shape()[1]]);
+              points_ = rhs.points_;
+              kind_   = rhs.kind_;
+              return *this;
+            }
             protected:
             container_type points_;
             private:
@@ -649,13 +687,13 @@ namespace alps {
             momentum_realspace_index_mesh(const std::string& kind, int ns,int ndim): points_(boost::extents[ns][ndim]), kind_(kind)
             {
             }
-      
+
             momentum_realspace_index_mesh(const std::string& kind, const container_type& mesh_points): points_(mesh_points), kind_(kind)
             {
             }
-      
+
             public:
-            // Returns the number of points
+            /// Returns the number of points
             int extent() const { return points_.shape()[0];}
             ///returns the spatial dimension
             int dimension() const { return points_.shape()[1];}
@@ -668,14 +706,15 @@ namespace alps {
                 return kind_ == mesh.kind_ &&
                     points_ == mesh.points_;
             }
-          
+
             /// Comparison operators
             bool operator!=(const momentum_realspace_index_mesh &mesh) const {
                 throw_if_empty();
                 return !(*this==mesh);
             }
-            
+
             const container_type &points() const{return points_;}
+            container_type &points() {return points_;}
 
             void save(alps::hdf5::archive& ar, const std::string& path) const
             {
@@ -683,7 +722,7 @@ namespace alps {
                 ar[path+"/kind"] << kind_;
                 ar[path+"/points"] << points_;
             }
-      
+
             void load(alps::hdf5::archive& ar, const std::string& path)
             {
                 std::string kind;
@@ -697,13 +736,13 @@ namespace alps {
             {
                 save(ar, ar.get_context());
             }
-            
+
             /// Load from HDF5
             void load(alps::hdf5::archive& ar)
             {
                 load(ar, ar.get_context());
             }
-            
+
 #ifdef ALPS_HAVE_MPI
           void broadcast(const alps::mpi::communicator& comm, int root)
             {
@@ -712,6 +751,9 @@ namespace alps {
                   throw_if_empty();
                 }
                 // FIXME: introduce (debug-only?) consistency check, like type checking? akin to load()?
+                std::array<size_t, 2> sizes{{points_.shape()[0], points_.shape()[1]}};
+                alps::mpi::broadcast(comm, &sizes[0], 2, root);
+                if (comm.rank()!=root) points_.resize(sizes);
                 detail::broadcast(comm, points_, root);
                 broadcast(comm, kind_, root);
             }
@@ -721,13 +763,19 @@ namespace alps {
         ///Stream output operator, e.g. for printing to file
         std::ostream &operator<<(std::ostream &os, const momentum_realspace_index_mesh &M);
 
-    
+
         class momentum_index_mesh: public momentum_realspace_index_mesh {
             typedef momentum_realspace_index_mesh base_type;
-            
+
             public:
-            
+
             typedef generic_index<momentum_index_mesh> index_type;
+            momentum_index_mesh(const momentum_index_mesh& rhs) : base_type(rhs) {}
+
+            momentum_index_mesh& operator=(const momentum_index_mesh& rhs) {
+              base_type::operator=(rhs);
+              return *this;
+            }
 
             momentum_index_mesh(): base_type("MOMENTUM_INDEX",0,0)
             {
@@ -736,21 +784,22 @@ namespace alps {
             momentum_index_mesh(int ns,int ndim): base_type("MOMENTUM_INDEX",ns,ndim)
             {
             }
-      
+
             momentum_index_mesh(const container_type& mesh_points): base_type("MOMENTUM_INDEX",mesh_points)
             {
             }
-      
+
             /// Returns the index of the mesh point in the data array
             int operator()(index_type idx) const { return idx(); }
         };
-    
+
         class real_space_index_mesh: public momentum_realspace_index_mesh {
             typedef momentum_realspace_index_mesh base_type;
-            
+
             public:
-            
+
             typedef generic_index<momentum_index_mesh> index_type;
+            real_space_index_mesh(const real_space_index_mesh& rhs) : base_type(rhs.kind(), rhs.extent(), rhs.dimension()) {}
 
             real_space_index_mesh(): base_type("REAL_SPACE_INDEX",0,0)
             {
@@ -759,21 +808,23 @@ namespace alps {
             real_space_index_mesh(int ns,int ndim): base_type("REAL_SPACE_INDEX",ns,ndim)
             {
             }
-      
+
             real_space_index_mesh(const container_type& mesh_points): base_type("REAL_SPACE_INDEX",mesh_points)
             {
             }
-      
+
             /// Returns the index of the mesh point in the data array
             int operator()(index_type idx) const { return idx(); }
         };
-    
+
         class index_mesh {
             int npoints_;
             std::vector<int> points_;
             public:
             typedef generic_index<index_mesh> index_type;
 
+            index_mesh(const index_mesh& rhs) : npoints_(rhs.npoints_) {compute_points();}
+            index_mesh& operator=(const index_mesh& rhs) {npoints_ = rhs.npoints_; compute_points();return * this;}
             index_mesh(): npoints_(0) { compute_points();}
             index_mesh(int np): npoints_(np) { compute_points();}
             int extent() const{return npoints_;}
@@ -791,7 +842,7 @@ namespace alps {
                 throw_if_empty();
                 return npoints_==mesh.npoints_;
             }
-          
+
             /// Comparison operators
             bool operator!=(const index_mesh &mesh) const {
                 throw_if_empty();
@@ -804,13 +855,13 @@ namespace alps {
                 ar[path+"/kind"] << "INDEX";
                 ar[path+"/N"] << npoints_;
             }
-      
+
             void load(alps::hdf5::archive& ar, const std::string& path)
             {
                 std::string kind;
                 ar[path+"/kind"] >> kind;
                 if (kind!="INDEX") throw std::runtime_error("Attempt to read Index mesh from non-Index data, kind="+kind); // FIXME: specific exception
-        
+
                 int np;
                 ar[path+"/N"] >> np;
                 npoints_=np;
@@ -822,21 +873,22 @@ namespace alps {
             {
                 save(ar, ar.get_context());
             }
-            
+
             /// Load from HDF5
             void load(alps::hdf5::archive& ar)
             {
                 load(ar, ar.get_context());
             }
-            
+
             void compute_points(){ points_.resize(npoints_); for(int i=0;i<npoints_;++i){points_[i]=i;} }
 
 #ifdef ALPS_HAVE_MPI
           void broadcast(const alps::mpi::communicator& comm, int root)
             {
                 using alps::mpi::broadcast;
-                throw_if_empty();
+                if(comm.rank() == root) throw_if_empty();
                 broadcast(comm, npoints_, root);
+                compute_points();
             }
 #endif
         };
@@ -857,7 +909,7 @@ namespace alps {
 
         public:
             typedef generic_index<legendre_mesh> index_type;
-
+            legendre_mesh(const legendre_mesh& rhs) : beta_(rhs.beta_), n_max_(rhs.n_max_), statistics_(rhs.statistics_) {}
             legendre_mesh(gf::statistics::statistics_type statistics=statistics::FERMIONIC):
                     beta_(0.0), n_max_(0), statistics_(statistics) {}
 
@@ -937,18 +989,18 @@ namespace alps {
             {
                 save(ar, ar.get_context());
             }
-            
+
             /// Load from HDF5
             void load(alps::hdf5::archive& ar)
             {
                 load(ar, ar.get_context());
             }
-            
+
 #ifdef ALPS_HAVE_MPI
             void broadcast(const alps::mpi::communicator& comm, int root)
             {
                 using alps::mpi::broadcast;
-                throw_if_empty();
+                if(comm.rank() == root) throw_if_empty();
                 broadcast(comm, beta_, root);
                 broadcast(comm, n_max_, root);
                 {
@@ -1022,7 +1074,10 @@ namespace alps {
 
         public:
             typedef generic_index<numerical_mesh> index_type;
-
+            numerical_mesh(const numerical_mesh<T>& rhs) : beta_(rhs.beta_), dim_(rhs.dim_), basis_functions_(rhs.basis_functions_), statistics_(rhs.statistics_), valid_(rhs.valid_) {
+                set_validity();
+                compute_points();
+            }
             numerical_mesh(gf::statistics::statistics_type statistics=statistics::FERMIONIC):
                     beta_(0.0), dim_(0), statistics_(statistics), valid_(false) {}
 
@@ -1096,7 +1151,7 @@ namespace alps {
                 ar[path+"/statistics"] << int(statistics_);
                 ar[path+"/beta"] << beta_;
                 for (int l=0; l < dim_; ++l) {
-                    basis_functions_[l].save(ar, path+"/basis_functions"+boost::lexical_cast<std::string>(l));
+                    basis_functions_[l].save(ar, path+"/basis_functions"+std::to_string(l));
                 }
             }
 
@@ -1113,15 +1168,14 @@ namespace alps {
                 if (valid_ && stat != statistics_) {
                     throw std::runtime_error("Attemp to load data with different statistics!");
                 }
-                statistics_ = static_cast<statistics::statistics_type>(stat);
 
                 ar[path+"/beta"] >> beta;
                 basis_functions_.resize(dim);
                 for (int l=0; l < dim; ++l) {
-                    basis_functions_[l].load(ar, path+"/basis_functions"+boost::lexical_cast<std::string>(l));
+                    basis_functions_[l].load(ar, path+"/basis_functions"+std::to_string(l));
                 }
 
-                statistics_=statistics::statistics_type(stat);
+                statistics_ = static_cast<statistics::statistics_type>(stat);
                 beta_=beta;
                 dim_=dim;
                 set_validity();
@@ -1133,18 +1187,18 @@ namespace alps {
             {
                 save(ar, ar.get_context());
             }
-            
+
             /// Load from HDF5
             void load(alps::hdf5::archive& ar)
             {
                 load(ar, ar.get_context());
             }
-            
+
 #ifdef ALPS_HAVE_MPI
             void broadcast(const alps::mpi::communicator& comm, int root)
             {
                 using alps::mpi::broadcast;
-                check_validity();
+                if(comm.rank() == root) check_validity();
 
                 broadcast(comm, beta_, root);
                 broadcast(comm, dim_, root);
@@ -1174,10 +1228,6 @@ namespace alps {
             }
 #endif
 
-            //void check_range(){
-                //if(statistics_!=statistics::FERMIONIC && statistics_!=statistics::BOSONIC) throw std::invalid_argument("statistics should be bosonic or fermionic");
-            //}
-
             void compute_points(){
                 _points().resize(extent());
                 for(int i=0;i<dim_;++i){
@@ -1185,8 +1235,6 @@ namespace alps {
                 }
             }
         };
-        ///Stream output operator, e.g. for printing to file
-        //std::ostream &operator<<(std::ostream &os, const numerical_mesh &M);
 
         typedef matsubara_mesh<mesh::POSITIVE_ONLY> matsubara_positive_mesh;
         typedef matsubara_mesh<mesh::POSITIVE_NEGATIVE> matsubara_pn_mesh;
@@ -1206,12 +1254,12 @@ namespace alps {
                that has some relevance to the asserted condition
                (unlike BOOST_STATIC_ASSERT).
             */
-            
+
             /// A helper class: indicator that a mesh can have a tail
             struct can_have_tail_yes { typedef bool mesh_can_have_tail; };
             /// A helper class: indicator that a mesh can NOT have a tail
             struct can_have_tail_no  { typedef bool mesh_cannot_have_tail; };
-                
+
             /// Trait: whether a mesh can have a tail (general meshes cannot have tails)
             template <typename> struct can_have_tail: public can_have_tail_no {};
 
@@ -1223,7 +1271,7 @@ namespace alps {
             template <> struct can_have_tail<itime_mesh>: public can_have_tail_yes {};
 
             /* ^^^^ End of static_assert code */
-            
+
             /// Print a 2D double boost::multi_array (for printing 2D meshes)
             /** @todo FIXME: Use a proper mesh-specific method instead, see operator<<(momentum_realspace_index_mesh) */
             std::ostream& operator<<(std::ostream& s, const boost::multi_array<double, 1>& data);

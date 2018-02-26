@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -40,7 +40,7 @@ namespace alps {
             } else {
                 map_type new_map;
                 while (root_sz--) {
-                    std::pair<K,V> pair;
+                    std::pair<K,V> pair; // FIXME! this requires default ctor
                     broadcast(comm, pair.first, root);
                     broadcast(comm, pair.second, root);
                     new_map.insert(pair);
