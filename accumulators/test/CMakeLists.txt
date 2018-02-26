@@ -39,6 +39,7 @@ if(ALPS_HAVE_MPI)
   set (test_src_mpi
     mpi_merge
     mpi_merge_uneven
+    repeated_merge
     zero_vector_mpi
     )
 endif()

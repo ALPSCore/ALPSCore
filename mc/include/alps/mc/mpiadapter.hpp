@@ -21,7 +21,7 @@ namespace alps {
     namespace detail {
 
         /// Base class for mcmpiadapter; should never be instantiated by a user
-    
+
         template<typename Base, typename ScheduleChecker> class mcmpiadapter_base : public Base {
 
         public:
@@ -51,7 +51,7 @@ namespace alps {
                     this->update();
                     this->measure();
                     if (stopped || schedule_checker.pending()) {
-                        stopped = stop_callback(); 
+                        stopped = stop_callback();
                         double local_fraction = stopped ? 1. : Base::fraction_completed();
                         schedule_checker.update(fraction = alps::mpi::all_reduce(communicator, local_fraction, std::plus<double>()));
                         done = fraction >= 1.;
@@ -73,13 +73,9 @@ namespace alps {
                                                   has_count,
                                                   std::plus<size_t>());
                     if (static_cast<int>(sum_counts) == communicator.size()) {
-                        if (communicator.rank() == 0) {
-                            typename Base::observable_collection_type::value_type merged = this->measurements[*it];
-                            merged.collective_merge(communicator, 0);
-                            partial_results.insert(*it, merged.result());
-                        } else {
-                            this->measurements[*it].collective_merge(communicator, 0);
-                        }
+                        typename Base::observable_collection_type::value_type merged = this->measurements[*it];
+                        merged.collective_merge(communicator, 0);
+                        partial_results.insert(*it, merged.result());
                     } else if (sum_counts > 0 && static_cast<int>(sum_counts) < communicator.size()) {
                         throw std::runtime_error(*it + " was measured on only some of the MPI processes.");
                     }
@@ -102,7 +98,7 @@ namespace alps {
     template<typename Base, typename ScheduleChecker = alps::check_schedule> class mcmpiadapter : public detail::mcmpiadapter_base<Base,ScheduleChecker> {
     private:
         typedef detail::mcmpiadapter_base<Base,ScheduleChecker> base_type_;
-        
+
     public:
         typedef typename base_type_::parameters_type parameters_type;
 
@@ -123,7 +119,7 @@ namespace alps {
     private:
         typedef alps::check_schedule ScheduleChecker;
         typedef detail::mcmpiadapter_base<Base,ScheduleChecker> base_type_;
-        
+
     public:
         typedef typename base_type_::parameters_type parameters_type;
 
@@ -155,7 +151,7 @@ namespace alps {
             return parameters;
         }
     };
-    
+
 }
 
 #endif
