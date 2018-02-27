@@ -182,6 +182,7 @@ struct traits< var_acc<T,Strategy> >
     typedef typename bind<Strategy, T>::value_type value_type;
     typedef typename bind<Strategy, T>::var_type var_type;
     typedef var_result<T,Strategy> result_type;
+    typedef var_data<T, Strategy> store_type;
 };
 
 extern template class var_acc<double>;

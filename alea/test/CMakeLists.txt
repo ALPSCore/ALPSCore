@@ -1,11 +1,11 @@
 include(ALPSEnableTests)
 
 set (test_src
+     empty
      twogauss
      galois
      transform
-     # Reenable when #462 is fixed
-     #stream_serializer
+     stream_serializer
     )
 
 #add tests for MPI

@@ -66,17 +66,10 @@ protected:
 
     template <typename T> void do_write(const ndview<const T> &data_view)
     {
-        const size_t * shape = data_view.shape();
-        size_t size = compute_size(shape, data_view.ndim());
-
+        size_t size = data_view.size();
         const T * data = data_view.data();
-        for(long n = 0; n < size; ++n)
+        for(size_t n = 0; n != size; ++n)
             ar_ << *(data + n);
-    }
-
-    static size_t compute_size(const size_t *shape, size_t ndim)
-    {
-        return std::accumulate(shape, shape + ndim, 1, std::multiplies<size_t>());
     }
 
 private:
@@ -139,23 +132,16 @@ protected:
 
     template <typename T> void do_read(ndview<T> &data_view)
     {
-        const size_t * shape = data_view.shape();
-        size_t size = compute_size(shape, data_view.ndim());
-
+        size_t size = data_view.size();
         T * data = data_view.data();
         if(data) {
-            for(long n = 0; n < size; ++n)
+            for(size_t n = 0; n != size; ++n)
                 ar_ >> *(data + n);
         } else {
             T tmp;
-            for(long n = 0; n < size; ++n)
+            for(size_t n = 0; n != size; ++n)
                 ar_ >> tmp;
         }
-    }
-
-    static size_t compute_size(const size_t *shape, size_t ndim)
-    {
-        return std::accumulate(shape, shape + ndim, 1, std::multiplies<size_t>());
     }
 
 private:
