@@ -184,6 +184,7 @@ struct traits< cov_acc<T,Strategy> >
     typedef typename bind<Strategy, T>::var_type var_type;
     typedef typename bind<Strategy, T>::cov_type cov_type;
     typedef cov_result<T,Strategy> result_type;
+    typedef cov_data<T, Strategy> store_type;
 };
 
 extern template class cov_acc<double>;
