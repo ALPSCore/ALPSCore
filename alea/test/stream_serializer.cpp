@@ -108,7 +108,7 @@ TEST(twogauss_serialize_case, mock_archive) {
     EXPECT_EQ(-123456, l);
     unsigned long ul = 0;
     archive >> ul;
-    EXPECT_EQ(7890, ul);
+    EXPECT_EQ(7890U, ul);
     std::complex<double> c = 0;
     archive >> c;
     EXPECT_EQ(std::complex<double>(0.5,0.75), c);
