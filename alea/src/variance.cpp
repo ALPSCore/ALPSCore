@@ -203,6 +203,9 @@ var_result<T,Str> &var_result<T,Str>::operator=(const var_result &other)
 template <typename T, typename Strategy>
 bool operator==(const var_result<T, Strategy> &r1, const var_result<T, Strategy> &r2)
 {
+    if (r1.count() == 0 && r2.count() == 0)
+        return true;
+
     return r1.count() == r2.count()
         && r1.count2() == r2.count2()
         && r1.store().data() == r2.store().data()

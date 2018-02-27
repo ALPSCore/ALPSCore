@@ -131,6 +131,9 @@ mean_result<T> &mean_result<T>::operator=(const mean_result &other)
 template <typename T>
 bool operator==(const mean_result<T> &r1, const mean_result<T> &r2)
 {
+    if (r1.count() == 0 && r2.count() == 0)
+        return true;
+
     return r1.count() == r2.count()
         && r1.store().data() == r2.store().data();
 }

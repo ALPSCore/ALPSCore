@@ -197,6 +197,9 @@ cov_result<T,Str> &cov_result<T,Str>::operator=(const cov_result &other)
 template <typename T, typename Strategy>
 bool operator==(const cov_result<T,Strategy> &r1, const cov_result<T,Strategy> &r2)
 {
+    if (r1.count() == 0 && r2.count() == 0)
+        return true;
+
     return r1.count() == r2.count()
         && r1.count2() == r2.count2()
         && r1.store().data() == r2.store().data()
