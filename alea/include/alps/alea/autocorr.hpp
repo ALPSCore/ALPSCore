@@ -166,6 +166,9 @@ public:
     /** Returns integrated auto-correlation time */
     column<var_type> tau() const;
 
+    /** Is sample size sufficient to estimate integrated auto-correlation time? */
+    bool tau_available() const { return find_level(DEFAULT_MIN_SAMPLES) > 0; }
+
     /** Collect measurements from different instances using sum-reducer */
     void reduce(const reducer &r) { reduce(r, true, true); }
 

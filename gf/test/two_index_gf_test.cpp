@@ -232,12 +232,12 @@ TEST_F(TwoIndexGFTest, TailSaveLoad)
     EXPECT_EQ(0,gft.max_tail_order());
     EXPECT_EQ(0,(denmat-gft.tail(0)).norm());
     {
-        alps::hdf5::archive oar("gf_2i_tailsaveload.h5","w");
+        alps::hdf5::archive oar("gf_2i_tailsaveloadX.h5","w");
         gft(g::matsubara_index(4),g::index(1))=std::complex<double>(7., 3.);
         oar["/gft"] << gft;
     }
     {
-        alps::hdf5::archive iar("gf_2i_tailsaveload.h5");
+        alps::hdf5::archive iar("gf_2i_tailsaveloadX.h5");
 
         iar["/gft"] >> gft2;
     }
