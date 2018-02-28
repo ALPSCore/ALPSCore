@@ -33,6 +33,7 @@ add_this_package(
         model
         propagation
         result
+        testing
         transform
         util
         variance
