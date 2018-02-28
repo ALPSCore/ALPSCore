@@ -201,6 +201,29 @@ public:
                           inv_t * x.imre(), inv_t * (x.imim() + s));
     }
 
+    friend bool isnan(complex_op x)
+    {
+        return std::any_of(&x.vals_[0][0], &x.vals_[2][0],
+                           static_cast<bool(*)(T)>(std::isnan));
+    }
+
+    friend bool isfinite(complex_op x)
+    {
+        return std::all_of(&x.vals_[0][0], &x.vals_[2][0],
+                           static_cast<bool(*)(T)>(std::isfinite));
+    }
+
+    friend bool isinf(complex_op x)
+    {
+        // An object cannot be inf and nan at the same time, for multi-
+        // component objects nan takes precedence
+        if (isnan(x))
+            return false;
+
+        return std::any_of(&x.vals_[0][0], &x.vals_[2][0],
+                           static_cast<bool(*)(T)>(std::isinf));
+    }
+
     friend complex_op abs(complex_op x) { return sqrt(abs2(x)); }
 
     friend std::ostream &operator<<(std::ostream &out, complex_op x)

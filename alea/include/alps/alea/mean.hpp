@@ -148,6 +148,7 @@ struct traits< mean_acc<T> >
 {
     typedef T value_type;
     typedef mean_result<T> result_type;
+    typedef mean_data<T> store_type;
 };
 
 extern template class mean_acc<double>;
