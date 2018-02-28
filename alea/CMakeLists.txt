@@ -30,6 +30,7 @@ add_this_package(
         covariance
         galois
         mean
+        model
         propagation
         result
         transform
