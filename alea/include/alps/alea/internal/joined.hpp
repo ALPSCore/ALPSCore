@@ -18,11 +18,48 @@ namespace alps { namespace alea {
 
     struct circular_var;
     struct elliptic_var;
+
 }}
+
+namespace alps { namespace alea { namespace internal {
+    template <typename... Pack> struct add_scalar;
+    template <typename... Pack> struct joined_value;
+}}}
 
 // Actual declarations
 
 namespace alps { namespace alea { namespace internal {
+
+template <typename... Pack>
+using add_scalar_type = typename joined_value<Pack...>::type;
+
+template <typename T>
+struct add_scalar<T>
+{
+    using type = T;
+};
+
+template <typename Head, typename... Tail>
+struct add_scalar<Head, Tail...>
+{
+    using type = decltype(Head(0) + typename add_scalar<Tail...>::type(0));
+};
+
+template <typename... Pack>
+using joined_value_type = typename joined_value<Pack...>::type;
+
+template <typename T>
+struct joined_value<T>
+{
+    using type = typename traits<T>::value_type;
+};
+
+template <typename Head, typename... Tail>
+struct joined_value<Head, Tail...>
+{
+    using type = decltype(typename joined_value<Head>::type(0)
+                          + typename joined_value<Tail...>::type(0));
+};
 
 // Predicates
 

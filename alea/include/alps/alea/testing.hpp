@@ -7,15 +7,62 @@
 
 #include <alps/alea/core.hpp>
 #include <alps/alea/util.hpp>
+#include <alps/alea/variance.hpp>
+#include <alps/alea/covariance.hpp>
+
+#include <alps/alea/internal/joined.hpp>
+#include <alps/alea/internal/pooling.hpp>
 
 #include <boost/math/distributions/fisher_f.hpp>
 
 namespace alps { namespace alea {
     class t2_result;
     template <typename T> struct diag_diffs;
+
+    template <typename R1, typename R2, typename T>
+    var_result<T> pooled_var(const R1 &, const R2 &);
+
+    template <typename R1, typename R2, typename T>
+    cov_result<T> pooled_cov(const R1 &, const R2 &);
 }}
 
 namespace alps { namespace alea {
+
+/**
+ * Result of Hotelling's T^2 test
+ *
+ * @see test_mean(), t2_test()
+ */
+class t2_result
+{
+public:
+    typedef boost::math::fisher_f_distribution<double> dist_type;
+
+public:
+    /** Initializes t2 test */
+    t2_result(double score, double f_size, double f_dof)
+        : score_(score), dist_(f_size, f_dof)
+    { }
+
+    /** p-value in favour of the lower alternate Hypothesis */
+    double pvalue_lower() const { return cdf(dist_, score_); }
+
+    /** p-value in favour of the upper alternate Hypothesis */
+    double pvalue_upper() const { return cdf(complement(dist_, score_)); }
+
+    /** lowest p-value */
+    double pvalue() const { return std::min(pvalue_lower(), pvalue_upper()); }
+
+    /** t2 statistic and argument to `dist()` */
+    double score() const { return score_; }
+
+    /** distribution */
+    const dist_type &dist() const { return dist_; }
+
+private:
+    double score_;
+    dist_type dist_;
+};
 
 /**
  * Perform Hotelling's T^2 test given a set of uncorrelated differences.
@@ -34,47 +81,48 @@ t2_result t2_test(const column<T> &diff,
                   double nmeas, size_t pools=1, double atol=1e-14
                   );
 
-/** Diagonalizes the covariance matrix */
-template <typename T>
-diag_diffs<T> diagonalize_cov(const column<T> &diff,
-                              const typename eigen<T>::matrix &cov);
-
-/** Helper struct for diagonalize_cov() */
-template <typename T>
-struct diag_diffs
+/**
+ * Test mean of stochastic result `result` against known result `expected`.
+ */
+template <typename Result, typename T>
+t2_result test_mean(const Result &result, const column<T> &expected,
+                    double atol=1e-14)
 {
-    column<T> diff;
-    column<typename make_real<T>::type> var;
-};
+    static_assert(is_alea_result<Result>::value, "Result is not alea result");
+    static_assert(traits<Result>::HAVE_VAR, "Result1 must have variance");
+
+    using diff_scalar = internal::add_scalar_type<
+                                typename traits<Result>::value_type, T>;
+    var_result<diff_scalar> diff = internal::make_diff(result, expected);
+    return t2_test(diff.mean(), diff.var(), diff.count(), 1, atol);
+}
 
 /**
- * Result of Hotelling's T^2 test
- *
- * @see test_mean(), t2_test()
+ * Test mean of stochastic result `result` against known result `expected`.
  */
-class t2_result
+template <typename Result, typename T>
+t2_result test_mean(const column<T> &expected, const Result &result,
+                    double atol=1e-14)
 {
-public:
-    typedef boost::math::fisher_f_distribution<double> dist_type;
+    return test_mean(result, expected, atol);
+}
 
-public:
-    /** Initializes t2 test */
-    t2_result(double score, double f_size, double f_dof)
-        : score_(score), dist_(f_size, f_dof)
-    { }
+/**
+ * Test mean of two stochastic results against each other.
+ */
+template <typename Result1, typename Result2>
+t2_result test_mean(const Result1 &result1, const Result2 &result2,
+                    double atol=1e-14)
+{
+    static_assert(is_alea_result<Result1>::value, "Result1 is not alea result");
+    static_assert(is_alea_result<Result1>::value, "Result2 is not alea result");
+    static_assert(traits<Result1>::HAVE_VAR, "Result1 must have variance");
+    static_assert(traits<Result2>::HAVE_VAR, "Result2 must have variance");
 
-    double pvalue_lower() const { return cdf(dist_, score_); }
-
-    double pvalue_upper() const { return cdf(complement(dist_, score_)); }
-
-    double score() const { return score_; }
-
-    const dist_type &dist() const { return dist_; }
-
-private:
-    double score_;
-    dist_type dist_;
-};
+    using diff_scalar = internal::joined_value_type<Result1, Result2>;
+    var_result<diff_scalar> diff = internal::pool_var(result1, result2);
+    return t2_test(diff.mean(), diff.var(), diff.count(), 2, atol);
+}
 
 
 }} /* namespace alps::alea */

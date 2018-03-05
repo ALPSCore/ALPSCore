@@ -45,26 +45,5 @@ template t2_result t2_test(const column<std::complex<double>> &diff,
                            const column<double> &var, double nmeas, size_t pools,
                            double atol);
 
-template <typename T>
-diag_diffs<T> diagonalize_cov(const column<T> &diff,
-                              const typename eigen<T>::matrix &cov)
-{
-    if (!cov.isApprox(cov.adjoint()))
-        throw std::invalid_argument("Covariance matrix is not Hermitean");
-
-    Eigen::SelfAdjointEigenSolver<typename eigen<T>::matrix> eigen(cov);
-    return diag_diffs<T>{
-                eigen.eigenvectors().adjoint() * diff,
-                eigen.eigenvalues()
-                };
-}
-
-template diag_diffs<double> diagonalize_cov(const column<double> &diff,
-                                const typename eigen<double>::matrix &cov);
-template diag_diffs<std::complex<double>> diagonalize_cov(
-                                const column<std::complex<double>> &diff,
-                                const typename eigen<std::complex<double>>::matrix &cov);
-
-
 }} /* namespace alps::alea */
 
