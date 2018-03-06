@@ -203,14 +203,12 @@ public:
 
     friend bool isnan(complex_op x)
     {
-        return std::any_of(&x.vals_[0][0], &x.vals_[2][0],
-                           static_cast<bool(*)(T)>(std::isnan));
+        return std::any_of(&x.vals_[0][0], &x.vals_[2][0], [](T y) {return std::isnan(y); });
     }
 
     friend bool isfinite(complex_op x)
     {
-        return std::all_of(&x.vals_[0][0], &x.vals_[2][0],
-                           static_cast<bool(*)(T)>(std::isfinite));
+        return std::all_of(&x.vals_[0][0], &x.vals_[2][0], [](T y) {return std::isfinite(y); });
     }
 
     friend bool isinf(complex_op x)
@@ -220,8 +218,7 @@ public:
         if (isnan(x))
             return false;
 
-        return std::any_of(&x.vals_[0][0], &x.vals_[2][0],
-                           static_cast<bool(*)(T)>(std::isinf));
+        return std::any_of(&x.vals_[0][0], &x.vals_[2][0], [](T y) {return std::isinf(y); });
     }
 
     friend complex_op abs(complex_op x) { return sqrt(abs2(x)); }
