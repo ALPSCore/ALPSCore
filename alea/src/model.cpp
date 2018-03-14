@@ -14,8 +14,12 @@ void var1_model<T>::init()
         throw std::invalid_argument("Negative variances in var_eps");
 
     // Otherwise the process is not stationary and the variance diverges
-    if (phi1_.squaredNorm() >= 1)
-        throw std::invalid_argument("phi is not a contraction");
+    Eigen::JacobiSVD<typename eigen<T>::matrix> phi1_svd(phi1_);
+    if (phi1_svd.singularValues()[0] >= 1) {
+        throw std::invalid_argument(
+                "phi is not a contraction, largest singular value is " +
+                std::to_string(phi1_svd.singularValues()[0]));
+    }
 
     stddev_eps_ = var_eps_.cwiseSqrt();
 }
@@ -46,10 +50,13 @@ template <typename T>
 typename eigen<T>::matrix var1_model<T>::cov() const
 {
     // stationarity implies that:
-    //       Cov[X(t), X(t)] = phi1 * Cov[X(t), X(t)] + Cov[eps(t), eps(t)]
+    //       Cov[X(t), X(t)] = phi1 * Cov[X(t), X(t)] * phi1^+ + Cov[eps(t), eps(t)]
     // from which it follows:
     //       vec Cov[X] = (1 - phi1 (x) phi1)^{-1} vec Cov[eps]
     //
+    // TODO: the inversion scales as size()**6. However above is nothing but a
+    //       discrete Lyapunov equation, so we should use the Bartels-Stewart
+    //       algorithm instead.
     size_t size_flat = size() * size();
     typename eigen<T>::matrix phi1_kron = kronecker<T>(phi1_, phi1_);
 
@@ -62,7 +69,6 @@ typename eigen<T>::matrix var1_model<T>::cov() const
     typename eigen<T>::col_map result_flat(result.data(), size_flat);
 
     // do computation
-    // WARNING: this scales as size()**6.
     auto flat_eye = eigen<T>::matrix::Identity(size_flat, size_flat);
     result_flat = (flat_eye - phi1_kron).colPivHouseholderQr().solve(epscov_flat);
     return result;
@@ -71,7 +77,7 @@ typename eigen<T>::matrix var1_model<T>::cov() const
 template <typename T>
 typename eigen<typename make_real<T>::type>::col var1_model<T>::var() const
 {
-    return cov().diagonal().cwiseAbs2();
+    return cov().diagonal().real();
 }
 
 template <typename T>
@@ -80,9 +86,9 @@ typename eigen<T>::matrix var1_model<T>::ctau() const
     // Since:
     //     C(t) = Cov[X(t0 + t), X(t0)] = phi * C(t-1) = phi^t Cov[X(t0)]
     // we find:
-    //     tau = phi1 * (1 - phi1)^{-1}
+    //     tau = (1 - phi1)^{-1} * phi1
     auto eye = eigen<T>::matrix::Identity(size(), size());
-    return phi1_ * (eye - phi1_).inverse();
+    return (eye - phi1_).colPivHouseholderQr().solve(phi1_);
 }
 
 template class var1_model<double>;
@@ -114,6 +120,7 @@ void var1_run<T>::restart()
 template <typename T>
 void var1_run<T>::update()
 {
+    assert(model_ != nullptr);
     ++t_;
     xt_ = model_->phi0() + model_->phi1() * xt_ + epst_;
 }

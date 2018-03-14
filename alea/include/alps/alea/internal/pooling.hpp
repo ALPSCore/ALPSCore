@@ -3,6 +3,7 @@
 
 #include <alps/alea/variance.hpp>
 #include <alps/alea/covariance.hpp>
+#include <alps/alea/autocorr.hpp>
 
 #include <alps/alea/internal/joined.hpp>
 
@@ -29,14 +30,27 @@ get_cov(const var_result<T,Str> &result)
     return result.var().asDiagonal();
 }
 
+template <typename T>
+typename eigen<typename traits<cov_result<T>>::cov_type>::matrix
+get_cov(const autocorr_result<T> &result)
+{
+    return result.var().asDiagonal();
+}
+
+template <typename Result, typename Derived>
+using diff_scalar_type = add_scalar_type<
+                            typename traits<Result>::value_type,
+                            typename Eigen::internal::traits<Derived>::Scalar>;
+
 /**
  * Get difference
  */
-template <typename Result, typename ExpectedT,
-          typename T=add_scalar_type<typename traits<Result>::value_type, ExpectedT>>
-var_result<T> make_diff(const Result &result, const column<ExpectedT> &expected)
+template <typename Result, typename Derived,
+          typename T=diff_scalar_type<Result, Derived>>
+var_result<T> make_diff(const Result &result,
+                        const Eigen::MatrixBase<Derived> &expected)
 {
-    if (result.size() != expected.size())
+    if ((int)result.size() != expected.size())
         throw size_mismatch();
 
     var_result<T> diff(var_data<T>(result.size()));
@@ -45,9 +59,11 @@ var_result<T> make_diff(const Result &result, const column<ExpectedT> &expected)
     diff.store().data() = result.mean() - expected;
 
     if (traits<Result>::HAVE_COV) {
-        Eigen::SelfAdjointEigenSolver<typename eigen<T>::matrix> ecov(result.cov());
+        Eigen::SelfAdjointEigenSolver<typename eigen<T>::matrix> ecov(get_cov(result));
         diff.store().data() = ecov.eigenvectors().adjoint() * diff.store().data();
         diff.store().data2() = ecov.eigenvalues();
+    } else {
+        diff.store().data2() = result.var();
     }
     return diff;
 }
@@ -64,7 +80,7 @@ var_result<T> pool_var(const Result1 &r1, const Result2 &r2)
 
     var_result<T> pooled(var_data<T>(r1.size()));
     pooled.store().count() = r1.count() * r2.count() / (r1.count() + r2.count());
-    pooled.store().count2() = 0;   // FIXME (does not matter for t2 test)
+    pooled.store().count2() = pooled.store().count();   // FIXME
     pooled.store().data() = r1.mean() - r2.mean();
 
     if (traits<Result1>::HAVE_COV || traits<Result2>::HAVE_COV) {

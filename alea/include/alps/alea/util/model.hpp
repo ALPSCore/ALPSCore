@@ -28,8 +28,8 @@ namespace alps { namespace alea { namespace util {
  *
  * where `phi0` is a shift vector, `phi` is the parameter matrix of the model,
  * and `eps(t)` is the shock term, which is Gaussian white noise with variances
- * `var_eps`.  (In the case of non-zero covariances, X must be rotated into the
- * eigenbasis of the covariance matrix.)
+ * `eps(t)[i] ~ N[(, var_eps[i])`.  (In the case of non-zero covariances, X
+ * must be rotated into the eigenbasis of the covariance matrix.)
  *
  * The model will tend to a stationary solution with the following moments: [1]
  *
@@ -142,9 +142,11 @@ protected:
     template <typename RandomEngine>
     void get_noise(RandomEngine &engine)
     {
-        boost::random::normal_distribution<var_type> dist;
-        for (size_t i = 0; i != epst_.size(); ++i)
-            epst_[i] = dist(engine, {0., model_->stddev_eps()[i]});
+        using boost::random::normal_distribution;
+        for (size_t i = 0; i != epst_.size(); ++i) {
+            normal_distribution<var_type> dist(0, model_->stddev_eps()[i]);
+            epst_[i] = dist(engine);
+        }
     }
 
     void update();

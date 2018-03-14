@@ -84,15 +84,15 @@ t2_result t2_test(const column<T> &diff,
 /**
  * Test mean of stochastic result `result` against known result `expected`.
  */
-template <typename Result, typename T>
-t2_result test_mean(const Result &result, const column<T> &expected,
+template <typename Result, typename Derived>
+t2_result test_mean(const Result &result,
+                    const Eigen::MatrixBase<Derived> &expected,
                     double atol=1e-14)
 {
     static_assert(is_alea_result<Result>::value, "Result is not alea result");
     static_assert(traits<Result>::HAVE_VAR, "Result1 must have variance");
 
-    using diff_scalar = internal::add_scalar_type<
-                                typename traits<Result>::value_type, T>;
+    using diff_scalar = internal::diff_scalar_type<Result, Derived>;
     var_result<diff_scalar> diff = internal::make_diff(result, expected);
     return t2_test(diff.mean(), diff.var(), diff.count(), 1, atol);
 }
@@ -100,8 +100,9 @@ t2_result test_mean(const Result &result, const column<T> &expected,
 /**
  * Test mean of stochastic result `result` against known result `expected`.
  */
-template <typename Result, typename T>
-t2_result test_mean(const column<T> &expected, const Result &result,
+template <typename Result, typename Derived>
+t2_result test_mean(const Eigen::MatrixBase<Derived> &expected,
+                    const Result &result,
                     double atol=1e-14)
 {
     return test_mean(result, expected, atol);
@@ -111,11 +112,11 @@ t2_result test_mean(const column<T> &expected, const Result &result,
  * Test mean of two stochastic results against each other.
  */
 template <typename Result1, typename Result2>
-t2_result test_mean(const Result1 &result1, const Result2 &result2,
-                    double atol=1e-14)
+typename std::enable_if<
+    is_alea_result<Result1>::value && is_alea_result<Result2>::value,
+    t2_result>::type
+test_mean(const Result1 &result1, const Result2 &result2, double atol=1e-14)
 {
-    static_assert(is_alea_result<Result1>::value, "Result1 is not alea result");
-    static_assert(is_alea_result<Result1>::value, "Result2 is not alea result");
     static_assert(traits<Result1>::HAVE_VAR, "Result1 must have variance");
     static_assert(traits<Result2>::HAVE_VAR, "Result2 must have variance");
 

@@ -31,7 +31,7 @@ namespace alps { namespace alea { namespace internal {
 namespace alps { namespace alea { namespace internal {
 
 template <typename... Pack>
-using add_scalar_type = typename joined_value<Pack...>::type;
+using add_scalar_type = typename add_scalar<Pack...>::type;
 
 template <typename T>
 struct add_scalar<T>
