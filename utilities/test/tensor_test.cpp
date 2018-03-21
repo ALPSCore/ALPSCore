@@ -41,7 +41,7 @@ TEST(TensorTest, TestInitialization) {
   tensor<std::complex<double>, 3> X(1,2,3);
   ASSERT_EQ(X.size(), 1*2*3u);
   tensor<double, 1> U( 50 );
-  ASSERT_EQ(U.size(), 50);
+  ASSERT_EQ(U.size(), 50u);
   std::vector<double> x(100);
   tensor<double, 2> UU(x.data(), 25, 4);
 }
@@ -82,7 +82,7 @@ TEST(TensorTest, TestCopyAssignments) {
   tensor<double, 2> T3(T1);
   tensor<double, 2> T2(N, N);
   for(size_t i = 0; i< N; ++i) {
-    for (int j = 0; j < N; ++j) {
+    for (size_t j = 0; j < N; ++j) {
       T1(i,j) = M1(i,j);
     }
   }
