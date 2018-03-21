@@ -102,14 +102,14 @@ TEST(TensorTest, TestSlices) {
   tensor_view<std::complex<double>, 1> slice1 = X(0, 1);
   ASSERT_EQ(slice1.dimension(), 1u);
 
-  ASSERT_EQ(slice1.shape()[0], 3);
+  ASSERT_EQ(slice1.shape()[0], 3u);
 
   for (size_t i = 0; i<X.shape()[0]; ++i) {
     tensor_view<std::complex<double>, 2> slice2 = X(i);
     ASSERT_EQ(X.index(i), 6*i);
-    ASSERT_EQ(slice2.dimension(), 2);
-    ASSERT_EQ(slice2.shape()[0], 2);
-    ASSERT_EQ(slice2.shape()[1], 3);
+    ASSERT_EQ(slice2.dimension(), 2u);
+    ASSERT_EQ(slice2.shape()[0], 2u);
+    ASSERT_EQ(slice2.shape()[1], 3u);
     for (size_t j = 0; j < X.shape()[1]; ++j) {
       ASSERT_EQ(X.index(i, j), 6*i + j*3);
       for (size_t k = 0; k < X.shape()[2]; ++k) {

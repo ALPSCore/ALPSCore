@@ -19,7 +19,7 @@ class GfMultiArrayTest : public ::testing::Test {
     typedef boost::multi_array<std::complex<double>,4> data_type;
     data_type ref_data_;
     boost::array<data_type::size_type, 4> ref_shape_;
-    
+
     public:
     static const int MASTER=0;
     static const int BASE=1;
@@ -27,8 +27,10 @@ class GfMultiArrayTest : public ::testing::Test {
     GfMultiArrayTest() : ref_data_(ARRAY_EXTENTS) {
         rank_=alps::mpi::communicator().rank();
         is_root_=(rank_==MASTER);
-        
-        for (data_type::index i=0; i<ref_data_.num_elements(); ++i) {
+
+        for (data_type::index i=0;
+             static_cast<data_type::size_type>(i)<ref_data_.num_elements();
+             ++i) {
             *(ref_data_.origin()+i)=std::complex<double>(i+0.5,i-0.5);
         }
         std::copy(ref_data_.shape(), ref_data_.shape()+ref_data_.num_dimensions(), ref_shape_.begin());
