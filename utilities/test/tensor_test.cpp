@@ -100,7 +100,7 @@ TEST(TensorTest, TestSlices) {
   tensor<std::complex<double>, 3> X(1, 2, 3);
 
   tensor_view<std::complex<double>, 1> slice1 = X(0, 1);
-  ASSERT_EQ(slice1.dimension(), 1);
+  ASSERT_EQ(slice1.dimension(), 1u);
 
   ASSERT_EQ(slice1.shape()[0], 3);
 
