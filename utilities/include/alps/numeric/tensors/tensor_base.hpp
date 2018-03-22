@@ -236,7 +236,7 @@ namespace alps {
          */
         template<typename S>
         typename std::enable_if < !std::is_same < S, tensorType >::value, tensor_base< decltype(S{} + T{}), Dim,
-            data_storage< decltype(S{} * T{}) > > >::type operator*(S scalar) {
+            data_storage< decltype(S{} * T{}) > > >::type operator*(S scalar) const {
           tensor_base< decltype(S{} + T{}), Dim, data_storage< decltype(S{} * T{}) > > x(*this);
           return (x *= static_cast<decltype(S{} + T{})>(scalar));
         };
@@ -249,7 +249,7 @@ namespace alps {
          * @return result of two tensor multiplication
          */
         template<typename S>
-        typename std::enable_if < std::is_same < S, tensorType >::value, tensorType >::type operator*(const S& rhs) {
+        typename std::enable_if < std::is_same < S, tensorType >::value, tensorType >::type operator*(const S& rhs) const {
           tensorType x(*this);
           return x*=rhs;
         };
@@ -281,7 +281,7 @@ namespace alps {
          */
         template<typename S>
         typename std::enable_if < !std::is_same < S, tensorType >::value, tensor_base< decltype(S{} + T{}), Dim,
-            data_storage< decltype(S{} * T{}) > > >::type operator/(S scalar) {
+            data_storage< decltype(S{} * T{}) > > >::type operator/(S scalar) const {
           tensor_base< decltype(S{} + T{}), Dim, data_storage< decltype(S{} * T{}) > >  x(*this);
           return (x /= scalar);
         };
