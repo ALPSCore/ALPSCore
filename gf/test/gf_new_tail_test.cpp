@@ -75,7 +75,6 @@ TEST_F(GreensFunctionTailTest, SetTail){
 TEST_F(GreensFunctionTailTest, TailSaveLoad)
 {
   typedef gfns::greenf<std::complex<double>, gfns::matsubara_mesh<gfns::mesh::POSITIVE_ONLY>, gfns::index_mesh> omega_sigma_gf;
-  typedef gfns::greenf<std::complex<double>, gfns::index_mesh> one_index_gf;
   typedef gfns::gf_tail<omega_sigma_gf, gfns::greenf<double, gfns::index_mesh> > omega_sigma_gf_with_tail;
   typedef gfns::greenf<double, gfns::index_mesh> density_matrix_type;
   density_matrix_type denmat = density_matrix_type(gfns::index_mesh(nspins));

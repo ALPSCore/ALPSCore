@@ -170,9 +170,9 @@ TEST(Mesh,CompareITime) {
 
 TEST(Mesh,PowerMeshHasRightSize) {
   alps::gf::power_mesh mesh1(20, 12, 16);
-  EXPECT_EQ(417, mesh1.points().size());
+  EXPECT_EQ(417u, mesh1.points().size());
   alps::gf::power_mesh mesh2(20, 12, 256);
-  EXPECT_EQ(6657, mesh2.points().size());
+  EXPECT_EQ(6657u, mesh2.points().size());
 
 }
 TEST(Mesh,ComparePower) {
