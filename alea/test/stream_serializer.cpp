@@ -108,7 +108,7 @@ TEST(twogauss_serialize_case, mock_archive) {
     EXPECT_EQ(-123456, l);
     unsigned long ul = 0;
     archive >> ul;
-    EXPECT_EQ(7890, ul);
+    EXPECT_EQ(7890U, ul);
     std::complex<double> c = 0;
     archive >> c;
     EXPECT_EQ(std::complex<double>(0.5,0.75), c);
@@ -132,7 +132,9 @@ public:
         Acc in_acc(2);
         for (size_t i = 0; i != twogauss_count; ++i)
             in_acc << std::vector<value_type>{twogauss_data[i][0], twogauss_data[i][1]};
+
         auto in = in_acc.result();
+        std::cerr << alps::alea::PRINT_VERBOSE << "\nin\n" << in;
 
         mock_archive archive;
         archive << in; // serialize
@@ -142,6 +144,7 @@ public:
 
         archive >> out; // deserialize
 
+        std::cerr << alps::alea::PRINT_VERBOSE << "\nout\n" << out << "\n";
         EXPECT_EQ(in, out);
     }
 };

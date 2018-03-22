@@ -147,6 +147,7 @@ struct traits< batch_acc<T> >
     typedef T value_type;
     typedef circular_var strategy_type;
     typedef batch_result<T> result_type;
+    typedef batch_data<T> store_type;
 };
 
 extern template class batch_acc<double>;

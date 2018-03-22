@@ -484,7 +484,7 @@ namespace alps {
         template<size_t M>
         inline size_t new_size(std::array < size_t, M >& sizes) const {
           size_t s = 1;
-          for (int i = 0; i < sizes.size(); ++i) {
+          for (size_t i = 0; i < sizes.size(); ++i) {
             sizes[i] = shape_[i + Dim - M];
             s *= sizes[i];
           }

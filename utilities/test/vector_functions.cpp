@@ -49,7 +49,7 @@ bool is_near(const std::vector<T>& v1, const std::vector<T>& v2) {
     return true;
 }
 
-    
+
 // GoogleTest fixture, parametrized over vector element type
 template <typename T>
 struct VectorFunctionsTest : public ::testing::Test
@@ -116,7 +116,7 @@ TYPED_TEST(VectorFunctionsTest, testMergeToSameSize) {
     value_type& merged=merge(vec1,vec2);
     EXPECT_EQ(&merged, &vec1);
 
-    ASSERT_EQ(5,vec1.size());
+    ASSERT_EQ(5u,vec1.size());
     EXPECT_EQ(res, vec1);
 }
 
@@ -137,7 +137,7 @@ TYPED_TEST(VectorFunctionsTest, testMergeToSmaller) {
     value_type& merged=merge(vec1,vec2);
     EXPECT_EQ(&merged, &vec1);
 
-    ASSERT_EQ(5,vec1.size());
+    ASSERT_EQ(5u,vec1.size());
     EXPECT_EQ(res, vec1);
 }
 
@@ -159,6 +159,6 @@ TYPED_TEST(VectorFunctionsTest, testMergeToLarger) {
     value_type& merged=merge(vec1,vec2);
     EXPECT_EQ(&merged, &vec1);
 
-    ASSERT_EQ(5,vec1.size());
+    ASSERT_EQ(5u,vec1.size());
     EXPECT_EQ(res, vec1);
 }

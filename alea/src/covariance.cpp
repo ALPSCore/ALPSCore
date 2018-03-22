@@ -30,14 +30,33 @@ void cov_data<T,Str>::convert_to_mean()
     data_ /= count_;
     data2_ -= count_ * internal::outer<bind<Str, T> >(data_, data_);
 
-    // bias correction: count2_/count_ is 1 for (non-weighted) mean
-    data2_ = data2_ / (count_ - count2_/count_);
+    // In case of zero unbiased information, the variance is infinite.
+    // However, data2_ is 0 in this case as well, so we need to handle it
+    // specially to avoid 0/0 = nan while propagating intrinsic NaN's.
+    const double nunbiased = count_ - count2_/count_;
+    if (nunbiased == 0)
+        data2_ = data2_.array().isNaN().select(data2_, INFINITY);
+    else
+        // HACK: this is written in out-of-place notation to work around Eigen
+        data2_ = data2_ / nunbiased;
 }
 
 template <typename T, typename Str>
 void cov_data<T,Str>::convert_to_sum()
 {
-    data2_ = data2_ * (count_ - count2_/count_);
+    // "empty" sets must be handled specially here because of NaNs
+    if (count_ == 0) {
+        reset();
+        return;
+    }
+
+    // Care must be taken again for zero unbiased info since inf/0 is NaN.
+    const double nunbiased = count_ - count2_/count_;
+    if (nunbiased == 0)
+        data2_ = data2_.array().isNaN().select(data2_, 0);
+    else
+        data2_ = data2_ * nunbiased;
+
     data2_ += count_ * internal::outer<bind<Str, T> >(data_, data_);
     data_ *= count_;
 }
@@ -178,6 +197,9 @@ cov_result<T,Str> &cov_result<T,Str>::operator=(const cov_result &other)
 template <typename T, typename Strategy>
 bool operator==(const cov_result<T,Strategy> &r1, const cov_result<T,Strategy> &r2)
 {
+    if (r1.count() == 0 && r2.count() == 0)
+        return true;
+
     return r1.count() == r2.count()
         && r1.count2() == r2.count2()
         && r1.store().data() == r2.store().data()

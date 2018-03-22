@@ -9,7 +9,7 @@
 
 #include <alps/utilities/gtest_par_xml_output.hpp>
 
-/* 
+/*
    NOTE: This program relies on file I/O to exchange info between processes
          --- do NOT run on too many cores!
 */
@@ -32,7 +32,7 @@ TEST_F(FourIndexGFTest,MpiWrongTailBroadcast)
 
     // Get the rank
     int rank=alps::mpi::communicator().rank();
-  
+
     // prepare diagonal matrix
     double U=3.0;
     denmat.initialize();
@@ -42,7 +42,7 @@ TEST_F(FourIndexGFTest,MpiWrongTailBroadcast)
     }
 
     g::omega_k1_k2_sigma_gf_with_tail gft(gf);
-    
+
     int order=0;
     if (rank==MASTER) { // on master only
       // attach a tail to the GF:
@@ -57,7 +57,7 @@ TEST_F(FourIndexGFTest,MpiWrongTailBroadcast)
     EXPECT_EQ(7, gft(g::matsubara_index(4),g::momentum_index(3), g::momentum_index(2), g::index(1)).real()) << "GF real part mismatch on rank " << rank;
     EXPECT_EQ(3, gft(g::matsubara_index(4),g::momentum_index(3), g::momentum_index(2), g::index(1)).imag()) << "GF imag part mismatch on rank " << rank;
 
-    ASSERT_EQ(1, gft.tail().size()) << "Tail size mismatch on rank " << rank;
+    ASSERT_EQ(1u, gft.tail().size()) << "Tail size mismatch on rank " << rank;
     EXPECT_NEAR(0, (gft.tail(0)-denmat).norm(), 1E-8) << "Tail broadcast differs from the received on rank " << rank;
 }
 
@@ -71,7 +71,7 @@ int main(int argc, char**argv)
     ::testing::InitGoogleTest(&argc, argv);
 
     Mpi_guard guard(MASTER,"four_index_gf_test_mismatched-tail-mpi.dat.");
-    
+
     int rc=RUN_ALL_TESTS();
 
     if (!guard.check_sig_files_ok(get_number_of_bcasts())) {
