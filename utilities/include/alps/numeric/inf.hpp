@@ -29,7 +29,7 @@ namespace alps {
         };
         ALPS_NUMERIC_INF_OVERLOADS(float)
         ALPS_NUMERIC_INF_OVERLOADS(double)
-        ALPS_NUMERIC_INF_OVERLOADS(detail::type_wrapper<long double>::type)
+        ALPS_NUMERIC_INF_OVERLOADS(alps::detail::type_wrapper<long double>::type)
 #undef ALPS_NUMERIC_INF_OVERLOADS
         
     }
