@@ -11,7 +11,7 @@ TEST_F(FourIndexGFTest,MpiBroadcast)
 {
     int rank=alps::mpi::communicator().rank();
     const int master=0;
-    
+
     alps::gf::matsubara_index omega; omega=4;
     alps::gf::momentum_index i; i=2;
     alps::gf::momentum_index j=alps::gf::momentum_index(3);
@@ -47,7 +47,7 @@ TEST_F(FourIndexGFTest, MpiTailBroadcast)
 
     int rank=alps::mpi::communicator().rank();
     const int master=0;
-    
+
     // prepare diagonal matrix
     double U=3.0;
     denmat.initialize();
@@ -75,8 +75,8 @@ TEST_F(FourIndexGFTest, MpiTailBroadcast)
     EXPECT_EQ(7, gft(g::matsubara_index(4),g::momentum_index(3), g::momentum_index(2), g::index(1)).real()) << "GF real part mismatch on rank " << rank;
     EXPECT_EQ(3, gft(g::matsubara_index(4),g::momentum_index(3), g::momentum_index(2), g::index(1)).imag()) << "GF imag part mismatch on rank " << rank;
 
-    ASSERT_EQ(1, gft.tail().size()) << "Tail size mismatch on rank " << rank;
-    EXPECT_NEAR(0, (gft.tail(0)-denmat).norm(), 1E-8) << "Tail broadcast differs from the received on rank " << rank; 
+    ASSERT_EQ(1u, gft.tail().size()) << "Tail size mismatch on rank " << rank;
+    EXPECT_NEAR(0, (gft.tail(0)-denmat).norm(), 1E-8) << "Tail broadcast differs from the received on rank " << rank;
 }
 
 // if testing MPI, we need main()

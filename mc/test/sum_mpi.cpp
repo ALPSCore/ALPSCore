@@ -22,7 +22,7 @@ class my_sim_type : public alps::mcbase {
 
     public:
 
-        static const int VSIZE=3;
+        static const unsigned int VSIZE=3;
 
         typedef std::vector<double> double_vector_type;
 
@@ -32,7 +32,7 @@ class my_sim_type : public alps::mcbase {
                          << alps::accumulators::FullBinningAccumulator<double_vector_type>("VValue")
                          << alps::accumulators::NoBinningAccumulator<double_vector_type>("VValue1");
         }
-  
+
         my_sim_type(parameters_type const & params, std::size_t seed_offset = 42)
             : alps::mcbase(params, seed_offset)
             , total_count(params["COUNT"])
@@ -43,7 +43,7 @@ class my_sim_type : public alps::mcbase {
             init();
         }
 
-        // if not compiled with mpi alps::mpi::communicator does not exists, 
+        // if not compiled with mpi alps::mpi::communicator does not exists,
         // so template the function
         template <typename Arg> my_sim_type(parameters_type const & params, Arg comm)
             : alps::mcbase(params, comm)
@@ -87,7 +87,7 @@ TEST(mc, sum_mpi){
         my_sim_type::define_parameters(params); // do parameters definitions
 
         params.broadcast(c, 0);
-        
+
         int t_min_check=1, t_max_check=1, timelimit=300;
 
         alps::mcmpiadapter<my_sim_type> my_sim(params, c, alps::check_schedule(t_min_check, t_max_check)); // create a simulation
@@ -111,18 +111,18 @@ TEST(mc, sum_mpi){
                 const my_sim_type::double_vector_type& vv_mean=results["VValue1"].mean<my_sim_type::double_vector_type>();
                 const my_sim_type::double_vector_type& vv_err=results["VValue1"].error<my_sim_type::double_vector_type>();
                 EXPECT_EQ(my_sim_type::VSIZE+0, vv_mean.size());
-                for (int i=0; i<my_sim_type::VSIZE; ++i) {
+                for (unsigned int i=0; i<my_sim_type::VSIZE; ++i) {
                     EXPECT_NEAR(expected_mean, vv_mean[i], 1.E-2) << "Vector (NoBinning) mean is incorrect at #" << i;
                     EXPECT_NEAR(expected_err, vv_err[i], 1.E-2)  << "Vector (NoBinning) error is incorrect at #" << i;
                 }
             }
-            
+
             // Test using FullBinningAccumulator
             {
                 const my_sim_type::double_vector_type& vv_mean=results["VValue"].mean<my_sim_type::double_vector_type>();
                 const my_sim_type::double_vector_type& vv_err=results["VValue"].error<my_sim_type::double_vector_type>();
                 EXPECT_EQ(my_sim_type::VSIZE+0, vv_mean.size());
-                for (int i=0; i<my_sim_type::VSIZE; ++i) {
+                for (unsigned int i=0; i<my_sim_type::VSIZE; ++i) {
                     EXPECT_NEAR(expected_mean, vv_mean[i], 1.E-2)  << "Vector (FullBinning) mean is incorrect at #" << i;
                     EXPECT_NEAR(expected_err, vv_err[i], 1.E-2) << "Vector (FullBinning) error is incorrect at #" << i;
                 }
@@ -139,4 +139,4 @@ int main(int argc, char** argv)
    alps::mpi::environment env(argc, argv, false);
    ::testing::InitGoogleTest(&argc, argv);
    return RUN_ALL_TESTS();
-}    
+}
