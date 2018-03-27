@@ -11,6 +11,7 @@
 
 #include <type_traits>
 #include <boost/static_assert.hpp>
+#include <boost/type_traits/is_fundamental.hpp>
 #include <algorithm>
 #include <complex>
 #include <vector>
