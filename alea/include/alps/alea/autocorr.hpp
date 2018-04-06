@@ -154,7 +154,7 @@ public:
     /** Returns sample size, i.e., number of accumulated data points */
     size_t count() const { return level_[0].count(); }
 
-    /** Return sum of squared sizes */
+    /** Return sum of squared weights */
     double count2() const { return level_[find_level(DEFAULT_MIN_SAMPLES)].count(); }
 
     /** Returns sample mean */
