@@ -37,6 +37,7 @@ struct make_real { typedef T type; };
 template <typename T>
 struct make_real< std::complex<T> > { typedef T type; };
 
+/** Extract underlying real type from complex, leave real types unchanged */
 template <typename T>
 using make_real_type = typename make_real<T>::type;
 

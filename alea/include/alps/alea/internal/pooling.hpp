@@ -1,3 +1,10 @@
+/**
+ * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * All rights reserved. Use is subject to license terms. See LICENSE.TXT
+ * For use in publications, see ACKNOWLEDGE.TXT
+ */
+#pragma once
+
 #include <alps/alea/core.hpp>
 #include <alps/alea/util.hpp>
 
@@ -9,6 +16,7 @@
 
 namespace alps { namespace alea { namespace internal {
 
+/** Returns covariance, or construct from variances if not available */
 template <typename T, typename Str>
 const typename eigen<typename traits<cov_result<T,Str>>::cov_type>::matrix &
 get_cov(const cov_result<T,Str> &result)
@@ -16,6 +24,7 @@ get_cov(const cov_result<T,Str> &result)
     return result.cov();
 }
 
+/** Returns covariance, or construct from variances if not available */
 template <typename Result>
 typename eigen<typename traits<Result>::cov_type>::matrix
 get_cov(const Result &result)
@@ -23,6 +32,7 @@ get_cov(const Result &result)
     return result.cov();
 }
 
+/** Returns covariance, or construct from variances if not available */
 template <typename T, typename Str>
 typename eigen<typename traits<cov_result<T,Str>>::cov_type>::matrix
 get_cov(const var_result<T,Str> &result)
@@ -30,6 +40,7 @@ get_cov(const var_result<T,Str> &result)
     return result.var().asDiagonal();
 }
 
+/** Returns covariance, or construct from variances if not available */
 template <typename T>
 typename eigen<typename traits<cov_result<T>>::cov_type>::matrix
 get_cov(const autocorr_result<T> &result)
@@ -80,12 +91,14 @@ var_result<T> pool_var(const Result1 &r1, const Result2 &r2)
 
     var_result<T> pooled(var_data<T>(r1.size()));
     pooled.store().count() = r1.count() * r2.count() / (r1.count() + r2.count());
-    pooled.store().count2() = pooled.store().count();   // FIXME
+
+    // FIXME: we would need to pool count2 here too
+    pooled.store().count2() = pooled.store().count();
     pooled.store().data() = r1.mean() - r2.mean();
 
     if (traits<Result1>::HAVE_COV || traits<Result2>::HAVE_COV) {
         // Pooling covariance matrices - diagonalize those to yield variances
-        auto pooled_cov = r1.count() * get_cov(r1) + r2.count() * get_cov(r2)
+        auto pooled_cov = (r1.count() - 1.) * get_cov(r1) + (r2.count() - 1.) * get_cov(r2)
                           / (r1.count() + r2.count() - 2.0);
 
         Eigen::SelfAdjointEigenSolver<typename eigen<T>::matrix> ecov(pooled_cov);
@@ -93,7 +106,7 @@ var_result<T> pool_var(const Result1 &r1, const Result2 &r2)
         pooled.store().data2() = ecov.eigenvalues();
     } else {
         // Directly pooling variances
-        pooled.store().data2() = r1.count() * r1.var() + r2.count() * r2.var()
+        pooled.store().data2() = (r1.count() - 1.) * r1.var() + (r2.count() - 1.) * r2.var()
                                 / (r1.count() + r2.count() - 2.0);
     }
     return pooled;

@@ -30,30 +30,36 @@ namespace alps { namespace alea { namespace internal {
 
 namespace alps { namespace alea { namespace internal {
 
+/** Given a set of types T1, T2, ..., return type of T1() + T2() + ... */
 template <typename... Pack>
 using add_scalar_type = typename add_scalar<Pack...>::type;
 
+/** Given a set of types T1, T2, ..., return type of T1() + T2() + ... */
 template <typename T>
 struct add_scalar<T>
 {
     using type = T;
 };
 
+/** Given a set of types T1, T2, ..., return type of T1() + T2() + ... */
 template <typename Head, typename... Tail>
 struct add_scalar<Head, Tail...>
 {
     using type = decltype(Head(0) + typename add_scalar<Tail...>::type(0));
 };
 
+/** Given a set of result types R1, R2, ..., return value type of joined result */
 template <typename... Pack>
 using joined_value_type = typename joined_value<Pack...>::type;
 
+/** Given a set of result types R1, R2, ..., return value type of joined result */
 template <typename T>
 struct joined_value<T>
 {
     using type = typename traits<T>::value_type;
 };
 
+/** Given a set of result types R1, R2, ..., return value type of joined result */
 template <typename Head, typename... Tail>
 struct joined_value<Head, Tail...>
 {
@@ -63,6 +69,7 @@ struct joined_value<Head, Tail...>
 
 // Predicates
 
+/** Given a set of result traits, is the joined result a batch_result */
 template <typename T1, typename T2>
 constexpr bool joins_batch()
 {
@@ -70,6 +77,7 @@ constexpr bool joins_batch()
         && T1::HAVE_BATCH && T2::HAVE_BATCH;
 }
 
+/** Given a set of result traits, is the joined result a autocor_result */
 template <typename T1, typename T2>
 constexpr bool joins_autocorr()
 {
@@ -77,6 +85,7 @@ constexpr bool joins_autocorr()
         && T1::HAVE_TAU && T2::HAVE_TAU;
 }
 
+/** Given a set of result traits, is the joined result a cov_result */
 template <typename T1, typename T2>
 constexpr bool joins_cov()
 {
@@ -85,6 +94,7 @@ constexpr bool joins_cov()
            && !(T1::HAVE_BATCH && T2::HAVE_BATCH);
 }
 
+/** Given a set of result traits, is the joined result a var_result */
 template <typename T1, typename T2>
 constexpr bool joins_var()
 {
@@ -95,6 +105,7 @@ constexpr bool joins_var()
            && !(T1::HAVE_BATCH && T2::HAVE_BATCH);
 }
 
+/** Given a set of result traits, is the joined result a mean_result */
 template <typename T1, typename T2>
 constexpr bool joins_mean()
 {

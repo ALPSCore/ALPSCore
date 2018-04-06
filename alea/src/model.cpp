@@ -17,7 +17,7 @@ void var1_model<T>::init()
     Eigen::JacobiSVD<typename eigen<T>::matrix> phi1_svd(phi1_);
     if (phi1_svd.singularValues()[0] >= 1) {
         throw std::invalid_argument(
-                "phi is not a contraction, largest singular value is " +
+                "phi1 is not a contraction, largest singular value is " +
                 std::to_string(phi1_svd.singularValues()[0]));
     }
 

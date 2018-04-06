@@ -28,7 +28,7 @@ namespace alps { namespace alea { namespace util {
  *
  * where `phi0` is a shift vector, `phi` is the parameter matrix of the model,
  * and `eps(t)` is the shock term, which is Gaussian white noise with variances
- * `eps(t)[i] ~ N[(, var_eps[i])`.  (In the case of non-zero covariances, X
+ * `eps(t)[i] ~ N(0, var_eps[i])`.  (In the case of non-zero covariances, X
  * must be rotated into the eigenbasis of the covariance matrix.)
  *
  * The model will tend to a stationary solution with the following moments: [1]

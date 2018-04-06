@@ -56,6 +56,7 @@ TEST(var1_test_model, tau)
 template <typename T, typename Acc>
 void fill(const alps::alea::util::var1_model<T> &model, Acc &acc, size_t tmax)
 {
+    // fill accumulator with values from model
     alps::alea::util::var1_run<T> run = model.start();
     boost::random::mt19937 engine;
     while (run.t() < tmax) {
