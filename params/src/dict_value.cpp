@@ -7,6 +7,8 @@
 /** @file dict_value.cpp
     Contains implementation of some alps::params_ns::dict_value members */
 
+#include <boost/version.hpp>
+
 #include <alps/params/dict_value.hpp>
 #include <alps/params/hdf5_variant.hpp>
 
@@ -155,7 +157,13 @@ namespace alps {
                 return strm;
             }
 
-            struct print_visitor : public boost::static_visitor<std::ostream&> {
+            struct print_visitor {
+#if __cplusplus == 201402L && BOOST_VERSION == 105800
+                // Workaround for a bug in boost 1.58 (C++14).
+                // Defining result_type ledas to a compiler error.
+#else
+                typedef std::ostream& result_type;
+#endif
                 std::ostream& os_;
 
                 print_visitor(std::ostream& os) : os_(os) {}
