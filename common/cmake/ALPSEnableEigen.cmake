@@ -74,11 +74,17 @@ function(add_eigen)
       message(STATUS "Trying to download and unpack Eigen3")
       if (NOT EXISTS "${ALPS_EIGEN_TGZ_FILE}")
         message(STATUS "Downloading Eigen3, timeout 600 sec")
-        file(DOWNLOAD ${ALPS_EIGEN_DOWNLOAD_LOCATION} ${ALPS_EIGEN_TGZ_FILE}
-          INACTIVITY_TIMEOUT 60
-          TIMEOUT 600
-          STATUS status_
-          SHOW_PROGRESS)
+        # Attempt to download four times
+        foreach(loop_var RANGE 3)
+          file(DOWNLOAD ${ALPS_EIGEN_DOWNLOAD_LOCATION} ${ALPS_EIGEN_TGZ_FILE}
+            INACTIVITY_TIMEOUT 60
+            TIMEOUT 600
+            STATUS status_
+            SHOW_PROGRESS)
+          if (status_ EQUAL 0)
+            break()
+          endif()
+        endforeach()
         if (status_ EQUAL 0)
           message(STATUS "Downloaded successfully")
         else()

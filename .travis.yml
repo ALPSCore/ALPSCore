@@ -18,6 +18,8 @@ addons:
       - openmpi-doc
       - libopenmpi-dev
       - libhdf5-serial-dev
+    config:
+      retries: true
 
 install: true
 
