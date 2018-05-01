@@ -8,6 +8,10 @@ set(ALPS_EIGEN_DOWNLOAD_LOCATION "http://bitbucket.org/eigen/eigen/get/${ALPS_EI
     CACHE STRING "Eigen3 download location")
 mark_as_advanced(ALPS_EIGEN_DOWNLOAD_LOCATION)
 
+if (NOT DEFINED BUNDLE_DOWNLOAD_TRIES)
+  set(BUNDLE_DOWNLOAD_TRIES 1)
+endif()
+
 # Add eigen to the current module (target ${PROJECT_NAME})
 # Sets EIGEN3_VERSION variable in the parent scope
 function(add_eigen)
@@ -74,11 +78,17 @@ function(add_eigen)
       message(STATUS "Trying to download and unpack Eigen3")
       if (NOT EXISTS "${ALPS_EIGEN_TGZ_FILE}")
         message(STATUS "Downloading Eigen3, timeout 600 sec")
-        file(DOWNLOAD ${ALPS_EIGEN_DOWNLOAD_LOCATION} ${ALPS_EIGEN_TGZ_FILE}
-          INACTIVITY_TIMEOUT 60
-          TIMEOUT 600
-          STATUS status_
-          SHOW_PROGRESS)
+        # Attempt to download four times
+        foreach(loop_var RANGE ${BUNDLE_DOWNLOAD_TRIES})
+          file(DOWNLOAD ${ALPS_EIGEN_DOWNLOAD_LOCATION} ${ALPS_EIGEN_TGZ_FILE}
+            INACTIVITY_TIMEOUT 60
+            TIMEOUT 600
+            STATUS status_
+            SHOW_PROGRESS)
+          if (status_ EQUAL 0)
+            break()
+          endif()
+        endforeach()
         if (status_ EQUAL 0)
           message(STATUS "Downloaded successfully")
         else()

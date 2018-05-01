@@ -34,7 +34,7 @@ public:
   omega_sigma_gf gf2;
   typedef omega_sigma_gf gf_type;
 
-  TailedGreensFunctionMPI():beta(10), nfreq(10), nsites(5), nspins(2),
+  TailedGreensFunctionMPI():beta(10), nsites(5), nfreq(10), nspins(2),
                       rank(alps::mpi::communicator().rank()),
                       is_root(alps::mpi::communicator().rank()==MASTER),
                       gf(matsubara_mesh(beta,nfreq), index_mesh(nsites)),

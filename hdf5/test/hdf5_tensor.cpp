@@ -40,7 +40,6 @@ TEST(hdf5, TestingTensorBoost){
 TEST(hdf5, TestingTensor){
   alps::testing::unique_file ufile("real_complex_vec.h5.", alps::testing::unique_file::KEEP_AFTER);
   const std::string&  filename = ufile.name();
-  const int size = 6;
 
   Eigen::MatrixXd M(Eigen::MatrixXd::Random(5, 6));
 
@@ -76,7 +75,6 @@ TEST(hdf5, TestingTensor){
 TEST(hdf5, TestingTensorComplex){
   alps::testing::unique_file ufile("real_complex_vec.h5.", alps::testing::unique_file::KEEP_AFTER);
   const std::string&  filename = ufile.name();
-  const int size = 6;
 
   Eigen::MatrixXd M(Eigen::MatrixXd::Random(5, 6));
 

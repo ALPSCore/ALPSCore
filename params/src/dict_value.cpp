@@ -7,6 +7,8 @@
 /** @file dict_value.cpp
     Contains implementation of some alps::params_ns::dict_value members */
 
+#include <boost/version.hpp>
+
 #include <alps/params/dict_value.hpp>
 #include <alps/params/hdf5_variant.hpp>
 
@@ -25,7 +27,7 @@ namespace alps {
                 class comparator2 : public boost::static_visitor<int> {
                     template <typename A, typename B>
                     static bool cmp_(const A& a, const B& b) { return (a==b)? 0 : (a<b)? -1:1; }
-                    
+
                     public:
                     /// Called by apply_visitor for bound values of different types
                     template <typename LHS_T, typename RHS_T>
@@ -36,7 +38,7 @@ namespace alps {
                                                        "incompatible types "+
                                                        lhs_name + "<=>" + rhs_name);
                     }
-                    
+
                     /// Called by apply_visitor for bound values of the same type
                     template <typename LHS_RHS_T>
                     int operator()(const LHS_RHS_T& lhs, const LHS_RHS_T& rhs) const {
@@ -47,7 +49,7 @@ namespace alps {
                     int operator()(const dict_value::None& lhs, const dict_value::None& rhs) const {
                         return 1;
                     }
-                        
+
 
                     // FIXME:TODO:
                     // Same types: compare directly
@@ -76,33 +78,33 @@ namespace alps {
                     bool operator()(const dict_value::None&, const RHS_T&) const {
                         return false;
                     }
-                    
+
                     /// Called when RHS is None
                     template <typename LHS_T>
                     bool operator()(const LHS_T&, const dict_value::None&) const {
                         return false;
                     }
-                    
+
                     /// Called when both are None
                     bool operator()(const dict_value::None&, const dict_value::None&) const {
                         return true;
                     }
                 };
-                
+
             } // visitor::
-            
+
         } // detail::
-        
+
         int dict_value::compare(const dict_value& rhs) const
         {
             if (this->empty() || rhs.empty()) throw exception::uninitialized_value(name_+"<=>"+rhs.name_,"Attempt to compare uninitialized value");
-                
+
             try {
                 return boost::apply_visitor(detail::visitor::comparator2(), val_, rhs.val_);
             } catch (exception::exception_base& exc) {
                 exc.set_name(name_+"<=>"+rhs.name_);
                 throw;
-            } 
+            }
         }
 
         bool dict_value::equals(const dict_value& rhs) const
@@ -114,7 +116,7 @@ namespace alps {
             if (this->empty()) return;
             alps::hdf5::write_variant<detail::dict_all_types>(ar, val_);
         }
-            
+
         void dict_value::load(alps::hdf5::archive& ar) {
             const std::string context=ar.get_context();
             std::string::size_type slash_pos=context.find_last_of("/");
@@ -131,7 +133,7 @@ namespace alps {
                     return ret;
                 }
             };
-            
+
             // Printing of a vector
             // FIXME!!! Consolidate with other definitions and move to alps::utilities
             template <typename T>
@@ -155,11 +157,20 @@ namespace alps {
                 return strm;
             }
 
-            struct print_visitor : public boost::static_visitor<std::ostream&> {
+            struct print_visitor {
+#if __cplusplus == 201402L && BOOST_VERSION == 105800
+                // Workaround for a bug in boost 1.58 with C++14.
+                // Defining `result_type` as a reference type
+                // leads to a compilation error;
+                // however, C++14 is able to deduce the type of the result
+                // without `result_type` being defined.
+#else
+                typedef std::ostream& result_type;
+#endif
                 std::ostream& os_;
 
                 print_visitor(std::ostream& os) : os_(os) {}
-                
+
                 template <typename T>
                 std::ostream& operator()(const T& val) const {
                     return os_ << val;
@@ -171,7 +182,7 @@ namespace alps {
             };
 
         }
-            
+
         std::ostream& print(std::ostream& s, const dict_value& dv, bool terse) {
             if (dv.empty()) {
                 s << "[NONE]";
@@ -194,6 +205,6 @@ namespace alps {
         }
 #endif
 
-        
+
     } // params_ns::
 } // alps::

@@ -166,11 +166,11 @@ namespace alps {
                 valid_ = true;
                 valid_ = valid_ && (n_sections_ >= 1);
                 assert(valid_);
-                valid_ = valid_ && (section_edges_.size() == n_sections_ + 1);
+                valid_ = valid_ && (section_edges_.size() == std::size_t(n_sections_) + 1);
                 assert(valid_);
-                valid_ = valid_ && (coeff_.shape()[0] == n_sections_);
+                valid_ = valid_ && (coeff_.shape()[0] == std::size_t(n_sections_));
                 assert(valid_);
-                valid_ = valid_ && (coeff_.shape()[1] == k_ + 1);
+                valid_ = valid_ && (coeff_.shape()[1] == std::size_t(k_+1));
                 assert(valid_);
                 for (int i = 0; i < n_sections_; ++i) {
                     valid_ = valid_ && (section_edges_[i] < section_edges_[i + 1]);
@@ -257,7 +257,7 @@ namespace alps {
 
             /// Return a reference to the coefficient of $x^p$ for the given section.
             inline T& coefficient(int i, int p) {
-                assert(i >= 0 && i < section_edges_.size());
+                assert(i >= 0 && std::size_t(i) < section_edges_.size());
                 assert(p >= 0 && p <= k_);
 #ifndef NDEBUG
                 check_validity();
@@ -331,7 +331,7 @@ namespace alps {
                 for (int s = 0; s < n_sections_; ++s) {
                     dx_power[0] = 1.0;
                     const double dx = section_edges_[s + 1] - section_edges_[s];
-                    for (int p = 1; p < dx_power.size(); ++p) {
+                    for (std::size_t p = 1; p < dx_power.size(); ++p) {
                         dx_power[p] = dx * dx_power[p - 1];
                     }
 
@@ -441,9 +441,9 @@ namespace alps {
         void orthonormalize(std::vector<piecewise_polynomial<T> > &pps) {
             typedef piecewise_polynomial<T> pp_type;
 
-            for (int l = 0; l < pps.size(); ++l) {
+            for (std::size_t l = 0; l < pps.size(); ++l) {
                 pp_type pp_new(pps[l]);
-                for (int l2 = 0; l2 < l; ++l2) {
+                for (std::size_t l2 = 0; l2 < l; ++l2) {
                     const T overlap = pps[l2].overlap(pps[l]);
                     pp_new = pp_new - overlap * pps[l2];
                 }
