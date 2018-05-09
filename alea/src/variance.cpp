@@ -233,7 +233,7 @@ void var_result<T,Str>::reduce(const reducer &r, bool pre_commit, bool post_comm
         store_->convert_to_sum();
         r.reduce(view<T>(store_->data().data(), store_->data().rows()));
         r.reduce(view<var_type>(store_->data2().data(), store_->data2().rows()));
-        r.reduce(view<double>(&store_->count(), 1));
+        r.reduce(view<size_t>(&store_->count(), 1));
         r.reduce(view<double>(&store_->count2(), 1));
     }
     if (pre_commit && post_commit) {
