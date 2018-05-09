@@ -5,7 +5,7 @@
  */
 
 /** @file repeated_merge.cpp
-    
+
     Test behavior of repeated accumulators merges.
 */
 
@@ -70,9 +70,10 @@ class AccumulatorTest : public ::testing::Test {
         {
             aa::accumulator_wrapper& acc=aset["value"];
             acc.collective_merge(comm_, root_);
+            // This is done by collective_merge(...):
             // if (!is_master) acc.reset();
         }
-    
+
         // Run again
         for (unsigned int i=0; i<NSTEPS; ++i) {
             aset["value"] << gen_();
@@ -94,7 +95,7 @@ class AccumulatorTest : public ::testing::Test {
             if (!aat::is_same_accumulator<accumulator_type,aa::MeanAccumulator>::value) {
                 EXPECT_NEAR(rset["test_value"].error<value_type>(), rset["value"].error<value_type>(), 1E-2) << "Error bar";
             }
-            
+
             if (aat::is_same_accumulator<accumulator_type,aa::LogBinningAccumulator>::value ||
                 aat::is_same_accumulator<accumulator_type,aa::FullBinningAccumulator>::value) {
                 EXPECT_NEAR(rset["test_value"].autocorrelation<value_type>(),
@@ -129,4 +130,4 @@ int main(int argc, char** argv)
    tweak(alps::mpi::communicator().rank(), argc, argv);
    ::testing::InitGoogleTest(&argc, argv);
    return RUN_ALL_TESTS();
-}    
+}
