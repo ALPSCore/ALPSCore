@@ -546,7 +546,6 @@ namespace alps {
 
 #ifdef ALPS_HAVE_MPI
             void collective_merge(alps::mpi::communicator const & comm, int root);
-            void collective_merge(alps::mpi::communicator const & comm, int root) const;
 #endif
 
             private:
