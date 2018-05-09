@@ -94,6 +94,15 @@ public:
     /** Re-allocate and thus clear all accumulated data */
     void reset();
 
+    /** Update the size and discard all measurements, if any */
+    void set_size(size_t size);
+
+    /** Update the number of batches and discard all measurements, if any */
+    void set_num_batches(size_t batch_size);
+
+    /** Update the batch size and discard all measurements, if any */
+    void set_batch_size(size_t batch_size);
+
     /** Returns `false` if `finalize()` has been called, `true` otherwise */
     bool valid() const { return (bool)store_; }
 

@@ -88,6 +88,13 @@ public:
         test_result();    // keeps mean constant
     }
 
+    void test_resize()
+    {
+        this->acc().set_size(3);
+        EXPECT_EQ(3u, this->acc().size());
+        EXPECT_EQ(0u, this->acc().count());
+    }
+
     void test_serialize()
     {
         alps::hdf5::archive ar("twogauss.hdf5", "w");

@@ -76,6 +76,15 @@ public:
     /** Re-allocate and thus clear all accumulated data */
     void reset();
 
+    /** Update the size and discard all measurements */
+    void set_size(size_t size);
+
+    /** Update the batch size and discard all measurements */
+    void set_batch_size(size_t batch_size);
+
+    /** Update the increment between levels and discard all measurements*/
+    void set_granularity(size_t granularity);
+
     /** Returns `false` if `finalize()` has been called, `true` otherwise */
     bool valid() const { return !level_.empty(); }
 

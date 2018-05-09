@@ -28,6 +28,29 @@ void autocorr_acc<T>::reset()
 }
 
 template <typename T>
+void autocorr_acc<T>::set_size(size_t size)
+{
+    size_ = size;
+    reset();
+}
+
+template <typename T>
+void autocorr_acc<T>::set_batch_size(size_t batch_size)
+{
+    // TODO: handle the case where we just discard levels more gracefully
+    batch_size_ = batch_size;
+    reset();
+}
+
+template <typename T>
+void autocorr_acc<T>::set_granularity(size_t granularity)
+{
+    // TODO: handle the case where we just discard levels more gracefully
+    granularity_ = granularity;
+    reset();
+}
+
+template <typename T>
 void autocorr_acc<T>::add_level()
 {
     // add a new level on top and push back the nextlevel

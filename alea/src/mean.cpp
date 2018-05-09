@@ -86,6 +86,14 @@ void mean_acc<T>::reset()
 }
 
 template <typename T>
+void mean_acc<T>::set_size(size_t size)
+{
+    size_ = size;
+    if (valid())
+        store_.reset(new mean_data<T>(size_));
+}
+
+template <typename T>
 mean_result<T> mean_acc<T>::result() const
 {
     internal::check_valid(*this);

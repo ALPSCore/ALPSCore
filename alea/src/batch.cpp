@@ -82,6 +82,35 @@ void batch_acc<T>::reset()
 }
 
 template <typename T>
+void batch_acc<T>::set_size(size_t size)
+{
+    size_ = size;
+    if (valid()) {
+        store_.reset(new batch_data<T>(size_, num_batches_));
+        reset();
+    }
+}
+
+template <typename T>
+void batch_acc<T>::set_batch_size(size_t batch_size)
+{
+    base_size_ = batch_size;
+    if (valid())
+        reset();
+}
+
+template <typename T>
+void batch_acc<T>::set_num_batches(size_t num_batches)
+{
+    // TODO: handle the case where we just discard levels more gracefully
+    num_batches_ = num_batches;
+    if (valid()) {
+        store_.reset(new batch_data<T>(size_, num_batches_));
+        reset();
+    }
+}
+
+template <typename T>
 void batch_acc<T>::add(const computed<T> &source, size_t count)
 {
     internal::check_valid(*this);
