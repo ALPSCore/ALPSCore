@@ -225,7 +225,7 @@ public:
     size_t count() const { return store_->count(); }
 
     /** Returns sum of squared sample sizes */
-    size_t count2() const { return store_->count2(); }
+    double count2() const { return store_->count2(); }
 
     /** Returns average batch size */
     double batch_size() const { return store_->count2() / store_->count(); }
