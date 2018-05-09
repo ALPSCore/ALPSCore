@@ -161,6 +161,16 @@ size_t autocorr_result<T>::find_level(size_t min_samples) const
 }
 
 template <typename T>
+double autocorr_result<T>::count2() const
+{
+    size_t lvl = find_level(DEFAULT_MIN_SAMPLES);
+
+    // The factor comes from the fact that we accumulate sums of batch_size
+    // elements, and therefore we get this by the law of large numbers
+    return level_[lvl].count2();
+}
+
+template <typename T>
 column<typename autocorr_result<T>::var_type> autocorr_result<T>::var() const
 {
     size_t lvl = find_level(DEFAULT_MIN_SAMPLES);
