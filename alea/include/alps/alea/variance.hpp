@@ -224,7 +224,7 @@ public:
     size_t count() const { return store_->count(); }
 
     /** Returns sum of squared sample sizes */
-    size_t count2() const { return store_->count2(); }
+    double count2() const { return store_->count2(); }
 
     /** Returns effective number of observations */
     double observations() const { return count() / batch_size(); }
