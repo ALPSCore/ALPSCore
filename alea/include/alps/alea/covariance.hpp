@@ -63,10 +63,10 @@ public:
     size_t size() const { return data_.rows(); }
 
     /** Returns sample size, i.e., number of accumulated data points */
-    double count() const { return count_; }
+    size_t count() const { return count_; }
 
     /** Returns sample size, i.e., number of accumulated data points */
-    double &count() { return count_; }
+    size_t &count() { return count_; }
 
     /** Returns sum of squared weights */
     double count2() const { return count2_; }
@@ -89,7 +89,8 @@ public:
 private:
     column<T> data_;
     cov_matrix_type data2_;
-    double count_, count2_;
+    size_t count_;
+    double count2_;
 
     friend class cov_acc<T, Strategy>;
     friend class cov_result<T, Strategy>;

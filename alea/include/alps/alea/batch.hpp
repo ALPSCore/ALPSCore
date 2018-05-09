@@ -246,6 +246,10 @@ template <typename T>
 struct traits< batch_result<T> >
 {
     typedef T value_type;
+
+    // TODO: batch result supports multiple strategies
+    typedef typename make_real<T>::type var_type;
+    typedef T cov_type;
     typedef circular_var strategy_type;
 
     const static bool HAVE_MEAN  = true;
