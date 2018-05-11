@@ -1,8 +1,8 @@
 include(ALPSEnableTests)
 
 set (test_src
-    hdf5_open
-    hdf5_open_deprecated
+    hdf5_open_strmode
+    hdf5_open_intmode
     hdf5_complex
     hdf5_bool
     hdf5_copy

@@ -4,7 +4,7 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-/** @file hdf5_open.cpp test basic archive object ctor (deprecated form) and file opening */
+/** @file hdf5_open.cpp test basic archive object ctor (integer/enum modes) and file opening */
 
 #include <alps/hdf5/archive.hpp>
 #include <alps/testing/unique_file.hpp>
