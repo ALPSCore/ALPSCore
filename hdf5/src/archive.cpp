@@ -33,9 +33,6 @@ namespace alps {
         archive::archive() : context_(NULL) {}
 
         archive::archive(std::string const & filename, int prop) : context_(NULL) {
-            std::cerr << "WARNING: Use of `archive(string name, int mode)` constructor (name=\""
-                      << filename << "\") is DEPRECATED!\n";
-
             std::string mode="";
             if (prop & COMPRESS) mode += "c";
             if (prop & MEMORY) mode += "m";
@@ -44,13 +41,11 @@ namespace alps {
 
             if (prop == READ) {
                 mode += "r";
-            } else if ((prop == WRITE) || (prop == REPLACE) || (prop == (WRITE|REPLACE))) {
+            } else if (prop == WRITE) {
                 mode += "w";
             } else {
                 throw wrong_mode("Unsupported mode flags when openinge file '"+filename+"'" + ALPS_STACKTRACE);
             }
-            std::cerr << "WARNING: Use of `archive(string name, string mode) constructor with mode=\""
-                      << mode << "\" instead!\n";
             open(filename,mode);
         }
 
@@ -430,11 +425,11 @@ namespace alps {
             if (ref_cnt_.find(file_key(filename, props & MEMORY)) == ref_cnt_.end())
                 ref_cnt_.insert(std::make_pair(
                       file_key(filename, props & MEMORY)
-                    , std::make_pair(context_ = new detail::archivecontext(filename, props & WRITE, props & REPLACE, props & COMPRESS, props & MEMORY), 1)
+                      , std::make_pair(context_ = new detail::archivecontext(filename, props & WRITE, false/*props & REPLACE*/, props & COMPRESS, props & MEMORY), 1)
                 ));
             else {
                 context_ = ref_cnt_.find(file_key(filename, props & MEMORY))->second.first;
-                context_->grant(props & WRITE, props & REPLACE);
+                context_->grant(props & WRITE, false/*props & REPLACE*/);
                 ++ref_cnt_.find(file_key(filename, props & MEMORY))->second.second;
             }
         }
