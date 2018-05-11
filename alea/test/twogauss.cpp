@@ -150,6 +150,8 @@ typedef ::testing::Types<
 
 TYPED_TEST_CASE(twogauss_mean_case, has_mean);
 
+TYPED_TEST(twogauss_mean_case, test_resize) { this->test_resize(); }
+
 TYPED_TEST(twogauss_mean_case, test_result) { this->test_result(); }
 
 TYPED_TEST(twogauss_mean_case, test_finalize) { this->test_finalize(); }
