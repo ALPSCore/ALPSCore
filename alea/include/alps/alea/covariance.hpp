@@ -125,7 +125,7 @@ public:
     using cov_matrix_type = typename eigen<cov_type>::matrix;
 
 public:
-    cov_acc(size_t size=1, size_t bundle_size=1);
+    cov_acc(size_t size=1, size_t batch_size=1);
 
     cov_acc(const cov_acc &other);
 
@@ -133,6 +133,12 @@ public:
 
     /** Re-allocate and thus clear all accumulated data */
     void reset();
+
+    /** Update the size and discard all measurements, if any */
+    void set_size(size_t size);
+
+    /** Update the batch size and discard current batch */
+    void set_batch_size(size_t batch_size);
 
     /** Returns `false` if `finalize()` has been called, `true` otherwise */
     bool valid() const { return (bool)store_; }

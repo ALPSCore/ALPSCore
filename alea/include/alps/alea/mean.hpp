@@ -109,6 +109,9 @@ public:
     /** Re-allocate and thus clear all accumulated data */
     void reset();
 
+    /** Update the size and discard all measurements, if any */
+    void set_size(size_t size);
+
     /** Returns `false` if `finalize()` has been called, `true` otherwise */
     bool valid() const { return (bool)store_; }
 

@@ -67,9 +67,9 @@ template class cov_data<std::complex<double>, elliptic_var>;
 
 
 template <typename T, typename Str>
-cov_acc<T,Str>::cov_acc(size_t size, size_t bundle_size)
+cov_acc<T,Str>::cov_acc(size_t size, size_t batch_size)
     : store_(new cov_data<T,Str>(size))
-    , current_(size, bundle_size)
+    , current_(size, batch_size)
 { }
 
 // We need an explicit copy constructor, as we need to copy the data
@@ -95,6 +95,22 @@ void cov_acc<T,Str>::reset()
         store_->reset();
     else
         store_.reset(new cov_data<T,Str>(size()));
+}
+
+template <typename T, typename Str>
+void cov_acc<T,Str>::set_size(size_t size)
+{
+    current_ = bundle<T>(size, current_.target());
+    if (valid())
+        store_.reset(new cov_data<T,Str>(size));
+}
+
+template <typename T, typename Str>
+void cov_acc<T,Str>::set_batch_size(size_t batch_size)
+{
+    // TODO: allow resizing with reset
+    current_.target() = batch_size;
+    current_.reset();
 }
 
 template <typename T, typename Str>

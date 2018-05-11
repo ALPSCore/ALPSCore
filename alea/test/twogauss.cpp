@@ -88,6 +88,13 @@ public:
         test_result();    // keeps mean constant
     }
 
+    void test_resize()
+    {
+        this->acc().set_size(3);
+        EXPECT_EQ(3u, this->acc().size());
+        EXPECT_EQ(0u, this->acc().count());
+    }
+
     void test_serialize()
     {
         alps::hdf5::archive ar("twogauss.hdf5", "w");
@@ -142,6 +149,8 @@ typedef ::testing::Types<
     > has_mean;
 
 TYPED_TEST_CASE(twogauss_mean_case, has_mean);
+
+TYPED_TEST(twogauss_mean_case, test_resize) { this->test_resize(); }
 
 TYPED_TEST(twogauss_mean_case, test_result) { this->test_result(); }
 
