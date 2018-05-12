@@ -303,7 +303,7 @@ namespace alps {
                 if (mesh::frequency_positivity_type(pos)!=positivity_) {
                   throw std::invalid_argument("Attempt to broadcast Matsubara mesh with the wrong positivity type "+std::to_string(pos) ); // FIXME: specific exception? Verbose positivity?
                 };
-                offset_ = ((PTYPE==mesh::POSITIVE_ONLY)?0:nfreq_);
+                offset_ = ((PTYPE==mesh::POSITIVE_ONLY)?0:nfreq_/2);
 
                 try {
                     check_range();
