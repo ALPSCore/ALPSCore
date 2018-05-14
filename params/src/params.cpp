@@ -55,7 +55,33 @@ namespace alps {
                     return boost::none;
                 }
             };
+
+
+            /// Default help description
+            static const char Default_help_description[]="Print help message";
         }
+
+        params::params(const std::string& inifile)
+            : dictionary(), raw_kv_content_(), td_map_(), err_status_(), origins_(), help_header_()
+        {
+            read_ini_file_(inifile);
+            if (!defined("help")) define("help", Default_help_description);
+        }
+
+
+
+        params::params(int argc, const char* const* argv, const char* hdf5_path)
+            : dictionary(),
+              raw_kv_content_(),
+              td_map_(),
+              err_status_(),
+              origins_(),
+              help_header_()
+        {
+            initialize_(argc, argv, hdf5_path);
+            if (!defined("help")) define("help", Default_help_description);
+        }
+
 
         int params::get_ini_name_count() const
         {
@@ -81,8 +107,8 @@ namespace alps {
 
         params& params::description(const std::string &message)
         {
-            this->define("help", "Print help message");
             help_header_=message;
+            if (!defined("help")) define("help", Default_help_description);
             return *this;
         }
 
