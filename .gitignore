@@ -16,7 +16,8 @@ target/
 # generated files
 *.pyc
 
-# stuff
+# IDE config files
 *.kdev*
+*.user
 *.project
 

@@ -216,7 +216,7 @@ TEST_F(ParamsTest0, hasMissingParsing) {
 
 TEST_F(ParamsTest0, helpNotRequested) {
     EXPECT_FALSE(par_.help_requested());
-    EXPECT_FALSE(par_.exists("help"));
+    EXPECT_TRUE(par_.exists("help"));
 
     par_.description("This is a test message");
     EXPECT_TRUE(par_.exists("help"));
@@ -292,27 +292,60 @@ TEST_F(ParamsTest0, helpRequestedNoDescription) {
     args.add("--help");
     params p(args.argc(), args.argv());
 
-    p.
-        define<int>("whole_num", "My-integer").
-        define<double>("fp_num", 1.25, "My-fp").
-        define<std::string>("solver.name", "Solver name").
-        define<double>("solver.precision", 1E-5, "Solver precision").
-        define< std::vector<int> >("solver.parameters", "Solver internal parameters");
+    p.define<int>("whole_num", "My-integer");
+    EXPECT_TRUE(p.help_requested());
+    std::ostringstream ostr;
+    EXPECT_TRUE(p.help_requested(ostr));
+    EXPECT_TRUE(ostr.str().find("whole_num")!=std::string::npos);
+    std::cout << ostr.str(); // DEBUG
+}
 
-    EXPECT_FALSE(p.help_requested());
+TEST_F(ParamsTest0, helpRequestedUserDefined) {
+    arg_holder args;
+    args.add("--help");
+    params p(args.argc(), args.argv());
 
-    p.define("help", "A user-defined flag (aka boolean parameter)");
+    EXPECT_TRUE(p.help_requested());
+
+    p
+        .define("help", "A user-defined help message")
+        .define<int>("whole_num", "My-integer");
 
     EXPECT_TRUE(p.help_requested());
 
     std::ostringstream ostr;
     EXPECT_TRUE(p.help_requested(ostr));
-    EXPECT_FALSE(ostr.str().find("This is a test message")!=std::string::npos);
+    EXPECT_TRUE(ostr.str().find("A user-defined help message")!=std::string::npos);
     EXPECT_TRUE(ostr.str().find("whole_num")!=std::string::npos);
-    EXPECT_TRUE(ostr.str().find("My-integer")!=std::string::npos);
-    EXPECT_TRUE(ostr.str().find("fp_num")!=std::string::npos);
-    EXPECT_TRUE(ostr.str().find("My-fp")!=std::string::npos);
-    EXPECT_TRUE(ostr.str().find("1.25")!=std::string::npos);
+    std::cout << ostr.str(); // DEBUG
+}
+
+TEST_F(ParamsTest0, helpDeletedRedefined) {
+    arg_holder args;
+    args.add("--help");
+    params p(args.argc(), args.argv());
+
+    // We can reassign a different type, whatever it means
+    p["help"]=1234;
+    EXPECT_NO_THROW(p["help"].as<int>());
+    EXPECT_FALSE(p.help_requested());
+
+    // We can erase help from the dictionary
+    p.erase("help");
+    EXPECT_FALSE(p.exists("help"));
+    EXPECT_FALSE(p.help_requested());
+
+    // but we cannot alter the parameter definition
+    EXPECT_THROW(p.define<int>("help", "Help is integer"), de::type_mismatch);
+
+    // and the help message still has the old definition
+    // (in this respect all paramnames behave the same)
+    p.define<int>("whole_num", "My-integer");
+
+    std::ostringstream ostr;
+    p.print_help(ostr);
+    EXPECT_FALSE(ostr.str().find("Help is integer")!=std::string::npos);
+    EXPECT_TRUE(ostr.str().find("whole_num")!=std::string::npos);
     std::cout << ostr.str(); // DEBUG
 }
 

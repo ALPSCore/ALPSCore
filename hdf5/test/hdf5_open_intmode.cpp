@@ -4,7 +4,7 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-/** @file hdf5_open.cpp test basic archive object ctor (deprecated form) and file opening */
+/** @file hdf5_open.cpp test basic archive object ctor (integer/enum modes) and file opening */
 
 #include <alps/hdf5/archive.hpp>
 #include <alps/testing/unique_file.hpp>
@@ -27,10 +27,11 @@ TEST(hdf5,OpenModesAWR) {
         alps::hdf5::archive ar(h5name,alps::hdf5::archive::WRITE); // same as "a"
         ar["/int2"]=2;
     }
-    {
-        alps::hdf5::archive ar(h5name, alps::hdf5::archive::WRITE|alps::hdf5::archive::REPLACE); // same as "a"
-        ar["/int3"]=3;
-    }
+    // @todo FIXME: should be reactivated when/if we implement REPLACE semantics
+    // {
+    //     alps::hdf5::archive ar(h5name, alps::hdf5::archive::WRITE|alps::hdf5::archive::REPLACE); // same as "a"
+    //     ar["/int3"]=3;
+    // }
     {
         alps::hdf5::archive ar(h5name,alps::hdf5::archive::READ);
         int n=0;
@@ -38,8 +39,8 @@ TEST(hdf5,OpenModesAWR) {
         EXPECT_EQ(1,n);
         ar["/int2"] >> n;
         EXPECT_EQ(2,n);
-        ar["/int3"] >> n;
-        EXPECT_EQ(3,n);
+        // ar["/int3"] >> n;
+        // EXPECT_EQ(3,n);
         EXPECT_THROW(ar["/int4"] << 4, alps::hdf5::archive_error);
     }
     {
@@ -49,8 +50,8 @@ TEST(hdf5,OpenModesAWR) {
         EXPECT_EQ(1,n);
         ar["/int2"] >> n;
         EXPECT_EQ(2,n);
-        ar["/int3"] >> n;
-        EXPECT_EQ(3,n);
+        // ar["/int3"] >> n;
+        // EXPECT_EQ(3,n);
         EXPECT_THROW(ar["/int4"] << 4, alps::hdf5::archive_error);
     }
 }

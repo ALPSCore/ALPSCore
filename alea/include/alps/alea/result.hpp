@@ -51,6 +51,9 @@ public:
     bool valid() const;
 
     /** Number of components of the random vector (e.g., size of mean) */
+    size_t size() const;
+
+    /** Returns number of accumulated data points */
     size_t count() const;
 
     /** Returns sample mean */
