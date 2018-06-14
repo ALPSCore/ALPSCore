@@ -5,6 +5,7 @@ set (test_src
      twogauss
      galois
      model
+     result
      transform
      stream_serializer
     )

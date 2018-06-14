@@ -209,9 +209,7 @@ namespace alps {
 
         void accumulator_wrapper::collective_merge(alps::mpi::communicator const & comm, int root) {
             boost::apply_visitor(collective_merge_visitor(comm, root), m_variant);
-        }
-        void accumulator_wrapper::collective_merge(alps::mpi::communicator const & comm, int root) const {
-            boost::apply_visitor(collective_merge_visitor(comm, root), m_variant);
+            if (comm.rank()!=root) this->reset();
         }
 #endif
 

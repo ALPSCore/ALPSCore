@@ -125,34 +125,26 @@ namespace alps {
             bool define_(const std::string& name, const std::string& descr);
 
           public:
-            /// Default ctor
+            /// Default ctor: creates an empty parameters object
             params() : dictionary(), raw_kv_content_(), td_map_(), err_status_(), origins_(), help_header_() {}
 
-            params(const std::string& inifile)
-                : dictionary(), raw_kv_content_(), td_map_(), err_status_(), origins_(), help_header_()
-            {
-                read_ini_file_(inifile);
-            }
+            /// Constructor from INI file
+            /** Reads the provided file (in INI format). Automatically defines `--help` flag.
 
+                @param inifile Path to the INI file
+             **/
+            params(const std::string& inifile);
 
             /// Constructor from command line and parameter files.
             /** Tries to see if the file is an HDF5, in which case restores the object from the
-                HDF5 file, ignoring the command line.
+                HDF5 file, ignoring the command line. Automatically defines `--help` flag.
 
                 @param argc Number of command line arguments (as in `main(int argc, char** argv)`)
                 @param argv Array of pointers to command line arguments (as in `main(int argc, char** argv)`)
                 @param hdf5_path path to HDF5 dataset containing the saved parameter object
                        (NULL if this functionality is not needed)
             */
-            params(int argc, const char* const* argv, const char* hdf5_path="/parameters")
-                : dictionary(),
-                  raw_kv_content_(),
-                  td_map_(),
-                  err_status_(),
-                  origins_(),
-                  help_header_()
-            { initialize_(argc, argv, hdf5_path); }
-
+            params(int argc, const char* const* argv, const char* hdf5_path="/parameters");
 
             /// Access to argv[0] (returns emty string if unknown)
             std::string get_argv0() const;
@@ -239,7 +231,7 @@ namespace alps {
                 return define<bool>(name, false, descr);
             }
 
-            /// Sets a description for the help message and introduces "--help" flag
+            /// Sets a description for the help message and introduces "--help" flag (if not already defined)
             params& description(const std::string& message);
 
             /// Returns a string describing the parameter (or an empty string)

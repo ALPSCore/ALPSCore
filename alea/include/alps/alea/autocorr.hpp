@@ -76,6 +76,15 @@ public:
     /** Re-allocate and thus clear all accumulated data */
     void reset();
 
+    /** Update the size and discard all measurements */
+    void set_size(size_t size);
+
+    /** Update the batch size and discard all measurements */
+    void set_batch_size(size_t batch_size);
+
+    /** Update the increment between levels and discard all measurements*/
+    void set_granularity(size_t granularity);
+
     /** Returns `false` if `finalize()` has been called, `true` otherwise */
     bool valid() const { return !level_.empty(); }
 
@@ -154,8 +163,8 @@ public:
     /** Returns sample size, i.e., number of accumulated data points */
     size_t count() const { return level_[0].count(); }
 
-    /** Return sum of squared weights */
-    double count2() const { return level_[find_level(DEFAULT_MIN_SAMPLES)].count(); }
+    /** Returns sum of squared samples sizes */
+    double count2() const;
 
     /** Returns sample mean */
     const column<T> &mean() const { return level_[0].mean(); }

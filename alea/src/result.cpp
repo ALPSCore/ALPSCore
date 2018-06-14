@@ -14,6 +14,14 @@ struct valid_visitor
     bool operator() (const Res &r) const { return r.valid(); }
 };
 
+struct size_visitor
+{
+    typedef size_t result_type;
+
+    template <typename Res>
+    size_t operator() (const Res &r) const { return r.size(); }
+};
+
 struct count_visitor
 {
     typedef size_t result_type;
@@ -111,6 +119,11 @@ private:
 bool result::valid() const
 {
     return boost::apply_visitor(valid_visitor(), res_);
+}
+
+size_t result::size() const
+{
+    return boost::apply_visitor(size_visitor(), res_);
 }
 
 size_t result::count() const
