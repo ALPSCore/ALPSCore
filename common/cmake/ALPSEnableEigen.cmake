@@ -13,7 +13,7 @@ mark_as_advanced(ALPS_BUNDLE_DOWNLOAD_TRIES)
 
 
 
-# Function to download Eigen using CMake file() built-in
+# Function to download a resource using CMake file() built-in
 # Arguments:
 #  url      : URL to download
 #  destfile : where to download to
@@ -32,6 +32,32 @@ function(cmake_download_ url destfile ntries statvar)
   endforeach()
   set(${statvar} ${status} PARENT_SCOPE)
 endfunction()
+
+# Function to download a resource using wget
+# Arguments:
+#  url      : URL to download
+#  destfile : where to download to
+#  ntries   : how many times to try
+#  statvar  : name of the variable to store status (0 == Success)
+function(wget_download_ url destfile ntries statvar)
+  find_program(WGET_BINARY wget DOC "Location of wget utility")
+  mark_as_advanced(WGET_BINARY)
+  if (NOT WGET_BINARY)
+    set(status, "Cannot find wget")
+  else()
+    get_filename_component(dest_dir ${destfile} DIRECTORY)
+    file(MAKE_DIRECTORY ${dest_dir})
+    foreach(loop_var RANGE ${ntries})
+      execute_process(COMMAND ${WGET_BINARY} "-O" ${destfile} ${url} RESULT_VARIABLE status TIMEOUT 600)
+      if (status EQUAL 0)
+        break()
+      endif()
+    endforeach()
+  endif()
+  set(${statvar} ${status} PARENT_SCOPE)
+endfunction()
+
+
 
 # Add eigen to the current module (target ${PROJECT_NAME})
 # Sets EIGEN3_VERSION variable in the parent scope
@@ -99,7 +125,8 @@ function(add_eigen)
       message(STATUS "Trying to download and unpack Eigen3")
       if (NOT EXISTS "${ALPS_EIGEN_TGZ_FILE}")
         message(STATUS "Downloading Eigen3, timeout 600 sec")
-        cmake_download_(${ALPS_EIGEN_DOWNLOAD_LOCATION} ${ALPS_EIGEN_TGZ_FILE} ${ALPS_BUNDLE_DOWNLOAD_TRIES} status_)
+        # cmake_download_(${ALPS_EIGEN_DOWNLOAD_LOCATION} ${ALPS_EIGEN_TGZ_FILE} ${ALPS_BUNDLE_DOWNLOAD_TRIES} status_)
+        wget_download_(${ALPS_EIGEN_DOWNLOAD_LOCATION} ${ALPS_EIGEN_TGZ_FILE} ${ALPS_BUNDLE_DOWNLOAD_TRIES} status_)
         if (status_ EQUAL 0)
           message(STATUS "Downloaded successfully")
         else()
