@@ -8,9 +8,9 @@ set(ALPS_EIGEN_DOWNLOAD_LOCATION "http://bitbucket.org/eigen/eigen/get/${ALPS_EI
     CACHE STRING "Eigen3 download location")
 mark_as_advanced(ALPS_EIGEN_DOWNLOAD_LOCATION)
 
-if (NOT DEFINED BUNDLE_DOWNLOAD_TRIES)
-  set(BUNDLE_DOWNLOAD_TRIES 1)
-endif()
+set(ALPS_BUNDLE_DOWNLOAD_TRIES 1 CACHE STRING "How many times to attempt a download of a dependency")
+mark_as_advanced(ALPS_BUNDLE_DOWNLOAD_TRIES)
+
 
 
 # Function to download Eigen using CMake file() built-in
@@ -99,7 +99,7 @@ function(add_eigen)
       message(STATUS "Trying to download and unpack Eigen3")
       if (NOT EXISTS "${ALPS_EIGEN_TGZ_FILE}")
         message(STATUS "Downloading Eigen3, timeout 600 sec")
-        cmake_download_(${ALPS_EIGEN_DOWNLOAD_LOCATION} ${ALPS_EIGEN_TGZ_FILE} ${BUNDLE_DOWNLOAD_TRIES} status_)
+        cmake_download_(${ALPS_EIGEN_DOWNLOAD_LOCATION} ${ALPS_EIGEN_TGZ_FILE} ${ALPS_BUNDLE_DOWNLOAD_TRIES} status_)
         if (status_ EQUAL 0)
           message(STATUS "Downloaded successfully")
         else()
