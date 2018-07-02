@@ -4,13 +4,18 @@ mark_as_advanced(ALPS_INSTALL_EIGEN)
 set(ALPS_EIGEN_MIN_VERSION "3.3.4" CACHE STRING "Minimum Eigen version required by ALPSCore")
 mark_as_advanced(ALPS_EIGEN_MIN_VERSION)
 
-set(ALPS_EIGEN_DOWNLOAD_LOCATION "http://bitbucket.org/eigen/eigen/get/${ALPS_EIGEN_MIN_VERSION}.tar.gz"
+set(ALPS_EIGEN_DOWNLOAD_LOCATION "https://bitbucket.org/eigen/eigen/get/${ALPS_EIGEN_MIN_VERSION}.tar.gz"
     CACHE STRING "Eigen3 download location")
 mark_as_advanced(ALPS_EIGEN_DOWNLOAD_LOCATION)
 
+set(ALPS_EIGEN_DOWNLOAD_METHODS cmake wget curl CACHE STRING "List of Eigen3 download methods to attempt")
+mark_as_advanced(ALPS_EIGEN_DOWNLOAD_METHODS)
+if (NOT ALPS_EIGEN_DOWNLOAD_METHODS)
+  message(FATAL_ERROR "The ALPS_EIGEN_DOWNLOAD_METHODS variable cannot be empty")
+endif()
+
 set(ALPS_BUNDLE_DOWNLOAD_TRIES 1 CACHE STRING "How many times to attempt a download of a dependency")
 mark_as_advanced(ALPS_BUNDLE_DOWNLOAD_TRIES)
-
 
 
 # Function to download a resource using CMake file() built-in
@@ -57,7 +62,29 @@ function(wget_download_ url destfile ntries statvar)
   set(${statvar} ${status} PARENT_SCOPE)
 endfunction()
 
-
+# Function to download a resource using curl
+# Arguments:
+#  url      : URL to download
+#  destfile : where to download to
+#  ntries   : how many times to try
+#  statvar  : name of the variable to store status (0 == Success)
+function(curl_download_ url destfile ntries statvar)
+  find_program(CURL_BINARY curl DOC "Location of curl utility")
+  mark_as_advanced(CURL_BINARY)
+  if (NOT CURL_BINARY)
+    set(status, "Cannot find curl")
+  else()
+    get_filename_component(dest_dir ${destfile} DIRECTORY)
+    file(MAKE_DIRECTORY ${dest_dir})
+    foreach(loop_var RANGE ${ntries})
+      execute_process(COMMAND ${CURL_BINARY} "--output" ${destfile} ${url} RESULT_VARIABLE status TIMEOUT 600)
+      if (status EQUAL 0)
+        break()
+      endif()
+    endforeach()
+  endif()
+  set(${statvar} ${status} PARENT_SCOPE)
+endfunction()
 
 # Add eigen to the current module (target ${PROJECT_NAME})
 # Sets EIGEN3_VERSION variable in the parent scope
@@ -124,12 +151,25 @@ function(add_eigen)
     if (NOT EIGEN3_INCLUDE_DIR)
       message(STATUS "Trying to download and unpack Eigen3")
       if (NOT EXISTS "${ALPS_EIGEN_TGZ_FILE}")
-        message(STATUS "Downloading Eigen3, timeout 600 sec")
-        # cmake_download_(${ALPS_EIGEN_DOWNLOAD_LOCATION} ${ALPS_EIGEN_TGZ_FILE} ${ALPS_BUNDLE_DOWNLOAD_TRIES} status_)
-        wget_download_(${ALPS_EIGEN_DOWNLOAD_LOCATION} ${ALPS_EIGEN_TGZ_FILE} ${ALPS_BUNDLE_DOWNLOAD_TRIES} status_)
-        if (status_ EQUAL 0)
-          message(STATUS "Downloaded successfully")
-        else()
+        foreach(method_ ${ALPS_EIGEN_DOWNLOAD_METHODS})
+          message(STATUS "Downloading Eigen3 via ${method_}, timeout 600 sec")
+          if (method_ STREQUAL cmake)
+            cmake_download_(${ALPS_EIGEN_DOWNLOAD_LOCATION} ${ALPS_EIGEN_TGZ_FILE} ${ALPS_BUNDLE_DOWNLOAD_TRIES} status_)
+          elseif (method_ STREQUAL wget)
+            wget_download_(${ALPS_EIGEN_DOWNLOAD_LOCATION} ${ALPS_EIGEN_TGZ_FILE} ${ALPS_BUNDLE_DOWNLOAD_TRIES} status_)
+          elseif (method_ STREQUAL curl)
+            curl_download_(${ALPS_EIGEN_DOWNLOAD_LOCATION} ${ALPS_EIGEN_TGZ_FILE} ${ALPS_BUNDLE_DOWNLOAD_TRIES} status_)
+          else()
+            message(FATAL_ERROR "Unknown download method ${method_}")
+          endif()
+          if (status_ EQUAL 0)
+            message(STATUS "Downloaded successfully via ${method_}")
+            break()
+          else()
+            message("Failed to download via ${method_}, trying the next one, if any")
+          endif()
+        endforeach()
+        if (NOT status_ EQUAL 0)
           message(FATAL_ERROR "Failed to download ${ALPS_EIGEN_TGZ_FILE} "
             "from ${ALPS_EIGEN_DOWNLOAD_LOCATION}: "
             "status=" ${status_})
