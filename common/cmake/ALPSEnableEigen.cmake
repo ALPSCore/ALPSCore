@@ -12,6 +12,27 @@ if (NOT DEFINED BUNDLE_DOWNLOAD_TRIES)
   set(BUNDLE_DOWNLOAD_TRIES 1)
 endif()
 
+
+# Function to download Eigen using CMake file() built-in
+# Arguments:
+#  url      : URL to download
+#  destfile : where to download to
+#  ntries   : how many times to try
+#  statvar  : name of the variable to store status (0 == Success)
+function(cmake_download_ url destfile ntries statvar)
+  foreach(loop_var RANGE ${ntries})
+    file(DOWNLOAD ${url} ${destfile}
+      INACTIVITY_TIMEOUT 60
+      TIMEOUT 600
+      STATUS status
+      SHOW_PROGRESS)
+    if (status EQUAL 0)
+      break()
+    endif()
+  endforeach()
+  set(${statvar} ${status} PARENT_SCOPE)
+endfunction()
+
 # Add eigen to the current module (target ${PROJECT_NAME})
 # Sets EIGEN3_VERSION variable in the parent scope
 function(add_eigen)
@@ -78,17 +99,7 @@ function(add_eigen)
       message(STATUS "Trying to download and unpack Eigen3")
       if (NOT EXISTS "${ALPS_EIGEN_TGZ_FILE}")
         message(STATUS "Downloading Eigen3, timeout 600 sec")
-        # Attempt to download four times
-        foreach(loop_var RANGE ${BUNDLE_DOWNLOAD_TRIES})
-          file(DOWNLOAD ${ALPS_EIGEN_DOWNLOAD_LOCATION} ${ALPS_EIGEN_TGZ_FILE}
-            INACTIVITY_TIMEOUT 60
-            TIMEOUT 600
-            STATUS status_
-            SHOW_PROGRESS)
-          if (status_ EQUAL 0)
-            break()
-          endif()
-        endforeach()
+        cmake_download_(${ALPS_EIGEN_DOWNLOAD_LOCATION} ${ALPS_EIGEN_TGZ_FILE} ${BUNDLE_DOWNLOAD_TRIES} status_)
         if (status_ EQUAL 0)
           message(STATUS "Downloaded successfully")
         else()
