@@ -86,6 +86,21 @@ function(curl_download_ url destfile ntries statvar)
   set(${statvar} ${status} PARENT_SCOPE)
 endfunction()
 
+# Check if the gzip file is readable and in proper format (e.g., not empty)
+# Arguments:
+#   filename : name of the file to check
+#   ok_var   : name of the variable to return the status (TRUE if the file is OK)
+function(check_gz_ filename ok_var)
+  set(sig_ "")
+  file(READ "${filename}" sig_ LIMIT 3 HEX)
+  if (sig_ STREQUAL "1f8b08")
+    set(ok TRUE)
+  else()
+    set(ok "")
+  endif()
+  set(${ok_var} ${ok} PARENT_SCOPE)
+endfunction()
+
 # Add eigen to the current module (target ${PROJECT_NAME})
 # Sets EIGEN3_VERSION variable in the parent scope
 function(add_eigen)
@@ -120,6 +135,15 @@ function(add_eigen)
      -DEIGEN3_INSTALL_DIR=<path to unpacked Eigen3>
      (if you want to co-install a specific version of Eigen)
 ")
+
+  # CAUTION, the message contains significant spaces in seemingly-empty lines.
+  set(eigen_download_options_msg "
+ If you wish to co-install Eigen3, please do the the following:
+ 1) Download the file manually from ${ALPS_EIGEN_DOWNLOAD_LOCATION} ;
+ 2) Set CMake variable ALPS_EIGEN_TGZ_FILE to the location of the downloaded file.
+ Alternatively, you can download and unpack Eigen3 in the directory of your choice and set CMake variable
+ EIGEN3_INCLUDE_DIR to the location of the directory. Note that Eigen3 will still be co-installed with ALPSCore
+ unless you explicitly set CMake variable ALPS_INSTALL_EIGEN to FALSE.")
   
   if (NOT ALPS_INSTALL_EIGEN)
     find_package(Eigen3 ${ALPS_EIGEN_MIN_VERSION})
@@ -169,22 +193,23 @@ function(add_eigen)
             message("Failed to download via ${method_}, trying the next one, if any")
           endif()
         endforeach()
-        if (NOT status_ EQUAL 0)
+        check_gz_("${ALPS_EIGEN_TGZ_FILE}" ok_)
+        if (NOT status_ EQUAL 0 OR NOT ok_)
+          file(REMOVE "${ALPS_EIGEN_TGZ_FILE}")
           message(FATAL_ERROR "Failed to download ${ALPS_EIGEN_TGZ_FILE} "
             "from ${ALPS_EIGEN_DOWNLOAD_LOCATION}: "
-            "status=" ${status_})
+            "status=" ${status_} ${eigen_download_options_msg}
+            )
         endif()
       else()
         message(STATUS "File ${ALPS_EIGEN_TGZ_FILE} is already downloaded")
+        check_gz_("${ALPS_EIGEN_TGZ_FILE}" ok_)
+        if (NOT ok_)
+          message(FATAL_ERROR "File ${ALPS_EIGEN_TGZ_FILE} is empty, corrupted, or unreadable."
+            " Please remove or replace the file before you try again." ${eigen_download_options_msg})
+        endif()
       endif()
 
-      # Check if the file is not empty
-      set(sig_ "")
-      file(READ "${ALPS_EIGEN_TGZ_FILE}" sig_ LIMIT 1 HEX)
-      if (NOT sig_)
-        message(FATAL_ERROR "File ${ALPS_EIGEN_TGZ_FILE} is empty or unreadable.")
-      endif()
-      
       set(unpack_subdir_ "${ALPS_EIGEN_UNPACK_DIR}/000unpack")
       file(MAKE_DIRECTORY "${unpack_subdir_}")
       file(REMOVE_RECURSE "${unpack_subdir_}")
@@ -195,7 +220,9 @@ function(add_eigen)
         RESULT_VARIABLE status_)
       if (NOT status_ EQUAL 0)
         message(FATAL_ERROR "Cannot unpack the file ${ALPS_EIGEN_TGZ_FILE}: "
-          "status=" status_)
+          "status=" ${status_}
+          " 
+ It is possible that download was unsuccessful. Please remove the file, verify the download location, and try again.")
       endif()
       message(STATUS "Unpacked successfully")
 
