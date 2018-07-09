@@ -10,6 +10,7 @@ if [ -n "$ALPS_BOOST_VERSION" ]; then
   boost_tgz=boost_${ALPS_BOOST_VERSION}.tar.gz
   boost_url=https://sourceforge.net/projects/boost/files/boost/${ALPS_BOOST_VERSION//_/.}/boost_${ALPS_BOOST_VERSION}.tar.gz/download
   wget -S -O $boost_tgz $boost_url
+  tar -xzf $boost_tgz
   export BOOST_ROOT=$PWD/boost_${ALPS_BOOST_VERSION}
   boost_no_system_paths=true
 fi
