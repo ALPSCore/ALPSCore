@@ -16,7 +16,7 @@
 
 #include "gtest/gtest.h"
 
-// Test that double vector can be read as complex
+// Test that double vector can NOT be read as complex
 TEST(hdf5, WriteDoubleReadComplexVec) {
     alps::testing::unique_file ufile("real_complex_vec.h5.", alps::testing::unique_file::REMOVE_NOW);
     const std::string&  filename = ufile.name();
@@ -33,15 +33,6 @@ TEST(hdf5, WriteDoubleReadComplexVec) {
     std::vector<std::complex<double> > w;
     {
         alps::hdf5::archive ar(filename, "r");
-        ar["/vec"] >> w;
-    }
-
-    std::cout << "w: " << alps::short_print(w) << std::endl;
-
-    const std::size_t expected_size=v.size();
-    ASSERT_EQ(expected_size, w.size());
-    for (std::size_t i=0; i<expected_size; ++i) {
-        ASSERT_EQ(v[i], w[i].real()) << "Vectors differ at i=" << i;
-        ASSERT_EQ(0, w[i].imag()) << "Imaginary part is non-zero at i=" << i;
+        ASSERT_THROW(ar["/vec"] >> w, std::runtime_error);
     }
 }
