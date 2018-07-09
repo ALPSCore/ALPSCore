@@ -18,6 +18,7 @@ addons:
       - openmpi-doc
       - libopenmpi-dev
       - libhdf5-serial-dev
+      - wget
     config:
       retries: true
 
@@ -28,6 +29,18 @@ env:
   - ENABLE_MPI=OFF ALPS_CXX_STD=c++11
   - ENABLE_MPI=ON ALPS_CC=mpicc ALPS_CXX=mpic++ ALPS_CXX_STD=c++14
   - ENABLE_MPI=OFF ALPS_CXX_STD=c++14
+  - ENABLE_MPI=ON ALPS_CC=mpicc ALPS_CXX_STD=c++11 ALPS_BOOST_VERSION=1_56_0
+  - ENABLE_MPI=ON ALPS_CC=mpicc ALPS_CXX_STD=c++11 ALPS_BOOST_VERSION=1_64_0
+  - ENABLE_MPI=ON ALPS_CC=mpicc ALPS_CXX_STD=c++11 ALPS_BOOST_VERSION=1_67_0
+  - ENABLE_MPI=ON ALPS_CC=mpicc ALPS_CXX_STD=c++11 ALPS_BOOST_VERSION=1_56_0
+  - ENABLE_MPI=ON ALPS_CC=mpicc ALPS_CXX_STD=c++11 ALPS_BOOST_VERSION=1_64_0
+  - ENABLE_MPI=ON ALPS_CC=mpicc ALPS_CXX_STD=c++11 ALPS_BOOST_VERSION=1_67_0
+  - ENABLE_MPI=ON ALPS_CC=mpicc ALPS_CXX_STD=c++14 ALPS_BOOST_VERSION=1_56_0
+  - ENABLE_MPI=ON ALPS_CC=mpicc ALPS_CXX_STD=c++14 ALPS_BOOST_VERSION=1_64_0
+  - ENABLE_MPI=ON ALPS_CC=mpicc ALPS_CXX_STD=c++14 ALPS_BOOST_VERSION=1_67_0
+  - ENABLE_MPI=ON ALPS_CC=mpicc ALPS_CXX_STD=c++14 ALPS_BOOST_VERSION=1_56_0
+  - ENABLE_MPI=ON ALPS_CC=mpicc ALPS_CXX_STD=c++14 ALPS_BOOST_VERSION=1_64_0
+  - ENABLE_MPI=ON ALPS_CC=mpicc ALPS_CXX_STD=c++14 ALPS_BOOST_VERSION=1_67_0
 
 before_script:
   - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
@@ -40,7 +53,15 @@ before_script:
 script:
   # Stop on first error
   - set -e
-
+  # Explicitly download Boost, if a specific version is requested
+  - boost_no_system_paths=false
+  - if [ -n "$ALPS_BOOST_VERSION" ]; then
+  -   boost_tgz=boost_${ALPS_BOOST_VERSION}.tar.gz
+  -   boost_url=https://sourceforge.net/projects/boost/files/boost/${ALPS_BOOST_VERSION//_/.}/boost_${ALPS_BOOST_VERSION}.tar.gz/download
+  -   wget -S -O $boost_tgz $boost_url
+  -   export BOOST_ROOT=$PWD/boost_${ALPS_BOOST_VERSION}
+  -   boost_no_system_paths=true
+  - fi
   # Build ALPSCore
   - mkdir build
   - mkdir install
@@ -55,7 +76,8 @@ script:
     -DALPS_INSTALL_EIGEN=true                             \
     -DALPS_BUNDLE_DOWNLOAD_TRIES=3                        \
     -DMPIEXEC=mpiexec -DMPIEXEC_NUMPROC_FLAG='-n'         \
-    -DENABLE_MPI=$ENABLE_MPI
+    -DENABLE_MPI=$ENABLE_MPI                              \
+    -DBoost_NO_SYSTEM_PATHS=${boost_no_system_paths}
   - make -j3
   - env ALPS_TEST_MPI_NPROC=3 make test
   - make install
