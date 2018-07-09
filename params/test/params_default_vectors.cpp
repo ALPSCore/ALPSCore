@@ -10,6 +10,7 @@
 */
 
 #include <alps/params.hpp>
+#include <gtest/gtest.h>
 
 TEST(ParamsTestDefaultVectors, defvec) {
     alps::params p;
