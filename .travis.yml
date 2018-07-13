@@ -24,19 +24,19 @@ addons:
 
 install: true
 
-# DEBUG!!!
-env:
-   - ALPS_BOOST_VERSION=1_67_0 ENABLE_MPI=ON ALPS_CC=mpicc ALPS_CXX=mpic++ ALPS_CXX_STD=c++11
+# Try:
+# With and without MPI
+# With "system" Boost, minimal supported, and the latest,
+# With the latest Boost and C++14.
 
-#env:
-#  - ENABLE_MPI=ON ALPS_CC=mpicc ALPS_CXX=mpic++ ALPS_CXX_STD=c++11
-#  - ENABLE_MPI=OFF ALPS_CXX_STD=c++11
-#  - ENABLE_MPI=ON ALPS_CC=mpicc ALPS_CXX=mpic++ ALPS_CXX_STD=c++14
-#  - ENABLE_MPI=OFF ALPS_CXX_STD=c++14
-#  - ALPS_BOOST_VERSION=1_56_0 ENABLE_MPI=ON ALPS_CC=mpicc ALPS_CXX=mpic++ ALPS_CXX_STD=c++11
-#  - ALPS_BOOST_VERSION=1_64_0 ENABLE_MPI=ON ALPS_CC=mpicc ALPS_CXX=mpic++ ALPS_CXX_STD=c++11
-#  - ALPS_BOOST_VERSION=1_67_0 ENABLE_MPI=ON ALPS_CC=mpicc ALPS_CXX=mpic++ ALPS_CXX_STD=c++11
-#  - ALPS_BOOST_VERSION=1_67_0 ENABLE_MPI=ON ALPS_CC=mpicc ALPS_CXX=mpic++ ALPS_CXX_STD=c++14
+env:
+  - ENABLE_MPI=ON ALPS_CC=mpicc ALPS_CXX=mpic++ ALPS_CXX_STD=c++11
+  - ENABLE_MPI=OFF ALPS_CXX_STD=c++11
+  - ENABLE_MPI=ON ALPS_CC=mpicc ALPS_CXX=mpic++ ALPS_CXX_STD=c++14
+  - ENABLE_MPI=OFF ALPS_CXX_STD=c++14
+  - ALPS_BOOST_VERSION=1_56_0 ENABLE_MPI=ON ALPS_CC=mpicc ALPS_CXX=mpic++ ALPS_CXX_STD=c++11
+  - ALPS_BOOST_VERSION=1_67_0 ENABLE_MPI=ON ALPS_CC=mpicc ALPS_CXX=mpic++ ALPS_CXX_STD=c++11
+  - ALPS_BOOST_VERSION=1_67_0 ENABLE_MPI=ON ALPS_CC=mpicc ALPS_CXX=mpic++ ALPS_CXX_STD=c++14
 
 before_script:
   - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
