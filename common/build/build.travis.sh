@@ -1,4 +1,7 @@
 #!/bin/bash
+
+## DEBUG VERSION OF THE SCRIPT --- DO NOT USE IN PRODUCTION!
+
 ## Build script for TravisCI
 
 # Be verbose and stop on first error
@@ -32,6 +35,14 @@ cmake ..                                              \
 -DENABLE_MPI=$ENABLE_MPI                              \
 ${boost_cmake_params}
 
-make -j3
-env ALPS_TEST_MPI_NPROC=3 make test
+# TravisCI provides 2 cores, with possible bursts
+# DEBUG: what does cpuinfo say?
+cat /proc/cpuinfo
+# DEBUG: test compilation with 3 processes
+time make -j3
+# DEBUG: test compilation on 2 processes
+make clean
+time make -j2
+
+time env ALPS_TEST_MPI_NPROC=3 make test
 make install
