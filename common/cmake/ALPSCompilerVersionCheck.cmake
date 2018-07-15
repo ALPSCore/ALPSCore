@@ -46,12 +46,13 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # FIXME: In future we can try to set this ourselves if CMake does not recognize the compiler
 set(ALPS_CXX_FLAGS "" CACHE INTERNAL "C++ compilation flags to be set as interface")
+set(ALPS_CMAKE_MINIMUM_VERSION ${CMAKE_MINIMUM_REQUIRED_VERSION})
 
 if (ALPS_CXX_STD STREQUAL "c++11")
   if (CMAKE_VERSION VERSION_LESS 3.8)
     set(ALPS_CXX_FEATURES "cxx_auto_type;cxx_constexpr" CACHE INTERNAL "List of C++ features required by ALPSCore")
   else()
-    # FIXME: if client uses cmake<3.8, this will lead to problems
+    set(ALPS_CMAKE_MINIMUM_VERSION 3.8)
     set(ALPS_CXX_FEATURES "cxx_std_11" CACHE INTERNAL "List of C++ features required by ALPSCore")
   endif()
   message(STATUS "ALPSCore will use C++11")
@@ -61,7 +62,7 @@ if (ALPS_CXX_STD STREQUAL "c++14")
   if (CMAKE_VERSION VERSION_LESS 3.8)
     set(ALPS_CXX_FEATURES "cxx_auto_type;cxx_constexpr;cxx_decltype_auto" CACHE INTERNAL "List of C++ features required by ALPSCore")
   else()
-    # FIXME: if client uses cmake<3.8, this will lead to problems
+    set(ALPS_CMAKE_MINIMUM_VERSION 3.8)
     set(ALPS_CXX_FEATURES "cxx_std_14" CACHE INTERNAL "List of C++ features required by ALPSCore")
   endif()
   message(STATUS "ALPSCore will use C++14")
@@ -73,7 +74,7 @@ if (ALPS_CXX_STD STREQUAL "c++17")
       "this CMake version is ${CMAKE_VERSION}. "
       "Please set ALPS_CXX_STD=custom and pass the proper compilation flags via CXX_COMPILE_FLAGS.")
   else()
-    # FIXME: if client uses cmake<3.8, this will lead to problems
+    set(ALPS_CMAKE_MINIMUM_VERSION 3.8)
     set(ALPS_CXX_FEATURES "cxx_std_17" CACHE INTERNAL "List of C++ features required by ALPSCore")
   endif()
   message(STATUS "ALPSCore will use C++17")
@@ -84,3 +85,5 @@ if (ALPS_CXX_STD STREQUAL "custom")
   message("CAUTION: ALPSCore C++ standard will be set by compiler flags;"
     " client code will not have any way to inquire the C++ standard used by ALPSCore!")
 endif()
+
+set(ALPS_CMAKE_MINIMUM_VERSION ${ALPS_CMAKE_MINIMUM_VERSION} CACHE INTERNAL "Minimum CMake version required to use ALPSCore")
