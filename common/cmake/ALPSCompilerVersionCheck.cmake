@@ -46,6 +46,13 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # FIXME: In future we can try to set this ourselves if CMake does not recognize the compiler
 set(ALPS_CXX_FLAGS "" CACHE INTERNAL "C++ compilation flags to be set as interface")
+if (NOT ALPS_CXX_STD STREQUAL "custom" AND NOT CMAKE_CXX_COMPILE_FEATURES)
+  message(FATAL_ERROR "This version of CMake does not know how to activate ${ALPS_CXX_STD} features "
+    "for your compiler ${CMAKE_CXX_COMPILER} (id: ${CMAKE_CXX_COMPILER_ID} version: ${CMAKE_CXX_COMPILER_VERSION}). "
+    "You may try to use a newer version of CMake, or set ALPS_CXX_STD=custom and pass the required "
+    "compiler flags via CMAKE_CXX_FLAGS.")
+endif()
+
 set(ALPS_CMAKE_MINIMUM_VERSION ${CMAKE_MINIMUM_REQUIRED_VERSION})
 
 if (ALPS_CXX_STD STREQUAL "c++11")
