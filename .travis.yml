@@ -48,10 +48,7 @@ matrix:
     - env: ENABLE_MPI=OFF
 
 before_script:
-  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-  - sudo apt-get update
-  - sudo apt-get install -y --allow-unauthenticated g++-5
-  - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 60 --slave /usr/bin/g++ g++ /usr/bin/g++-5
+  - ./common/build/build_prereq.travis.sh
   - export OMPI_CC=${CC}
   - export OMPI_CXX=${CXX}
 
