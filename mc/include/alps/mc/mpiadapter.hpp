@@ -29,12 +29,26 @@ namespace alps {
 
         protected:
             /// Construct mcmpiadapter_base with a custom scheduler
+            /**
+               Initializes the wrapped simulation class, passes parameters and an RNG seed that linearly depends on MPI rank.
+
+               @tparam Base a single-process simulation class to be wrapped
+               @tparam ScheduleChecker a schedule checker class
+
+               @param parameters Parameters object for the wrapped simulation class
+               @param comm MPI communicator to work on
+               @param check Schedule checker object
+               @param rng_seed_step RNG seed increase for each rank
+               @param rng_seed_base RNG seed for rank 0
+             */
             mcmpiadapter_base(
                   parameters_type const & parameters
                 , alps::mpi::communicator const & comm
                 , ScheduleChecker const & check
+                , int rng_seed_step
+                , int rng_seed_base
             )
-                : Base(parameters, comm.rank())
+                : Base(parameters, comm.rank()*rng_seed_step + rng_seed_base)
                 , communicator(comm)
                 , schedule_checker(check)
                 , clone(comm.rank())
@@ -103,13 +117,33 @@ namespace alps {
         typedef typename base_type_::parameters_type parameters_type;
 
         /// Construct mcmpiadapter with a custom scheduler
+        /**
+           Initializes the wrapped simulation class, passes parameters and an RNG seed that linearly depends on MPI rank.
+
+           @warning If you wish to run repeated simulations with
+           different seeds, make sure that you specify appropriate
+           (large enough) `rng_seed_step` and/or `rng_seed_base`,
+           otherwise the simulations will not be statistically
+           independent.
+
+           @tparam Base a single-process simulation class to be wrapped
+           @tparam ScheduleChecker a schedule checker class
+
+           @param parameters Parameters object for the wrapped simulation class
+           @param comm MPI communicator to work on
+           @param check Schedule checker object
+           @param rng_seed_step RNG seed increase for each rank
+           @param rng_seed_base RNG seed for rank 0
+        */
         // Just forwards to the base class constructor
         mcmpiadapter(
             parameters_type const & parameters
             , alps::mpi::communicator const & comm
             , ScheduleChecker const & check
+            , int rng_seed_step = 1
+            , int rng_seed_base = 0
             )
-            : base_type_(parameters, comm, check)
+            : base_type_(parameters, comm, check, rng_seed_step, rng_seed_base)
         {}
     };
 
@@ -124,22 +158,61 @@ namespace alps {
         typedef typename base_type_::parameters_type parameters_type;
 
         /// Construct mcmpiadapter with a custom scheduler
+        /**
+           Initializes the wrapped simulation class, passes parameters and an RNG seed that linearly depends on MPI rank.
+
+           @warning If you wish to run repeated simulations with
+           different seeds, make sure that you specify appropriate
+           (large enough) `rng_seed_step` and/or `rng_seed_base`,
+           otherwise the simulations will not be statistically
+           independent.
+
+           @tparam Base a single-process simulation class to be wrapped
+           @tparam ScheduleChecker a schedule checker class
+
+           @param parameters Parameters object for the wrapped simulation class
+           @param comm MPI communicator to work on
+           @param check Schedule checker object
+           @param rng_seed_step RNG seed increase for each rank
+           @param rng_seed_base RNG seed for rank 0
+        */
         // Just forwards to the base class constructor
         mcmpiadapter(
             parameters_type const & parameters
             , alps::mpi::communicator const & comm
             , ScheduleChecker const & check
+            , int rng_seed_step = 1
+            , int rng_seed_base = 0
             )
-            : base_type_(parameters, comm, check)
+            : base_type_(parameters, comm, check, rng_seed_step, rng_seed_base)
         {}
 
         /// Construct mcmpiadapter_base with alps::check_schedule with the relevant parameters Tmin and Tmax taken from the provided parameters
+        /**
+           Initializes the wrapped simulation class, passes parameters and an RNG seed that linearly depends on MPI rank.
+
+           @warning If you wish to run repeated simulations with
+           different seeds, make sure that you specify appropriate
+           (large enough) `rng_seed_step` and/or `rng_seed_base`,
+           otherwise the simulations will not be statistically
+           independent.
+
+           @tparam Base a single-process simulation class to be wrapped
+           @tparam ScheduleChecker a schedule checker class
+
+           @param parameters Parameters object for the wrapped simulation class
+           @param comm MPI communicator to work on
+           @param rng_seed_step RNG seed increase for each rank
+           @param rng_seed_base RNG seed for rank 0
+        */
         // constructs the ScheduleChecker object and then forwards the ctor
         mcmpiadapter(
             parameters_type const & parameters
             , alps::mpi::communicator const & comm
+            , int rng_seed_step = 1
+            , int rng_seed_base = 0
             )
-            : base_type_(parameters, comm, ScheduleChecker(parameters["Tmin"], parameters["Tmax"]))
+            : base_type_(parameters, comm, ScheduleChecker(parameters["Tmin"], parameters["Tmax"]), rng_seed_step, rng_seed_base)
         { }
 
         /// Define parameters specific for alps::check_schedule: Tmin and Tmax
