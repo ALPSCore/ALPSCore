@@ -1,4 +1,4 @@
-# This is a minimal CMake file that illustrates how to use Eigen
+# This is a minimal CMake file that illustrates how to use Boost
 # in project that uses ALPSCore
 
 # we need at least cmake version 3.1
