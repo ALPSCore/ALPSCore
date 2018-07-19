@@ -45,7 +45,7 @@ env:
 matrix:
   include:
     - os: osx
-    - env: ENABLE_MPI=OFF
+      env: ENABLE_MPI=OFF ALPS_CXX_STD=c++11 ALPS_BOOST_VERSION=1_67_0 
 
 before_script:
   - ./common/build/build_prereq.travis.sh
@@ -53,4 +53,4 @@ before_script:
   - export OMPI_CXX=${CXX}
 
 script:
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ./common/build/build.travis_osx.sh; else ./common/build/build.travis.sh; fi
+  - ./common/build/build.travis.sh
