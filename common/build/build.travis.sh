@@ -34,8 +34,11 @@ ${boost_cmake_params}
 
 # TravisCI provides 2 cores, with possible bursts;
 # We use exactly as many cores as available to us.
-ncores=$(nproc)
-[[ "$ncores" == "" ]] && ncores=2 # FIXME: MacOS does not have ncores
+if which nproc; then
+    ncores=$(nproc)
+else
+    ncores=2 # FIXME: MacOS does not have nproc
+fi
 
 time make -j$ncores
 
