@@ -16,6 +16,8 @@
 #include <cstring> // for memcmp()
 #include <boost/optional.hpp>
 
+#include <alps/utilities/fs/get_basename.hpp>
+
 #include <alps/testing/fp_compare.hpp>
 
 // #include <alps/testing/unique_file.hpp> // FIXME!!! Temporary!
@@ -435,6 +437,14 @@ namespace alps {
             return s;
         }
 
+        std::string origin_name(const params& p)
+        {
+            std::string origin;
+            if (p.is_restored()) origin=p.get_archive_name();
+            else if (p.get_ini_name_count()>0) origin=p.get_ini_name(0);
+            else origin=alps::fs::get_basename(p.get_argv0());
+            return origin;
+        }
 
 #ifdef ALPS_HAVE_MPI
         void params::broadcast(const alps::mpi::communicator& comm, int rank) {
