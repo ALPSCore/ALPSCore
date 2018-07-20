@@ -34,9 +34,15 @@ ${boost_cmake_params}
 
 # TravisCI provides 2 cores, with possible bursts;
 # We use exactly as many cores as available to us.
-time make -j$(nproc)
+if which nproc; then
+    ncores=$(nproc)
+else
+    ncores=2 # FIXME: MacOS does not have nproc
+fi
+
+time make -j$ncores
 
 # Run MPI tests with a slight oversubscription
 # (this might help detect timing-dependent bugs)
-time env ALPS_TEST_MPI_NPROC=$[$(nproc)+1] make test
+time env ALPS_TEST_MPI_NPROC=$[$ncores+1] make test
 make install

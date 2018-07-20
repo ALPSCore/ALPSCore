@@ -38,11 +38,13 @@ env:
   - ALPS_BOOST_VERSION=1_67_0 ENABLE_MPI=ON ALPS_CC=mpicc ALPS_CXX=mpic++ ALPS_CXX_STD=c++11
   - ALPS_BOOST_VERSION=1_67_0 ENABLE_MPI=ON ALPS_CC=mpicc ALPS_CXX=mpic++ ALPS_CXX_STD=c++14
 
+matrix:
+  include:
+    - os: osx
+      env: ENABLE_MPI=OFF ALPS_CXX_STD=c++11 ALPS_BOOST_VERSION=1_67_0 
+
 before_script:
-  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-  - sudo apt-get update
-  - sudo apt-get install -y --allow-unauthenticated g++-5
-  - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 60 --slave /usr/bin/g++ g++ /usr/bin/g++-5
+  - ./common/build/build_prereq.travis.sh
   - export OMPI_CC=${CC}
   - export OMPI_CXX=${CXX}
 
