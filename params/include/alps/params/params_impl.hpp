@@ -160,15 +160,6 @@ namespace alps {
             swap(p1.origins_.data(), p2.origins_.data());
         }
 
-        inline std::string origin_name(const params& p)
-        {
-            std::string origin;
-            if (p.is_restored()) origin=p.get_archive_name();
-            else if (p.get_ini_name_count()>0) origin=p.get_ini_name(0);
-            else origin=p.get_argv0();
-            return origin;
-        }
-
         inline std::string params::get_origin_name() const
         {
             return origin_name(*this);

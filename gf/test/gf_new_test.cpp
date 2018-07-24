@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -332,4 +332,19 @@ TEST(GreensFunction, Reshape) {
   ASSERT_TRUE(g2.data().shape() == g1.data().shape());
   ASSERT_NO_THROW(g2(alps::gf::matsubara_positive_mesh::index_type(0)).reshape(y2, z2));
   ASSERT_THROW(g2(alps::gf::matsubara_positive_mesh::index_type(0)).reshape(y, z2), std::invalid_argument);
+}
+
+TEST(GreensFunction, MeshAssignment) {
+  alps::gf::real_space_index_mesh m1(4, 10);
+  for(int i = 0; i< 4; ++i) {
+    for(int j = 0; j<10; ++j) {
+      m1.points()[i][j] = i*2+j + 1;
+    }
+  }
+  greenf<double, alps::gf::matsubara_positive_mesh, alps::gf::real_space_index_mesh> g(alps::gf::matsubara_positive_mesh(100, 10),m1);
+  for(int i = 0; i< 4; ++i) {
+    for(int j = 0; j<10; ++j) {
+      ASSERT_EQ(m1.points()[i][j], g.mesh2().points()[i][j]);
+    }
+  }
 }

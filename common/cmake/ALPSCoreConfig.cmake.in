@@ -80,12 +80,43 @@ function(alpscore_config_main_)
         endif()
       endforeach()
     endif()
+
+    set(alps_boost_dir_ @Boost_DIR@)
+    set(alps_boost_root_ @BOOST_ROOT@)
+    set(alps_boost_includedir_ @Boost_INCLUDE_DIR@)
+    set(alps_boost_librarydir_ @Boost_LIBRARY_DIR_RELEASE@ @Boost_LIBRARY_DIR_DEBUG@)
+
+    if (alps_boost_dir_)
+      set(Boost_DIR ${alps_boost_dir_} PARENT_SCOPE)
+    endif()
+    if (alps_boost_root_)
+      set(BOOST_ROOT ${alps_boost_root_} PARENT_SCOPE)
+    endif()
+    if (alps_boost_includedir_)
+      set(BOOST_INCLUDEDIR ${alps_boost_includedir_} PARENT_SCOPE)
+    endif()
+    if (alps_boost_librarydir_)
+      list(REMOVE_DUPLICATES alps_boost_librarydir_)
+      set(BOOST_LIBRARYDIR ${alps_boost_librarydir_} PARENT_SCOPE)
+    endif()
+    set(Boost_NO_SYSTEM_PATHS true PARENT_SCOPE)
+    
     
     set(ALPSCore_LIBRARIES ${ALPSCore_LIBRARIES} PARENT_SCOPE)
     set(ALPSCore_COMPONENTS ${ALPSCore_FIND_COMPONENTS} PARENT_SCOPE)
 endfunction(alpscore_config_main_)
 
 
+set(ALPSCore_CMAKE_MINIMUM_VERSION @ALPS_CMAKE_MINIMUM_VERSION@)
+set(ALPSCore_CMAKE_MATCH true)
+if (CMAKE_VERSION VERSION_LESS ALPSCore_CMAKE_MINIMUM_VERSION)
+  message(WARNING "To use ALPScore CMake version ${ALPSCore_CMAKE_MINIMUM_VERSION} or later "
+    "is required; this CMake version is ${CMAKE_VERSION}. "
+    "You may use a newer CMake for your project, "
+    "or try to rebuild ALPSCore with CMake version ${CMAKE_VERSION}.")
+  set(ALPSCore_CMAKE_MATCH false)
+endif()
+    
 set(ALPSCore_HAS_MPI @ALPS_HAVE_MPI@)
 set(ALPSCore_CXX_STD "@ALPS_CXX_STD@")
 set(ALPSCore_CXX_COMPILER_ID "@CMAKE_CXX_COMPILER_ID@")
@@ -110,9 +141,9 @@ else()
     set(ALPSCore_COMPILER_MATCH false)
   endif()
 endif()
-if (ALPSCore_COMPILER_MATCH)
+if (ALPSCore_COMPILER_MATCH AND ALPSCore_CMAKE_MATCH)
   alpscore_config_main_()
 endif()
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(ALPSCore REQUIRED_VARS ALPSCore_LIBRARIES ALPSCore_COMPILER_MATCH HANDLE_COMPONENTS)
+find_package_handle_standard_args(ALPSCore REQUIRED_VARS ALPSCore_LIBRARIES ALPSCore_COMPILER_MATCH ALPSCore_CMAKE_MATCH HANDLE_COMPONENTS)

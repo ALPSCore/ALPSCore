@@ -159,8 +159,8 @@ namespace alps {
             /// Convenience method: returns the "origin name"
             /** @returns (parameter_file_name || restart_file name || program_name || "")
 
-                @deprecated Use `alps::params_ns::get_origin(const params&)` instead,
-                also available as `alps::get_origin(const params&)`.
+                @deprecated Use `alps::params_ns::origin_name(const params&)` instead,
+                also available as `alps::origin_name(const params&)`.
              **/
             std::string get_origin_name() const ALPS_DEPRECATED;
 
@@ -279,6 +279,20 @@ namespace alps {
             }
 #endif
         };
+
+        /// Convenience function to obtain the "origin" filename associated with the parameters object
+        /**
+           The "origin" name can be used to generate, e.g., sensible output file names
+           based on the parameter file names that passed to the program.
+
+           * * If the parameters object is restored from an archive, the archive name is its origin.
+           * * If the parameters object is constructed from INI file(s), the first INI file is its origin.
+           * * If the parameters object is constructed from the command line without INI files,
+             the origin is the executable name (if available) *stripped of its path*.
+           * * Otherwise, the origin name is empty.
+
+        */
+        std::string origin_name(const params& p);
 
     } // params_ns::
     typedef params_ns::params params;
