@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
+ * All rights reserved. Use is subject to license terms. See LICENSE.TXT
+ * For use in publications, see ACKNOWLEDGE.TXT
+ */
 #include <alps/alea/result.hpp>
 
 #include <type_traits>
@@ -12,6 +17,14 @@ struct valid_visitor
 
     template <typename Res>
     bool operator() (const Res &r) const { return r.valid(); }
+};
+
+struct size_visitor
+{
+    typedef size_t result_type;
+
+    template <typename Res>
+    size_t operator() (const Res &r) const { return r.size(); }
 };
 
 struct count_visitor
@@ -111,6 +124,11 @@ private:
 bool result::valid() const
 {
     return boost::apply_visitor(valid_visitor(), res_);
+}
+
+size_t result::size() const
+{
+    return boost::apply_visitor(size_visitor(), res_);
 }
 
 size_t result::count() const

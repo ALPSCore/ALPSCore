@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -51,6 +51,9 @@ public:
     bool valid() const;
 
     /** Number of components of the random vector (e.g., size of mean) */
+    size_t size() const;
+
+    /** Returns number of accumulated data points */
     size_t count() const;
 
     /** Returns sample mean */

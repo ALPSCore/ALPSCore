@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -108,6 +108,9 @@ public:
 
     /** Re-allocate and thus clear all accumulated data */
     void reset();
+
+    /** Update the size and discard all measurements, if any */
+    void set_size(size_t size);
 
     /** Returns `false` if `finalize()` has been called, `true` otherwise */
     bool valid() const { return (bool)store_; }

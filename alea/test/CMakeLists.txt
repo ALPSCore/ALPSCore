@@ -4,6 +4,7 @@ set (test_src
      empty
      twogauss
      galois
+     result
      transform
      stream_serializer
     )

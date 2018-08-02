@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
+ * All rights reserved. Use is subject to license terms. See LICENSE.TXT
+ * For use in publications, see ACKNOWLEDGE.TXT
+ */
 #include <alps/alea/autocorr.hpp>
 #include <alps/alea/serialize.hpp>
 
@@ -25,6 +30,29 @@ void autocorr_acc<T>::reset()
     nextlevel_ = batch_size_;
     level_.clear();
     level_.push_back(var_acc<T>(size_, batch_size_));
+}
+
+template <typename T>
+void autocorr_acc<T>::set_size(size_t size)
+{
+    size_ = size;
+    reset();
+}
+
+template <typename T>
+void autocorr_acc<T>::set_batch_size(size_t batch_size)
+{
+    // TODO: handle the case where we just discard levels more gracefully
+    batch_size_ = batch_size;
+    reset();
+}
+
+template <typename T>
+void autocorr_acc<T>::set_granularity(size_t granularity)
+{
+    // TODO: handle the case where we just discard levels more gracefully
+    granularity_ = granularity;
+    reset();
 }
 
 template <typename T>
@@ -135,6 +163,16 @@ size_t autocorr_result<T>::find_level(size_t min_samples) const
             return i - 1;
     }
     return 0;
+}
+
+template <typename T>
+double autocorr_result<T>::count2() const
+{
+    size_t lvl = find_level(DEFAULT_MIN_SAMPLES);
+
+    // The factor comes from the fact that we accumulate sums of batch_size
+    // elements, and therefore we get this by the law of large numbers
+    return level_[lvl].count2();
 }
 
 template <typename T>

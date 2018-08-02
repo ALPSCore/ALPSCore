@@ -16,9 +16,12 @@
 #include <cstring> // for memcmp()
 #include <boost/optional.hpp>
 
+#include <alps/utilities/fs/get_basename.hpp>
+
 #include <alps/testing/fp_compare.hpp>
 
-#include <alps/testing/unique_file.hpp> // FIXME!!! Temporary!
+// #include <alps/testing/unique_file.hpp> // FIXME!!! Temporary!
+#include <alps/utilities/temporary_filename.hpp> // FIXME!!! Temporary!
 #include <fstream> // FIXME!!! Temporary!
 
 #include <alps/hdf5/map.hpp>
@@ -54,13 +57,39 @@ namespace alps {
                     return boost::none;
                 }
             };
+
+
+            /// Default help description
+            static const char Default_help_description[]="Print help message";
         }
+
+        params::params(const std::string& inifile)
+            : dictionary(), raw_kv_content_(), td_map_(), err_status_(), origins_(), help_header_()
+        {
+            read_ini_file_(inifile);
+            if (!defined("help")) define("help", Default_help_description);
+        }
+
+
+
+        params::params(int argc, const char* const* argv, const char* hdf5_path)
+            : dictionary(),
+              raw_kv_content_(),
+              td_map_(),
+              err_status_(),
+              origins_(),
+              help_header_()
+        {
+            initialize_(argc, argv, hdf5_path);
+            if (!defined("help")) define("help", Default_help_description);
+        }
+
 
         int params::get_ini_name_count() const
         {
             return origins_.data().size()-origins_type::INIFILES;
         }
-        
+
         std::string params::get_ini_name(int n) const
         {
             if (n<0 || n>=get_ini_name_count()) return std::string();
@@ -80,8 +109,8 @@ namespace alps {
 
         params& params::description(const std::string &message)
         {
-            this->define("help", "Print help message");
             help_header_=message;
+            if (!defined("help")) define("help", Default_help_description);
             return *this;
         }
 
@@ -102,7 +131,7 @@ namespace alps {
             }
             return !unused.empty();
         }
-        
+
         bool params::has_unused(std::ostream& out, const std::string& subsection) const
         {
             return has_unused_(out, &subsection);
@@ -113,7 +142,7 @@ namespace alps {
             return has_unused_(out, 0);
         }
 
-        std::ostream& params::print_help(std::ostream& out) const 
+        std::ostream& params::print_help(std::ostream& out) const
         {
             out << help_header_ << "\nAvailable options:\n";
 
@@ -163,14 +192,14 @@ namespace alps {
         {
             return this->exists<bool>("help") && (*this)["help"].as<bool>();
         }
-        
+
         bool params::help_requested(std::ostream& out) const
         {
             if (!this->help_requested()) return false;
             print_help(out);
             return true;
         }
-        
+
         bool params::has_missing(std::ostream& out) const
         {
             if (this->ok()) return false;
@@ -184,11 +213,11 @@ namespace alps {
             typedef std::string::size_type size_type;
             const size_type& npos=std::string::npos;
             using std::string;
-            
+
             if (argc==0) return;
             origins_.data()[origins_type::ARGV0].assign(argv[0]);
             if (argc<2) return;
-            
+
             std::vector<string> all_args(argv+1,argv+argc);
             std::stringstream cmd_options;
             bool file_args_mode=false;
@@ -230,14 +259,16 @@ namespace alps {
             }
             // FIXME!!!
             // This is very inefficient and is done only for testing.
-            alps::testing::unique_file tmpfile(origins_.data()[origins_type::ARGV0]+".param.ini", alps::testing::unique_file::REMOVE_AFTER);
-            std::ofstream tmpstream(tmpfile.name().c_str());
+            // // alps::testing::unique_file tmpfile(origins_.data()[origins_type::ARGV0]+".param.ini", alps::testing::unique_file::REMOVE_AFTER);
+            // // std::ofstream tmpstream(tmpfile.name().c_str());
+            std::string tmpfile_name=alps::temporary_filename("tmp_ini_file");
+            std::ofstream tmpstream(tmpfile_name.c_str());
             tmpstream << cmd_options.rdbuf();
             tmpstream.close();
-            read_ini_file_(tmpfile.name());
+            read_ini_file_(tmpfile_name);
             origins_.data().pop_back(); // remove the "invisible" ini file
         }
-        
+
         void params::read_ini_file_(const std::string& inifile)
         {
             detail::iniparser parser(inifile);
@@ -287,18 +318,18 @@ namespace alps {
             ar[context+"@status"] << err_status_;
             ar[context+"@origins"]  << origins_.data();
             ar[context+"@help_header"]  << help_header_;
-            
+
             std::vector<std::string> keys=ar.list_children(context);
             BOOST_FOREACH(const std::string& key, keys) {
                 td_map_type::const_iterator it=td_map_.find(key);
-                
+
                 if (it!=td_map_.end()) {
                     ar[key+"@description"] << it->second.descr();
                     ar[key+"@defnumber"] << it->second.defnumber();
                 }
             }
         }
-        
+
         void params::load(alps::hdf5::archive& ar) {
             params newpar;
             newpar.dictionary::load(ar);
@@ -309,7 +340,7 @@ namespace alps {
             ar[context+"@origins"]  >> newpar.origins_.data();
             newpar.origins_.check();
             ar[context+"@help_header"]  >> newpar.help_header_;
-            
+
             // Get the vectors of keys, values and convert them back to a map
             {
                 typedef std::vector<std::string> stringvec;
@@ -353,7 +384,7 @@ namespace alps {
                     newpar.td_map_.insert(std::make_pair(key, detail::td_type(typestr, descr, dn)));
                 }
             }
-            
+
             using std::swap;
             swap(*this, newpar);
         }
@@ -406,6 +437,14 @@ namespace alps {
             return s;
         }
 
+        std::string origin_name(const params& p)
+        {
+            std::string origin;
+            if (p.is_restored()) origin=p.get_archive_name();
+            else if (p.get_ini_name_count()>0) origin=p.get_ini_name(0);
+            else origin=alps::fs::get_basename(p.get_argv0());
+            return origin;
+        }
 
 #ifdef ALPS_HAVE_MPI
         void params::broadcast(const alps::mpi::communicator& comm, int rank) {
@@ -420,4 +459,3 @@ namespace alps {
 #endif
     } // ::params_ns
 }// alps::
-            

@@ -1,8 +1,8 @@
 include(ALPSEnableTests)
 
 set (test_src
-    hdf5_open
-    hdf5_open_deprecated
+    hdf5_open_strmode
+    hdf5_open_intmode
     hdf5_complex
     hdf5_bool
     hdf5_copy
@@ -12,7 +12,6 @@ set (test_src
     hdf5_native_type    
     hdf5_multiarchive
     hdf5_pair
-    hdf5_real_complex
     hdf5_real_complex_vec
     hdf5_replace
     hdf5_vecvecdbl

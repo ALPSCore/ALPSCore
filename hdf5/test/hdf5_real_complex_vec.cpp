@@ -16,40 +16,23 @@
 
 #include "gtest/gtest.h"
 
-TEST(hdf5, TestingOfRealComplexVec){
+// Test that double vector can NOT be read as complex
+TEST(hdf5, WriteDoubleReadComplexVec) {
     alps::testing::unique_file ufile("real_complex_vec.h5.", alps::testing::unique_file::REMOVE_NOW);
     const std::string&  filename = ufile.name();
 
-    try {
-        const int size = 6;
+    const int size = 6;
+    std::vector<double> v(size, 3.2);
+    std::cout << "v: " << alps::short_print(v) << std::endl;
 
-        std::vector<double> v(size, 3.2);
-
-        std::cout << "v: " << alps::short_print(v) << std::endl;
-
-        {
-            alps::hdf5::archive ar(filename, "w");
-            ar["/vec"] << v;
-        }
-
-        std::vector<std::complex<double> > w;
-        {
-            alps::hdf5::archive ar(filename, "r");
-            ar["/vec"] >> w;
-        }
-
-        std::cout << "w: " << alps::short_print(w) << std::endl;
-        
-		bool passed = true;
-		for (int i=0; passed && i<size; ++i)
-			passed = (v[i] == w[i]);
-
-        std::cout << "Test status checked element by element." << std::endl;
-        EXPECT_TRUE(passed);
-
-    } catch (alps::hdf5::archive_error & ex) {
-        std::cout << "Test passed because Exception was thrown." << std::endl;
-        EXPECT_TRUE(true);
+    {
+        alps::hdf5::archive ar(filename, "w");
+        ar["/vec"] << v;
     }
 
+    std::vector<std::complex<double> > w;
+    {
+        alps::hdf5::archive ar(filename, "r");
+        ASSERT_THROW(ar["/vec"] >> w, std::runtime_error);
+    }
 }

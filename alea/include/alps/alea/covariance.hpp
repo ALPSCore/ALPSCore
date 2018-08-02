@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -63,10 +63,10 @@ public:
     size_t size() const { return data_.rows(); }
 
     /** Returns sample size, i.e., number of accumulated data points */
-    double count() const { return count_; }
+    size_t count() const { return count_; }
 
     /** Returns sample size, i.e., number of accumulated data points */
-    double &count() { return count_; }
+    size_t &count() { return count_; }
 
     /** Returns sum of squared weights */
     double count2() const { return count2_; }
@@ -89,7 +89,8 @@ public:
 private:
     column<T> data_;
     cov_matrix_type data2_;
-    double count_, count2_;
+    size_t count_;
+    double count2_;
 
     friend class cov_acc<T, Strategy>;
     friend class cov_result<T, Strategy>;
@@ -124,7 +125,7 @@ public:
     using cov_matrix_type = typename eigen<cov_type>::matrix;
 
 public:
-    cov_acc(size_t size=1, size_t bundle_size=1);
+    cov_acc(size_t size=1, size_t batch_size=1);
 
     cov_acc(const cov_acc &other);
 
@@ -132,6 +133,12 @@ public:
 
     /** Re-allocate and thus clear all accumulated data */
     void reset();
+
+    /** Update the size and discard all measurements, if any */
+    void set_size(size_t size);
+
+    /** Update the batch size and discard current batch */
+    void set_batch_size(size_t batch_size);
 
     /** Returns `false` if `finalize()` has been called, `true` otherwise */
     bool valid() const { return (bool)store_; }
@@ -224,7 +231,7 @@ public:
     size_t count() const { return store_->count(); }
 
     /** Returns sum of squared sample sizes */
-    size_t count2() const { return store_->count2(); }
+    double count2() const { return store_->count2(); }
 
     /** Returns average batch size */
     double batch_size() const { return store_->count2() / store_->count(); }

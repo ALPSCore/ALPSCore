@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
+ * All rights reserved. Use is subject to license terms. See LICENSE.TXT
+ * For use in publications, see ACKNOWLEDGE.TXT
+ */
 #include <alps/alea/mean.hpp>
 #include <alps/alea/variance.hpp>
 #include <alps/alea/covariance.hpp>
@@ -176,3 +181,61 @@ TEST(twogauss, ratio) {
                 twogauss_mean[0] / twogauss_mean[1],
                 ratio_res_ret.stderror()[0]);
 }
+
+
+template<typename T>
+struct transformer_id : public alps::alea::transformer<T>
+{
+    transformer_id(size_t size) : size_(size) { }
+
+    alps::alea::column<T> operator() (const alps::alea::column<T> &in) const override {
+        return in;
+    }
+    size_t in_size() const override { return size_; }
+    size_t out_size() const override { return size_; }
+    bool is_linear() const override { return true; }
+
+private:
+    size_t size_;
+};
+
+template <typename Acc>
+class twogauss_batched_id_case
+    : public ::testing::Test
+{
+public:
+    typedef typename alps::alea::traits<Acc>::value_type value_type;
+    typedef typename alps::alea::traits<Acc>::result_type result_type;
+
+    twogauss_batched_id_case() { }
+
+    void test_result()
+    {
+        Acc acc;
+        acc.set_batch_size(4);
+        for (size_t i = 0; i != twogauss_count; ++i)
+            acc << twogauss_data[i][0];
+
+        result_type res = acc.finalize();
+
+        // identity transform shall preserve mean and variance
+        auto tf_res = alps::alea::transform(alps::alea::linear_prop(),
+                                            transformer_id<double>(1),
+                                            res);
+
+        EXPECT_EQ(res.count(), tf_res.count());
+        ALPS_EXPECT_NEAR(res.count2(), tf_res.count2(), 1e-16);
+        ALPS_EXPECT_NEAR(res.mean(), tf_res.mean(), 1e-16);
+        ALPS_EXPECT_NEAR(res.var(), tf_res.var(), 1e-12);
+    }
+};
+
+typedef ::testing::Types<
+      alps::alea::var_acc<double>
+    , alps::alea::cov_acc<double>
+    , alps::alea::autocorr_acc<double>
+    , alps::alea::batch_acc<double>
+    > batchable;
+
+TYPED_TEST_CASE(twogauss_batched_id_case, batchable);
+TYPED_TEST(twogauss_batched_id_case, test_result) { this->test_result(); }

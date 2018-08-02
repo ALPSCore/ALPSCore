@@ -13,9 +13,6 @@
 #include <alps/utilities/remove_cvr.hpp>
 #include <alps/utilities/type_wrapper.hpp>
 
-// FIXME: remove together with deprecated methods
-#include <alps/utilities/deprecated.hpp>
-
 #ifndef ALPS_SINGLE_THREAD
 
 #include <boost/thread.hpp>
@@ -96,14 +93,12 @@ namespace alps {
 
         class archive {
             private:
-               /// Assignment operator is deleted
-               archive& operator=(const archive&); /* not implemented*/ // FIXME:TODO:C++11 `=delete` or implement via `swap()`
-            // FIXME: MAKE private:
+               archive& operator=(const archive&) =delete; /* not implemented*/ // FIXME: ...or implement via `swap()`?
             public:
                 typedef enum {
                     READ = 0x00,
                     WRITE = 0x01,
-                    REPLACE = 0x02,
+                    /* REPLACE = 0x02, */ // FIXME: reactivate when we have "replace" semantics
                     COMPRESS = 0x04,
                     MEMORY = 0x10
                 } properties;
@@ -114,7 +109,7 @@ namespace alps {
                 /// to be used in conjunction with `void open(const std::string &, std::string)` function
                 archive();
                 archive(std::string const & filename, std::string mode = "r");
-                archive(std::string const & filename, int prop)  ALPS_DEPRECATED;
+                archive(std::string const & filename, int prop);
                 archive(archive const & arg);
 
                 virtual ~archive();

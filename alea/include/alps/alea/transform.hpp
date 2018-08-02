@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -57,9 +57,11 @@ typename std::enable_if<traits<InResult>::HAVE_COV, cov_result<T> >::type transf
         dx = 0.125 * std::abs(in.stderror().mean());
     typename eigen<T>::matrix jac = jacobian(tf, in.mean(), dx);
 
+    // TODO: this batch_size thing works but is conceptually hairy.
+    double batch_size = in.count2() / in.count();
     cov_result<T> res(cov_data<T>(tf.out_size()));
     res.store().data() = tf(in.mean());
-    res.store().data2() = jac * in.cov() * jac.adjoint();
+    res.store().data2() = jac * in.cov()/batch_size * jac.adjoint();
     res.store().count() = in.count();
     res.store().count2() = in.count2();
     return res;
@@ -83,9 +85,11 @@ typename std::enable_if<!traits<InResult>::HAVE_COV, cov_result<T>>::type transf
         dx = 0.125 * std::abs(in.stderror().mean());
     typename eigen<T>::matrix jac = jacobian(tf, in.mean(), dx);
 
+    // TODO: this batch_size() thing is conceptually hairy.
+    double batch_size = in.count2() / in.count();
     cov_result<T> res(cov_data<T>(tf.out_size()));
     res.store().data() = tf(in.mean());
-    res.store().data2() = jac * in.var().asDiagonal() * jac.adjoint();
+    res.store().data2() = jac * in.var().asDiagonal()/batch_size  * jac.adjoint();
     res.store().count() = in.count();
     res.store().count2() = in.count2();
     return res;

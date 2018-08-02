@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
+ * All rights reserved. Use is subject to license terms. See LICENSE.TXT
+ * For use in publications, see ACKNOWLEDGE.TXT
+ */
 #include <alps/alea/variance.hpp>
 #include <alps/alea/util.hpp>
 #include <alps/alea/serialize.hpp>
@@ -69,9 +74,9 @@ template class var_data<std::complex<double>, elliptic_var>;
 
 
 template <typename T, typename Str>
-var_acc<T,Str>::var_acc(size_t size, size_t bundle_size)
+var_acc<T,Str>::var_acc(size_t size, size_t batch_size)
     : store_(new var_data<T,Str>(size))
-    , current_(size, bundle_size)
+    , current_(size, batch_size)
 { }
 
 // We need an explicit copy constructor, as we need to copy the data
@@ -97,6 +102,22 @@ void var_acc<T,Str>::reset()
         store_->reset();
     else
         store_.reset(new var_data<T,Str>(size()));
+}
+
+template <typename T, typename Str>
+void var_acc<T,Str>::set_size(size_t size)
+{
+    current_ = bundle<T>(size, current_.target());
+    if (valid())
+        store_.reset(new var_data<T,Str>(size));
+}
+
+template <typename T, typename Str>
+void var_acc<T,Str>::set_batch_size(size_t batch_size)
+{
+    // TODO: allow resizing with reset
+    current_.target() = batch_size;
+    current_.reset();
 }
 
 template <typename T, typename Str>
@@ -233,7 +254,7 @@ void var_result<T,Str>::reduce(const reducer &r, bool pre_commit, bool post_comm
         store_->convert_to_sum();
         r.reduce(view<T>(store_->data().data(), store_->data().rows()));
         r.reduce(view<var_type>(store_->data2().data(), store_->data2().rows()));
-        r.reduce(view<double>(&store_->count(), 1));
+        r.reduce(view<size_t>(&store_->count(), 1));
         r.reduce(view<double>(&store_->count2(), 1));
     }
     if (pre_commit && post_commit) {

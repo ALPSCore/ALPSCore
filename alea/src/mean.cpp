@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
+ * All rights reserved. Use is subject to license terms. See LICENSE.TXT
+ * For use in publications, see ACKNOWLEDGE.TXT
+ */
 #include <alps/alea/mean.hpp>
 #include <alps/alea/util.hpp>
 #include <alps/alea/computed.hpp>
@@ -82,6 +87,14 @@ void mean_acc<T>::reset()
     if (valid())
         store_->reset();
     else
+        store_.reset(new mean_data<T>(size_));
+}
+
+template <typename T>
+void mean_acc<T>::set_size(size_t size)
+{
+    size_ = size;
+    if (valid())
         store_.reset(new mean_data<T>(size_));
 }
 

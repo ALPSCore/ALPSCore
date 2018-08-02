@@ -913,7 +913,7 @@ namespace alps {
 
         public:
             typedef generic_index<legendre_mesh> index_type;
-            legendre_mesh(const legendre_mesh& rhs) : beta_(rhs.beta_), n_max_(rhs.n_max_), statistics_(rhs.statistics_) {}
+            legendre_mesh(const legendre_mesh& rhs) : beta_(rhs.beta_), n_max_(rhs.n_max_), statistics_(rhs.statistics_) {compute_points();}
             legendre_mesh(gf::statistics::statistics_type statistics=statistics::FERMIONIC):
                     beta_(0.0), n_max_(0), statistics_(statistics) {}
 
@@ -1059,12 +1059,12 @@ namespace alps {
             void set_validity() {
                 valid_ = true;
                 valid_ = valid_ && dim_ > 0;
-                valid_ = valid_ && dim_ == basis_functions_.size();
+                valid_ = valid_ && std::size_t(dim_) == basis_functions_.size();
                 valid_ = valid_ && beta_ >= 0.0;
                 valid_ = valid_ && (statistics_==statistics::FERMIONIC || statistics_==statistics::BOSONIC);
 
-                if (basis_functions_.size() > 1) {
-                    for (int l=0; l < basis_functions_.size()-1; ++l) {
+                if (basis_functions_.size() > 1u) {
+                    for (std::size_t l=0; l < basis_functions_.size()-1; ++l) {
                         valid_ = valid_ && (basis_functions_[l].section_edges() == basis_functions_[l+1].section_edges());
                     }
                 }
@@ -1083,11 +1083,11 @@ namespace alps {
                 compute_points();
             }
             numerical_mesh(gf::statistics::statistics_type statistics=statistics::FERMIONIC):
-                    beta_(0.0), dim_(0), statistics_(statistics), valid_(false) {}
+                    beta_(0.0), dim_(0), statistics_(statistics), basis_functions_(), valid_(false) {}
 
             numerical_mesh(double b,  const std::vector<piecewise_polynomial<T> >&basis_functions,
                            gf::statistics::statistics_type statistics=statistics::FERMIONIC):
-                    beta_(b), dim_(basis_functions.size()), basis_functions_(basis_functions), statistics_(statistics), valid_(false) {
+                    beta_(b), dim_(basis_functions.size()), statistics_(statistics), basis_functions_(basis_functions), valid_(false) {
                 set_validity();
                 //check_range();
                 compute_points();
