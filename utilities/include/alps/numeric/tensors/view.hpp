@@ -35,7 +35,7 @@ namespace alps {
         /**
          * Construct view on DataStorage object
          */
-        view(data_storage<T>&storage) : data_(storage.data().data()), size_(storage.data().size())  {}
+        view(data_storage<T>&storage) : data_(storage.data()), size_(storage.size())  {}
         /// Copy constructor
         view(const view & view) : data_(view.data_), size_(view.size_) {}
         /// Move constructor

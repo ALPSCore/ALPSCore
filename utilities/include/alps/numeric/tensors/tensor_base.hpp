@@ -32,7 +32,11 @@ namespace alps {
        */
       template<typename T, typename St>
       struct is_storage {
-        static constexpr bool value = std::is_same < St, data_storage < T > > ::value || std::is_same < St, data_view < T > > ::value;
+        static constexpr bool value = std::is_same < St, simple_storage < T > > ::value ||
+#ifdef ALPS_HAVE_MPI
+            std::is_same < St, shared_storage < T > > ::value ||
+#endif
+            std::is_same < St, data_view < T > > ::value;
       };
 
       /**
@@ -50,6 +54,13 @@ namespace alps {
        */
       template<typename T, size_t D>
       using tensor = detail::tensor_base < T, D, detail::data_storage < T > >;
+#ifdef ALPS_HAVE_MPI
+      /**
+       * Definition of Tensor with mpi3 shared storage
+       */
+      template<typename T, size_t D>
+      using shared_tensor = detail::tensor_base < T, D, shared_storage< T > >;
+#endif
       /**
        * Definition of Tensor as view of existent data array
        */
@@ -108,13 +119,18 @@ namespace alps {
          */
         tensor_base(Container &&container, const std::array < size_t, Dim >& sizes) : storage_(container), shape_(sizes) {
           static_assert(is_storage< T, Container>::value, "Should be either data_storage or data_view type");
+          assert(storage_.size() == size());
           fill_acc_sizes();
         }
 
         tensor_base(Container &container, const std::array < size_t, Dim >& sizes) : storage_(container), shape_(sizes) {
           static_assert(is_storage< T, Container>::value, "Should be either data_storage or data_view type");
+          assert(storage_.size() == size());
           fill_acc_sizes();
         }
+
+        template<typename...Indices>
+        tensor_base(Container &container, size_t size1, Indices...sizes) : tensor_base(container, {{size1, size_t(sizes)...}}) {}
 
         /**
          * Create tensor from the existent data. All operation will be performed on the data stored in <data> parameter
@@ -123,7 +139,7 @@ namespace alps {
          * @param data  - pointer to the raw data buffer
          * @param sizes - array with sizes for each dimension
          */
-        tensor_base(T *data, const std::array < size_t, Dim > & sizes) : storage_(viewType(data, size(sizes))), shape_(sizes) {
+        tensor_base(T *data, const std::array < size_t, Dim > & sizes) : storage_(data, size(sizes)), shape_(sizes) {
           fill_acc_sizes();
         }
 
@@ -165,7 +181,13 @@ namespace alps {
         template<typename T2, typename St, typename = std::enable_if<std::is_same<Container, storageType>::value, void >>
         tensor_base(tensor_base<T2, Dim, St> &&rhs) noexcept: storage_(rhs.storage()), shape_(rhs.shape()), acc_sizes_(rhs.acc_sizes()) {}
 
-
+        /// Different type assignment
+        template<typename T2, typename St>
+        tensor_base < T, Dim, Container > &operator=(const tensor_base < T2, Dim, St> &rhs){
+          assert(size()==rhs.size());
+          storage_ = rhs.storage();
+          return *this;
+        };
         /// Copy assignment
         tensor_base < T, Dim, Container > &operator=(const tensor_base < T, Dim, Container > &rhs) = default;
         /// Move assignment
@@ -419,7 +441,7 @@ namespace alps {
         template<typename X = Container>
         typename std::enable_if<std::is_same < X, data_storage < T > >::value, void>::type reshape(const std::array<size_t, Dim>& shape) {
           size_t new_size = size(shape);
-          storage_.data().resize(new_size);
+          storage_.resize(new_size);
           shape_ = shape;
           fill_acc_sizes();
         }
@@ -442,10 +464,10 @@ namespace alps {
         static size_t dimension() { return Dim; }
 
         /// const pointer to the internal data
-        const prec *data() const { return &storage_.data(0); }
+        const prec *data() const { return storage_.data(); }
 
         /// pointer to the internal data
-        prec *data() { return &storage_.data(0); }
+        prec *data() { return storage_.data(); }
 
         /// const reference to the data storage
         const Container &storage() const { return storage_; }

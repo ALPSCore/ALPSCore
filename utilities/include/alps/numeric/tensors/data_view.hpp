@@ -36,7 +36,7 @@ namespace alps {
         /// Construct view of the whole DataStorage
         data_view(data_storage<T> & storage) : data_slice_(storage), offset_(0), size_(storage.size()) {}
         template<typename S>
-        data_view(const data_storage<S> & storage, size_t size = 0, size_t offset = 0) : data_slice_(storage.data().data(), size), offset_(offset), size_(size) {}
+        data_view(const data_storage<S> & storage, size_t size = 0, size_t offset = 0) : data_slice_(storage.data(), size), offset_(offset), size_(size) {}
         /// Construct subview of specified size for DataStorage starting from offset point
         data_view(data_storage<T> & storage, size_t size, size_t offset = 0) : data_slice_(storage), offset_(offset), size_(size) {}
         /// Move-construction of subview of specified size for another View starting from offset point
@@ -86,7 +86,7 @@ namespace alps {
         /// Comparison against DataStorage
         template<typename T2>
         bool operator==(const data_storage<T2>& r) const {
-          return size() == r.size() && std::equal(r.data().begin(), r.data().end(), data());
+          return size() == r.size() && std::equal(r.data(), r.data() + r.size(), data());
         }
       };
     }
