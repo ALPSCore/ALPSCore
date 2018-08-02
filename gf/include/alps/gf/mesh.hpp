@@ -303,7 +303,7 @@ namespace alps {
                 if (mesh::frequency_positivity_type(pos)!=positivity_) {
                   throw std::invalid_argument("Attempt to broadcast Matsubara mesh with the wrong positivity type "+std::to_string(pos) ); // FIXME: specific exception? Verbose positivity?
                 };
-                offset_ = ((PTYPE==mesh::POSITIVE_ONLY)?0:nfreq_);
+                offset_ = ((PTYPE==mesh::POSITIVE_ONLY)?0:nfreq_/2);
 
                 try {
                     check_range();
@@ -662,6 +662,10 @@ namespace alps {
                                                                                       kind_(rhs.kind_){
               points_ = rhs.points_;
             }
+            momentum_realspace_index_mesh(momentum_realspace_index_mesh&& rhs) : points_(boost::extents[rhs.points_.shape()[0]][rhs.points_.shape()[1]]),
+                                                                                      kind_(rhs.kind_){
+              points_ = rhs.points_;
+            }
             momentum_realspace_index_mesh& operator=(const momentum_realspace_index_mesh& rhs) {
               points_.resize(boost::extents[rhs.points_.shape()[0]][rhs.points_.shape()[1]]);
               points_ = rhs.points_;
@@ -799,7 +803,7 @@ namespace alps {
             public:
 
             typedef generic_index<momentum_index_mesh> index_type;
-            real_space_index_mesh(const real_space_index_mesh& rhs) : base_type(rhs.kind(), rhs.extent(), rhs.dimension()) {}
+            real_space_index_mesh(const real_space_index_mesh& rhs) : base_type(rhs) {}
 
             real_space_index_mesh(): base_type("REAL_SPACE_INDEX",0,0)
             {
