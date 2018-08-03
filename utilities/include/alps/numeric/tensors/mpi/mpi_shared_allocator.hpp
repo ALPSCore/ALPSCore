@@ -12,7 +12,15 @@
 #ifdef ALPS_HAVE_MPI
 #include <mpi.h>
 
+#if MPI_VERSION > 2
+#define ALPS_HAVE_SHARED_ALLOCATOR
+#else
+#ifndef NDEBUG
+#warning "MPI shared memory is not supported by your MPI library."
+#endif
+#endif
 
+#ifdef ALPS_HAVE_SHARED_ALLOCATOR
 namespace alps {
   namespace numerics {
     namespace detail {
@@ -73,5 +81,6 @@ namespace alps {
     }
   }
 }
+#endif //ALPS_HAVE_SHARED_ALLOCATOR
 #endif //ALPS_HAVE_MPI
 #endif //ALPSCORE_MPI_SHARED_ALLOCATOR_HPP

@@ -222,7 +222,7 @@ namespace alps {
     }
     template<typename T>
     using simple_storage = detail::data_storage<T, detail::simple_allocator<T> >;
-#ifdef ALPS_HAVE_MPI
+#ifdef ALPS_HAVE_SHARED_ALLOCATOR
     template<typename T>
     using shared_storage = detail::data_storage<T, detail::mpi_shared_allocator<T> >;
 #endif

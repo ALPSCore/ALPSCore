@@ -10,6 +10,8 @@
 #include <alps/config.hpp>
 #include <alps/numeric/tensors.hpp>
 
+#ifdef ALPS_HAVE_SHARED_ALLOCATOR
+
 class TensorMpiTest : public ::testing::Test {
 public:
   int nproc_;
@@ -21,6 +23,7 @@ public:
 };
 
 TEST_F(TensorMpiTest, TestInit) {
+
   MPI_Comm shmcomm;
   MPI_Comm_split_type (MPI_COMM_WORLD, MPI_COMM_TYPE_SHARED,0, MPI_INFO_NULL,&shmcomm);
   int shnprocs;
@@ -44,6 +47,7 @@ TEST_F(TensorMpiTest, TestInit) {
     ASSERT_DOUBLE_EQ(X.data()[i],(1<<(i%shnprocs))*i);
   }
 }
+#endif
 
 int main(int argc, char** argv)
 {
