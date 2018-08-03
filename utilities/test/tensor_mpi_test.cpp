@@ -8,7 +8,7 @@
 #include <gtest/gtest.h>
 #include <mpi.h>
 #include <alps/config.hpp>
-#include <alps/numeric/tensors/tensor_base.hpp>
+#include <alps/numeric/tensors.hpp>
 
 class TensorMpiTest : public ::testing::Test {
 public:
@@ -29,7 +29,7 @@ TEST_F(TensorMpiTest, TestInit) {
   MPI_Comm_rank(MPI_COMM_WORLD, &shmyrank);
   int N1 = 10, N2 = 10, N3 = 10;
   MPI_Win win;
-  alps::numerics::shared_storage<double> container(N1*N2*N3, alps::numerics::detail::MPISharedAllocator<double>(shmcomm, win));
+  alps::numerics::shared_storage<double> container(N1*N2*N3, alps::numerics::detail::mpi_shared_allocator<double>(shmcomm, win));
   alps::numerics::shared_tensor<double, 3> T(container, N1, N2, N3);
   size_t alloc_length = T.size();
   T.storage().lock();
@@ -40,10 +40,9 @@ TEST_F(TensorMpiTest, TestInit) {
   T.storage().release();
 
   for (int i = 0; i < alloc_length; ++i) {
-      ASSERT_DOUBLE_EQ(T.data()[i],(1<<(i%shnprocs))*i);
+    const alps::numerics::shared_tensor<double, 3>& X = T;
+    ASSERT_DOUBLE_EQ(X.data()[i],(1<<(i%shnprocs))*i);
   }
-
-  ASSERT_ANY_THROW(T.data()[0] = 10);
 }
 
 int main(int argc, char** argv)

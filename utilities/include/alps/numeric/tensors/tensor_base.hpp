@@ -40,6 +40,15 @@ namespace alps {
       };
 
       /**
+       * Check that all values in pack are true
+       *
+       * @tparam IndicesTypes - types of indices template parameter pack
+       */
+      template <bool...> struct bool_pack;
+      template <bool... v>
+      using all_true = std::is_same<bool_pack<true, v...>, bool_pack<v..., true>>;
+
+      /**
        * Base Tensor Class
        *
        * @tparam T - datatype, should be scalar
@@ -80,11 +89,16 @@ namespace alps {
        */
       template<typename T, size_t Dim, typename Container>
       class tensor_base {
+      public:
         // types definitions
         typedef T prec;
+      private:
         typedef data_view < T > viewType;
-        //typedef data_view < const T > constViewType;
+        typedef data_view < const typename std::remove_const<T>::type > constViewType;
+        typedef data_view < typename std::remove_const<T>::type > nonconstViewType;
         typedef data_storage < T > storageType;
+        typedef data_storage < const typename std::remove_const<T>::type > constStorageType;
+        typedef data_storage < typename std::remove_const<T>::type > nonconstStorageType;
         /// current Tensor type
         typedef tensor_base < T, Dim, Container > tType;
         /// Tensor type with storage
@@ -129,8 +143,23 @@ namespace alps {
           fill_acc_sizes();
         }
 
+        template<typename Container2>
+        tensor_base(Container2 &container, size_t size, size_t offset, const std::array < size_t, Dim >& sizes) :
+            storage_(container, size, offset), shape_(sizes) {
+          assert(storage_.size() == this->size());
+          fill_acc_sizes();
+        }
+
+        template<typename Container2>
+        tensor_base(const Container2 &container, size_t size, size_t offset, const std::array < size_t, Dim >& sizes) :
+            storage_(container, size, offset), shape_(sizes) {
+          assert(storage_.size() == this->size());
+          fill_acc_sizes();
+        }
+
         template<typename...Indices>
-        tensor_base(Container &container, size_t size1, Indices...sizes) : tensor_base(container, {{size1, size_t(sizes)...}}) {}
+        tensor_base(typename std::enable_if< all_true<std::is_convertible<Indices, std::size_t>::value...>::value, Container >::type &container,
+                    size_t size1, Indices...sizes) : tensor_base(container, {{size1, size_t(sizes)...}}) {}
 
         /**
          * Create tensor from the existent data. All operation will be performed on the data stored in <data> parameter
@@ -234,7 +263,7 @@ namespace alps {
             size_t >::type t1, IndexTypes ... indices) {
           std::array < size_t, Dim - (sizeof...(IndexTypes)) - 1 > sizes;
           size_t s = new_size(sizes);
-          return tensor_view < T, Dim - (sizeof...(IndexTypes)) - 1 >(viewType(storage_, s, (index(t1, indices...))), sizes);
+          return tensor_view < T, Dim - (sizeof...(IndexTypes)) - 1 > ( storage_, s, index(t1, indices...), sizes);
         }
 
         template<typename ...IndexTypes>
@@ -243,7 +272,7 @@ namespace alps {
           std::array < size_t, Dim - (sizeof...(IndexTypes)) - 1 > sizes;
           size_t s = new_size(sizes);
           return tensor_view <const typename std::remove_const<T>::type, Dim - (sizeof...(IndexTypes)) - 1 >
-              (data_view<const typename std::remove_const<T>::type>( storage_, s, index(t1, indices...) ), sizes );
+              (storage_, s, index(t1, indices...), sizes );
         }
 
         /*
@@ -323,8 +352,18 @@ namespace alps {
          * Set data to 0
          */
         void set_zero() {
-          Eigen::Map < Eigen::Matrix < T, 1, Eigen::Dynamic > > M(&storage_.data(0), storage_.size());
-          M.setZero();
+          set_number(T(0));
+        }
+
+        /**
+         *
+         * @tparam num_type
+         * @param value
+         */
+        template<typename num_type>
+        void set_number(num_type value) {
+          static_assert(std::is_convertible<num_type, T>::value, "Can not assign value to the tensor. Value can not be cast into the tensor value type.");
+          std::fill_n(data(), size(), T(value));
         }
 
         /**

@@ -7,85 +7,42 @@
 #ifndef ALPSCORE_GF_TENSORBASE_H
 #define ALPSCORE_GF_TENSORBASE_H
 
-#include <alps/config.hpp>
-
-#ifdef ALPS_HAVE_MPI
-#include <mpi.h>
-#endif
-
+#include <alps/numeric/tensors/mpi/mpi_shared_allocator.hpp>
 
 namespace alps {
   namespace numerics {
     namespace detail {
 
+      /**
+       * Simple data allocator
+       * @tparam T - datatype
+       */
       template <typename T>
-      class SimpleAllocator {
+      class simple_allocator {
 
       public:
+        /**
+         * Allocate new array of requested size and return pointer to the first element
+         *
+         * @param size - size to allocate
+         * @return pointer to the first elemnt of allocated data array
+         */
         T* allocate(size_t size) {
           return new T[size];
         }
 
+        /**
+         * release memory
+         * @param data
+         */
         void deallocate(T* data) {
           delete [] data;
         }
 
         void lock(){}
         void release(){}
+        bool locked() {return true;}
       };
-
-#ifdef ALPS_HAVE_MPI
-      template <typename T>
-      class MPISharedAllocator {
-      public:
-
-        MPISharedAllocator(MPI_Comm& comm, MPI_Win& win) : _comm(&comm), _win(&win) {
-
-        };
-
-        T* allocate(size_t size) {
-          void *mem;
-          // compute local size for array
-          size_t nloc = local_size(size);
-          // allocate shared memory
-          MPI_Win_allocate_shared(nloc * sizeof(T), sizeof(T), MPI_INFO_NULL, *_comm, &mem, _win);
-          MPI_Aint alloc_length;
-          int disp_unit;
-          // get pointer to the 0-th element of the global array
-          MPI_Win_shared_query(*_win, 0, &alloc_length, &disp_unit, &mem);
-          return (T*) mem;
-        }
-
-        void deallocate(T* data) {
-          // we do not release anything.
-          // one should explicitly release MPI-window in the very original place.
-        }
-        void lock(){
-          MPI_Win_lock_all(MPI_MODE_NOCHECK , *_win);
-        }
-        void release(){
-          MPI_Win_sync(*_win);
-          MPI_Win_unlock_all(*_win);
-        }
-      private:
-        /**
-         * compute local size for global array
-         * @param n -- global size
-         * @return local size
-         */
-        size_t local_size(size_t n) const {
-          int s, r;
-          MPI_Comm_size(*_comm, &s);
-          MPI_Comm_rank(*_comm, &r);
-          size_t nloc = n / s;
-          if(n%s > r) nloc++;
-          return nloc;
-        }
-
-        MPI_Comm *_comm;
-        MPI_Win *_win;
-      };
-#endif
 
       // Forward declarations
       template<typename T>
@@ -95,7 +52,7 @@ namespace alps {
        * @brief TensorBase class implements basic multi-dimensional operations.
        * All arithmetic operations are performed by Eigen library
        */
-      template<typename T, typename Allocator = SimpleAllocator<T> >
+      template<typename T, typename Allocator = simple_allocator<T> >
       class data_storage {
       private:
         /// internal data storage
@@ -104,8 +61,12 @@ namespace alps {
         size_t size_;
         /// dataspace allocator
         Allocator allocator_;
-        /// Lock data in case of shared memory access
-        bool lock_;
+        /// Check the data is locked in case of shared memory access
+        void check_lock() {
+          if(!allocator_.locked()) {
+            std::cerr<<"You are trying to access non-locked tensor with non-const method."<<std::endl;
+          }
+        }
       public:
 
         /// create data_dtorage from other storage object by copying data into vector
@@ -132,15 +93,17 @@ namespace alps {
         };
         /// Copy assignment
         data_storage<T, Allocator>& operator=(const data_storage<T, Allocator>& rhs) {
-          assert(size() == rhs.size());
-          data_ = allocator_.allocate(rhs.size());
+          if(size() != rhs.size()) {
+            resize(rhs.size());
+          }
           std::copy(rhs.data(), rhs.data() + rhs.size(), data_);
           return *this;
         };
         /// Move assignment
         data_storage<T, Allocator>& operator=(data_storage<T, Allocator>&& rhs) {
-          assert(size() == rhs.size());
-          data_ = allocator_.allocate(rhs.size());
+          if(size() != rhs.size()) {
+            resize(rhs.size());
+          }
           std::copy(rhs.data(), rhs.data() + rhs.size(), data_);
           return *this;
         };
@@ -148,7 +111,9 @@ namespace alps {
         template<typename T2, typename A2>
         data_storage<T, Allocator>& operator=(const data_storage<T2, A2>& rhs) {
           static_assert(std::is_convertible<T2, T>::value, "Can't perform assignment: T2 can be casted into T");
-          assert(size() == rhs.size());
+          if(size() != rhs.size()) {
+            resize(rhs.size());
+          }
           std::copy(rhs.data(), rhs.data() + rhs.size(), data_);
           return *this;
         };
@@ -187,14 +152,19 @@ namespace alps {
 
         /// @return reference to the data at point i
         inline T& data(size_t i) {
-          assert(lock_);
-          return data_[i];};
+#ifndef NDEBUG
+          check_lock();
+#endif
+          return data_[i];
+        };
         /// @return const-reference to the data at point i
         inline const T& data(size_t i) const {return data_[i];};
         /// bracket operators
         inline const T& operator()(size_t i) const {return data_[i];};
         inline T& operator()(size_t i) {
-          assert(lock_);
+#ifndef NDEBUG
+          check_lock();
+#endif
           return data_[i];
         };
         /// @return data size
@@ -203,12 +173,14 @@ namespace alps {
         const T* data() const {return data_;}
         /// @return reference to stored vector
         T* data() {
-          assert(lock_);
+#ifndef NDEBUG
+          check_lock();
+#endif
           return data_;}
         /// perform data-access lock
-        void lock(){lock_ = true; allocator_.lock();}
+        void lock(){allocator_.lock();}
         /// release internal data
-        void release(){lock_ = false; allocator_.release();}
+        void release(){allocator_.release();}
 
         /// Data-storage resize
         void resize(size_t new_size) {
@@ -249,10 +221,10 @@ namespace alps {
       };
     }
     template<typename T>
-    using simple_storage = detail::data_storage<T, detail::SimpleAllocator<T> >;
+    using simple_storage = detail::data_storage<T, detail::simple_allocator<T> >;
 #ifdef ALPS_HAVE_MPI
     template<typename T>
-    using shared_storage = detail::data_storage<T, detail::MPISharedAllocator<T> >;
+    using shared_storage = detail::data_storage<T, detail::mpi_shared_allocator<T> >;
 #endif
   }
 }

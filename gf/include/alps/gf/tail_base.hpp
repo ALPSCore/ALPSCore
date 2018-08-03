@@ -164,7 +164,7 @@ namespace alps {
           ar[path+"/tail/max_tail_order"]=max_tail_order_;
           if(min_tail_order_==TAIL_NOT_SET) return;
           for (int i=min_tail_order_; i<=max_tail_order_; ++i) {
-            ar[path+"/tail/"+std::to_string(i)] << tails_[i].data().storage().data();
+            ar[path+"/tail/"+std::to_string(i)] << tails_[i].data();
           }
         }
 
@@ -184,10 +184,10 @@ namespace alps {
 
           if(min_tail_order_>0) tails_.resize(min_tail_order_, tail_type (tuple_tail < 1, std::tuple_size<typename HEADGF::mesh_types>::value >(meshes())));
 
-          std::vector<typename TAILGF::value_type> buffer;
           for (int i=min_tail_order_; i<=max_tail_order_; ++i) {
+            typename tail_type::storage_type buffer;
             ar[path+"/tail/"+std::to_string(i)] >> buffer;
-            tails_.push_back(tail_type(buffer.data(), tuple_tail < 1, std::tuple_size<typename HEADGF::mesh_types>::value >(meshes())));
+            tails_.push_back(tail_type(buffer, tuple_tail < 1, std::tuple_size<typename HEADGF::mesh_types>::value >(meshes())));
           }
         }
 

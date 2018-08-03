@@ -174,7 +174,11 @@ namespace alps {
         /// Create GF with the provided data
         gf_base(VTYPE* data, const mesh_types &meshes) : data_(data, get_sizes(meshes)), meshes_(meshes), empty_(false) {}
         /// Create GF with the provided data and meshes
-        gf_base(data_storage const &data, MESHES...meshes) : data_(data), meshes_(std::make_tuple(meshes...)), empty_(false) {}
+        gf_base(const data_storage &data, const mesh_types &meshes) : data_(data), meshes_(meshes), empty_(false) {}
+        /// Create GF with the provided data and meshes
+        gf_base(data_storage &&data, const mesh_types &meshes) : data_(data), meshes_(meshes), empty_(false) {}
+        /// Create GF with the provided data and meshes
+        gf_base(const data_storage &data, MESHES...meshes) : data_(data), meshes_(std::make_tuple(meshes...)), empty_(false) {}
         /// Create GF with the provided data and meshes
         gf_base(data_storage && data, MESHES...meshes) : data_(std::move(data)), meshes_(std::make_tuple(meshes...)), empty_(false) {}
 
