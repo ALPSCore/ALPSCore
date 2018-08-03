@@ -127,7 +127,6 @@ TEST(TensorTest, TestSubSlices) {
     tensor_view<double, 3> Y = X(i);
     for (size_t j = 0; j < X.shape()[1]; ++j) {
       tensor_view<double, 2> Z = Y (j);
-      ASSERT_EQ(Z.storage().offset(), (i* X.shape()[1]+ j)* X.shape()[2]* X.shape()[3]);
       std::vector<double> XX(X.shape()[2]* X.shape()[3], 0.0);
       for (size_t k = 0; k < X.shape()[2]; ++k) {
         for (size_t l = 0; l < X.shape()[3]; ++l) {
@@ -476,4 +475,31 @@ TEST(TensorTest, Reshape) {
   ASSERT_TRUE(X.shape()[0] == 1 && X.shape()[1] == 100 && X.shape()[2] == 5);
   X.reshape(10,10,10);
   ASSERT_TRUE(X.shape()[0] == 10 && X.shape()[1] == 10 && X.shape()[2] == 10);
+}
+
+TEST(TensorTest, ValueAssignment) {
+  size_t N = 10;
+  tensor <double, 3> X(N, N, N);
+  tensor <std::complex<double>, 3> Z(N, N, N);
+  int value = 5;
+  X.set_number(value);
+  Z.set_number(value);
+  for(int i = 0; i<N; ++i){
+    for (int j = 0; j < N; ++j) {
+      for (int k = 0; k < N; ++k) {
+        ASSERT_EQ(X(i,j,k), value);
+        ASSERT_EQ(Z(i,j,k), std::complex<double>(value));
+      }
+    }
+  }
+  X.set_zero();
+  Z.set_zero();
+  for(int i = 0; i<N; ++i){
+    for (int j = 0; j < N; ++j) {
+      for (int k = 0; k < N; ++k) {
+        ASSERT_EQ(X(i,j,k), 0.0);
+        ASSERT_EQ(Z(i,j,k), std::complex<double>(0.0));
+      }
+    }
+  }
 }

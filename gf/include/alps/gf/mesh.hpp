@@ -662,6 +662,10 @@ namespace alps {
                                                                                       kind_(rhs.kind_){
               points_ = rhs.points_;
             }
+            momentum_realspace_index_mesh(momentum_realspace_index_mesh&& rhs) : points_(boost::extents[rhs.points_.shape()[0]][rhs.points_.shape()[1]]),
+                                                                                      kind_(rhs.kind_){
+              points_ = rhs.points_;
+            }
             momentum_realspace_index_mesh& operator=(const momentum_realspace_index_mesh& rhs) {
               points_.resize(boost::extents[rhs.points_.shape()[0]][rhs.points_.shape()[1]]);
               points_ = rhs.points_;

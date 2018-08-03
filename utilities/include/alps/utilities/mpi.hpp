@@ -24,9 +24,7 @@
 #include <exception> /* for std::uncaught_exception() */
 #include <functional> /* for std::plus */
 #include <algorithm> /* for std::max */
-
-#include <boost/scoped_array.hpp> /* for std::string broadcast */
-#include <boost/shared_ptr.hpp> /* for proper copy/assign of managed communicators */
+#include <memory> /* for shared and unique ptrs */
 
 #include <stdexcept>
 #include <typeinfo>
@@ -98,7 +96,7 @@ namespace alps {
 
         /// Encapsulation of an MPI communicator and some communicator-related operations
         class communicator {
-            boost::shared_ptr<MPI_Comm> comm_ptr_;
+            std::shared_ptr<MPI_Comm> comm_ptr_;
 
             // Internal functor class to destroy communicator when needed
             struct comm_deleter {
@@ -267,7 +265,7 @@ namespace alps {
             } else {
                 // FIXME: not very efficient --- any better way without heap alloc?
                 //        Note, there is no guarantee in C++03 that modifying *(&val[0]+i) is safe!
-                boost::scoped_array<char> buf(new char[root_sz]);
+                std::unique_ptr<char> buf(new char[root_sz]);
                 broadcast(comm, buf.get(), root_sz, root);
                 val.assign(buf.get(), root_sz);
             }

@@ -6,7 +6,7 @@
 
 #include <fstream>
 #include <alps/testing/unique_file.hpp>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <map>
 
 #include <gtest/gtest.h>
@@ -96,7 +96,7 @@ TEST(TemporaryFile, CheckClash)
     const std::string prefix="alps_temp_filename_test";
     const unsigned int n_uniq_names=(1<<10); // how many uniq names to create
 
-    typedef boost::shared_ptr<at::unique_file> ufile_ptr;
+    typedef std::shared_ptr<at::unique_file> ufile_ptr;
     typedef std::map<std::string,ufile_ptr> map_type;
     typedef map_type::value_type val_type;
     typedef map_type::iterator iter_type;

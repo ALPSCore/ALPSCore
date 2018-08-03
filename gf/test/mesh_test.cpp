@@ -242,6 +242,9 @@ TEST(Mesh,CompareRealSpace) {
   EXPECT_FALSE(mesh1==mesh3);
   EXPECT_FALSE(mesh1!=mesh2);
   EXPECT_FALSE(mesh1==mesh4);
+  
+  mesh2 = mesh3;
+  EXPECT_TRUE(mesh3==mesh2);
 }
 
 TEST(Mesh,CompareIndex) {

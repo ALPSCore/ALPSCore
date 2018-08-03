@@ -19,6 +19,7 @@ set (test_src_mpi
     mpi_utils_bcast
     mpi_utils_bcast_optional
     mpi_utils_reduce
+    tensor_mpi_test
     )
 
 foreach(test ${test_src})
