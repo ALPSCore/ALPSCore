@@ -115,7 +115,7 @@ class AccumulatorTest : public ::testing::Test {
 
         if (comm.rank()==0) { // the accumulator is valid only on master
             // extract results
-            const boost::shared_ptr<alps::accumulators::result_wrapper> resptr=acc.result();
+            const std::shared_ptr<alps::accumulators::result_wrapper> resptr=acc.result();
 
             // test results
             int ntot=std::accumulate(nsamples.begin(), nsamples.end(), 0);

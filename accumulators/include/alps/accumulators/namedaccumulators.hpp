@@ -30,7 +30,7 @@ namespace alps {
                 AccumulatorBase(const ArgumentPack& rhs,
                                 typename std::enable_if<std::is_base_of<AccumulatorBase,ArgumentPack>::value,int>::type =0)
                     : name(rhs.name),
-                      wrapper(boost::shared_ptr<accumulator_wrapper>(rhs.wrapper->new_clone()))
+                      wrapper(std::shared_ptr<accumulator_wrapper>(rhs.wrapper->new_clone()))
                 { }
 
                 /// Adds value directly to this named accumulator
@@ -42,7 +42,7 @@ namespace alps {
                 }
 
                 /// Returns a shared pointer to the result associated with this named accumulator
-                boost::shared_ptr<result_wrapper> result() const
+                std::shared_ptr<result_wrapper> result() const
                 {
                     return wrapper->result();
                 }
@@ -52,7 +52,7 @@ namespace alps {
                 {
                     // Self-assignment is handled correctly (albeit inefficiently)
                     this->name=rhs.name;
-                    this->wrapper = boost::shared_ptr<accumulator_wrapper>(rhs.wrapper->new_clone());
+                    this->wrapper = std::shared_ptr<accumulator_wrapper>(rhs.wrapper->new_clone());
                     return *this;
                 }
 
@@ -66,7 +66,7 @@ namespace alps {
 #endif
 
                 std::string name;
-                boost::shared_ptr<accumulator_wrapper> wrapper;
+                std::shared_ptr<accumulator_wrapper> wrapper;
             }; // end struct AccumulatorBase
         } // end namespace detail
 

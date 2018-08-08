@@ -94,7 +94,7 @@ namespace alps {
             }
             mutable accumulator_wrapper * self;
         };
-        accumulator_wrapper & accumulator_wrapper::operator=(boost::shared_ptr<accumulator_wrapper> const & rhs) {
+        accumulator_wrapper & accumulator_wrapper::operator=(std::shared_ptr<accumulator_wrapper> const & rhs) {
             boost::apply_visitor(assign_visitor(this), rhs->m_variant);
             return *this;
         }
@@ -167,11 +167,11 @@ namespace alps {
         struct result_visitor: public boost::static_visitor<> {
             template<typename T> void operator()(T const & arg) {
                 detail::check_ptr(arg);
-                value = boost::shared_ptr<result_wrapper>(new result_wrapper(arg->result()));
+                value = std::shared_ptr<result_wrapper>(new result_wrapper(arg->result()));
             }
-            boost::shared_ptr<result_wrapper> value;
+            std::shared_ptr<result_wrapper> value;
         };
-        boost::shared_ptr<result_wrapper> accumulator_wrapper::result() const {
+        std::shared_ptr<result_wrapper> accumulator_wrapper::result() const {
             result_visitor visitor;
             boost::apply_visitor(visitor, m_variant);
             return visitor.value;

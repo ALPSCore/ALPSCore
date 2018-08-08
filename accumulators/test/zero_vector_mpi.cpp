@@ -36,7 +36,7 @@ class AccumulatorEmptyVecTest : public ::testing::Test {
 
     void add_data_test() {
         EXPECT_ANY_THROW(acc_ << value_type());
-        boost::shared_ptr<aa::result_wrapper> resptr=acc_.result();
+        std::shared_ptr<aa::result_wrapper> resptr=acc_.result();
         EXPECT_EQ(0u, resptr->count());
     }
 
