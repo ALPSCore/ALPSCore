@@ -162,23 +162,27 @@ namespace alps {
         gf_base() : data_(std::array < size_t, N_ >{{0}}), empty_(true) {}
 
         /**
-         * Create Green's function object with given meshes
+         * Create Green's function object with meshes specified individually
          * @param meshes - list of meshes
          */
         gf_base(MESHES...meshes) : gf_base(std::make_tuple(meshes...)) {}
         /**
-         * Create Green's function object with given meshes
+         * Create Green's function object with meshes given as tuple
          * @param meshes - tuple of meshes
          */
         gf_base(const mesh_types &meshes) : data_(get_sizes(meshes)), meshes_(meshes), empty_(false) {}
-        /// Create GF with the provided data
+        /// Create GF from a data pointer and a mesh tuple
         gf_base(VTYPE* data, const mesh_types &meshes) : data_(data, get_sizes(meshes)), meshes_(meshes), empty_(false) {}
-        /// Create GF with the provided data and meshes
-        gf_base(data_storage const &data, MESHES...meshes) : data_(data), meshes_(std::make_tuple(meshes...)), empty_(false) {}
-        /// Create GF with the provided data and meshes
+        /// Create GF with the data and meshes provided - passing mesh tuple and data as const ref
+        gf_base(const data_storage &data, const mesh_types &meshes) : data_(data), meshes_(meshes), empty_(false) {}
+        /// Create GF with the data and meshes provided - passing mesh tuple and moving in data
+        gf_base(data_storage &&data, const mesh_types &meshes) : data_(data), meshes_(meshes), empty_(false) {}
+        /// Create GF with the data and meshes provided - passing meshes individually and data as const ref
+        gf_base(const data_storage &data, MESHES...meshes) : data_(data), meshes_(std::make_tuple(meshes...)), empty_(false) {}
+        /// Create GF with the data and meshes provided - moving in data and passing meshes as tuple
         gf_base(data_storage && data, MESHES...meshes) : data_(std::move(data)), meshes_(std::make_tuple(meshes...)), empty_(false) {}
 
-        /// construct new GF object by copy data from another GF object defined with different storage type
+        /// construct new GF object by copying data from another GF object defined with a different storage type
         template<typename St, typename = std::enable_if<!std::is_same<St, Storage>::value && std::is_same<St, data_view>::value > >
         gf_base(const gf_base<VTYPE, St, MESHES...> &g) : data_(g.data()), meshes_(g.meshes()), empty_(g.is_empty()) {}
         template<typename St, typename = std::enable_if<!std::is_same<St, Storage>::value && std::is_same<St, data_storage>::value > >
