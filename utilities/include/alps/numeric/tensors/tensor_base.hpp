@@ -346,6 +346,13 @@ namespace alps {
         };
 
         /**
+         * Negate tensor
+         */
+        tensor_base < T, Dim, Container > operator-() const {
+          return *this * T(-1.0);
+        };
+
+        /**
          * Set data to 0
          */
         void set_zero() {
@@ -353,9 +360,10 @@ namespace alps {
         }
 
         /**
+         * Assign all the values in the tensor to the specific scalar
          *
-         * @tparam num_type
-         * @param value
+         * @tparam num_type - scalar value type
+         * @param value     - scalar value for all elements in the tensor
          */
         template<typename num_type>
         void set_number(num_type value) {
@@ -370,17 +378,12 @@ namespace alps {
           return storage_.size();
         }
 
+        /**
+         * @return the total number of elements in the tensor
+         */
         size_t num_elements() const {
           return storage_.size();
         }
-
-        /**
-         * Negate tensor
-         */
-        tensor_base < T, Dim, Container > operator-() {
-          *this *= -1.0;
-          return *this;
-        };
 
         /**
          * For 2D square Tensor compute inverse Tensor.

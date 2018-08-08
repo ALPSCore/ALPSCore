@@ -18,10 +18,12 @@ namespace alps {
       class data_view;
 
       /**
-       * @brief TensorBase class implements basic multi-dimensional operations.
-       * All arithmetic operations are performed by Eigen library
+       * @brief Internal data storage class for tensors
+       *
+       * @tparam T  the scalar type
+       * @tparam Cont  abstraction of the data storage (default vector)
        */
-      template<typename T, typename Cont = std::vector<T> >
+      template<typename T, typename Cont = std::vector<typename std::remove_const<T>::type> >
       class data_storage {
       private:
         /// internal data storage
@@ -59,22 +61,28 @@ namespace alps {
           return *this;
         };
 
+        /**
+         * General tensor assignment 
+         *
+         * @tparam T2  - rhs value type
+         * @tparam C2  - rhs storage container type
+         */
         template<typename T2, typename C2>
         data_storage<T, Cont>& operator=(const data_storage<T2, C2>& rhs) {
-          static_assert(std::is_convertible<T2, T>::value, "Can't perform assignment: T2 can be casted into T");
+          static_assert(std::is_convertible<T2, T>::value, "Can not perform assignment: T2 can not be cast into T");
           if(size() != rhs.size()) {
             resize(rhs.size());
           }
           std::copy(rhs.data(), rhs.data() + rhs.size(), data());
           return *this;
         };
-        /// Create data_dtorage from the view object by copying data into vector
+        /// Create data_dtorage from the view object by copying data into underlying container
         template<typename T2>
         data_storage(const data_view<T2> & view)  : data_(view.size()) {
           static_assert(std::is_convertible<T2, T>::value, "View type can not be converted into storage");
           std::copy(view.data(), view.data() + view.size(), data());
         }
-        /// Move-Create DataStorage from the view object by copying data into vector
+        /// Move-Create DataStorage from the view object by copying data into underlying container
         template<typename T2>
         data_storage(data_view<T2> && view) noexcept  : data_(view.size()){
           std::copy(view.data(), view.data() + view.size(), data());
@@ -115,10 +123,11 @@ namespace alps {
          * and all elements are equal to each other
          *
          * @tparam T2 - datatype of rhs storage
+         * @tparam C2 - data storage type of rhs storage
          * @param r   - rhs storage
          */
-        template<typename T2, typename A2>
-        bool operator==(const data_storage<T2, A2> &r) const {
+        template<typename T2, typename C2>
+        bool operator==(const data_storage<T2, C2> &r) const {
           return r.size() == size() && std::equal(r.data(), r.data() + r.size(), data());
         }
 
