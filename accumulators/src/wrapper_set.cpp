@@ -27,7 +27,7 @@ namespace alps {
             template<typename T>
             T & wrapper_set<T>::operator[](std::string const & name) {
                 if (!has(name))
-                    m_storage.insert(make_pair(name, boost::shared_ptr<T>(new T())));
+                    m_storage.insert(make_pair(name, std::shared_ptr<T>(new T())));
                 return *(m_storage.find(name)->second);
             }
 
@@ -44,7 +44,7 @@ namespace alps {
             }
 
             template<typename T>
-            void wrapper_set<T>::insert(std::string const & name, boost::shared_ptr<T> ptr){
+            void wrapper_set<T>::insert(std::string const & name, std::shared_ptr<T> ptr){
                 if (has(name))
                     throw std::out_of_range("There already exists an accumulator with the name: " + name + ALPS_STACKTRACE);
                 m_storage.insert(make_pair(name, ptr));

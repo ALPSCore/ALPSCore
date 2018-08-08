@@ -45,7 +45,7 @@ namespace alps {
         namespace impl {
             /// Register a serializable type, without locking
             template<typename T> template<typename A> void wrapper_set<T>::register_serializable_type_nolock() {
-                m_types.push_back(boost::shared_ptr<detail::serializable_type<T> >(new detail::serializable_type_impl<T, A>));
+                m_types.push_back(std::shared_ptr<detail::serializable_type<T> >(new detail::serializable_type_impl<T, A>));
                 for (std::size_t i = m_types.size(); i > 1 && m_types[i - 1]->rank() > m_types[i - 2]->rank(); --i)
                     m_types[i - 1].swap(m_types[i - 2]);
             }
@@ -95,12 +95,12 @@ namespace alps {
                 std::vector<std::string> list = ar.list_children("");
                 for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
                     ar.set_context(*it);
-                    for (typename std::vector<boost::shared_ptr<detail::serializable_type<T> > >::const_iterator jt = m_types.begin()
+                    for (typename std::vector<std::shared_ptr<detail::serializable_type<T> > >::const_iterator jt = m_types.begin()
                         ; jt != m_types.end()
                         ; ++jt
                     )
                         if ((*jt)->can_load(ar)) {
-                            operator[](*it) = boost::shared_ptr<T>((*jt)->create(ar));
+                            operator[](*it) = std::shared_ptr<T>((*jt)->create(ar));
                             break;
                         }
                     if (!has(*it))

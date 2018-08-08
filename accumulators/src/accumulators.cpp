@@ -132,7 +132,7 @@ namespace alps {
             	m_ptr->merge(*(rhs.m_ptr));
             }
 
-            virtual_accumulator_wrapper & virtual_accumulator_wrapper::operator=(boost::shared_ptr<virtual_accumulator_wrapper> const & rhs){
+            virtual_accumulator_wrapper & virtual_accumulator_wrapper::operator=(std::shared_ptr<virtual_accumulator_wrapper> const & rhs){
             	(*m_ptr) = *(rhs->m_ptr);
             	return *this;
             }
@@ -174,8 +174,8 @@ namespace alps {
             }
 
             // result
-            boost::shared_ptr<virtual_result_wrapper<virtual_accumulator_wrapper> > virtual_accumulator_wrapper::result() const {
-                return boost::shared_ptr<virtual_result_wrapper<virtual_accumulator_wrapper> >(
+            std::shared_ptr<virtual_result_wrapper<virtual_accumulator_wrapper> > virtual_accumulator_wrapper::result() const {
+                return std::shared_ptr<virtual_result_wrapper<virtual_accumulator_wrapper> >(
                     new virtual_result_wrapper<virtual_accumulator_wrapper>(new result_wrapper(*(m_ptr->result())))
                 );
             }
@@ -199,7 +199,7 @@ namespace alps {
 
     #define ALPS_ACCUMULATOR_ADD_ACCUMULATOR(r, type, T)                                                                \
         accumulator_set & operator<<(accumulator_set & set, const MeanAccumulator< T > & arg) {                         \
-            set.insert(arg.name(), boost::shared_ptr<accumulators::wrapped::virtual_accumulator_wrapper>(               \
+            set.insert(arg.name(), std::shared_ptr<accumulators::wrapped::virtual_accumulator_wrapper>(               \
                 new accumulators::wrapped::virtual_accumulator_wrapper(new accumulators::accumulator_wrapper(           \
                     accumulators::impl::Accumulator<                                                                    \
                         T , accumulators::mean_tag, accumulators::impl::Accumulator<                                    \
@@ -211,7 +211,7 @@ namespace alps {
             return set;                                                                                                 \
         }                                                                                                               \
         accumulator_set & operator<<(accumulator_set & set, const NoBinningAccumulator< T > & arg) {                    \
-            set.insert(arg.name(), boost::shared_ptr<accumulators::wrapped::virtual_accumulator_wrapper>(               \
+            set.insert(arg.name(), std::shared_ptr<accumulators::wrapped::virtual_accumulator_wrapper>(               \
                 new accumulators::wrapped::virtual_accumulator_wrapper(new accumulators::accumulator_wrapper(           \
                     accumulators::impl::Accumulator<                                                                    \
                         T , accumulators::error_tag, accumulators::impl::Accumulator<                                   \
@@ -225,7 +225,7 @@ namespace alps {
             return set;                                                                                                 \
         }                                                                                                               \
         accumulator_set & operator<<(accumulator_set & set, const LogBinningAccumulator< T > & arg) {                    \
-            set.insert(arg.name(), boost::shared_ptr<accumulators::wrapped::virtual_accumulator_wrapper>(               \
+            set.insert(arg.name(), std::shared_ptr<accumulators::wrapped::virtual_accumulator_wrapper>(               \
                 new accumulators::wrapped::virtual_accumulator_wrapper(new accumulators::accumulator_wrapper(           \
                     accumulators::impl::Accumulator<                                                                    \
                         T , accumulators::binning_analysis_tag, accumulators::impl::Accumulator<                        \
@@ -241,7 +241,7 @@ namespace alps {
             return set;                                                                                                 \
         }                                                                                                               \
         accumulator_set & operator<<(accumulator_set & set, const FullBinningAccumulator< T > & arg) {                    \
-            set.insert(arg.name(), boost::shared_ptr<accumulators::wrapped::virtual_accumulator_wrapper>(               \
+            set.insert(arg.name(), std::shared_ptr<accumulators::wrapped::virtual_accumulator_wrapper>(               \
                 new accumulators::wrapped::virtual_accumulator_wrapper(new accumulators::accumulator_wrapper(           \
                     accumulators::impl::Accumulator<                                                                    \
                         T , accumulators::max_num_binning_tag, accumulators::impl::Accumulator<                         \

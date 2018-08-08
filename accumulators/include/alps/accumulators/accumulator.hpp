@@ -15,7 +15,7 @@
 
 #include <alps/hdf5/archive.hpp>
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include <boost/variant/variant.hpp>
 #include <boost/variant/get.hpp>
@@ -35,7 +35,7 @@ namespace alps {
             typedef std::string printable_type; ///<Implementation-defined printable type for results/accumulators
 
             template<typename T> struct add_base_wrapper_pointer {
-                typedef boost::shared_ptr<base_wrapper<T> > type;
+                typedef std::shared_ptr<base_wrapper<T> > type;
             };
 
             template<typename... Types> struct make_variant_type {
@@ -64,7 +64,7 @@ namespace alps {
             /** @note Throws on a failed check */
             // FIXME: better initialize the pointer with something reasonable to begin with?
             template <typename T>
-            void check_ptr(const boost::shared_ptr<T>& ptr) {
+            void check_ptr(const std::shared_ptr<T>& ptr) {
                 if (!ptr) throw std::runtime_error("Uninitialized accumulator accessed");
             }
 
@@ -96,7 +96,7 @@ namespace alps {
                 result_wrapper(hdf5::archive & ar);
 
                 // operator=
-                result_wrapper & operator=(boost::shared_ptr<result_wrapper> const & rhs);
+                result_wrapper & operator=(std::shared_ptr<result_wrapper> const & rhs);
 
             private:
                 // Visitors that need access to m_variant
@@ -461,7 +461,7 @@ namespace alps {
                 accumulator_wrapper* new_clone() const;
 
                 // operator=
-                accumulator_wrapper & operator=(boost::shared_ptr<accumulator_wrapper> const & rhs);
+                accumulator_wrapper & operator=(std::shared_ptr<accumulator_wrapper> const & rhs);
 
                 // count
                 boost::uint64_t count() const;
@@ -539,7 +539,7 @@ namespace alps {
             void reset() const;
 
             // result
-            boost::shared_ptr<result_wrapper> result() const;
+            std::shared_ptr<result_wrapper> result() const;
 
             // print
             void print(std::ostream & os, bool terse=false) const;
