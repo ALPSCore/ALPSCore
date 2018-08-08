@@ -58,7 +58,7 @@ class AccumulatorTest : public ::testing::Test {
         acc.collective_merge(comm, master);
         if (master==rank) {
             // extract results
-            const boost::shared_ptr<aac::result_wrapper> resptr=acc.result();
+            const std::shared_ptr<aac::result_wrapper> resptr=acc.result();
             const aac::result_wrapper& res=*resptr;
 
             value_type expected_mean=aact::gen_data<value_type>(gen.mean(npoints_all), VECSIZE);

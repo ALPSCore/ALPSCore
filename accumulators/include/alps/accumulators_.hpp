@@ -125,7 +125,7 @@ namespace alps {
                     /// Merge another accumulator into this one. @param rhs  accumulator to merge.
                     void merge(const virtual_accumulator_wrapper & rhs);
 
-                    virtual_accumulator_wrapper & operator=(boost::shared_ptr<virtual_accumulator_wrapper> const & rhs);
+                    virtual_accumulator_wrapper & operator=(std::shared_ptr<virtual_accumulator_wrapper> const & rhs);
 
                     // count
                     boost::uint64_t count() const;
@@ -164,7 +164,7 @@ namespace alps {
                     void reset() const;
 
                     // result
-                    boost::shared_ptr<virtual_result_wrapper<virtual_accumulator_wrapper> > result() const;
+                    std::shared_ptr<virtual_result_wrapper<virtual_accumulator_wrapper> > result() const;
 
                     // print
                     void print(std::ostream & os) const;

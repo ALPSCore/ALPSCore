@@ -46,7 +46,7 @@ namespace alps {
             }
             mutable result_wrapper * self;
         };
-        result_wrapper & result_wrapper::operator=(boost::shared_ptr<result_wrapper> const & rhs) {
+        result_wrapper & result_wrapper::operator=(std::shared_ptr<result_wrapper> const & rhs) {
             boost::apply_visitor(assign_visitor(this), rhs->m_variant);
             return *this;
         }
