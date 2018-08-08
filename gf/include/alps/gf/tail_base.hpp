@@ -187,7 +187,7 @@ namespace alps {
           for (int i=min_tail_order_; i<=max_tail_order_; ++i) {
             typename tail_type::storage_type buffer;
             ar[path+"/tail/"+std::to_string(i)] >> buffer;
-            tails_.push_back(tail_type(buffer.data(), tuple_tail < 1, std::tuple_size<typename HEADGF::mesh_types>::value >(meshes())));
+            tails_.push_back(tail_type(buffer, tuple_tail < 1, std::tuple_size<typename HEADGF::mesh_types>::value >(meshes())));
           }
         }
 

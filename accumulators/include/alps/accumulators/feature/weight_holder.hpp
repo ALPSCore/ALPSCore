@@ -16,7 +16,7 @@
 #include <alps/utilities/short_print.hpp>
 
 #include <boost/utility.hpp>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include <stdexcept>
 #include <type_traits>
@@ -137,7 +137,7 @@ namespace alps {
 
                 private:
                     bool m_owner;
-                    boost::shared_ptr< ::alps::accumulators::base_wrapper<typename value_type<weight_type>::type> > m_weight;
+                    std::shared_ptr< ::alps::accumulators::base_wrapper<typename value_type<weight_type>::type> > m_weight;
             };
 
             template<typename T, typename W, typename B> class Result<T, weight_holder_tag<W>, B> : public B {
@@ -192,7 +192,7 @@ namespace alps {
 
                 protected:
                     bool m_owner;
-                    boost::shared_ptr< ::alps::accumulators::base_wrapper<typename value_type<weight_type>::type> > m_weight;
+                    std::shared_ptr< ::alps::accumulators::base_wrapper<typename value_type<weight_type>::type> > m_weight;
             };
 
         }
