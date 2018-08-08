@@ -33,9 +33,6 @@ namespace alps {
       template<typename T, typename St>
       struct is_storage {
         static constexpr bool value = std::is_same < St, simple_storage < T > > ::value ||
-#ifdef ALPS_HAVE_SHARED_ALLOCATOR
-            std::is_same < St, shared_storage < T > > ::value ||
-#endif
             std::is_same < St, data_view < T > > ::value;
       };
 
