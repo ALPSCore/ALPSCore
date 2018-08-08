@@ -25,7 +25,6 @@
 #include <functional> /* for std::plus */
 #include <algorithm> /* for std::max */
 
-#include <boost/scoped_array.hpp> /* for std::string broadcast */
 #include <boost/shared_ptr.hpp> /* for proper copy/assign of managed communicators */
 
 #include <stdexcept>
@@ -267,7 +266,7 @@ namespace alps {
             } else {
                 // FIXME: not very efficient --- any better way without heap alloc?
                 //        Note, there is no guarantee in C++03 that modifying *(&val[0]+i) is safe!
-                boost::scoped_array<char> buf(new char[root_sz]);
+                std::unique_ptr<char[]> buf(new char[root_sz]);
                 broadcast(comm, buf.get(), root_sz, root);
                 val.assign(buf.get(), root_sz);
             }

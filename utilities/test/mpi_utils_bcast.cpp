@@ -5,7 +5,7 @@
  */
 
 #include <algorithm>
-#include <boost/scoped_array.hpp>
+#include <memory>
 
 #include <alps/utilities/mpi.hpp>
 
@@ -61,7 +61,7 @@ class MpiBcastTest_base : public ::testing::Test {
         vector_type root_data=alps::testing::datapoint<vector_type>::get(true,vsize);
         vector_type slave_data=alps::testing::datapoint<vector_type>::get(false,vsize);
 
-        boost::scoped_array<value_type> my_data(new value_type[vsize]);
+        std::unique_ptr<value_type[]> my_data(new value_type[vsize]);
         if (is_root_) {
             std::copy(root_data.begin(), root_data.end(), my_data.get());
         } else {
