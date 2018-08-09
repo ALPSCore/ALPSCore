@@ -10,6 +10,5 @@
 #include <alps/numeric/tensors/tensor_base.hpp>
 #include <alps/numeric/tensors/data_storage.hpp>
 #include <alps/numeric/tensors/data_view.hpp>
-#include <alps/numeric/tensors/mpi/mpi_shared_allocator.hpp>
 
 #endif //ALPSCORE_TENSORS_HPP
