@@ -9,7 +9,7 @@
 #include <alps/utilities/signal.hpp>
 #include <alps/utilities/stacktrace.hpp>
 
-#include <boost/scoped_array.hpp>
+#include <memory>
 
 #include <hdf5.h>
 
