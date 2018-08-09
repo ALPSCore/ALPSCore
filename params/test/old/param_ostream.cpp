@@ -7,8 +7,6 @@
 #include <iostream>
 #include <sstream>
 
-#include "boost/lexical_cast.hpp"
-
 #include "alps/params.hpp"
 #include "gtest/gtest.h"
 
@@ -34,7 +32,7 @@ namespace {
     template <typename T>
     std::string toPrintString(const std::string& name, T val)
     {
-        return name + " : " + boost::lexical_cast<std::string>(val);
+        return name + " : " + std::to_string(val);
     }
 
     // utility function: stringify a name-value (vector) from parameter as it would be expected on print

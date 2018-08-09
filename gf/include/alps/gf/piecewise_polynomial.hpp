@@ -13,7 +13,6 @@
 #include <vector>
 #include <cassert>
 #include <boost/multi_array.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/typeof/typeof.hpp>
 
 #include <alps/hdf5/archive.hpp>

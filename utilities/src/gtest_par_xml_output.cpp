@@ -7,7 +7,6 @@
 #include <string>
 #include <cstring>
 
-#include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
 
 #include <alps/utilities/gtest_par_xml_output.hpp>
@@ -21,7 +20,7 @@ namespace alps {
 
         const std::string option_prefix="--gtest_output=xml";
         const size_t prefix_len=option_prefix.size();
-        const std::string srank=boost::lexical_cast<std::string>(irank);
+        const std::string srank=std::to_string(irank);
 
         for (int i=1; i<argc; ++i) {
             std::string arg(argv[i]);
