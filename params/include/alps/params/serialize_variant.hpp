@@ -18,7 +18,6 @@
 #include <boost/mpl/for_each.hpp>
 #include <stdexcept>
 #include <boost/optional.hpp>
-#include <boost/lexical_cast.hpp> // for error messages
 
 namespace alps {
     namespace detail {

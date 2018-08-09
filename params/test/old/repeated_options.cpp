@@ -8,7 +8,6 @@
 #include "gtest/gtest.h"
 #include "alps/testing/unique_file.hpp"
 
-#include "boost/lexical_cast.hpp"
 
 #include <cstdio>
 #include <fstream>

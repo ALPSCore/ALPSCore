@@ -6,6 +6,7 @@
 #pragma once
 #include <complex>
 #include <cassert>
+#include <array>
 #include <type_traits>
 #include <boost/multi_array.hpp>
 #include <boost/operators.hpp>
