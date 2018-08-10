@@ -27,7 +27,6 @@
 #include <alps/hdf5/map.hpp>
 #include <alps/hdf5/vector.hpp>
 
-#include <boost/foreach.hpp>
 
 #ifdef ALPS_HAVE_MPI
 #include <alps/utilities/mpi_map.hpp>
@@ -117,7 +116,7 @@ namespace alps {
         bool params::has_unused_(std::ostream& out, const std::string* prefix_ptr) const
         {
             strvec unused;
-            BOOST_FOREACH(const strmap::value_type& kv, raw_kv_content_) {
+            for(const strmap::value_type& kv: raw_kv_content_) {
                 bool relevant = !prefix_ptr  // no specific prefix?
                                 || (prefix_ptr->empty() ? kv.first.find('.')==std::string::npos // top-level section?
                                                         : kv.first.find(*prefix_ptr+".")==0);   // starts with sec name?
@@ -153,7 +152,7 @@ namespace alps {
             std::string::size_type names_column_width=0;
 
             // prepare 2 columns: parameters and their description
-            BOOST_FOREACH(const td_map_type::value_type& tdp, td_map_) {
+            for(const td_map_type::value_type& tdp: td_map_) {
                 const std::string name_and_type=tdp.first + " (" +  tdp.second.typestr() + "):";
                 if (names_column_width<name_and_type.size()) names_column_width=name_and_type.size();
 
@@ -180,7 +179,7 @@ namespace alps {
             std::ostream::fmtflags oldfmt=out.flags();
             left(out);
             names_column_width += 4;
-            BOOST_FOREACH(const nd_pair& ndp, name_and_description) {
+            for(const nd_pair& ndp: name_and_description) {
                 out << std::left << std::setw(names_column_width) << ndp.first << ndp.second << "\n";
             }
             out.flags(oldfmt);
@@ -221,7 +220,7 @@ namespace alps {
             std::vector<string> all_args(argv+1,argv+argc);
             std::stringstream cmd_options;
             bool file_args_mode=false;
-            BOOST_FOREACH(const string& arg, all_args) {
+            for(const string& arg: all_args) {
                 if (file_args_mode) {
                     read_ini_file_(arg);
                     continue;
@@ -272,7 +271,7 @@ namespace alps {
         void params::read_ini_file_(const std::string& inifile)
         {
             detail::iniparser parser(inifile);
-            BOOST_FOREACH(const detail::iniparser::kv_pair& kv, parser()) {
+            for(const detail::iniparser::kv_pair& kv: parser()) {
                 // FIXME!!! Check for duplicates and optionally warn!
                 std::string key=kv.first;
                 if (!key.empty() && key[0]=='.') key.erase(0,1);
@@ -309,7 +308,7 @@ namespace alps {
             std::vector<std::string> raw_keys, raw_vals;
             raw_keys.reserve(raw_kv_content_.size());
             raw_vals.reserve(raw_kv_content_.size());
-            BOOST_FOREACH(const strmap::value_type& kv, raw_kv_content_) {
+            for(const strmap::value_type& kv: raw_kv_content_) {
                 raw_keys.push_back(kv.first);
                 raw_vals.push_back(kv.second);
             }
@@ -320,7 +319,7 @@ namespace alps {
             ar[context+"@help_header"]  << help_header_;
 
             std::vector<std::string> keys=ar.list_children(context);
-            BOOST_FOREACH(const std::string& key, keys) {
+            for(const std::string& key: keys) {
                 td_map_type::const_iterator it=td_map_.find(key);
 
                 if (it!=td_map_.end()) {
@@ -360,7 +359,7 @@ namespace alps {
                 }
             }
             std::vector<std::string> keys=ar.list_children(context);
-            BOOST_FOREACH(const std::string& key, keys) {
+            for(const std::string& key: keys) {
                 const std::string d_attr=key+"@description";
                 const std::string num_attr=key+"@defnumber";
                 if (ar.is_attribute(d_attr)) {
@@ -418,7 +417,7 @@ namespace alps {
             s << "[alps::params]"
               << " origins=" << p.origins_.data() << " status=" << p.err_status_
               << "\nRaw kv:\n";
-            BOOST_FOREACH(const params::strmap::value_type& kv, p.raw_kv_content_) {
+            for(const params::strmap::value_type& kv: p.raw_kv_content_) {
                 s << kv.first << "=" << kv.second << "\n";
             }
             s << "[alps::params] Dictionary:\n";

@@ -13,8 +13,6 @@
 
 #include <alps/params/iniparser_interface.hpp>
 
-#include <boost/foreach.hpp>
-
 namespace ap=alps::params_ns;
 using ap::dictionary;
 using ap::params;
@@ -63,7 +61,7 @@ class IniparserTest : public ::testing::Test {
 TEST_F(IniparserTest, printAll) {
     ap::detail::iniparser::kv_container_type kvs;
     kvs=parser_();
-    BOOST_FOREACH(const ap::detail::iniparser::kv_pair& kv, kvs) {
+    for(const ap::detail::iniparser::kv_pair& kv: kvs) {
         std::cout << "Key='" << kv.first << "' value='" << kv.second << "'\n";
     }
 }

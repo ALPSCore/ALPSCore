@@ -14,7 +14,6 @@
 
 #include <boost/throw_exception.hpp>
 #include <boost/lambda/lambda.hpp>
-#include <boost/foreach.hpp>
 #include <boost/array.hpp>
 
 #include <algorithm>
@@ -47,7 +46,7 @@ namespace alps {
         template<std::size_t N> struct inf<boost::array<double, N> > {
             operator boost::array<double, N> const() {
                 boost::array<double, N> retval;
-                BOOST_FOREACH(double & arg, retval) {
+                for(double & arg: retval) {
                     arg = std::numeric_limits<double>::infinity();
                 }
                 return retval;

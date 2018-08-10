@@ -14,7 +14,6 @@
 
 #include <alps/utilities/mpi.hpp>
 #include <map>
-#include <boost/foreach.hpp>
 
 namespace alps {
     namespace mpi {
@@ -33,7 +32,7 @@ namespace alps {
             broadcast(comm, root_sz, root);
               
             if (comm.rank()==root) {
-                BOOST_FOREACH(value_type& pair, a_map) {
+                for(value_type& pair: a_map) {
                     broadcast(comm, const_cast<K&>(pair.first), root);
                     broadcast(comm, pair.second, root);
                 }

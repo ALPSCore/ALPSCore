@@ -9,8 +9,6 @@
     @brief Tests parameter input from commandline
 */
 
-// #include <boost/foreach.hpp>
-
 #include "./params_test_support.hpp"
 
 #include <alps/params.hpp>

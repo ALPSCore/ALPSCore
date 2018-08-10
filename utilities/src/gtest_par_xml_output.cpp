@@ -7,8 +7,6 @@
 #include <string>
 #include <cstring>
 
-#include <boost/foreach.hpp>
-
 #include <alps/utilities/gtest_par_xml_output.hpp>
 #include <alps/utilities/fs/get_extension.hpp>
 
@@ -49,7 +47,7 @@ namespace alps {
 
     gtest_par_xml_output::~gtest_par_xml_output()
     {
-        BOOST_FOREACH(char* p, keeper_) {
+        for(char* p : keeper_) {
             // std::cerr << "DEBUG: gtest_par_xml_output() deallocate ptr=" << (void*)p << "\n";
             delete[] p;
         }

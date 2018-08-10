@@ -16,7 +16,6 @@
 #include <alps/utilities/mpi.hpp>
 #include <string>
 
-#include <boost/foreach.hpp>
 #include <boost/container/vector.hpp>
 
 namespace alps {
@@ -36,7 +35,7 @@ namespace alps {
             if (comm.rank() != root) {
                 vec.resize(root_sz);
             }
-            BOOST_FOREACH(std::string& elem, vec) {
+            for(std::string& elem: vec) {
                 broadcast(comm, elem, root);
             }
         }

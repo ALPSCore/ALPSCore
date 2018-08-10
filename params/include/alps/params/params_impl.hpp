@@ -13,7 +13,6 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
 #include <locale> // FIXME: needed only for boolean conversions
-#include <boost/foreach.hpp> // FIXME: needed only for boolean conversions
 
 namespace alps {
     namespace params_ns {
@@ -44,7 +43,7 @@ namespace alps {
             struct parse_string<bool> {
                 static boost::optional<bool> apply(std::string in) {
                     std::locale c_locale("C");
-                    BOOST_FOREACH(char& c, in) { // FIXME:C++11
+                    for(char& c: in) { 
                         c=tolower(c, c_locale);
                     }
                     boost::optional<bool> result;
