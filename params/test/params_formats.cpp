@@ -9,8 +9,6 @@
     @brief Tests various input formats for parameters
 */
 
-#include <boost/foreach.hpp>
-
 #include "./params_test_support.hpp"
 
 namespace ap=alps::params_ns;
