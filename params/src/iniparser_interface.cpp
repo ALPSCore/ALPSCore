@@ -15,7 +15,6 @@
 #include <algorithm>
 #include <iterator>
 
-#include <boost/foreach.hpp>
 
 namespace alps {
     namespace params_ns {

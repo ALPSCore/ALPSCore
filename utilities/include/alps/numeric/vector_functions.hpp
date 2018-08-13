@@ -19,7 +19,6 @@
 #include <boost/accumulators/numeric/functional.hpp> 
 
 #include <boost/bind.hpp>
-#include <boost/foreach.hpp>
 #include <boost/lambda/bind.hpp>
 #include <boost/lambda/lambda.hpp>
 #include <boost/throw_exception.hpp>

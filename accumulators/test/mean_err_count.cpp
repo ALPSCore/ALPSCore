@@ -8,7 +8,6 @@
     Test basic accumulator statistics.
 */
 
-#include <boost/foreach.hpp>
 #include <boost/math/special_functions/fpclassify.hpp> /* for portable isinf() */
 
 #include "alps/accumulators.hpp"
@@ -227,7 +226,7 @@ struct AccumulatorStatInfErrTest : public AccumulatorStatTest<G> {
     static bool is_inf(const std::vector<T>& val) {
         EXPECT_FALSE(val.empty()) << "Error vector is empty!!";
         if (val.empty()) return false;
-        BOOST_FOREACH(const T& elem, val) {
+        for(const T& elem: val) {
             if (!is_inf(elem)) return false;
         }
         return true;
