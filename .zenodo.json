@@ -2,20 +2,20 @@
     "license": "other-open", 
     "creators": [
         {
-            "affiliation": "University of Michigan, Ann Arbor, MI, USA", 
-            "name": "Alexander Gaenko"
+            "name": "Alexander Gaenko",
+            "affiliation": "University of Michigan, Ann Arbor, MI, USA"
         }, 
         {
-            "affiliation": "University of Michigan, Ann Arbor, MI, USA",
-            "name": "Andrey E. Antipov"
+            "name": "Andrey E. Antipov",
+            "affiliation": "University of Michigan, Ann Arbor, MI, USA"
         }, 
         {
             "name": "Gabriele Carcassi",
             "affiliation": "University of Michigan, Ann Arbor, MI, USA"
         }, 
         {
-            "affiliation": "ETH Zurich, Zurich, Switzerland",
-            "name": "Lukas Gamper"
+            "name": "Lukas Gamper",
+            "affiliation": "ETH Zurich, Zurich, Switzerland"
         }, 
         {
             "name": "Tianran Chen",
@@ -46,12 +46,24 @@
             "affiliation": "ETH Zurich, Zurich, Switzerland"
         }, 
         {
+            "name": "Joseph Kleinhenz",
+            "affiliation": "University of Michigan, Ann Arbor, MI, USA"
+        }, 
+        {
+          "name": "Igor Krivenko",
+          "affiliation": "University of Michigan, Ann Arbor, MI, USA"
+        }, 
+        {
             "name": "James P.F. LeBlanc",
             "affiliation": "Memorial University of Newfoundland, Newfoundland & Labrador, Canada"
         },
         {
             "name": "Ryan Levy",
             "affiliation": "University of Illinois, Urbana-Champaign, IL, USA"
+        }, 
+        {
+            "name": "Jia Li",
+            "affiliation": "University of Michigan, Ann Arbor, MI, USA"
         }, 
         {
             "name": "Tama Ma",
@@ -74,8 +86,12 @@
             "affiliation": "ETH Zurich, Zurich, Switzerland"
         }, 
         {
-            "affiliation": "University of Michigan, Ann Arbor, MI, USA", 
-            "name": "Emanuel Gull"
+            "name": "Markus Wallerberger",
+            "affiliation": "University of Michigan, Ann Arbor, MI, USA"
+        }, 
+        {
+            "name": "Emanuel Gull",
+            "affiliation": "University of Michigan, Ann Arbor, MI, USA"
         }
     ], 
     "access_right": "open", 
