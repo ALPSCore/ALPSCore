@@ -497,9 +497,9 @@ TEST(TensorTest, ValueAssignment) {
   int value = 5;
   X.set_number(value);
   Z.set_number(value);
-  for(int i = 0; i<N; ++i){
-    for (int j = 0; j < N; ++j) {
-      for (int k = 0; k < N; ++k) {
+  for(size_t i = 0; i<N; ++i){
+    for (size_t j = 0; j < N; ++j) {
+      for (size_t k = 0; k < N; ++k) {
         ASSERT_EQ(X(i,j,k), value);
         ASSERT_EQ(Z(i,j,k), std::complex<double>(value));
       }
@@ -507,9 +507,9 @@ TEST(TensorTest, ValueAssignment) {
   }
   X.set_zero();
   Z.set_zero();
-  for(int i = 0; i<N; ++i){
-    for (int j = 0; j < N; ++j) {
-      for (int k = 0; k < N; ++k) {
+  for(size_t i = 0; i<N; ++i){
+    for (size_t j = 0; j < N; ++j) {
+      for (size_t k = 0; k < N; ++k) {
         ASSERT_EQ(X(i,j,k), 0.0);
         ASSERT_EQ(Z(i,j,k), std::complex<double>(0.0));
       }
@@ -520,9 +520,9 @@ TEST(TensorTest, ValueAssignment) {
 TEST(TensorTest, Negate) {
   size_t N = 10;
   tensor <double, 3> X(N, N, N);
-  for(int i = 0; i<N; ++i){
-    for (int j = 0; j < N; ++j) {
-      for (int k = 0; k < N; ++k) {
+  for(size_t i = 0; i<N; ++i){
+    for (size_t j = 0; j < N; ++j) {
+      for (size_t k = 0; k < N; ++k) {
         X(i,j,k) = double(i*N + j*N*N + k)/double(N*N);
       }
     }
@@ -530,9 +530,9 @@ TEST(TensorTest, Negate) {
   tensor <double, 3> Y = -X;
   tensor<std::complex<double>, 3> Z = -Y;
   tensor<float, 3> W = -X;
-  for(int i = 0; i<N; ++i){
-    for (int j = 0; j < N; ++j) {
-      for (int k = 0; k < N; ++k) {
+  for(size_t i = 0; i<N; ++i){
+    for (size_t j = 0; j < N; ++j) {
+      for (size_t k = 0; k < N; ++k) {
         ASSERT_EQ(X(i,j,k), -Y(i,j,k));
         ASSERT_EQ(std::complex<double>(X(i,j,k)), Z(i,j,k));
         ASSERT_NEAR(X(i,j,k), -W(i,j,k), 1e-6);
@@ -540,4 +540,3 @@ TEST(TensorTest, Negate) {
     }
   }
 }
-
