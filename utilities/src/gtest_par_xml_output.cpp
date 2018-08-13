@@ -7,8 +7,6 @@
 #include <string>
 #include <cstring>
 
-#include <boost/foreach.hpp>
-
 #include <alps/utilities/gtest_par_xml_output.hpp>
 #include <alps/utilities/fs/get_extension.hpp>
 
@@ -24,7 +22,7 @@ namespace alps {
 
         for (int i=1; i<argc; ++i) {
             std::string arg(argv[i]);
-            if (arg.compare(0,prefix_len,option_prefix)!=0) continue; // starts with prefix? 
+            if (arg.compare(0,prefix_len,option_prefix)!=0) continue; // starts with prefix?
             arg.replace(0,prefix_len, "",0); // remove the prefix; arg is "argument" after "=xml"
             std::string arg_new;
             if (arg.empty()) { // "=xml"
@@ -49,7 +47,7 @@ namespace alps {
 
     gtest_par_xml_output::~gtest_par_xml_output()
     {
-        BOOST_FOREACH(char* p, keeper_) {
+        for(char* p : keeper_) {
             // std::cerr << "DEBUG: gtest_par_xml_output() deallocate ptr=" << (void*)p << "\n";
             delete[] p;
         }
