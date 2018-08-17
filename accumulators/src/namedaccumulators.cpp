@@ -23,7 +23,7 @@ namespace alps {
         template<typename T>
         MeanAccumulator<T>& MeanAccumulator<T>::operator=(const MeanAccumulator& rhs)
         {
-            return static_cast<MeanAccumulator&>(*this=rhs);
+            return static_cast<MeanAccumulator&>(*static_cast<base_type*>(this)=rhs);
         }
 
         template<typename T>
@@ -41,7 +41,7 @@ namespace alps {
         template<typename T>
         NoBinningAccumulator<T>& NoBinningAccumulator<T>::operator=(const NoBinningAccumulator& rhs)
         {
-            return static_cast<NoBinningAccumulator&>(*this=rhs);
+            return static_cast<NoBinningAccumulator&>(*static_cast<base_type*>(this)=rhs);
         }
 
         template<typename T>
@@ -59,7 +59,7 @@ namespace alps {
         template<typename T>
         LogBinningAccumulator<T>& LogBinningAccumulator<T>::operator=(const LogBinningAccumulator& rhs)
         {
-                return static_cast<LogBinningAccumulator&>(*this=rhs);
+                return static_cast<LogBinningAccumulator&>(*static_cast<base_type*>(this)=rhs);
         }
 
         template<typename T>
@@ -83,7 +83,7 @@ namespace alps {
         template<typename T>
         FullBinningAccumulator<T>& FullBinningAccumulator<T>::operator=(const FullBinningAccumulator& rhs)
         {
-            return static_cast<FullBinningAccumulator&>(*this=rhs);
+            return static_cast<FullBinningAccumulator&>(*static_cast<base_type*>(this)=rhs);
         }
 
         template<typename T>
@@ -122,4 +122,3 @@ namespace alps {
         BOOST_PP_SEQ_FOR_EACH(ALPS_ACCUMULATOR_INST_OPERATOR_TYPE, ~, ALPS_ACCUMULATOR_VALUE_TYPES_SEQ)
     }
 }
-
