@@ -75,6 +75,7 @@ namespace alps {
             impl::Accumulator<T, mean_tag, impl::Accumulator<T, count_tag, impl::AccumulatorBase<T> > >
         > {
             typedef typename impl::Accumulator<T, mean_tag, impl::Accumulator<T, count_tag, impl::AccumulatorBase<T> > > accumulator_type;
+            typedef detail::AccumulatorBase<accumulator_type> base_type;
             typedef typename accumulator_type::result_type result_type;
             BOOST_PARAMETER_CONSTRUCTOR(
                 MeanAccumulator,
@@ -91,6 +92,7 @@ namespace alps {
             typename impl::Accumulator<T, error_tag, typename MeanAccumulator<T>::accumulator_type>
         > {
             typedef typename impl::Accumulator<T, error_tag, typename MeanAccumulator<T>::accumulator_type> accumulator_type;
+            typedef detail::AccumulatorBase<accumulator_type> base_type;
             typedef typename accumulator_type::result_type result_type;
             BOOST_PARAMETER_CONSTRUCTOR(
                 NoBinningAccumulator,
@@ -106,6 +108,7 @@ namespace alps {
             typename impl::Accumulator<T, binning_analysis_tag, typename NoBinningAccumulator<T>::accumulator_type>
         > {
             typedef typename impl::Accumulator<T, binning_analysis_tag, typename NoBinningAccumulator<T>::accumulator_type> accumulator_type;
+            typedef detail::AccumulatorBase<accumulator_type> base_type;
             typedef typename accumulator_type::result_type result_type;
             BOOST_PARAMETER_CONSTRUCTOR(
                 LogBinningAccumulator,
@@ -125,6 +128,7 @@ namespace alps {
             typename impl::Accumulator<T, max_num_binning_tag, typename LogBinningAccumulator<T>::accumulator_type>
         > {
             typedef typename impl::Accumulator<T, max_num_binning_tag, typename LogBinningAccumulator<T>::accumulator_type> accumulator_type;
+            typedef detail::AccumulatorBase<accumulator_type> base_type;
             typedef typename accumulator_type::result_type result_type;
             BOOST_PARAMETER_CONSTRUCTOR(
                 FullBinningAccumulator,
@@ -155,4 +159,3 @@ namespace alps {
 
     }
 }
-
