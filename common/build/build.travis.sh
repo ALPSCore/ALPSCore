@@ -27,6 +27,7 @@ cmake $alpscore_src                                   \
 -DCMAKE_BUILD_TYPE=Debug                              \
 -DCMAKE_C_COMPILER=${ALPS_CC:-${CC}}                  \
 -DALPS_CXX_STD=$ALPS_CXX_STD                          \
+-DCMAKE_CXX_FLAGS='-Wall -Werror'                     \
 -DCMAKE_CXX_COMPILER=${ALPS_CXX:-${CXX}}              \
 -DCMAKE_INSTALL_PREFIX=$TRAVIS_BUILD_DIR/installed    \
 -DALPS_INSTALL_EIGEN=true                             \
