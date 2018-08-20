@@ -15,7 +15,7 @@
 namespace aa=alps::accumulators;
 
 template <typename NAMED_ACC>
-struct AccumulatorTest {
+struct AccumulatorTest : public ::testing::Test  {
     typedef NAMED_ACC named_acc_type;
     typedef typename aa::value_type<typename named_acc_type::accumulator_type>::type value_type;
 
@@ -40,15 +40,14 @@ struct AccumulatorTest {
     }
 };
 
-#define MAKE_TESTS(_acc_,_type_)                                      \
-    TEST(accumulators, AssignNamed ## _acc_ ## T ## _type_) {              \
-        AccumulatorTest< aa::_acc_<_type_> >::assign_named();         \
-    }                                                                 \
-    TEST(accumulators, SelfAssignNamed ## _acc_ ## T ## _type_) {          \
-        AccumulatorTest< aa::_acc_<_type_> >::self_assign_named();    \
-    }
+using AccTypes=::testing::Types<
+    aa::MeanAccumulator<double>,
+    aa::NoBinningAccumulator<double>,
+    aa::LogBinningAccumulator<double>,
+    aa::FullBinningAccumulator<double>
+    >;
 
-MAKE_TESTS(MeanAccumulator, double)
-MAKE_TESTS(NoBinningAccumulator, double)
-MAKE_TESTS(LogBinningAccumulator, double)
-MAKE_TESTS(FullBinningAccumulator, double)
+TYPED_TEST_CASE(AccumulatorTest, AccTypes);
+
+TYPED_TEST(AccumulatorTest, AssignNamed) { this->assign_named(); }
+TYPED_TEST(AccumulatorTest, SelfAssignNamed) { this->self_assign_named(); }
