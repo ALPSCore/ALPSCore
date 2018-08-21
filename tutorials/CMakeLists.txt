@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.1)
 project("ALPSCore_Tutorials" LANGUAGES CXX)
 
 add_subdirectory("linking")
+add_subdirectory("use_boost")
 add_subdirectory("use_eigen")
 add_subdirectory("params/cmd_params")
 add_subdirectory("params/code_params")
