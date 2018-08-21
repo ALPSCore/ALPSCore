@@ -17,10 +17,11 @@ if [ -n "$ALPS_BOOST_VERSION" ]; then
 fi
 
 # Build ALPSCore
+alpscore_src=$PWD
 mkdir -pv build
 mkdir -pv install
 cd build
-cmake ..                                              \
+cmake $alpscore_src                                   \
 -DCMAKE_BUILD_TYPE=Debug                              \
 -DCMAKE_C_COMPILER=${ALPS_CC:-${CC}}                  \
 -DALPS_CXX_STD=$ALPS_CXX_STD                          \
@@ -46,3 +47,8 @@ time make -j$ncores
 # (this might help detect timing-dependent bugs)
 time env ALPS_TEST_MPI_NPROC=$[$ncores+1] make test
 make install
+
+# Test tutorials build
+mkdir -pv tutorials
+cd tutorials
+ALPSCore_DIR=$TRAVIS_BUILD_DIR/installed cmake $alpscore_src/tutorials
