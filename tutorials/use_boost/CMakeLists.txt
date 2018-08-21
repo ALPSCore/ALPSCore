@@ -21,9 +21,14 @@ target_link_libraries(use_boost_header ${ALPSCore_LIBRARIES})
 
 # If our code uses some Boost library, we will need to ask CMake to find it.
 # Because we search for Boost after searching for ALPSCore,
-# CMake should find the same Boost version.
+# CMake will likely find the same Boost version,
+# but we may as well ask for it specifically.
 # Let's ask for "filesystem" package (which itself depends on "system")
-find_package(Boost REQUIRED filesystem system)
+
+message("ALPSCore used Boost version ${ALPSCore_BOOST_VERSION}")
+find_package(Boost ${ALPSCore_BOOST_VERSION} EXACT REQUIRED filesystem system)
+
+message("Found Boost libraries: ${Boost_LIBRARIES}")
 
 # Our executable "use_boost_fs" is made from a single source file "use_boost_fs.cpp"
 add_executable(use_boost_fs use_boost_fs.cpp)

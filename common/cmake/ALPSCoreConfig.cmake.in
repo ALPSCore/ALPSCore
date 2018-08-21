@@ -99,9 +99,8 @@ function(alpscore_config_main_)
       list(REMOVE_DUPLICATES alps_boost_librarydir_)
       set(BOOST_LIBRARYDIR ${alps_boost_librarydir_} PARENT_SCOPE)
     endif()
-    set(Boost_NO_SYSTEM_PATHS true PARENT_SCOPE)
     
-    
+    set(ALPSCore_BOOST_VERSION @ALPSCore_BOOST_VERSION@ PARENT_SCOPE)
     set(ALPSCore_LIBRARIES ${ALPSCore_LIBRARIES} PARENT_SCOPE)
     set(ALPSCore_COMPONENTS ${ALPSCore_FIND_COMPONENTS} PARENT_SCOPE)
 endfunction(alpscore_config_main_)
