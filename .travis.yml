@@ -50,3 +50,8 @@ before_script:
 
 script:
   - ./common/build/build.travis.sh
+
+# Dump CMake caches and the generated *.cmake files in case of failure
+after_failure:
+  - more $(find $TRAVIS_BUILD_DIR -type f -name CMakeCache.txt) </dev/null | cat
+  - more $(find $TRAVIS_BUILD_DIR/installed -type f -name '*.cmake') </dev/null | cat
