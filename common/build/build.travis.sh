@@ -18,6 +18,13 @@ if [ -n "$ALPS_BOOST_VERSION" ]; then
   no_boost_libs=true
 fi
 
+# FIXME: A hack to suppress warnings in MPI headers
+mpi_warning_hack=""
+if [[ "$ENABLE_MPI" == "ON" ]]; then
+    mpi_incdirs=" $(mpic++ -showme:incdirs)"
+    mpi_warning_hack="${mpi_incdirs// / -isystem }"
+fi
+
 # Build ALPSCore
 alpscore_src=$PWD
 mkdir -pv build
@@ -27,7 +34,7 @@ cmake $alpscore_src                                   \
 -DCMAKE_BUILD_TYPE=Debug                              \
 -DCMAKE_C_COMPILER=${ALPS_CC:-${CC}}                  \
 -DALPS_CXX_STD=$ALPS_CXX_STD                          \
--DCMAKE_CXX_FLAGS='-Wall -Werror'                     \
+-DCMAKE_CXX_FLAGS="-Wall -Werror ${mpi_warning_hack}"   \
 -DCMAKE_CXX_COMPILER=${ALPS_CXX:-${CXX}}              \
 -DCMAKE_INSTALL_PREFIX=$TRAVIS_BUILD_DIR/installed    \
 -DALPS_INSTALL_EIGEN=true                             \
