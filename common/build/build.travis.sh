@@ -6,6 +6,7 @@ set -ev
 
 # Explicitly download Boost, if a specific version is requested
 boost_cmake_params=""
+no_boost_libs=false
 if [ -n "$ALPS_BOOST_VERSION" ]; then
   download_dir=$HOME/boost
   mkdir -pv $download_dir
@@ -14,6 +15,7 @@ if [ -n "$ALPS_BOOST_VERSION" ]; then
   wget -S -O $boost_tgz $boost_url
   tar -C $download_dir -xzf $boost_tgz
   boost_cmake_params="-DBoost_NO_SYSTEM_PATHS=true -DBoost_NO_BOOST_CMAKE=true -DBOOST_ROOT=$download_dir/boost_${ALPS_BOOST_VERSION}"
+  no_boost_libs=true
 fi
 
 # Build ALPSCore
@@ -51,4 +53,4 @@ make install
 # Test tutorials build
 mkdir -pv tutorials
 cd tutorials
-ALPSCore_DIR=$TRAVIS_BUILD_DIR/installed cmake $alpscore_src/tutorials
+ALPSCore_DIR=$TRAVIS_BUILD_DIR/installed cmake $alpscore_src/tutorials -DALPS_TUTORIALS_NO_BOOST_LIBS=${no_boost_libs}

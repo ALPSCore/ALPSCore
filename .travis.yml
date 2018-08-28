@@ -13,6 +13,7 @@ addons:
       - sourceline: ppa:kzemek/boost
     packages:
       - libboost1.58-dev
+      - libboost-filesystem1.58-dev # for `use_boost` tutorial
       - openmpi-bin
       - openmpi-common
       - openmpi-doc
