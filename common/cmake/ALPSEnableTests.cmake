@@ -13,7 +13,15 @@ function(UseGtest gtest_root)
 
     message(STATUS "gtest is in ${gtest_root}")
     if (NOT TARGET ${gtest_root})
+        # Hack to suppress all warnings in gtest
+        set(save_cxx_flags_ ${CMAKE_CXX_FLAGS})
+        set(save_c_flags_ ${CMAKE_C_FLAGS})
+        # FIXME: this is actually gcc/clang/icc specific
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -w")
         add_subdirectory(${gtest_root} ${PROJECT_BINARY_DIR}/gtest)
+        set(CMAKE_CXX_FLAGS ${save_cxx_flags_})
+        set(CMAKE_C_FLAGS ${save_c_flags_})
     endif()
             
     # export gtest variables
@@ -36,7 +44,7 @@ if (NOT tests_are_already_enabled)
     unset(gtest_root)
     find_package(GTest)
     # set (LINK_TEST  ${GTEST_MAIN_LIBRARIES}) 
-    include_directories(${GTEST_INCLUDE_DIRS})
+    include_directories(SYSTEM ${GTEST_INCLUDE_DIRS})
     set(tests_are_already_enabled TRUE)
 endif(NOT tests_are_already_enabled)
 
