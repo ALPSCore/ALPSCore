@@ -240,11 +240,12 @@ namespace alps {
                     if (hdf5_path) {
                         boost::optional<alps::hdf5::archive> maybe_ar=try_open_ar(arg, "r");
                         if (maybe_ar) {
-                            if (all_args.size()!=1) throw std::invalid_argument("HDF5 arhive must be the only argument");
+                            // if (all_args.size()!=1) throw std::invalid_argument("HDF5 arhive must be the only argument");
                             maybe_ar->set_context(hdf5_path);
                             this->load(*maybe_ar);
                             origins_.data()[origins_type::ARCHNAME]=all_args[0];
-                            return;
+                            // return;
+                            continue;
                         }
                     }
                     read_ini_file_(arg);
