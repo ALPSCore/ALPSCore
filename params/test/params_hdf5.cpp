@@ -179,9 +179,10 @@ TEST_F(ParamsTest, h5CtorOverride) {
             params p_new(args.argc(), args.argv());
             FAIL() << "Ctor of `p_new` is expected to throw; it doesn't";
         } catch (const alps::params_ns::exception::value_mismatch& exc) {
-            EXPECT_TRUE(std::string(exc.what()).find("my_num") != std::string::npos) << "Expected mention of the key";
-            EXPECT_TRUE(std::string(exc.what()).find("certainly_not_a_number") != std::string::npos) << "Expected mention of the value";
-            EXPECT_TRUE(std::string(exc.what()).find("'int'") != std::string::npos) << "Expected mention of the type";
+            const std::string msg=exc.what();
+            EXPECT_TRUE(msg.find("my_num") != std::string::npos) << "Expected mention of the key";
+            EXPECT_TRUE(msg.find("certainly_not_a_number") != std::string::npos) << "Expected mention of the value";
+            EXPECT_TRUE(msg.find("'int'") != std::string::npos) << "Expected mention of the type";
             // std::cout << "DEBUG: exception message: '" << exc.what() << "'\n";
         } catch (...) {
             FAIL() << "Ctor of `p_new` throws the wrong exception type";
