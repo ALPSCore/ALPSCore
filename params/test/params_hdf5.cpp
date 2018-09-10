@@ -188,14 +188,3 @@ TEST_F(ParamsTest, h5CtorOverride) {
         }
     }
 }
-
-TEST_F(ParamsTest, h5CtorNotFirstArgument) {
-    {
-        ah5::archive ar(file_.name(), "w");
-        ar["/parameters"] << par_;
-    }
-    arg_holder args;
-    args.add("some=something").add(file_.name());
-
-    EXPECT_ANY_THROW(params p_new(args.argc(), args.argv()));
-}
