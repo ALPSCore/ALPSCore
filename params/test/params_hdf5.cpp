@@ -19,9 +19,10 @@ namespace ah5=alps::hdf5;
 namespace test_data {
     static const char inifile_content[]=
         "my_bool=true\n"
-        "my_int=1234\n"
+        "my_num=1234\n"
         "my_string=ABC\n"
         "my_double=12.75\n"
+        "my_intvec=1,2,3,4\n"
         ;
 
 }
@@ -45,7 +46,7 @@ TEST_F(ParamsTest, saveLoad) {
     params p_other(args.argc(), args.argv());
     p_other["another_int"]=9999;
 
-    par_.define<int>("my_int", "Integer param");
+    par_.define<int>("my_num", "Number param");
     par_.define<double>("my_double", 0.00, "Double param");
 
     {
@@ -93,49 +94,99 @@ TEST_F(ParamsTest, h5Ctor) {
     EXPECT_EQ(file_.name(), p_new.get_archive_name());
 }
 
-// struct define_visitor {
-//     params& p_;
-//     const std::string& name_;
-//     const std::string& descr_;
-
-//     define_visitor(params& p, const std::string& name, const std::string& descr): p_(p), name_(name), descr_(descr) {}
-//     typedef void result_type;
-//     template <typename T>
-//     void operator()(const T& val) {
-//         p_.define<T>(name_, descr_, val);
-//     }
-// };
-
+// FIXME: this test shoudl be split into 3: for a scalar, for a vector, for a wrong-formatted value
 TEST_F(ParamsTest, h5CtorOverride) {
+    typedef std::vector<int> intvec;
     {
         ah5::archive ar(file_.name(), "w");
         par_
             .define<bool>("my_bool","Boolean")
-            .define<int>("my_int", "Integer")
+            .define<int>("my_num", "Integer")
             .define<std::string>("my_string", "String")
-            .define<double>("my_double", "Double");
+            .define<double>("my_double", "Double")
+            .define<intvec>("my_intvec", "Integer vector");
         ar["/parameters"] << par_;
     }
-    arg_holder args;
-    args.add(file_.name()).add("my_int=7777");
 
-    params p_new(args.argc(), args.argv());
+    // Testing a scalar, file not in 1st position
+    {
+        arg_holder args;
+        args.add("my_num=7777").add(file_.name());
 
-    // params p_loaded(1, args.argv());
-    // params p_new(args.argc()-1, args.argv()+1);
-    // for (auto it=p_loaded.begin(), fin=p_loaded.end(); it!=fin; ++it) {
-    //     apply_visitor(define_visitor(p_new, fin->name(), const std::string &descr)
-    // }
+        params p_new(args.argc(), args.argv());
 
+        EXPECT_EQ(true, p_new["my_bool"]);
+        EXPECT_EQ("ABC", p_new["my_string"]);
+        EXPECT_EQ(12.75, p_new["my_double"]);
+        EXPECT_EQ(7777, p_new["my_num"]);
 
-    p_new.define<bool>("my_bool","Boolean")
-        .define<int>("my_int", "Integer")
-        .define<std::string>("my_string", "String")
-        .define<double>("my_double", "Double");
-    EXPECT_EQ(true, p_new["my_bool"]);
-    EXPECT_EQ("ABC", p_new["my_string"]);
-    EXPECT_EQ(12.75, p_new["my_double"]);
-    EXPECT_EQ(7777, p_new["my_int"]);
+        p_new
+            .define<bool>("my_bool","Boolean")
+            .define<int>("my_num", "Integer")
+            .define<std::string>("my_string", "String")
+            .define<double>("my_double", "Double");
+
+        EXPECT_EQ(true, p_new["my_bool"]);
+        EXPECT_EQ("ABC", p_new["my_string"]);
+        EXPECT_EQ(12.75, p_new["my_double"]);
+        EXPECT_EQ(7777, p_new["my_num"]);
+    }
+
+    // Testing a vector
+    {
+        arg_holder args;
+        args.add(file_.name()).add("my_intvec=9,9,9");
+
+        params p_new(args.argc(), args.argv());
+
+        EXPECT_EQ(true, p_new["my_bool"]);
+        EXPECT_EQ("ABC", p_new["my_string"]);
+        EXPECT_EQ(12.75, p_new["my_double"]);
+        EXPECT_EQ(1234, p_new["my_num"]);
+
+        const intvec expected_vec={9,9,9};
+
+        intvec actual_vec=p_new["my_intvec"];
+        ASSERT_EQ(expected_vec.size(), actual_vec.size());
+        for (std::size_t i=0; i<actual_vec.size(); ++i) {
+            EXPECT_EQ(expected_vec[i], actual_vec[i]) << "for i=" << i;
+        }
+
+        p_new
+            .define<bool>("my_bool","Boolean")
+            .define<int>("my_num", "Integer")
+            .define<std::string>("my_string", "String")
+            .define<double>("my_double", "Double");
+
+        EXPECT_EQ(true, p_new["my_bool"]);
+        EXPECT_EQ("ABC", p_new["my_string"]);
+        EXPECT_EQ(12.75, p_new["my_double"]);
+        EXPECT_EQ(1234, p_new["my_num"]);
+
+        actual_vec=p_new["my_intvec"];
+        ASSERT_EQ(expected_vec.size(), actual_vec.size());
+        for (std::size_t i=0; i<actual_vec.size(); ++i) {
+            EXPECT_EQ(expected_vec[i], actual_vec[i]) << "for i=" << i;
+        }
+    }
+
+    // Testing an invalid value
+    {
+        arg_holder args;
+        args.add(file_.name()).add("my_num=certainly_not_a_number");
+
+        try {
+            params p_new(args.argc(), args.argv());
+            FAIL() << "Ctor of `p_new` is expected to throw; it doesn't";
+        } catch (const alps::params_ns::exception::value_mismatch& exc) {
+            EXPECT_TRUE(std::string(exc.what()).find("my_num") != std::string::npos) << "Expected mention of the key";
+            EXPECT_TRUE(std::string(exc.what()).find("certainly_not_a_number") != std::string::npos) << "Expected mention of the value";
+            EXPECT_TRUE(std::string(exc.what()).find("'int'") != std::string::npos) << "Expected mention of the type";
+            // std::cout << "DEBUG: exception message: '" << exc.what() << "'\n";
+        } catch (...) {
+            FAIL() << "Ctor of `p_new` throws the wrong exception type";
+        }
+    }
 }
 
 TEST_F(ParamsTest, h5CtorNotFirstArgument) {

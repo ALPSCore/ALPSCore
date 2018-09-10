@@ -20,9 +20,8 @@
 
 #include <alps/testing/fp_compare.hpp>
 
-// #include <alps/testing/unique_file.hpp> // FIXME!!! Temporary!
 #include <alps/utilities/temporary_filename.hpp> // FIXME!!! Temporary!
-#include <fstream> // FIXME!!! Temporary!
+#include <fstream>
 
 #include <alps/hdf5/map.hpp>
 #include <alps/hdf5/vector.hpp>
@@ -54,6 +53,47 @@ namespace alps {
                     return alps::hdf5::archive(fname, mode);
                 } catch (alps::hdf5::archive_error& ) {
                     return boost::none;
+                }
+            };
+
+
+            // Helper function to read INI file into the provided map
+            template <typename MAP_T>
+            void ini_file_to_map(const std::string& ini_name, MAP_T& map)
+            {
+                detail::iniparser parser(ini_name);
+                for(const detail::iniparser::kv_pair& kv: parser()) {
+                    // FIXME!!! Check for duplicates and optionally warn!
+                    std::string key=kv.first;
+                    if (!key.empty() && key[0]=='.') key.erase(0,1);
+                    map[key]=kv.second;
+                }
+            }
+
+            // Helper functor to convert a string to a value of the
+            // same type as a dict_value and assign it to the dict_value
+            class parse_visitor {
+                const std::string& strparam_val_;
+                dictionary::value_type& dictval_;
+              public:
+                typedef bool result_type;
+
+                parse_visitor(const std::string& strparam_val, dictionary::value_type& dval):
+                    strparam_val_(strparam_val), dictval_(dval)
+                {}
+
+                template <typename BOUND_T>
+                result_type operator()(const BOUND_T& bound_val) const
+                {
+                    boost::optional<BOUND_T> maybe_val=detail::parse_string<BOUND_T>::apply(strparam_val_);
+                    if (!maybe_val) return false;
+                    dictval_=*maybe_val;
+                    return true;
+                }
+
+                result_type operator()(const dictionary::value_type::None&) const
+                {
+                    return true;
                 }
             };
 
@@ -219,6 +259,7 @@ namespace alps {
 
             std::vector<string> all_args(argv+1,argv+argc);
             std::stringstream cmd_options;
+            bool is_restored=false;
             bool file_args_mode=false;
             for(const string& arg: all_args) {
                 if (file_args_mode) {
@@ -240,11 +281,10 @@ namespace alps {
                     if (hdf5_path) {
                         boost::optional<alps::hdf5::archive> maybe_ar=try_open_ar(arg, "r");
                         if (maybe_ar) {
-                            // if (all_args.size()!=1) throw std::invalid_argument("HDF5 arhive must be the only argument");
                             maybe_ar->set_context(hdf5_path);
                             this->load(*maybe_ar);
                             origins_.data()[origins_type::ARCHNAME]=all_args[0];
-                            // return;
+                            is_restored=true;
                             continue;
                         }
                     }
@@ -259,25 +299,39 @@ namespace alps {
             }
             // FIXME!!!
             // This is very inefficient and is done only for testing.
-            // // alps::testing::unique_file tmpfile(origins_.data()[origins_type::ARGV0]+".param.ini", alps::testing::unique_file::REMOVE_AFTER);
-            // // std::ofstream tmpstream(tmpfile.name().c_str());
             std::string tmpfile_name=alps::temporary_filename("tmp_ini_file");
             std::ofstream tmpstream(tmpfile_name.c_str());
             tmpstream << cmd_options.rdbuf();
             tmpstream.close();
-            read_ini_file_(tmpfile_name);
-            origins_.data().pop_back(); // remove the "invisible" ini file
+            ini_file_to_map(tmpfile_name, raw_kv_content_);
+
+            if (is_restored) {
+                // The parameter object was restored from archive, and
+                // some key-values may have been supplied. We need to
+                // go through the already `define<T>()`-ed map values
+                // and try to parse the supplied string values as the
+                // corresponding types.
+
+                // It's a bit of a mess:
+                // 1) We rely on that we can iterate over dictionary as a map
+                // 2) Although it's const-iterator, we know that underlying map can be modified
+                for (auto& kv: *this) {
+                    const auto& key=kv.first;
+                    auto raw_kv_it=raw_kv_content_.find(key);
+                    if (raw_kv_it != raw_kv_content_.end()) {
+                        bool ok=apply_visitor(parse_visitor(raw_kv_it->second, const_cast<dictionary::value_type&>(kv.second)), kv.second);
+                        if (!ok) {
+                            const auto typestr=td_map_[key].typestr();
+                            throw exception::value_mismatch(key, "String '"+raw_kv_it->second+"' can't be parsed as type '"+typestr+"'");
+                        }
+                    }
+                }
+            }
         }
 
         void params::read_ini_file_(const std::string& inifile)
         {
-            detail::iniparser parser(inifile);
-            for(const detail::iniparser::kv_pair& kv: parser()) {
-                // FIXME!!! Check for duplicates and optionally warn!
-                std::string key=kv.first;
-                if (!key.empty() && key[0]=='.') key.erase(0,1);
-                raw_kv_content_[key]=kv.second;
-            }
+            ini_file_to_map(inifile, raw_kv_content_);
             origins_.data().push_back(inifile);
         }
 
