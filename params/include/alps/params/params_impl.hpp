@@ -43,7 +43,7 @@ namespace alps {
             struct parse_string<bool> {
                 static boost::optional<bool> apply(std::string in) {
                     std::locale c_locale("C");
-                    for(char& c: in) { 
+                    for(char& c: in) {
                         c=tolower(c, c_locale);
                     }
                     boost::optional<bool> result;
