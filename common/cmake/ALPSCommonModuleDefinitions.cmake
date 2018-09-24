@@ -13,6 +13,11 @@ endif()
 set(CMAKE_DISABLE_SOURCE_CHANGES ON)
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
+# Ignore special meaning of PackageName_ROOT variables (since CMake 3.12)
+if (NOT CMAKE_VERSION VERSION_LESS 3.12)
+  cmake_policy(SET CMP0074 OLD)
+endif()
+
 # RPATH fix
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
