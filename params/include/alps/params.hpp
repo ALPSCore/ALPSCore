@@ -146,7 +146,7 @@ namespace alps {
             */
             params(int argc, const char* const* argv, const char* hdf5_path="/parameters");
 
-            /// Access to argv[0] (returns emty string if unknown)
+            /// Access to argv[0] (returns empty string if unknown)
             std::string get_argv0() const;
 
             /// Access to ini file names (if any); returns empty string if out of range
