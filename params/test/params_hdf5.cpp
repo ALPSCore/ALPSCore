@@ -92,6 +92,7 @@ TEST_F(ParamsTest, h5Ctor) {
 
     EXPECT_TRUE(p_new.is_restored());
     EXPECT_EQ(file_.name(), p_new.get_archive_name());
+    EXPECT_EQ(file_.name(), origin_name(p_new));
 }
 
 // FIXME: this test shoudl be split into 3: for a scalar, for a vector, for a wrong-formatted value
