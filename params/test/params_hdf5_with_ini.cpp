@@ -32,8 +32,8 @@ struct ParamsH5CmdlineTest : public ::testing::Test {
         ar["/parameters"]=p;
     }
 
-    ParamsH5CmdlineTest() : inifile_("inifile"),
-                            h5file_("h5file", at::unique_file::REMOVE_AFTER)
+    ParamsH5CmdlineTest() : inifile_("inifile_"),
+                            h5file_("h5file_", at::unique_file::REMOVE_AFTER)
     {
         make_h5_file(h5file_.name());
 
@@ -46,13 +46,25 @@ struct ParamsH5CmdlineTest : public ::testing::Test {
 
 // Two h5 files in the command line
 TEST_F(ParamsH5CmdlineTest, checkTwoH5Files) {
-    at::unique_file h5file2("another_h5file", at::unique_file::REMOVE_AFTER);
+    at::unique_file h5file2("another_h5file_", at::unique_file::REMOVE_AFTER);
     make_h5_file(h5file2.name());
 
     arg_holder args;
     args.add(h5file_.name()).add(inifile_.name()).add(h5file2.name());
 
-    EXPECT_ANY_THROW(alps::params p(args.argc(), args.argv()));
+    try { // can't use EXPECT_THROW: we want to check the exception object
+        alps::params p(args.argc(), args.argv());
+        FAIL() << "alps::params ctor is expected to throw; it doesn't";
+    } catch (const alps::params::archive_conflict& exc) {
+        EXPECT_EQ(h5file_.name(), exc.get_name(0)) << "exception should know 1st archive filename";
+        EXPECT_EQ(h5file2.name(), exc.get_name(1)) << "exception should know 2nd archive filename";
+        std::string what_msg=exc.what();
+        EXPECT_TRUE(what_msg.find(h5file_.name()) != std::string::npos) << "exception message should mention 1st archive filename";
+        EXPECT_TRUE(what_msg.find(h5file2.name()) != std::string::npos) << "exception message should mention 2nd archive filename";
+        // std::cout << "DEBUG: " << what_msg << std::endl;
+    } catch (...) {
+        FAIL() << "alps::param ctor threw exception of unexpected type";
+    }
 }
 
 
