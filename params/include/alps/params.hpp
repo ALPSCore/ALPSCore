@@ -164,10 +164,31 @@ namespace alps {
              **/
             std::string get_origin_name() const ALPS_DEPRECATED;
 
+            // FIXME: 1) Make these exception types derived from some `params::exception`;
+            //        2) Define them ouside and typedef here.
+
             /// Exception type: the object was not restored from archive
             struct not_restored : public std::runtime_error {
                 not_restored(const std::string& a_what)
                     : std::runtime_error(a_what) {}
+            };
+
+            /// Exception type: attempt to restore from 2 archives
+            class archive_conflict : public std::runtime_error {
+                std::vector<std::string> fnames_;
+              public:
+                archive_conflict(const std::string& a_what, const std::string& fname1, const std::string& fname2)
+                    : std::runtime_error(a_what+"; name1='"+fname1+"' name2='"+fname2+"'"),
+                      fnames_({fname1, fname2})
+                { }
+
+                const std::string& get_name(unsigned int i) const {
+                    return fnames_[i % fnames_.size()];
+                }
+
+                const std::vector<std::string>& get_names() const {
+                    return fnames_;
+                }
             };
 
             /// Conveninece method: true if the object was restored from an archive

@@ -252,6 +252,7 @@ namespace alps {
             typedef std::string::size_type size_type;
             const size_type& npos=std::string::npos;
             using std::string;
+            using boost::optional;
 
             if (argc==0) return;
             origins_.data()[origins_type::ARGV0].assign(argv[0]);
@@ -259,11 +260,12 @@ namespace alps {
 
             std::vector<string> all_args(argv+1,argv+argc);
             std::stringstream cmd_options;
-            bool is_restored=false;
+            std::vector<string> ini_files;
+            optional<string> restored_from_archive;
             bool file_args_mode=false;
             for(const string& arg: all_args) {
                 if (file_args_mode) {
-                    read_ini_file_(arg);
+                    ini_files.push_back(arg);
                     continue;
                 }
                 size_type key_end=arg.find('=');
@@ -279,16 +281,21 @@ namespace alps {
                 }
                 if (0==key_begin && npos==key_end) {
                     if (hdf5_path) {
-                        boost::optional<alps::hdf5::archive> maybe_ar=try_open_ar(arg, "r");
+                        optional<alps::hdf5::archive> maybe_ar=try_open_ar(arg, "r");
                         if (maybe_ar) {
+                            if (restored_from_archive) {
+                                throw archive_conflict("More than one archive is specified in command line",
+                                                       *restored_from_archive, arg);
+                            }
                             maybe_ar->set_context(hdf5_path);
                             this->load(*maybe_ar);
-                            origins_.data()[origins_type::ARCHNAME]=all_args[0];
-                            is_restored=true;
+                            origins_.data()[origins_type::ARCHNAME]=arg;
+                            restored_from_archive=arg;
                             continue;
                         }
                     }
-                    read_ini_file_(arg);
+
+                    ini_files.push_back(arg);
                     continue;
                 }
                 if (npos==key_end) {
@@ -297,6 +304,10 @@ namespace alps {
                     cmd_options << arg.substr(key_begin) << "\n";
                 }
             }
+            for (auto fname: ini_files) {
+                read_ini_file_(fname);
+            }
+
             // FIXME!!!
             // This is very inefficient and is done only for testing.
             std::string tmpfile_name=alps::temporary_filename("tmp_ini_file");
@@ -305,7 +316,7 @@ namespace alps {
             tmpstream.close();
             ini_file_to_map(tmpfile_name, raw_kv_content_);
 
-            if (is_restored) {
+            if (restored_from_archive) {
                 // The parameter object was restored from archive, and
                 // some key-values may have been supplied. We need to
                 // go through the already `define<T>()`-ed map values
