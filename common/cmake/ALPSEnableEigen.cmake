@@ -123,7 +123,8 @@ function(add_eigen)
  3. Rerun CMake with option:
      -DALPS_INSTALL_EIGEN=true 
     to request the installation script to attempt to download Eigen3
-    and co-install it with ALPSCore.
+    and co-install it with ALPSCore. (If it still fails, remove your
+    CMakeCache.txt and try again).
  
     In the latter case, you may optionally also set:
      -DALPS_EIGEN_UNPACK_DIR=<path to directory to unpack Eigen> 
@@ -230,6 +231,8 @@ function(add_eigen)
       if (NOT sigfile_)
         message(FATAL_ERROR "Cannot find Eigen3 in the unpacked archive under ${unpack_subdir_}")
       endif()
+      unset(EIGEN3_INCLUDE_DIR)
+      unset(EIGEN3_INCLUDE_DIR CACHE)
       get_filename_component(EIGEN3_INCLUDE_DIR "${sigfile_}" DIRECTORY CACHE)
     endif(NOT EIGEN3_INCLUDE_DIR)
 
