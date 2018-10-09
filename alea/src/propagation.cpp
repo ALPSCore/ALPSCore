@@ -15,7 +15,7 @@ typename eigen<T>::matrix jacobian(const transformer<T> &f, column<T> x, double 
     size_t in_size = f.in_size();
     size_t out_size = f.out_size();
 
-    typename eigen<T>::matrix result(out_size, out_size);
+    typename eigen<T>::matrix result(out_size, in_size);
     for (size_t j = 0; j != in_size; ++j) {
         x(j) += dx;
         result.col(j) = f(x);
