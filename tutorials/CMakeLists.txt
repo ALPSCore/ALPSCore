@@ -20,7 +20,7 @@ add_subdirectory("mc/ising_mc")
 add_subdirectory("mc/simple_mc")
 if (ALPSCore_HAS_MPI)
   add_subdirectory("mc/simple_mc_mpi")
+  add_subdirectory("mc/mpi")
 endif()
 add_subdirectory("mc/ising2_mc")
 add_subdirectory("many_points/process")
-
