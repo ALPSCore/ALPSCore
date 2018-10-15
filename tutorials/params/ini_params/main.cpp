@@ -16,10 +16,11 @@
  * Run the example with different arguments combinations. For example:
  * <ul>
  *   <li>./ini_params configurationA.ini</li>
- *   <li>./ini_params configurationA.ini --count 3</li>
+ *   <li>./ini_params configurationA.ini count=3</li>
  *   <li>./ini_params configurationB.ini</li>
+ *   <li>./ini_params configurationA.ini count=3 configurationB.ini</li>
  * </ul>
- * 
+ *
  * @param argc the number of arguments
  * @param argv the argument array
  * @return the exit code
@@ -30,23 +31,23 @@ int main(int argc, char** argv)
     // initialize the values.
     std::cout << "Creating parameter object..." << std::endl;
     alps::params par(argc, argv);
-    
-    
+
+
     // Here we define all the parameters we are interested in, giving their
-    // names, default values, and descriptions. By default, only the "help" 
+    // names, default values, and descriptions. By default, only the "help"
     // parameter is defined, and is initialized to false.
     //
     // If a parameter is defined without a default value, the
     // parameter must be supplied (either as an ini file entry or as a
     // command line argument).
     //
-    // If an ini file entry matches "parameterName=Xxx" then the parameter 
+    // If an ini file entry matches "parameterName=Xxx" then the parameter
     // is set to the value; if no ini file entry matches, the default
     // value is used. Command-line options will override the ini file entry.
     //
     // An ini file can contain [sections]. A parameter name `name` in
     // a section `[section]` is referred to as `section.name`.
-    // 
+    //
     std::cout << "Defining parameters..." << std::endl;
     // no sections:
     par .define<int>("count", 0, "Number of interconnected elements")
@@ -60,7 +61,7 @@ int main(int argc, char** argv)
     par.define<std::string>("user", "User name");
     // a "switch" parameter (either it is present or not):
     par.define("verbose","Be verbose");
-    
+
     // If requested, we print the help message, which is constructed from the
     // information we gave when defining the parameters.
     if (par.help_requested(std::cout)) {
@@ -68,7 +69,7 @@ int main(int argc, char** argv)
     }
 
     // We can also check if there are any parameters that do not have
-    // a value assigned or were given as an invalid format; if so, a short message will 
+    // a value assigned or were given as an invalid format; if so, a short message will
     // be printed to the given stream.
     if (par.has_missing(std::cout)) {
         return 1;
@@ -99,8 +100,8 @@ int main(int argc, char** argv)
               << std::endl;
 
     // We can also print parameters to standard output.
-    std::cout << "\nAll parameter values" << std::endl;    
-    std::cout << "----------------" << std::endl;    
+    std::cout << "\nAll parameter values" << std::endl;
+    std::cout << "----------------" << std::endl;
     std::cout << par;
     return 0;
 }

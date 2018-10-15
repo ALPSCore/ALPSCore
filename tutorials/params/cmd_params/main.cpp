@@ -18,12 +18,19 @@
  * <p>
  * Run the example with different arguments combinations. For example:
  * <ul>
- *   <li>./cmd_params --name "Superman"</li>
+ *   <li>./cmd_params --name="Superman"</li>
  *   <li>./cmd_params </li>
- *   <li>./cmd_params --count -100  </li>
- *   <li>./cmd_params --count 200 --val 2.71 --name "Luthor" </li>
+ *   <li>./cmd_params --count=-100  </li>
+ *   <li>./cmd_params --count=200 --val=2.71 --name="Luthor" </li>
  * </ul>
- * 
+ * You can omit dashes in front of arguments, as long there is an "=" sign:
+ * <ul>
+ *   <li>./cmd_params name="Superman"</li>
+ *   <li>./cmd_params </li>
+ *   <li>./cmd_params count=-100  </li>
+ *   <li>./cmd_params count=200 val=2.71 name="Luthor" </li>
+ * </ul>
+ *
  * @param argc the number of arguments
  * @param argv the argument array
  * @return the exit code
@@ -34,20 +41,20 @@ int main(int argc, char** argv)
     // initialize the values.
     std::cout << "Creating parameter object..." << std::endl;
     alps::params par(argc, argv);
-    
-    
+
+
     // Here we define all the parameters we are interested in, giving their
-    // names, default values, and descriptions. By default, only the "help" 
+    // names, default values, and descriptions. By default, only the "help"
     // parameter is defined, and is initialized to false.
     //
-    // If a command-line argument matches "--parameterName" then the parameter 
+    // If a command-line argument matches "--parameterName=..." then the parameter
     // is set to the value; if no command-line argument matches, the default
     // value is used. Command-line arguments that do not match any parameter are ignored.
     std::cout << "Defining parameters..." << std::endl;
     par.define<int>("count", 100, "Number of interconnected elements");
     par.define<double>("val", 6.28, "Value of implosion constant");
     par.define<std::string>("name", "Name of de-construction algorithm");
-    
+
     // Parameter validation. We check each condition. If not met, we print an
     // error and flag the help to be printed later.
     // The "name" parameter must be present
@@ -66,7 +73,7 @@ int main(int argc, char** argv)
         std::cout << "The number of interconnected elements must be positive" << std::endl;
         par["help"] = true;
     }
-    
+
     // If requested, we print the help message, which is constructed from the
     // information we gave when defining the parameters.
     if (par.help_requested(std::cout)) {
@@ -74,8 +81,8 @@ int main(int argc, char** argv)
     }
 
     // Printing parameter to standard output.
-    std::cout << "Parameter values" << std::endl;    
-    std::cout << "----------------" << std::endl;    
+    std::cout << "Parameter values" << std::endl;
+    std::cout << "----------------" << std::endl;
     std::cout << par;
     return 0;
 }
