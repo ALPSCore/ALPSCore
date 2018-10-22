@@ -5,11 +5,9 @@
  */
 
 /** @file params_cmdline.cpp
-    
+
     @brief Tests parameter input from commandline
 */
-
-// #include <boost/foreach.hpp>
 
 #include "./params_test_support.hpp"
 
@@ -34,10 +32,10 @@ class ParamsTestCmdline : public ::testing::Test {
   public:
     ParamsTestCmdline() {}
 };
-    
+
 TEST_F(ParamsTestCmdline, argHolder) {
     ASSERT_EQ(1, args_.argc());
-    
+
     args_.add("arg1").add("arg2");
     ASSERT_EQ(3, args_.argc());
 
@@ -56,20 +54,6 @@ TEST_F(ParamsTestCmdline, iniMaker) {
     ostr << infile.rdbuf();
     EXPECT_EQ(std::string("line1\nline2\n"), ostr.str());
 }
-
-// TEST_F(ParamsTestCmdline, originName) {
-//     params p0;
-//     const params& cp0=p0;
-//     EXPECT_EQ("",cp0.get_origin_name());
-
-//     char** argv=0;
-//     int argc=0;
-//     params p1(argc, argv);
-//     EXPECT_EQ("", p1.get_origin_name());
-
-//     params p2(args_.argc(), args_.argv());
-//     EXPECT_EQ("./program_name", p2.get_origin_name());
-// }
 
 
 TEST_F(ParamsTestCmdline, filenameArgs) {
@@ -94,7 +78,7 @@ TEST_F(ParamsTestCmdline, filenameArgs) {
     EXPECT_EQ(1,p["one"]);
     EXPECT_EQ(2,p["two"]);
     EXPECT_EQ("three",p["three"]);
-}    
+}
 
 TEST_F(ParamsTestCmdline, boolFlagArgs) {
     args_
@@ -146,11 +130,11 @@ TEST_F(ParamsTestCmdline, filenamesAndKeys) {
         .add("one=111")    // overrides files even after it
         .add(ini1.name())  // partly overridden by cmdline before and after
         .add("two=222")    // overrides files
-        .add(ini2.name())  // partly overridden 
+        .add(ini2.name())  // partly overridden
         .add("three=333"); // overrides files
 
     params p(args_.argc(), args_.argv());
-    
+
     ASSERT_TRUE(p
                 .define<int>("zero", "Option 0")
                 .define<int>("one", "Option 1")
@@ -180,7 +164,7 @@ TEST_F(ParamsTestCmdline, doubleDash) {
 
     std::string ini1_as_key=ini1.name().substr(2);
     std::string ini2_as_key=ini2.name().substr(2);
-    
+
     ASSERT_TRUE(p
                 .define<int>("one", 0, "Option 1")
                 .define<int>("two", 0, "Option 2")

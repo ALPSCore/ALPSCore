@@ -34,11 +34,11 @@ class SingleAccumulatorTest : public ::testing::Test {
     {
         using namespace alps::accumulators;
         named_acc_type named_acc("accname");
-        boost::shared_ptr<accumulator_wrapper> awptr=named_acc.wrapper;
+        std::shared_ptr<accumulator_wrapper> awptr=named_acc.wrapper;
         accumulator_wrapper& aw=*awptr;
         aw << 1.0;
 
-        boost::shared_ptr<result_wrapper> resptr=awptr->result();
+        std::shared_ptr<result_wrapper> resptr=awptr->result();
         result_wrapper& res=*resptr;
         // This is wrong:
         // result_wrapper& res=*(awptr->result());

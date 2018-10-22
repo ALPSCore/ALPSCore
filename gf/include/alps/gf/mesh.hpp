@@ -6,6 +6,7 @@
 #pragma once
 #include <complex>
 #include <cassert>
+#include <array>
 #include <type_traits>
 #include <boost/multi_array.hpp>
 #include <boost/operators.hpp>
@@ -799,7 +800,7 @@ namespace alps {
             public:
 
             typedef generic_index<momentum_index_mesh> index_type;
-            real_space_index_mesh(const real_space_index_mesh& rhs) : base_type(rhs.kind(), rhs.extent(), rhs.dimension()) {}
+            real_space_index_mesh(const real_space_index_mesh& rhs) : base_type(rhs) {}
 
             real_space_index_mesh(): base_type("REAL_SPACE_INDEX",0,0)
             {
@@ -909,7 +910,7 @@ namespace alps {
 
         public:
             typedef generic_index<legendre_mesh> index_type;
-            legendre_mesh(const legendre_mesh& rhs) : beta_(rhs.beta_), n_max_(rhs.n_max_), statistics_(rhs.statistics_) {}
+            legendre_mesh(const legendre_mesh& rhs) : beta_(rhs.beta_), n_max_(rhs.n_max_), statistics_(rhs.statistics_) {compute_points();}
             legendre_mesh(gf::statistics::statistics_type statistics=statistics::FERMIONIC):
                     beta_(0.0), n_max_(0), statistics_(statistics) {}
 

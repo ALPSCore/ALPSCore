@@ -14,7 +14,6 @@
 #include <cmath>
 #include <cstddef>
 #include <numeric>
-#include <boost/lexical_cast.hpp>
 #include "alps/accumulators.hpp"
 
 namespace alps {
@@ -40,7 +39,7 @@ namespace alps {
             {
                 EXPECT_EQ(expected.size(), actual.size()) << "Sizes of "+descr+" differ";
                 for (size_t i=0; i<expected.size(); ++i) {
-                    EXPECT_NEAR(expected.at(i), actual.at(i), tol) << "Element #"+boost::lexical_cast<std::string>(i)+" of "+descr+" differs";
+                    EXPECT_NEAR(expected.at(i), actual.at(i), tol) << "Element #"+std::to_string(i)+" of "+descr+" differs";
                 }
             }
 

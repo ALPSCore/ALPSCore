@@ -19,12 +19,10 @@
 #include <boost/accumulators/numeric/functional.hpp> 
 
 #include <boost/bind.hpp>
-#include <boost/foreach.hpp>
 #include <boost/lambda/bind.hpp>
 #include <boost/lambda/lambda.hpp>
 #include <boost/throw_exception.hpp>
 
-#include <boost/lexical_cast.hpp>
 
 #include <vector>
 #include <algorithm>
@@ -326,8 +324,8 @@ namespace alps {
             template<typename T>                                                                           \
             std::vector<T> & OP_NAME (std::vector<T> & lhs, std::vector<T> const & rhs) {                  \
                 if(lhs.size() != rhs.size()) {                                                             \
-                    std::string lsz=boost::lexical_cast<std::string>(lhs.size());                          \
-                    std::string rsz=boost::lexical_cast<std::string>(rhs.size());                          \
+                    std::string lsz=std::to_string(lhs.size());                          \
+                    std::string rsz=std::to_string(rhs.size());                          \
                     boost::throw_exception(std::runtime_error("std::vectors have different sizes:"         \
                                                               " left="+lsz+                                \
                                                               " right="+rsz + "\n" +                       \

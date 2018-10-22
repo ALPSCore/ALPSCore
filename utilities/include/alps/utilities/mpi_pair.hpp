@@ -16,7 +16,6 @@
 #include <alps/utilities/mpi.hpp>
 #include <string>
 
-#include <boost/foreach.hpp>
 #include <boost/container/vector.hpp>
 
 namespace alps {

@@ -143,10 +143,49 @@ namespace alps {
                 @param argv Array of pointers to command line arguments (as in `main(int argc, char** argv)`)
                 @param hdf5_path path to HDF5 dataset containing the saved parameter object
                        (NULL if this functionality is not needed)
+
+
+                The parameters are supplied in the `--key=value`
+                format; the double dash (`--`) can be shortened to a single dash (`-`)
+                or omitted.  The `=value` part may be omitted, in
+                which case it is interpreted as `=false`, and the key
+                must be preceded by at least one dash (`-`).
+
+                If an argument is not recognized as a key-value pair
+                (that is, it does not contain the `=` character and
+                does not start with `-`) it is interpreted as a file
+                name.
+
+                If a double-dash argument (`--`) is encountered, it is
+                skipped, and all arguments following it are
+                interpreted as file names.
+
+                The files are either HDF5-formatted archives or
+                INI-formatted files. INI file can be sectoned by
+                `[section]` headers: the key `some_key` in section
+                `[some_section]` is interpreted as a key
+                `some_section.some_key`.
+
+                The command line is parsed in the following way:
+
+                1. The whole command line is scanned.
+                2. If an (HDF5) archive file name is present, the parameters object is loaded from the archive.
+                3. If there is another archive file name, an exception of type
+                   `alps::params::archive_conflict` is thrown.
+                4. All INI files are read in the order given.
+                5. The command line  arguments are read.
+                    1. If a key is encountered more than once, the
+                    latter occurence silently overrides the former. Thus,
+                    the values supplied in the command line override values from INI files
+                    and archives.
+                    2. If a key was present and `define<T>()`d in the archive, the new value must be parsable
+                    as type `T`; otherwise an exception of type
+                    `alps::params_ns::dictionary::value_mismatch` is thrown.
+
             */
             params(int argc, const char* const* argv, const char* hdf5_path="/parameters");
 
-            /// Access to argv[0] (returns emty string if unknown)
+            /// Access to argv[0] (returns empty string if unknown)
             std::string get_argv0() const;
 
             /// Access to ini file names (if any); returns empty string if out of range
@@ -159,15 +198,36 @@ namespace alps {
             /// Convenience method: returns the "origin name"
             /** @returns (parameter_file_name || restart_file name || program_name || "")
 
-                @deprecated Use `alps::params_ns::get_origin(const params&)` instead,
-                also available as `alps::get_origin(const params&)`.
+                @deprecated Use `alps::params_ns::origin_name(const params&)` instead,
+                also available as `alps::origin_name(const params&)`.
              **/
             std::string get_origin_name() const ALPS_DEPRECATED;
+
+            // FIXME: 1) Make these exception types derived from some `params::exception`;
+            //        2) Define them ouside and typedef here.
 
             /// Exception type: the object was not restored from archive
             struct not_restored : public std::runtime_error {
                 not_restored(const std::string& a_what)
                     : std::runtime_error(a_what) {}
+            };
+
+            /// Exception type: attempt to restore from 2 archives
+            class archive_conflict : public std::runtime_error {
+                std::vector<std::string> fnames_;
+              public:
+                archive_conflict(const std::string& a_what, const std::string& fname1, const std::string& fname2)
+                    : std::runtime_error(a_what+"; name1='"+fname1+"' name2='"+fname2+"'"),
+                      fnames_({fname1, fname2})
+                { }
+
+                const std::string& get_name(unsigned int i) const {
+                    return fnames_[i % fnames_.size()];
+                }
+
+                const std::vector<std::string>& get_names() const {
+                    return fnames_;
+                }
             };
 
             /// Conveninece method: true if the object was restored from an archive
@@ -279,6 +339,20 @@ namespace alps {
             }
 #endif
         };
+
+        /// Convenience function to obtain the "origin" filename associated with the parameters object
+        /**
+           The "origin" name can be used to generate, e.g., sensible output file names
+           based on the parameter file names that passed to the program.
+
+           * * If the parameters object is restored from an archive, the archive name is its origin.
+           * * If the parameters object is constructed from INI file(s), the first INI file is its origin.
+           * * If the parameters object is constructed from the command line without INI files,
+             the origin is the executable name (if available) *stripped of its path*.
+           * * Otherwise, the origin name is empty.
+
+        */
+        std::string origin_name(const params& p);
 
     } // params_ns::
     typedef params_ns::params params;

@@ -31,11 +31,12 @@ namespace alps {
          * @param data - pointer to the raw buffer
          * @param size - raw buffer size
          */
-        view(T* data, size_t size) : data_(data), size_(size){}
+        view(typename std::remove_cv<T>::type * data, size_t size) : data_(data), size_(size){}
+        view(const T* data, size_t size) : data_(const_cast<T*>(data)), size_(size){}
         /**
          * Construct view on DataStorage object
          */
-        view(data_storage<T>&storage) : data_(storage.data().data()), size_(storage.data().size())  {}
+        view(data_storage<T>&storage) : data_(storage.data()), size_(storage.size())  {}
         /// Copy constructor
         view(const view & view) : data_(view.data_), size_(view.size_) {}
         /// Move constructor

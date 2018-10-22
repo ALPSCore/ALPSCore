@@ -13,49 +13,46 @@ addons:
       - sourceline: ppa:kzemek/boost
     packages:
       - libboost1.58-dev
+      - libboost-filesystem1.58-dev # for `use_boost` tutorial
       - openmpi-bin
       - openmpi-common
       - openmpi-doc
       - libopenmpi-dev
       - libhdf5-serial-dev
+      - wget
     config:
       retries: true
 
 install: true
+
+# Try:
+# With and without MPI
+# With "system" Boost, minimal supported, and the latest,
+# With the latest Boost and C++14.
 
 env:
   - ENABLE_MPI=ON ALPS_CC=mpicc ALPS_CXX=mpic++ ALPS_CXX_STD=c++11
   - ENABLE_MPI=OFF ALPS_CXX_STD=c++11
   - ENABLE_MPI=ON ALPS_CC=mpicc ALPS_CXX=mpic++ ALPS_CXX_STD=c++14
   - ENABLE_MPI=OFF ALPS_CXX_STD=c++14
+  - ALPS_BOOST_VERSION=1_56_0 ENABLE_MPI=ON ALPS_CC=mpicc ALPS_CXX=mpic++ ALPS_CXX_STD=c++11
+  - ALPS_BOOST_VERSION=1_67_0 ENABLE_MPI=ON ALPS_CC=mpicc ALPS_CXX=mpic++ ALPS_CXX_STD=c++11
+  - ALPS_BOOST_VERSION=1_67_0 ENABLE_MPI=ON ALPS_CC=mpicc ALPS_CXX=mpic++ ALPS_CXX_STD=c++14
+
+matrix:
+  include:
+    - os: osx
+      env: ENABLE_MPI=OFF ALPS_CXX_STD=c++11 ALPS_BOOST_VERSION=1_67_0 
 
 before_script:
-  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-  - sudo apt-get update
-  - sudo apt-get install -y --allow-unauthenticated g++-5
-  - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 60 --slave /usr/bin/g++ g++ /usr/bin/g++-5
+  - ./common/build/build_prereq.travis.sh
   - export OMPI_CC=${CC}
   - export OMPI_CXX=${CXX}
 
 script:
-  # Stop on first error
-  - set -e
+  - ./common/build/build.travis.sh
 
-  # Build ALPSCore
-  - mkdir build
-  - mkdir install
-  - cd build
-  - |
-    cmake ..                                              \
-    -DCMAKE_BUILD_TYPE=Debug                              \
-    -DCMAKE_C_COMPILER=${ALPS_CC:-${CC}}                  \
-    -DALPS_CXX_STD=$ALPS_CXX_STD                          \
-    -DCMAKE_CXX_COMPILER=${ALPS_CXX:-${CXX}}              \
-    -DCMAKE_INSTALL_PREFIX=$TRAVIS_BUILD_DIR/installed    \
-    -DALPS_INSTALL_EIGEN=true                             \
-    -DBUNDLE_DOWNLOAD_TRIES=3                             \
-    -DMPIEXEC=mpiexec -DMPIEXEC_NUMPROC_FLAG='-n'         \
-    -DENABLE_MPI=$ENABLE_MPI
-  - make -j3
-  - env ALPS_TEST_MPI_NPROC=3 make test
-  - make install
+# Dump CMake caches and the generated *.cmake files in case of failure
+after_failure:
+  - more $(find $TRAVIS_BUILD_DIR -type f -name CMakeCache.txt) </dev/null | cat
+  - more $(find $TRAVIS_BUILD_DIR/installed -type f -name '*.cmake') </dev/null | cat

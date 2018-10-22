@@ -5,11 +5,9 @@
  */
 
 /** @file params_origins.cpp
-    
+
     @brief Tests parameter origin query methods
 */
-
-// #include <boost/foreach.hpp>
 
 #include "./params_test_support.hpp"
 
@@ -25,14 +23,14 @@ TEST(ParamsTestOrigins, simple) {
 }
 
 TEST(ParamsTestOrigins, cmdlineOnly) {
-    arg_holder args("./progname");
+    arg_holder args("path/to/progname.exe");
     args.add("some=string");
     alps::params p(args.argc(), args.argv());
-    EXPECT_EQ("./progname", p.get_argv0());
+    EXPECT_EQ("path/to/progname.exe", p.get_argv0());
     EXPECT_EQ(0, p.get_ini_name_count());
     ASSERT_NO_THROW(p.get_ini_name(0));
     EXPECT_TRUE(p.get_ini_name(0).empty());
-    EXPECT_EQ("./progname",origin_name(p));
+    EXPECT_EQ("progname.exe",origin_name(p));
 }
 
 TEST(ParamsTestOrigins, inifileOnly) {
@@ -54,13 +52,13 @@ TEST(ParamsTestOrigins, inifileInCmdline) {
     ini_maker ini2("params_origins2.ini.");
     ini2.add("another=string2");
 
-    arg_holder args("./progname");
+    arg_holder args("path/to/progname.exe");
     args.add(ini1.name());
     args.add("some_other=string3");
     args.add(ini2.name());
-    
+
     alps::params p(args.argc(), args.argv());
-    EXPECT_EQ("./progname", p.get_argv0());
+    EXPECT_EQ("path/to/progname.exe", p.get_argv0());
     EXPECT_EQ(2, p.get_ini_name_count());
 
     ASSERT_NO_THROW(p.get_ini_name(0));
@@ -68,7 +66,7 @@ TEST(ParamsTestOrigins, inifileInCmdline) {
 
     ASSERT_NO_THROW(p.get_ini_name(1));
     EXPECT_EQ(ini2.name(), p.get_ini_name(1));
-    
+
     ASSERT_NO_THROW(p.get_ini_name(2));
     EXPECT_TRUE(p.get_ini_name(2).empty());
 

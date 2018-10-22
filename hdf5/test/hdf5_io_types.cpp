@@ -25,7 +25,6 @@
 
 #include <boost/random.hpp>
 #include <boost/multi_array.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
 
 #define VECTOR_SIZE 25
@@ -101,7 +100,7 @@ template<typename T> void initialize(std::complex<T> & v) {
     v = std::complex<T>(rng(), rng());
 }
 void initialize(std::string & v) {
-    v = boost::lexical_cast<std::string>(rng());
+    v = std::to_string(rng());
 }
 template<typename T, typename A> void initialize(std::vector<T, A> & v) {
     v = creator<std::vector<T, A> >::random();

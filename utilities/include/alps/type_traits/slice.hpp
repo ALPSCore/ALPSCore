@@ -11,7 +11,6 @@
 
 #include <alps/type_traits/is_sequence.hpp>
 #include <alps/type_traits/element_type.hpp>
-#include <boost/lexical_cast.hpp>
 
 #include <type_traits>
 
@@ -45,7 +44,7 @@ template <class ValueType>
 typename std::enable_if<is_sequence<ValueType>::value, std::string>::type
 slice_name(ValueType const& ,unsigned i)
 {
-  return boost::lexical_cast<std::string,int>(i);
+  return std::to_string(i);
 }
 
 template <class ValueType>

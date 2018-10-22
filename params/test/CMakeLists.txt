@@ -5,6 +5,8 @@ set (test_src
   dictionary
   params
   dots_in_keys
+  params_default_vectors
+  params_string_vectors
   params_formats
   params_cmdline
   params_defaulted
@@ -16,6 +18,7 @@ set (test_src
   params_eq
   dictionary_hdf5
   params_hdf5
+  params_hdf5_with_ini
   )
 
 foreach(test ${test_src})

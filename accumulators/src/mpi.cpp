@@ -9,9 +9,6 @@
 
 #ifdef ALPS_HAVE_MPI
 
-#include <boost/lexical_cast.hpp> // for throw() message
-
-
     namespace alps {
         namespace alps_mpi {
             namespace detail {
@@ -24,7 +21,7 @@
                 {
                     if (count<=0) {
                         throw std::invalid_argument("MPI_Reduce() is called with invalid count="
-                                                    + boost::lexical_cast<std::string>(count)
+                                                    + std::to_string(count)
                                                     + ALPS_STACKTRACE);
                     }
                     if (sendbuf==recvbuf) {

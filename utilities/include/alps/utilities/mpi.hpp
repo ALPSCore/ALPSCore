@@ -25,8 +25,7 @@
 #include <functional> /* for std::plus */
 #include <algorithm> /* for std::max */
 
-#include <boost/scoped_array.hpp> /* for std::string broadcast */
-#include <boost/shared_ptr.hpp> /* for proper copy/assign of managed communicators */
+#include <memory> /* for proper copy/assign of managed communicators */
 
 #include <stdexcept>
 #include <typeinfo>
@@ -97,8 +96,20 @@ namespace alps {
         };
 
         /// Encapsulation of an MPI communicator and some communicator-related operations
+        /**
+           A communicator object can be created from an existing MPI
+           communicator, either by simple wrapping, by duplicating, or
+           by taking complete ownership (see `communicator(const MPI_Comm&, comm_create_kind)`).
+
+           Some MPI operations are implemented as mthods of this
+           class.  Many ALPSCore classes have `%broadcast()` methods
+           that take the communicator object as an argument.  The
+           communicator object is implicitly convertible to the
+           wrapped MPI communicator and therefore can be used as an
+           argument to MPI calls directly.
+         */
         class communicator {
-            boost::shared_ptr<MPI_Comm> comm_ptr_;
+            std::shared_ptr<MPI_Comm> comm_ptr_;
 
             // Internal functor class to destroy communicator when needed
             struct comm_deleter {
@@ -112,10 +123,16 @@ namespace alps {
 
             public:
 
+            /// Creates an `MPI_COMM_WORLD` communicator object
             communicator() : comm_ptr_(new MPI_Comm(MPI_COMM_WORLD)) {} // FIXME? Shall we deprecate it?
 
             // FIXME: introduce error checking!!
 
+            /// Creates a communicator object from an MPI communicator
+            /**
+               @param comm MPI communicator
+               @param kind How to manage the communicator (see alps::mpi::comm_create_kind)
+            */
             communicator(const MPI_Comm& comm, comm_create_kind kind) {
                 switch (kind) {
                   default:
@@ -160,16 +177,20 @@ namespace alps {
             }
         };
 
+
+        /// MPI environment RAII class
         class environment {
             bool initialized_;
             bool abort_on_exception_;
             public:
 
+            /// Call `MPI_Abort()`
             static void abort(int rc=0)
             {
                 MPI_Abort(MPI_COMM_WORLD,rc);
             }
 
+            /// Returns initialized status of MPI
             static bool initialized()
             {
                 int ini;
@@ -177,6 +198,7 @@ namespace alps {
                 return ini;
             }
 
+            /// Returns finalized status of MPI
             static bool finalized()
             {
                 int fin;
@@ -184,6 +206,14 @@ namespace alps {
                 return fin;
             }
 
+            /// Initializes MPI environment unless it's already active
+            /**
+               @param argc `argc` argument from `main(argc, argv)`
+               @param argv `argv` argument from `main(argc, argv)`
+               @param abort_on_exception If true and MPI environment object is getting destroyed
+                                         while an exception is being handled, call `MPI_Abort()`
+
+            */
             environment(int& argc, char**& argv, bool abort_on_exception=true)
                 : initialized_(false), abort_on_exception_(abort_on_exception)
             {
@@ -192,6 +222,12 @@ namespace alps {
                     initialized_=true;
                 }
             }
+
+            /// Initializes MPI environment unless it's already active
+            /** This ctor does not pass `argc` and `argv`.
+               @param abort_on_exception If true and MPI environment object is getting destroyed
+                                         while an exception is being handled, call `MPI_Abort()`
+            */
             environment(bool abort_on_exception=true)
                 : initialized_(false), abort_on_exception_(abort_on_exception)
             {
@@ -201,6 +237,10 @@ namespace alps {
                 }
             }
 
+            /// Finalizes MPI unless already finalized or was already initilaized when ctor was called
+            /**
+               If called during an exception unwinding, may call `MPI_Abort()` (see the corresponding ctors)
+            */
             ~environment()
             {
                 if (!initialized_) return; // we are not in control, don't mess up other's logic.
@@ -255,7 +295,7 @@ namespace alps {
             broadcast(comm, &val, 1, root);
         }
 
-        /// MPI_BCast of a single value: overload for std::string
+        /// MPI_BCast of a single value: overload for `std::string`
         // FIXME: what is exception safety status?
         // FIXME: inline to have it header-only. A tad too complex to be inlined?
         inline void broadcast(const communicator& comm, std::string& val, int root) {
@@ -267,7 +307,7 @@ namespace alps {
             } else {
                 // FIXME: not very efficient --- any better way without heap alloc?
                 //        Note, there is no guarantee in C++03 that modifying *(&val[0]+i) is safe!
-                boost::scoped_array<char> buf(new char[root_sz]);
+                std::unique_ptr<char[]> buf(new char[root_sz]);
                 broadcast(comm, buf.get(), root_sz, root);
                 val.assign(buf.get(), root_sz);
             }
@@ -280,7 +320,7 @@ namespace alps {
             return detail::mpi_type<T>();
         }
 
-        /// performs MPI_Allgather() for primitive type T
+        /// performs `MPI_Allgather()` for primitive type T
         /** @note Vector `out_vals` is resized */
         template <typename T>
         void all_gather(const communicator& comm, const T& in_val, std::vector<T>& out_vals) {
@@ -321,7 +361,7 @@ namespace alps {
             }
         };
 
-        /// Performs MPI_Allreduce for array of a primitive type, T[n]
+        /// Performs `MPI_Allreduce` for array of a primitive type, T[n]
         template <typename T, typename OP>
         void all_reduce(const alps::mpi::communicator& comm, const T* val, int n,
                         T* out_val, const OP& /*op*/)
@@ -337,7 +377,7 @@ namespace alps {
                           is_mpi_op<OP,T>::op(), comm);
         }
 
-        /// Performs MPI_Allreduce for a primitive type T
+        /// Performs `MPI_Allreduce` for a primitive type T
         template <typename T, typename OP>
         void all_reduce(const alps::mpi::communicator& comm, const T& val,
                         T& out_val, const OP& op)
@@ -345,7 +385,7 @@ namespace alps {
             all_reduce(comm, &val, 1, &out_val, op);
         }
 
-        /// Performs MPI_Allreduce for a primitive type T
+        /// Performs `MPI_Allreduce` for a primitive type T
         template <typename T, typename OP>
         T all_reduce(const alps::mpi::communicator& comm, const T& val, const OP& op)
         {

@@ -42,7 +42,7 @@ int main(int argc, char** argv)
 
         // If needed, restore the last checkpoint
         std::string checkpoint_file = parameters["checkpoint"].as<std::string>();
-        if (!is_master) checkpoint_file+="."+boost::lexical_cast<std::string>(rank);
+        if (!is_master) checkpoint_file+="."+std::to_string(rank);
         
         if (parameters.is_restored()) {
             std::cout << "Restoring checkpoint from " << checkpoint_file

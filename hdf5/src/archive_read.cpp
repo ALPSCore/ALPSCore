@@ -7,8 +7,6 @@
 #include <iostream>
 #include <vector>
 
-#include <boost/scoped_array.hpp>
-
 #include <hdf5.h>
 
 #include <alps/hdf5/archive.hpp>
@@ -121,7 +119,7 @@ namespace alps {
                         throw std::logic_error("multidimensional dataset of fixed string datas is not implemented (" + path + ")" + ALPS_STACKTRACE);
                     else if (H5Tget_class(native_id) == H5T_STRING) {
                         std::size_t len = std::accumulate(chunk.begin(), chunk.end(), std::size_t(1), std::multiplies<std::size_t>());
-                        boost::scoped_array<char *> raw(
+                        std::unique_ptr<char * []> raw(
                             new char * [len]
                         );
                         if (std::equal(chunk.begin(), chunk.end(), data_size.begin())) {
@@ -159,7 +157,7 @@ namespace alps {
                         throw std::logic_error("multidimensional dataset of fixed string datas is not implemented (" + path + ")" + ALPS_STACKTRACE);
                     else if (H5Tget_class(native_id) == H5T_STRING) {
                         std::size_t len = std::accumulate(chunk.begin(), chunk.end(), std::size_t(1), std::multiplies<std::size_t>());
-                        boost::scoped_array<char *> raw(
+                        std::unique_ptr<char *[]> raw(
                             new char * [len]
                         );
                         if (std::equal(chunk.begin(), chunk.end(), data_size.begin())) {

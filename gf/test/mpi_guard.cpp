@@ -14,7 +14,6 @@
 #include <iostream>
 #include <cstdio>
 #include <cstdlib>
-#include <boost/lexical_cast.hpp>
 
 #include <sys/types.h> // for pid_t ?
 #include <unistd.h> // for getpid()
@@ -79,8 +78,8 @@ Mpi_guard::Mpi_guard(int master, const std::string& basename) : master_(master),
     MPI_Comm_rank(MPI_COMM_WORLD, &rank_);
     MPI_Comm_size(MPI_COMM_WORLD, &nprocs_);
         
-    sig_fname_=sig_fname_base_+boost::lexical_cast<std::string>(rank_);
-    sig_fname_master_=sig_fname_base_+boost::lexical_cast<std::string>(master_);
+    sig_fname_=sig_fname_base_+std::to_string(rank_);
+    sig_fname_master_=sig_fname_base_+std::to_string(master_);
         
     std::remove(sig_fname_.c_str());
     if (rank_==master_) {
@@ -115,7 +114,7 @@ bool Mpi_guard::check_sig_files_ok(int number_of_bcasts) {
         // master process: wait till all slaves report
         for (int i=0; i<nprocs_; ++i) {
             if (i==master_) continue; // don't wait on myself
-            const std::string sig_fname_slave=sig_fname_base_+boost::lexical_cast<std::string>(i);
+            const std::string sig_fname_slave=sig_fname_base_+std::to_string(i);
             int nbc=-1;
             int itry;
             for (itry=1; itry<=100; ++itry) {

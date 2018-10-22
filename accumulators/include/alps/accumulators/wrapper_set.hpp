@@ -9,7 +9,7 @@
 #include <alps/config.hpp>
 #include <alps/hdf5/archive.hpp>
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <mutex>
 
 namespace alps {
@@ -29,8 +29,8 @@ namespace alps {
                 public:
                     typedef T value_type;
 
-                    typedef typename std::map<std::string, boost::shared_ptr<T> >::iterator iterator;
-                    typedef typename std::map<std::string, boost::shared_ptr<T> >::const_iterator const_iterator;
+                    typedef typename std::map<std::string, std::shared_ptr<T> >::iterator iterator;
+                    typedef typename std::map<std::string, std::shared_ptr<T> >::const_iterator const_iterator;
 
                     // TODO: make trait ... to disable for result_wrapper
                     template <typename U> wrapper_set(wrapper_set<U> const & arg) {
@@ -46,7 +46,7 @@ namespace alps {
 
                     bool has(std::string const & name) const;
 
-                    void insert(std::string const & name, boost::shared_ptr<T> ptr);
+                    void insert(std::string const & name, std::shared_ptr<T> ptr);
 
                     std::size_t size() const {
                         return m_storage.size();
@@ -94,11 +94,11 @@ namespace alps {
                     }
 
                 private:
-                    std::map<std::string, boost::shared_ptr<T> > m_storage;
-                    static std::vector<boost::shared_ptr<detail::serializable_type<T> > > m_types;
+                    std::map<std::string, std::shared_ptr<T> > m_storage;
+                    static std::vector<std::shared_ptr<detail::serializable_type<T> > > m_types;
                     static std::mutex m_types_mutex;
             };
-            template<typename T> std::vector<boost::shared_ptr<detail::serializable_type<T> > > wrapper_set<T>::m_types;
+            template<typename T> std::vector<std::shared_ptr<detail::serializable_type<T> > > wrapper_set<T>::m_types;
             template<typename T> std::mutex wrapper_set<T>::m_types_mutex;
 
             template<typename T> inline std::ostream & operator<<(std::ostream & os, const wrapper_set<T> & arg) {

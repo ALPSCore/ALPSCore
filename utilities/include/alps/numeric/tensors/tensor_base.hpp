@@ -32,8 +32,18 @@ namespace alps {
        */
       template<typename T, typename St>
       struct is_storage {
-        static constexpr bool value = std::is_same < St, data_storage < T > > ::value || std::is_same < St, data_view < T > > ::value;
+        static constexpr bool value = std::is_same < St, simple_storage < T > > ::value ||
+            std::is_same < St, data_view < T > > ::value;
       };
+
+      /**
+       * Check that all values in pack are true
+       *
+       * @tparam IndicesTypes - types of indices template parameter pack
+       */
+      template <bool...> struct bool_pack;
+      template <bool... v>
+      using all_true = std::is_same<bool_pack<true, v...>, bool_pack<v..., true>>;
 
       /**
        * Base Tensor Class
@@ -50,6 +60,13 @@ namespace alps {
        */
       template<typename T, size_t D>
       using tensor = detail::tensor_base < T, D, detail::data_storage < T > >;
+#ifdef ALPS_HAVE_SHARED_ALLOCATOR
+      /**
+       * Definition of Tensor with mpi3 shared storage
+       */
+      template<typename T, size_t D>
+      using shared_tensor = detail::tensor_base < T, D, shared_storage< T > >;
+#endif
       /**
        * Definition of Tensor as view of existent data array
        */
@@ -69,11 +86,16 @@ namespace alps {
        */
       template<typename T, size_t Dim, typename Container>
       class tensor_base {
+      public:
         // types definitions
         typedef T prec;
+      private:
         typedef data_view < T > viewType;
-        //typedef data_view < const T > constViewType;
+        typedef data_view < const typename std::remove_const<T>::type > constViewType;
+        typedef data_view < typename std::remove_const<T>::type > nonconstViewType;
         typedef data_storage < T > storageType;
+        typedef data_storage < const typename std::remove_const<T>::type > constStorageType;
+        typedef data_storage < typename std::remove_const<T>::type > nonconstStorageType;
         /// current Tensor type
         typedef tensor_base < T, Dim, Container > tType;
         /// Tensor type with storage
@@ -108,13 +130,33 @@ namespace alps {
          */
         tensor_base(Container &&container, const std::array < size_t, Dim >& sizes) : storage_(container), shape_(sizes) {
           static_assert(is_storage< T, Container>::value, "Should be either data_storage or data_view type");
+          assert(storage_.size() == size());
           fill_acc_sizes();
         }
 
         tensor_base(Container &container, const std::array < size_t, Dim >& sizes) : storage_(container), shape_(sizes) {
           static_assert(is_storage< T, Container>::value, "Should be either data_storage or data_view type");
+          assert(storage_.size() == size());
           fill_acc_sizes();
         }
+
+        template<typename Container2>
+        tensor_base(Container2 &container, size_t size, size_t offset, const std::array < size_t, Dim >& sizes) :
+            storage_(container, size, offset), shape_(sizes) {
+          assert(storage_.size() == this->size());
+          fill_acc_sizes();
+        }
+
+        template<typename Container2>
+        tensor_base(const Container2 &container, size_t size, size_t offset, const std::array < size_t, Dim >& sizes) :
+            storage_(container, size, offset), shape_(sizes) {
+          assert(storage_.size() == this->size());
+          fill_acc_sizes();
+        }
+
+        template<typename...Indices>
+        tensor_base(typename std::enable_if< all_true<std::is_convertible<Indices, std::size_t>::value...>::value, Container >::type &container,
+                    size_t size1, Indices...sizes) : tensor_base(container, {{size1, size_t(sizes)...}}) {}
 
         /**
          * Create tensor from the existent data. All operation will be performed on the data stored in <data> parameter
@@ -123,7 +165,7 @@ namespace alps {
          * @param data  - pointer to the raw data buffer
          * @param sizes - array with sizes for each dimension
          */
-        tensor_base(T *data, const std::array < size_t, Dim > & sizes) : storage_(viewType(data, size(sizes))), shape_(sizes) {
+        tensor_base(T *data, const std::array < size_t, Dim > & sizes) : storage_(data, size(sizes)), shape_(sizes) {
           fill_acc_sizes();
         }
 
@@ -165,7 +207,13 @@ namespace alps {
         template<typename T2, typename St, typename = std::enable_if<std::is_same<Container, storageType>::value, void >>
         tensor_base(tensor_base<T2, Dim, St> &&rhs) noexcept: storage_(rhs.storage()), shape_(rhs.shape()), acc_sizes_(rhs.acc_sizes()) {}
 
-
+        /// Different type assignment
+        template<typename T2, typename St>
+        tensor_base < T, Dim, Container > &operator=(const tensor_base < T2, Dim, St> &rhs){
+          assert(size()==rhs.size());
+          storage_ = rhs.storage();
+          return *this;
+        };
         /// Copy assignment
         tensor_base < T, Dim, Container > &operator=(const tensor_base < T, Dim, Container > &rhs) = default;
         /// Move assignment
@@ -212,7 +260,7 @@ namespace alps {
             size_t >::type t1, IndexTypes ... indices) {
           std::array < size_t, Dim - (sizeof...(IndexTypes)) - 1 > sizes;
           size_t s = new_size(sizes);
-          return tensor_view < T, Dim - (sizeof...(IndexTypes)) - 1 >(viewType(storage_, s, (index(t1, indices...))), sizes);
+          return tensor_view < T, Dim - (sizeof...(IndexTypes)) - 1 > ( storage_, s, index(t1, indices...), sizes);
         }
 
         template<typename ...IndexTypes>
@@ -221,7 +269,7 @@ namespace alps {
           std::array < size_t, Dim - (sizeof...(IndexTypes)) - 1 > sizes;
           size_t s = new_size(sizes);
           return tensor_view <const typename std::remove_const<T>::type, Dim - (sizeof...(IndexTypes)) - 1 >
-              (data_view<const typename std::remove_const<T>::type>( storage_, s, index(t1, indices...) ), sizes );
+              (storage_, s, index(t1, indices...), sizes );
         }
 
         /*
@@ -236,7 +284,7 @@ namespace alps {
          */
         template<typename S>
         typename std::enable_if < !std::is_same < S, tensorType >::value, tensor_base< decltype(S{} + T{}), Dim,
-            data_storage< decltype(S{} * T{}) > > >::type operator*(S scalar) {
+            data_storage< decltype(S{} * T{}) > > >::type operator*(S scalar) const {
           tensor_base< decltype(S{} + T{}), Dim, data_storage< decltype(S{} * T{}) > > x(*this);
           return (x *= static_cast<decltype(S{} + T{})>(scalar));
         };
@@ -249,7 +297,7 @@ namespace alps {
          * @return result of two tensor multiplication
          */
         template<typename S>
-        typename std::enable_if < std::is_same < S, tensorType >::value, tensorType >::type operator*(const S& rhs) {
+        typename std::enable_if < std::is_same < S, tensorType >::value, tensorType >::type operator*(const S& rhs) const {
           tensorType x(*this);
           return x*=rhs;
         };
@@ -281,7 +329,7 @@ namespace alps {
          */
         template<typename S>
         typename std::enable_if < !std::is_same < S, tensorType >::value, tensor_base< decltype(S{} + T{}), Dim,
-            data_storage< decltype(S{} * T{}) > > >::type operator/(S scalar) {
+            data_storage< decltype(S{} * T{}) > > >::type operator/(S scalar) const {
           tensor_base< decltype(S{} + T{}), Dim, data_storage< decltype(S{} * T{}) > >  x(*this);
           return (x /= scalar);
         };
@@ -298,11 +346,29 @@ namespace alps {
         };
 
         /**
+         * Negate tensor
+         */
+        tensor_base < T, Dim, Container > operator-() const {
+          return *this * T(-1.0);
+        };
+
+        /**
          * Set data to 0
          */
         void set_zero() {
-          Eigen::Map < Eigen::Matrix < T, 1, Eigen::Dynamic > > M(&storage_.data(0), storage_.size());
-          M.setZero();
+          set_number(T(0));
+        }
+
+        /**
+         * Assign all the values in the tensor to the specific scalar
+         *
+         * @tparam num_type - scalar value type
+         * @param value     - scalar value for all elements in the tensor
+         */
+        template<typename num_type>
+        void set_number(num_type value) {
+          static_assert(std::is_convertible<num_type, T>::value, "Can not assign value to the tensor. Value can not be cast into the tensor value type.");
+          std::fill_n(data(), size(), T(value));
         }
 
         /**
@@ -312,6 +378,9 @@ namespace alps {
           return storage_.size();
         }
 
+        /**
+         * @return the total number of elements in the tensor
+         */
         size_t num_elements() const {
           return storage_.size();
         }
@@ -419,7 +488,7 @@ namespace alps {
         template<typename X = Container>
         typename std::enable_if<std::is_same < X, data_storage < T > >::value, void>::type reshape(const std::array<size_t, Dim>& shape) {
           size_t new_size = size(shape);
-          storage_.data().resize(new_size);
+          storage_.resize(new_size);
           shape_ = shape;
           fill_acc_sizes();
         }
@@ -442,10 +511,10 @@ namespace alps {
         static size_t dimension() { return Dim; }
 
         /// const pointer to the internal data
-        const prec *data() const { return &storage_.data(0); }
+        const prec *data() const { return storage_.data(); }
 
         /// pointer to the internal data
-        prec *data() { return &storage_.data(0); }
+        prec *data() { return storage_.data(); }
 
         /// const reference to the data storage
         const Container &storage() const { return storage_; }

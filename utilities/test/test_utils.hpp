@@ -15,7 +15,6 @@
 #include <complex>
 #include <iostream>
 #include <cmath> // for pow()
-#include <boost/foreach.hpp>
 
 
 namespace alps {
@@ -177,7 +176,7 @@ namespace alps {
             /// Returns different vector values of the specified length for the different value of the argument.
             static std::vector<T> get(bool choice, std::size_t sz) {
                 std::vector<T> arr(sz);
-                BOOST_FOREACH(typename std::vector<T>::reference vref, arr) {
+                for(typename std::vector<T>::reference vref: arr) {
                     vref=datapoint<T>::get(choice,sz);
                     choice=!choice;
                 }
@@ -189,7 +188,7 @@ namespace alps {
             {
                 std::vector<T> arr(sz);
                 unsigned int i=0;
-                BOOST_FOREACH(typename std::vector<T>::reference vref, arr) {
+                for(typename std::vector<T>::reference vref: arr) {
                     vref=datapoint<T>::get(choice+i,sz);
                     ++i;
                 }

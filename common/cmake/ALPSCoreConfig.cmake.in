@@ -80,12 +80,54 @@ function(alpscore_config_main_)
         endif()
       endforeach()
     endif()
+
+    # Restore Boost version and location hints
+    set(alps_BOOST_DIR_ @Boost_DIR@)
+    set(alps_BOOST_ROOT_ @ALPSCore_BOOST_ROOT@)
+    set(alps_BOOST_INCLUDEDIR_ @ALPSCore_BOOST_INCLUDEDIR@)
+    set(alps_BOOST_LIBRARYDIR_ @ALPSCore_BOOST_LIBRARYDIR@)
+
+    set(ALPSCore_BOOST_VERSION @ALPSCore_BOOST_VERSION@)
+    set(ALPSCore_BOOST_VERSION ${ALPSCore_BOOST_VERSION} PARENT_SCOPE)
+
+    if (BOOST_FOUND OR TARGET Boost::boost)
+      message("Note: Boost seems to be searched and found before ALPSCore."
+        " ALPSCore is unable to hint CMake to the locaton of Boost it was built with."
+        " Make sure you are using the same version of Boost: ${ALPSCore_BOOST_VERSION}")
+    else()
+      
+      foreach(varname_ Boost_DIR BOOST_ROOT BOOST_INCLUDEDIR BOOST_LIBRARYDIR)
+        set(alps_var_ ${alps_${varname_}_})      
+        set(client_var_ ${${varname_}})
+        if (alps_var_)
+          if (NOT client_var_ OR client_var_ STREQUAL alps_var_)
+            set(${varname_} ${alps_var_} PARENT_SCOPE)
+            message(STATUS "ALPSCore will hint CMake about Boost location: ${varname_}=${alps_var_}")
+          else()
+            message(WARNING "Variable ${varname_} is set to '${client_var_}', which is different"
+              " from the value '${alps_var_}' used when building ALPSCore."
+              " Make sure you are using the same version of Boost: ${ALPSCore_BOOST_VERSION}")
+          endif()
+        endif()
+      endforeach()
+
+    endif()
     
     set(ALPSCore_LIBRARIES ${ALPSCore_LIBRARIES} PARENT_SCOPE)
     set(ALPSCore_COMPONENTS ${ALPSCore_FIND_COMPONENTS} PARENT_SCOPE)
 endfunction(alpscore_config_main_)
 
 
+set(ALPSCore_CMAKE_MINIMUM_VERSION @ALPS_CMAKE_MINIMUM_VERSION@)
+set(ALPSCore_CMAKE_MATCH true)
+if (CMAKE_VERSION VERSION_LESS ALPSCore_CMAKE_MINIMUM_VERSION)
+  message(WARNING "To use ALPScore CMake version ${ALPSCore_CMAKE_MINIMUM_VERSION} or later "
+    "is required; this CMake version is ${CMAKE_VERSION}. "
+    "You may use a newer CMake for your project, "
+    "or try to rebuild ALPSCore with CMake version ${CMAKE_VERSION}.")
+  set(ALPSCore_CMAKE_MATCH false)
+endif()
+    
 set(ALPSCore_HAS_MPI @ALPS_HAVE_MPI@)
 set(ALPSCore_CXX_STD "@ALPS_CXX_STD@")
 set(ALPSCore_CXX_COMPILER_ID "@CMAKE_CXX_COMPILER_ID@")
@@ -110,9 +152,9 @@ else()
     set(ALPSCore_COMPILER_MATCH false)
   endif()
 endif()
-if (ALPSCore_COMPILER_MATCH)
+if (ALPSCore_COMPILER_MATCH AND ALPSCore_CMAKE_MATCH)
   alpscore_config_main_()
 endif()
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(ALPSCore REQUIRED_VARS ALPSCore_LIBRARIES ALPSCore_COMPILER_MATCH HANDLE_COMPONENTS)
+find_package_handle_standard_args(ALPSCore REQUIRED_VARS ALPSCore_LIBRARIES ALPSCore_COMPILER_MATCH ALPSCore_CMAKE_MATCH HANDLE_COMPONENTS)

@@ -5,8 +5,6 @@
  */
 
 #include <algorithm>
-// #include <boost/scoped_array.hpp>
-// #include <boost/container/vector.hpp> // to deal with vector<bool> in a sane manner
 
 #include <alps/utilities/mpi.hpp>
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2017 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2018 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -332,4 +332,65 @@ TEST(GreensFunction, Reshape) {
   ASSERT_TRUE(g2.data().shape() == g1.data().shape());
   ASSERT_NO_THROW(g2(alps::gf::matsubara_positive_mesh::index_type(0)).reshape(y2, z2));
   ASSERT_THROW(g2(alps::gf::matsubara_positive_mesh::index_type(0)).reshape(y, z2), std::invalid_argument);
+}
+
+TEST(GreensFunction, MeshAssignment) {
+  alps::gf::real_space_index_mesh m1(4, 10);
+  for(int i = 0; i< 4; ++i) {
+    for(int j = 0; j<10; ++j) {
+      m1.points()[i][j] = i*2+j + 1;
+    }
+  }
+  greenf<double, alps::gf::matsubara_positive_mesh, alps::gf::real_space_index_mesh> g(alps::gf::matsubara_positive_mesh(100, 10),m1);
+  for(int i = 0; i< 4; ++i) {
+    for(int j = 0; j<10; ++j) {
+      ASSERT_EQ(m1.points()[i][j], g.mesh2().points()[i][j]);
+    }
+  }
+}
+
+TEST(GreensFunction, ConstructorTests){
+  alps::gf::matsubara_positive_mesh x(100, 10);
+  alps::gf::index_mesh y(10);
+  alps::gf::itime_mesh z(100, 10);
+  alps::gf::legendre_mesh w(100, 10);
+
+  //construct without data passed in and individual meshes
+  greenf<double, alps::gf::matsubara_positive_mesh, alps::gf::index_mesh, alps::gf::itime_mesh, alps::gf::legendre_mesh> g(x, y, z, w);
+  for(std::size_t i = 0; i<g.data().size(); ++i) {
+    ASSERT_EQ(g.data().storage().data(i), 0.0);
+  }
+
+  //construct with data passed in as pointer
+  std::vector<double> data(x.extent()*y.extent()*z.extent()*w.extent(), 7.);
+  greenf<double, alps::gf::matsubara_positive_mesh, alps::gf::index_mesh, alps::gf::itime_mesh, alps::gf::legendre_mesh> g2(&(data[0]), std::make_tuple(x, y, z, w));
+  for(std::size_t i = 0; i<g.data().size(); ++i) {
+    ASSERT_EQ(g2.data().storage().data(i), 7.);
+  }
+ 
+  //construct with data passed in as vector 
+  {
+    alps::numerics::tensor < double, 4 > data_tensor(x.extent(), y.extent(), z.extent(), w.extent());
+    double *data_tensor_data_ptr=data_tensor.data(); std::fill(data_tensor_data_ptr, data_tensor_data_ptr+x.extent()*y.extent()*z.extent()*w.extent(), M_PI);
+    greenf<double, alps::gf::matsubara_positive_mesh, alps::gf::index_mesh, alps::gf::itime_mesh, alps::gf::legendre_mesh> g3(data_tensor, std::make_tuple(x, y, z, w));
+    greenf<double, alps::gf::matsubara_positive_mesh, alps::gf::index_mesh, alps::gf::itime_mesh, alps::gf::legendre_mesh> g4(data_tensor, x, y, z, w);
+    for(std::size_t i = 0; i<g.data().size(); ++i) {
+      ASSERT_EQ(g3.data().storage().data(i), M_PI);
+      ASSERT_EQ(g4.data().storage().data(i), M_PI);
+    }
+  }
+  
+  //construct with data passed in by move constructor
+  {
+    alps::numerics::tensor < double, 4 > data_tensor_1(x.extent(), y.extent(), z.extent(), w.extent());
+    alps::numerics::tensor < double, 4 > data_tensor_2(x.extent(), y.extent(), z.extent(), w.extent());
+    double *data_tensor_data_ptr_1=data_tensor_1.data(); std::fill(data_tensor_data_ptr_1, data_tensor_data_ptr_1+x.extent()*y.extent()*z.extent()*w.extent(), M_PI*2);
+    double *data_tensor_data_ptr_2=data_tensor_2.data(); std::fill(data_tensor_data_ptr_2, data_tensor_data_ptr_2+x.extent()*y.extent()*z.extent()*w.extent(), M_PI*3);
+    greenf<double, alps::gf::matsubara_positive_mesh, alps::gf::index_mesh, alps::gf::itime_mesh, alps::gf::legendre_mesh> g3(std::move(data_tensor_1), std::make_tuple(x, y, z, w));
+    greenf<double, alps::gf::matsubara_positive_mesh, alps::gf::index_mesh, alps::gf::itime_mesh, alps::gf::legendre_mesh> g4(std::move(data_tensor_2), x, y, z, w);
+    for(std::size_t i = 0; i<g.data().size(); ++i) {
+      ASSERT_EQ(g3.data().storage().data(i), M_PI*2);
+      ASSERT_EQ(g4.data().storage().data(i), M_PI*3);
+    }
+  }
 }

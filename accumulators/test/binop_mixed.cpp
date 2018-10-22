@@ -51,7 +51,7 @@ class AccumulatorMixedBinaryTest : public ::testing::Test {
     // double exp_scalar_right_err_;
 
     aa::accumulator_set aset_;
-    boost::shared_ptr<aa::result_set> rset_p_;
+    std::shared_ptr<aa::result_set> rset_p_;
 
     aa::result_set& results() {
         return *rset_p_;
@@ -71,7 +71,7 @@ class AccumulatorMixedBinaryTest : public ::testing::Test {
             aset_["left"] << aat::gen_data<value_type>(v).value();
             aset_["right"] << aat::gen_data<value_type>(v).value();
         }
-        rset_p_=boost::shared_ptr<aa::result_set>(new aa::result_set(aset_));
+        rset_p_=std::shared_ptr<aa::result_set>(new aa::result_set(aset_));
 
         exp_scalar_left_mean_=scalar_gen_.mean(NPOINTS);
         exp_scalar_right_mean_=exp_scalar_left_mean_;

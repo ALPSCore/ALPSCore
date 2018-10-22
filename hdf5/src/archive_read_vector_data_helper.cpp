@@ -7,7 +7,7 @@
 #include <iostream>
 #include <vector>
 
-#include <boost/scoped_array.hpp>
+#include <memory>
 
 #include <alps/hdf5/archive.hpp>
 #include <alps/utilities/stacktrace.hpp>
@@ -29,7 +29,7 @@ namespace alps {
                     H5Tequal(type_type(H5Tcopy(native_id)), type_type(get_native_type(U())))
                 ) > 0) {
                     std::size_t len = std::accumulate(chunk.begin(), chunk.end(), std::size_t(1), std::multiplies<std::size_t>());
-                    boost::scoped_array<U> raw(
+                    std::unique_ptr<U[]> raw(
                         new U[len]
                     );
                     if (std::equal(chunk.begin(), chunk.end(), data_size.begin())) {

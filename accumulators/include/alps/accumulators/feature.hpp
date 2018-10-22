@@ -206,7 +206,7 @@ namespace alps {
 #endif
             };
 
-            template<typename T, typename F, typename B> struct Accumulator {};
+            template<typename T, typename F, typename B> class Accumulator {};
 
             template<typename T, typename F, typename B> class Result {};
 

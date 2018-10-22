@@ -36,7 +36,10 @@ if (ENABLE_MPI)
         # check that the versions of compilers are the same
         execute_process(COMMAND ${MPI_CXX_COMPILER}   "-dumpversion" OUTPUT_VARIABLE mpi_version OUTPUT_STRIP_TRAILING_WHITESPACE)
         execute_process(COMMAND ${CMAKE_CXX_COMPILER} "-dumpversion" OUTPUT_VARIABLE cxx_version OUTPUT_STRIP_TRAILING_WHITESPACE)
-        if (NOT ${mpi_version} EQUAL ${cxx_version})
+        if (NOT cxx_version)
+          set(cxx_version ${CMAKE_CXX_COMPILER_VERSION})
+        endif()
+        if (NOT mpi_version OR NOT cxx_version OR NOT mpi_version EQUAL cxx_version)
             message(WARNING "MPI compiler doesn't match the C++ compiler.
 MPI compiler is: ${MPI_CXX_COMPILER}
 MPI compiler version is: ${mpi_version}
