@@ -44,8 +44,16 @@ public:
         : score_(score), dist_(f_size, f_dof)
     { }
 
+    /** Returns whether the lower alternate hypothesis can be tested.
+     *
+     * For low values of size, the F distribution does not have a mode,
+     * because there is no way to distinguish the lower alternate hypothesis
+     * (too large error bars) from an accidental "hit".
+     */
+    bool has_plower() const { return dist_.degrees_of_freedom1() > 3; }
+
     /** p-value in favour of the lower alternate Hypothesis */
-    double pvalue_lower() const { return cdf(dist_, score_); }
+    double pvalue_lower() const { return has_plower() ? cdf(dist_, score_) : 1; }
 
     /** p-value in favour of the upper alternate Hypothesis */
     double pvalue_upper() const { return cdf(complement(dist_, score_)); }
