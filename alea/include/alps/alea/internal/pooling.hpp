@@ -116,8 +116,8 @@ var_result<T> pool_var(const Result1 &r1, const Result2 &r2)
         pooled.store().data2() = ecov.eigenvalues();
     } else {
         // Directly pooling variances
-        pooled.store().data2() = (obs1 - 1.) * r1.var() + (obs2 - 1.) * r2.var()
-                                / (obs1 + obs2 - 2.0);
+        pooled.store().data2() = ((obs1 - 1.) * r1.var() + (obs2 - 1.) * r2.var())
+                                 / (obs1 + obs2 - 2.0);
     }
     return pooled;
 }
