@@ -223,8 +223,8 @@ public:
         EXPECT_NEAR(twogauss_block40_count, res.observations(), 1e-10);
 
         std::vector<var_type> obs_var = res.var();
-        EXPECT_NEAR(obs_var[0], twogauss_block40_var[0], 1e-6);
-        EXPECT_NEAR(obs_var[1], twogauss_block40_var[1], 1e-6);
+        EXPECT_NEAR(res.batch_size() * obs_var[0], twogauss_block40_var[0], 1e-6);
+        EXPECT_NEAR(res.batch_size() * obs_var[1], twogauss_block40_var[1], 1e-6);
 
         std::vector<var_type> obs_err = res.stderror();
         EXPECT_NEAR(obs_err[0], twogauss_block40_stderr[0], 1e-6);

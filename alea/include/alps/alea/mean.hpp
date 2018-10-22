@@ -32,6 +32,7 @@ namespace alps { namespace alea {
 
 namespace alps { namespace alea {
 
+
 /**
  * Data which tracks only the mean/sum and the count.
  *

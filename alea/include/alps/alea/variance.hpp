@@ -113,7 +113,19 @@ extern template class var_data<std::complex<double>, circular_var>;
 extern template class var_data<std::complex<double>, elliptic_var>;
 
 /**
- * Accumulator which tracks the mean and a naive variance estimate.
+ * Accumulator which tracks the weighted mean and a variance estimate.
+ *
+ * Given a set of data points `x[i]` and a set of weights `w[i]`, or,
+ * equivalently, a set of variances on the data point `sigma2[i] = 1/w[i]`,
+ * computes the weighted mean:
+ *
+ *     mean = 1/N1 * sum(w[i] * x[i]),
+ *
+ * and the weighted variance:
+ *
+ *     var = 1/(N1 - N2/N1) * sum(w[i] * (x[i] - mean) * (x[i] - mean)),
+ *
+ * where `N1 = sum(w[i])` and `N2 = sum(w[i] * w[i])`.
  */
 template <typename T, typename Strategy=circular_var>
 class var_acc
@@ -197,7 +209,7 @@ extern template class var_acc<std::complex<double>, circular_var>;
 extern template class var_acc<std::complex<double>, elliptic_var>;
 
 /**
- * Result which contains mean and a naive variance estimate.
+ * Result which tracks the weighted mean and a variance estimate.
  */
 template <typename T, typename Strategy=circular_var>
 class var_result
@@ -238,12 +250,8 @@ public:
     /** Returns sample mean */
     const column<T> &mean() const { return store_->data(); }
 
-    // TODO: this is essentially a weighted variance thing.  The weighted
-    // variance differs from the pooled on by a factor.  We should probably
-    // split the two things.
-
     /** Returns bias-corrected sample variance */
-    column<var_type> var() const { return batch_size() * store_->data2(); }
+    column<var_type> var() const { return store_->data2(); }
 
     /** Returns bias-corrected standard error of the mean */
     column<var_type> stderror() const;

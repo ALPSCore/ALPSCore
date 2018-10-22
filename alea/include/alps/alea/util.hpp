@@ -14,6 +14,10 @@
 #include <vector>
 #include <Eigen/Dense>
 
+namespace alps { namespace alea {
+    template <typename T, typename Str> class var_result;
+    template <typename T, typename Str> class cov_result;
+}}
 
 // -------- INTEROPERABILITY WITH EIGEN --------
 
@@ -34,6 +38,10 @@ struct make_real { typedef T type; };
 /** Extract underlying real type from complex, leave real types unchanged */
 template <typename T>
 struct make_real< std::complex<T> > { typedef T type; };
+
+/** Extract underlying real type from complex, leave real types unchanged */
+template <typename T>
+using make_real_type = typename make_real<T>::type;
 
 template <typename T>
 struct eigen

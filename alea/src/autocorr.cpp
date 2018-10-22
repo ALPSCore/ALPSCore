@@ -170,8 +170,6 @@ double autocorr_result<T>::count2() const
 {
     size_t lvl = find_level(DEFAULT_MIN_SAMPLES);
 
-    // The factor comes from the fact that we accumulate sums of batch_size
-    // elements, and therefore we get this by the law of large numbers
     return level_[lvl].count2();
 }
 
@@ -180,8 +178,10 @@ column<typename autocorr_result<T>::var_type> autocorr_result<T>::var() const
 {
     size_t lvl = find_level(DEFAULT_MIN_SAMPLES);
 
-    // The factor comes from the fact that we accumulate sums of batch_size
-    // elements, and therefore we get this by the law of large numbers
+    // The question is whether to return the ensemble variance or the batch
+    // variance here.  We opt for the batch variance, because it makes
+    // everything consistent with each other.
+    //return level_[lvl].batch_size() * level_[lvl].var();
     return level_[lvl].var();
 }
 
@@ -190,10 +190,16 @@ column<typename autocorr_result<T>::var_type> autocorr_result<T>::stderror() con
 {
     size_t lvl = find_level(DEFAULT_MIN_SAMPLES);
 
-    // Standard error of the mean has another 1/N (but at the level!)
-    //double fact = 1. * batch_size(lvl) / level_[lvl].count();
-    //return (fact * level_[lvl].var()).cwiseSqrt();
     return level_[lvl].stderror();
+}
+
+
+template <typename T>
+double autocorr_result<T>::observations() const
+{
+    size_t lvl = find_level(DEFAULT_MIN_SAMPLES);
+
+    return level_[lvl].observations();
 }
 
 template <typename T>
@@ -202,8 +208,9 @@ column<typename autocorr_result<T>::var_type> autocorr_result<T>::tau() const
     size_t lvl = find_level(DEFAULT_MIN_SAMPLES);
     const column<var_type> &var0 = level_[0].var();
     const column<var_type> &varn = level_[lvl].var();
+    const double n = level_[lvl].batch_size();
 
-    return (0.5 * varn.array() / var0.array() - 0.5).matrix();
+    return (0.5 * n * varn.array() / var0.array() - 0.5).matrix();
 }
 
 template <typename T>
