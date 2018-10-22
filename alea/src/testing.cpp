@@ -7,10 +7,6 @@ t2_result t2_test(const column<T> &diff,
                   const column<typename make_real<T>::type> &var,
                   double nmeas, size_t pools, double atol)
 {
-//     std::cerr << "\nDIFF= " << diff.transpose()
-//               << "\nVAR=  " << var.transpose()
-//               << "\nNMEAS=" << nmeas << "\n";
-
     if (diff.rows() != var.rows())
         throw std::invalid_argument("Size mismatch between diff and var");
     if (pools != 1 && pools != 2)
@@ -40,6 +36,7 @@ t2_result t2_test(const column<T> &diff,
 
     // normalize T2 score to match F distribution
     double score = dof/(nsize * (nmeas - pools)) * t2;
+
     return t2_result(score, nsize, dof);
 }
 

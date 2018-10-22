@@ -94,6 +94,17 @@ void print_result(std::ostream &out, const alps::alea::autocorr_result<T> &res)
         << std::endl;
 }
 
+template <typename T>
+void print_result(std::ostream &out, const alps::alea::var_result<T> &res)
+{
+    out << "ESTIMATED RESULT:"
+        << "\n\tmean = " << res.mean().transpose()
+        << "\n\tsem  = " << res.stderror().transpose()
+        << "\n\tvar  = " << res.var().transpose()
+        << "\n\tnobs = " << res.observations()
+        << std::endl;
+}
+
 template <typename Acc>
 class model_error_case
     : public ::testing::Test
@@ -195,8 +206,15 @@ TEST(var1_test, same)
     alps::alea::autocorr_result<double> res2 = acc2.finalize();
     print_result(std::cerr, res2);
 
-    // perform T2 test
-    alps::alea::t2_result t2 = alps::alea::test_mean(res1, res2);
+    // perform T2 test manually
+    alps::alea::var_result<double> diff = alps::alea::internal::pool_var(res1, res2);
+    print_result(std::cerr, diff);
+    alps::alea::t2_result t2 = alps::alea::t2_test(diff.mean(), diff.var(),
+                                                   diff.observations(), 1, 1e-10);
     print_t2(std::cerr, t2);
+    ASSERT_GE(t2.pvalue(), 0.01);
+
+    // Perform T2 test automatically
+    t2 = alps::alea::test_mean(res1, res2);
     ASSERT_GE(t2.pvalue(), 0.01);
 }
