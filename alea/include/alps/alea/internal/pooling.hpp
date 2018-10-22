@@ -65,13 +65,17 @@ var_result<T> make_diff(const Result &result,
         throw size_mismatch();
 
     var_result<T> diff(var_data<T>(result.size()));
-    diff.store().count() = result.count();
-    diff.store().count2() = result.count2();
+
+    // We do not copy the true values of count(), count2(), because they
+    // are not consistent with stderr/variance for the autocorrelation acc.
+    // TODO: come up with some grand scheme that corrects this.
+    diff.store().count() = result.observations();
+    diff.store().count2() = result.observations();
     diff.store().data() = result.mean() - expected;
 
     if (traits<Result>::HAVE_COV) {
         Eigen::SelfAdjointEigenSolver<typename eigen<T>::matrix> ecov(get_cov(result));
-        diff.store().data() = ecov.eigenvectors().adjoint() * diff.store().data();
+        diff.store().data() = diff.store().data() * ecov.eigenvectors();
         diff.store().data2() = ecov.eigenvalues();
     } else {
         diff.store().data2() = result.var();
@@ -90,24 +94,30 @@ var_result<T> pool_var(const Result1 &r1, const Result2 &r2)
         throw size_mismatch();
 
     var_result<T> pooled(var_data<T>(r1.size()));
-    pooled.store().count() = r1.count() * r2.count() / (r1.count() + r2.count());
 
-    // FIXME: we would need to pool count2 here too
+    // We pool the number of observations, which is the minimal version.
+    // TODO: Ideally, we would like to do proper variance pooling for
+    // weighted samples.
+    double obs1 = r1.observations();
+    double obs2 = r2.observations();
+    pooled.store().count() = obs1 * obs2 / (obs1 + obs2);
     pooled.store().count2() = pooled.store().count();
+
+    // The mean is just the difference
     pooled.store().data() = r1.mean() - r2.mean();
 
     if (traits<Result1>::HAVE_COV || traits<Result2>::HAVE_COV) {
         // Pooling covariance matrices - diagonalize those to yield variances
-        auto pooled_cov = (r1.count() - 1.) * get_cov(r1) + (r2.count() - 1.) * get_cov(r2)
-                          / (r1.count() + r2.count() - 2.0);
+        auto pooled_cov = (obs1 - 1.) * get_cov(r1) + (obs2 - 1.) * get_cov(r2)
+                          / (obs1 + obs2 - 2.0);
 
         Eigen::SelfAdjointEigenSolver<typename eigen<T>::matrix> ecov(pooled_cov);
-        pooled.store().data() = ecov.eigenvectors().adjoint() * pooled.store().data();
+        pooled.store().data() = pooled.store().data() * ecov.eigenvectors();
         pooled.store().data2() = ecov.eigenvalues();
     } else {
         // Directly pooling variances
-        pooled.store().data2() = (r1.count() - 1.) * r1.var() + (r2.count() - 1.) * r2.var()
-                                / (r1.count() + r2.count() - 2.0);
+        pooled.store().data2() = (obs1 - 1.) * r1.var() + (obs2 - 1.) * r2.var()
+                                / (obs1 + obs2 - 2.0);
     }
     return pooled;
 }

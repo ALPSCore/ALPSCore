@@ -65,6 +65,35 @@ void fill(const alps::alea::util::var1_model<T> &model, Acc &acc, size_t tmax)
     }
 }
 
+void print_t2(std::ostream &out, const alps::alea::t2_result &res)
+{
+    out << "T2 RESULT:"
+        << "\n\ta (size) = " << res.dist().degrees_of_freedom1()
+        << "\n\tb (dof)  = " << res.dist().degrees_of_freedom2()
+        << "\n\tFab   1% = " << quantile(res.dist(), 0.01)
+        << "\n\tFab   5% = " << quantile(res.dist(), 0.05)
+        << "\n\tFab  25% = " << quantile(res.dist(), 0.25)
+        << "\n\tFab  50% = " << quantile(res.dist(), 0.50)
+        << "\n\tFab  75% = " << quantile(res.dist(), 0.75)
+        << "\n\tFab  95% = " << quantile(res.dist(), 0.95)
+        << "\n\tFab  99% = " << quantile(res.dist(), 0.99)
+        << "\n\tf-score  = " << res.score()
+        << "\n\tp-values = " << res.pvalue_lower() << " " << res.pvalue_upper()
+        << std::endl;
+}
+
+template <typename T>
+void print_result(std::ostream &out, const alps::alea::autocorr_result<T> &res)
+{
+    out << "ESTIMATED RESULT:"
+        << "\n\tmean = " << res.mean().transpose()
+        << "\n\tsem  = " << res.stderror().transpose()
+        << "\n\tvar  = " << res.var().transpose()
+        << "\n\tnobs = " << res.observations()
+        << "\n\ttau  = " << res.tau().transpose()
+        << std::endl;
+}
+
 template <typename Acc>
 class model_error_case
     : public ::testing::Test
@@ -134,12 +163,11 @@ TEST(var1_test, autocorr)
 
     fill(model, acc, 400000);
     alps::alea::autocorr_result<double> res = acc.finalize();
-    std::cerr << "EST.  MEAN=" << res.mean().transpose() << "\n";
-    std::cerr << "EST.  ERR =" << res.stderror().transpose() << "\n";
-    std::cerr << "EST.  TAU =" << res.tau().transpose() << "\n";
+    print_result(std::cerr, res);
 
     // perform T2 test
     alps::alea::t2_result t2 = alps::alea::test_mean(res, model.mean());
+    print_t2(std::cerr, t2);
     ASSERT_GE(t2.pvalue(), 0.01);
 }
 
@@ -155,19 +183,20 @@ TEST(var1_test, same)
     alps::alea::util::var1_model<double> model1(phi0, phi1, veps_one);
     alps::alea::util::var1_model<double> model2(phi0, phi1, veps_two);
 
+    std::cerr << "EXACT MEAN=" << model1.mean().transpose() << "\n";
+
     alps::alea::autocorr_acc<double> acc1(2), acc2(2);
     fill(model1, acc1, 400000);
     fill(model2, acc2, 400000);
 
     alps::alea::autocorr_result<double> res1 = acc1.finalize();
-    alps::alea::autocorr_result<double> res2 = acc2.finalize();
+    print_result(std::cerr, res1);
 
-    std::cerr << "EST.  MEAN=" << res1.mean().transpose() << "\n";
-    std::cerr << "EST.  ERR =" << res1.stderror().transpose() << "\n";
-    std::cerr << "EST.  MEAN=" << res2.mean().transpose() << "\n";
-    std::cerr << "EST.  ERR =" << res2.stderror().transpose() << "\n";
+    alps::alea::autocorr_result<double> res2 = acc2.finalize();
+    print_result(std::cerr, res2);
 
     // perform T2 test
     alps::alea::t2_result t2 = alps::alea::test_mean(res1, res2);
+    print_t2(std::cerr, t2);
     ASSERT_GE(t2.pvalue(), 0.01);
 }

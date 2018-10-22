@@ -94,7 +94,7 @@ t2_result test_mean(const Result &result,
 
     using diff_scalar = internal::diff_scalar_type<Result, Derived>;
     var_result<diff_scalar> diff = internal::make_diff(result, expected);
-    return t2_test(diff.mean(), diff.var(), diff.count(), 1, atol);
+    return t2_test(diff.mean(), diff.var(), diff.observations(), 1, atol);
 }
 
 /**
@@ -122,7 +122,7 @@ test_mean(const Result1 &result1, const Result2 &result2, double atol=1e-14)
 
     using diff_scalar = internal::joined_value_type<Result1, Result2>;
     var_result<diff_scalar> diff = internal::pool_var(result1, result2);
-    return t2_test(diff.mean(), diff.var(), diff.count(), 2, atol);
+    return t2_test(diff.mean(), diff.var(), diff.observations(), 2, atol);
 }
 
 
