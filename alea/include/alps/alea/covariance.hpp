@@ -200,7 +200,19 @@ extern template class cov_acc<std::complex<double>, elliptic_var>;
 
 
 /**
- * Accumulator which tracks the mean and a naive variance estimate.
+ * Accumulator which tracks the mean and a naive covariance estimate.
+ *
+ * Given a set of data points `x[i]` and a set of weights `w[i]`, or,
+ * equivalently, a set of variances on the data point `sigma2[i] = 1/w[i]`,
+ * computes the weighted mean:
+ *
+ *     mean = 1/N1 * sum(w[i] * x[i]),
+ *
+ * and the weighted variance:
+ *
+ *     var = 1/(N1 - N2/N1) * sum(w[i] * (x[i] - mean) * (x[i] - mean)).T,
+ *
+ * where `N1 = sum(w[i])` and `N2 = sum(w[i] * w[i])`.
  */
 template <typename T, typename Strategy=circular_var>
 class cov_result
@@ -242,15 +254,11 @@ public:
     /** Returns sample mean */
     const column<T> &mean() const { return store_->data(); }
 
-    // TODO: this is essentially a weighted variance thing.  The weighted
-    // variance differs from the pooled on by a factor.  We should probably
-    // split the two things.
-
     /** Returns bias-corrected sample variance */
-    column<var_type> var() const { return batch_size() * store_->data2().diagonal().real(); }
+    column<var_type> var() const { return store_->data2().diagonal().real(); }
 
     /** Returns bias-corrected sample covariance matrix  */
-    typename eigen<cov_type>::matrix cov() const { return batch_size() * store_->data2(); }
+    typename eigen<cov_type>::matrix cov() const { return store_->data2(); }
 
     /** Returns bias-corrected standard error of the mean */
     column<var_type> stderror() const;

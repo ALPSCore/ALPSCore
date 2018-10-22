@@ -177,7 +177,7 @@ column<typename autocorr_result<T>::var_type> autocorr_result<T>::var() const
 
     // The factor comes from the fact that we accumulate sums of batch_size
     // elements, and therefore we get this by the law of large numbers
-    return level_[lvl].var();
+    return level_[lvl].batch_size() * level_[lvl].var();
 }
 
 template <typename T>
@@ -197,8 +197,9 @@ column<typename autocorr_result<T>::var_type> autocorr_result<T>::tau() const
     size_t lvl = find_level(DEFAULT_MIN_SAMPLES);
     const column<var_type> &var0 = level_[0].var();
     const column<var_type> &varn = level_[lvl].var();
+    const double n = level_[lvl].batch_size();
 
-    return (0.5 * varn.array() / var0.array() - 0.5).matrix();
+    return (0.5 * n * varn.array() / var0.array() - 0.5).matrix();
 }
 
 template <typename T>
