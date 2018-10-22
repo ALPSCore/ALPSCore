@@ -21,7 +21,7 @@ t2_result t2_test(const column<T> &diff,
     double t2 = 0;
     size_t nsize = 0;
     for (int i = 0; i != diff.rows(); ++i) {
-        if (abs(var[i]) < atol && std::norm(diff[i]) < atol)
+        if (std::abs(var[i]) < atol && std::norm(diff[i]) < atol)
             continue;
 
         t2 += std::norm(diff[i]) / var[i];
