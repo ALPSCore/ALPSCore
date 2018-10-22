@@ -156,6 +156,7 @@ struct traits< batch_acc<T> >
     typedef T value_type;
     typedef circular_var strategy_type;
     typedef batch_result<T> result_type;
+    typedef typename make_real<T>::type var_type;
     typedef batch_data<T> store_type;
 };
 
@@ -197,6 +198,12 @@ public:
 
     /** Returns sum of squared sample sizes */
     double count2() const { return store_->count().squaredNorm(); }
+
+    /** Returns average batch size */
+    double batch_size() const { return count2() / count(); }
+
+    /** Returns effective number of observations */
+    double observations() const { return count() / batch_size(); }
 
     /** Returns sample mean */
     column<T> mean() const;

@@ -178,6 +178,9 @@ public:
     /** Returns integrated auto-correlation time */
     column<var_type> tau() const;
 
+    /** Returns number of observations consistent with var/stderror */
+    double observations() const;
+
     /** Is sample size sufficient to estimate integrated auto-correlation time? */
     bool tau_available() const { return find_level(DEFAULT_MIN_SAMPLES) > 0; }
 

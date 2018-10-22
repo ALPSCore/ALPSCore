@@ -65,6 +65,59 @@ void fill(const alps::alea::util::var1_model<T> &model, Acc &acc, size_t tmax)
     }
 }
 
+template <typename Acc>
+class model_error_case
+    : public ::testing::Test
+{
+public:
+    typedef typename alps::alea::traits<Acc>::var_type var_type;
+
+    model_error_case()
+        : acc_(2)
+        , model_()
+    {
+        Eigen::VectorXd phi0(2), veps(2);
+        Eigen::MatrixXd phi1(2,2);
+
+        phi0 << 2, 3;
+        phi1 << .80, 0, 0, .64;
+        veps << 1.0, 0.25;
+        model_ = alps::alea::util::var1_model<double>(phi0, phi1, veps);
+    }
+
+    void test()
+    {
+        acc_.set_batch_size(4);
+        fill(model_, acc_, 400000);
+        result_ = acc_.finalize();
+
+        std::vector<double> obs_var = result_.var();
+        std::vector<double> obs_stderr = result_.stderror();
+        double nobs = result_.observations();
+
+        EXPECT_NEAR(result_.count() * result_.count() / result_.count2(),
+                    nobs, 1e-10);
+        EXPECT_NEAR(std::sqrt(obs_var[0]/nobs), obs_stderr[0], 1e-10);
+        EXPECT_NEAR(std::sqrt(obs_var[0]/nobs), obs_stderr[0], 1e-10);
+    }
+
+private:
+    Acc acc_;
+    typename alps::alea::traits<Acc>::result_type result_;
+    alps::alea::util::var1_model<double> model_;
+};
+
+typedef ::testing::Types<
+      alps::alea::var_acc<double>
+    , alps::alea::cov_acc<double>
+    , alps::alea::autocorr_acc<double>
+    , alps::alea::batch_acc<double>
+    > has_stderr;
+
+TYPED_TEST_CASE(model_error_case, has_stderr);
+TYPED_TEST(model_error_case, test) { this->test(); }
+
+
 TEST(var1_test, autocorr)
 {
     Eigen::VectorXd phi0(2), veps(2);
