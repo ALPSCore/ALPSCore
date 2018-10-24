@@ -10,6 +10,8 @@
 #define ALPS_NUMERIC_IS_ZERO_HPP
 
 #include <cmath>
+#include <complex>
+#include <limits>
 #include <type_traits>
 
 namespace alps { namespace numeric {
@@ -19,24 +21,24 @@ namespace detail {
 template<class T, unsigned int N = 5>
 struct precision
 {
-  static inline T epsilon() { return 1e-50; }
+  static inline T epsilon() { return T(1e-50); }
 };
 template<class T> struct precision<T, 0>;
 template<class T> struct precision<T, 1>
 {
-  static inline T epsilon() { return 1e-10; }
+  static inline T epsilon() { return T(1e-10); }
 };
 template<class T> struct precision<T, 2>
 {
-  static inline T epsilon() { return 1e-20; }
+  static inline T epsilon() { return T(1e-20); }
 };
 template<class T> struct precision<T, 3>
 {
-  static inline T epsilon() { return 1e-30; }
+  static inline T epsilon() { return T(1e-30); }
 };
 template<class T> struct precision<T, 4>
 {
-  static inline T epsilon() { return 1e-40; }
+  static inline T epsilon() { return T(1e-40); }
 };
 
 } // end namespace detail
@@ -53,8 +55,9 @@ template<class T> struct precision<T, 4>
 template<unsigned int N, class T>
 inline bool is_zero(T x,
   typename std::enable_if<std::is_arithmetic<T>::value >::type* = 0,
-  typename std::enable_if<std::is_float<T>::value >::type* = 0)
-{ return std::abs(x) < detail::precision<T, N>::epsilon(); }
+  typename std::enable_if<std::is_floating_point<T>::value >::type* = 0)
+{ return (std::abs(x) < detail::precision<T, N>::epsilon() ||
+          std::abs(x) < std::numeric_limits<T>::min()); }
 template<unsigned int N, class T>
 inline bool is_zero(T x,
   typename std::enable_if<std::is_arithmetic<T>::value >::type* = 0,
@@ -85,8 +88,9 @@ inline bool is_zero(const T& x,
 template<class T>
 inline bool is_zero(T x,
   typename std::enable_if<std::is_arithmetic<T>::value >::type* = 0,
-  typename std::enable_if<std::is_float<T>::value >::type* = 0)
-{ return std::abs(x) < detail::precision<T>::epsilon(); }
+  typename std::enable_if<std::is_floating_point<T>::value >::type* = 0)
+{ return (std::abs(x) < detail::precision<T>::epsilon() ||
+          std::abs(x) < std::numeric_limits<T>::min()); }
 template<class T>
 inline bool is_zero(T x,
   typename std::enable_if<std::is_arithmetic<T>::value >::type* = 0,

@@ -11,6 +11,7 @@ set (test_src
     vector_functions
     rectangularize
     tensor_test
+    is_zero
     )
 
 set (test_src_mpi
