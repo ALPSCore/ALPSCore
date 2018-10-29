@@ -11,7 +11,6 @@ add_executable(${PROJECT_NAME} main.cpp)
 #   - either in a standard system path `/usr`
 #   - somewhere in your $PATH
 #   - in the directory corresponding to $ALPSCore_DIR
-find_package(HDF5 REQUIRED)
 find_package(ALPSCore REQUIRED alea)
 
 # Use ALPSCore_LIBRARIES variable to link to ALPSCore
