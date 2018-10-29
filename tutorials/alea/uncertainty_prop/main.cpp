@@ -21,7 +21,9 @@ alea::util::var1_model<double> create_model()
 
 int main()
 {
-    // Construct a data set from a very simple prescription called VAR(1)
+    // Construct a data set from a very simple prescription called VAR(1).
+    // A detailed explanation of VAR(P) models can be found in
+    // https://www.kevinsheppard.com/images/5/56/Chapter5.pdf
     alea::util::var1_model<double> model = create_model();
     std::cout << "Exact <X> =" << model.mean().transpose() << "\n";
     std::cout << "Exact autocorr. time = " << model.ctau() << "\n";
