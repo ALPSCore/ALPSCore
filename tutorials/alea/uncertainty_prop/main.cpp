@@ -54,7 +54,7 @@ int main()
     }
 
     // Analyze data: we repurpose our accumulated data as results by calling
-    // finalize.  Before we can accumulate again, we would need to call reset()
+    // finalize().  Before we can accumulate again, we would need to call reset()
     // on the accumulators
     alea::autocorr_result<double> rcorr = acorr.finalize();
     alea::batch_result<double> rbatch = abatch.finalize();
