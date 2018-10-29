@@ -24,7 +24,7 @@ int main()
     // Construct a data set from a very simple prescription called VAR(1)
     alea::util::var1_model<double> model = create_model();
     std::cout << "Exact <X> =" << model.mean().transpose() << "\n";
-    std::cout << "Exact autocorr. time = " << model.ctau() << "\n\n";
+    std::cout << "Exact autocorr. time = " << model.ctau() << "\n";
 
     // Set up two accumulators: one which tries to estimate autocorrelation
     // time and one which keeps track of the distribution of values.  The "1"
@@ -36,7 +36,7 @@ int main()
     std::mt19937 prng(0);
 
     // Generate data points and add them to the accumulators
-    std::cout << "RUNNING SIMULATION\n";
+    std::cout << "\nSimulation data:\n";
     alea::util::var1_run<double> generator = model.start();
     while(generator.t() < 1000000) {
         // Measure the current value
@@ -62,5 +62,23 @@ int main()
     std::cout << "Measured <X> = " << rcorr << "\n";
     std::cout << "Measured autocorr. time = " << rcorr.tau() << "\n";
 
+    // Compare result to analytic result using hypothesis testing
+    alea::t2_result test = alea::test_mean(rcorr, model.mean());
+    std::cout << "p-value = " << test.pvalue() << "\n";
+    if (test.pvalue() >= 0.05)
+        std::cout << "Results are consistent at the alpha = 0.05 level\n";
+
+    // Estimate <1/x> by performing a Jackknife error propagation
+    std::cout << "\nError propagation:\n";
+    auto f = [] (double x) -> double { return 1/x; };
+    alea::batch_result<double> prop = alea::transform(
+                    alea::jackknife_prop(),
+                    alea::make_transformer(std::function<double(double)>(f)),
+                    rbatch
+                    );
+    std::cout << "Measured <1/X> = " << prop << "\n";
+
+    alea::t2_result test2 = alea::test_mean(prop, model.mean().cwiseInverse());
+    std::cout << "p-value = " << test2.pvalue() << "\n";
     return 0;
 }
