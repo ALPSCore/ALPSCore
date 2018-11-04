@@ -170,7 +170,7 @@ namespace alps {
         }
 
         template<typename...Indices>
-        tensor_base(T *data, size_t size1, Indices...sizes) : tensor_base(data, {{size1, size_t(sizes)...}}) {}
+        tensor_base(T *data, size_t size1, Indices...sizes) : storage_(data, size({{size1, size_t(sizes)...}})), shape_({{size1, size_t(sizes)...}}) {fill_acc_sizes();}
 
         /**
          * Create empty Tensor with provided sizes for each dimensions

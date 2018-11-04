@@ -195,8 +195,8 @@ TEST(TensorTest, TestMultByScalar) {
 TEST(TensorTest, RemoteDataRef) {
   size_t n = 256;
   std::vector<double> X(n, 0.0);
-  tensor_view<double, 1> Y(X.data(), {{X.size()}});
-  tensor_view<double, 2> Z(X.data(), {{16, 16}});
+  tensor_view<double, 1> Y(X.data(), X.size());
+  tensor_view<double, 2> Z(X.data(), 16, 16);
   for(size_t i = 0; i< X.size(); ++i) {
     X[i] = i*0.5;
   }
