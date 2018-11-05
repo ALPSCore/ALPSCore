@@ -238,7 +238,7 @@ struct reducer_setup
     size_t pos;
 
     /** Total number of instances (thread count/MPI size/etc.) */
-    size_t count;
+    uint64_t count;
 
     /** Reductions will yield valid result on this instance */
     bool have_result;

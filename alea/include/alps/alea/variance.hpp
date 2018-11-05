@@ -65,7 +65,7 @@ public:
     size_t size() const { return data_.rows(); }
 
     /** Returns sample size, i.e., number of accumulated data points */
-    size_t count() const { return count_; }
+    uint64_t count() const { return count_; }
 
     /** Returns sample size, i.e., number of accumulated data points */
     size_t &count() { return count_; }
@@ -91,7 +91,7 @@ public:
 private:
     column<T> data_;
     column<var_type> data2_;
-    size_t count_;
+    uint64_t count_;
     double count2_;
 
     friend class var_acc<T, Strategy>;
@@ -135,7 +135,7 @@ public:
     using var_type = typename bind<Strategy, T>::var_type;
 
 public:
-    var_acc(size_t size=1, size_t batch_size=1);
+    var_acc(size_t size=1, uint64_t batch_size=1);
 
     var_acc(const var_acc &other);
 
@@ -148,7 +148,7 @@ public:
     void set_size(size_t size);
 
     /** Update the batch size and discard current batch */
-    void set_batch_size(size_t batch_size);
+    void set_batch_size(uint64_t batch_size);
 
     /** Returns `false` if `finalize()` has been called, `true` otherwise */
     bool valid() const { return (bool)store_; }
@@ -157,7 +157,7 @@ public:
     size_t size() const { return current_.size(); }
 
     /** Returns number of data points per batch */
-    size_t batch_size() const { return current_.target(); }
+    uint64_t batch_size() const { return current_.target(); }
 
     /** Add computed vector to the accumulator */
     var_acc &operator<<(const computed<T> &src) { add(src, 1, nullptr); return *this; }
@@ -166,7 +166,7 @@ public:
     var_acc &operator<<(const var_result<T,Strategy> &result);
 
     /** Returns sample size, i.e., number of accumulated data points */
-    size_t count() const { return store_->count(); }
+    uint64_t count() const { return store_->count(); }
 
     /** Returns result corresponding to current state of accumulator */
     var_result<T,Strategy> result() const;
@@ -180,7 +180,7 @@ public:
     const var_data<T,Strategy> &store() const { return *store_; }
 
 protected:
-    void add(const computed<T> &source, size_t count, var_acc *cascade);
+    void add(const computed<T> &source, uint64_t count, var_acc *cascade);
 
     void add_bundle(var_acc *cascade);
 
@@ -239,7 +239,7 @@ public:
     double batch_size() const { return store_->count2() / store_->count(); }
 
     /** Returns sample size, i.e., number of accumulated data points */
-    size_t count() const { return store_->count(); }
+    uint64_t count() const { return store_->count(); }
 
     /** Returns sum of squared sample sizes */
     double count2() const { return store_->count2(); }

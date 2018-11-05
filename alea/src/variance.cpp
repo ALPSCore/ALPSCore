@@ -74,7 +74,7 @@ template class var_data<std::complex<double>, elliptic_var>;
 
 
 template <typename T, typename Str>
-var_acc<T,Str>::var_acc(size_t size, size_t batch_size)
+var_acc<T,Str>::var_acc(size_t size, uint64_t batch_size)
     : store_(new var_data<T,Str>(size))
     , current_(size, batch_size)
 { }
@@ -113,7 +113,7 @@ void var_acc<T,Str>::set_size(size_t size)
 }
 
 template <typename T, typename Str>
-void var_acc<T,Str>::set_batch_size(size_t batch_size)
+void var_acc<T,Str>::set_batch_size(uint64_t batch_size)
 {
     // TODO: allow resizing with reset
     current_.target() = batch_size;
@@ -121,7 +121,7 @@ void var_acc<T,Str>::set_batch_size(size_t batch_size)
 }
 
 template <typename T, typename Str>
-void var_acc<T,Str>::add(const computed<T> &source, size_t count,
+void var_acc<T,Str>::add(const computed<T> &source, uint64_t count,
                          var_acc<T,Str> *cascade)
 {
     internal::check_valid(*this);

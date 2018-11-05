@@ -72,7 +72,7 @@ template class cov_data<std::complex<double>, elliptic_var>;
 
 
 template <typename T, typename Str>
-cov_acc<T,Str>::cov_acc(size_t size, size_t batch_size)
+cov_acc<T,Str>::cov_acc(size_t size, uint64_t batch_size)
     : store_(new cov_data<T,Str>(size))
     , current_(size, batch_size)
 { }
@@ -111,7 +111,7 @@ void cov_acc<T,Str>::set_size(size_t size)
 }
 
 template <typename T, typename Str>
-void cov_acc<T,Str>::set_batch_size(size_t batch_size)
+void cov_acc<T,Str>::set_batch_size(uint64_t batch_size)
 {
     // TODO: allow resizing with reset
     current_.target() = batch_size;
@@ -119,7 +119,7 @@ void cov_acc<T,Str>::set_batch_size(size_t batch_size)
 }
 
 template <typename T, typename Str>
-void cov_acc<T,Str>::add(const computed<value_type> &source, size_t count)
+void cov_acc<T,Str>::add(const computed<value_type> &source, uint64_t count)
 {
     internal::check_valid(*this);
     source.add_to(view<T>(current_.sum().data(), current_.size()));

@@ -35,7 +35,7 @@ template class batch_data<std::complex<double> >;
 
 
 template <typename T>
-batch_acc<T>::batch_acc(size_t size, size_t num_batches, size_t base_size)
+batch_acc<T>::batch_acc(size_t size, size_t num_batches, uint64_t base_size)
     : size_(size)
     , num_batches_(num_batches)
     , base_size_(base_size)
@@ -97,7 +97,7 @@ void batch_acc<T>::set_size(size_t size)
 }
 
 template <typename T>
-void batch_acc<T>::set_batch_size(size_t batch_size)
+void batch_acc<T>::set_batch_size(uint64_t batch_size)
 {
     base_size_ = batch_size;
     if (valid())
@@ -116,7 +116,7 @@ void batch_acc<T>::set_num_batches(size_t num_batches)
 }
 
 template <typename T>
-void batch_acc<T>::add(const computed<T> &source, size_t count)
+void batch_acc<T>::add(const computed<T> &source, uint64_t count)
 {
     internal::check_valid(*this);
 

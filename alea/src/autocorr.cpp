@@ -12,7 +12,7 @@
 namespace alps { namespace alea {
 
 template <typename T>
-autocorr_acc<T>::autocorr_acc(size_t size, size_t batch_size, size_t granularity)
+autocorr_acc<T>::autocorr_acc(size_t size, uint64_t batch_size, size_t granularity)
     : size_(size)
     , batch_size_(batch_size)
     , count_(0)
@@ -40,7 +40,7 @@ void autocorr_acc<T>::set_size(size_t size)
 }
 
 template <typename T>
-void autocorr_acc<T>::set_batch_size(size_t batch_size)
+void autocorr_acc<T>::set_batch_size(uint64_t batch_size)
 {
     // TODO: handle the case where we just discard levels more gracefully
     batch_size_ = batch_size;
@@ -64,7 +64,7 @@ void autocorr_acc<T>::add_level()
 }
 
 template <typename T>
-void autocorr_acc<T>::add(const computed<T> &source, size_t count)
+void autocorr_acc<T>::add(const computed<T> &source, uint64_t count)
 {
     assert(count_ < nextlevel_);
     internal::check_valid(*this);
@@ -155,7 +155,7 @@ size_t autocorr_result<T>::batch_size(size_t i) const
 }
 
 template <typename T>
-size_t autocorr_result<T>::find_level(size_t min_samples) const
+size_t autocorr_result<T>::find_level(uint64_t min_samples) const
 {
     // TODO: this can be done in O(1)
     for (unsigned i = nlevel(); i != 0; --i) {
