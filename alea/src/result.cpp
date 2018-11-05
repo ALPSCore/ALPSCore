@@ -29,10 +29,10 @@ struct size_visitor
 
 struct count_visitor
 {
-    typedef size_t result_type;
+    typedef uint64_t result_type;
 
     template <typename Res>
-    size_t operator() (const Res &r) const { return r.count(); }
+    uint64_t operator() (const Res &r) const { return r.count(); }
 };
 
 template <typename T>          // T = double or std::complex<double>
@@ -131,7 +131,7 @@ size_t result::size() const
     return boost::apply_visitor(size_visitor(), res_);
 }
 
-size_t result::count() const
+uint64_t result::count() const
 {
     return boost::apply_visitor(count_visitor(), res_);
 }
