@@ -149,7 +149,7 @@ template bool operator==(const autocorr_result<std::complex<double>> &r1,
                          const autocorr_result<std::complex<double>> &r2);
 
 template <typename T>
-size_t autocorr_result<T>::batch_size(size_t i) const
+uint64_t autocorr_result<T>::batch_size(size_t i) const
 {
     return level_[i].batch_size();
 }
@@ -251,8 +251,10 @@ void serialize(serializer &s, const std::string &key, const autocorr_result<T> &
 {
     internal::check_valid(self);
     internal::serializer_sentry group(s, key);
-    serialize(s, "@size", self.size());
-    serialize(s, "@nlevel", self.nlevel());
+
+    // Write size and nlevel as 64-bit integers for consistency
+    serialize(s, "@size", static_cast<uint64_t>(self.size()));
+    serialize(s, "@nlevel", static_cast<uint64_t>(self.nlevel()));
 
     s.enter("level");
     for (size_t i = 0; i != self.nlevel(); ++i)
@@ -271,10 +273,11 @@ void deserialize(deserializer &s, const std::string &key, autocorr_result<T> &se
     typedef typename autocorr_result<T>::var_type var_type;
     internal::deserializer_sentry group(s, key);
 
+    size_t scalar_size = 1;
+    s.read("@size", ndview<uint64_t>(nullptr, &scalar_size, 0)); // discard
+
     // first deserialize the fundamentals and make sure that the target fits
-    size_t new_size = 1;
-    s.read("@size", ndview<size_t>(nullptr, &new_size, 0)); // discard
-    size_t new_nlevel;
+    uint64_t new_nlevel;
     deserialize(s, "@nlevel", new_nlevel);
     self.level_.resize(new_nlevel);
 
@@ -283,10 +286,10 @@ void deserialize(deserializer &s, const std::string &key, autocorr_result<T> &se
         deserialize(s, std::to_string(i), self.level_[i]);
     s.exit();
 
+    scalar_size = self.size();
     s.enter("mean");
-    new_size = self.size();
-    s.read("value", ndview<T>(nullptr, &new_size, 1)); // discard
-    s.read("error", ndview<var_type>(nullptr, &new_size, 1)); // discard
+    s.read("value", ndview<T>(nullptr, &scalar_size, 1)); // discard
+    s.read("error", ndview<var_type>(nullptr, &scalar_size, 1)); // discard
     s.exit();
 }
 

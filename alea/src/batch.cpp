@@ -296,8 +296,9 @@ void serialize(serializer &s, const std::string &key, const batch_result<T> &sel
     internal::check_valid(self);
     internal::serializer_sentry group(s, key);
 
-    serialize(s, "@size", self.size());
-    serialize(s, "@num_batches", self.store().num_batches());
+    // Serialize as 64-bit integers for consistency
+    serialize(s, "@size", static_cast<uint64_t>(self.size()));
+    serialize(s, "@num_batches", static_cast<uint64_t>(self.store().num_batches()));
 
     s.enter("batch");
     serialize(s, "count", self.store().count());
@@ -317,7 +318,7 @@ void deserialize(deserializer &s, const std::string &key, batch_result<T> &self)
     internal::deserializer_sentry group(s, key);
 
     // first deserialize the fundamentals and make sure that the target fits
-    size_t new_size, new_nbatches;
+    uint64_t new_size, new_nbatches;
     deserialize(s, "@size", new_size);
     deserialize(s, "@num_batches", new_nbatches);
     if (!self.valid() || self.size() != new_size || self.store().num_batches() != new_nbatches)
@@ -329,9 +330,10 @@ void deserialize(deserializer &s, const std::string &key, batch_result<T> &self)
     deserialize(s, "sum", self.store().batch());
     s.exit();
 
+    size_t new_size_sizet = new_size;
     s.enter("mean");
-    s.read("value", ndview<T>(nullptr, &new_size, 1)); // discard
-    s.read("error", ndview<var_type>(nullptr, &new_size, 1)); // discard
+    s.read("value", ndview<T>(nullptr, &new_size_sizet, 1)); // discard
+    s.read("error", ndview<var_type>(nullptr, &new_size_sizet, 1)); // discard
     s.exit();
 }
 
