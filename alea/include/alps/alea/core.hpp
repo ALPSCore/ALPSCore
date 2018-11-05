@@ -272,13 +272,16 @@ struct reducer
     virtual reducer_setup get_setup() const = 0;
 
     /** Get maximum of scalar value over all instances (immediate) */
-    virtual long get_max(long value) const = 0;
+    virtual int64_t get_max(int64_t value) const = 0;
 
     /** Reduce double data-set into `data` */
     virtual void reduce(view<double> data) const = 0;
 
+    /** Reduce int data-set into `data` */
+    virtual void reduce(view<int32_t> data) const = 0;
+
     /** Reduce long data-set into `data` */
-    virtual void reduce(view<long> data) const = 0;
+    virtual void reduce(view<int64_t> data) const = 0;
 
     /** Finish reduction of all data if deferred */
     virtual void commit() const = 0;
@@ -297,8 +300,11 @@ struct reducer
     void reduce(view<complex_op<double> > data) const {
         reduce(view<double>((double *)data.data(), 4 * data.size()));
     }
-    void reduce(view<unsigned long> data) const {
-        reduce(view<long>((long *)data.data(), data.size()));
+    void reduce(view<uint32_t> data) const {
+        reduce(view<int32_t>((int32_t *)data.data(), data.size()));
+    }
+    void reduce(view<uint64_t> data) const {
+        reduce(view<int64_t>((int64_t *)data.data(), data.size()));
     }
 };
 
