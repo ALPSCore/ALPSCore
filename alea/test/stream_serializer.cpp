@@ -104,18 +104,18 @@ TEST(twogauss_serialize_case, mock_archive) {
     mock_archive archive;
 
     archive << (double)3.14
-            << (long)-123456
-            << (unsigned long)7890
+            << (int64_t)-123456
+            << (uint64_t)7890
             << std::complex<double>(0.5,0.75)
             << alps::alea::complex_op<double>(1, 2, 3, 4);
 
     double x = 0;
     archive >> x;
     EXPECT_EQ(3.14, x);
-    long l = 0;
+    int64_t l = 0;
     archive >> l;
     EXPECT_EQ(-123456, l);
-    unsigned long ul = 0;
+    uint64_t ul = 0;
     archive >> ul;
     EXPECT_EQ(7890U, ul);
     std::complex<double> c = 0;
