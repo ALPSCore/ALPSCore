@@ -266,7 +266,7 @@ void batch_result<T>::reduce(const reducer &r, bool pre_commit, bool post_commit
     internal::check_valid(*this);
     if (pre_commit) {
         r.reduce(view<T>(store_->batch().data(), store_->batch().size()));
-        r.reduce(view<size_t>(store_->count().data(), store_->num_batches()));
+        r.reduce(view<uint64_t>(store_->count().data(), store_->num_batches()));
     }
     if (pre_commit && post_commit) {
         r.commit();

@@ -98,7 +98,7 @@ public:
     void set_size(size_t size);
 
     /** Update the number of batches and discard all measurements, if any */
-    void set_num_batches(uint64_t batch_size);
+    void set_num_batches(size_t num_batches);
 
     /** Update the batch size and discard all measurements, if any */
     void set_batch_size(uint64_t batch_size);
