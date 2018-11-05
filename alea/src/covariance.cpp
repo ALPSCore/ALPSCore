@@ -249,7 +249,7 @@ void cov_result<T,Str>::reduce(const reducer &r, bool pre_commit, bool post_comm
         store_->convert_to_sum();
         r.reduce(view<T>(store_->data().data(), store_->data().rows()));
         r.reduce(view<cov_type>(store_->data2().data(), store_->data2().size()));
-        r.reduce(view<size_t>(&store_->count(), 1));
+        r.reduce(view<uint64_t>(&store_->count(), 1));
         r.reduce(view<double>(&store_->count2(), 1));
     }
     if (pre_commit && post_commit) {
@@ -275,7 +275,8 @@ void serialize(serializer &s, const std::string &key, const cov_result<T,Str> &s
     internal::check_valid(self);
     internal::serializer_sentry group(s, key);
 
-    serialize(s, "@size", self.store_->data_.size());
+    // serialize to uint64_t to make sure we are consistent across 32/64 bit
+    serialize(s, "@size", static_cast<uint64_t>(self.store_->data_.size()));
     serialize(s, "count", self.store_->count_);
     serialize(s, "count2", self.store_->count2_);
     s.enter("mean");
@@ -291,9 +292,12 @@ void deserialize(deserializer &s, const std::string &key, cov_result<T,Str> &sel
     typedef typename cov_result<T,Str>::var_type var_type;
     internal::deserializer_sentry group(s, key);
 
+    // deserialize from uint64_t
+    uint64_t new_size_des;
+    deserialize(s, "@size", new_size_des);
+
     // first deserialize the fundamentals and make sure that the target fits
-    size_t new_size;
-    deserialize(s, "@size", new_size);
+    size_t new_size = new_size_des;
     if (!self.valid() || self.size() != new_size)
         self.store_.reset(new cov_data<T,Str>(new_size));
 
