@@ -20,8 +20,10 @@ public:
 
     // Store simple types
     mock_archive & operator<<(double x) { store_fundamental(x); return *this; }
-    mock_archive & operator<<(long x) { store_fundamental(x); return *this; }
-    mock_archive & operator<<(unsigned long x) { store_fundamental(x); return *this; }
+    mock_archive & operator<<(int64_t x) { store_fundamental(x); return *this; }
+    mock_archive & operator<<(uint64_t x) { store_fundamental(x); return *this; }
+    mock_archive & operator<<(int32_t x) { store_fundamental(x); return *this; }
+    mock_archive & operator<<(uint32_t x) { store_fundamental(x); return *this; }
     mock_archive & operator<<(std::complex<double> x)
     {
         *this << x.real() << x.imag();
@@ -47,8 +49,10 @@ public:
 
     // Extract simple types
     mock_archive & operator>>(double &x) { extract_fundamental(x); return *this; }
-    mock_archive & operator>>(long &x) { extract_fundamental(x); return *this; }
-    mock_archive & operator>>(unsigned long &x) { extract_fundamental(x); return *this; }
+    mock_archive & operator>>(int64_t &x) { extract_fundamental(x); return *this; }
+    mock_archive & operator>>(uint64_t &x) { extract_fundamental(x); return *this; }
+    mock_archive & operator>>(int32_t &x) { extract_fundamental(x); return *this; }
+    mock_archive & operator>>(uint32_t &x) { extract_fundamental(x); return *this; }
     mock_archive & operator>>(std::complex<double> &x) {
       double r, i;
       extract_fundamental(r);

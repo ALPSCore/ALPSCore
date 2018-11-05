@@ -21,6 +21,10 @@ namespace alps { namespace alea {
 
 using std::size_t;
 using std::ptrdiff_t;
+using std::uint64_t;
+using std::int64_t;
+using std::uint32_t;
+using std::int32_t;
 
 /** Estimator cannot add to view as the sizes are mismatched */
 struct size_mismatch : public std::exception { };
@@ -325,10 +329,16 @@ struct serializer
     virtual void write(const std::string &key, ndview<const complex_op<double>>) = 0;
 
     /** Writes a named multi-dimensional array of longs */
-    virtual void write(const std::string &key, ndview<const long>) = 0;
+    virtual void write(const std::string &key, ndview<const int64_t>) = 0;
 
     /** Writes a named multi-dimensional array of unsigned longs */
-    virtual void write(const std::string &key, ndview<const unsigned long>) = 0;
+    virtual void write(const std::string &key, ndview<const uint64_t>) = 0;
+
+    /** Writes a named multi-dimensional array of int */
+    virtual void write(const std::string &key, ndview<const int32_t>) = 0;
+
+    /** Writes a named multi-dimensional array of unsigned int */
+    virtual void write(const std::string &key, ndview<const uint32_t>) = 0;
 
     /** Returns a copy of `*this` created using `new` */
     virtual serializer *clone() { throw unsupported_operation(); }
@@ -369,11 +379,17 @@ struct deserializer
     /** Reads a named multi-dimensional array of double complex operand */
     virtual void read(const std::string &key, ndview<complex_op<double>>) = 0;
 
-    /** Reads a named multi-dimensional array of long */
-    virtual void read(const std::string &key, ndview<long>) = 0;
+    /** Reads a named multi-dimensional array of longs */
+    virtual void read(const std::string &key, ndview<int64_t>) = 0;
 
-    /** Reads a named multi-dimensional array of unsigned long */
-    virtual void read(const std::string &key, ndview<unsigned long>) = 0;
+    /** Reads a named multi-dimensional array of unsigned longs */
+    virtual void read(const std::string &key, ndview<uint64_t>) = 0;
+
+    /** Reads a named multi-dimensional array of int */
+    virtual void read(const std::string &key, ndview<int32_t>) = 0;
+
+    /** Reads a named multi-dimensional array of unsigned int */
+    virtual void read(const std::string &key, ndview<uint32_t>) = 0;
 
     /** Returns a copy of `*this` created using `new` */
     virtual deserializer *clone() { throw unsupported_operation(); }
