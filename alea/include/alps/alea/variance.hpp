@@ -68,7 +68,7 @@ public:
     uint64_t count() const { return count_; }
 
     /** Returns sample size, i.e., number of accumulated data points */
-    size_t &count() { return count_; }
+    uint64_t &count() { return count_; }
 
     /** Returns sum of squared weights */
     double count2() const { return count2_; }
