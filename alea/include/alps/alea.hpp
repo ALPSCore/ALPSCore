@@ -139,6 +139,7 @@
 
 // Transforms
 #include <alps/alea/transform.hpp>
+#include <alps/alea/transformer.hpp>
 
 // Tests
 #include <alps/alea/testing.hpp>
