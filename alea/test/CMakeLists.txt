@@ -1,6 +1,7 @@
 include(ALPSEnableTests)
 
 set (test_src
+     compare
      empty
      twogauss
      galois
