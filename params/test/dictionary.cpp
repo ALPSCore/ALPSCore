@@ -210,7 +210,6 @@ class DictionaryTestIntegrals : public ::testing::Test {
     static const unsigned int pos_uint=   integer_traits<unsigned int>::const_max-9;
     static const unsigned long pos_ulong= integer_traits<unsigned long>::const_max-10;
 
-    // FIXME: consider this too
     static const bool long_is_int=(sizeof(long)==sizeof(int));
 
     public:
@@ -219,7 +218,6 @@ class DictionaryTestIntegrals : public ::testing::Test {
         // suffix "_uis" means "unsigned integer size"
         // suffix "_ls" means "long size"
 
-      std::cerr << "DEBUG: " << neg_long << ' ' << neg_int << ' ' << pos_int << ' ' << pos_long << ' ' << pos_uint << ' ' << pos_ulong << std::endl;
         dict_["neg_long"]= +neg_long;
 
         dict_["neg_int"]= +neg_int;
