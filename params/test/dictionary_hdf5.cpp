@@ -24,7 +24,7 @@ namespace de=ap::exception;
 using ap::dictionary;
 
 typedef std::vector<bool> boolvec;
-typedef std::vector<int> intvec;
+typedef std::vector<long> longvec;
 typedef std::vector<double> dblvec;
 typedef std::vector<std::string> strvec;
 
@@ -47,13 +47,13 @@ class DictionaryTestHdf5 : public ::testing::Test {
     {
 
         dict1_["my_bool"]=apt::data_trait<bool>::get(true);
-        dict1_["my_int"]=apt::data_trait<  int>::get(true);
+        dict1_["my_long"]=apt::data_trait<long>::get(true);
         dict1_["my_unsigned long"]=apt::data_trait<unsigned long>::get(true);
         dict1_["my_float"]=apt::data_trait<float>::get(true);
         dict1_["my_double"]=apt::data_trait<  double>::get(true);
         dict1_["my_string"]=apt::data_trait<  std::string>::get(true);
-        dict1_["my_boolvec"]=apt::data_trait<  boolvec>::get(true);
-        dict1_["my_intvec"]=apt::data_trait<  intvec>::get(true);
+        dict1_["my_boolvec"]=apt::data_trait<boolvec>::get(true);
+        dict1_["my_longvec"]=apt::data_trait<longvec>::get(true);
         dict1_["my_dblvec"]=apt::data_trait<  dblvec>::get(true);
         dict1_["my_strvec"]=apt::data_trait<  strvec>::get(true);
         // dict1_["my_boolpair"]=apt::data_trait<  boolpair>::get(true);
@@ -62,13 +62,13 @@ class DictionaryTestHdf5 : public ::testing::Test {
         // dict1_["my_stringpair"]=apt::data_trait<  stringpair>::get(true);
 
         dict2_["my_bool"]=apt::data_trait<bool>::get(false);
-        dict2_["my_int"]=apt::data_trait<  int>::get(false);
+        dict2_["my_long"]=apt::data_trait<long>::get(false);
         dict2_["my_unsigned long"]=apt::data_trait<unsigned long>::get(false);
         dict2_["my_float"]=apt::data_trait<float>::get(false);
         dict2_["my_double"]=apt::data_trait<  double>::get(false);
         dict2_["my_string"]=apt::data_trait<  std::string>::get(false);
-        dict2_["my_boolvec"]=apt::data_trait<  boolvec>::get(false);
-        dict2_["my_intvec"]=apt::data_trait<  intvec>::get(false);
+        dict2_["my_boolvec"]=apt::data_trait<boolvec>::get(false);
+        dict2_["my_longvec"]=apt::data_trait<longvec>::get(false);
         dict2_["my_dblvec"]=apt::data_trait<  dblvec>::get(false);
         dict2_["my_strvec"]=apt::data_trait<  strvec>::get(false);
         // dict2_["my_boolpair"]=apt::data_trait<  boolpair>::get(false);
