@@ -50,6 +50,14 @@ std::ostream &operator<<(std::ostream &os, const legendre_mesh &M){
   return os;
 }
 
+std::ostream &operator<<(std::ostream &os, const chebyshev_mesh &M){
+  os<<"# "<<"CHEBYSHEV"<<" mesh: order: "<<M.extent()<<" beta: "<<M.beta()<<" statistics: ";
+  os<<(M.statistics()==alps::gf::statistics::FERMIONIC?"FERMIONIC":"BOSONIC");
+  os<<std::endl;
+  return os;
+}
+
+
   namespace detail {
   // print 1D boost multiarray --- a 2D-point of a mesh
   std::ostream& operator<<(std::ostream& s, const boost::multi_array<double, 1>& data)
