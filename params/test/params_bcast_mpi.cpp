@@ -5,7 +5,7 @@
  */
 
 /** @file params_bcast_mpi.cpp
-    
+
     @brief Tests MPI broadcast of parameters
 */
 
@@ -32,7 +32,7 @@ class ParamsTest : public ::testing::Test {
   public:
     ParamsTest(): comm_(), root_(0),
                   is_master_(comm_.rank()==root_)
-                   
+
     { }
 };
 
@@ -42,7 +42,7 @@ TEST_F(ParamsTest, bcast) {
 
     ini_maker ini("params_bcast_mpi.ini.");
     ini.add(test_data::inifile_content);
-    
+
     params p_as_on_root(ini.name());
 
     std::string root_ini_name=ini.name();
@@ -51,7 +51,7 @@ TEST_F(ParamsTest, bcast) {
     params p_slave;
 
     params& p=*(is_master_ ? &p_as_on_root : &p_slave);
-    
+
     p_as_on_root.define<int>("my_int", "Integer param");
     p_as_on_root.define<std::string>("my_string", "String param");
 
@@ -61,7 +61,7 @@ TEST_F(ParamsTest, bcast) {
     } else {
         ASSERT_TRUE(p_slave==p) << "Observed on rank " << comm_.rank();
     }
-    
+
     broadcast(comm_, p, root_);
 
     EXPECT_TRUE(p==p_as_on_root) << "Observed on rank " << comm_.rank();
@@ -80,6 +80,10 @@ TEST_F(ParamsTest, bcastCtor) {
 
     ASSERT_TRUE(p.define<int>("my_int", "Integer").ok()) << "Observed on rank " << comm_.rank();
     ASSERT_TRUE(p.define<std::string>("my_string", "String").ok()) << "Observed on rank " << comm_.rank();
+
+    EXPECT_TRUE(p.defined("help")) << "`--help` is not defined on rank " << comm_.rank();
+    EXPECT_TRUE(p.exists<bool>("help")) << "`--help` is not a boolean flag on rank " << comm_.rank();
+
     EXPECT_EQ(1, p["my_int"].as<int>()) << "Observed on rank " << comm_.rank();
     EXPECT_EQ("abc", p["my_string"].as<std::string>()) << "Observed on rank " << comm_.rank();
 }
@@ -91,6 +95,6 @@ int main(int argc, char** argv)
    alps::gtest_par_xml_output tweak;
    tweak(alps::mpi::communicator().rank(), argc, argv);
    ::testing::InitGoogleTest(&argc, argv);
-   
+
    return RUN_ALL_TESTS();
-}    
+}
