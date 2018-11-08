@@ -54,10 +54,10 @@ public:
     size_t size() const { return data_.rows(); }
 
     /** Returns number of accumulated data points */
-    size_t count() const { return count_; }
+    uint64_t count() const { return count_; }
 
     /** Returns number of accumulated data points */
-    size_t &count() { return count_; }
+    uint64_t &count() { return count_; }
 
     /** Returns data vector (either mean or sum) */
     const column<T> &data() const { return data_; }
@@ -73,7 +73,7 @@ public:
 
 private:
     column<T> data_;
-    size_t count_;
+    uint64_t count_;
 
     friend class mean_acc<T>;
     friend class mean_result<T>;
@@ -126,7 +126,7 @@ public:
     mean_acc &operator<<(const mean_result<T> &result);
 
     /** Returns sample size, i.e., number of accumulated data points */
-    size_t count() const { return store_->count(); }
+    uint64_t count() const { return store_->count(); }
 
     /** Returns result corresponding to current state of accumulator */
     mean_result<T> result() const;
@@ -138,7 +138,7 @@ public:
     const mean_data<T> &store() const { return *store_; }
 
 protected:
-    void add(const computed<T> &source, size_t count);
+    void add(const computed<T> &source, uint64_t count);
 
     void finalize_to(mean_result<T> &result);
 
@@ -182,7 +182,7 @@ public:
     size_t size() const { return store_->size(); }
 
     /** Returns sample size, i.e., number of accumulated data points */
-    size_t count() const { return store_->count(); }
+    uint64_t count() const { return store_->count(); }
 
     /** Returns sample mean */
     const column<T> &mean() const { return store_->data(); }

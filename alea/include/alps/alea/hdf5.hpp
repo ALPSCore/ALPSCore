@@ -53,11 +53,19 @@ public:
         throw unsupported_operation();  // FIXME
     }
 
-    void write(const std::string &key, ndview<const long> value) override {
+    void write(const std::string &key, ndview<const int64_t> value) override {
         do_write(key, value);
     }
 
-    void write(const std::string &key, ndview<const unsigned long> value) override {
+    void write(const std::string &key, ndview<const uint64_t> value) override {
+        do_write(key, value);
+    }
+
+    void write(const std::string &key, ndview<const int32_t> value) override {
+        do_write(key, value);
+    }
+
+    void write(const std::string &key, ndview<const uint32_t> value) override {
         do_write(key, value);
     }
 
@@ -79,11 +87,19 @@ public:
         throw unsupported_operation();  // FIXME
     }
 
-    void read(const std::string &key, ndview<long> value) override {
+    void read(const std::string &key, ndview<int64_t> value) override {
         do_read(key, value);
     }
 
-    void read(const std::string &key, ndview<unsigned long> value) override {
+    void read(const std::string &key, ndview<uint64_t> value) override {
+        do_read(key, value);
+    }
+
+    void read(const std::string &key, ndview<int32_t> value) override {
+        do_read(key, value);
+    }
+
+    void read(const std::string &key, ndview<uint32_t> value) override {
         do_read(key, value);
     }
 

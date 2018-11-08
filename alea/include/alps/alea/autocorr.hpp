@@ -71,7 +71,7 @@ public:
     using level_acc_type = var_acc<T, circular_var>;
 
 public:
-    autocorr_acc(size_t size=1, size_t batch_size=1, size_t granularity=2);
+    autocorr_acc(size_t size=1, uint64_t batch_size=1, size_t granularity=2);
 
     /** Re-allocate and thus clear all accumulated data */
     void reset();
@@ -80,7 +80,7 @@ public:
     void set_size(size_t size);
 
     /** Update the batch size and discard all measurements */
-    void set_batch_size(size_t batch_size);
+    void set_batch_size(uint64_t batch_size);
 
     /** Update the increment between levels and discard all measurements*/
     void set_granularity(size_t granularity);
@@ -98,7 +98,7 @@ public:
     autocorr_acc &operator<<(const autocorr_result<T> &result);
 
     /** Returns sample size, i.e., number of accumulated data points */
-    size_t count() const { return count_; }
+    uint64_t count() const { return count_; }
 
     /** Returns result corresponding to current state of accumulator */
     autocorr_result<T> result() const;
@@ -111,7 +111,7 @@ public:
     const level_acc_type &level(size_t i) const { return level_[i]; }
 
 protected:
-    void add(const computed<T> &source, size_t count);
+    void add(const computed<T> &source, uint64_t count);
 
     void add_level();
 
@@ -161,7 +161,7 @@ public:
     size_t size() const { return level_[0].size(); }
 
     /** Returns sample size, i.e., number of accumulated data points */
-    size_t count() const { return level_[0].count(); }
+    uint64_t count() const { return level_[0].count(); }
 
     /** Returns sum of squared samples sizes */
     double count2() const;
@@ -196,9 +196,9 @@ public:
     /** Write some info about the result to a stream */
     friend std::ostream &operator<< <>(std::ostream &, const autocorr_result &);
 
-    size_t find_level(size_t min_samples) const;
+    size_t find_level(uint64_t min_samples) const;
 
-    size_t batch_size(size_t level) const;
+    uint64_t batch_size(size_t level) const;
 
     size_t nlevel() const { return level_.size(); }
 

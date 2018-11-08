@@ -72,8 +72,11 @@ private:
     void advance_galois();
 
     size_t size_;
-    size_t level_, factor_;
-    size_t current_, skip_, level_pos_, cycle_;
+    size_t level_, level_pos_, cycle_;
+
+    // Internally, these need to be 64-bit numbers, because skip and factor
+    // will reflect the number of "merges".
+    uint64_t current_, skip_, factor_;
 };
 
 }}}

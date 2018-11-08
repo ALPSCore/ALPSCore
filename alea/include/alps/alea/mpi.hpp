@@ -55,7 +55,7 @@ struct mpi_reducer
         return mpi_setup;
     }
 
-    long get_max(long data) const override
+    int64_t get_max(int64_t data) const override
     {
         mpi::checked(MPI_Allreduce(MPI_IN_PLACE, &data, 1, MPI_LONG,
                                    MPI_MAX, comm_));
@@ -64,7 +64,9 @@ struct mpi_reducer
 
     void reduce(view<double> data) const override { inplace_reduce(data); }
 
-    void reduce(view<long> data) const override { inplace_reduce(data); }
+    void reduce(view<int32_t> data) const override { inplace_reduce(data); }
+
+    void reduce(view<int64_t> data) const override { inplace_reduce(data); }
 
     void commit() const override { }
 

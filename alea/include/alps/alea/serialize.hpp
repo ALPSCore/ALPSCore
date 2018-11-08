@@ -88,10 +88,16 @@ namespace alps { namespace alea {
 
 // Serialization methods
 
-inline void serialize(serializer &ser, const std::string &key, unsigned long value) {
+inline void serialize(serializer &ser, const std::string &key, uint32_t value) {
     internal::scalar_serialize(ser, key, value);
 }
-inline void serialize(serializer &ser, const std::string &key, long value) {
+inline void serialize(serializer &ser, const std::string &key, int32_t value) {
+    internal::scalar_serialize(ser, key, value);
+}
+inline void serialize(serializer &ser, const std::string &key, uint64_t value) {
+    internal::scalar_serialize(ser, key, value);
+}
+inline void serialize(serializer &ser, const std::string &key, int64_t value) {
     internal::scalar_serialize(ser, key, value);
 }
 inline void serialize(serializer &ser, const std::string &key, double value) {
@@ -137,10 +143,16 @@ void serialize(serializer &ser, const std::string &key,
 
 // Argument-oriented deserialization
 
-inline void deserialize(deserializer &ser, const std::string &key, unsigned long &value) {
+inline void deserialize(deserializer &ser, const std::string &key, uint64_t &value) {
     internal::scalar_deserialize(ser, key, value);
 }
-inline void deserialize(deserializer &ser, const std::string &key, long &value) {
+inline void deserialize(deserializer &ser, const std::string &key, int64_t &value) {
+    internal::scalar_deserialize(ser, key, value);
+}
+inline void deserialize(deserializer &ser, const std::string &key, uint32_t &value) {
+    internal::scalar_deserialize(ser, key, value);
+}
+inline void deserialize(deserializer &ser, const std::string &key, int32_t &value) {
     internal::scalar_deserialize(ser, key, value);
 }
 inline void deserialize(deserializer &ser, const std::string &key, double &value) {

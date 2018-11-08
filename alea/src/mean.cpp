@@ -58,7 +58,7 @@ mean_acc<T> &mean_acc<T>::operator=(const mean_acc &other)
 }
 
 template <typename T>
-void mean_acc<T>::add(const computed<T> &source, size_t count)
+void mean_acc<T>::add(const computed<T> &source, uint64_t count)
 {
     internal::check_valid(*this);
     source.add_to(view<T>(store_->data().data(), size()));
@@ -163,7 +163,7 @@ void mean_result<T>::reduce(const reducer &r, bool pre_commit, bool post_commit)
     if (pre_commit) {
         store_->convert_to_sum();
         r.reduce(view<T>(store_->data().data(), store_->data().rows()));
-        r.reduce(view<size_t>(&store_->count(), 1));
+        r.reduce(view<uint64_t>(&store_->count(), 1));
     }
     if (pre_commit && post_commit) {
         r.commit();
@@ -187,7 +187,8 @@ void serialize(serializer &s, const std::string &key, const mean_result<T> &self
     internal::check_valid(self);
     internal::serializer_sentry group(s, key);
 
-    serialize(s, "@size", self.store_->data_.size());
+    // serialize to uint64_t to make sure we are consistent across 32/64 bit
+    serialize(s, "@size", static_cast<uint64_t>(self.store_->data_.size()));
     serialize(s, "count", self.store_->count_);
     s.enter("mean");
     serialize(s, "value", self.store_->data_);
@@ -199,9 +200,12 @@ void deserialize(deserializer &s, const std::string &key, mean_result<T> &self)
 {
     internal::deserializer_sentry group(s, key);
 
+    // deserialize from uint64_t
+    uint64_t new_size_des;
+    deserialize(s, "@size", new_size_des);
+
     // first deserialize the fundamentals and make sure that the target fits
-    size_t new_size;
-    deserialize(s, "@size", new_size);
+    size_t new_size = new_size_des;
     if (!self.valid() || self.size() != new_size)
         self.store_.reset(new mean_data<T>(new_size));
 
