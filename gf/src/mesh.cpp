@@ -3,7 +3,7 @@
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
-#include"alps/gf/mesh.hpp"
+#include <alps/gf/mesh.hpp>
 
 namespace alps{
 namespace gf{

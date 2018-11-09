@@ -100,7 +100,7 @@ namespace alps {namespace gf {
       load(ar, ar.get_context());
     }
 
-//#ifdef ALPS_HAVE_MPI
+#ifdef ALPS_HAVE_MPI
     void broadcast(const alps::mpi::communicator& comm, int root)
     {
       using alps::mpi::broadcast;
@@ -114,7 +114,7 @@ namespace alps {namespace gf {
       detail::broadcast(comm, points_, root);
       broadcast(comm, kind_, root);
     }
-//#endif
+#endif
 
   };
   ///Stream output operator, e.g. for printing to file
