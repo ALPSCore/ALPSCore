@@ -24,9 +24,11 @@ namespace alps {namespace gf {
     std::vector<double> zeros_;
 
     inline void throw_if_empty() const {
+#ifndef NDEBUG
       if (extent() == 0) {
         throw std::runtime_error("chebyshev mesh is empty");
       }
+#endif
     }
 
   public:
@@ -40,9 +42,7 @@ namespace alps {namespace gf {
     }
 
     int operator()(index_type idx) const {
-#ifndef NDEBUG
       throw_if_empty();
-#endif
       return idx();
     }
 
