@@ -4,7 +4,7 @@
 # we need at least cmake version 3.1
 cmake_minimum_required(VERSION 3.1)
 
-# the project is called 'use_eigen', and it is a C++ project
+# the project is called 'gf', and it is a C++ project
 project(gf CXX)
 
 set(CMAKE_CXX_STANDARD 11)
