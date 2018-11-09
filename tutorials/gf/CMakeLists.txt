@@ -20,7 +20,7 @@ if ( NOT ALPSCore_HAS_EIGEN_VERSION)
     find_package(Eigen3 3.3.4 REQUIRED)
 endif()
 
-# we only have one cpp file: it's called use_eigen.cpp
+# we only have one cpp file: it's called gf.cpp
 add_executable(${PROJECT_NAME} gf.cpp)
 
 
