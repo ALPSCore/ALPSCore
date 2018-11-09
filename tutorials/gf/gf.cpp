@@ -17,7 +17,7 @@ int main() {
 
   double beta = 10.0;
 
-  // Define meshes for the Green's function object
+  // Define shortcuts for meshes types
 
   using matsubara = alps::gf::matsubara_positive_mesh;
   using index     = alps::gf::index_mesh;
@@ -31,6 +31,7 @@ int main() {
   using il = alps::gf::legendre_mesh::index_type;
   using ic = alps::gf::chebyshev_mesh::index_type;
 
+  // Define meshes for the Green's function object
   matsubara m1(beta, N1);
   index     m2(N2);
   itime     m3(beta, N3);
