@@ -17,7 +17,7 @@ int main() {
 
   double beta = 10.0;
 
-  // Define meshes for the Green's function object
+  // Define shortcuts for meshes types
 
   using matsubara = alps::gf::matsubara_positive_mesh;
   using index     = alps::gf::index_mesh;
