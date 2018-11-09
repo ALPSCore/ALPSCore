@@ -58,7 +58,7 @@ int main() {
   for (int i = 0, cnt = 0; i < m4.extent(); ++i) {
     for (int j = 0; j < m5.extent(); ++j, ++cnt) {
       if(std::abs(g_view(il(i), ic(j)) - g(iw(0), ii(0), it(1), il(i), ic(j))) > 1e-10 ) {
-        std::cerr<<"Something wrong"<<std::endl;
+        throw std::logic_error("Something wrong");
       }
     }
   }
@@ -71,13 +71,13 @@ int main() {
     for (int j = 0; j < m5.extent(); ++j) {
       // check that it is the same as view
       if(std::abs(g_view(il(i), ic(j)) - g_copy(it(1), il(i), ic(j))) > 1e-10 ) {
-        std::cerr<<"Something wrong"<<std::endl;
+        throw std::logic_error("Something wrong");
       }
       // change the value
       g_copy(it(1), il(i), ic(j)) += i*4 + 5 + j;
       // check that it does not affect original
       if(std::abs(g_view(il(i), ic(j)) - g_copy(it(1), il(i), ic(j))) < 1e-10 ) {
-        std::cerr<<"Something wrong"<<std::endl;
+        throw std::logic_error("Something wrong");
       }
     }
   }
