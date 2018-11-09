@@ -31,6 +31,7 @@ int main() {
   using il = alps::gf::legendre_mesh::index_type;
   using ic = alps::gf::chebyshev_mesh::index_type;
 
+  // Define meshes for the Green's function object
   matsubara m1(beta, N1);
   index     m2(N2);
   itime     m3(beta, N3);
