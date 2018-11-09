@@ -98,7 +98,7 @@ namespace alps {namespace gf {
 
 
     /// Swaps this and another mesh
-    // It's a member function to avoid dealing with templated friend decalration.
+    // It's a member function to avoid dealing with templated friend declaration.
     void swap(numerical_mesh& other) {
       using std::swap;
       check_validity();
