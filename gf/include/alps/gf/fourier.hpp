@@ -89,25 +89,28 @@ namespace gf {
   }
 
   ///Fourier transform a matsubara gf to an imag time gf
-  template<class...Meshes> void fourier_frequency_to_time(
-      const gf_tail<greenf<std::complex<double>, matsubara_positive_mesh, Meshes...>,
-      greenf<double,Meshes...> > &g_omega,
-      gf_tail<greenf<double, itime_mesh, Meshes...>, greenf<double, Meshes...> > &g_tau){
-    alps::numerics::tensor<std::complex<double>, (sizeof...(Meshes)) + 1> in_data(g_omega.data().shape());
+  template<class...MESHES> void fourier_frequency_to_time(
+      const gf_tail<
+      detail::gf_base<std::complex<double>, numerics::tensor<std::complex<double>, sizeof...(MESHES) + 1>, matsubara_positive_mesh, MESHES...>,
+      greenf<double,MESHES...> > &g_omega,
+      gf_tail<
+      detail::gf_base<double, numerics::tensor<double, sizeof...(MESHES) + 1>, itime_mesh, MESHES...>,
+      greenf<double, MESHES...> > &g_tau){
+    alps::numerics::tensor<std::complex<double>, (sizeof...(MESHES)) + 1> in_data(g_omega.data().shape());
 
-    using tail_data = alps::numerics::tensor<double, sizeof...(Meshes)>;
+    using tail_data = alps::numerics::tensor<double, sizeof...(MESHES)>;
 
-    std::array<size_t, sizeof...(Meshes)> tail_shape;
-    for (size_t i = 0; i < sizeof...(Meshes); ++i) {
+    std::array<size_t, sizeof...(MESHES)> tail_shape;
+    for (size_t i = 0; i < sizeof...(MESHES); ++i) {
       tail_shape[i] = g_omega.data().shape()[i+1];
     }
 
     tail_data zero_tail(tail_shape);
 
-    const alps::numerics::tensor<double, sizeof...(Meshes)>& c0=(g_omega.min_tail_order()==0 && g_omega.max_tail_order()>=0 )? g_omega.tail(0).data():zero_tail;
-    const alps::numerics::tensor<double, sizeof...(Meshes)>& c1=(g_omega.min_tail_order()<=1 && g_omega.max_tail_order()>=1 )? g_omega.tail(1).data():zero_tail;
-    const alps::numerics::tensor<double, sizeof...(Meshes)>& c2=(g_omega.min_tail_order()<=2 && g_omega.max_tail_order()>=2 )? g_omega.tail(2).data():zero_tail;
-    const alps::numerics::tensor<double, sizeof...(Meshes)>& c3=(g_omega.min_tail_order()<=3 && g_omega.max_tail_order()>=3 )? g_omega.tail(3).data():zero_tail;
+    const alps::numerics::tensor<double, sizeof...(MESHES)>& c0=(g_omega.min_tail_order()==0 && g_omega.max_tail_order()>=0 )? g_omega.tail(0).data():zero_tail;
+    const alps::numerics::tensor<double, sizeof...(MESHES)>& c1=(g_omega.min_tail_order()<=1 && g_omega.max_tail_order()>=1 )? g_omega.tail(1).data():zero_tail;
+    const alps::numerics::tensor<double, sizeof...(MESHES)>& c2=(g_omega.min_tail_order()<=2 && g_omega.max_tail_order()>=2 )? g_omega.tail(2).data():zero_tail;
+    const alps::numerics::tensor<double, sizeof...(MESHES)>& c3=(g_omega.min_tail_order()<=3 && g_omega.max_tail_order()>=3 )? g_omega.tail(3).data():zero_tail;
     for (size_t i = 0; i < c0.size(); ++i) {
       if(c0.data()[i] != 0) throw std::runtime_error("attempt to Fourier transform an object which goes to a constant. FT is ill defined");
     }
