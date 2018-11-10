@@ -108,7 +108,9 @@ namespace gf {
     const alps::numerics::tensor<double, sizeof...(MESHES)>& c1=(g_omega.min_tail_order()<=1 && g_omega.max_tail_order()>=1 )? g_omega.tail(1).data():zero_tail;
     const alps::numerics::tensor<double, sizeof...(MESHES)>& c2=(g_omega.min_tail_order()<=2 && g_omega.max_tail_order()>=2 )? g_omega.tail(2).data():zero_tail;
     const alps::numerics::tensor<double, sizeof...(MESHES)>& c3=(g_omega.min_tail_order()<=3 && g_omega.max_tail_order()>=3 )? g_omega.tail(3).data():zero_tail;
-
+    for (int i = 0; i < c0.size(); ++i) {
+      if(c0.data()[i] != 0) throw std::runtime_error("attempt to Fourier transform an object which goes to a constant. FT is ill defined");
+    }
     for(int n=0;n<g_omega.mesh1().extent();++n) {
       in_data(n) = g_omega(matsubara_index(n)).data() - f_omega(g_omega.mesh1().points()[n],c1,c2,c3);
     }
