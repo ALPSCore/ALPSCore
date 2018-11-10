@@ -81,7 +81,7 @@ public:
   itime_gf_type g_tau;
   itime_gf_type g_tau_2;
 
-  NoninteractingFourierTestGF():beta(10), nk(200), mu(1.0), nfreq(2000),ntau(2001),
+  NoninteractingFourierTestGF():beta(10), mu(1.0), nfreq(2000),ntau(2001), nk(200),
                         g_omega(alps::gf::omega_k_sigma_gf(alps::gf::matsubara_positive_mesh(beta,nfreq),
                                                            alps::gf::momentum_index_mesh(nk, 1),
                                                            alps::gf::index_mesh(2))),

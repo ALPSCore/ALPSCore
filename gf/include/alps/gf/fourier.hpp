@@ -69,12 +69,12 @@ namespace gf {
   inline void transform_vector_no_tail_loop(const alps::numerics::tensor<std::complex<double>, D> &input_data,
                                             const std::vector<double> &omega,
                                             alps::numerics::tensor<double, D> &output_data, const std::vector<double> &tau, double beta){
-    using Matrix  = Eigen::Matrix<double, 1, Eigen::Dynamic, Eigen::RowMajor>;
-    using MatrixX = Eigen::Matrix<std::complex<double>, 1, Eigen::Dynamic, Eigen::RowMajor>;
     int ld_in = omega.size();
     int rest_in = input_data.size() / ld_in;
+#ifndef NDEBUG
     int ld_out = tau.size();
     int rest_out = output_data.size() / ld_out;
+#endif
     assert(rest_in == rest_out);
 
     output_data.set_zero();
