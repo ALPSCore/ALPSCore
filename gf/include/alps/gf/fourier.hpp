@@ -43,17 +43,17 @@ namespace gf {
     using MatrixX = Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
     Matrix Cos(tau.size(), omega.size());
     Matrix Sin(tau.size(), omega.size());
-    for (unsigned int i=0; i<tau.size(); ++i) {
-      for (unsigned int k=0; k<omega.size(); ++k) {
+    for (size_t i=0; i<tau.size(); ++i) {
+      for (size_t k=0; k<omega.size(); ++k) {
         double wt=omega[k]*tau[i];
         Cos(i, k) = cos(wt);
         Sin(i, k) = sin(wt);
       }
     }
-    int ld_in = omega.size();
-    int rest_in = input_data.size() / ld_in;
-    int ld_out = tau.size();
-    int rest_out = output_data.size() / ld_out;
+    size_t ld_in = omega.size();
+    size_t rest_in = input_data.size() / ld_in;
+    size_t ld_out = tau.size();
+    size_t rest_out = output_data.size() / ld_out;
 
     assert(rest_in == rest_out);
 
@@ -69,18 +69,18 @@ namespace gf {
   inline void transform_vector_no_tail_loop(const alps::numerics::tensor<std::complex<double>, D> &input_data,
                                             const std::vector<double> &omega,
                                             alps::numerics::tensor<double, D> &output_data, const std::vector<double> &tau, double beta){
-    int ld_in = omega.size();
-    int rest_in = input_data.size() / ld_in;
+    size_t ld_in = omega.size();
+    size_t rest_in = input_data.size() / ld_in;
 #ifndef NDEBUG
-    int ld_out = tau.size();
-    int rest_out = output_data.size() / ld_out;
+    size_t ld_out = tau.size();
+    size_t rest_out = output_data.size() / ld_out;
 #endif
     assert(rest_in == rest_out);
 
     output_data.set_zero();
-    for (int r = 0; r < rest_in; ++r) {
-      for (unsigned int i=0; i<tau.size(); ++i) {
-        for (unsigned int k = 0; k < omega.size(); ++k) {
+    for (size_t r = 0; r < rest_in; ++r) {
+      for (size_t i=0; i<tau.size(); ++i) {
+        for (size_t k = 0; k < omega.size(); ++k) {
           double wt=omega[k]*tau[i];
           output_data.data()[i * rest_in + r] += 2.0 * (cos(wt) * input_data.data()[k * rest_in + r].real() + sin(wt) * input_data.data()[k * rest_in + r].imag()) / beta;
         }
@@ -89,30 +89,30 @@ namespace gf {
   }
 
   ///Fourier transform a matsubara gf to an imag time gf
-  template<class...MESHES> void fourier_frequency_to_time(
-      const gf_tail<greenf<std::complex<double>, matsubara_positive_mesh, MESHES...>,
-      greenf<double,MESHES...> > &g_omega,
-      gf_tail<greenf<double, itime_mesh, MESHES...>, greenf<double, MESHES...> > &g_tau){
-    alps::numerics::tensor<std::complex<double>, (sizeof...(MESHES)) + 1> in_data(g_omega.data().shape());
+  template<class...Meshes> void fourier_frequency_to_time(
+      const gf_tail<greenf<std::complex<double>, matsubara_positive_mesh, Meshes...>,
+      greenf<double,Meshes...> > &g_omega,
+      gf_tail<greenf<double, itime_mesh, Meshes...>, greenf<double, Meshes...> > &g_tau){
+    alps::numerics::tensor<std::complex<double>, (sizeof...(Meshes)) + 1> in_data(g_omega.data().shape());
 
-    using tail_data = alps::numerics::tensor<double, sizeof...(MESHES)>;
+    using tail_data = alps::numerics::tensor<double, sizeof...(Meshes)>;
 
-    std::array<size_t, sizeof...(MESHES)> tail_shape;
-    for (int i = 0; i < sizeof...(MESHES); ++i) {
+    std::array<size_t, sizeof...(Meshes)> tail_shape;
+    for (size_t i = 0; i < sizeof...(Meshes); ++i) {
       tail_shape[i] = g_omega.data().shape()[i+1];
     }
 
     tail_data zero_tail(tail_shape);
 
-    const alps::numerics::tensor<double, sizeof...(MESHES)>& c0=(g_omega.min_tail_order()==0 && g_omega.max_tail_order()>=0 )? g_omega.tail(0).data():zero_tail;
-    const alps::numerics::tensor<double, sizeof...(MESHES)>& c1=(g_omega.min_tail_order()<=1 && g_omega.max_tail_order()>=1 )? g_omega.tail(1).data():zero_tail;
-    const alps::numerics::tensor<double, sizeof...(MESHES)>& c2=(g_omega.min_tail_order()<=2 && g_omega.max_tail_order()>=2 )? g_omega.tail(2).data():zero_tail;
-    const alps::numerics::tensor<double, sizeof...(MESHES)>& c3=(g_omega.min_tail_order()<=3 && g_omega.max_tail_order()>=3 )? g_omega.tail(3).data():zero_tail;
-    for (int i = 0; i < c0.size(); ++i) {
+    const alps::numerics::tensor<double, sizeof...(Meshes)>& c0=(g_omega.min_tail_order()==0 && g_omega.max_tail_order()>=0 )? g_omega.tail(0).data():zero_tail;
+    const alps::numerics::tensor<double, sizeof...(Meshes)>& c1=(g_omega.min_tail_order()<=1 && g_omega.max_tail_order()>=1 )? g_omega.tail(1).data():zero_tail;
+    const alps::numerics::tensor<double, sizeof...(Meshes)>& c2=(g_omega.min_tail_order()<=2 && g_omega.max_tail_order()>=2 )? g_omega.tail(2).data():zero_tail;
+    const alps::numerics::tensor<double, sizeof...(Meshes)>& c3=(g_omega.min_tail_order()<=3 && g_omega.max_tail_order()>=3 )? g_omega.tail(3).data():zero_tail;
+    for (size_t i = 0; i < c0.size(); ++i) {
       if(c0.data()[i] != 0) throw std::runtime_error("attempt to Fourier transform an object which goes to a constant. FT is ill defined");
     }
     for(int n=0;n<g_omega.mesh1().extent();++n) {
-      in_data(n) = g_omega(matsubara_index(n)).data() - f_omega(g_omega.mesh1().points()[n],c1,c2,c3);
+      in_data(size_t(n)) = g_omega(matsubara_index(size_t(n))).data() - f_omega(g_omega.mesh1().points()[size_t(n)],c1,c2,c3);
     }
 
     if(g_omega.mesh1().extent() * g_tau.mesh1().extent() > 5000000 || g_omega.data().size()/g_omega.mesh1().extent() < 100)
