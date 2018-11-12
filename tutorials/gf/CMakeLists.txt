@@ -14,15 +14,8 @@ set(CMAKE_CXX_STANDARD 11)
 # export ALPSCore_DIR=/location/to/ALPSCORE/
 find_package(ALPSCore 2.2 REQUIRED gf)
 
-# check if Eigen is present:
-if ( NOT ALPSCore_HAS_EIGEN_VERSION)
-    message("WARNING: ALPSCore does not provide Eigen, trying to find.")
-    find_package(Eigen3 3.3.4 REQUIRED)
-endif()
-
 # we only have one cpp file: it's called gf.cpp
 add_executable(${PROJECT_NAME} gf.cpp)
-
 
 # Use ALPSCore_LIBRARIES variable to link to ALPSCore
 target_link_libraries(${PROJECT_NAME} ${ALPSCore_LIBRARIES})
