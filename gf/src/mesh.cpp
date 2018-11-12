@@ -3,7 +3,7 @@
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
-#include"alps/gf/mesh.hpp"
+#include <alps/gf/mesh.hpp>
 
 namespace alps{
 namespace gf{
@@ -49,6 +49,14 @@ std::ostream &operator<<(std::ostream &os, const legendre_mesh &M){
   os<<std::endl;
   return os;
 }
+
+std::ostream &operator<<(std::ostream &os, const chebyshev_mesh &M){
+  os<<"# "<<"CHEBYSHEV"<<" mesh: order: "<<M.extent()<<" beta: "<<M.beta()<<" statistics: ";
+  os<<(M.statistics()==alps::gf::statistics::FERMIONIC?"FERMIONIC":"BOSONIC");
+  os<<std::endl;
+  return os;
+}
+
 
   namespace detail {
   // print 1D boost multiarray --- a 2D-point of a mesh
