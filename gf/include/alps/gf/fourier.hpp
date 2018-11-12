@@ -9,17 +9,7 @@
 namespace alps {
 namespace gf {
 
-  inline std::complex<double> f_omega(double wn, double c1, double c2, double c3) {
-    std::complex<double> iwn(0., wn);
-    std::complex<double> iwnsq=iwn*iwn;
-    return c1/iwn + c2/(iwnsq) + c3/(iwn*iwnsq);
-  }
-
-  inline double f_tau(double tau, double beta, double c1, double c2, double c3) {
-    return -0.5*c1 + (c2*0.25)*(-beta+2.*tau) + (c3*0.25)*(beta*tau-tau*tau);
-  }
-
-
+  /// Model function in Matsubara frequencies for tails up to third power in 1/iw
   template<size_t D>
   inline alps::numerics::tensor<std::complex<double>, D> f_omega(double wn, const alps::numerics::tensor<double, D>& c1, const alps::numerics::tensor<double, D>& c2, const alps::numerics::tensor<double, D>&c3) {
     std::complex<double> iwn(0., wn);
@@ -27,6 +17,7 @@ namespace gf {
     return c1/iwn + c2/(iwnsq) + c3/(iwn*iwnsq);
   }
 
+  /// Model function in Imaginary time for tails up to third power in 1/iw
   template<size_t D>
   inline alps::numerics::tensor<double, D> f_tau(double tau, double beta,
                                                  const alps::numerics::tensor<double, D>& c1,
@@ -35,7 +26,7 @@ namespace gf {
     return c1 *(-0.5) + (c2*0.25)*(-beta+2.*tau) + (c3*0.25)*(beta*tau-tau*tau);
   }
 
-  ///Fourier transform kernel of the omega -> tau transform
+  /// Fourier transform helper of the omega -> tau transform
   template<size_t D>
   inline void transform_vector_no_tail_matrix(const alps::numerics::tensor<std::complex<double>, D>&input_data, const std::vector<double> &omega,
                                               alps::numerics::tensor<double, D> &output_data, const std::vector<double> &tau, double beta){
@@ -60,11 +51,11 @@ namespace gf {
     Eigen::Map<const MatrixX> In(input_data.data(), ld_in, rest_in);
     Eigen::Map<Matrix>        Out(output_data.data(), ld_out, rest_out);
 
-    // real part of `exp(-i*wt) * [x + i*y]` gives `cos(wt) * x + sin(wt) * y`
+    // + sign comes from the -i in the phase
     Out = 2.0*(Cos * In.real() + Sin * In.imag())/beta;
   }
 
-  ///Fourier transform kernel of the omega -> tau transform
+  /// Fourier transform helper of the omega -> tau transform
   template<size_t D>
   inline void transform_vector_no_tail_loop(const alps::numerics::tensor<std::complex<double>, D> &input_data,
                                             const std::vector<double> &omega,
@@ -118,7 +109,7 @@ namespace gf {
       in_data(size_t(n)) = g_omega(matsubara_index(size_t(n))).data() - f_omega(g_omega.mesh1().points()[size_t(n)],c1,c2,c3);
     }
 
-    if(g_omega.mesh1().extent() * g_tau.mesh1().extent() > 5000000 || g_omega.data().size()/g_omega.mesh1().extent() < 100)
+    if(g_omega.mesh1().extent() * g_tau.mesh1().extent() > 20000000 || g_omega.data().size()/g_omega.mesh1().extent() < 100)
       transform_vector_no_tail_loop(in_data,g_omega.mesh1().points(), g_tau.data(), g_tau.mesh1().points(), g_tau.mesh1().beta());
     else
       transform_vector_no_tail_matrix(in_data,g_omega.mesh1().points(), g_tau.data(), g_tau.mesh1().points(), g_tau.mesh1().beta());
