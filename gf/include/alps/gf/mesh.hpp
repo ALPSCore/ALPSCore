@@ -18,7 +18,7 @@
 #endif
 
 #include <alps/gf/mesh/index.hpp>
-#include <alps/gf/mesh/frequency_meches.hpp>
+#include <alps/gf/mesh/frequency_meshes.hpp>
 #include <alps/gf/mesh/time_meshes.hpp>
 #include <alps/gf/mesh/index_meshes.hpp>
 #include <alps/gf/mesh/legendre_mesh.hpp>

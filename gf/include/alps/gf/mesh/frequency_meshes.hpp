@@ -233,7 +233,7 @@ namespace alps {namespace gf {
         check_range();
       } catch (const std::exception& exc) {
         int wrank=alps::mpi::communicator().rank();
-        // FIXME? Try to communiucate the error with all ranks, at least in debug mode?
+        // FIXME? Try to communicate the error with all ranks, at least in debug mode?
         std::cerr << "matsubara_mesh<>::broadcast() exception at WORLD rank=" << wrank << std::endl
                   << exc.what()
                   << "\nAborting." << std::endl;
