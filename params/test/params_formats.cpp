@@ -27,13 +27,13 @@ namespace test_data {
         "my_false2=off\n"
         "my_true3=yes\n"
         "my_false3=no\n"
-        "my_long=8589934593\n" // 2^33+1
+        "my_long=131073\n" // 2^17+1
         "my_float=1.25\n"
         "my_double=2.75\n"
         "my_bool_vec=true,false,true\n"
         "my_int_vec=1,2,3\n"
         "my_short_vec=10\n"
-        "my_long_vec=1,2,8589934593\n"
+        "my_long_vec=1,2,131073\n"
         "my_double_vec=1.25,2.75,3.25\n"
         "my_string_vec=AAA,BBB,CC\n"
         "my_true_pair=key:true\n"
@@ -74,7 +74,7 @@ MAKE_SOURCE2(my_false2, bool,false, FalseAsOff)
 MAKE_SOURCE2(my_true3, bool,true, TrueAsYes)
 MAKE_SOURCE2(my_false3, bool,false, FalseAsNo)
 
-MAKE_SOURCE(my_long, long, 8589934593)
+MAKE_SOURCE(my_long, long, 131073)
 MAKE_SOURCE(my_float, float, 1.25)
 MAKE_SOURCE(my_double, double, 2.75)
 
@@ -108,7 +108,7 @@ typedef my_data<std::vector<__type__>,1> __name__;
 
 MAKE_VEC3_SOURCE(my_bool_vec, bool, true,false,true)
 MAKE_VEC3_SOURCE(my_int_vec, int, 1,2,3)
-MAKE_VEC3_SOURCE(my_long_vec, long, 1,2,8589934593)
+MAKE_VEC3_SOURCE(my_long_vec, long, 1,2,131073)
 MAKE_VEC3_SOURCE(my_double_vec, double, 1.25,2.75,3.25)
 MAKE_VEC3_SOURCE(my_string_vec, std::string, "AAA","BBB","CC")
 
