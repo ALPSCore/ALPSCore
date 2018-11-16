@@ -210,8 +210,7 @@ class DictionaryTestIntegrals : public ::testing::Test {
     static const unsigned int pos_uint=   integer_traits<unsigned int>::const_max-9;
     static const unsigned long pos_ulong= integer_traits<unsigned long>::const_max-10;
 
-    // FIXME: consider this too
-    // static const bool long_is_int=(sizeof(long)==sizeof(int));
+    static const bool long_is_int=(sizeof(long)==sizeof(int));
 
     public:
     DictionaryTestIntegrals(): dict_(), cdict_(dict_) {
@@ -267,8 +266,13 @@ TEST_F(DictionaryTestIntegrals, toUlong) {
     actual=cdict_["uint"];
     EXPECT_EQ(0u, actual-pos_uint);
 
-    actual=cdict_["pos_long_uis"];
-    EXPECT_EQ(0u, actual-pos_uint);
+    if (long_is_int) {
+        EXPECT_THROW(actual=cdict_["pos_long_uis"], de::value_mismatch);
+        EXPECT_EQ(0u, actual-pos_uint);
+    } else {
+        actual=cdict_["pos_long_uis"];
+        EXPECT_EQ(0u, actual-pos_uint);
+    }
 
     actual=cdict_["ulong_uis"];
     EXPECT_EQ(0u, actual-pos_uint);
@@ -310,14 +314,26 @@ TEST_F(DictionaryTestIntegrals, toLong) {
     actual=cdict_["ulong_is"];
     EXPECT_EQ(0u, actual-pos_int);
 
-    actual=cdict_["uint"];
-    EXPECT_EQ(0u, actual-pos_uint);
+    if (long_is_int) {
+        actual=1;
+        EXPECT_THROW(actual=cdict_["uint"], de::value_mismatch);
+        EXPECT_EQ(1u, actual);
+    } else {
+        actual=cdict_["uint"];
+        EXPECT_EQ(0u, actual-pos_uint);
+    }
 
     actual=cdict_["pos_long_uis"];
     EXPECT_EQ(0u, actual-pos_uint);
 
-    actual=cdict_["ulong_uis"];
-    EXPECT_EQ(0u, actual-pos_uint);
+    if (long_is_int) {
+        actual=1;
+        EXPECT_THROW(actual=cdict_["ulong_uis"], de::value_mismatch);
+        EXPECT_EQ(1u, actual);
+    } else {
+        actual=cdict_["ulong_uis"];
+        EXPECT_EQ(0u, actual-pos_uint);
+    }
 
     actual=cdict_["pos_long"];
     EXPECT_EQ(0u, actual-pos_long);
@@ -339,15 +355,25 @@ TEST_F(DictionaryTestIntegrals, toUint) {
     EXPECT_THROW(actual=cdict_["neg_long_is"], de::value_mismatch);
     EXPECT_EQ(1u,actual);
 
-    EXPECT_THROW(actual=cdict_["pos_long"], de::value_mismatch);
-    EXPECT_EQ(1u,actual);
+    if (long_is_int) {
+        actual=cdict_["pos_long"];
+        EXPECT_EQ(0u, actual-pos_long);
 
-    EXPECT_THROW(actual=cdict_["ulong_ls"], de::value_mismatch);
-    EXPECT_EQ(1u,actual);
+        actual=cdict_["ulong_ls"];
+        EXPECT_EQ(0u, actual-pos_long);
 
-    EXPECT_THROW(actual=cdict_["ulong"], de::value_mismatch);
-    EXPECT_EQ(1u,actual);
+        actual=cdict_["ulong"];
+        EXPECT_EQ(0u, actual-pos_ulong);
+    } else {
+        EXPECT_THROW(actual=cdict_["pos_long"], de::value_mismatch);
+        EXPECT_EQ(1u,actual);
 
+        EXPECT_THROW(actual=cdict_["ulong_ls"], de::value_mismatch);
+        EXPECT_EQ(1u,actual);
+
+        EXPECT_THROW(actual=cdict_["ulong"], de::value_mismatch);
+        EXPECT_EQ(1u,actual);
+    }
 
     actual=cdict_["pos_int"];
     EXPECT_EQ(0u, actual-pos_int);
@@ -364,8 +390,14 @@ TEST_F(DictionaryTestIntegrals, toUint) {
     actual=cdict_["uint"];
     EXPECT_EQ(0u, actual-pos_uint);
 
-    actual=cdict_["pos_long_uis"];
-    EXPECT_EQ(0u, actual-pos_uint);
+    actual=1;
+    if (long_is_int) {
+        EXPECT_THROW(actual=cdict_["pos_long_uis"], de::value_mismatch);
+        EXPECT_EQ(1u,actual);
+    } else {
+        actual=cdict_["pos_long_uis"];
+        EXPECT_EQ(0u, actual-pos_uint);
+    }
 
     actual=cdict_["ulong_uis"];
     EXPECT_EQ(0u, actual-pos_uint);
@@ -374,24 +406,38 @@ TEST_F(DictionaryTestIntegrals, toUint) {
 TEST_F(DictionaryTestIntegrals, toInt) {
     int actual=1;
 
-    EXPECT_THROW(actual=cdict_["neg_long"], de::value_mismatch);
-    EXPECT_EQ(1,actual);
+    if (long_is_int) {
+        actual=cdict_["neg_long"];
+        EXPECT_EQ(0, actual-neg_long);
+    } else {
+        EXPECT_THROW(actual=cdict_["neg_long"], de::value_mismatch);
+        EXPECT_EQ(1,actual);
+    }
 
+    actual=1;
     EXPECT_THROW(actual=cdict_["uint"], de::value_mismatch);
     EXPECT_EQ(1,actual);
 
-    EXPECT_THROW(actual=cdict_["pos_long_uis"], de::value_mismatch);
-    EXPECT_EQ(1,actual);
+    if (!long_is_int) {
+        EXPECT_THROW(actual=cdict_["pos_long_uis"], de::value_mismatch);
+        EXPECT_EQ(1,actual);
+    }
 
     EXPECT_THROW(actual=cdict_["ulong_uis"], de::value_mismatch);
     EXPECT_EQ(1,actual);
 
-    EXPECT_THROW(actual=cdict_["pos_long"], de::value_mismatch);
-    EXPECT_EQ(1,actual);
+    if (long_is_int) {
+        actual=cdict_["pos_long"];
+        EXPECT_EQ(0,actual-pos_long);
+    } else {
+        EXPECT_THROW(actual=cdict_["pos_long"], de::value_mismatch);
+        EXPECT_EQ(1,actual);
 
-    EXPECT_THROW(actual=cdict_["ulong_ls"], de::value_mismatch);
-    EXPECT_EQ(1,actual);
+        EXPECT_THROW(actual=cdict_["ulong_ls"], de::value_mismatch);
+        EXPECT_EQ(1,actual);
+    }
 
+    actual=1;
     EXPECT_THROW(actual=cdict_["ulong"], de::value_mismatch);
     EXPECT_EQ(1,actual);
 
@@ -444,8 +490,10 @@ TEST_F(DictionaryTestIntegrals, toFloat) {
     actual=cdict_["uint"];
     EXPECT_FLT_EQ(+pos_uint, actual);
 
-    actual=cdict_["pos_long_uis"];
-    EXPECT_FLT_EQ(+pos_uint, actual);
+    if (!long_is_int) {
+        actual=cdict_["pos_long_uis"];
+        EXPECT_FLT_EQ(+pos_uint, actual);
+    }
 
     actual=cdict_["ulong_uis"];
     EXPECT_FLT_EQ(+pos_uint, actual);
@@ -488,8 +536,10 @@ TEST_F(DictionaryTestIntegrals, toDouble) {
     actual=cdict_["uint"];
     EXPECT_DBL_EQ(+pos_uint, actual);
 
-    actual=cdict_["pos_long_uis"];
-    EXPECT_DBL_EQ(+pos_uint, actual);
+    if (!long_is_int) {
+        actual=cdict_["pos_long_uis"];
+        EXPECT_DBL_EQ(+pos_uint, actual);
+    }
 
     actual=cdict_["ulong_uis"];
     EXPECT_DBL_EQ(+pos_uint, actual);

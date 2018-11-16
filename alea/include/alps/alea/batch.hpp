@@ -56,14 +56,14 @@ public:
     const typename eigen<T>::matrix &batch() const { return batch_; }
 
     /** Returns sample size (number of accumulated points) for each batch */
-    typename eigen<size_t>::row &count() { return count_; }
+    typename eigen<uint64_t>::row &count() { return count_; }
 
     /** Returns sample size (number of accumulated points) for each batch */
-    const typename eigen<size_t>::row &count() const { return count_; }
+    const typename eigen<uint64_t>::row &count() const { return count_; }
 
 private:
     typename eigen<T>::matrix batch_;
-    typename eigen<size_t>::row count_;
+    typename eigen<uint64_t>::row count_;
 };
 
 template <typename T>
@@ -85,7 +85,7 @@ public:
     using value_type = T;
 
 public:
-    batch_acc(size_t size=1, size_t num_batches=256, size_t base_size=1);
+    batch_acc(size_t size=1, size_t num_batches=256, uint64_t base_size=1);
 
     batch_acc(const batch_acc &other);
 
@@ -98,10 +98,10 @@ public:
     void set_size(size_t size);
 
     /** Update the number of batches and discard all measurements, if any */
-    void set_num_batches(size_t batch_size);
+    void set_num_batches(size_t num_batches);
 
     /** Update the batch size and discard all measurements, if any */
-    void set_batch_size(size_t batch_size);
+    void set_batch_size(uint64_t batch_size);
 
     /** Returns `false` if `finalize()` has been called, `true` otherwise */
     bool valid() const { return (bool)store_; }
@@ -119,7 +119,7 @@ public:
     batch_acc &operator<<(const batch_result<T> &result);
 
     /** Returns sample size, i.e., total number of accumulated data points */
-    size_t count() const { return store_->count().sum(); }
+    uint64_t count() const { return store_->count().sum(); }
 
     /** Returns result corresponding to current state of accumulator */
     batch_result<T> result() const;
@@ -132,12 +132,12 @@ public:
 
     const internal::galois_hopper &cursor() const { return cursor_; }
 
-    const typename eigen<size_t>::row &offset() const { return offset_; }
+    const typename eigen<uint64_t>::row &offset() const { return offset_; }
 
     size_t current_batch_size() const { return base_size_ * cursor_.factor(); }
 
 protected:
-    void add(const computed<T> &source, size_t count);
+    void add(const computed<T> &source, uint64_t count);
 
     void next_batch();
 
@@ -147,7 +147,7 @@ private:
     size_t size_, num_batches_, base_size_;
     std::unique_ptr< batch_data<value_type> > store_;
     internal::galois_hopper cursor_;
-    typename eigen<size_t>::row offset_;
+    typename eigen<uint64_t>::row offset_;
 };
 
 template <typename T>
@@ -194,7 +194,7 @@ public:
     size_t num_batches() const { return store_->num_batches(); }
 
     /** Returns sample size, i.e., total number of accumulated data points */
-    size_t count() const { return store_->count().sum(); }
+    uint64_t count() const { return store_->count().sum(); }
 
     /** Returns sum of squared sample sizes */
     double count2() const { return store_->count().squaredNorm(); }

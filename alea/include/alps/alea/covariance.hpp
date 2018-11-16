@@ -63,10 +63,10 @@ public:
     size_t size() const { return data_.rows(); }
 
     /** Returns sample size, i.e., number of accumulated data points */
-    size_t count() const { return count_; }
+    uint64_t count() const { return count_; }
 
     /** Returns sample size, i.e., number of accumulated data points */
-    size_t &count() { return count_; }
+    uint64_t &count() { return count_; }
 
     /** Returns sum of squared weights */
     double count2() const { return count2_; }
@@ -89,7 +89,7 @@ public:
 private:
     column<T> data_;
     cov_matrix_type data2_;
-    size_t count_;
+    uint64_t count_;
     double count2_;
 
     friend class cov_acc<T, Strategy>;
@@ -125,7 +125,7 @@ public:
     using cov_matrix_type = typename eigen<cov_type>::matrix;
 
 public:
-    cov_acc(size_t size=1, size_t batch_size=1);
+    cov_acc(size_t size=1, uint64_t batch_size=1);
 
     cov_acc(const cov_acc &other);
 
@@ -138,7 +138,7 @@ public:
     void set_size(size_t size);
 
     /** Update the batch size and discard current batch */
-    void set_batch_size(size_t batch_size);
+    void set_batch_size(uint64_t batch_size);
 
     /** Returns `false` if `finalize()` has been called, `true` otherwise */
     bool valid() const { return (bool)store_; }
@@ -147,7 +147,7 @@ public:
     size_t size() const { return current_.size(); }
 
     /** Returns number of data points per batch */
-    size_t batch_size() const { return current_.target(); }
+    uint64_t batch_size() const { return current_.target(); }
 
     /** Add computed vector to the accumulator */
     cov_acc& operator<<(const computed<T>& src){ add(src, 1); return *this; }
@@ -156,7 +156,7 @@ public:
     cov_acc &operator<<(const cov_result<T,Strategy> &result);
 
     /** Returns sample size, i.e., number of accumulated data points */
-    size_t count() const { return store_->count(); }
+    uint64_t count() const { return store_->count(); }
 
     /** Returns result corresponding to current state of accumulator */
     cov_result<T,Strategy> result() const;
@@ -170,7 +170,7 @@ public:
     const cov_data<T,Strategy> &store() const { return *store_; }
 
 protected:
-    void add(const computed<T> &source, size_t count);
+    void add(const computed<T> &source, uint64_t count);
 
     void add_bundle();
 
@@ -240,7 +240,7 @@ public:
     size_t size() const { return store_->size(); }
 
     /** Returns sample size, i.e., number of accumulated data points */
-    size_t count() const { return store_->count(); }
+    uint64_t count() const { return store_->count(); }
 
     /** Returns sum of squared sample sizes */
     double count2() const { return store_->count2(); }

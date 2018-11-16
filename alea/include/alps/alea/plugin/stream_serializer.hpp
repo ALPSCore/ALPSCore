@@ -53,11 +53,19 @@ public:
     {
         do_write(data_view);
     }
-    void write(const std::string &, ndview<const long> data_view) override
+    void write(const std::string &, ndview<const int64_t> data_view) override
     {
         do_write(data_view);
     }
-    void write(const std::string &, ndview<const unsigned long> data_view) override
+    void write(const std::string &, ndview<const uint64_t> data_view) override
+    {
+        do_write(data_view);
+    }
+    void write(const std::string &, ndview<const int32_t> data_view) override
+    {
+        do_write(data_view);
+    }
+    void write(const std::string &, ndview<const uint32_t> data_view) override
     {
         do_write(data_view);
     }
@@ -119,11 +127,19 @@ public:
     {
         do_read(value);
     }
-    void read(const std::string &, ndview<long> value) override
+    void read(const std::string &, ndview<int64_t> value) override
     {
         do_read(value);
     }
-    void read(const std::string &, ndview<unsigned long> value) override
+    void read(const std::string &, ndview<uint64_t> value) override
+    {
+        do_read(value);
+    }
+    void read(const std::string &, ndview<int32_t> value) override
+    {
+        do_read(value);
+    }
+    void read(const std::string &, ndview<uint32_t> value) override
     {
         do_read(value);
     }

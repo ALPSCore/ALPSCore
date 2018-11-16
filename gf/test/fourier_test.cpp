@@ -66,6 +66,69 @@ public:
   }
 };
 
+class NoninteractingFourierTestGF : public ::testing::Test
+{
+public:
+  const double beta;
+  double mu;
+  const int nfreq;
+  const int ntau;
+  const int nk;
+  typedef alps::gf::omega_k_sigma_gf_with_tail matsubara_gf_type;
+  typedef alps::gf::itime_k_sigma_gf_with_tail itime_gf_type;
+  typedef alps::gf::two_index_gf<double, alps::gf::momentum_index_mesh, alps::gf::index_mesh> tail_type;
+  matsubara_gf_type g_omega;
+  itime_gf_type g_tau;
+  itime_gf_type g_tau_2;
+
+  NoninteractingFourierTestGF():beta(10), mu(1.0), nfreq(2000),ntau(2001), nk(200),
+                        g_omega(alps::gf::omega_k_sigma_gf(alps::gf::matsubara_positive_mesh(beta,nfreq),
+                                                           alps::gf::momentum_index_mesh(nk, 1),
+                                                           alps::gf::index_mesh(2))),
+                        g_tau(alps::gf::itime_k_sigma_gf(alps::gf::itime_mesh(beta,ntau),
+                                                         alps::gf::momentum_index_mesh(nk, 1),
+                                                         alps::gf::index_mesh(2))), g_tau_2(g_tau){}
+  double wn(int n){
+    return (2.*n+1)*M_PI/beta;
+  }
+  std::complex<double> iwn(int n){
+    return std::complex<double>(0., wn(n));
+  }
+  double epsilon(int k) {
+    return 2.0*cos(2.0*k*M_PI/nk);
+  }
+  std::complex<double> matsubara(int n, int k){
+    return 1.0/(iwn(n) + mu - epsilon(k));
+  }
+  double itime(double tau, int k){
+    double epsk_m_mu = epsilon(k) - mu;
+    double fermi_1 = -1.0/(1.0 + std::exp(-beta * epsk_m_mu) );
+    double fermi_2 = -1.0/(1.0 + std::exp( beta * epsk_m_mu) );
+    return (epsk_m_mu<0 ? std::exp((beta-tau) * epsk_m_mu) * fermi_2:
+                          std::exp(-tau       * epsk_m_mu) * fermi_1);
+  }
+  double tau(int n){
+    return beta/(ntau-1)*n;
+  }
+
+  void initialize_matsubara(matsubara_gf_type &g){
+    for(alps::gf::matsubara_positive_mesh::index_type n(0);n<nfreq;++n){
+      for (alps::gf::momentum_index ik(0); ik < nk; ++ik) {
+        g(n, ik, alps::gf::index(0))=matsubara(n(), ik());
+        g(n, ik, alps::gf::index(1))=matsubara(n(), ik());
+      }
+    }
+  }
+  void initialize_itime(itime_gf_type &g){
+    for(alps::gf::itime_mesh::index_type n(0);n<ntau;++n){
+      for (alps::gf::momentum_index ik(0); ik < nk; ++ik) {
+        g(n, ik, alps::gf::index(0)) = itime(tau(n()), ik());
+        g(n, ik, alps::gf::index(1)) = itime(tau(n()), ik());
+      }
+    }
+  }
+};
+
 TEST_F(AtomicFourierTestGF,ZeroIsDensity){
   initialize_as_atomic_itime(g_tau);
   EXPECT_NEAR(g_tau(alps::gf::itime_mesh::index_type(0     ),alps::gf::index(0)), -(1-density()), 1.e-8);
@@ -109,4 +172,54 @@ TEST_F(AtomicFourierTestGF,MatsubaraToTimeFourierAwayHalfFilling){
   initialize_as_atomic_itime(g_tau_2);
 
   EXPECT_NEAR((g_tau-g_tau_2).norm(), 0, 1.e-7);
+}
+
+TEST_F(NoninteractingFourierTestGF,MatsubaraToTimeFourier){
+  initialize_matsubara(g_omega);
+  tail_type unity=tail_type(alps::gf::momentum_index_mesh(nk, 1), alps::gf::index_mesh(2));
+  tail_type second=tail_type(alps::gf::momentum_index_mesh(nk, 1), alps::gf::index_mesh(2));
+  tail_type third=tail_type(alps::gf::momentum_index_mesh(nk, 1), alps::gf::index_mesh(2));
+  unity.initialize();
+  second.initialize();
+  unity.data().set_number(1.0);
+  for (int ik = 0; ik < nk; ++ik) {
+    second.data()(ik, 0) = epsilon(ik) - mu;
+    second.data()(ik, 1) = epsilon(ik) - mu;
+    third.data()(ik, 0)  = (epsilon(ik) - mu) * (epsilon(ik) - mu);
+    third.data()(ik, 1)  = (epsilon(ik) - mu) * (epsilon(ik) - mu);
+  }
+  g_omega.set_tail(1,unity);
+  g_omega.set_tail(2,second);
+  g_omega.set_tail(3,third);
+  fourier_frequency_to_time(g_omega, g_tau);
+
+  initialize_itime(g_tau_2);
+
+  EXPECT_NEAR((g_tau-g_tau_2).norm(), 0, 1.e-7);
+}
+
+TEST(FourierTestGF, FourierStrategy) {
+  double beta = 100;
+  int nts = 1001;
+  int iwmax = 1000;
+  int nk = 10;
+  double mu = 0.1;
+  alps::gf::omega_k_sigma_gf matsubara_gf(alps::gf::matsubara_positive_mesh(beta,iwmax),
+                                          alps::gf::momentum_index_mesh(nk, 1),
+                                          alps::gf::index_mesh(2));
+  alps::gf::itime_k_sigma_gf itime_gf_1(alps::gf::itime_mesh(beta,nts),
+                                           alps::gf::momentum_index_mesh(nk, 1),
+                                           alps::gf::index_mesh(2));
+  alps::gf::itime_k_sigma_gf itime_gf_2(alps::gf::itime_mesh(beta,nts),
+                                           alps::gf::momentum_index_mesh(nk, 1),
+                                           alps::gf::index_mesh(2));
+  for (alps::gf::matsubara_index iw(0); iw < matsubara_gf.mesh1().extent(); ++iw) {
+    for (alps::gf::momentum_index ik(0); ik < matsubara_gf.mesh2().extent(); ++ik) {
+      matsubara_gf(iw, ik, alps::gf::index(0)) = 1.0 / (std::complex<double>(0., matsubara_gf.mesh1().points()[iw()]) + mu - cos(2.0 * ik() * M_PI / nk) );
+      matsubara_gf(iw, ik, alps::gf::index(1)) = 1.0/  (std::complex<double>(0., matsubara_gf.mesh1().points()[iw()]) - mu - cos(2.0 * ik() * M_PI / nk) );
+    }
+  }
+  alps::gf::transform_vector_no_tail_loop(matsubara_gf.data(),matsubara_gf.mesh1().points(), itime_gf_1.data(), itime_gf_1.mesh1().points(), itime_gf_1.mesh1().beta());
+  alps::gf::transform_vector_no_tail_matrix(matsubara_gf.data(),matsubara_gf.mesh1().points(), itime_gf_2.data(), itime_gf_2.mesh1().points(), itime_gf_2.mesh1().beta());
+  EXPECT_NEAR((itime_gf_1-itime_gf_2).norm(), 0, 1.e-11);
 }

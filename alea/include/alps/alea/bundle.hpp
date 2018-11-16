@@ -20,7 +20,7 @@ template <typename T>
 class bundle
 {
 public:
-    bundle(size_t size, size_t target) : sum_(size), target_(target) { reset(); }
+    bundle(size_t size, uint64_t target) : sum_(size), target_(target) { reset(); }
 
     /** Re-allocate and thus clear all accumulated data */
     void reset() { sum_.fill(0); count_ = 0; }
@@ -30,13 +30,13 @@ public:
     /** Number of components of the random vector (e.g., size of mean) */
     size_t size() const { return sum_.rows(); }
 
-    size_t &target() { return target_; }
+    uint64_t &target() { return target_; }
 
-    const size_t &target() const { return target_; }
+    const uint64_t &target() const { return target_; }
 
-    size_t &count() { return count_; }
+    uint64_t &count() { return count_; }
 
-    size_t count() const { return count_; }
+    uint64_t count() const { return count_; }
 
     column<T> &sum() { return sum_; }
 
@@ -44,7 +44,7 @@ public:
 
 private:
     column<T> sum_;
-    size_t target_, count_;
+    uint64_t target_, count_;
 };
 
 }}

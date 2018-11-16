@@ -35,7 +35,7 @@ template class batch_data<std::complex<double> >;
 
 
 template <typename T>
-batch_acc<T>::batch_acc(size_t size, size_t num_batches, size_t base_size)
+batch_acc<T>::batch_acc(size_t size, size_t num_batches, uint64_t base_size)
     : size_(size)
     , num_batches_(num_batches)
     , base_size_(base_size)
@@ -97,7 +97,7 @@ void batch_acc<T>::set_size(size_t size)
 }
 
 template <typename T>
-void batch_acc<T>::set_batch_size(size_t batch_size)
+void batch_acc<T>::set_batch_size(uint64_t batch_size)
 {
     base_size_ = batch_size;
     if (valid())
@@ -116,7 +116,7 @@ void batch_acc<T>::set_num_batches(size_t num_batches)
 }
 
 template <typename T>
-void batch_acc<T>::add(const computed<T> &source, size_t count)
+void batch_acc<T>::add(const computed<T> &source, uint64_t count)
 {
     internal::check_valid(*this);
 
@@ -266,7 +266,7 @@ void batch_result<T>::reduce(const reducer &r, bool pre_commit, bool post_commit
     internal::check_valid(*this);
     if (pre_commit) {
         r.reduce(view<T>(store_->batch().data(), store_->batch().size()));
-        r.reduce(view<size_t>(store_->count().data(), store_->num_batches()));
+        r.reduce(view<uint64_t>(store_->count().data(), store_->num_batches()));
     }
     if (pre_commit && post_commit) {
         r.commit();
@@ -296,8 +296,9 @@ void serialize(serializer &s, const std::string &key, const batch_result<T> &sel
     internal::check_valid(self);
     internal::serializer_sentry group(s, key);
 
-    serialize(s, "@size", self.size());
-    serialize(s, "@num_batches", self.store().num_batches());
+    // Serialize as 64-bit integers for consistency
+    serialize(s, "@size", static_cast<uint64_t>(self.size()));
+    serialize(s, "@num_batches", static_cast<uint64_t>(self.store().num_batches()));
 
     s.enter("batch");
     serialize(s, "count", self.store().count());
@@ -317,7 +318,7 @@ void deserialize(deserializer &s, const std::string &key, batch_result<T> &self)
     internal::deserializer_sentry group(s, key);
 
     // first deserialize the fundamentals and make sure that the target fits
-    size_t new_size, new_nbatches;
+    uint64_t new_size, new_nbatches;
     deserialize(s, "@size", new_size);
     deserialize(s, "@num_batches", new_nbatches);
     if (!self.valid() || self.size() != new_size || self.store().num_batches() != new_nbatches)
@@ -329,9 +330,10 @@ void deserialize(deserializer &s, const std::string &key, batch_result<T> &self)
     deserialize(s, "sum", self.store().batch());
     s.exit();
 
+    size_t new_size_sizet = new_size;
     s.enter("mean");
-    s.read("value", ndview<T>(nullptr, &new_size, 1)); // discard
-    s.read("error", ndview<var_type>(nullptr, &new_size, 1)); // discard
+    s.read("value", ndview<T>(nullptr, &new_size_sizet, 1)); // discard
+    s.read("error", ndview<var_type>(nullptr, &new_size_sizet, 1)); // discard
     s.exit();
 }
 

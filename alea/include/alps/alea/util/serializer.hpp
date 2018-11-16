@@ -26,9 +26,13 @@ public:
 
     void write(const std::string &, ndview<const complex_op<double>>) override { }
 
-    void write(const std::string &, ndview<const long>) override { }
+    void write(const std::string &, ndview<const int64_t>) override { }
 
-    void write(const std::string &, ndview<const unsigned long>) override { }
+    void write(const std::string &, ndview<const uint64_t>) override { }
+
+    void write(const std::string &, ndview<const int32_t>) override { }
+
+    void write(const std::string &, ndview<const uint32_t>) override { }
 
     null_serializer *clone() override { return new null_serializer(*this); }
 
@@ -76,11 +80,19 @@ public:
         do_write(key, value);
     }
 
-    void write(const std::string &key, ndview<const long> value) override {
+    void write(const std::string &key, ndview<const int64_t> value) override {
         do_write(key, value);
     }
 
-    void write(const std::string &key, ndview<const unsigned long> value) override {
+    void write(const std::string &key, ndview<const uint64_t> value) override {
+        do_write(key, value);
+    }
+
+    void write(const std::string &key, ndview<const int32_t> value) override {
+        do_write(key, value);
+    }
+
+    void write(const std::string &key, ndview<const uint32_t> value) override {
         do_write(key, value);
     }
 

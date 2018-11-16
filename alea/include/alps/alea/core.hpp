@@ -21,6 +21,10 @@ namespace alps { namespace alea {
 
 using std::size_t;
 using std::ptrdiff_t;
+using std::uint64_t;
+using std::int64_t;
+using std::uint32_t;
+using std::int32_t;
 
 /** Estimator cannot add to view as the sizes are mismatched */
 struct size_mismatch : public std::exception { };
@@ -234,7 +238,7 @@ struct reducer_setup
     size_t pos;
 
     /** Total number of instances (thread count/MPI size/etc.) */
-    size_t count;
+    uint64_t count;
 
     /** Reductions will yield valid result on this instance */
     bool have_result;
@@ -268,13 +272,16 @@ struct reducer
     virtual reducer_setup get_setup() const = 0;
 
     /** Get maximum of scalar value over all instances (immediate) */
-    virtual long get_max(long value) const = 0;
+    virtual int64_t get_max(int64_t value) const = 0;
 
     /** Reduce double data-set into `data` */
     virtual void reduce(view<double> data) const = 0;
 
+    /** Reduce int data-set into `data` */
+    virtual void reduce(view<int32_t> data) const = 0;
+
     /** Reduce long data-set into `data` */
-    virtual void reduce(view<long> data) const = 0;
+    virtual void reduce(view<int64_t> data) const = 0;
 
     /** Finish reduction of all data if deferred */
     virtual void commit() const = 0;
@@ -293,8 +300,11 @@ struct reducer
     void reduce(view<complex_op<double> > data) const {
         reduce(view<double>((double *)data.data(), 4 * data.size()));
     }
-    void reduce(view<unsigned long> data) const {
-        reduce(view<long>((long *)data.data(), data.size()));
+    void reduce(view<uint32_t> data) const {
+        reduce(view<int32_t>((int32_t *)data.data(), data.size()));
+    }
+    void reduce(view<uint64_t> data) const {
+        reduce(view<int64_t>((int64_t *)data.data(), data.size()));
     }
 };
 
@@ -325,10 +335,16 @@ struct serializer
     virtual void write(const std::string &key, ndview<const complex_op<double>>) = 0;
 
     /** Writes a named multi-dimensional array of longs */
-    virtual void write(const std::string &key, ndview<const long>) = 0;
+    virtual void write(const std::string &key, ndview<const int64_t>) = 0;
 
     /** Writes a named multi-dimensional array of unsigned longs */
-    virtual void write(const std::string &key, ndview<const unsigned long>) = 0;
+    virtual void write(const std::string &key, ndview<const uint64_t>) = 0;
+
+    /** Writes a named multi-dimensional array of int */
+    virtual void write(const std::string &key, ndview<const int32_t>) = 0;
+
+    /** Writes a named multi-dimensional array of unsigned int */
+    virtual void write(const std::string &key, ndview<const uint32_t>) = 0;
 
     /** Returns a copy of `*this` created using `new` */
     virtual serializer *clone() { throw unsupported_operation(); }
@@ -369,11 +385,17 @@ struct deserializer
     /** Reads a named multi-dimensional array of double complex operand */
     virtual void read(const std::string &key, ndview<complex_op<double>>) = 0;
 
-    /** Reads a named multi-dimensional array of long */
-    virtual void read(const std::string &key, ndview<long>) = 0;
+    /** Reads a named multi-dimensional array of longs */
+    virtual void read(const std::string &key, ndview<int64_t>) = 0;
 
-    /** Reads a named multi-dimensional array of unsigned long */
-    virtual void read(const std::string &key, ndview<unsigned long>) = 0;
+    /** Reads a named multi-dimensional array of unsigned longs */
+    virtual void read(const std::string &key, ndview<uint64_t>) = 0;
+
+    /** Reads a named multi-dimensional array of int */
+    virtual void read(const std::string &key, ndview<int32_t>) = 0;
+
+    /** Reads a named multi-dimensional array of unsigned int */
+    virtual void read(const std::string &key, ndview<uint32_t>) = 0;
 
     /** Returns a copy of `*this` created using `new` */
     virtual deserializer *clone() { throw unsupported_operation(); }

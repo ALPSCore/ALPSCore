@@ -54,7 +54,7 @@ public:
     size_t size() const;
 
     /** Returns number of accumulated data points */
-    size_t count() const;
+    uint64_t count() const;
 
     /** Returns sample mean */
     template <typename T>
