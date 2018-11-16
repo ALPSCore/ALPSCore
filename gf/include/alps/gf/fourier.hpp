@@ -83,10 +83,10 @@ namespace gf {
   template<class...MESHES> void fourier_frequency_to_time(
       const gf_tail<
       detail::gf_base<std::complex<double>, numerics::tensor<std::complex<double>, sizeof...(MESHES) + 1>, matsubara_positive_mesh, MESHES...>,
-      greenf<double,MESHES...> > &g_omega,
+      detail::gf_base<double, numerics::tensor<double, sizeof...(MESHES)>, MESHES...> > &g_omega,
       gf_tail<
-      detail::gf_base<double, numerics::tensor<double, sizeof...(MESHES) + 1>, itime_mesh, MESHES...>,
-      greenf<double, MESHES...> > &g_tau){
+      detail::gf_base<double, numerics::tensor<double, sizeof...(MESHES) + 1 >, itime_mesh, MESHES...>,
+      detail::gf_base<double, numerics::tensor<double, sizeof...(MESHES)>, MESHES...> > &g_tau){
     alps::numerics::tensor<std::complex<double>, (sizeof...(MESHES)) + 1> in_data(g_omega.data().shape());
 
     using tail_data = alps::numerics::tensor<double, sizeof...(MESHES)>;
