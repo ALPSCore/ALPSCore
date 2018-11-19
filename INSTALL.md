@@ -5,8 +5,8 @@ Prerequisites
 To install ALPSCore, the following is needed:
 
  1. C++ compiler: g++ >= 4.8.1 OR Intel >= 15.0 OR Clang >= 3.2
- 2. CMake >= 3.1 (*NOTE*: CMake 3.6.0 on Mac has a [known problem](Known-problems-and-workarounds))
- 3. HDF5 library 1.8.x (*NOTE*: HDF5 1.10 has a [known problem](Known-problems-and-workarounds#some-hdf5-related-tests-fail))
+ 2. CMake >= 3.1 (*NOTE*: CMake 3.6.0 on Mac has a [known problem](https://github.com/ALPSCore/ALPSCore/wiki/Known-problems-and-workarounds))
+ 3. HDF5 library 1.8.x (*NOTE*: HDF5 1.10 has a [known problem](https://github.com/ALPSCore/ALPSCore/wiki/Known-problems-and-workarounds#some-hdf5-related-tests-fail))
  4. Boost >= 1.56.0
  5. Eigen 3.3.4 (can be requested to be downloaded automatically)
 
@@ -148,9 +148,9 @@ The ALPSCore library uses CMake as its build system.
 4. On most high performance computers with non-standard environments, e.g.
    crays/blue genes, you will get the best results by using the wrapper
    compilers and enabling static linking (see ALPS_BUILD_TYPE in
-   [CMake variables](CMake-and-environment-variables-affecting-ALPSCore-build).
+   [CMake variables](https://github.com/ALPSCore/ALPSCore/wiki/CMake-and-environment-variables-affecting-ALPSCore-build).
 
-5. See also a page listing [known problems](Known-problems-and-workarounds).
+5. See also a page listing [known problems](https://github.com/ALPSCore/ALPSCore/wiki/Known-problems-and-workarounds).
 
 
 Build your project with ALPSCore
