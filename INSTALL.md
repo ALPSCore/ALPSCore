@@ -80,11 +80,12 @@ The ALPSCore library uses CMake as its build system.
        $ cmake .. -DEIGEN3_INCLUDE_DIR=/path/to/Eigen3/headers \
                   -DCMAKE_INSTALL_PREFIX=/where/to/install/ALPSCore
 
-   There are many [[CMake and environment variables affecting ALPSCore build]],
-   which you can pass using `cmake -Dvariable=value` syntax, please refer to
-   the [[corresponding Wiki page|CMake and environment variables affecting ALPSCore build]].
+   There are many CMake and environment variables affecting ALPSCore build,
+   which you can pass using `cmake -Dvariable=value` syntax, please refer to the
+   [corresponding Wiki page](https://github.com/ALPSCore/ALPSCore/wiki/CMake-and-environment-variables-affecting-ALPSCore-build).
 
-   You can also have a look at the [build.jenkins.sh](https://github.com/ALPSCore/ALPSCore/blob/master/common/build/build.jenkins.sh)
+   You can also have a look at the 
+   [build.jenkins.sh](https://github.com/ALPSCore/ALPSCore/blob/master/common/build/build.jenkins.sh)
    file in the directory [common/build](https://github.com/ALPSCore/ALPSCore/tree/master/common/build).
    This outlines some of the common options used by our automatic build system.
 
@@ -92,10 +93,11 @@ The ALPSCore library uses CMake as its build system.
    depend on the ALPScore libraries with the same C++ standard for ABI
    compatibility. At the very least, do not mix C++03 and C++11 code.  More
    detailed information about setting C++ standard version is available on
-   [[Choice of C++ standard|Choice of CXX standard]] page.
+   [the wiki](https://github.com/ALPSCore/ALPSCore/wiki/Choice-of-CXX-standard).
 
    For advanced users: If you do not wish to install all ALPSCore components,
-   please refer to [[Selecting ALPSCore components]].
+   please refer to the wiki page
+   [Selecting ALPSCore components](https://github.com/ALPSCore/ALPSCore/wiki/Selecting-ALPSCore-components).
 
 3. Once the build tree successfully generated, perform the build:
 
