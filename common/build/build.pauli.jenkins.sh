@@ -5,6 +5,7 @@
 # COMPILER - the compiler to build with
 # MPI_VERSION - MPI library to link with
 # PHASE - 'cmake' | 'make' | 'test' | 'install' (all of the above if empty)
+# The scripts creates directories under ./build.tmp/
 
 # This function sets build environment unless it's already set (as determined by env. var `build_environment_set`)
 function setup_environment() {
@@ -63,8 +64,9 @@ function setup_environment() {
 
     export BOOST_ROOT=/opt/ohpc/pub/libs/gnu/openmpi/boost/1.66.0
 
-    mkdir -pv build.tmp
-    cd build.tmp
+    local build_dir="build.tmp/${COMPILER}_${MPI_VERSION}"
+    mkdir -pv $build_dir
+    cd $build_dir
 
     build_environment_set=1
 }
@@ -77,7 +79,7 @@ function run_cmake() {
           -DTestXMLOutput=TRUE \
           -DEIGEN3_INCLUDE_DIR=$HOME/.local/packages/eigen-3.3.4 \
           -DDocumentation=OFF \
-          ..
+          ../..
 }
 
 function run_make() {
