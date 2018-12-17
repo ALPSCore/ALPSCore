@@ -12,7 +12,7 @@ function setup_environment() {
     [[ $build_environment_set == 1 ]] && return 0
     
     module purge
-    module add cmake/3.11.1
+    module add cmake
     case $COMPILER in
         gcc_4.8.5) 
             export CC=$(which gcc)
@@ -65,15 +65,16 @@ function setup_environment() {
     export BOOST_ROOT=/opt/ohpc/pub/libs/gnu/openmpi/boost/1.66.0
 
     local build_dir="build.tmp/${COMPILER}_${MPI_VERSION}"
-    mkdir -pv $build_dir
-    cd $build_dir
+    mkdir -pv "$build_dir"
+    cd "$build_dir"
 
     build_environment_set=1
 }
 
 function run_cmake() {
+    rm -rf *
     cmake -DCMAKE_INSTALL_PREFIX=$PWD/install \
-          -DTesting=ON -DExtensiveTesting=ON \
+          -DTesting=ON -DExtensiveTesting=OFF \
           -DCMAKE_BUILD_TYPE=Release \
           -DENABLE_MPI=${ENABLE_MPI} \
           -DTestXMLOutput=TRUE \
