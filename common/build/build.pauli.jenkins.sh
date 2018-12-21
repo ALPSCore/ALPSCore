@@ -12,7 +12,7 @@ function setup_environment() {
     [[ $build_environment_set == 1 ]] && return 0
     
     module purge
-    module add cmake/3.11.1
+    module add cmake
     case $COMPILER in
         gcc_4.8.5) 
             export CC=$(which gcc)
@@ -73,7 +73,7 @@ function setup_environment() {
 
 function run_cmake() {
     cmake -DCMAKE_INSTALL_PREFIX=$PWD/install \
-          -DTesting=ON -DExtensiveTesting=ON \
+          -DTesting=ON -DExtensiveTesting=OFF \
           -DCMAKE_BUILD_TYPE=Release \
           -DENABLE_MPI=${ENABLE_MPI} \
           -DTestXMLOutput=TRUE \
