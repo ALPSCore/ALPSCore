@@ -65,7 +65,6 @@ function setup_environment() {
     export BOOST_ROOT=/opt/ohpc/pub/libs/gnu/openmpi/boost/1.66.0
 
     local build_dir="build.tmp/${COMPILER}_${MPI_VERSION}"
-    rm -rf "$build_dir"
     mkdir -pv "$build_dir"
     cd "$build_dir"
 
@@ -73,6 +72,7 @@ function setup_environment() {
 }
 
 function run_cmake() {
+    rm -rf *
     cmake -DCMAKE_INSTALL_PREFIX=$PWD/install \
           -DTesting=ON -DExtensiveTesting=OFF \
           -DCMAKE_BUILD_TYPE=Release \
