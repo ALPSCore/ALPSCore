@@ -1,9 +1,13 @@
 
+/// Get a build dir based on name
+def build_dir_name(name) { "build.tmp/${name}" }
+
 /// Calling shell for the particular phase
-def call_phase(phase, compiler, mpilib) {
+def call_phase(phase, name, compiler, mpilib) {
     sh """export PHASE=${phase}
           export COMPILER=${compiler}
           export MPI_VERSION=${mpilib}
+          export BUILD_DIR='${build_dir_name(name)}'
           ./common/build/build.pauli.jenkins.sh
        """
 }
@@ -11,24 +15,29 @@ def call_phase(phase, compiler, mpilib) {
 /// Sub-pipeline for a project; returns closure defining the sub-pipe
 def sub_pipe(name, compiler, mpilib) {
     { ->
-        stage("My stage with ${name}") {
+        stage("Sub-pipeline with ${name}") {
             stash(name: name)
             node("master-node") {
                 unstash(name: name)
                 
                 stage("Config") {
                     echo "Config step with compiler=${compiler} mpilib=${mpilib}"
-                    call_phase('cmake', compiler, mpilib)
+                    call_phase('cmake', name, compiler, mpilib)
                 }
 
                 stage("Build") {
                     echo "Build step with compiler=${compiler} mpilib=${mpilib}"
-                    call_phase('make', compiler, mpilib)
+                    call_phase('make', name, compiler, mpilib)
                 }
 
                 stage("Test")  {
                     echo "Test step with compiler=${compiler} mpilib=${mpilib}"
-                    call_phase('test', compiler, mpilib)
+                    call_phase('test', name, compiler, mpilib)
+                }
+
+                stage("Install")  {
+                    echo "Install step with compiler=${compiler} mpilib=${mpilib}"
+                    call_phase('install', name, compiler, mpilib)
                 }
             }
         }
