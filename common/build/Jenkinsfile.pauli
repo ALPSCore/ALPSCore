@@ -33,6 +33,7 @@ def sub_pipe(name, compiler, mpilib) {
                 stage("Test")  {
                     echo "Test step with compiler=${compiler} mpilib=${mpilib}"
                     call_phase('test', name, compiler, mpilib)
+                    junit "${build_dir_name(name)}/*/test/*.xml"
                 }
 
                 stage("Install")  {
