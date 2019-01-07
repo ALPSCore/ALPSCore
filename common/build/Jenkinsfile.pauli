@@ -35,10 +35,12 @@ def sub_pipe(name, compiler, mpilib) {
                     call_phase('test', name, compiler, mpilib)
                     junit "${build_dir_name(name)}/*/test/*.xml"
                 }
-
+                
                 stage("Install")  {
                     echo "Install step with compiler=${compiler} mpilib=${mpilib}"
                     call_phase('install', name, compiler, mpilib)
+                    zip archive: true, dir: "${build_dir_name(name)}/install", glob: '', zipFile: "${build_dir_name(name)}/alpscore.zip"
+                    fingerprint "${build_dir_name(name)}/alpscore.zip"
                 }
             }
         }
