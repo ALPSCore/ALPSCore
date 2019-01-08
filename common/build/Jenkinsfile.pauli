@@ -39,7 +39,7 @@ def sub_pipe(name, compiler, mpilib) {
                 stage("Install")  {
                     echo "Install step with compiler=${compiler} mpilib=${mpilib}"
                     call_phase('install', name, compiler, mpilib)
-                    zip archive: true, dir: "${build_dir_name(name)}/install", glob: '', zipFile: "${dir_for_env(env)}/alpscore.zip"
+                    zip archive: true, dir: "${build_dir_name(name)}/install", glob: '', zipFile: "${build_dir_name(name)}/alpscore.zip"
                     fingerprint "${build_dir_name(name)}/alpscore.zip"
                 }
             }
