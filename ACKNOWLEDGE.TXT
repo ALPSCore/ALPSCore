@@ -2,9 +2,9 @@ Whenever scientific publications result from a program based on ALPS Core Librar
 
 1) The most current ALPS Core Libraries paper:
 
-A. Gaenko et al., Comp. Phys. Comm. (2017) v.213, p.235-251
-http://www.sciencedirect.com/science/article/pii/S0010465516303885
-http://dx.doi.org/10.1016/j.cpc.2016.12.009
+Wallerberger, Markus, et al. "Updated Core Libraries of the ALPS Project." 
+arXiv preprint arXiv:1811.08331 (2018).
+https://arxiv.org/abs/1811.08331
 
 2) The most current ALPS paper:
 
