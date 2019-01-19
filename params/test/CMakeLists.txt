@@ -19,6 +19,7 @@ set (test_src
   dictionary_hdf5
   params_hdf5
   params_hdf5_with_ini
+  params_vec_hdf5
   )
 
 foreach(test ${test_src})
