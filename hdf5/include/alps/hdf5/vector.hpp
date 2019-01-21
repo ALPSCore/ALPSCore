@@ -176,8 +176,9 @@ namespace alps {
                     ar.delete_data(path);
                 else if (path.find_last_of('@') != std::string::npos && ar.is_attribute(path))
                     ar.delete_attribute(path);
+                std::string cpath = ar.complete_path(path);
                 for(typename std::vector<T, A>::const_iterator it = value.begin(); it != value.end(); ++it)
-                    save(ar, ar.complete_path(path) + "/" + cast<std::string>(it - value.begin()), *it);
+                    save(ar, cpath + "/" + cast<std::string>(it - value.begin()), *it);
             }
         }
 
@@ -214,10 +215,11 @@ namespace alps {
         ) {
             using alps::cast;
             if (ar.is_group(path)) {
-                std::vector<std::string> children = ar.list_children(path);
+                std::string cpath = ar.complete_path(path);
+                std::vector<std::string> children = ar.list_children(cpath);
                 value.resize(children.size());
                 for (typename std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)
-                   load(ar, ar.complete_path(path) + "/" + *it, value[cast<std::size_t>(*it)]);
+                   load(ar, cpath + "/" + *it, value[cast<std::size_t>(*it)]);
             } else {
                 if (ar.is_complex(path) != has_complex_elements<T>::value)
                     throw archive_error("no complex value in archive" + ALPS_STACKTRACE);
