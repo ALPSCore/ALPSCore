@@ -48,34 +48,26 @@ if (NOT tests_are_already_enabled)
     set(tests_are_already_enabled TRUE)
 endif(NOT tests_are_already_enabled)
 
-# custom function to add test with xml output and linked to gtest
-# arg0 - test (assume the source is ${test}.cpp)
-# optional arg: NOMAIN: do not link libgtest_main containing main()
-# optional arg: MAIN: do link libgtest_main containing main()
-# optional arg: PARTEST: run test in parallel using N processes, where N is run-time value of environment variable ALPS_TEST_MPI_NPROC
-#               (or 1 if the variable is not set) (FIXME: make this a configurable constant!)
-# optional arg: SRCS source1 source2... : additional source files
-# Affected by: ${PROJECT_NAME}_DEPENDS variable.
-function(alps_add_gtest test)
+
+# internal function to build a test executable
+# MAIN|NOMAIN TARGET <target_name> EXE <exe_name> SRCS <src1> <src2>...
+function(alps_build_gtest_)
     include(CMakeParseArguments)
-    cmake_parse_arguments("arg" "NOMAIN;MAIN;PARTEST" "" "SRCS" ${ARGN})
-    if (TestXMLOutput)
-        set (test_xml_output_ --gtest_output=xml:${test}.xml)
-    endif()
-    if (arg_NOMAIN AND arg_MAIN)
-        message(FATAL_ERROR "Incorrect use of alps_add_gtest(testname [MAIN|NOMAIN] [PARTEST] [SRCS extra_sources...])")
-    endif()
-    if (arg_UNPARSED_ARGUMENTS) 
+    cmake_parse_arguments("arg" "" "NOMAIN;TARGET" "SRCS" ${ARGN})
+    set(usage_help_ "alps_build_gtest_([NOMAIN true|false] TARGET tgt SRCS file1 file2...)")
+    if (arg_UNPARSED_ARGUMENTS)
         message(FATAL_ERROR
-            "Unknown parameters: ${arg_UNPARSED_ARGUMENTS}"
-            "Usage: alps_add_gtest(testname [MAIN|NOMAIN] [PARTEST] [SRCS extra_sources...])")
+            "Unknown parameters: ${arg_UNPARSED_ARGUMENTS}\n"
+            "Usage: ${usage_help_}")
     endif()
-    set(sources_ ${test} ${arg_SRCS})
-    
-    add_executable(${test} ${sources_})
+    if (NOT arg_TARGET)
+        message(FATAL_ERROR "'TARGET' must be specified in ${usage_help_}")
+    endif()
+
+    add_executable(${arg_TARGET} ${arg_SRCS})
     if (ALPS_BUILD_STATIC)
-      set_property(TARGET ${test} PROPERTY LINK_SEARCH_START_STATIC 1)
-      set_property(TARGET ${test} PROPERTY LINK_SEARCH_END_STATIC 1)
+        set_property(TARGET ${arg_TARGET} PROPERTY LINK_SEARCH_START_STATIC 1)
+        set_property(TARGET ${arg_TARGET} PROPERTY LINK_SEARCH_END_STATIC 1)
     endif()
 
     if (arg_NOMAIN)
@@ -83,11 +75,55 @@ function(alps_add_gtest test)
     else()
         set(link_test_ ${GTEST_MAIN_LIBRARIES})
     endif()
+    
+    target_link_libraries(${arg_TARGET} ${PROJECT_NAME} ${${PROJECT_NAME}_DEPENDS} ${link_test_})
+endfunction()      
+  
 
-    target_link_libraries(${test} ${PROJECT_NAME} ${${PROJECT_NAME}_DEPENDS} ${link_test_})
-    # FIXME: if compiler supports MPI directly, the MPIEXEC program is not deduced!
-    # FIXME: in the MPI test command, POSIX shell is assumed
-    if (arg_PARTEST AND MPIEXEC)
+# custom function to add test with xml output and linked to gtest
+# arg0 - test (assume the source is ${test}.cpp)
+# optional arg: NOMAIN: do not link libgtest_main containing main()
+# optional arg: MAIN: do link libgtest_main containing main()
+# optional arg: PARTEST: run test in parallel using N processes, where N is run-time value of environment variable ALPS_TEST_MPI_NPROC
+#               (or 1 if the variable is not set) (FIXME: make this a configurable constant!)
+# optional arg: COMPILEFAIL: expect compilation failure as positive test outcome
+# optional arg: SRCS source1 source2... : additional source files
+# Affected by: ${PROJECT_NAME}_DEPENDS variable.
+function(alps_add_gtest test)
+    include(CMakeParseArguments)
+    cmake_parse_arguments("arg" "NOMAIN;MAIN;PARTEST;COMPILEFAIL" "" "SRCS" ${ARGN})
+    set(usage_help_ "alps_add_gtest(testname [MAIN|NOMAIN] [PARTEST] [COMPILEFAIL] [SRCS extra_sources...])")
+    if (TestXMLOutput)
+        set (test_xml_output_ --gtest_output=xml:${test}.xml)
+    endif()
+    if (arg_NOMAIN AND arg_MAIN)
+        message(FATAL_ERROR "Incorrect use of ${usage_help_}")
+    endif()
+    if (arg_UNPARSED_ARGUMENTS) 
+        message(FATAL_ERROR
+            "Unknown parameters: ${arg_UNPARSED_ARGUMENTS}\n"
+            "Usage: ${usage_help_}")
+    endif()
+
+    set(sources_ ${test} ${arg_SRCS})
+
+    alps_build_gtest_(NOMAIN ${arg_NOMAIN} TARGET ${test} SRCS ${sources_})
+    
+    if (arg_COMPILEFAIL)
+        set(nocompile_target_ ${test}.nocompile)
+        alps_build_gtest_(NOMAIN ${arg_NOMAIN} TARGET ${nocompile_target_} SRCS ${sources_})
+        set_property(TARGET ${nocompile_target_} PROPERTY EXCLUDE_FROM_ALL 1)
+        target_compile_definitions(${nocompile_target_} PRIVATE "-DALPS_TEST_EXPECT_COMPILE_FAILURE")
+
+        set(build_cmd_ "cmake --build . --target ${nocompile_target_}")
+        set(run_fail_cmd_ "$<TARGET_FILE:${nocompile_target_}> ${test_xml_output_}")
+        set(run_ok_cmd_ "$<TARGET_FILE:${test}> ${test_xml_output_}")
+        set(shell_cmd_ "if ${build_cmd_}\; then ${run_fail_cmd_}\; false\; else ${run_ok_cmd_}\; fi")
+        set(cmd_ "/bin/sh" "-c" "${shell_cmd_}")
+        message("DEBUG: cmd='${cmd_}'")
+    elseif (arg_PARTEST AND MPIEXEC) 
+        # FIXME: if compiler supports MPI directly, the MPIEXEC program is not deduced!
+        # FIXME: in the MPI test command, POSIX shell is assumed
         set(cmd_ "/bin/sh" "-c" "${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} \${ALPS_TEST_MPI_NPROC:-1} ${MPIEXEC_PREFLAGS} $<TARGET_FILE:${test}> ${MPIEXEC_POSTFLAGS} ${test_xml_output_}")
     else()
         set(cmd_ $<TARGET_FILE:${test}> ${test_xml_output_})
