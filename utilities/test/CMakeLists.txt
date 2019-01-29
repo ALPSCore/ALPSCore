@@ -33,3 +33,6 @@ if(ALPS_HAVE_MPI)
   alps_add_gtest(mpi_utils_env_exceptions1 PARTEST SRCS mpi_test_support)
   alps_add_gtest(mpi_utils_env_exceptions2 PARTEST SRCS mpi_test_support)
 endif()
+
+# Testing "compilation failure test" machinery
+alps_add_gtest(compilation_failure_test COMPILEFAIL)
