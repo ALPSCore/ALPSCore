@@ -120,7 +120,6 @@ function(alps_add_gtest test)
         set(run_ok_cmd_ "$<TARGET_FILE:${test}> ${test_xml_output_}")
         set(shell_cmd_ "if ${build_cmd_}\; then ${run_fail_cmd_}\; false\; else ${run_ok_cmd_}\; fi")
         set(cmd_ "/bin/sh" "-c" "${shell_cmd_}")
-        message("DEBUG: cmd='${cmd_}'")
     elseif (arg_PARTEST AND MPIEXEC) 
         # FIXME: if compiler supports MPI directly, the MPIEXEC program is not deduced!
         # FIXME: in the MPI test command, POSIX shell is assumed
