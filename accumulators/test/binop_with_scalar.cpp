@@ -5,7 +5,7 @@
  */
 
 /** @file binop_with_scalar.cpp
-    Test simple binary operations between vector and scalr results.
+    Test simple binary operations between vector and scalar results.
 */
 
 
@@ -99,19 +99,22 @@ using namespace alps::accumulators;
 */
 
 typedef ::testing::Types<
+#ifdef ALPS_ENABLE_VECTOR_FLOAT_ACCUMULATORS
     acc_vs_pair_gen<MeanAccumulator,float>,
+    acc_vs_pair_gen<NoBinningAccumulator,float>,
+    acc_vs_pair_gen<LogBinningAccumulator,float>,
+    acc_vs_pair_gen<FullBinningAccumulator,float>,
+#endif
+
     acc_vs_pair_gen<MeanAccumulator,double>,
     acc_vs_pair_gen<MeanAccumulator,long double>,
 
-    acc_vs_pair_gen<NoBinningAccumulator,float>,
     acc_vs_pair_gen<NoBinningAccumulator,double>,
     acc_vs_pair_gen<NoBinningAccumulator,long double>,
 
-    acc_vs_pair_gen<LogBinningAccumulator,float>,
     acc_vs_pair_gen<LogBinningAccumulator,double>,
     acc_vs_pair_gen<LogBinningAccumulator,long double>,
 
-    acc_vs_pair_gen<FullBinningAccumulator,float>,
     acc_vs_pair_gen<FullBinningAccumulator,double>,
     acc_vs_pair_gen<FullBinningAccumulator,long double>
     > acc_types;

@@ -25,7 +25,7 @@ TEST(accumulators, WeightedObservable){
 	}
 	EXPECT_NEAR(measurements["sign"].mean<double>(), 1. / 3., 1.e-12);
 	EXPECT_NEAR(measurements["x*sign"].mean<double>(), 166., 1.e-12);
-        
+
 	std::vector<double> x_sign_vec_mean=measurements["x*sign vec"].mean<std::vector<double> >();
         for(int i=0;i<s;++i){
           EXPECT_NEAR(x_sign_vec_mean[i], 166., 1.e-12);
@@ -52,8 +52,11 @@ TEST(accumulators, BinaryWithScalar)
                << alps::accumulators::FullBinningAccumulator<double_vec>("double_vector2")
                << alps::accumulators::FullBinningAccumulator<float>("float_scalar1")
                << alps::accumulators::FullBinningAccumulator<float>("float_scalar2")
+#ifdef ALPS_ENABLE_VECTOR_FLOAT_ACCUMULATORS
                << alps::accumulators::FullBinningAccumulator<float_vec>("float_vector1")
-               << alps::accumulators::FullBinningAccumulator<float_vec>("float_vector2");
+               << alps::accumulators::FullBinningAccumulator<float_vec>("float_vector2")
+#endif
+               ;
 
   measurements["double_scalar1"] << 1.;
   measurements["double_scalar2"] << 2.;
@@ -62,18 +65,21 @@ TEST(accumulators, BinaryWithScalar)
 
   measurements["double_vector1"] << double_vec(3,1.);
   measurements["double_vector2"] << double_vec(3,2.);
+#ifdef ALPS_ENABLE_VECTOR_FLOAT_ACCUMULATORS
   measurements["float_vector1"] << float_vec(3,1.);
   measurements["float_vector1"] << float_vec(3,2.);
-
+#endif
   alps::accumulators::result_set results(measurements);
 
   results["double_scalar1"]/results["double_scalar2"]; // FIXME: duplicate of other tests
   EXPECT_THROW(results["double_scalar1"]/results["float_scalar2"],std::logic_error);
+#ifdef ALPS_ENABLE_VECTOR_FLOAT_ACCUMULATORS
   EXPECT_THROW(results["double_vector1"]/results["float_vector2"],std::logic_error);
-  
+#endif
+
   results["double_vector1"]/results["double_vector2"]; // FIXME: duplicate of other tests
   EXPECT_THROW(results["double_scalar1"]/results["double_vector2"],std::logic_error);
 
-  results["double_vector1"]/results["double_scalar2"]; 
+  results["double_vector1"]/results["double_scalar2"];
   EXPECT_THROW(results["double_vector1"]/results["float_scalar2"],std::logic_error);
 }

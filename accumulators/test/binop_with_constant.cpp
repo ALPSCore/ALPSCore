@@ -53,7 +53,7 @@ class AccumulatorBinaryOpTest : public ::testing::Test {
         compare_near(gen_data<lhs_data_type>(acc_gen_.expected_mean()+2.0).value(), res.mean<lhs_data_type>(), acc_gen_type::tol(), "Mean value");
         compare_near(gen_data<lhs_data_type>(acc_gen_.expected_err()).value(), res.error<lhs_data_type>(), acc_gen_type::tol(), "Error value");
     }
-    
+
     /// Test subtraction
     void sub()  const
     {
@@ -62,7 +62,7 @@ class AccumulatorBinaryOpTest : public ::testing::Test {
         compare_near(gen_data<lhs_data_type>(acc_gen_.expected_mean()-2.0).value(), res.mean<lhs_data_type>(), acc_gen_type::tol(), "Mean value");
         compare_near(gen_data<lhs_data_type>(acc_gen_.expected_err()).value(), res.error<lhs_data_type>(), acc_gen_type::tol(), "Error value");
     }
-    
+
     /// Test multiplication
     void mul()  const
     {
@@ -71,7 +71,7 @@ class AccumulatorBinaryOpTest : public ::testing::Test {
         compare_near(gen_data<lhs_data_type>(acc_gen_.expected_mean()*2.0).value(), res.mean<lhs_data_type>(), acc_gen_type::tol(), "Mean value");
         compare_near(gen_data<lhs_data_type>(acc_gen_.expected_err()*2.0).value(), res.error<lhs_data_type>(), acc_gen_type::tol(), "Error value");
     }
-    
+
     /// Test division
     void div()  const
     {
@@ -95,10 +95,6 @@ typedef long double long_double;
 typedef std::vector<float> float_vec;
 typedef std::vector<double> double_vec;
 typedef std::vector<long_double> long_double_vec;
-
-#define ALPS_TEST_SCALARS_SEQ (float)(double)(long_double)
-#define ALPS_TEST_VECTORS_SEQ (float_vec)(double_vec)(long_double_vec)
-#define ALPS_TEST_ANAME_SEQ (NoBinningAccumulator)(LogBinningAccumulator)(FullBinningAccumulator)
 
 // Now, generate all possible pairs of typed named accumulators with RHS types.
 // Unfortunately, BOOST_PP seems to be unable to do it (or at least not in a easy way).
@@ -143,27 +139,29 @@ INSTANTIATE_TYPED_TEST_CASE_P(ScalarScalar, AccumulatorBinaryOpTest, Scalar_Scal
 
 // Vector-scalar pairs: accs="No Log Full"; lhts="float_vec double_vec long_double_vec"; rhts="float double long_double"
 typedef ::testing::Types<
+#ifdef ALPS_ENABLE_VECTOR_FLOAT_ACCUMULATORS
     std::pair<alps::accumulators::NoBinningAccumulator<float_vec>,float>,
     std::pair<alps::accumulators::NoBinningAccumulator<float_vec>,double>,
     std::pair<alps::accumulators::NoBinningAccumulator<float_vec>,long_double>,
+    std::pair<alps::accumulators::LogBinningAccumulator<float_vec>,float>,
+    std::pair<alps::accumulators::LogBinningAccumulator<float_vec>,double>,
+    std::pair<alps::accumulators::LogBinningAccumulator<float_vec>,long_double>,
+    std::pair<alps::accumulators::LogBinningAccumulator<double_vec>,float>,
+    std::pair<alps::accumulators::FullBinningAccumulator<float_vec>,float>,
+    std::pair<alps::accumulators::FullBinningAccumulator<float_vec>,double>,
+    std::pair<alps::accumulators::FullBinningAccumulator<float_vec>,long_double>,
+#endif
     std::pair<alps::accumulators::NoBinningAccumulator<double_vec>,float>,
     std::pair<alps::accumulators::NoBinningAccumulator<double_vec>,double>,
     std::pair<alps::accumulators::NoBinningAccumulator<double_vec>,long_double>,
     std::pair<alps::accumulators::NoBinningAccumulator<long_double_vec>,float>,
     std::pair<alps::accumulators::NoBinningAccumulator<long_double_vec>,double>,
     std::pair<alps::accumulators::NoBinningAccumulator<long_double_vec>,long_double>,
-    std::pair<alps::accumulators::LogBinningAccumulator<float_vec>,float>,
-    std::pair<alps::accumulators::LogBinningAccumulator<float_vec>,double>,
-    std::pair<alps::accumulators::LogBinningAccumulator<float_vec>,long_double>,
-    std::pair<alps::accumulators::LogBinningAccumulator<double_vec>,float>,
     std::pair<alps::accumulators::LogBinningAccumulator<double_vec>,double>,
     std::pair<alps::accumulators::LogBinningAccumulator<double_vec>,long_double>,
     std::pair<alps::accumulators::LogBinningAccumulator<long_double_vec>,float>,
     std::pair<alps::accumulators::LogBinningAccumulator<long_double_vec>,double>,
     std::pair<alps::accumulators::LogBinningAccumulator<long_double_vec>,long_double>,
-    std::pair<alps::accumulators::FullBinningAccumulator<float_vec>,float>,
-    std::pair<alps::accumulators::FullBinningAccumulator<float_vec>,double>,
-    std::pair<alps::accumulators::FullBinningAccumulator<float_vec>,long_double>,
     std::pair<alps::accumulators::FullBinningAccumulator<double_vec>,float>,
     std::pair<alps::accumulators::FullBinningAccumulator<double_vec>,double>,
     std::pair<alps::accumulators::FullBinningAccumulator<double_vec>,long_double>,
@@ -173,38 +171,3 @@ typedef ::testing::Types<
     > Vector_Scalar_types;
 
 INSTANTIATE_TYPED_TEST_CASE_P(VectorScalar, AccumulatorBinaryOpTest, Vector_Scalar_types);
-
-// Vector-Vector pairs: accs="No Log Full"; lhts="float_vec double_vec long_double_vec"; rhts="float_vec double_vec long_double_vec"
-// FIXME: this does not really work!
-typedef ::testing::Types<
-    std::pair<alps::accumulators::NoBinningAccumulator<float_vec>,float_vec>,
-    std::pair<alps::accumulators::NoBinningAccumulator<float_vec>,double_vec>,
-    std::pair<alps::accumulators::NoBinningAccumulator<float_vec>,long_double_vec>,
-    std::pair<alps::accumulators::NoBinningAccumulator<double_vec>,float_vec>,
-    std::pair<alps::accumulators::NoBinningAccumulator<double_vec>,double_vec>,
-    std::pair<alps::accumulators::NoBinningAccumulator<double_vec>,long_double_vec>,
-    std::pair<alps::accumulators::NoBinningAccumulator<long_double_vec>,float_vec>,
-    std::pair<alps::accumulators::NoBinningAccumulator<long_double_vec>,double_vec>,
-    std::pair<alps::accumulators::NoBinningAccumulator<long_double_vec>,long_double_vec>,
-    std::pair<alps::accumulators::LogBinningAccumulator<float_vec>,float_vec>,
-    std::pair<alps::accumulators::LogBinningAccumulator<float_vec>,double_vec>,
-    std::pair<alps::accumulators::LogBinningAccumulator<float_vec>,long_double_vec>,
-    std::pair<alps::accumulators::LogBinningAccumulator<double_vec>,float_vec>,
-    std::pair<alps::accumulators::LogBinningAccumulator<double_vec>,double_vec>,
-    std::pair<alps::accumulators::LogBinningAccumulator<double_vec>,long_double_vec>,
-    std::pair<alps::accumulators::LogBinningAccumulator<long_double_vec>,float_vec>,
-    std::pair<alps::accumulators::LogBinningAccumulator<long_double_vec>,double_vec>,
-    std::pair<alps::accumulators::LogBinningAccumulator<long_double_vec>,long_double_vec>,
-    std::pair<alps::accumulators::FullBinningAccumulator<float_vec>,float_vec>,
-    std::pair<alps::accumulators::FullBinningAccumulator<float_vec>,double_vec>,
-    std::pair<alps::accumulators::FullBinningAccumulator<float_vec>,long_double_vec>,
-    std::pair<alps::accumulators::FullBinningAccumulator<double_vec>,float_vec>,
-    std::pair<alps::accumulators::FullBinningAccumulator<double_vec>,double_vec>,
-    std::pair<alps::accumulators::FullBinningAccumulator<double_vec>,long_double_vec>,
-    std::pair<alps::accumulators::FullBinningAccumulator<long_double_vec>,float_vec>,
-    std::pair<alps::accumulators::FullBinningAccumulator<long_double_vec>,double_vec>,
-    std::pair<alps::accumulators::FullBinningAccumulator<long_double_vec>,long_double_vec>
- > Vector_Vector_types;
-
-// Produces compilation error:
-// INSTANTIATE_TYPED_TEST_CASE_P(VectorVector, AccumulatorBinaryOpTest, Vector_Vector_types);
