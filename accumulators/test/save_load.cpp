@@ -99,7 +99,7 @@ class AccumulatorTest : public ::testing::Test {
     template <typename T>
     void load(T& measurements) const
     {
-        alps::hdf5::archive ar(h5name,"w");
+        alps::hdf5::archive ar(h5name,"r");
         ar["mydata"] >> measurements;
     }
 };
