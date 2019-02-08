@@ -126,6 +126,11 @@ namespace alps {
             };
 
             template<typename T> class AccumulatorBase {
+#ifndef ALPS_ENABLE_VECTOR_FLOAT_ACCUMULATORS
+                static_assert(!std::is_same<T, std::vector<float>>::value,
+                              "Support of vector<float> value type in legacy accumulators is disabled. "
+                              "Please consider using the new ALEA accumulators instead.");
+#endif
                 public:
                     typedef T value_type;
                     typedef ResultBase<T> result_type;
