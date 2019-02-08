@@ -45,7 +45,9 @@ TEST(accumulators, BinaryWithScalar)
 {
   alps::accumulators::accumulator_set measurements;
   typedef std::vector<double> double_vec;
+#ifdef ALPS_ENABLE_VECTOR_FLOAT_ACCUMULATORS
   typedef std::vector<float> float_vec;
+#endif
   measurements << alps::accumulators::FullBinningAccumulator<double>("double_scalar1")
                << alps::accumulators::FullBinningAccumulator<double>("double_scalar2")
                << alps::accumulators::FullBinningAccumulator<double_vec>("double_vector1")

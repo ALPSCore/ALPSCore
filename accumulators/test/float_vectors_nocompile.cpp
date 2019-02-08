@@ -11,8 +11,8 @@
 namespace aa=alps::accumulators;
 
 TEST(accumulators, floatVectorsNoCompile) {
-    typedef std::vector<float> float_v;
 #ifdef ALPS_TEST_EXPECT_COMPILE_FAILURE
+    typedef std::vector<float> float_v;
     auto named_acc=aa::NoBinningAccumulator<float_v>("float_vector");
     FAIL() << "This test should have never compiled";
 #else
