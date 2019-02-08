@@ -44,9 +44,13 @@ class AccumulatorTest : public ::testing::Test {
     typedef A accumulator_type;
 
     unsigned int nsamples;
+    alps::testing::unique_file h5_tmp_file;
     const std::string h5name;
 
-    AccumulatorTest() : nsamples(0), h5name(alps::testing::temporary_filename("save_load.h5."))
+    AccumulatorTest() :
+        nsamples(0),
+        h5_tmp_file("save_load.h5.", alps::testing::unique_file::REMOVE_AFTER),
+        h5name(h5_tmp_file.name())
     { }
 
     // Add (constant) data to an accumulator
