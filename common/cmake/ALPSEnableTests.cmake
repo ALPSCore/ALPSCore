@@ -120,10 +120,19 @@ function(alps_add_gtest test)
         set(run_ok_cmd_ "$<TARGET_FILE:${test}> ${test_xml_output_}")
         set(shell_cmd_ "if ${build_cmd_}\; then ${run_fail_cmd_}\; false\; else ${run_ok_cmd_}\; fi")
         set(cmd_ "/bin/sh" "-c" "${shell_cmd_}")
-    elseif (arg_PARTEST AND MPIEXEC) 
-        # FIXME: if compiler supports MPI directly, the MPIEXEC program is not deduced!
-        # FIXME: in the MPI test command, POSIX shell is assumed
-        set(cmd_ "/bin/sh" "-c" "${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} \${ALPS_TEST_MPI_NPROC:-1} ${MPIEXEC_PREFLAGS} $<TARGET_FILE:${test}> ${MPIEXEC_POSTFLAGS} ${test_xml_output_}")
+    elseif (arg_PARTEST AND ALPS_HAVE_MPI) 
+        # if unspecified, we assume the standard mpi launcher, according to MPI-3.1 specs, Chapter 8.8
+        # (see https://www.mpi-forum.org/docs/mpi-3.1/mpi31-report/node228.htm#Node228)
+        if (NOT MPIEXEC) 
+            set(MPIEXEC "mpiexec")
+        endif()
+        if (NOT MPIEXEC_NUMPROC_FLAG)
+            set(MPIEXEC_NUMPROC_FLAG "-n")
+        endif()
+
+        # we also allow test-time override of the MPI launcher and its arguments
+        # (NOTE: POSIX shell is assumed)
+        set(cmd_ "/bin/sh" "-c" "\${ALPS_TEST_MPIEXEC:-${MPIEXEC}} \${ALPS_TEST_MPI_NPROC_FLAG:-${MPIEXEC_NUMPROC_FLAG}} \${ALPS_TEST_MPI_NPROC:-1} \${ALPS_TEST_MPIEXEC_PREFLAGS:-${MPIEXEC_PREFLAGS}} $<TARGET_FILE:${test}> \${ALPS_TEST_MPIEXEC_POSTFLAGS:-${MPIEXEC_POSTFLAGS}} ${test_xml_output_}")
     else()
         set(cmd_ $<TARGET_FILE:${test}> ${test_xml_output_})
     endif()
