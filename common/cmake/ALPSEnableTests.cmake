@@ -5,6 +5,9 @@
 # check xml output
 option(TestXMLOutput "Output tests to xml" OFF)
 
+# default number of MPI processes for MPI testing
+set(ALPS_TEST_MPI_NPROC 1 CACHE STRING "Default number of MPI processes to use for MPI-enabled tests")
+
 # Find gtest or otherwise fetch it into the build_dir/gtest
 function(UseGtest gtest_root)  
     #set (gtest_root ${ALPS_ROOT_DIR}/../common/deps/gtest-1.7.0)
@@ -123,16 +126,16 @@ function(alps_add_gtest test)
     elseif (arg_PARTEST AND ALPS_HAVE_MPI) 
         # if unspecified, we assume the standard mpi launcher, according to MPI-3.1 specs, Chapter 8.8
         # (see https://www.mpi-forum.org/docs/mpi-3.1/mpi31-report/node228.htm#Node228)
-        if (NOT MPIEXEC) 
+        if (NOT DEFINED MPIEXEC) 
             set(MPIEXEC "mpiexec")
         endif()
-        if (NOT MPIEXEC_NUMPROC_FLAG)
+        if (NOT DEFINED MPIEXEC_NUMPROC_FLAG)
             set(MPIEXEC_NUMPROC_FLAG "-n")
         endif()
 
         # we also allow test-time override of the MPI launcher and its arguments
         # (NOTE: POSIX shell is assumed)
-        set(cmd_ "/bin/sh" "-c" "\${ALPS_TEST_MPIEXEC:-${MPIEXEC}} \${ALPS_TEST_MPI_NPROC_FLAG:-${MPIEXEC_NUMPROC_FLAG}} \${ALPS_TEST_MPI_NPROC:-1} \${ALPS_TEST_MPIEXEC_PREFLAGS:-${MPIEXEC_PREFLAGS}} $<TARGET_FILE:${test}> \${ALPS_TEST_MPIEXEC_POSTFLAGS:-${MPIEXEC_POSTFLAGS}} ${test_xml_output_}")
+        set(cmd_ "/bin/sh" "-c" "\${ALPS_TEST_MPIEXEC:-${MPIEXEC}} \${ALPS_TEST_MPI_NPROC_FLAG:-${MPIEXEC_NUMPROC_FLAG}} \${ALPS_TEST_MPI_NPROC:-${ALPS_TEST_MPI_NPROC}} \${ALPS_TEST_MPIEXEC_PREFLAGS:-${MPIEXEC_PREFLAGS}} $<TARGET_FILE:${test}> \${ALPS_TEST_MPIEXEC_POSTFLAGS:-${MPIEXEC_POSTFLAGS}} ${test_xml_output_}")
     else()
         set(cmd_ $<TARGET_FILE:${test}> ${test_xml_output_})
     endif()
