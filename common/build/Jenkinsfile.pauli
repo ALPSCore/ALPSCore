@@ -1,4 +1,9 @@
 @Library('alpscore_jenkins_pipeline') _
 
-build_alpscore(compilers:"gcc_5.4.0 gcc_4.8.5 clang_3.4.2 clang_5.0.1 intel_18.0.5",
-               mpilibs:"MPI_OFF OpenMPI")
+// // One can explicitly request compilers and MPI libraries:
+// //  (unsupported pairs will be silently excluded; unsupported values cause error)
+// build_alpscore(compilers:"gcc_5.4.0 gcc_4.8.5 clang_3.4.2 clang_5.0.1 intel_18.0.5",
+//                mpilibs:"MPI_OFF OpenMPI")
+
+// Or ask to build on all supported configuratons:
+build_alpscore()
