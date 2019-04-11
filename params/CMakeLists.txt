@@ -28,7 +28,9 @@ endif()
 add_this_package(params dict_value dictionary iniparser_interface EXTRA $<TARGET_OBJECTS:libiniparser>)
 
 add_boost()
-add_hdf5()
+if (ALPS_HAVE_ALPS_HDF5)
+    add_hdf5()
+endif()
 
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../common/deps/iniparser" "./iniparser")
 if (ALPS_BUILD_SHARED OR ALPS_BUILD_PIC)
@@ -39,7 +41,12 @@ target_include_directories(${PROJECT_NAME} PRIVATE $<TARGET_PROPERTY:libiniparse
 # This does not work in CMake 3.1:
 # target_sources(${PROJECT_NAME} PRIVATE $<TARGET_OBJECTS:libiniparser>)
 
-add_alps_package(alps-utilities alps-hdf5)
+if (ALPS_HAVE_ALPS_HDF5)
+    add_alps_package(alps-utilities alps-hdf5)
+else()
+    message("NOTE: module params will be built without HDF5 support (alps-hdf5 is disabled)")
+    add_alps_package(alps-utilities)
+endif()
 
 add_testing()
 
