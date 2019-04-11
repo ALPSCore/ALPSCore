@@ -16,11 +16,16 @@ set (test_src
   dictval_eq  
   dictionary_eq
   params_eq
-  dictionary_hdf5
-  params_hdf5
-  params_hdf5_with_ini
-  params_vec_hdf5
   )
+
+if(ALPS_HAVE_ALPS_HDF5)
+    set(test_src
+        ${test_src}
+        dictionary_hdf5
+        params_hdf5
+        params_hdf5_with_ini
+        params_vec_hdf5)
+endif()
 
 foreach(test ${test_src})
     alps_add_gtest(${test})

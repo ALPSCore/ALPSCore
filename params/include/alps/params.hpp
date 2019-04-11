@@ -8,7 +8,10 @@
 #define ALPS_PARAMS_HPP_INCLUDED_00f672a032d949a7aa0e760a6b6f0602
 
 #include "alps/config.hpp"
+#ifdef ALPS_HAVE_ALPS_HDF5
 #include "alps/hdf5/archive.hpp"
+#endif
+
 #include <alps/utilities/deprecated.hpp>
 
 
@@ -299,11 +302,13 @@ namespace alps {
 
             friend void swap(params& p1, params& p2);
 
+#ifdef ALPS_HAVE_ALPS_HDF5
             /// Saves parameter object to an archive
             void save(alps::hdf5::archive&) const;
 
             /// Loads parameter object form an archive
             void load(alps::hdf5::archive&);
+#endif
 
             /// Prints parameters to a stream in an unspecified format
             friend

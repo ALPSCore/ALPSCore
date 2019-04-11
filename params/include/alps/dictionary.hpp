@@ -79,11 +79,13 @@ namespace alps {
             /// Compare two dictionaries (true if all entries are of the same type and value)
             bool equals(const dictionary& rhs) const;
 
+#ifdef ALPS_HAVE_ALPS_HDF5
             /// Save the dictionary to an archive
             void save(alps::hdf5::archive& ar) const;
 
             /// Load the dictionary from an archive
             void load(alps::hdf5::archive& ar);
+#endif
 
             friend std::ostream& operator<<(std::ostream&, const dictionary&);
 

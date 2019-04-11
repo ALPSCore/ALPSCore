@@ -18,11 +18,12 @@
 #include <boost/mpl/contains.hpp>
 
 
-
+#ifdef ALPS_HAVE_ALPS_HDF5
 // forward declarations
 namespace alps{ namespace hdf5 {
     class archive;
 }}
+#endif
 
 namespace alps {
     namespace params_ns {
@@ -34,8 +35,10 @@ namespace alps {
 
             /// "Empty value" type
             struct None {
+#ifdef ALPS_HAVE_ALPS_HDF5
                 void save(alps::hdf5::archive&) const { throw std::logic_error("None::save() should never be called"); }
                 void load(alps::hdf5::archive&) { throw std::logic_error("None::load() should never be called"); }
+#endif
             };
             template <typename S>
             inline S& operator<<(S&, const None&) { throw std::logic_error("Generic streaming operator of None should never be called"); }
