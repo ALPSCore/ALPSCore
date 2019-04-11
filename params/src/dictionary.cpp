@@ -9,7 +9,9 @@
 
 #include <alps/dictionary.hpp>
 
+#ifdef ALPS_HAVE_ALPS_HDF5
 #include <alps/hdf5/map.hpp>
+#endif
 
 #ifdef ALPS_HAVE_MPI
 #include <alps/utilities/mpi_map.hpp>
@@ -26,7 +28,7 @@ namespace alps {
                 return map_.end();
         }
 
-        
+
         /// Access with intent to assign
         dictionary::value_type& dictionary::operator[](const std::string& key) {
             map_type::iterator it=map_.lower_bound(key);
@@ -59,14 +61,15 @@ namespace alps {
             };
 
         }
-        
-        bool dictionary::equals(const dictionary &rhs) const 
+
+        bool dictionary::equals(const dictionary &rhs) const
         {
             if (this->size()!=rhs.size()) return false;
             return std::equal(map_.begin(), map_.end(), rhs.map_.begin(), compare<map_type>());
         }
 
 
+#ifdef ALPS_HAVE_ALPS_HDF5
         void dictionary::save(alps::hdf5::archive& ar) const
         {
             ar[""] << map_;
@@ -76,10 +79,11 @@ namespace alps {
         {
             map_type new_map;
             ar[""] >> new_map;
-            
+
             using std::swap;
             swap(map_,new_map);
         }
+#endif
 
         std::ostream& operator<<(std::ostream& s, const dictionary& d)
         {
@@ -91,7 +95,7 @@ namespace alps {
 
 #ifdef ALPS_HAVE_MPI
         // Defined here to avoid including <mpi_map.hpp> inside user header
-        void dictionary::broadcast(const alps::mpi::communicator& comm, int root) { 
+        void dictionary::broadcast(const alps::mpi::communicator& comm, int root) {
             using alps::mpi::broadcast;
             broadcast(comm, map_, root);
         }

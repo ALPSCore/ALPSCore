@@ -9,8 +9,11 @@
 
 #include <boost/version.hpp>
 
+#include <alps/config.hpp>
 #include <alps/params/dict_value.hpp>
+#ifdef ALPS_HAVE_ALPS_HDF5
 #include <alps/params/hdf5_variant.hpp>
+#endif
 
 #ifdef ALPS_HAVE_MPI
 #include <alps/params/mpi_variant.hpp>
@@ -112,6 +115,7 @@ namespace alps {
             return boost::apply_visitor(detail::visitor::equals2(), val_, rhs.val_);
         }
 
+#ifdef ALPS_HAVE_ALPS_HDF5
         void dict_value::save(alps::hdf5::archive& ar) const {
             if (this->empty()) return;
             alps::hdf5::write_variant<detail::dict_all_types>(ar, val_);
@@ -124,6 +128,7 @@ namespace alps {
             name_=context.substr(slash_pos);
             val_=alps::hdf5::read_variant<detail::dict_all_types>(ar);
         }
+#endif
 
         namespace {
             struct typestring_visitor : public boost::static_visitor<std::string> {

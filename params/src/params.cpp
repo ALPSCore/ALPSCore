@@ -23,8 +23,10 @@
 #include <alps/utilities/temporary_filename.hpp> // FIXME!!! Temporary!
 #include <fstream>
 
+#ifdef ALPS_HAVE_ALPS_HDF5
 #include <alps/hdf5/map.hpp>
 #include <alps/hdf5/vector.hpp>
+#endif
 
 
 #ifdef ALPS_HAVE_MPI
@@ -37,6 +39,7 @@ namespace alps {
     namespace params_ns {
 
         namespace {
+#ifdef ALPS_HAVE_ALPS_HDF5
             // Helper function to try to open an HDF5 archive, return "none" if it fails
             boost::optional<alps::hdf5::archive> try_open_ar(const std::string& fname, const char* mode)
             {
@@ -55,6 +58,7 @@ namespace alps {
                     return boost::none;
                 }
             };
+#endif
 
 
             // Helper function to read INI file into the provided map
@@ -280,6 +284,7 @@ namespace alps {
                         }
                         if (0==key_begin && npos==key_end) {
                             if (hdf5_path) {
+#ifdef ALPS_HAVE_ALPS_HDF5
                                 optional<alps::hdf5::archive> maybe_ar=try_open_ar(arg, "r");
                                 if (maybe_ar) {
                                     if (restored_from_archive) {
@@ -292,6 +297,7 @@ namespace alps {
                                     restored_from_archive=arg;
                                     continue;
                                 }
+#endif
                             }
 
                             ini_files.push_back(arg);
@@ -371,6 +377,7 @@ namespace alps {
         }
 
 
+#ifdef ALPS_HAVE_ALPS_HDF5
         void params::save(alps::hdf5::archive& ar) const {
             dictionary::save(ar);
             const std::string context=ar.get_context();
@@ -457,6 +464,7 @@ namespace alps {
             using std::swap;
             swap(*this, newpar);
         }
+#endif
 
         namespace {
             // Printing of a vector

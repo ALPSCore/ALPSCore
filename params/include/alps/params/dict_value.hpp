@@ -46,7 +46,9 @@
 #include "./dict_exceptions.hpp"
 #include "./dict_types.hpp" // Sequences of supported types
 
+#ifdef ALPS_HAVE_ALPS_HDF5
 #include <alps/hdf5/archive.hpp>
+#endif
 
 #ifdef ALPS_HAVE_MPI
 #include <alps/utilities/mpi.hpp>
@@ -125,11 +127,13 @@ namespace alps {
             /// Returns true if the objects hold the same type and value, false otherwise
             bool equals(const dict_value& rhs) const;
 
+#ifdef ALPS_HAVE_ALPS_HDF5
             /// Saves the value to an archive
             void save(alps::hdf5::archive& ar) const;
 
             /// Loads the value from an archive
             void load(alps::hdf5::archive& ar);
+#endif
 
             /// Const-access visitor to the bound value
             /** @param visitor functor should be callable as `R result=visitor(bound_value_const_ref)`
