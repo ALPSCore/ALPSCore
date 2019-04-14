@@ -17,6 +17,9 @@
 
 #include <alps/alea/complex_op.hpp>
 
+#include <alps/common/view.hpp>
+#include <alps/common/serialize.hpp>
+
 namespace alps { namespace alea {
 
 using std::size_t;
@@ -47,95 +50,17 @@ template<typename T> struct is_alea_acc : std::false_type {};
 // Metafunction to detect ALEA result types
 template<typename T> struct is_alea_result : std::false_type {};
 
-/**
- * Data view as a thin wrapper around a continuous array.
- *
- * Basically collects a pointer continuous array together with its size.  Note
- * that the view does not own the `data` pointer.
- */
-template <typename T>
-class view
-{
-public:
-    typedef T value_type;
 
-public:
-    /** Construct view on nothing */
-    view() : data_(nullptr), size_(0) { }
+// import for backwards-compatibility
+template <typename T> using view = alps::common::view<T>;
+template <typename T> using ndview = alps::common::ndview<T>;
+using serializer = alps::common::serializer;
+using deserializer = alps::common::deserializer;
 
-    /** Construct view on data area with size */
-    view(T *data, size_t size)
-        : data_(data), size_(size)
-    { }
-
-    /** Get pointer to zeroth element */
-    T *data() { return data_; }
-
-    /** Get pointer to zeroth element */
-    const T *data() const { return data_; }
-
-    /** Return size */
-    size_t size() const { return size_; }
-
-private:
-    T *data_;
-    size_t size_;
-};
-
-/**
- * Data view as a thin wrapper around a continuous multi-dimensional array.
- *
- * Basically collects a pointer continuous array in ROW-MAJOR format (vector,
- * transposed Eigen array, C array etc.) together with its shape.  Note that
- * the view neither owns the `data` pointer nor the `shape` pointer.  Thus it
- * amends `view<T>` with shape information.
- */
-template <typename T>
-class ndview
-    : public view<T>
-{
-public:
-    typedef T value_type;
-
-public:
-    /** Construct view on nothing */
-    ndview() : view<T>(), shape_(nullptr), ndim_(0) { }
-
-    /** Construct view on data area with shape */
-    ndview(T *data, const size_t *shape, size_t ndim)
-        : view<T>(data, compute_size(shape, ndim))
-        , shape_(shape)
-        , ndim_(ndim)
-    { }
-
-    /** Construct view on data area with shape and size hint */
-    ndview(T *data, size_t size, const size_t *shape, size_t ndim)
-        : view<T>(data, size)
-        , shape_(shape)
-        , ndim_(ndim)
-    {
-        assert(size == compute_size(shape, ndim));
-    }
-
-    /** Get shape of data space */
-    const size_t *shape() const { return shape_; }
-
-    /** Get number of dimensions */
-    size_t ndim() const { return ndim_; }
-
-protected:
-    static size_t compute_size(const size_t *shape, size_t ndim)
-    {
-        size_t result = 1;
-        for (size_t d = 0; d != ndim; ++d)
-            result *= shape[d];
-        return result;
-    }
-
-private:
-    const size_t *shape_;
-    size_t ndim_;
-};
+namespace internal {
+    using serializer_sentry = alps::common::serializer_sentry;
+    using deserializer_sentry = alps::common::deserializer_sentry;
+}
 
 /**
  * Interface for a computed result (a result computed on-the-fly).
@@ -306,102 +231,6 @@ struct reducer
     void reduce(view<uint64_t> data) const {
         reduce(view<int64_t>((int64_t *)data.data(), data.size()));
     }
-};
-
-/**
- * Foster the serialization of data to disk.
- *
- * The serialization interface writes a hierarchy of named groups, traversed by
- * `enter()` and `exit()`, each containing a set of primitives or key-value
- * pairs, written by the `write()` family of methods.
- *
- * @see alps::alea::serialize(), alps::alea::deserializer
- */
-struct serializer
-{
-    /** Creates and descends into a group with name `group` */
-    virtual void enter(const std::string &group) = 0;
-
-    /** Ascends from the lowermost group */
-    virtual void exit() = 0;
-
-    /** Writes a named multi-dimensional array of doubles */
-    virtual void write(const std::string &key, ndview<const double>) = 0;
-
-    /** Writes a named multi-dimensional array of complex doubles */
-    virtual void write(const std::string &key, ndview<const std::complex<double>>) = 0;
-
-    /** Writes a named multi-dimensional array of complex operands */
-    virtual void write(const std::string &key, ndview<const complex_op<double>>) = 0;
-
-    /** Writes a named multi-dimensional array of longs */
-    virtual void write(const std::string &key, ndview<const int64_t>) = 0;
-
-    /** Writes a named multi-dimensional array of unsigned longs */
-    virtual void write(const std::string &key, ndview<const uint64_t>) = 0;
-
-    /** Writes a named multi-dimensional array of int */
-    virtual void write(const std::string &key, ndview<const int32_t>) = 0;
-
-    /** Writes a named multi-dimensional array of unsigned int */
-    virtual void write(const std::string &key, ndview<const uint32_t>) = 0;
-
-    /** Returns a copy of `*this` created using `new` */
-    virtual serializer *clone() { throw unsupported_operation(); }
-
-    /** Destructor */
-    virtual ~serializer() { }
-};
-
-/**
- * Foster the deserialization of data from disk.
- *
- * The serialization interface writes a hierarchy of named groups, traversed by
- * `enter()` and `exit()`, each containing a set of primitives or key-value
- * pairs, read out by the `read()` family of methods.
- *
- * Each `read()` method read to the `ndview::data()` buffer, if given.  If
- * that field is `nullptr`, it shall instead read but discard the data.
- *
- * @see alps::alea::deserialize(), alps::alea::serializer
- */
-struct deserializer
-{
-    /** Descends into a group with name `group` */
-    virtual void enter(const std::string &group) = 0;
-
-    /** Ascends from the lowermost group */
-    virtual void exit() = 0;
-
-    /** Retrieves metadata for a primitive */
-    virtual std::vector<size_t> get_shape(const std::string &key) = 0;
-
-    /** Reads a named multi-dimensional array of double */
-    virtual void read(const std::string &key, ndview<double>) = 0;
-
-    /** Reads a named multi-dimensional array of double complex */
-    virtual void read(const std::string &key, ndview<std::complex<double>>) = 0;
-
-    /** Reads a named multi-dimensional array of double complex operand */
-    virtual void read(const std::string &key, ndview<complex_op<double>>) = 0;
-
-    /** Reads a named multi-dimensional array of longs */
-    virtual void read(const std::string &key, ndview<int64_t>) = 0;
-
-    /** Reads a named multi-dimensional array of unsigned longs */
-    virtual void read(const std::string &key, ndview<uint64_t>) = 0;
-
-    /** Reads a named multi-dimensional array of int */
-    virtual void read(const std::string &key, ndview<int32_t>) = 0;
-
-    /** Reads a named multi-dimensional array of unsigned int */
-    virtual void read(const std::string &key, ndview<uint32_t>) = 0;
-
-    /** Returns a copy of `*this` created using `new` */
-    virtual deserializer *clone() { throw unsupported_operation(); }
-
-    /** Destructor */
-    virtual ~deserializer() { }
 };
 
 /**

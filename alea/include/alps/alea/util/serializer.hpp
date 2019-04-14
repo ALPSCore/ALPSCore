@@ -24,8 +24,6 @@ public:
 
     void write(const std::string &, ndview<const std::complex<double>>) override { }
 
-    void write(const std::string &, ndview<const complex_op<double>>) override { }
-
     void write(const std::string &, ndview<const int64_t>) override { }
 
     void write(const std::string &, ndview<const uint64_t>) override { }
@@ -73,10 +71,6 @@ public:
     }
 
     void write(const std::string &key, ndview<const std::complex<double>> value) override {
-        do_write(key, value);
-    }
-
-    void write(const std::string &key, ndview<const complex_op<double>> value) override {
         do_write(key, value);
     }
 

@@ -49,10 +49,6 @@ public:
         do_write(key, value);
     }
 
-    void write(const std::string &key, ndview<const complex_op<double>> value) override {
-        throw unsupported_operation();  // FIXME
-    }
-
     void write(const std::string &key, ndview<const int64_t> value) override {
         do_write(key, value);
     }
@@ -81,10 +77,6 @@ public:
 
     void read(const std::string &key, ndview<std::complex<double>> value) override {
         do_read(key, value);
-    }
-
-    void read(const std::string &key, ndview<complex_op<double>> value) override {
-        throw unsupported_operation();  // FIXME
     }
 
     void read(const std::string &key, ndview<int64_t> value) override {
