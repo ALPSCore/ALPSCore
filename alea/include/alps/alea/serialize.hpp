@@ -12,8 +12,42 @@
 
 #include <array>
 
-namespace alps { namespace common {
+namespace alps { namespace serialization {
 
-// TODO
+template <typename Derived>
+typename std::enable_if<
+        eigen_scalar_is<Derived, alps::alea::complex_op<double>>::value>::type
+serialize(serializer &ser, const std::string &key,
+          const Eigen::MatrixBase<Derived> &value)
+{
+    throw std::runtime_error("serializing complex_op matrices not implemented.");
+}
+
+template <typename T>
+typename std::enable_if<
+            std::is_same<T, alps::alea::complex_op<double>>::value>::type
+deserialize(deserializer &ser, const std::string &key,
+            Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &value)
+{
+    throw std::runtime_error("serializing complex_op matrices not implemented.");
+}
+
+template <typename T>
+typename std::enable_if<
+            std::is_same<T, alps::alea::complex_op<double>>::value>::type
+deserialize(deserializer &ser, const std::string &key,
+            Eigen::Matrix<T, Eigen::Dynamic, 1> &value)
+{
+    throw std::runtime_error("serializing complex_op matrices not implemented.");
+}
+
+template <typename T>
+typename std::enable_if<
+            std::is_same<T, alps::alea::complex_op<double>>::value>::type
+deserialize(deserializer &ser, const std::string &key,
+            Eigen::Matrix<T, 1, Eigen::Dynamic> &value)
+{
+    throw std::runtime_error("serializing complex_op matrices not implemented.");
+}
 
 }}

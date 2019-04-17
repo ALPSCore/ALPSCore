@@ -286,11 +286,9 @@ void serialize(serializer &s, const std::string &key, const var_result<T,Str> &s
     serialize(s, "count2", self.store_->count2_);
     s.enter("mean");
     serialize(s, "value", self.store_->data_);
-    // FIXME: complex_op
-    // serialize(s, "error", self.stderror());   // TODO temporary
+    serialize(s, "error", self.stderror());   // TODO temporary
     s.exit();
-    // FIXME: complex_op
-    // serialize(s, "var", self.store_->data2_);
+    serialize(s, "var", self.store_->data2_);
 }
 
 template <typename T, typename Str>
@@ -313,11 +311,10 @@ void deserialize(deserializer &s, const std::string &key, var_result<T,Str> &sel
     deserialize(s, "count2", self.store_->count2_);
     s.enter("mean");
     deserialize(s, "value", self.store_->data_);
-    // FIXME complexop
-    //s.read("error", ndview<var_type>(nullptr, &new_size, 1)); // discard
+    Eigen::Matrix<var_type, Eigen::Dynamic, 1> discard(self.size());
+    deserialize(s, "error", discard); // discard
     s.exit();
-    // FIXME: complex_op
-    // deserialize(s, "var", self.store_->data2_);
+    deserialize(s, "var", self.store_->data2_);
 }
 
 template void serialize(serializer &, const std::string &key, const var_result<double, circular_var> &);

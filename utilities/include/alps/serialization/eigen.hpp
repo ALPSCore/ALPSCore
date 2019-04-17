@@ -13,9 +13,21 @@
 namespace alps { namespace serialization {
 
 template <typename Derived>
+struct eigen_scalar {
+    using type = typename Eigen::internal::traits<Derived>::Scalar;
+};
+
+template <typename Derived>
+using eigen_scalar_t = typename eigen_scalar<Derived>::type;
+
+template <typename Derived>
 struct has_primitive_scalar {
-    using _scalar_type = typename Eigen::internal::traits<Derived>::Scalar;
-    static const bool value = is_primitive<_scalar_type>::value;
+    static const bool value = is_primitive<eigen_scalar_t<Derived>>::value;
+};
+
+template <typename Derived, typename T>
+struct eigen_scalar_is {
+    static const bool value = std::is_same<eigen_scalar_t<Derived>, T>::value;
 };
 
 template <typename Derived>
