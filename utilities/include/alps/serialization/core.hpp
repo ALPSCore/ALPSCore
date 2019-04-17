@@ -11,14 +11,32 @@
 #include <complex>
 #include <vector>
 
-#include <Eigen/Dense>
-
 #include <alps/common/view.hpp>
 
-namespace alps { namespace common {
+// Forward declarations
+
+namespace alps { namespace serialization {
+    struct unsupported_serializer_clone;
+    struct serializer;
+    struct deserializer;
+
+    namespace internal {
+        template <typename T>
+        void scalar_serialize(serializer &, const std::string &, T);
+
+        template <typename T>
+        void scalar_deserialize(deserializer &, const std::string &, T &);
+    }
+}}
+
+// Actual declarations
+
+namespace alps { namespace serialization {
+
+using alps::common::ndview;
 
 /** Class does not support this operation */
-struct unsupported_serializer_clone : public std::exception { };
+struct unsupported_operation : public std::exception { };
 
 /**
  * Foster the serialization of data to disk.
@@ -27,7 +45,12 @@ struct unsupported_serializer_clone : public std::exception { };
  * `enter()` and `exit()`, each containing a set of primitives or key-value
  * pairs, written by the `write()` family of methods.
  *
- * @see alps::alea::serialize(), alps::alea::deserializer
+ * \note You will usually only use the `write()` methods directly when writing
+ *       your own serialzation format or when extending serialization for new
+ *       matrix containers.  In other cases, refer to the `serialize()`
+ *       function.
+ *
+ * @see serialize(), deserializer
  */
 struct serializer
 {
@@ -56,7 +79,7 @@ struct serializer
     virtual void write(const std::string &key, ndview<const uint32_t>) = 0;
 
     /** Returns a copy of `*this` created using `new` */
-    virtual serializer *clone() { throw unsupported_serializer_clone(); }
+    virtual serializer *clone() { throw unsupported_operation(); }
 
     /** Destructor */
     virtual ~serializer() { }
@@ -72,7 +95,12 @@ struct serializer
  * Each `read()` method read to the `ndview::data()` buffer, if given.  If
  * that field is `nullptr`, it shall instead read but discard the data.
  *
- * @see alps::alea::deserialize(), alps::alea::serializer
+ * \note You will usually only use the `read()` methods directly when writing
+ *       your own serialzation format or when extending serialization for new
+ *       matrix containers.  In other cases, refer to the `deserialize()`
+ *       function.
+ *
+ * @see deserialize(), serializer
  */
 struct deserializer
 {
@@ -104,104 +132,28 @@ struct deserializer
     virtual void read(const std::string &key, ndview<uint32_t>) = 0;
 
     /** Returns a copy of `*this` created using `new` */
-    virtual deserializer *clone() { throw unsupported_serializer_clone(); }
+    virtual deserializer *clone() { throw unsupported_operation(); }
 
     /** Destructor */
     virtual ~deserializer() { }
 };
 
 /**
- * Allows RAII-type use of groups in serializer.
+ * Trait checking whether `T` is a valid serialization primitive.
  *
- * Enters the specified group on construction of the sentry, and automatically
- * leaves the group when the object is destroyed.  This also allows recovery in
- * the case of soft exceptions.
- *
- *     void write_to_group(serializer &s, std::string name) {
- *         internal::serializer_sentry group(s, name);
- *         serialize(s, "first_item", 42);
- *         serialize(s, "second_item", 4711);
- *     } // exits group here
+ * `is_primitive<T>::value` evaluates to `true` if and only if `T` is a
+ * serialization primitive, i.e., if `serializer::write` accepts `ndview<T>`
+ * and `deserializer::read` accepts `ndview<const T>`.
  */
-struct serializer_sentry
-{
-    serializer_sentry(serializer &ser, const std::string &group)
-        : ser_(ser)
-        , group_(group)
-    {
-        if (group != "")
-            ser_.enter(group);
-    }
-
-    ~serializer_sentry()
-    {
-        if (group_ != "")
-            ser_.exit();
-    }
-
-private:
-    serializer &ser_;
-    std::string group_;
-};
-
-/**
- * Allows RAII-type use of groups in deserializer.
- *
- * Enters the specified group on construction of the sentry, and automatically
- * leaves the group when the object is destroyed.  This also allows recovery in
- * the case of soft exceptions.
- */
-struct deserializer_sentry
-{
-    deserializer_sentry(deserializer &ser, const std::string &group)
-        : ser_(ser)
-        , group_(group)
-    {
-        if (group != "")
-            ser_.enter(group);
-    }
-
-    ~deserializer_sentry()
-    {
-        if (group_ != "")
-            ser_.exit();
-    }
-
-private:
-    deserializer &ser_;
-    std::string group_;
-};
-
-}}
-
-namespace alps { namespace common { namespace internal {
-
-/** Helper function for serialization of scalars */
 template <typename T>
-void scalar_serialize(serializer &ser, const std::string &key, T value)
-{
-    ser.write(key, ndview<const T>(&value, nullptr, 0));
-}
+struct is_primitive : std::false_type { };
 
-/** Helper function for deserialization of scalars */
-template <typename T>
-T scalar_deserialize(deserializer &ser, const std::string &key)
-{
-    T value;
-    ser.read(key, ndview<T>(&value, nullptr, 0));
-    return value;
-}
-
-/** Helper function for deserialization of scalars */
-template <typename T>
-void scalar_deserialize(deserializer &ser, const std::string &key, T &value)
-{
-    ser.read(key, ndview<T>(&value, nullptr, 0));
-}
-
-}}}
-
-namespace alps { namespace common {
+template <> struct is_primitive<double> : std::true_type { };
+template <> struct is_primitive<std::complex<double>> : std::true_type { };
+template <> struct is_primitive<int64_t> : std::true_type { };
+template <> struct is_primitive<uint64_t> : std::true_type { };
+template <> struct is_primitive<int32_t> : std::true_type { };
+template <> struct is_primitive<uint32_t> : std::true_type { };
 
 // Serialization methods
 
@@ -223,38 +175,6 @@ inline void serialize(serializer &ser, const std::string &key, double value) {
 inline void serialize(serializer &ser, const std::string &key,
                       std::complex<double> value) {
     internal::scalar_serialize(ser, key, value);
-}
-
-template <typename Derived>
-void serialize(serializer &ser, const std::string &key,
-               const Eigen::MatrixBase<Derived> &value)
-{
-    typedef Eigen::internal::traits<Derived> traits;
-    typedef typename traits::Scalar scalar_type;
-    typedef Eigen::Matrix<scalar_type, Derived::RowsAtCompileTime,
-                          Derived::ColsAtCompileTime> plain_matrix_type;
-
-    // Ensure that evaluated expression will be continuous
-    if ((Derived::MaxRowsAtCompileTime != Eigen::Dynamic
-                    && Derived::MaxRowsAtCompileTime != value.rows())
-            || (Derived::MaxColsAtCompileTime != Eigen::Dynamic
-                    && Derived::MaxColsAtCompileTime != value.cols())
-            || ((Derived::Options & Eigen::RowMajor)
-                    && value.rows() != 1 && value.cols() != 1))
-        serialize(ser, key, plain_matrix_type(value));
-
-    // Evaluate to matrix or proxy object if already matrix
-    auto temp = value.eval();
-
-    if (Derived::ColsAtCompileTime == 1 || Derived::RowsAtCompileTime == 1) {
-        // Omit second dimension for simple vectors
-        std::array<size_t, 1> dims = {{(size_t)temp.size()}};
-        ser.write(key, ndview<const scalar_type>(temp.data(), dims.data(), 1));
-    } else {
-        // Eigen arrays are column-major
-        std::array<size_t, 2> dims = {{(size_t)temp.cols(), (size_t)temp.rows()}};
-        ser.write(key, ndview<const scalar_type>(temp.data(), dims.data(), 2));
-    }
 }
 
 // Argument-oriented deserialization
@@ -279,28 +199,22 @@ inline void deserialize(deserializer &ser, const std::string &key,
     internal::scalar_deserialize(ser, key, value);
 }
 
-template <typename T>
-void deserialize(deserializer &ser, const std::string &key,
-                 Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &value)
-{
-    std::array<size_t, 2> shape = {{(size_t)value.cols(), (size_t)value.rows()}};
-    ser.read(key, ndview<T>(value.data(), shape.data(), shape.size()));
-}
-
-template <typename T>
-void deserialize(deserializer &ser, const std::string &key,
-                 Eigen::Matrix<T, Eigen::Dynamic, 1> &value)
-{
-    std::array<size_t, 1> shape = {{(size_t)value.rows()}};
-    ser.read(key, ndview<T>(value.data(), shape.data(), shape.size()));
-}
-
-template <typename T>
-void deserialize(deserializer &ser, const std::string &key,
-                 Eigen::Matrix<T, 1, Eigen::Dynamic> &value)
-{
-    std::array<size_t, 1> shape = {{(size_t)value.cols()}};
-    ser.read(key, ndview<T>(value.data(), shape.data(), shape.size()));
-}
-
 }}
+
+namespace alps { namespace serialization { namespace internal {
+
+/** Helper function for serialization of scalars */
+template <typename T>
+void scalar_serialize(serializer &ser, const std::string &key, T value)
+{
+    ser.write(key, ndview<const T>(&value, nullptr, 0));
+}
+
+/** Helper function for deserialization of scalars */
+template <typename T>
+void scalar_deserialize(deserializer &ser, const std::string &key, T &value)
+{
+    ser.read(key, ndview<T>(&value, nullptr, 0));
+}
+
+}}}

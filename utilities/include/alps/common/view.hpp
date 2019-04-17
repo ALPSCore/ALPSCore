@@ -14,10 +14,13 @@ namespace alps { namespace common {
 using std::size_t;
 
 /**
- * Data view as a thin wrapper around a continuous array.
+ * Data view as a thin wrapper around a C-contiguous array.
  *
- * Basically collects a pointer continuous array together with its size.  Note
- * that the view does not own the `data` pointer.
+ * Basically collects a pointer C-contiguous array together with its size.
+ *
+ * \warning For performance and maximal flexibility, the view does not own
+ *          the `data` pointer.  You need to make sure that the data pointer
+ *          outlives this object.
  */
 template <typename T>
 class view
@@ -49,12 +52,14 @@ private:
 };
 
 /**
- * Data view as a thin wrapper around a continuous multi-dimensional array.
+ * Data view as a thin wrapper around a C-contiguous  multi-dimensional array.
  *
- * Basically collects a pointer continuous array in ROW-MAJOR format (vector,
- * transposed Eigen array, C array etc.) together with its shape.  Note that
- * the view neither owns the `data` pointer nor the `shape` pointer.  Thus it
- * amends `view<T>` with shape information.
+ * Basically collects a pointer contiguous array in ROW-MAJOR format (vector,
+ * transposed Eigen array, C array etc.) together with its shape.
+ *
+ * \warning for performance, this class owns neither the `data` pointer nor
+ *          the `shape` pointer.  You need to make sure that both pointers
+ *          outlive this object.
  */
 template <typename T>
 class ndview

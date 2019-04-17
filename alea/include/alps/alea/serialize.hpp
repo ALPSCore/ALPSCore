@@ -6,21 +6,14 @@
 #pragma once
 
 #include <alps/alea/core.hpp>
+#include <alps/serialization/core.hpp>
+#include <alps/serialization/util.hpp>
+#include <alps/serialization/eigen.hpp>
 
 #include <array>
 
-
 namespace alps { namespace common {
 
-// Serialization methods
-
-
-
-
-
-// Argument-oriented deserialization
-
-
-
+// TODO
 
 }}

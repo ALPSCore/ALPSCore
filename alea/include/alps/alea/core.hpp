@@ -18,7 +18,10 @@
 #include <alps/alea/complex_op.hpp>
 
 #include <alps/common/view.hpp>
-#include <alps/common/serialize.hpp>
+
+#include <alps/serialization/core.hpp>
+#include <alps/serialization/eigen.hpp>
+#include <alps/serialization/util.hpp>
 
 namespace alps { namespace alea {
 
@@ -54,12 +57,12 @@ template<typename T> struct is_alea_result : std::false_type {};
 // import for backwards-compatibility
 template <typename T> using view = alps::common::view<T>;
 template <typename T> using ndview = alps::common::ndview<T>;
-using serializer = alps::common::serializer;
-using deserializer = alps::common::deserializer;
+using serializer = alps::serialization::serializer;
+using deserializer = alps::serialization::deserializer;
 
 namespace internal {
-    using serializer_sentry = alps::common::serializer_sentry;
-    using deserializer_sentry = alps::common::deserializer_sentry;
+    using serializer_sentry = alps::serialization::serializer_sentry;
+    using deserializer_sentry = alps::serialization::deserializer_sentry;
 }
 
 /**
