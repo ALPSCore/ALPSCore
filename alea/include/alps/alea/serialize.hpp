@@ -36,7 +36,7 @@ serialize(serializer &ser, const std::string &key,
         ser.write(key, ndview<const double>(dbl_data, dims.data(), dims.size()));
     } else {
         // Eigen arrays are column-major
-        std::array<size_t, 4> dims = {{(size_t)value.cols(), value.rows(), 2, 2}};
+        std::array<size_t, 4> dims = {{(size_t)value.cols(), (size_t)value.rows(), 2, 2}};
         ser.write(key, ndview<const double>(dbl_data, dims.data(), dims.size()));
     }
 }
