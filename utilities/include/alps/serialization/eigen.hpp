@@ -8,6 +8,8 @@
 #include <Eigen/Dense>
 #include <array>
 
+#include <iostream> //FIXME
+
 #include <alps/serialization/core.hpp>
 
 namespace alps { namespace serialization {
@@ -31,63 +33,60 @@ struct eigen_scalar_is {
 };
 
 template <typename Derived>
+constexpr bool eigen_is_contiguous(const Eigen::PlainObjectBase<Derived> &matrix)
+{
+    // check that unless the dimension is trivial (of size 1), the strides
+    // must be that of a Fortran-contiguous (column-major) array.
+    return (matrix.rows() == 1 || matrix.rowStride() == 1)
+        && (matrix.cols() == 1 || matrix.colStride() == matrix.rows());
+}
+
+template <typename Derived>
 typename std::enable_if<has_primitive_scalar<Derived>::value, void>::type
 serialize(serializer &ser, const std::string &key,
-          const Eigen::MatrixBase<Derived> &value)
+          const Eigen::PlainObjectBase<Derived> &value)
 {
-    typedef Eigen::internal::traits<Derived> traits;
-    typedef typename traits::Scalar scalar_type;
-    typedef Eigen::Matrix<scalar_type, Derived::RowsAtCompileTime,
-                          Derived::ColsAtCompileTime> plain_matrix_type;
+    using scalar_type = eigen_scalar_t<Derived>;
+    using matrix_type = Eigen::Matrix<scalar_type, Eigen::Dynamic, Eigen::Dynamic>;
 
-    // Ensure that evaluated expression will be C-contiguous
-    if ((Derived::MaxRowsAtCompileTime != Eigen::Dynamic
-                    && Derived::MaxRowsAtCompileTime != value.rows())
-            || (Derived::MaxColsAtCompileTime != Eigen::Dynamic
-                    && Derived::MaxColsAtCompileTime != value.cols())
-            || ((Derived::Options & Eigen::RowMajor)
-                    && value.rows() != 1 && value.cols() != 1))
-        serialize(ser, key, plain_matrix_type(value));
+    // Ensure that evaluated expression will be Fortran-contiguous
+    if (!eigen_is_contiguous(value))
+        serialize(ser, key, matrix_type(value));
 
     // Evaluate to matrix or proxy object if already matrix
-    auto temp = value.eval();
-
     if (Derived::ColsAtCompileTime == 1 || Derived::RowsAtCompileTime == 1) {
         // Omit second dimension for simple vectors
-        std::array<size_t, 1> dims = {{(size_t)temp.size()}};
-        ser.write(key, ndview<const scalar_type>(temp.data(), dims.data(), 1));
+        std::array<size_t, 1> dims = {{(size_t)value.size()}};
+        ser.write(key, ndview<const scalar_type>(value.data(), dims.data(), 1));
     } else {
         // Eigen arrays are column-major
-        std::array<size_t, 2> dims = {{(size_t)temp.cols(), (size_t)temp.rows()}};
-        ser.write(key, ndview<const scalar_type>(temp.data(), dims.data(), 2));
+        std::array<size_t, 2> dims = {{(size_t)value.cols(), (size_t)value.rows()}};
+        ser.write(key, ndview<const scalar_type>(value.data(), dims.data(), 2));
     }
 }
 
-template <typename T>
-typename std::enable_if<is_primitive<T>::value, void>::type
+template <typename Derived>
+typename std::enable_if<has_primitive_scalar<Derived>::value, void>::type
 deserialize(deserializer &ser, const std::string &key,
-            Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &value)
+            Eigen::PlainObjectBase<Derived> &value)
 {
-    std::array<size_t, 2> shape = {{(size_t)value.cols(), (size_t)value.rows()}};
-    ser.read(key, ndview<T>(value.data(), shape.data(), shape.size()));
-}
+    using scalar_type = eigen_scalar_t<Derived>;
 
-template <typename T>
-typename std::enable_if<is_primitive<T>::value, void>::type
-deserialize(deserializer &ser, const std::string &key,
-            Eigen::Matrix<T, Eigen::Dynamic, 1> &value)
-{
-    std::array<size_t, 1> shape = {{(size_t)value.rows()}};
-    ser.read(key, ndview<T>(value.data(), shape.data(), shape.size()));
-}
+    // Ensure that evaluated expression will be Fortran-contiguous
+    if (!eigen_is_contiguous(value)) {
+        throw std::runtime_error("Unable to read to array: "
+                                 "it must be Fortran contiguous in memory");
+    }
 
-template <typename T>
-typename std::enable_if<is_primitive<T>::value, void>::type
-deserialize(deserializer &ser, const std::string &key,
-            Eigen::Matrix<T, 1, Eigen::Dynamic> &value)
-{
-    std::array<size_t, 1> shape = {{(size_t)value.cols()}};
-    ser.read(key, ndview<T>(value.data(), shape.data(), shape.size()));
+    if (Derived::ColsAtCompileTime == 1 || Derived::RowsAtCompileTime == 1) {
+        // Omit second dimension for simple vectors
+        std::array<size_t, 1> shape = {{(size_t)value.size()}};
+        ser.read(key, ndview<scalar_type>(value.data(), shape.data(), shape.size()));
+    } else {
+        // Extract underlying buffer and read
+        std::array<size_t, 2> shape = {{(size_t)value.cols(), (size_t)value.rows()}};
+        ser.read(key, ndview<scalar_type>(value.data(), shape.data(), shape.size()));
+    }
 }
 
 }}
