@@ -14,24 +14,29 @@
 
 namespace alps { namespace serialization {
 
+/** Type trait that extracts the underlying scalar type of array */
 template <typename Derived>
 struct eigen_scalar {
     using type = typename Eigen::internal::traits<Derived>::Scalar;
 };
 
+/** Type trait that extracts the underlying scalar type of array */
 template <typename Derived>
 using eigen_scalar_t = typename eigen_scalar<Derived>::type;
 
+/** Underlying Eigen scalar type is a serialization primitive */
 template <typename Derived>
 struct has_primitive_scalar {
     static const bool value = is_primitive<eigen_scalar_t<Derived>>::value;
 };
 
+/** Underlying Eigen scalar type is `T` */
 template <typename Derived, typename T>
 struct eigen_scalar_is {
     static const bool value = std::is_same<eigen_scalar_t<Derived>, T>::value;
 };
 
+/** Returns true if and only if Eigen array is Fortran-contiguous */
 template <typename Derived>
 constexpr bool eigen_is_contiguous(const Eigen::PlainObjectBase<Derived> &matrix)
 {
@@ -41,6 +46,7 @@ constexpr bool eigen_is_contiguous(const Eigen::PlainObjectBase<Derived> &matrix
         && (matrix.cols() == 1 || matrix.colStride() == matrix.rows());
 }
 
+/** Serializes Eigen array or matrix */
 template <typename Derived>
 typename std::enable_if<has_primitive_scalar<Derived>::value, void>::type
 serialize(serializer &ser, const std::string &key,
@@ -65,6 +71,7 @@ serialize(serializer &ser, const std::string &key,
     }
 }
 
+/** Deserializes Eigen array or matrix */
 template <typename Derived>
 typename std::enable_if<has_primitive_scalar<Derived>::value, void>::type
 deserialize(deserializer &ser, const std::string &key,
