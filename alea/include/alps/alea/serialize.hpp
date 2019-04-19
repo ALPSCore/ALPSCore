@@ -6,186 +6,65 @@
 #pragma once
 
 #include <alps/alea/core.hpp>
+#include <alps/serialization/core.hpp>
+#include <alps/serialization/util.hpp>
+#include <alps/serialization/eigen.hpp>
 
 #include <array>
 
-namespace alps { namespace alea { namespace internal {
+namespace alps { namespace serialization {
 
-/**
- * Allows RAII-type use of groups.
- */
-struct serializer_sentry
-{
-    serializer_sentry(serializer &ser, const std::string &group)
-        : ser_(ser)
-        , group_(group)
-    {
-        if (group != "")
-            ser_.enter(group);
-    }
-
-    ~serializer_sentry()
-    {
-        if (group_ != "")
-            ser_.exit();
-    }
-
-private:
-    serializer &ser_;
-    std::string group_;
-};
-
-/**
- * Allows RAII-type use of groups.
- */
-struct deserializer_sentry
-{
-    deserializer_sentry(deserializer &ser, const std::string &group)
-        : ser_(ser)
-        , group_(group)
-    {
-        if (group != "")
-            ser_.enter(group);
-    }
-
-    ~deserializer_sentry()
-    {
-        if (group_ != "")
-            ser_.exit();
-    }
-
-private:
-    deserializer &ser_;
-    std::string group_;
-};
-
-/** Helper function for serialization of scalars */
-template <typename T>
-void scalar_serialize(serializer &ser, const std::string &key, T value)
-{
-    ser.write(key, ndview<const T>(&value, nullptr, 0));
-}
-
-/** Helper function for deserialization of scalars */
-template <typename T>
-T scalar_deserialize(deserializer &ser, const std::string &key)
-{
-    T value;
-    ser.read(key, ndview<T>(&value, nullptr, 0));
-    return value;
-}
-
-/** Helper function for deserialization of scalars */
-template <typename T>
-void scalar_deserialize(deserializer &ser, const std::string &key, T &value)
-{
-    ser.read(key, ndview<T>(&value, nullptr, 0));
-}
-
-}}}
-
-namespace alps { namespace alea {
-
-// Serialization methods
-
-inline void serialize(serializer &ser, const std::string &key, uint32_t value) {
-    internal::scalar_serialize(ser, key, value);
-}
-inline void serialize(serializer &ser, const std::string &key, int32_t value) {
-    internal::scalar_serialize(ser, key, value);
-}
-inline void serialize(serializer &ser, const std::string &key, uint64_t value) {
-    internal::scalar_serialize(ser, key, value);
-}
-inline void serialize(serializer &ser, const std::string &key, int64_t value) {
-    internal::scalar_serialize(ser, key, value);
-}
-inline void serialize(serializer &ser, const std::string &key, double value) {
-    internal::scalar_serialize(ser, key, value);
-}
-inline void serialize(serializer &ser, const std::string &key,
-                      std::complex<double> value) {
-    internal::scalar_serialize(ser, key, value);
-}
-
+/** Serializes Eigen array of complex_op<double> */
 template <typename Derived>
-void serialize(serializer &ser, const std::string &key,
-               const Eigen::MatrixBase<Derived> &value)
+typename std::enable_if<
+        eigen_scalar_is<Derived, alps::alea::complex_op<double>>::value>::type
+serialize(serializer &ser, const std::string &key,
+          const Eigen::PlainObjectBase<Derived> &value)
 {
-    typedef Eigen::internal::traits<Derived> traits;
-    typedef typename traits::Scalar scalar_type;
-    typedef Eigen::Matrix<scalar_type, Derived::RowsAtCompileTime,
-                          Derived::ColsAtCompileTime> plain_matrix_type;
+    using scalar_type = eigen_scalar_t<Derived>;
+    using matrix_type = Eigen::Matrix<scalar_type, Eigen::Dynamic, Eigen::Dynamic>;
 
-    // Ensure that evaluated expression will be continuous
-    if ((Derived::MaxRowsAtCompileTime != Eigen::Dynamic
-                    && Derived::MaxRowsAtCompileTime != value.rows())
-            || (Derived::MaxColsAtCompileTime != Eigen::Dynamic
-                    && Derived::MaxColsAtCompileTime != value.cols())
-            || ((Derived::Options & Eigen::RowMajor)
-                    && value.rows() != 1 && value.cols() != 1))
-        serialize(ser, key, plain_matrix_type(value));
+    // Ensure that evaluated expression will be Fortran-contiguous
+    if (!eigen_is_contiguous(value))
+        serialize(ser, key, matrix_type(value));
 
     // Evaluate to matrix or proxy object if already matrix
-    auto temp = value.eval();
-
+    const double *dbl_data = reinterpret_cast<const double *>(value.data());
     if (Derived::ColsAtCompileTime == 1 || Derived::RowsAtCompileTime == 1) {
         // Omit second dimension for simple vectors
-        std::array<size_t, 1> dims = {{(size_t)temp.size()}};
-        ser.write(key, ndview<const scalar_type>(temp.data(), dims.data(), 1));
+        std::array<size_t, 3> dims = {{(size_t)value.size(), 2, 2}};
+        ser.write(key, ndview<const double>(dbl_data, dims.data(), dims.size()));
     } else {
         // Eigen arrays are column-major
-        std::array<size_t, 2> dims = {{(size_t)temp.cols(), (size_t)temp.rows()}};
-        ser.write(key, ndview<const scalar_type>(temp.data(), dims.data(), 2));
+        std::array<size_t, 4> dims = {{(size_t)value.cols(), (size_t)value.rows(), 2, 2}};
+        ser.write(key, ndview<const double>(dbl_data, dims.data(), dims.size()));
     }
 }
 
-
-// Argument-oriented deserialization
-
-inline void deserialize(deserializer &ser, const std::string &key, uint64_t &value) {
-    internal::scalar_deserialize(ser, key, value);
-}
-inline void deserialize(deserializer &ser, const std::string &key, int64_t &value) {
-    internal::scalar_deserialize(ser, key, value);
-}
-inline void deserialize(deserializer &ser, const std::string &key, uint32_t &value) {
-    internal::scalar_deserialize(ser, key, value);
-}
-inline void deserialize(deserializer &ser, const std::string &key, int32_t &value) {
-    internal::scalar_deserialize(ser, key, value);
-}
-inline void deserialize(deserializer &ser, const std::string &key, double &value) {
-    internal::scalar_deserialize(ser, key, value);
-}
-inline void deserialize(deserializer &ser, const std::string &key,
-                        std::complex<double> &value) {
-    internal::scalar_deserialize(ser, key, value);
-}
-
-template <typename T>
-void deserialize(deserializer &ser, const std::string &key,
-                 Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &value)
+/** Deserializes Eigen array or matrix of complex_op<double> */
+template <typename Derived>
+typename std::enable_if<
+        eigen_scalar_is<Derived, alps::alea::complex_op<double>>::value>::type
+deserialize(deserializer &ser, const std::string &key,
+            Eigen::PlainObjectBase<Derived> &value)
 {
-    std::array<size_t, 2> shape = {{(size_t)value.cols(), (size_t)value.rows()}};
-    ser.read(key, ndview<T>(value.data(), shape.data(), shape.size()));
-}
+    // Ensure that evaluated expression will be Fortran-contiguous
+    if (!eigen_is_contiguous(value)) {
+        throw std::runtime_error("Unable to read to array: "
+                                 "it must be Fortran contiguous in memory");
+    }
 
-template <typename T>
-void deserialize(deserializer &ser, const std::string &key,
-                 Eigen::Matrix<T, Eigen::Dynamic, 1> &value)
-{
-    std::array<size_t, 1> shape = {{(size_t)value.rows()}};
-    ser.read(key, ndview<T>(value.data(), shape.data(), shape.size()));
+    // Evaluate to matrix or proxy object if already matrix
+    double *dbl_data = reinterpret_cast<double *>(value.data());
+    if (Derived::ColsAtCompileTime == 1 || Derived::RowsAtCompileTime == 1) {
+        // Omit second dimension for simple vectors
+        std::array<size_t, 3> shape = {{(size_t)value.size(), 2, 2}};
+        ser.read(key, ndview<double>(dbl_data, shape.data(), shape.size()));
+    } else {
+        // Extract underlying buffer and read
+        std::array<size_t, 4> shape = {{(size_t)value.cols(), (size_t)value.rows(), 2, 2}};
+        ser.read(key, ndview<double>(dbl_data, shape.data(), shape.size()));
+    }
 }
-
-template <typename T>
-void deserialize(deserializer &ser, const std::string &key,
-                 Eigen::Matrix<T, 1, Eigen::Dynamic> &value)
-{
-    std::array<size_t, 1> shape = {{(size_t)value.cols()}};
-    ser.read(key, ndview<T>(value.data(), shape.data(), shape.size()));
-}
-
 
 }}

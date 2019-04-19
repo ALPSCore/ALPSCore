@@ -49,10 +49,6 @@ public:
     {
         do_write(data_view);
     }
-    void write(const std::string &, ndview<const complex_op<double>> data_view) override
-    {
-        do_write(data_view);
-    }
     void write(const std::string &, ndview<const int64_t> data_view) override
     {
         do_write(data_view);
@@ -120,10 +116,6 @@ public:
         do_read(value);
     }
     void read(const std::string &, ndview<std::complex<double>> value) override
-    {
-        do_read(value);
-    }
-    void read(const std::string &, ndview<complex_op<double>> value) override
     {
         do_read(value);
     }

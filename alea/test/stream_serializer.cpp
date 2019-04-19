@@ -30,14 +30,6 @@ public:
         return *this;
     }
 
-    // Store complex_op<T>
-    template<typename T>
-    mock_archive & operator<<(const alps::alea::complex_op<T> &x)
-    {
-        *this << x.rere() << x.reim() << x.imre() << x.imim();
-        return *this;
-    }
-
     // Store ALEA results
     template <typename T>
     typename std::enable_if<alps::alea::is_alea_result<T>::value, mock_archive &>::type
@@ -59,14 +51,6 @@ public:
       extract_fundamental(i);
       x = std::complex<double>(r, i);
       return *this;
-    }
-
-    // Extract complex_op<T>
-    template<typename T>
-    mock_archive & operator>>(alps::alea::complex_op<T> &x)
-    {
-        *this >> x.rere() >> x.reim() >> x.imre() >> x.imim();
-        return *this;
     }
 
     // Extract ALEA results
@@ -107,7 +91,8 @@ TEST(twogauss_serialize_case, mock_archive) {
             << (int64_t)-123456
             << (uint64_t)7890
             << std::complex<double>(0.5,0.75)
-            << alps::alea::complex_op<double>(1, 2, 3, 4);
+            //<< alps::alea::complex_op<double>(1, 2, 3, 4)
+            ;
 
     double x = 0;
     archive >> x;
@@ -121,9 +106,9 @@ TEST(twogauss_serialize_case, mock_archive) {
     std::complex<double> c = 0;
     archive >> c;
     EXPECT_EQ(std::complex<double>(0.5,0.75), c);
-    alps::alea::complex_op<double> co(0, 0, 0, 0);
-    archive >> co;
-    EXPECT_EQ(alps::alea::complex_op<double>(1, 2, 3, 4), co);
+    //alps::alea::complex_op<double> co(0, 0, 0, 0);
+    //archive >> co;
+    //EXPECT_EQ(alps::alea::complex_op<double>(1, 2, 3, 4), co);
 }
 
 template <typename Acc>

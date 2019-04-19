@@ -306,7 +306,8 @@ void deserialize(deserializer &s, const std::string &key, cov_result<T,Str> &sel
     deserialize(s, "count2", self.store_->count2_);
     s.enter("mean");
     deserialize(s, "value", self.store_->data_);
-    s.read("error", ndview<var_type>(nullptr, &new_size, 1)); // discard
+    Eigen::Matrix<var_type, Eigen::Dynamic, 1> discard(self.size());
+    deserialize(s, "error", discard);
     s.exit();
     deserialize(s, "cov", self.store_->data2_);
 }
