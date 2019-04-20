@@ -28,7 +28,9 @@ serialize(serializer &ser, const std::string &key,
     if (!eigen_is_contiguous(value))
         serialize(ser, key, matrix_type(value));
 
-    // Evaluate to matrix or proxy object if already matrix
+    // complex_op<...> is a wrapper around double[2][2].  In order to convert
+    // it to serializable object, we first cast it to doubles, and then add
+    // two further dimensions.
     const double *dbl_data = reinterpret_cast<const double *>(value.data());
     if (Derived::ColsAtCompileTime == 1 || Derived::RowsAtCompileTime == 1) {
         // Omit second dimension for simple vectors
@@ -54,7 +56,9 @@ deserialize(deserializer &ser, const std::string &key,
                                  "it must be Fortran contiguous in memory");
     }
 
-    // Evaluate to matrix or proxy object if already matrix
+    // complex_op<...> is a wrapper around double[2][2].  In order to convert
+    // it to serializable object, we first cast it to doubles, and then add
+    // two further dimensions.
     double *dbl_data = reinterpret_cast<double *>(value.data());
     if (Derived::ColsAtCompileTime == 1 || Derived::RowsAtCompileTime == 1) {
         // Omit second dimension for simple vectors
