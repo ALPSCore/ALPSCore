@@ -25,7 +25,7 @@ Installing pre-packaged ALPSCore
 
  2. Linux:
 
-    a. [Debian package](https://github.com/cmsi/ma-alpscore.)
+    a. [Debian package](https://github.com/cmsi/ma-alpscore)
 
     b. [Gentoo packaging](https://github.com/ALPSCore/packaging/blob/master/gentoo)
 
