@@ -20,11 +20,19 @@ class hdf5_serializer
     , public deserializer
 {
 public:
+    ///constructor with explicit path
     hdf5_serializer(hdf5::archive &ar, const std::string &path)
         : archive_(&ar)
         , path_(path)
         , group_()
     { }
+    ///constructor with archive and path implicit in archive context
+    hdf5_serializer(hdf5::archive &ar)
+        : archive_(&ar)
+        , path_(ar.get_context())
+        , group_()
+    { }
+
 
     // Common methods
 
