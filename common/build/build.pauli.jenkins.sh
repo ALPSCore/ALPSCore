@@ -92,7 +92,7 @@ function run_cmake() {
 }
 
 function run_make() {
-    make -j8 VERBOSE=1
+    make -j8
 }
 
 function run_test() {
