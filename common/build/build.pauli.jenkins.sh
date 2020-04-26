@@ -15,6 +15,9 @@ BASE_DIR=$(/bin/pwd)
 function setup_environment() {
     [[ $build_environment_set == 1 ]] && return 0
     
+    # Jenkins doesn't seem to load environment by default
+    . /etc/profile
+    
     module purge
     module add cmake
     case $COMPILER in
