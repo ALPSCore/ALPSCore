@@ -14,44 +14,48 @@ BASE_DIR=$(/bin/pwd)
 # This function sets build environment unless it's already set (as determined by env. var `build_environment_set`)
 function setup_environment() {
     [[ $build_environment_set == 1 ]] && return 0
-    
+
     # Jenkins doesn't seem to load environment by default
     . /etc/profile
-    
+
     module purge
-    module add cmake
+    module add cmake/3.15.4 eigen3/3.3.7
+
+    # Replace '_' by '/'
+    $_COMPILER_MODULE="${COMPILER/_/'/'}"
+
     case $COMPILER in
-        gcc_4.8.5) 
-            export CC=$(which gcc)
-            export CXX=$(which g++)
-            ;;
         gcc_5.4.0)
-            module add gnu/5.4.0
+            module add ${_COMPILER_MODULE} hdf5/${_COMPILER_MODULE}/1.10.5 boost/${_COMPILER_MODULE}/1.65.0
             export CC=$(which gcc)
             export CXX=$(which g++)
             ;;
-        clang_3.4.2) 
+        gcc_7.3.0)
+            module add ${_COMPILER_MODULE} hdf5/${_COMPILER_MODULE}/1.10.5 boost/${_COMPILER_MODULE}/1.65.0
+            export CC=$(which gcc)
+            export CXX=$(which g++)
+            ;;
+        llvm_5.0.1)
+            module add ${_COMPILER_MODULE} hdf5/${_COMPILER_MODULE}/1.10.5 boost/${_COMPILER_MODULE}/1.65.0
             export CC=$(which clang)
             export CXX=$(which clang++)
             ;;
-        clang_5.0.1)
-            module add llvm5/5.0.1
-            export CC=$(which clang)
-            export CXX=$(which clang++)
+        intel_18.0.5.274)
+            module add ${_COMPILER_MODULE} hdf5/${_COMPILER_MODULE}/1.10.5 boost/${_COMPILER_MODULE}/1.65.0
+            export CC=$(which icc)
+            export CXX=$(which icpc)
             ;;
-        intel_18.0.5)
-            . /opt/intel/bin/compilervars.sh intel64
-            # we have to load GNU CC before OpenMPI, but will use Intel
-            [[ $MPI_VERSION = OpenMPI ]] && module add gnu/5.4.0 openmpi/1.10.7
-            export CC=/opt/intel/bin/icc
-            export CXX=/opt/intel/bin/icpc
+        intel_19.0.2.187)
+            module add ${_COMPILER_MODULE} hdf5/${_COMPILER_MODULE}/1.10.5 boost/${_COMPILER_MODULE}/1.65.0
+            export CC=$(which icc)
+            export CXX=$(which icpc)
             ;;
-        *) 
+        *)
             echo "Unsupported compiler passed via COMPILER='$COMPILER'; valid values are:" 2>&1
-            echo "gcc_4.8.5 gcc_5.4.0 clang_3.4.2 clang_5.0.1 intel_18.0.5"
+            echo "gcc_5.4.0 gcc_7.3.0 llvm_5.0.1 intel_18.0.5.274 intel_19.0.2.187"
             exit 1
             ;;
-        
+
     esac
 
     case $MPI_VERSION in
@@ -60,7 +64,7 @@ function setup_environment() {
             ;;
         OpenMPI)
             ENABLE_MPI=ON
-            module add openmpi/1.10.7
+            module add openmpi/${_COMPILER_MODULE}/3.1.4
             ;;
         *)
             echo "Unsupported MPI version passed via MPI_VERSION='$MPI_VERSION'; valid values are:" 2>&1

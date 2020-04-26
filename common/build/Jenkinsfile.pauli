@@ -19,7 +19,7 @@ def sub_pipe(name, compiler, mpilib) {
             stash(name: name)
             node("master-node") {
                 unstash(name: name)
-                
+
                 stage("Config") {
                     echo "Config step with compiler=${compiler} mpilib=${mpilib}"
                     call_phase('cmake', name, compiler, mpilib)
@@ -35,7 +35,7 @@ def sub_pipe(name, compiler, mpilib) {
                     call_phase('test', name, compiler, mpilib)
                     junit "${build_dir_name(name)}/*/test/*.xml"
                 }
-                
+
                 stage("Install")  {
                     echo "Install step with compiler=${compiler} mpilib=${mpilib}"
                     call_phase('install', name, compiler, mpilib)
@@ -57,7 +57,7 @@ pipeline {
     }
 
     parameters {
-        string(name: 'COMPILERS', defaultValue: 'gcc_4.8.5,gcc_5.4.0,clang_3.4.2,clang_5.0.1,intel_18.0.5', description: 'Compilers to use')
+        string(name: 'COMPILERS', defaultValue: 'gcc_5.4.0,gcc_7.3.0,llvm_5.0.1,intel_18.0.5.274,intel_19.0.2.187', description: 'Compilers to use')
         string(name: 'MPI_VERSIONS', defaultValue: 'MPI_OFF,OpenMPI', description: 'MPI versions to link with')
     }
 
@@ -71,10 +71,10 @@ pipeline {
                         for (mpilib in params.MPI_VERSIONS.tokenize(',')) {
 
                             // Filter out combinations that don't work with MPI
-                            if (comp=="gcc_5.4.0" || comp=="intel_18.0.5" || mpilib=="MPI_OFF") {
-                                key="compiler=${comp}_mpilib=${mpilib}"
-                                projects[key]=sub_pipe(key, comp, mpilib)
-                            }
+                            //if (comp=="gcc_5.4.0" || comp=="intel_18.0.5" || mpilib=="MPI_OFF") {
+                            //    key="compiler=${comp}_mpilib=${mpilib}"
+                            //    projects[key]=sub_pipe(key, comp, mpilib)
+                            //}
 
                         }
                     }
@@ -119,6 +119,6 @@ pipeline {
                      compressLog: true,
                      body: "ALPSCore build status changed"
         }
-        
+
     }
 }
