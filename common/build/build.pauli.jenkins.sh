@@ -22,7 +22,7 @@ function setup_environment() {
     module add cmake/3.15.4 eigen3/3.3.7
 
     # Replace '_' by '/'
-    $_COMPILER_MODULE="${COMPILER/_/'/'}"
+    $_COMPILER_MODULE="${COMPILER/_//}"
 
     case $COMPILER in
         gcc_5.4.0)
