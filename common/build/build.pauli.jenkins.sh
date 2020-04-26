@@ -73,8 +73,6 @@ function setup_environment() {
    	    ;;
     esac
 
-    export BOOST_ROOT=/opt/ohpc/pub/libs/gnu/openmpi/boost/1.66.0
-
     [[ $BUILD_DIR ]] || BUILD_DIR="build.tmp/${COMPILER}_${MPI_VERSION}"
     mkdir -pv "$BUILD_DIR"
     cd "$BUILD_DIR"
@@ -89,7 +87,6 @@ function run_cmake() {
           -DCMAKE_BUILD_TYPE=Release \
           -DENABLE_MPI=${ENABLE_MPI} \
           -DTestXMLOutput=TRUE \
-          -DEIGEN3_INCLUDE_DIR=$HOME/.local/packages/eigen-3.3.4 \
           -DDocumentation=OFF \
           "$BASE_DIR"
 }
