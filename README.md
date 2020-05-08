@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/ALPSCore/ALPSCore.svg?branch=master)](https://travis-ci.org/ALPSCore/ALPSCore)
+[![Build Status](https://pauli.physics.lsa.umich.edu:8443/buildStatus/icon?job=public_projects%2Falpscore.old%2Fmaster)](https://pauli.physics.lsa.umich.edu:8443/job/public_projects/job/alpscore.old/job/master/)
 
 The ALPSCore project, based on the ALPS (Algorithms and Libraries for Physics Simulations) project, provides generic algorithms and utilities for physics problems. It strives to increase software reuse in the physics community.
 
