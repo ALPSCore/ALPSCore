@@ -296,10 +296,10 @@ namespace alps {
          * @param rhs - right hand side tensor
          * @return result of two tensor multiplication
          */
-        template<typename S>
-        typename std::enable_if < std::is_same < S, tensorType >::value, tensorType >::type operator*(const S& rhs) const {
-          tensorType x(*this);
-          return x*=rhs;
+        template<typename S, typename Ct>
+        tensor < decltype(S{} + T{}), Dim > operator*(const tensor_base < S, Dim, Ct > &rhs) {
+          tensor < decltype(S{} + T{}), Dim > x(*this);
+          return (x *= rhs);
         };
 
         /**
