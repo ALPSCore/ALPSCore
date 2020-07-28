@@ -473,6 +473,57 @@ namespace alps {
           return MatrixMap < T >(&storage().data(0), shape_[0], shape_[1]);
         };
 
+        ConstMatrixMap < T > matrix() const {
+          static_assert(Dim == 2, "Can not return Eigen matrix view for not 2D tensor.");
+          return ConstMatrixMap < T >(&storage().data(0), shape_[0], shape_[1]);
+        };
+
+        /**
+         * @return Eigen vector representation for 1D Tensor
+         */
+        MatrixMap < T, 1, Eigen::Dynamic > vector() {
+          static_assert(Dim == 1, "Can not return Eigen vector view for not 1D tensor.");
+          return MatrixMap < T, 1, Eigen::Dynamic >(&storage().data(0), size());
+        };
+
+        ConstMatrixMap < T, 1, Eigen::Dynamic > vector() const {
+          static_assert(Dim == 1, "Can not return Eigen vector view for not 1D tensor.");
+          return ConstMatrixMap < T, 1, Eigen::Dynamic >(&storage().data(0), size());
+        };
+
+        Eigen::Map <Eigen::Matrix < T, Eigen::Dynamic, 1, Eigen::ColMajor > > cvector() {
+          static_assert(Dim == 1, "Can not return Eigen vector view for not 1D tensor.");
+          return Eigen::Map <Eigen::Matrix < T, Eigen::Dynamic, 1, Eigen::ColMajor > >(&storage().data(0), size());
+        };
+
+        Eigen::Map <const Eigen::Matrix < T, Eigen::Dynamic, 1, Eigen::ColMajor > > cvector() const {
+          static_assert(Dim == 1, "Can not return Eigen vector view for not 1D tensor.");
+          return Eigen::Map <const Eigen::Matrix < T, Eigen::Dynamic, 1, Eigen::ColMajor > >(&storage().data(0), size());
+        };
+
+        /**
+         * @return Eigen array representation for 1D and 2D Tensor
+         */
+        template<size_t M = Dim>
+        typename std::enable_if< M == 1, Eigen::Map < Eigen::Array < T, 1, Eigen::Dynamic > > >::type array() {
+           return Eigen::Map < Eigen::Array < T, 1, Eigen::Dynamic > >(&storage().data(0), size());
+        };
+
+        template<size_t M = Dim>
+        typename std::enable_if< M == 1, Eigen::Map < const Eigen::Array < T, 1, Eigen::Dynamic > > >::type array() const {
+          return Eigen::Map < const Eigen::Array < T, 1, Eigen::Dynamic > >(&storage().data(0), size());
+        };
+
+        template<size_t M = Dim>
+        typename std::enable_if< M == 2, Eigen::Map < Eigen::Array < T, Eigen::Dynamic, Eigen::Dynamic > > >::type array() {
+          return Eigen::Map < Eigen::Array < T, Eigen::Dynamic, Eigen::Dynamic > >(&storage().data(0), shape_[0], shape_[1]);
+        };
+
+        template<size_t M = Dim>
+        typename std::enable_if< M == 2, Eigen::Map < const Eigen::Array < T, Eigen::Dynamic, Eigen::Dynamic > > >::type array() const {
+          return Eigen::Map < const Eigen::Array < T, Eigen::Dynamic, Eigen::Dynamic > >(&storage().data(0), shape_[0], shape_[1]);
+        };
+
         /// sizes for each dimension
         const std::array < size_t, Dim > &shape() const { return shape_; };
 
