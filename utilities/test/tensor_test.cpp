@@ -540,3 +540,33 @@ TEST(TensorTest, Negate) {
     }
   }
 }
+
+TEST(TensorTest, EigenView) {
+  using Matrix = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+
+  size_t N = 10;
+
+  tensor<double, 3> A(N, N, N);
+  for (size_t i = 0; i < N; ++i) {
+    A(i).matrix() = Matrix::Random(N, N);
+  }
+  const tensor<double, 2> B = A(0);
+  auto X = B.matrix();
+
+  for (int i = 0; i < N; ++i) {
+    for (int j = 0; j < N; ++j) {
+      ASSERT_EQ(X(i, j), A(0, i, j));
+    }
+  }
+
+  auto Dim2 = B.array() * B.array();
+  auto ViewDim2 = A(0).array() * A(0).array();
+  ASSERT_DOUBLE_EQ((Dim2 - ViewDim2).maxCoeff(), 0.);
+
+  auto V1 = A(0, 0).vector();
+  const tensor<double, 1> C = A(0, 0);
+  auto V2 = C.vector();
+  for (int i = 0; i < N; ++i) {
+    ASSERT_DOUBLE_EQ(V1(i), V2(i));
+  }
+}
