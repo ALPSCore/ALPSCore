@@ -297,8 +297,10 @@ namespace alps {
          * @return result of two tensor multiplication
          */
         template<typename S, typename Ct>
-        tensor < decltype(S{} + T{}), Dim > operator*(const tensor_base < S, Dim, Ct > &rhs) const {
-          tensor < decltype(S{} + T{}), Dim > x(*this);
+        typename std::enable_if<
+          std::is_convertible<S, T>::value || std::is_convertible<T, S>::value,
+          tensor < typename std::conditional< std::is_convertible<T, S>::value, S, T>::type, Dim > >::type operator*(const tensor_base < S, Dim, Ct > &rhs) const {
+          tensor < typename std::conditional< std::is_convertible<T, S>::value, S, T>::type, Dim > x(*this);
           return (x *= rhs);
         };
 
@@ -317,9 +319,7 @@ namespace alps {
          * Inplace tensor multiplication
          */
         template<typename S, typename Ct>
-        typename std::enable_if <
-          std::is_same < S, T >::value || std::is_same < T, std::complex < double>>::value
-          || std::is_same < T, std::complex < float>>::value, tType & >::type operator*=(const tensor_base < S, Dim, Ct > &rhs) {
+        typename std::enable_if < std::is_convertible < S, T >::value, tType & >::type operator*=(const tensor_base < S, Dim, Ct > &rhs) {
           Eigen::Map < Eigen::Array < T, 1, Eigen::Dynamic > > M1(&storage_.data(0), storage_.size());
           Eigen::Map < const Eigen::Array < S, 1, Eigen::Dynamic > > M2(&rhs.storage().data(0), rhs.storage().size());
           M1*=M2;
