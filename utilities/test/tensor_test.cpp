@@ -540,3 +540,69 @@ TEST(TensorTest, Negate) {
     }
   }
 }
+
+TEST(TensorTest, EigenView) {
+  using Matrix = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+  using Vector = Eigen::Matrix<double, 1, Eigen::Dynamic, Eigen::RowMajor>;
+  using Array = Eigen::Array <double, Eigen::Dynamic, Eigen::Dynamic>;
+
+  size_t N = 10;
+
+  tensor<double, 3> A(N, N, N);
+  for (size_t i = 0; i < N; ++i) {
+    A(i).matrix() = Matrix::Random(N, N);
+  }
+  const tensor<double, 2> B = A(0);
+  auto X = B.matrix();
+
+  for (int i = 0; i < N; ++i) {
+    for (int j = 0; j < N; ++j) {
+      ASSERT_EQ(X(i, j), A(0, i, j));
+    }
+  }
+
+  Array Dim2 = B.array() * B.array();
+  Array ViewDim2 = A(0).array() * A(0).array();
+  ASSERT_DOUBLE_EQ((Dim2 - ViewDim2).maxCoeff(), 0.);
+
+  Vector V1 = A(0, 0).vector();
+  const tensor<double, 1> C = A(0, 0);
+  Vector V2 = C.vector();
+  for (int i = 0; i < N; ++i) {
+    ASSERT_DOUBLE_EQ(V1(i), V2(i));
+  }
+}
+
+TEST(TensorTest, TestTensorMult) {
+  size_t N = 10;
+  tensor<double, 2> a(N, N);
+  tensor<float, 2> b(N, N);
+  tensor<std::complex<double>, 2> c(N, N);
+  tensor<std::complex<double>, 2> d(N, N);
+
+  Eigen::MatrixXd a_ref = Eigen::MatrixXd::Random(N, N);
+  Eigen::MatrixXf b_ref = Eigen::MatrixXf::Random(N, N);
+  Eigen::MatrixXcd c_ref = Eigen::MatrixXcd::Random(N, N);
+
+  a.matrix() = a_ref;
+  b.matrix() = b_ref;
+  c.matrix() = c_ref;
+  d.matrix() = c_ref;
+
+  tensor<double, 2> ab = a * b;
+  tensor<std::complex<double>, 2> ac = a * c;
+  tensor<std::complex<double>, 2> bd = b * d;
+  tensor<std::complex<double>, 2> cd = c * d;
+
+  for(int i = 0; i < N; ++i) {
+    for(int j = 0; j < N; ++j) {
+      ASSERT_NEAR(ab(i, j), a_ref(i, j) * b_ref(i, j), 1e-5);
+      ASSERT_NEAR(ac(i, j).real(), (a_ref(i, j) * c_ref(i, j)).real(), 1e-12);
+      ASSERT_NEAR(ac(i, j).imag(), (a_ref(i, j) * c_ref(i, j)).imag(), 1e-12);
+      ASSERT_NEAR(bd(i, j).real(), (double(b_ref(i, j)) * c_ref(i, j)).real(), 1e-5);
+      ASSERT_NEAR(bd(i, j).imag(), (double(b_ref(i, j)) * c_ref(i, j)).imag(), 1e-5);
+      ASSERT_NEAR(cd(i, j).real(), (c_ref(i, j) * c_ref(i, j)).real(), 1e-12);
+      ASSERT_NEAR(cd(i, j).imag(), (c_ref(i, j) * c_ref(i, j)).imag(), 1e-12);
+    }
+  }
+}
