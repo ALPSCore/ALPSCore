@@ -92,7 +92,6 @@ TEST(TensorTest, TestCopyAssignments) {
   Eigen::MatrixXd M1 = Eigen::MatrixXd::Random(N, N);
   Eigen::MatrixXcd M2 = Eigen::MatrixXcd::Random(N, N);
   tensor<double, 2> T1(N, N);
-  tensor<double, 2> T3(T1);
   tensor<double, 2> T2(N, N);
   for(size_t i = 0; i< N; ++i) {
     for (size_t j = 0; j < N; ++j) {
@@ -107,6 +106,23 @@ TEST(TensorTest, TestCopyAssignments) {
   V1(0,0) = -15.0;
   V2 = V1;
   ASSERT_EQ(T2(0,0), -15.0);
+}
+
+TEST(TensorTest, TestMoveAssignments) {
+  size_t N = 10;
+  Eigen::MatrixXd M1 = Eigen::MatrixXd::Random(N, N);
+  Eigen::MatrixXd M2 = Eigen::MatrixXd::Random(N, N);
+  tensor<double, 2> T1(N, N);
+  tensor<double, 2> T2(N, N);
+  for(size_t i = 0; i< N; ++i) {
+    for (size_t j = 0; j < N; ++j) {
+      T1(i,j) = M1(i,j);
+      T2(i,j) = M2(i,j);
+    }
+  }
+  T2 = std::move(T1);
+  ASSERT_EQ(T1.size(), 0ul);
+  ASSERT_EQ(T2.matrix(), M1);
 }
 
 TEST(TensorTest, TestSlices) {
