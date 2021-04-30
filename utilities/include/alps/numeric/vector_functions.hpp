@@ -18,9 +18,6 @@
 #include <boost/accumulators/numeric/functional/vector.hpp> 
 #include <boost/accumulators/numeric/functional.hpp> 
 
-#include <boost/bind.hpp>
-#include <boost/lambda/bind.hpp>
-#include <boost/lambda/lambda.hpp>
 #include <boost/throw_exception.hpp>
 
 
@@ -137,13 +134,13 @@ namespace alps {
         /// Sum of a scalar and a vector
         template<typename T>
         std::vector<T> operator + (T const & scalar, std::vector<T> rhs) {
-            std::transform(rhs.begin(), rhs.end(), rhs.begin(), bind1st(std::plus<T>(), scalar));
+            std::transform(rhs.begin(), rhs.end(), rhs.begin(), [&](const T & vec_val) { return vec_val + scalar; });
             return rhs;
         }
         /// Sum of a vector and a scalar
         template<typename T>
         std::vector<T> operator + (std::vector<T> lhs, T const & scalar) {
-            std::transform(lhs.begin(), lhs.end(), lhs.begin(), bind2nd(std::plus<T>(), scalar));
+            std::transform(lhs.begin(), lhs.end(), lhs.begin(), [&](const T & vec_val) { return vec_val + scalar; });
             return lhs;
         }
 
@@ -182,7 +179,7 @@ namespace alps {
         /// Returns a vector with elements inverted and scaled by a scalar
         template<typename T>
         std::vector<T> operator / (T const & scalar, std::vector<T> rhs) {
-            std::transform(rhs.begin(), rhs.end(), rhs.begin(), scalar / boost::lambda::_1);
+            std::transform(rhs.begin(), rhs.end(), rhs.begin(), [&] (const T& vec_val) {return scalar / vec_val;});
             return rhs;
         }
 
@@ -212,7 +209,7 @@ namespace alps {
 
         template<typename T, typename U> std::vector<T> pow(std::vector<T> vec, U index) {
             using std::pow;
-            std::transform(vec.begin(), vec.end(), vec.begin(), boost::lambda::bind<T>(static_cast<T (*)(T, T)>(&pow), boost::lambda::_1, index));
+            std::transform(vec.begin(), vec.end(), vec.begin(), [&] (const T & vec_val) {return std::pow(vec_val, index); });
             return vec;
         }
 

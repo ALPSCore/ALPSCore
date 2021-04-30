@@ -429,7 +429,7 @@ namespace alps {
             piecewise_polynomial<T> pp_copy(pp);
             std::transform(
                     pp_copy.coeff_.origin(), pp_copy.coeff_.origin() + pp_copy.coeff_.num_elements(),
-                    pp_copy.coeff_.origin(), std::bind1st(std::multiplies<T>(), scalar)
+                    pp_copy.coeff_.origin(), [&] (const T & pp_val) {return pp_val * scalar;}
 
             );
             return pp_copy;
