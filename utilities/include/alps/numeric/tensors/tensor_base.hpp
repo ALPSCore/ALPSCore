@@ -351,7 +351,7 @@ namespace alps {
          * Negate tensor
          */
         tensor_base < T, Dim, Container > operator-() const {
-          return *this * T(-1.0);
+          return tensor_base < T, Dim, Container >(*this) *= T(-1.0);
         };
 
         /**

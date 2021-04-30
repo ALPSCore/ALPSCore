@@ -10,8 +10,6 @@
 #include <alps/config.hpp>
 #include <alps/utilities/stacktrace.hpp>
 
-#include <boost/bind.hpp>
-
 #include <string>
 #include <complex>
 #include <typeinfo>
