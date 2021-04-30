@@ -54,15 +54,12 @@ namespace alps {
         };
         /// Move assignment
         data_storage<T, Cont>& operator=(data_storage<T, Cont>&& rhs) {
-          if(size() != rhs.size()) {
-            resize(rhs.size());
-          }
-          std::copy(rhs.data(), rhs.data() + rhs.size(), data());
+          data_ = std::move(rhs.data_);
           return *this;
         };
 
         /**
-         * General tensor assignment 
+         * General tensor assignment
          *
          * @tparam T2  - rhs value type
          * @tparam C2  - rhs storage container type
