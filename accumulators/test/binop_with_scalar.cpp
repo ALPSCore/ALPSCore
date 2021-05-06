@@ -19,6 +19,16 @@
 using namespace alps::accumulators::testing;
 
 
+template<typename ScalarType>
+struct tolerance {
+  static const ScalarType value = 1e-8;
+};
+
+template<>
+struct tolerance<float> {
+  static const float value = 1.1e-4;
+};
+
 /// Google Test Fixture: argument is acc_vs_pair_gen<A,T> to test (A<vector<T>> op A<T>)
 template <typename TGEN>
 class AccumulatorVSBinaryOpTest : public ::testing::Test {
@@ -57,7 +67,7 @@ class AccumulatorVSBinaryOpTest : public ::testing::Test {
                                                                                                     \
         ASSERT_EQ(vv_mean.size(),vs_mean.size()) << "Vector means sizes differ!";                   \
         for (size_t i=0; i<vv_mean.size(); ++i) {                                                      \
-            EXPECT_NEAR(vv_mean[i], vs_mean[i], 1E-8) << "Vector means differ at element " << i;    \
+            EXPECT_NEAR(vv_mean[i], vs_mean[i], tolerance<scalar_data_type>::value) << "Vector means differ at element " << i;    \
         }                                                                                           \
                                                                                                     \
         /* do not test error if it is not implemented for the accumulator */                        \
@@ -68,7 +78,7 @@ class AccumulatorVSBinaryOpTest : public ::testing::Test {
                                                                                                     \
         ASSERT_EQ(vv_err.size(),vs_err.size()) << "Vector errors sizes differ!";                    \
         for (size_t i=0; i<vv_err.size(); ++i) {                                                       \
-            EXPECT_NEAR(vv_err[i], vs_err[i], 1E-8) << "Vector errors differ at element " << i;     \
+            EXPECT_NEAR(vv_err[i], vs_err[i], tolerance<scalar_data_type>::value) << "Vector errors differ at element " << i;     \
         }                                                                                           \
     }
 
