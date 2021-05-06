@@ -21,12 +21,12 @@ using namespace alps::accumulators::testing;
 
 template<typename ScalarType>
 struct tolerance {
-  static const ScalarType value = 1e-8;
+  static constexpr ScalarType value = 1e-8;
 };
 
 template<>
 struct tolerance<float> {
-  static const float value = 1.1e-4;
+  static constexpr float value = 1.1e-4;
 };
 
 /// Google Test Fixture: argument is acc_vs_pair_gen<A,T> to test (A<vector<T>> op A<T>)
