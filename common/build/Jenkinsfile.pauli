@@ -91,30 +91,30 @@ pipeline {
         }
         unstable {
             echo 'DEBUG: Build is unstable'
-            emailext to: 'galexv+jenkins.status@umich.edu',
-                     recipientProviders: [brokenTestsSuspects(), culprits(), requestor()],
-                     subject: 'ALPSCore: Jenkins build is unstable',
-                     attachLog: true,
-                     compressLog: true,
-                     body: "ALPSCore build is unstable: see attached log"
+            //emailext to: 'galexv+jenkins.status@umich.edu',
+            //         recipientProviders: [brokenTestsSuspects(), culprits(), requestor()],
+            //         subject: 'ALPSCore: Jenkins build is unstable',
+            //         attachLog: true,
+            //         compressLog: true,
+            //         body: "ALPSCore build is unstable: see attached log"
         }
         failure {
             echo 'DEBUG: Build failed'
-            emailext to: 'galexv+jenkins.status@umich.edu',
-                     recipientProviders: [brokenTestsSuspects(), culprits(), requestor()],
-                     subject: 'ALPSCore: Jenkins build has failed',
-                     attachLog: true,
-                     compressLog: true,
-                     body: "ALPSCore build has failed: see attached log"
+            //emailext to: 'galexv+jenkins.status@umich.edu',
+            //         recipientProviders: [brokenTestsSuspects(), culprits(), requestor()],
+            //         subject: 'ALPSCore: Jenkins build has failed',
+            //         attachLog: true,
+            //         compressLog: true,
+            //         body: "ALPSCore build has failed: see attached log"
         }
         changed {
             echo 'DEBUG: Build status changed'
-            emailext to: 'galexv+jenkins.status@umich.edu',
-                     recipientProviders: [brokenTestsSuspects(), culprits(), requestor()],
-                     subject: 'ALPSCore: Jenkins build status changed',
-                     attachLog: true,
-                     compressLog: true,
-                     body: "ALPSCore build status changed"
+            //emailext to: 'galexv+jenkins.status@umich.edu',
+            //         recipientProviders: [brokenTestsSuspects(), culprits(), requestor()],
+            //         subject: 'ALPSCore: Jenkins build status changed',
+            //         attachLog: true,
+            //         compressLog: true,
+            //         body: "ALPSCore build status changed"
         }
 
     }
