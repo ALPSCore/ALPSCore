@@ -57,7 +57,6 @@ namespace alps {
           data_ = std::move(rhs.data_);
           return *this;
         };
-
         /**
          * General tensor assignment
          *

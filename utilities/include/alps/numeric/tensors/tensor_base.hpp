@@ -207,17 +207,50 @@ namespace alps {
         template<typename T2, typename St, typename = std::enable_if<std::is_same<Container, storageType>::value, void >>
         tensor_base(tensor_base<T2, Dim, St> &&rhs) noexcept: storage_(rhs.storage()), shape_(rhs.shape()), acc_sizes_(rhs.acc_sizes()) {}
 
-        /// Different type assignment
-        template<typename T2, typename St>
-        tensor_base < T, Dim, Container > &operator=(const tensor_base < T2, Dim, St> &rhs){
-          assert(size()==rhs.size());
+        // Different type assignments
+
+        // assign when lhs and rhs containers are same
+        /// Copy assignment
+        tensor_base < T, Dim, Container > & operator=(const tensor_base < T, Dim, Container > &rhs) {
+          shape_ = rhs.shape();
+          acc_sizes_ = rhs.acc_sizes();
           storage_ = rhs.storage();
           return *this;
-        };
-        /// Copy assignment
-        tensor_base < T, Dim, Container > &operator=(const tensor_base < T, Dim, Container > &rhs) = default;
+        }
         /// Move assignment
-        tensor_base < T, Dim, Container > &operator=(tensor_base < T, Dim, Container > &&rhs) = default;
+        tensor_base < T, Dim, Container > & operator=(tensor_base < T, Dim, Container > &&rhs) {
+          shape_ = std::move(rhs.shape());
+          acc_sizes_ = std::move(rhs.acc_sizes());
+          storage_ = std::move(rhs.storage());
+          return *this;
+        }
+
+        // assignment when lhs and rhs containers are different or rhs has different scalar value type
+        /// Copy assignment
+        template<typename T2, typename Ct2>
+        typename std::enable_if<std::is_convertible<T2, T>::value && ( ( !std::is_same<T2, T>::value && 
+                                std::is_same<Container, Ct2>::value ) || (!std::is_same<Container, Ct2>::value) ),
+                                tensor_base < T, Dim, Container > >::type &
+        operator=(const tensor_base < T2, Dim, Ct2 > &rhs) {
+          shape_ = rhs.shape();
+          acc_sizes_ = rhs.acc_sizes();
+          reshape(shape_);
+          std::copy(rhs.storage().data(), rhs.storage().data() + rhs.storage().size(), storage_.data());
+          return *this;
+        }
+        /// Move assignment
+        template<typename T2, typename Ct2>
+        typename std::enable_if<std::is_convertible<T2, T>::value && ( ( !std::is_same<T2, T>::value && 
+                                std::is_same<Container, Ct2>::value ) || (!std::is_same<Container, Ct2>::value) ),
+                                tensor_base < T, Dim, Container > >::type &
+        operator=(tensor_base < T2, Dim, Ct2 > &&rhs) {
+          shape_ = rhs.shape();
+          acc_sizes_ = rhs.acc_sizes();
+          reshape(shape_);
+          std::copy(rhs.storage().data(), rhs.storage().data() + rhs.storage().size(), storage_.data());
+          return *this;
+        }
+
         /// compare tensors
         template<typename T2, typename St>
         bool operator==(const tensor_base<T2, Dim, St>& rhs) const {
@@ -283,10 +316,10 @@ namespace alps {
          * @return New tensor equal to the current tensor multiplied by scalar
          */
         template<typename S>
-        typename std::enable_if < !std::is_same < S, tensorType >::value, tensor_base< decltype(S{} + T{}), Dim,
+        typename std::enable_if < !std::is_same < S, tensorType >::value, tensor_base< decltype(S{} * T{}), Dim,
             data_storage< decltype(S{} * T{}) > > >::type operator*(S scalar) const {
-          tensor_base< decltype(S{} + T{}), Dim, data_storage< decltype(S{} * T{}) > > x(*this);
-          return (x *= static_cast<decltype(S{} + T{})>(scalar));
+          tensor_base< decltype(S{} * T{}), Dim, data_storage< decltype(S{} * T{}) > > x(*this);
+          return (x *= static_cast<decltype(S{} * T{})>(scalar));
         };
 
         /**

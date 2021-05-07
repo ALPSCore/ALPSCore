@@ -108,21 +108,69 @@ TEST(TensorTest, TestCopyAssignments) {
   ASSERT_EQ(T2(0,0), -15.0);
 }
 
+tensor_view<double, 2> make_tensor(int N, int ii, int x) {
+  tensor<double, 3> T(N, N, N);
+  for(size_t i = 0; i< N; ++i) {
+    for (size_t j = 0; j < N; ++j) {
+      for (size_t k = 0; k < N; ++k) {
+        T(i,j,k) = i*x*x + j*x + k;
+      }
+    }
+  }
+  tensor_view<double, 2> view = T(ii);
+  T *= 1.0;
+  return std::move(view);
+}
+
+TEST(TensorTest, TestMoveAssignments2) {
+  size_t N = 10;
+  tensor<double, 2> T1(N, N);
+  tensor<double, 2> T2(N, N);
+  T1 = make_tensor(N, 0, 2);
+  T2 = make_tensor(N, 1, 3);
+  for (size_t j = 0; j < N; ++j) {
+    for (size_t k = 0; k < N; ++k) {
+      ASSERT_EQ(T1(j,k), 0*2*2 + j*2 + k );
+      ASSERT_EQ(T2(j,k), 1*3*3 + j*3 + k );
+    }
+  }
+}
+
 TEST(TensorTest, TestMoveAssignments) {
   size_t N = 10;
   Eigen::MatrixXd M1 = Eigen::MatrixXd::Random(N, N);
   Eigen::MatrixXd M2 = Eigen::MatrixXd::Random(N, N);
+  Eigen::MatrixXd M3 = Eigen::MatrixXd::Random(N, N);
+  Eigen::MatrixXf M4 = Eigen::MatrixXf::Random(N, N);
   tensor<double, 2> T1(N, N);
   tensor<double, 2> T2(N, N);
+  tensor<double, 2> T3(N, N);
+  tensor<float, 2> T4(N, N);
+  tensor<double, 1> T5(N);
   for(size_t i = 0; i< N; ++i) {
     for (size_t j = 0; j < N; ++j) {
       T1(i,j) = M1(i,j);
       T2(i,j) = M2(i,j);
+      T3(i,j) = M3(i,j);
+      T4(i,j) = M4(i,j);
     }
+    T5(i) = M3(i,i);
   }
+  // direct move asign 
   T2 = std::move(T1);
+  // move asign view to view
+  T3(1) = std::move(T2(1));
+  // move assign view to storage
+  T5 = std::move(T2(3));
   ASSERT_EQ(T1.size(), 0ul);
   ASSERT_EQ(T2.matrix(), M1);
+  ASSERT_EQ(T2(1,1), T3(1,1));
+  ASSERT_TRUE(std::equal(T2(3).storage().data(), 
+                         T2(3).storage().data() + T2(3).storage().size(), 
+                         T5.storage().data(), [&] (const double & l, const double & r) {return std::abs(l-r)<1e-10; } ));
+  // move assign convertible types
+  T2 = std::move(T4);
+  ASSERT_EQ(T2.matrix(), M4.cast<double>());
 }
 
 TEST(TensorTest, TestSlices) {

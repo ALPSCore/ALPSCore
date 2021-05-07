@@ -5,6 +5,7 @@
  */
 
 #include <iostream>
+#include <memory>
 #include <vector>
 
 #include <hdf5.h>
