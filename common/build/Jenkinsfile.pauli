@@ -12,6 +12,17 @@ def call_phase(phase, name, compiler, mpilib) {
        """
 }
 
+/// Report status to GitHub
+void setBuildStatus(String message, String state) {
+  step([
+      $class: "GitHubCommitStatusSetter",
+      reposSource: [$class: "ManuallyEnteredRepositorySource", url: "https://github.com/ALPSCore/ALPSCore"],
+      contextSource: [$class: "ManuallyEnteredCommitContextSource", context: "ci/jenkins/build-status"],
+      errorHandlers: [[$class: "ChangingBuildStatusErrorHandler", result: "UNSTABLE"]],
+      statusResultSource: [ $class: "ConditionalStatusResultSource", results: [[$class: "AnyBuildResult", message: message, state: state]] ]
+  ]);
+}
+
 /// Sub-pipeline for a project; returns closure defining the sub-pipe
 def sub_pipe(name, compiler, mpilib) {
     { ->
@@ -62,6 +73,12 @@ pipeline {
     }
 
     stages {
+        stage('Status update') {
+            steps {
+                echo 'DEBUG: Sending PENDING status to GitHub'
+                setBuildStatus("Jenkins build has started", 'PENDING')
+            }
+        }
         stage('Parallel stages') {
             steps {
                 script {
@@ -88,9 +105,11 @@ pipeline {
         }
         success {
             echo 'DEBUG: Build successful'
+            setBuildStatus('Jenkins build is successful', 'SUCCESS')
         }
         unstable {
             echo 'DEBUG: Build is unstable'
+            setBuildStatus('Jenkins build is successful', 'ERROR')
             //emailext to: 'galexv+jenkins.status@umich.edu',
             //         recipientProviders: [brokenTestsSuspects(), culprits(), requestor()],
             //         subject: 'ALPSCore: Jenkins build is unstable',
@@ -100,6 +119,7 @@ pipeline {
         }
         failure {
             echo 'DEBUG: Build failed'
+            setBuildStatus('Jenkins build failed', 'FAILURE')
             //emailext to: 'galexv+jenkins.status@umich.edu',
             //         recipientProviders: [brokenTestsSuspects(), culprits(), requestor()],
             //         subject: 'ALPSCore: Jenkins build has failed',
