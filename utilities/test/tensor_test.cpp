@@ -108,6 +108,34 @@ TEST(TensorTest, TestCopyAssignments) {
   ASSERT_EQ(T2(0,0), -15.0);
 }
 
+tensor_view<double, 2> make_tensor(int N, int ii, int x) {
+  tensor<double, 3> T(N, N, N);
+  for(size_t i = 0; i< N; ++i) {
+    for (size_t j = 0; j < N; ++j) {
+      for (size_t k = 0; k < N; ++k) {
+        T(i,j,k) = i*x*x + j*x + k;
+      }
+    }
+  }
+  tensor_view<double, 2> view = T(ii);
+  T *= 1.0;
+  return std::move(view);
+}
+
+TEST(TensorTest, TestMoveAssignments2) {
+  size_t N = 10;
+  tensor<double, 2> T1(N, N);
+  tensor<double, 2> T2(N, N);
+  T1 = make_tensor(N, 0, 2);
+  T2 = make_tensor(N, 1, 3);
+  for (size_t j = 0; j < N; ++j) {
+    for (size_t k = 0; k < N; ++k) {
+      ASSERT_EQ(T1(j,k), 0*2*2 + j*2 + k );
+      ASSERT_EQ(T2(j,k), 1*3*3 + j*3 + k );
+    }
+  }
+}
+
 TEST(TensorTest, TestMoveAssignments) {
   size_t N = 10;
   Eigen::MatrixXd M1 = Eigen::MatrixXd::Random(N, N);
