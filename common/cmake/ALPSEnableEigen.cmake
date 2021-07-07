@@ -4,7 +4,7 @@ mark_as_advanced(ALPS_INSTALL_EIGEN)
 set(ALPS_EIGEN_MIN_VERSION "3.3.4" CACHE STRING "Minimum Eigen version required by ALPSCore")
 mark_as_advanced(ALPS_EIGEN_MIN_VERSION)
 
-set(ALPS_EIGEN_DOWNLOAD_LOCATION "https://bitbucket.org/eigen/eigen/get/${ALPS_EIGEN_MIN_VERSION}.tar.gz"
+set(ALPS_EIGEN_DOWNLOAD_LOCATION "https://gitlab.com/libeigen/eigen/-/archive/${ALPS_EIGEN_MIN_VERSION}/eigen-${ALPS_EIGEN_MIN_VERSION}.tar.gz"
     CACHE STRING "Eigen3 download location")
 mark_as_advanced(ALPS_EIGEN_DOWNLOAD_LOCATION)
 
