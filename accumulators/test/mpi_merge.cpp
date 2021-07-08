@@ -133,22 +133,25 @@ typedef std::vector<double> doublevec;
 typedef std::vector<float> floatvec;
 
 typedef ::testing::Types<
-    alps::accumulators::NoBinningAccumulator<double>,
-    alps::accumulators::LogBinningAccumulator<double>,
-    alps::accumulators::FullBinningAccumulator<double>,
-
     alps::accumulators::NoBinningAccumulator<float>,
     alps::accumulators::LogBinningAccumulator<float>,
     alps::accumulators::FullBinningAccumulator<float>,
 
-    alps::accumulators::NoBinningAccumulator<doublevec>,
-    alps::accumulators::LogBinningAccumulator<doublevec>,
-    alps::accumulators::FullBinningAccumulator<doublevec>,
+    alps::accumulators::NoBinningAccumulator<double>,
+    alps::accumulators::LogBinningAccumulator<double>,
+    alps::accumulators::FullBinningAccumulator<double>,
 
+#ifdef ALPS_ENABLE_VECTOR_FLOAT_ACCUMULATORS
     alps::accumulators::NoBinningAccumulator<floatvec>,
     alps::accumulators::LogBinningAccumulator<floatvec>,
-    alps::accumulators::FullBinningAccumulator<floatvec>
-    > MyTypes;
+    alps::accumulators::FullBinningAccumulator<floatvec>,
+#endif
+
+    alps::accumulators::NoBinningAccumulator<doublevec>,
+    alps::accumulators::LogBinningAccumulator<doublevec>,
+    alps::accumulators::FullBinningAccumulator<doublevec>
+
+   > MyTypes;
 
 TYPED_TEST_CASE(AccumulatorTest, MyTypes);
 

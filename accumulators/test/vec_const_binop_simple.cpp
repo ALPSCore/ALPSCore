@@ -19,7 +19,7 @@ void do_sum()
   using namespace alps::accumulators;
   accumulator_set m;
   typedef std::vector<T1> data_type; // vector of T1
-  m << NoBinningAccumulator<data_type>("acc"); 
+  m << NoBinningAccumulator<data_type>("acc");
   m["acc"] << data_type(3,0.0);
   result_set res(m);
   try {
@@ -28,7 +28,8 @@ void do_sum()
     FAIL() << std::string("Exception:\n")+exc.what();
   }
 }
-  
+
+#ifdef ALPS_ENABLE_VECTOR_FLOAT_ACCUMULATORS
 // Add float to vector of floats.
 TEST(AccumulatorTest,AddFloatToFloatVec)
 {
@@ -40,6 +41,7 @@ TEST(AccumulatorTest,AddDoubleToFloatVec)
 {
   do_sum<float,double>();
 }
+#endif
 
 // Add float to vector of doubles
 TEST(AccumulatorTest,AddFloatToDoubleVec)

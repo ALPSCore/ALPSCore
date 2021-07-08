@@ -31,15 +31,15 @@ struct AccumulatorTest : public testing::Test {
     typedef typename acc_type::accumulator_type raw_accumulator_type;
     typedef typename acc_type::result_type raw_result_type;
     typedef typename acc_gen_type::value_type value_type;
-    
-    static const int NPOINTS=acc_gen_type::NPOINTS; 
+
+    static const int NPOINTS=acc_gen_type::NPOINTS;
 
     acc_gen_type acc_gen;
 
     // Ugly, but should work
     static const bool is_mean_acc=is_same_accumulator<acc_type, alps::accumulators::MeanAccumulator>::value;
     static const bool is_nobin_acc=is_same_accumulator<acc_type, alps::accumulators::NoBinningAccumulator>::value;
-    
+
 
     /// Save accumulator
     void TestSaveAccumulator() {
@@ -76,7 +76,7 @@ struct AccumulatorTest : public testing::Test {
 
         // Check that the underlying accumulator holds the expected raw accumulator type
         m1["data"].extract<raw_accumulator_type>();
-        
+
         const alps::accumulators::result_set r(m);
         const alps::accumulators::result_set r1(m1);
         EXPECT_EQ(r["data"].count(), r1["data"].count());
@@ -127,6 +127,13 @@ typedef ::testing::Types<
     ,AccumulatorTypeGenerator<alps::accumulators::NoBinningAccumulator, float>
     ,AccumulatorTypeGenerator<alps::accumulators::MeanAccumulator,      float>
 
+#ifdef ALPS_ENABLE_VECTOR_FLOAT_ACCUMULATORS
+    ,AccumulatorTypeGenerator<alps::accumulators::FullBinningAccumulator,vfloat>
+    ,AccumulatorTypeGenerator<alps::accumulators::LogBinningAccumulator, vfloat>
+    ,AccumulatorTypeGenerator<alps::accumulators::NoBinningAccumulator,  vfloat>
+    ,AccumulatorTypeGenerator<alps::accumulators::MeanAccumulator,       vfloat>
+#endif
+
     ,AccumulatorTypeGenerator<alps::accumulators::FullBinningAccumulator,double>
     ,AccumulatorTypeGenerator<alps::accumulators::LogBinningAccumulator, double>
     ,AccumulatorTypeGenerator<alps::accumulators::NoBinningAccumulator,  double>
@@ -136,11 +143,6 @@ typedef ::testing::Types<
     ,AccumulatorTypeGenerator<alps::accumulators::LogBinningAccumulator, long double>
     ,AccumulatorTypeGenerator<alps::accumulators::NoBinningAccumulator,  long double>
     ,AccumulatorTypeGenerator<alps::accumulators::MeanAccumulator,       long double>
-
-    ,AccumulatorTypeGenerator<alps::accumulators::FullBinningAccumulator,vfloat>
-    ,AccumulatorTypeGenerator<alps::accumulators::LogBinningAccumulator, vfloat>
-    ,AccumulatorTypeGenerator<alps::accumulators::NoBinningAccumulator,  vfloat>
-    ,AccumulatorTypeGenerator<alps::accumulators::MeanAccumulator,       vfloat>
 
     ,AccumulatorTypeGenerator<alps::accumulators::FullBinningAccumulator,vdouble>
     ,AccumulatorTypeGenerator<alps::accumulators::LogBinningAccumulator, vdouble>

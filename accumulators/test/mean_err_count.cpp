@@ -137,9 +137,11 @@ typedef ::testing::Types<
     generator<aa::MeanAccumulator<float>, aat::AlternatingData, 20000>,
     generator<aa::MeanAccumulator<float>, aat::LinearData, 2>,
     generator<aa::MeanAccumulator<float>, aat::LinearData, 100>,
-    // generator<aa::MeanAccumulator<float>, aat::LinearData, 10000>, 
-    generator<aa::MeanAccumulator<float>, aat::RandomData, 100000, 3>,
+    // generator<aa::MeanAccumulator<float>, aat::LinearData, 10000>,
+    generator<aa::MeanAccumulator<float>, aat::RandomData, 100000, 3>
 
+#ifdef ALPS_ENABLE_VECTOR_FLOAT_ACCUMULATORS
+    ,
     generator<aa::MeanAccumulator<v_float>, aat::ConstantData, 2>,
     generator<aa::MeanAccumulator<v_float>, aat::ConstantData, 100>,
     generator<aa::MeanAccumulator<v_float>, aat::ConstantData, 20000>,
@@ -150,6 +152,7 @@ typedef ::testing::Types<
     generator<aa::MeanAccumulator<v_float>, aat::LinearData, 100>,
     // generator<aa::MeanAccumulator<v_float>, aat::LinearData, 10000>,
     generator<aa::MeanAccumulator<v_float>, aat::RandomData, 100000, 3>
+#endif
     > float_mean_types;
 INSTANTIATE_TYPED_TEST_CASE_P(FloatMean, AccumulatorStatTest, float_mean_types);
 
@@ -187,9 +190,11 @@ typedef ::testing::Types<
     generator<aa::NoBinningAccumulator<float>, aat::AlternatingData, 20000>,
     generator<aa::NoBinningAccumulator<float>, aat::LinearData, 2>,
     generator<aa::NoBinningAccumulator<float>, aat::LinearData, 100>,
-    // generator<aa::NoBinningAccumulator<float>, aat::LinearData, 10000>, 
-    generator<aa::NoBinningAccumulator<float>, aat::RandomData, 100000, 3>,
+    // generator<aa::NoBinningAccumulator<float>, aat::LinearData, 10000>,
+    generator<aa::NoBinningAccumulator<float>, aat::RandomData, 100000, 3>
 
+#ifdef ALPS_ENABLE_VECTOR_FLOAT_ACCUMULATORS
+    ,
     generator<aa::NoBinningAccumulator<v_float>, aat::ConstantData, 2>,
     generator<aa::NoBinningAccumulator<v_float>, aat::ConstantData, 100>,
     generator<aa::NoBinningAccumulator<v_float>, aat::ConstantData, 20000>,
@@ -200,6 +205,7 @@ typedef ::testing::Types<
     generator<aa::NoBinningAccumulator<v_float>, aat::LinearData, 100>,
     // generator<aa::NoBinningAccumulator<v_float>, aat::LinearData, 10000>,
     generator<aa::NoBinningAccumulator<v_float>, aat::RandomData, 100000, 3>
+#endif
     > float_nobin_types;
 INSTANTIATE_TYPED_TEST_CASE_P(FloatNobin, AccumulatorStatTest, float_nobin_types);
 
@@ -218,10 +224,10 @@ template <typename G>
 struct AccumulatorStatInfErrTest : public AccumulatorStatTest<G> {
     typedef AccumulatorStatTest<G> base_type;
     typedef typename base_type::value_type value_type;
-    
+
     template <typename T>
     static bool is_inf(const T& val) { return (boost::math::isinf)(val); }
-    
+
     template <typename T>
     static bool is_inf(const std::vector<T>& val) {
         EXPECT_FALSE(val.empty()) << "Error vector is empty!!";
@@ -232,7 +238,7 @@ struct AccumulatorStatInfErrTest : public AccumulatorStatTest<G> {
         return true;
     }
 
-    
+
     void testError() {
         value_type rerr=this->gen.result().template error<value_type>();
         EXPECT_TRUE(is_inf(rerr)) << "Result error bar is incorrect";
@@ -273,4 +279,3 @@ typedef ::testing::Types<
     > doublevec_short_types;
 
 INSTANTIATE_TYPED_TEST_CASE_P(DoubleVectorShort, AccumulatorStatInfErrTest, doublevec_short_types);
-

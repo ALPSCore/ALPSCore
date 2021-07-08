@@ -122,10 +122,12 @@ typedef ::testing::Types<
     alps::accumulators::LogBinningAccumulator<float>,
     alps::accumulators::FullBinningAccumulator<float>,
 
+#ifdef ALPS_ENABLE_VECTOR_FLOAT_ACCUMULATORS
     alps::accumulators::MeanAccumulator<floatvec>,
     alps::accumulators::NoBinningAccumulator<floatvec>,
     alps::accumulators::LogBinningAccumulator<floatvec>,
     alps::accumulators::FullBinningAccumulator<floatvec>,
+#endif
 
     alps::accumulators::MeanAccumulator<doublevec>,
     alps::accumulators::NoBinningAccumulator<doublevec>,

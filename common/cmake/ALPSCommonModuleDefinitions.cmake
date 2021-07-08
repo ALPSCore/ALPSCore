@@ -43,6 +43,16 @@ mark_as_advanced(CMAKE_BUILD_TYPE)
 option(ALPS_DEBUG "Set to TRUE to supress auto-adjusting your compilation flags" false)
 mark_as_advanced(ALPS_DEBUG)
 
+# Re-activate legacy accumulators of vector<float>, and allow to disable warnings
+option(ALPS_ENABLE_VECTOR_FLOAT_ACCUMULATORS "Turn ON to re-enable legacy float-vector accumulators (NOT RECOMMENDED) " OFF)
+option(ALPS_ENABLE_VECTOR_FLOAT_ACCUMULATORS_DO_NOT_WARN "Turn ON to disable warnings regarding legacy float-vector accumulators (NOT RECOMMENDED) " OFF)
+mark_as_advanced(ALPS_ENABLE_VECTOR_FLOAT_ACCUMULATORS ALPS_ENABLE_VECTOR_FLOAT_ACCUMULATORS_DO_NOT_WARN)
+if (ALPS_ENABLE_VECTOR_FLOAT_ACCUMULATORS)
+    message(WARNING "Legacy accumulators containing `vector<float>` are not reliable. "
+        "Please consider switching to the new ALEA accumulators!")
+endif()
+
+
 # GF uses boost::multi_array, to supress extra checks we need to define extra flags,
 # otherwise codes will slow down to a crawl.
 if (NOT ALPS_DEBUG)

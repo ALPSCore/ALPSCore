@@ -52,3 +52,7 @@ endforeach(test)
 foreach(test ${test_src_mpi})
     alps_add_gtest(${test} NOMAIN PARTEST)
 endforeach(test)
+
+if (NOT ALPS_ENABLE_VECTOR_FLOAT_ACCUMULATORS)
+    alps_add_gtest(float_vectors_nocompile COMPILEFAIL)
+endif()
