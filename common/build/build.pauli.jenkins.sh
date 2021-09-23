@@ -25,34 +25,24 @@ function setup_environment() {
     _COMPILER_MODULE="${COMPILER/_//}"
 
     case $COMPILER in
-        gcc_5.4.0)
-            module add ${_COMPILER_MODULE} hdf5/${_COMPILER_MODULE}/1.10.5 boost/${_COMPILER_MODULE}/1.65.0
+        gcc_10.3.0)
+            module add ${_COMPILER_MODULE} hdf5/${_COMPILER_MODULE}/1.10.7 boost/${_COMPILER_MODULE}/1.76.0
             export CC=$(which gcc)
             export CXX=$(which g++)
             ;;
-        gcc_7.3.0)
-            module add ${_COMPILER_MODULE} hdf5/${_COMPILER_MODULE}/1.10.5 boost/${_COMPILER_MODULE}/1.65.0
-            export CC=$(which gcc)
-            export CXX=$(which g++)
-            ;;
-        llvm_5.0.1)
-            module add ${_COMPILER_MODULE} hdf5/${_COMPILER_MODULE}/1.10.5 boost/${_COMPILER_MODULE}/1.65.0
+        aocc_3.1.0)
+            module add ${_COMPILER_MODULE} hdf5/${_COMPILER_MODULE}/1.10.7 boost/${_COMPILER_MODULE}/1.76.0
             export CC=$(which clang)
             export CXX=$(which clang++)
             ;;
-        intel_18.0.5.274)
-            module add ${_COMPILER_MODULE} hdf5/${_COMPILER_MODULE}/1.10.5 boost/${_COMPILER_MODULE}/1.65.0
-            export CC=$(which icc)
-            export CXX=$(which icpc)
-            ;;
-        intel_19.0.2.187)
-            module add ${_COMPILER_MODULE} hdf5/${_COMPILER_MODULE}/1.10.5 boost/${_COMPILER_MODULE}/1.65.0
+        intel_2021.3.0)
+            module add ${_COMPILER_MODULE} hdf5/${_COMPILER_MODULE}/1.10.7 boost/${_COMPILER_MODULE}/1.75.0
             export CC=$(which icc)
             export CXX=$(which icpc)
             ;;
         *)
             echo "Unsupported compiler passed via COMPILER='$COMPILER'; valid values are:" 2>&1
-            echo "gcc_5.4.0 gcc_7.3.0 llvm_5.0.1 intel_18.0.5.274 intel_19.0.2.187"
+            echo "gcc_10.3.0 aocc_3.1.0 intel_2021.3.0"
             exit 1
             ;;
 
@@ -64,7 +54,7 @@ function setup_environment() {
             ;;
         OpenMPI)
             ENABLE_MPI=ON
-            module add openmpi/${_COMPILER_MODULE}/3.1.4
+            module add openmpi/${_COMPILER_MODULE}/4.1.1
             ;;
         *)
             echo "Unsupported MPI version passed via MPI_VERSION='$MPI_VERSION'; valid values are:" 2>&1
