@@ -51,8 +51,15 @@ namespace gf {
     Eigen::Map<const MatrixX> In(input_data.data(), ld_in, rest_in);
     Eigen::Map<Matrix>        Out(output_data.data(), ld_out, rest_out);
 
+    Matrix tmp = In.real();
+    Out = Cos * tmp;
+
     // + sign comes from the -i in the phase
-    Out = 2.0*(Cos * In.real() + Sin * In.imag())/beta;
+    tmp = In.imag();
+    Out += Sin * tmp;
+
+    // Normalize
+    Out *= 2.0/beta;
   }
 
   /// Fourier transform helper of the omega -> tau transform
