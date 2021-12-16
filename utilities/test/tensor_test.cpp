@@ -163,14 +163,14 @@ TEST(TensorTest, TestMoveAssignments) {
   // move assign view to storage
   T5 = std::move(T2(3));
   ASSERT_EQ(T1.size(), 0ul);
-  ASSERT_EQ(T2.matrix(), M1);
+  ASSERT_TRUE(M1.isApprox(T2.matrix()));
   ASSERT_EQ(T2(1,1), T3(1,1));
   ASSERT_TRUE(std::equal(T2(3).storage().data(), 
                          T2(3).storage().data() + T2(3).storage().size(), 
                          T5.storage().data(), [&] (const double & l, const double & r) {return std::abs(l-r)<1e-10; } ));
   // move assign convertible types
   T2 = std::move(T4);
-  ASSERT_EQ(T2.matrix(), M4.cast<double>());
+  ASSERT_TRUE(T2.matrix().isApprox(M4.cast<double>()));
 }
 
 TEST(TensorTest, TestSlices) {
