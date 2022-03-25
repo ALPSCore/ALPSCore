@@ -73,6 +73,8 @@ namespace alps {
         T* data() {return data_slice_.data();}
         /// @return const pointer to the raw buffer
         const T* data() const {return data_slice_.data();}
+        /// set new pointer
+        void set_ref(T* const&ref) {data_slice_.set_ref(ref);}
 
         /// DataView comparison
         template<typename T2>

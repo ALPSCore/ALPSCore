@@ -66,6 +66,8 @@ namespace alps {
         inline T* data() {return data_;};
         /// @return const raw buffer pointer
         inline const T* data() const {return data_;};
+        /// change view pointer
+        void set_ref(T* const &ref) { data_ = ref; }
       };
     }
   }

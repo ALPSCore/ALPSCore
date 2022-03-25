@@ -207,6 +207,11 @@ namespace alps {
         template<typename T2, typename St, typename = std::enable_if<std::is_same<Container, storageType>::value, void >>
         tensor_base(tensor_base<T2, Dim, St> &&rhs) noexcept: storage_(rhs.storage()), shape_(rhs.shape()), acc_sizes_(rhs.acc_sizes()) {}
 
+        template<typename St=Container>
+        void set_ref(typename std::enable_if<std::is_same<St, data_view<T>>::value, T >::type * const&new_ref) {
+          storage_.set_ref(new_ref);
+        }
+
         // Different type assignments
 
         // assign when lhs and rhs containers are same

@@ -136,6 +136,33 @@ TEST(TensorTest, TestMoveAssignments2) {
   }
 }
 
+TEST(TensorTest, TestChangeReference) {
+  size_t N = 10;
+  tensor<double, 2> T1(N, N);
+  tensor<double, 2> T2(N, N);
+  std::vector<double> v(N*N, 0.0);
+  for (size_t j = 0; j < N; ++j) {
+    for (size_t k = 0; k < N; ++k) {
+      T1(j,k) = 2*2*j*k + j*2 + k;
+      T2(j,k) = 3*3*j*k + j*3 + k;
+      v[j*N + k] = 6*3*j*k + j*4 + k;
+    }
+  }
+  tensor_view<double, 2> V1(T1);
+  for (size_t j = 0; j < N; ++j) {
+    for (size_t k = 0; k < N; ++k) {
+      ASSERT_EQ(T1(j,k), V1(j,k));
+    }
+  }
+  double * ref = v.data();
+  V1.set_ref(v.data());
+  for (size_t j = 0; j < N; ++j) {
+    for (size_t k = 0; k < N; ++k) {
+      ASSERT_EQ(v[j*N + k], V1(j,k));
+    }
+  }
+}
+
 TEST(TensorTest, TestMoveAssignments) {
   size_t N = 10;
   Eigen::MatrixXd M1 = Eigen::MatrixXd::Random(N, N);
