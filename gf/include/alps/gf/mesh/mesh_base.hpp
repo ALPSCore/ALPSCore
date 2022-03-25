@@ -47,3 +47,4 @@ namespace alps {namespace gf {
     std::vector<double> points_;
   };
 }}
+

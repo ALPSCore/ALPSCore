@@ -161,3 +161,4 @@ namespace alps {namespace gf {
   typedef legendre_mesh::index_type legendre_index;
 
 }}
+

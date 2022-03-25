@@ -320,7 +320,7 @@ namespace alps {
             data_storage< decltype(S{} * T{}) > > >::type operator*(S scalar) const {
           tensor_base< decltype(S{} * T{}), Dim, data_storage< decltype(S{} * T{}) > > x(*this);
           return (x *= static_cast<decltype(S{} * T{})>(scalar));
-        };
+        }
 
         /**
          * Two tensors multiplication. We need to decide whether it should be element-wise or more sofisticated tensor contraction.
@@ -335,7 +335,7 @@ namespace alps {
           tensor < typename std::conditional< std::is_convertible<T, S>::value, S, T>::type, Dim > >::type operator*(const tensor_base < S, Dim, Ct > &rhs) const {
           tensor < typename std::conditional< std::is_convertible<T, S>::value, S, T>::type, Dim > x(*this);
           return (x *= rhs);
-        };
+        }
 
         /**
          * Inplace tensor scaling
@@ -346,7 +346,7 @@ namespace alps {
           Eigen::Map < Eigen::Matrix < T, 1, Eigen::Dynamic > > M(&storage_.data(0), storage_.size());
           M *= T(scalar);
           return *this;
-        };
+        }
 
         /**
          * Inplace tensor multiplication
@@ -357,7 +357,7 @@ namespace alps {
           Eigen::Map < const Eigen::Array < S, 1, Eigen::Dynamic > > M2(&rhs.storage().data(0), rhs.storage().size());
           M1*=M2;
           return *this;
-        };
+        }
 
         /**
          * Tensor inversed scaling
@@ -367,7 +367,7 @@ namespace alps {
             data_storage< decltype(S{} * T{}) > > >::type operator/(S scalar) const {
           tensor_base< decltype(S{} + T{}), Dim, data_storage< decltype(S{} * T{}) > >  x(*this);
           return (x /= scalar);
-        };
+        }
 
         /**
          * Inplace division
@@ -378,14 +378,14 @@ namespace alps {
           Eigen::Map < Eigen::Matrix < T, 1, Eigen::Dynamic > > M(&storage_.data(0), storage_.size());
           M *= T(1.0)/T(scalar);
           return *this;
-        };
+        }
 
         /**
          * Negate tensor
          */
         tensor_base < T, Dim, Container > operator-() const {
           return tensor_base < T, Dim, Container >(*this) *= T(-1.0);
-        };
+        }
 
         /**
          * Set data to 0
@@ -434,7 +434,7 @@ namespace alps {
           Eigen::Map < Eigen::Matrix < T, Eigen::Dynamic, Eigen::Dynamic > > Mt(&(x.storage().data(0)), shape_[0], shape_[1]);
           Mt = Mt.inverse();
           return x;
-        };
+        }
 
         /**
          * Compute sum of two tensors
@@ -448,7 +448,7 @@ namespace alps {
         tensor < decltype(S{} + T{}), Dim > operator+(const tensor_base < S, Dim, Ct > &rhs) const {
           tensor < decltype(S{} + T{}), Dim > x(*this);
           return (x += rhs);
-        };
+        }
 
         /**
          * Compute difference of two tensors of a same type
@@ -457,7 +457,7 @@ namespace alps {
         tensor < decltype(S{} - T{}), Dim > operator-(const tensor_base < S, Dim, Ct > &rhs) const {
           tensor < decltype(S{} - T{}), Dim > x(*this);
           return (x -= rhs);
-        };
+        }
 
         /**
          * Inplace addition
@@ -470,7 +470,7 @@ namespace alps {
           ConstMatrixMap < S, 1, Eigen::Dynamic > M2(&y.storage().data(0), y.storage().size());
           M1.noalias() += M2;
           return (*this);
-        };
+        }
 
         /**
          * Inplace subtraction
@@ -482,7 +482,7 @@ namespace alps {
           ConstMatrixMap < T, 1, Eigen::Dynamic> M2(&y.storage().data(0), y.storage().size());
           M1.noalias() -= M2;
           return (*this);
-        };
+        }
 
         /**
          * Compute a dot product of two 2D tensors
@@ -498,7 +498,7 @@ namespace alps {
           MatrixMap < T > M3(&x.storage().data(0), x.shape()[0], x.shape()[1]);
           M3 = M1*M2;
           return x;
-        };
+        }
 
         /**
          * @return Eigen matrix representation for 2D Tensor
@@ -506,12 +506,12 @@ namespace alps {
         MatrixMap < T > matrix() {
           static_assert(Dim == 2, "Can not return Eigen matrix view for not 2D tensor.");
           return MatrixMap < T >(&storage().data(0), shape_[0], shape_[1]);
-        };
+        }
 
         ConstMatrixMap < T > matrix() const {
           static_assert(Dim == 2, "Can not return Eigen matrix view for not 2D tensor.");
           return ConstMatrixMap < T >(&storage().data(0), shape_[0], shape_[1]);
-        };
+        }
 
         /**
          * @return Eigen vector representation for 1D Tensor
@@ -519,22 +519,22 @@ namespace alps {
         MatrixMap < T, 1, Eigen::Dynamic > vector() {
           static_assert(Dim == 1, "Can not return Eigen vector view for not 1D tensor.");
           return MatrixMap < T, 1, Eigen::Dynamic >(&storage().data(0), size());
-        };
+        }
 
         ConstMatrixMap < T, 1, Eigen::Dynamic > vector() const {
           static_assert(Dim == 1, "Can not return Eigen vector view for not 1D tensor.");
           return ConstMatrixMap < T, 1, Eigen::Dynamic >(&storage().data(0), size());
-        };
+        }
 
         Eigen::Map <Eigen::Matrix < T, Eigen::Dynamic, 1, Eigen::ColMajor > > cvector() {
           static_assert(Dim == 1, "Can not return Eigen vector view for not 1D tensor.");
           return Eigen::Map <Eigen::Matrix < T, Eigen::Dynamic, 1, Eigen::ColMajor > >(&storage().data(0), size());
-        };
+        }
 
         Eigen::Map <const Eigen::Matrix < T, Eigen::Dynamic, 1, Eigen::ColMajor > > cvector() const {
           static_assert(Dim == 1, "Can not return Eigen vector view for not 1D tensor.");
           return Eigen::Map <const Eigen::Matrix < T, Eigen::Dynamic, 1, Eigen::ColMajor > >(&storage().data(0), size());
-        };
+        }
 
         /**
          * @return Eigen array representation for 1D and 2D Tensor
@@ -542,25 +542,25 @@ namespace alps {
         template<size_t M = Dim>
         typename std::enable_if< M == 1, Eigen::Map < Eigen::Array < T, 1, Eigen::Dynamic > > >::type array() {
            return Eigen::Map < Eigen::Array < T, 1, Eigen::Dynamic > >(&storage().data(0), size());
-        };
+        }
 
         template<size_t M = Dim>
         typename std::enable_if< M == 1, Eigen::Map < const Eigen::Array < T, 1, Eigen::Dynamic > > >::type array() const {
           return Eigen::Map < const Eigen::Array < T, 1, Eigen::Dynamic > >(&storage().data(0), size());
-        };
+        }
 
         template<size_t M = Dim>
         typename std::enable_if< M == 2, Eigen::Map < Eigen::Array < T, Eigen::Dynamic, Eigen::Dynamic > > >::type array() {
           return Eigen::Map < Eigen::Array < T, Eigen::Dynamic, Eigen::Dynamic > >(&storage().data(0), shape_[0], shape_[1]);
-        };
+        }
 
         template<size_t M = Dim>
         typename std::enable_if< M == 2, Eigen::Map < const Eigen::Array < T, Eigen::Dynamic, Eigen::Dynamic > > >::type array() const {
           return Eigen::Map < const Eigen::Array < T, Eigen::Dynamic, Eigen::Dynamic > >(&storage().data(0), shape_[0], shape_[1]);
-        };
+        }
 
         /// sizes for each dimension
-        const std::array < size_t, Dim > &shape() const { return shape_; };
+        const std::array < size_t, Dim > &shape() const { return shape_; }
 
         /// reshape with index list
         template<typename ...Inds>
@@ -591,7 +591,7 @@ namespace alps {
         }
 
         /// offset multipliers for each dimension
-        const std::array < size_t, Dim > &acc_sizes() const { return acc_sizes_; };
+        const std::array < size_t, Dim > &acc_sizes() const { return acc_sizes_; }
 
         /// dimension of the tensor
         static size_t dimension() { return Dim; }

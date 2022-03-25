@@ -49,7 +49,7 @@ namespace alps {
 
         template<typename S>
         data_view(const data_view<S>& storage, size_t size = 0, size_t offset = 0) :
-          data_slice_(&storage.data()[offset], size), size_(size) {};
+          data_slice_(&storage.data()[offset], size), size_(size) {}
 
 
         /// Move constructor
@@ -61,12 +61,12 @@ namespace alps {
         data_view<T>& operator=(data_view<T>&& rhs) = default;
 
         /// @return reference to the data at point i
-        T& data(size_t i) {return data_slice_.data(i);};
+        T& data(size_t i) {return data_slice_.data(i);}
         /// @return const-reference to the data at point i
-        const T& data(size_t i) const {return data_slice_.data(i);};
+        const T& data(size_t i) const {return data_slice_.data(i);}
         /// bracket operators
-        inline const T&  operator()(size_t i) const {return data_slice_.data(i);};
-        inline T& operator()(size_t i) {return data_slice_.data(i);};
+        inline const T&  operator()(size_t i) const {return data_slice_.data(i);}
+        inline T& operator()(size_t i) {return data_slice_.data(i);}
         /// @return buffer size
         size_t size() const {return size_;}
         /// @return pointer to the raw buffer

@@ -90,3 +90,4 @@ TEST(LinearGrid, CheckMinMax) {
     EXPECT_NEAR(Emin, points[0], 1e-10);
     EXPECT_NEAR(Emax, points[points.size()-1], 1e-10);
 }
+
