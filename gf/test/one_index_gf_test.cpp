@@ -183,3 +183,4 @@ TEST_F(OneIndexGFTest, DefaultConstructiveAccess) {
     EXPECT_ANY_THROW(-gf_empty);
 }
 #endif
+
