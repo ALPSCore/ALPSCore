@@ -52,6 +52,7 @@ namespace gf {
     Eigen::Map<Matrix>        Out(output_data.data(), ld_out, rest_out);
 
     // + sign comes from the -i in the phase
+    // Evaluate 2.0*(Cos * In.real() + Sin * In.imag())/beta;
     Out = 2.0*(Cos * In.real().eval() + Sin * In.imag().eval())/beta;
   }
 
