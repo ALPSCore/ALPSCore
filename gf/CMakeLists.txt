@@ -7,7 +7,7 @@ project (alps-gf CXX)
 message ("\nALPSCore module : ${PROJECT_NAME}\n")
 
 # find additional cmake module in cmake dir
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/../common/cmake)
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/../common/cmake)
 # add common definitions, if being configured independently
 if (CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   include(ALPSCommonModuleDefinitions)
