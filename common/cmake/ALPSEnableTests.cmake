@@ -105,7 +105,7 @@ function(alps_add_gtest test)
             "Usage: ${usage_help_}")
     endif()
 
-    set(sources_ ${test} ${arg_SRCS})
+    set(sources_ ${test}.cpp ${arg_SRCS})
 
     alps_build_gtest_(NOMAIN ${arg_NOMAIN} TARGET ${test} SRCS ${sources_})
     
