@@ -67,7 +67,7 @@ namespace alps {
         template<> struct cast_hook<std::string, T > {                                \
             static inline std::string apply( T arg) {                                \
                 char buffer[255];                                                    \
-                if (sprintf(buffer, "%" p "" c, arg) < 0)                            \
+                if (snprintf(buffer, 255, "%" p "" c, arg) < 0)                      \
                     throw std::runtime_error(                                        \
                         "error casting from " #T " to string" + ALPS_STACKTRACE        \
                     );                                                                \
