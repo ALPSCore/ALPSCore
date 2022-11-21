@@ -91,5 +91,5 @@ gen_cfg_main()
 # Create the main *.hpp config file
 gen_main_hpp_config()
 # create module file for lmod manager 
-configure_file("${PROJECT_SOURCE_DIR}/common/misc/alpscore.lmod.in" "${CMAKE_BINARY_DIR}/alpscore.lmod")
+configure_file("${PROJECT_SOURCE_DIR}/common/misc/alpscore.lmod.in" "${PROJECT_BINARY_DIR}/alpscore.lmod")
 
