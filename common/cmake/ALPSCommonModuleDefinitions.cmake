@@ -111,7 +111,7 @@ endif()
 
 # add includes and libs for each module
 macro(alps_add_module module module_path)
-    set(${module}_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/${module_path}/include ${CMAKE_BINARY_DIR}/${module_path}/include)
+    set(${module}_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/${module_path}/include ${PROJECT_BINARY_DIR}/${module_path}/include)
     set(${module}_LIBRARIES ${module})
 endmacro(alps_add_module)
 
@@ -284,8 +284,8 @@ macro(gen_documentation)
 endmacro(gen_documentation)
 
 function(gen_main_hpp_config)
-  configure_file("${CMAKE_SOURCE_DIR}/utilities/include/config.hpp.in" "${CMAKE_BINARY_DIR}/utilities/include/alps/config.hpp")
-  install(FILES "${CMAKE_BINARY_DIR}/utilities/include/alps/config.hpp" DESTINATION include/alps) 
+  configure_file("${PROJECT_SOURCE_DIR}/utilities/include/config.hpp.in" "${PROJECT_BINARY_DIR}/utilities/include/alps/config.hpp")
+  install(FILES "${PROJECT_BINARY_DIR}/utilities/include/alps/config.hpp" DESTINATION include/alps) 
 endfunction(gen_main_hpp_config)
 
 macro(gen_pkg_config)
