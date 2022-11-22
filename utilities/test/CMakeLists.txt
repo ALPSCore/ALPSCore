@@ -30,8 +30,8 @@ if(ALPS_HAVE_MPI)
   foreach(test ${test_src_mpi})
     alps_add_gtest(${test} PARTEST NOMAIN)
   endforeach(test)
-  alps_add_gtest(mpi_utils_env_exceptions1 PARTEST SRCS mpi_test_support)
-  alps_add_gtest(mpi_utils_env_exceptions2 PARTEST SRCS mpi_test_support)
+  alps_add_gtest(mpi_utils_env_exceptions1 PARTEST SRCS mpi_test_support.cpp)
+  alps_add_gtest(mpi_utils_env_exceptions2 PARTEST SRCS mpi_test_support.cpp)
 endif()
 
 # Testing "compilation failure test" machinery
