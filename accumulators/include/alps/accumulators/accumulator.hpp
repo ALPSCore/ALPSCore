@@ -15,6 +15,11 @@
 
 #include <alps/hdf5/archive.hpp>
 
+#if defined(ALPS_ENABLE_VECTOR_FLOAT_ACCUMULATORS) && !defined(ALPS_ENABLE_VECTOR_FLOAT_ACCUMULATORS_DO_NOT_WARN)
+#warning Legacy support of accumulators of float vectors is unreliable! Please consider switching to the new ALEA code.
+#define ALPS_ENABLE_VECTOR_FLOAT_ACCUMULATORS_DO_NOT_WARN 1
+#endif
+
 #include <memory>
 
 #include <boost/variant/variant.hpp>
