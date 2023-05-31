@@ -70,11 +70,13 @@ namespace gf {
     assert(rest_in == rest_out);
 
     output_data.set_zero();
-    for (size_t r = 0; r < rest_in; ++r) {
-      for (size_t i=0; i<tau.size(); ++i) {
-        for (size_t k = 0; k < omega.size(); ++k) {
-          double wt=omega[k]*tau[i];
-          output_data.data()[i * rest_in + r] += 2.0 * (cos(wt) * input_data.data()[k * rest_in + r].real() + sin(wt) * input_data.data()[k * rest_in + r].imag()) / beta;
+    for (size_t i=0; i<tau.size(); ++i) {
+      for (size_t k = 0; k < omega.size(); ++k) {
+        double wt=omega[k]*tau[i];
+        double cos_wt = cos(wt);
+        double sin_wt = sin(wt);
+        for (size_t r = 0; r < rest_in; ++r) {
+          output_data.data()[i * rest_in + r] += 2.0 * (cos_wt * input_data.data()[k * rest_in + r].real() + sin_wt * input_data.data()[k * rest_in + r].imag()) / beta;
         }
       }
     }
@@ -109,11 +111,10 @@ namespace gf {
     for(int n=0;n<g_omega.mesh1().extent();++n) {
       in_data(size_t(n)) = g_omega(matsubara_index(size_t(n))).data() - f_omega(g_omega.mesh1().points()[size_t(n)],c1,c2,c3);
     }
-
-    if(g_omega.mesh1().extent() * g_tau.mesh1().extent() > 20000000 || g_omega.data().size()/g_omega.mesh1().extent() < 100)
+    if(g_omega.mesh1().extent() * g_tau.mesh1().extent() > 80000000)
       transform_vector_no_tail_loop(in_data,g_omega.mesh1().points(), g_tau.data(), g_tau.mesh1().points(), g_tau.mesh1().beta());
     else
-      transform_vector_no_tail_matrix(in_data,g_omega.mesh1().points(), g_tau.data(), g_tau.mesh1().points(), g_tau.mesh1().beta());
+    transform_vector_no_tail_matrix(in_data,g_omega.mesh1().points(), g_tau.data(), g_tau.mesh1().points(), g_tau.mesh1().beta());
 
     for(int t=0;t<g_tau.mesh1().extent();++t){
       g_tau(itime_index(t)).data() += f_tau(g_tau.mesh1().points()[t],g_tau.mesh1().beta(),c1,c2,c3);
