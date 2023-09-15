@@ -31,14 +31,9 @@ function setup_environment() {
             export CXX=$(which g++)
             ;;
         aocc_4.0.0)
-            module add ${_COMPILER_MODULE} hdf5/1.10.7 boost/1.77.0
+            module add ${_COMPILER_MODULE} hdf5/1.10.8 boost/1.81.0
             export CC=$(which clang)
             export CXX=$(which clang++)
-            ;;
-        intel_2021.3.0)
-            module add ${_COMPILER_MODULE} hdf5/1.10.7 boost/1.75.0
-            export CC=$(which icc)
-            export CXX=$(which icpc)
             ;;
         *)
             echo "Unsupported compiler passed via COMPILER='$COMPILER'; valid values are:" 2>&1
