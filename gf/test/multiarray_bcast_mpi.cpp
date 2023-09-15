@@ -10,15 +10,15 @@
 #include "mpi_guard.hpp"
 #include <alps/utilities/gtest_par_xml_output.hpp>
 
-#define ARRAY_EXTENTS boost::extents[2][3][5][7]
+#define ARRAY_EXTENTS std::array<size_t, 4>{{2,3,5,7}}
 
 class GfMultiArrayTest : public ::testing::Test {
     protected:
     int rank_;
     bool is_root_;
-    typedef boost::multi_array<std::complex<double>,4> data_type;
+    typedef alps::numerics::tensor<std::complex<double>,4> data_type;
     data_type ref_data_;
-    boost::array<data_type::size_type, 4> ref_shape_;
+    std::array<size_t, 4> ref_shape_;
 
     public:
     static const int MASTER=0;
@@ -28,24 +28,22 @@ class GfMultiArrayTest : public ::testing::Test {
         rank_=alps::mpi::communicator().rank();
         is_root_=(rank_==MASTER);
 
-        for (data_type::index i=0;
-             static_cast<data_type::size_type>(i)<ref_data_.num_elements();
+        for (size_t i=0;
+             i<ref_data_.size();
              ++i) {
-            *(ref_data_.origin()+i)=std::complex<double>(i+0.5,i-0.5);
+            *(ref_data_.data()+i)=std::complex<double>(i+0.5,i-0.5);
         }
-        std::copy(ref_data_.shape(), ref_data_.shape()+ref_data_.num_dimensions(), ref_shape_.begin());
-        ref_data_.reindex(BASE);
+        std::copy(ref_data_.shape().begin(), ref_data_.shape().end(), ref_shape_.begin());
     }
 };
 
 TEST_F(GfMultiArrayTest, MpiBroadcast) {
     data_type mydata;
     if (is_root_) {
-        mydata.resize(ARRAY_EXTENTS);
+        mydata.reshape(ARRAY_EXTENTS);
         mydata=ref_data_;
-        mydata.reindex(BASE);
     } else {
-        mydata.reindex(5); // set a strange base on receiving ranks
+//        mydata.reindex(5); // set a strange base on receiving ranks
     }
 
     alps::gf::detail::broadcast(alps::mpi::communicator(), mydata, MASTER);
@@ -55,11 +53,11 @@ TEST_F(GfMultiArrayTest, MpiBroadcast) {
         for (std::size_t i1=0; i1<ref_shape_[1]; ++i1) {
             for (std::size_t i2=0; i2<ref_shape_[2]; ++i2) {
                 for (std::size_t i3=0; i3<ref_shape_[3]; ++i3) {
-                    ASSERT_EQ(ref_data_[BASE+i0][BASE+i1][BASE+i2][BASE+i3].real(),
-                              mydata[BASE+i0][BASE+i1][BASE+i2][BASE+i3].real())
+                    ASSERT_EQ(ref_data_(i0,i1,i2,i3).real(),
+                              mydata(i0,i1,i2,i3).real())
                         << "The reference and the broadcast arrays differ on rank #" << rank_;
-                    ASSERT_EQ(ref_data_[BASE+i0][BASE+i1][BASE+i2][BASE+i3].imag(),
-                              mydata[BASE+i0][BASE+i1][BASE+i2][BASE+i3].imag())
+                    ASSERT_EQ(ref_data_(i0,i1,i2,i3).imag(),
+                              mydata(i0,i1,i2,i3).imag())
                         << "The reference and the broadcast arrays differ on rank #" << rank_;
                 }
             }
@@ -69,12 +67,12 @@ TEST_F(GfMultiArrayTest, MpiBroadcast) {
 
 // This test should result in program crash (call to MPI_Abort())
 TEST_F(GfMultiArrayTest, DISABLED_MpiBroadcastDimMismatch) {
-    typedef boost::multi_array<std::complex<double>, 2> mis_data_type;
-    mis_data_type mydata(boost::extents[2][3]);
+    typedef alps::numerics::tensor<std::complex<double>, 2> mis_data_type;
+    mis_data_type mydata(2,3);
 
     if (is_root_) {
         data_type root_data;
-        root_data.resize(ARRAY_EXTENTS);
+        root_data.reshape(ARRAY_EXTENTS);
         root_data=ref_data_;
         alps::gf::detail::broadcast(alps::mpi::communicator(), root_data, MASTER);
     } else {

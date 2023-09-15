@@ -9,6 +9,8 @@
 #include <alps/gf/mpi_bcast.hpp>
 #endif
 
+#include <boost/operators.hpp>
+
 namespace alps {namespace gf {
 
     /// A generic index

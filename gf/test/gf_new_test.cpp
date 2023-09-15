@@ -338,13 +338,13 @@ TEST(GreensFunction, MeshAssignment) {
   alps::gf::real_space_index_mesh m1(4, 10);
   for(int i = 0; i< 4; ++i) {
     for(int j = 0; j<10; ++j) {
-      m1.points()[i][j] = i*2+j + 1;
+      m1.points()(i,j) = i*2+j + 1;
     }
   }
   greenf<double, alps::gf::matsubara_positive_mesh, alps::gf::real_space_index_mesh> g(alps::gf::matsubara_positive_mesh(100, 10),m1);
   for(int i = 0; i< 4; ++i) {
     for(int j = 0; j<10; ++j) {
-      ASSERT_EQ(m1.points()[i][j], g.mesh2().points()[i][j]);
+      ASSERT_EQ(m1.points()(i,j), g.mesh2().points()(i,j));
     }
   }
 }

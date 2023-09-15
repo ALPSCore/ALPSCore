@@ -14,13 +14,13 @@
 namespace alps {namespace gf {
   class momentum_realspace_index_mesh {
   public:
-    typedef boost::multi_array<double,2> container_type;
-    momentum_realspace_index_mesh(const momentum_realspace_index_mesh& rhs) : points_(boost::extents[rhs.points_.shape()[0]][rhs.points_.shape()[1]]),
+    typedef alps::numerics::tensor<double,2> container_type;
+    momentum_realspace_index_mesh(const momentum_realspace_index_mesh& rhs) : points_(rhs.points_.shape()[0], rhs.points_.shape()[1]),
                                                                               kind_(rhs.kind_){
       points_ = rhs.points_;
     }
     momentum_realspace_index_mesh& operator=(const momentum_realspace_index_mesh& rhs) {
-      points_.resize(boost::extents[rhs.points_.shape()[0]][rhs.points_.shape()[1]]);
+      points_.reshape(rhs.points_.shape());
       points_ = rhs.points_;
       kind_   = rhs.kind_;
       return *this;
@@ -37,11 +37,11 @@ namespace alps {namespace gf {
     }
 
   protected:
-    momentum_realspace_index_mesh(): points_(boost::extents[0][0]), kind_("")
+    momentum_realspace_index_mesh(): points_(0, 0), kind_("")
     {
     }
 
-    momentum_realspace_index_mesh(const std::string& kind, int ns,int ndim): points_(boost::extents[ns][ndim]), kind_(kind)
+    momentum_realspace_index_mesh(const std::string& kind, int ns,int ndim): points_(ns, ndim), kind_(kind)
     {
     }
 
@@ -110,7 +110,7 @@ namespace alps {namespace gf {
       // FIXME: introduce (debug-only?) consistency check, like type checking? akin to load()?
       std::array<size_t, 2> sizes{{points_.shape()[0], points_.shape()[1]}};
       alps::mpi::broadcast(comm, &sizes[0], 2, root);
-      if (comm.rank()!=root) points_.resize(sizes);
+      if (comm.rank()!=root) points_.reshape(sizes);
       detail::broadcast(comm, points_, root);
       broadcast(comm, kind_, root);
     }

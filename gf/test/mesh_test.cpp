@@ -192,15 +192,15 @@ TEST(Mesh,ComparePower) {
 }
 
 TEST(Mesh,CompareMomentum) {
-  alps::gf::momentum_index_mesh::container_type points1(boost::extents[20][3]);
-  alps::gf::momentum_index_mesh::container_type points2(boost::extents[20][3]);
-  alps::gf::momentum_index_mesh::container_type points3(boost::extents[20][3]);
-  alps::gf::momentum_index_mesh::container_type points4(boost::extents[3][20]);
+  alps::gf::momentum_index_mesh::container_type points1(20,3);
+  alps::gf::momentum_index_mesh::container_type points2(20,3);
+  alps::gf::momentum_index_mesh::container_type points3(20,3);
+  alps::gf::momentum_index_mesh::container_type points4(3,20);
   for (std::size_t i=0; i<points1.num_elements(); ++i) {
-    *(points1.origin()+i)=i;
-    *(points2.origin()+i)=i;
-    *(points3.origin()+i)=i+1;
-    *(points4.origin()+i)=i;
+    *(points1.data()+i)=i;
+    *(points2.data()+i)=i;
+    *(points3.data()+i)=i+1;
+    *(points4.data()+i)=i;
   }
 
   alps::gf::momentum_index_mesh mesh1(points1);
@@ -219,15 +219,15 @@ TEST(Mesh,CompareMomentum) {
 
 
 TEST(Mesh,CompareRealSpace) {
-  alps::gf::real_space_index_mesh::container_type points1(boost::extents[20][3]);
-  alps::gf::real_space_index_mesh::container_type points2(boost::extents[20][3]);
-  alps::gf::real_space_index_mesh::container_type points3(boost::extents[20][3]);
-  alps::gf::real_space_index_mesh::container_type points4(boost::extents[3][20]);
+  alps::gf::real_space_index_mesh::container_type points1(20,3);
+  alps::gf::real_space_index_mesh::container_type points2(20,3);
+  alps::gf::real_space_index_mesh::container_type points3(20,3);
+  alps::gf::real_space_index_mesh::container_type points4(3,20);
   for (std::size_t i=0; i<points1.num_elements(); ++i) {
-    *(points1.origin()+i)=i;
-    *(points2.origin()+i)=i;
-    *(points3.origin()+i)=i+1;
-    *(points4.origin()+i)=i;
+    *(points1.data()+i)=i;
+    *(points2.data()+i)=i;
+    *(points3.data()+i)=i+1;
+    *(points4.data()+i)=i;
   }
 
   alps::gf::real_space_index_mesh mesh1(points1);
@@ -391,7 +391,7 @@ TEST(Mesh,PrintMomentumMeshHeader) {
   header_line << "# MOMENTUM_INDEX mesh: N: "<<data.shape()[0]<<" dimension: "<<data.shape()[1]<<" points: ";
   for(std::size_t i=0;i<data.shape()[0];++i){
     header_line<<"(";
-    for(std::size_t d=0;d<data.shape()[1]-1;++d){ header_line<<data[i][d]<<","; } header_line<<data[i][data.shape()[1]-1]<<") ";
+    for(std::size_t d=0;d<data.shape()[1]-1;++d){ header_line<<data(i,d)<<","; } header_line<<data(i,data.shape()[1]-1)<<") ";
   }
   header_line<<std::endl;
   alps::gf::momentum_index_mesh mesh1(data);
@@ -405,7 +405,7 @@ TEST(Mesh,PrintRealSpaceMeshHeader) {
   header_line << "# REAL_SPACE_INDEX mesh: N: "<<data.shape()[0]<<" dimension: "<<data.shape()[1]<<" points: ";
   for(std::size_t i=0;i<data.shape()[0];++i){
     header_line<<"(";
-    for(std::size_t d=0;d<data.shape()[1]-1;++d){ header_line<<data[i][d]<<","; } header_line<<data[i][data.shape()[1]-1]<<") ";
+    for(std::size_t d=0;d<data.shape()[1]-1;++d){ header_line<<data(i,d)<<","; } header_line<<data(i,data.shape()[1]-1)<<") ";
   }
   header_line<<std::endl;
   alps::gf::real_space_index_mesh mesh1(data);
@@ -441,8 +441,8 @@ TEST(Mesh,SwapNumericalMesh) {
     section_edges[1] =  0.0;
     section_edges[2] =  1.0;
 
-    boost::multi_array<Scalar,2> coeff(boost::extents[n_section][k+1]);
-    std::fill(coeff.origin(), coeff.origin()+coeff.num_elements(), 0.0);
+    alps::numerics::tensor<Scalar,2> coeff(n_section,k+1);
+    coeff.set_zero();
 
     pp_type p(n_section, section_edges, coeff);
 
@@ -478,8 +478,8 @@ TEST(Mesh,NumericalMeshSave) {
     section_edges[1] =  0.0;
     section_edges[2] =  1.0;
 
-    boost::multi_array<Scalar,2> coeff(boost::extents[n_section][k+1]);
-    std::fill(coeff.origin(), coeff.origin()+coeff.num_elements(), 0.0);
+    alps::numerics::tensor<Scalar,2> coeff(n_section,k+1);
+    coeff.set_zero();
 
     pp_type p(n_section, section_edges, coeff);
     std::vector<pp_type> basis_functions;
@@ -514,8 +514,8 @@ TEST(Mesh,NumericalMeshSaveStream) {
     section_edges[1] =  0.0;
     section_edges[2] =  1.0;
 
-    boost::multi_array<Scalar,2> coeff(boost::extents[n_section][k+1]);
-    std::fill(coeff.origin(), coeff.origin()+coeff.num_elements(), 0.0);
+    alps::numerics::tensor<Scalar,2> coeff(n_section,k+1);
+    coeff.set_zero();
 
     pp_type p(n_section, section_edges, coeff);
     std::vector<pp_type> basis_functions;

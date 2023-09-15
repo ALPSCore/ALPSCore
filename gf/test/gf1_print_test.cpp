@@ -7,7 +7,6 @@
 /* Test printing of 1-index GF with various meshes */
 
 #include <sstream>
-#include <boost/array.hpp>
 
 #include <gtest/gtest.h>
 #include <alps/gf/gf.hpp>
@@ -46,11 +45,10 @@ class mesh_generator<g::real_space_index_mesh> {
   public:
     typedef g::real_space_index_mesh value_type;
     static value_type get() {
-        const boost::array<int,2> dims={{3,2}}; // 3 points, each is 2D
-        value_type::container_type points(dims);
-        points[0][0]=10; points[0][1]=11; 
-        points[1][0]=20; points[1][1]=21; 
-        points[2][0]=30; points[2][1]=31; 
+        value_type::container_type points(3,2);
+        points(0,0)=10; points(0,1)=11;
+        points(1,0)=20; points(1,1)=21;
+        points(2,0)=30; points(2,1)=31;
         return value_type(points);
     }
 };
@@ -60,11 +58,10 @@ class mesh_generator<g::momentum_index_mesh> {
   public:
     typedef g::momentum_index_mesh value_type;
     static value_type get() {
-        const boost::array<int,2> dims={{3,2}}; // 3 points, each is 2D
-        value_type::container_type points(dims);
-        points[0][0]=10; points[0][1]=11; 
-        points[1][0]=20; points[1][1]=21; 
-        points[2][0]=30; points[2][1]=31; 
+        value_type::container_type points(3,2);
+        points(0,0)=10; points(0,1)=11;
+        points(1,0)=20; points(1,1)=21;
+        points(2,0)=30; points(2,1)=31;
         return value_type(points);
     }
 };

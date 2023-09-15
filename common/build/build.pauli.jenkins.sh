@@ -19,30 +19,25 @@ function setup_environment() {
     . /etc/profile
 
     module purge
-    module add cmake/3.15.4 eigen3/3.3.7
+    module add cmake/3.25.3 eigen3/3.4.0
 
     # Replace '_' by '/'
     _COMPILER_MODULE="${COMPILER/_//}"
 
     case $COMPILER in
-        gcc_10.3.0)
-            module add ${_COMPILER_MODULE} hdf5/1.10.7 boost/1.76.0
+        gcc_12.2.0)
+            module add ${_COMPILER_MODULE} hdf5/1.10.8 boost/1.81.0
             export CC=$(which gcc)
             export CXX=$(which g++)
             ;;
-        aocc_3.1.0)
-            module add ${_COMPILER_MODULE} hdf5/1.10.7 boost/1.77.0
+        aocc_4.0.0)
+            module add ${_COMPILER_MODULE} hdf5/1.10.8 boost/1.81.0
             export CC=$(which clang)
             export CXX=$(which clang++)
             ;;
-        intel_2021.3.0)
-            module add ${_COMPILER_MODULE} hdf5/1.10.7 boost/1.75.0
-            export CC=$(which icc)
-            export CXX=$(which icpc)
-            ;;
         *)
             echo "Unsupported compiler passed via COMPILER='$COMPILER'; valid values are:" 2>&1
-            echo "gcc_10.3.0 aocc_3.1.0 intel_2021.3.0"
+            echo "gcc_12.2.0 aocc_4.0.0"
             exit 1
             ;;
 
@@ -54,7 +49,7 @@ function setup_environment() {
             ;;
         OpenMPI)
             ENABLE_MPI=ON
-            module add openmpi/${_COMPILER_MODULE}/4.1.1
+            module add openmpi
             ;;
         *)
             echo "Unsupported MPI version passed via MPI_VERSION='$MPI_VERSION'; valid values are:" 2>&1

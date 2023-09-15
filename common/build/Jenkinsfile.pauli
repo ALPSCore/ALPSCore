@@ -68,7 +68,7 @@ pipeline {
     }
 
     parameters {
-        string(name: 'COMPILERS', defaultValue: 'aocc_3.1.0,gcc_10.3.0,intel_2021.3.0', description: 'Compilers to use')
+        string(name: 'COMPILERS', defaultValue: 'aocc_4.0.0,gcc_12.2.0', description: 'Compilers to use')
         string(name: 'MPI_VERSIONS', defaultValue: 'MPI_OFF,OpenMPI', description: 'MPI versions to link with')
     }
 

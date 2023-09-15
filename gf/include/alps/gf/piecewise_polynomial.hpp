@@ -12,13 +12,13 @@
 #include <type_traits>
 #include <vector>
 #include <cassert>
-#include <boost/multi_array.hpp>
 #include <boost/typeof/typeof.hpp>
 
+#include <alps/numeric/tensors.hpp>
 #include <alps/hdf5/archive.hpp>
 #include <alps/hdf5/complex.hpp>
 #include <alps/hdf5/vector.hpp>
-#include <alps/hdf5/multi_array.hpp>
+#include <alps/hdf5/tensor.hpp>
 
 #ifdef ALPS_HAVE_MPI
 #include "mpi_bcast.hpp"
@@ -40,7 +40,7 @@ namespace alps {
              * @return   conj(a) * b
              */
             template<class T>
-            typename std::enable_if<boost::is_floating_point<T>::value, T>::type
+            typename std::enable_if<std::is_floating_point<T>::value, T>::type
             outer_product(T a, T b) {
                 return a * b;
             }
@@ -52,7 +52,7 @@ namespace alps {
             }
 
             template<class T>
-            typename std::enable_if<boost::is_floating_point<T>::value, T>::type
+            typename std::enable_if<std::is_floating_point<T>::value, T>::type
             conjg(T a) {
                 return a;
             }
@@ -98,7 +98,7 @@ namespace alps {
                 const int k_min = std::min(f1.order(), f2.order());
 
                 for (int s=0; s < f1.num_sections(); ++s) {
-                    op.perform(&f1.coeff_[s][0], &f2.coeff_[s][0], &result.coefficient(s,0), f1.order(), f2.order(), k_min);
+                    op.perform(&f1.coeff_(s,0), &f2.coeff_(s,0), &result.coefficient(s,0), f1.order(), f2.order(), k_min);
                 }
 
                 return result;
@@ -114,7 +114,7 @@ namespace alps {
         private:
             int k_;
 
-            typedef boost::multi_array<T, 2> coefficient_type;
+            typedef alps::numerics::tensor<T, 2> coefficient_type;
 
             template<typename TT, typename Op>
             friend piecewise_polynomial<TT>
@@ -184,9 +184,9 @@ namespace alps {
             piecewise_polynomial(int k, const std::vector<double> &section_edges) : k_(k),
                                                                                     n_sections_(section_edges.size()-1),
                                                                                     section_edges_(section_edges),
-                                                                                    coeff_(boost::extents[n_sections_][k+1]),
+                                                                                    coeff_(n_sections_,k+1),
                                                                                     valid_(false) {
-                std::fill(coeff_.origin(), coeff_.origin()+coeff_.num_elements(), 0.0);
+                coeff_.set_zero();
 
                 set_validity();
                 check_validity();//this may throw
@@ -194,7 +194,7 @@ namespace alps {
 
             piecewise_polynomial(int n_section,
                                  const std::vector<double> &section_edges,
-                                 const boost::multi_array<T, 2> &coeff) : k_(coeff.shape()[1]-1),
+                                 const alps::numerics::tensor<T, 2> &coeff) : k_(coeff.shape()[1]-1),
                                                                           n_sections_(section_edges.size() - 1),
                                                                           section_edges_(section_edges),
                                                                           coeff_(coeff), valid_(false) {
@@ -208,7 +208,7 @@ namespace alps {
                 n_sections_ = other.n_sections_;
                 section_edges_ = other.section_edges_;
                 //Should be resized before a copy
-                coeff_.resize(boost::extents[other.coeff_.shape()[0]][other.coeff_.shape()[1]]);
+                coeff_.reshape(other.coeff_.shape());
                 coeff_ = other.coeff_;
                 valid_ = other.valid_;
                 return *this;
@@ -251,7 +251,7 @@ namespace alps {
 #ifndef NDEBUG
                 check_validity();
 #endif
-                return coeff_[i][p];
+                return coeff_(i,p);
             }
 
             /// Return a reference to the coefficient of $x^p$ for the given section.
@@ -261,12 +261,12 @@ namespace alps {
 #ifndef NDEBUG
                 check_validity();
 #endif
-                return coeff_[i][p];
+                return coeff_(i,p);
             }
 
             /// Set to zero
             void set_zero() {
-                std::fill(coeff_.origin(), coeff_.origin()+coeff_.num_elements(), 0.0);
+                coeff_.set_zero();
             }
 
             /// Compute the value at x.
@@ -289,7 +289,7 @@ namespace alps {
                 const double dx = x - section_edges_[section];
                 T r = 0.0, x_pow = 1.0;
                 for (int p = 0; p < k_ + 1; ++p) {
-                    r += coeff_[section][p] * x_pow;
+                    r += coeff_(section,p) * x_pow;
                     x_pow *= dx;
                 }
                 return r;
@@ -336,7 +336,7 @@ namespace alps {
 
                     for (int p = 0; p < k + 1; ++p) {
                         for (int p2 = 0; p2 < k2 + 1; ++p2) {
-                            r += detail::outer_product((Tr) coeff_[s][p], (Tr) other.coeff_[s][p2])
+                            r += detail::outer_product((Tr) coeff_(s,p), (Tr) other.coeff_(s,p2))
                                  * dx_power[p + p2 + 1] / (p + p2 + 1.0);
                         }
                     }
@@ -399,8 +399,8 @@ namespace alps {
                 section_edges_.resize(n_sections_+1);
                 broadcast(comm, &section_edges_[0], n_sections_+1, root);
 
-                coeff_.resize(boost::extents[n_sections_][k_+1]);
-                broadcast(comm, coeff_.origin(), (k_+1)*n_sections_, root);
+                coeff_.reshape(n_sections_,k_+1);
+                broadcast(comm, coeff_.data(), (k_+1)*n_sections_, root);
 
                 set_validity();
                 check_validity();
@@ -428,8 +428,8 @@ namespace alps {
         const piecewise_polynomial<T> operator*(T scalar, const piecewise_polynomial<T> &pp) {
             piecewise_polynomial<T> pp_copy(pp);
             std::transform(
-                    pp_copy.coeff_.origin(), pp_copy.coeff_.origin() + pp_copy.coeff_.num_elements(),
-                    pp_copy.coeff_.origin(), [&] (const T & pp_val) {return pp_val * scalar;}
+                    pp_copy.coeff_.data(), pp_copy.coeff_.data() + pp_copy.coeff_.size(),
+                    pp_copy.coeff_.data(), [&] (const T & pp_val) {return pp_val * scalar;}
 
             );
             return pp_copy;

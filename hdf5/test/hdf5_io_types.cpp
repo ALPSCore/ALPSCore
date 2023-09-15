@@ -24,7 +24,6 @@
 #include <type_traits>
 
 #include <boost/random.hpp>
-#include <boost/multi_array.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
 
 #define VECTOR_SIZE 25
@@ -135,10 +134,10 @@ template<
     initialize_tuple_value<8, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename std::is_same<T8, boost::tuples::null_type>::type());
     initialize_tuple_value<9, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename std::is_same<T9, boost::tuples::null_type>::type());
 }
-template<typename T, typename A> void initialize(boost::multi_array<T, 1, A> & v) {
-    v.resize(boost::extents[VECTOR_SIZE]);
-    v = creator<boost::multi_array<T, 1, A> >::random();
-}
+//template<typename T, typename A> void initialize(boost::multi_array<T, 1, A> & v) {
+//    v.resize(boost::extents[VECTOR_SIZE]);
+//    v = creator<boost::multi_array<T, 1, A> >::random();
+//}
 // template<typename T,  typename A> void initialize(alps::multi_array<T, 1, A> & v) {
 //     v.resize(boost::extents[VECTOR_SIZE]);
 //     v = creator<alps::multi_array<T, 1, A> >::random();
@@ -604,7 +603,7 @@ template<typename T> struct creator< C < alps::numeric::matrix<T> > > {         
     template<typename X> static base_type empty(X const &) { return base_type(); }                 \
     template<typename X> static base_type special(X const &) { return base_type(); }               \
 };*/                                                                                                 \
-HDF5_DEFINE_MULTI_ARRAY_TYPE(boost, C)/*                                                             \
+//HDF5_DEFINE_MULTI_ARRAY_TYPE(boost, C)/*                                                             \
 HDF5_DEFINE_MULTI_ARRAY_TYPE(alps, C)*/
 
 HDF5_DEFINE_VECTOR_TYPE(std::vector)
@@ -818,7 +817,7 @@ template<typename T, typename U> bool equal(std::pair<T *, std::vector<U> > cons
                             return false;                                                                                                           \
         return true;                                                                                                                                \
     }
-HDF5_DEFINE_MULTI_ARRAY_TYPE(boost)
+//HDF5_DEFINE_MULTI_ARRAY_TYPE(boost)
 // HDF5_DEFINE_MULTI_ARRAY_TYPE(alps)
 
 
@@ -1130,10 +1129,10 @@ template<typename T> struct skip_attribute<std::valarray<std::valarray<T> > >: p
 
 template<typename T, std::size_t N> struct skip_attribute<boost::array<std::vector<T>, N> >: public std::true_type {};
 
-template<typename T, std::size_t N, typename A> struct skip_attribute<std::vector<boost::multi_array<T, N, A> > >: public std::true_type {};
+//template<typename T, std::size_t N, typename A> struct skip_attribute<std::vector<boost::multi_array<T, N, A> > >: public std::true_type {};
 // template<typename T, std::size_t N, typename A> struct skip_attribute<std::vector<alps::multi_array<T, N, A> > >: public std::true_type {};
 
-template<typename T, std::size_t N, typename A> struct skip_attribute<boost::multi_array<T, N, A> * >: public std::true_type {};
+//template<typename T, std::size_t N, typename A> struct skip_attribute<boost::multi_array<T, N, A> * >: public std::true_type {};
 // template<typename T, std::size_t N, typename A> struct skip_attribute<alps::multi_array<T, N, A> * >: public std::true_type {};
 
 template <
@@ -1150,7 +1149,7 @@ template<typename T, typename U> struct skip_attribute<std::pair<T, U> >:
 
 template<typename T> struct skip_attribute<std::pair<T *, std::vector<std::size_t> > >: public skip_attribute<T> {};
 template<typename T> struct skip_attribute<std::pair<std::vector<T> *, std::vector<std::size_t> > >: public std::true_type {};
-template<typename T, std::size_t N, typename A> struct skip_attribute<std::pair<boost::multi_array<T, N, A> *, std::vector<std::size_t> > >: public std::true_type {};
+//template<typename T, std::size_t N, typename A> struct skip_attribute<std::pair<boost::multi_array<T, N, A> *, std::vector<std::size_t> > >: public std::true_type {};
 // template<typename T, std::size_t N, typename A> struct skip_attribute<std::pair<alps::multi_array<T, N, A> *, std::vector<std::size_t> > >: public std::true_type {};
 
 template<typename T> struct skip_attribute<boost::shared_array<T> >: public skip_attribute<T> {};
@@ -1168,7 +1167,7 @@ public:
       std::cout << "SKIP" << std::endl;
     else {
       for (std::size_t i = 32; i && result_; --i){
-        result_=hdf5_test<typename boost::remove_pointer<XXXX>::type >::write(filename, typename std::is_pointer< XXXX >::type());
+        result_=hdf5_test<typename std::remove_pointer<XXXX>::type >::write(filename, typename std::is_pointer< XXXX >::type());
         EXPECT_TRUE(result_);
       }
       {
@@ -1176,7 +1175,7 @@ public:
         alps::hdf5::archive iar2(filename, SZIP_COMPRESS ? "ca" : "a");
         alps::hdf5::archive iar3 = iar1;
         for (std::size_t i = 32; i && result_; --i){
-          result_=hdf5_test<typename boost::remove_pointer< XXXX >::type >::overwrite(filename, typename std::is_pointer< XXXX >::type());
+          result_=hdf5_test<typename std::remove_pointer< XXXX >::type >::overwrite(filename, typename std::is_pointer< XXXX >::type());
           EXPECT_TRUE(result_);
         }
       }

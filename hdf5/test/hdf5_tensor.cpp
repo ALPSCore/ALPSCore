@@ -6,9 +6,6 @@
 
 #include <alps/hdf5/tensor.hpp>
 #include <alps/hdf5/complex.hpp>
-#include <boost/multi_array.hpp>
-
-#include <alps/hdf5/multi_array.hpp>
 #include <alps/hdf5/archive.hpp>
 #include <alps/utilities/short_print.hpp>
 
@@ -18,24 +15,6 @@
 #include <iostream>
 
 #include "gtest/gtest.h"
-
-TEST(hdf5, TestingTensorBoost){
-  alps::testing::unique_file ufile("real_complex_vec.h5.", alps::testing::unique_file::KEEP_AFTER);
-  const std::string&  filename = ufile.name();
-
-  boost::multi_array<std::complex<double>, 2> v(boost::extents[1][2]);
-  boost::multi_array<double, 2> w(boost::extents[1][2]);
-  {
-    alps::hdf5::archive ar(filename, "w");
-    ar["/vec"] << v;
-    ar["/vec2"] << w;
-  }
-  {
-    alps::hdf5::archive ar(filename);
-    alps::hdf5::load(ar, "/vec", v);
-  }
-}
-
 
 TEST(hdf5, TestingTensor){
   alps::testing::unique_file ufile("real_complex_vec.h5.", alps::testing::unique_file::KEEP_AFTER);

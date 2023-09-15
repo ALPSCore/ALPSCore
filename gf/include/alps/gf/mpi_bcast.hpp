@@ -37,26 +37,20 @@ namespace alps {
                @note Any detected mismatch results in MPI_Abort()
              */
             template <typename T, size_t N>
-            void broadcast(const alps::mpi::communicator& comm, boost::multi_array<T,N>& data, int root)
+            void broadcast(const alps::mpi::communicator& comm, alps::numerics::tensor<T,N>& data, int root)
             {
-                typedef boost::multi_array<T,N> data_type;
-                typedef typename data_type::index index_type;
-                typedef typename data_type::size_type size_type;
+                typedef alps::numerics::tensor<T,N> data_type;
+//                typedef typename data_type::index index_type;
                 
                 int rank=comm.rank();
                 const bool is_root=(rank==root);
 
                 try {
-                    // NOTE: questionable; boost::multi_array does not document comparison of storage orders
-                    if (! (data.storage_order()==boost::c_storage_order()) )
-                        throw std::logic_error("Unsupported storage order in multi_array broadcast at rank #"+
-                                               std::to_string(rank));
-                
                     // Compare dimensions with root. Normally should not be needed,
                     // and incurs extra communication cost ==> enabled only in debug mode.
 #ifndef         BOOST_DISABLE_ASSERTS
                     {
-                        size_type ndim=N;
+                        size_t ndim=N;
                         alps::mpi::broadcast(comm, ndim, root);
                         if (ndim!=N) {
                             throw std::logic_error("Different multi_array dimensions in broadcast:\n"
@@ -80,29 +74,19 @@ namespace alps {
                     // FIXME: In debug mode we could use MPI_Allreduce() and notify other processes
                     //        of the error. Has to be done carefully to avoid unmatched broadcasts.
                 }
-
-                // Broadcast the bases
-                boost::array<index_type,N> bases;
-                const index_type* root_bases=data.index_bases();
-                if (is_root) {
-                    std::copy(root_bases, root_bases+N, bases.begin()); // FIXME: this copy is not needed if done carefully
-                }
-                alps::mpi::broadcast(comm, bases.data(), N, root);
-
                 // Broadcast the array shape
-                boost::array<size_type,N> shape;
+                std::array<size_t,N> shape;
                 if (is_root) {
-                    const size_type* root_shape=data.shape();
-                    std::copy(root_shape, root_shape+N, shape.begin()); // FIXME: this copy is not needed if done carefully
+                  std::array<size_t, N> root_shape=data.shape();
+                  std::copy(root_shape.begin(), root_shape.end(), shape.begin()); // FIXME: this copy is not needed if done carefully
                 }
                 alps::mpi::broadcast(comm, shape.data(), N, root);
 
                 if (! is_root) {
-                    data.resize(shape);
-                    data.reindex(bases);
+                    data.reshape(shape);
                 }
                 
-                size_t nelements=data.num_elements();
+                size_t nelements=data.size();
 
                 // This is an additional broadcast, but we need to ensure MPI broadcast correctness,
                 // otherwise it would be a hell to debug down the road figuring out what exactly went wrong.
@@ -118,7 +102,7 @@ namespace alps {
                               << std::endl;
                     MPI_Abort(MPI_COMM_WORLD, 1);
                 }
-                alps::mpi::broadcast(comm, &data(bases), nelements, root);
+                alps::mpi::broadcast(comm, data.data(), nelements, root);
             }
 
         } // detail::

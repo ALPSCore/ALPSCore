@@ -8,6 +8,8 @@
 *build*/
 target/
 
+!common/build*
+
 # patching files
 *.patch
 *.orig
