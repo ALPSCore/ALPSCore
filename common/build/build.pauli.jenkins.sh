@@ -54,7 +54,7 @@ function setup_environment() {
             ;;
         OpenMPI)
             ENABLE_MPI=ON
-            module add openmpi/${_COMPILER_MODULE}/4.1.5
+            module add openmpi/${_COMPILER_MODULE}
             ;;
         *)
             echo "Unsupported MPI version passed via MPI_VERSION='$MPI_VERSION'; valid values are:" 2>&1
