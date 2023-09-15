@@ -5,8 +5,10 @@
 !.gitignore
 
 # build files
-build*/
+*build*/
 target/
+
+!common/build*
 
 # patching files
 *.patch
