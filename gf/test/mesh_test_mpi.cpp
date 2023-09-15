@@ -88,9 +88,9 @@ TEST_F(MeshTest,MpiBcastITime) {
 
 TEST_F(MeshTest,MpiBcastMomentum) {
     typedef agf::momentum_index_mesh mesh_type;
-    mesh_type::container_type points(boost::extents[20][3]);
-    for (std::size_t i=0; i<points.num_elements(); ++i) {
-        *(points.origin()+i)=i;
+    mesh_type::container_type points(20,3);
+    for (std::size_t i=0; i<points.size(); ++i) {
+        *(points.data()+i)=i;
     }
 
     mesh_type ref_mesh(points);
@@ -104,9 +104,9 @@ TEST_F(MeshTest,MpiBcastMomentum) {
 
 TEST_F(MeshTest,MpiBcastRealspace) {
     typedef agf::real_space_index_mesh mesh_type;
-    mesh_type::container_type points(boost::extents[20][3]);
-    for (std::size_t i=0; i<points.num_elements(); ++i) {
-        *(points.origin()+i)=i;
+    mesh_type::container_type points(20,3);
+    for (std::size_t i=0; i<points.size(); ++i) {
+        *(points.data()+i)=i;
     }
 
     mesh_type ref_mesh(points);
@@ -153,14 +153,14 @@ TEST_F(MeshTest,MpiBcastNumericalMesh) {
     section_edges[0] = -1.0;
     section_edges[1] =  0.0;
     section_edges[2] =  1.0;
-    boost::multi_array<Scalar,2> coeff(boost::extents[n_section][k+1]);
+    alps::numerics::tensor<Scalar,2> coeff(n_section,k+1);
 
     std::vector<pp_type> bf, bf2;
     for (int l = 0; l < dim; ++l){
-        std::fill(coeff.origin(), coeff.origin()+coeff.num_elements(), 0.0);
+        coeff.set_zero();
         bf.push_back(pp_type(n_section, section_edges, coeff));
 
-        std::fill(coeff.origin(), coeff.origin()+coeff.num_elements(), 1.0);
+        coeff.set_number(1.0);
         bf2.push_back(pp_type(n_section, section_edges, coeff));
     }
 

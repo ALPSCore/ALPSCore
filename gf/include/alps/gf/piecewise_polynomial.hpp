@@ -266,7 +266,7 @@ namespace alps {
 
             /// Set to zero
             void set_zero() {
-                std::fill(coeff_.origin(), coeff_.origin()+coeff_.num_elements(), 0.0);
+                coeff_.set_zero();
             }
 
             /// Compute the value at x.
@@ -399,8 +399,8 @@ namespace alps {
                 section_edges_.resize(n_sections_+1);
                 broadcast(comm, &section_edges_[0], n_sections_+1, root);
 
-                coeff_.resize(n_sections_,k_+1);
-                broadcast(comm, coeff_.origin(), (k_+1)*n_sections_, root);
+                coeff_.reshape(n_sections_,k_+1);
+                broadcast(comm, coeff_.data(), (k_+1)*n_sections_, root);
 
                 set_validity();
                 check_validity();
