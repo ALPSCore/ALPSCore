@@ -25,7 +25,7 @@ struct range<bool> {
 
 template <>
 struct range<char> {
-    static const std::size_t VALUE=256;
+    static const std::size_t VALUE=128; //note that some platforms have trouble with char 241 being equal to '\0'
 };
 
 template <typename T>

@@ -40,7 +40,7 @@ namespace alps {
         using swallow = int[];
         (void)swallow{0, (void(os << std::get<Is>(t)), 0)...};
         return os;
-      };
+      }
 
       template <typename ...Args>
       auto operator<<(std::ostream & os, const std::tuple<Args...>& t) ->
@@ -525,11 +525,11 @@ namespace alps {
         /**
          * @return const reference to the storage object
          */
-        const Storage &data() const { return data_; };
+        const Storage &data() const { return data_; }
         /**
          * @return reference to the storage object
          */
-        Storage &data() { return data_; };
+        Storage &data() { return data_; }
 
         /**
          * @return true if GF object was initilized as empty
@@ -626,7 +626,7 @@ namespace alps {
          */
         std::array < size_t, N_ > get_sizes(MESHES...meshes) {
           return get_sizes(std::forward_as_tuple(meshes...));
-        };
+        }
 
         /**
          * Tuple version of the previous method
@@ -638,7 +638,7 @@ namespace alps {
           std::array < size_t, N_ > sizes;
           sizes = fill_sizes(meshes, make_index_sequence<sizeof...(MESHES)>());
           return sizes;
-        };
+        }
 
         /**
          * The following method fill array with the sizes of each grid
@@ -653,7 +653,7 @@ namespace alps {
         template<size_t...Is>
         inline std::array < size_t, N_ > fill_sizes(const mesh_types &grids, index_sequence<Is...>) {
           return {{size_t(std::get<Is>(grids).extent())...}};
-        };
+        }
 
         /**
          * Swap meshes between
@@ -755,3 +755,4 @@ namespace alps {
 }
 
 #endif //ALPSCORE_GF_H
+

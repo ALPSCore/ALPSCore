@@ -21,7 +21,7 @@ set (test_srcs
 
 
 foreach(test ${test_srcs})
-    alps_add_gtest(${test} SRCS gf_test)
+    alps_add_gtest(${test} SRCS gf_test.cpp)
 endforeach(test)
 
 set (mpi_test_srcs
@@ -36,7 +36,7 @@ set (mpi_test_srcs
 
 if (ALPS_HAVE_MPI) 
     foreach(test ${mpi_test_srcs})
-        alps_add_gtest(${test} NOMAIN PARTEST SRCS gf_test mpi_guard)
+        alps_add_gtest(${test} NOMAIN PARTEST SRCS gf_test.cpp mpi_guard.cpp)
     endforeach(test)
 endif()
 

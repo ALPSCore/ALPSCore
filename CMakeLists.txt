@@ -10,7 +10,7 @@ project(ALPSCore C CXX)
 # set(CMAKE_CXX_STANDARD 11)
 
 # include cmake scripts from common/cmake directory
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/./common/cmake)
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/common/cmake)
 
 include(ALPSCommonModuleDefinitions)
 
@@ -72,9 +72,9 @@ endforeach()
 
 #Doxygen building is a function to prevent namespace damage
 function(build_documentation_)
-    set(DOXYFILE_SOURCE_DIR "${CMAKE_SOURCE_DIR}/common/doc")
+    set(DOXYFILE_SOURCE_DIR "${PROJECT_SOURCE_DIR}/common/doc")
     message(STATUS "Building documentation for sources in ${DOXYFILE_EXTRA_SOURCES}")  
-    set(DOXYFILE_IN "${CMAKE_SOURCE_DIR}/common/doc/Doxyfile.in") 
+    set(DOXYFILE_IN "${PROJECT_SOURCE_DIR}/common/doc/Doxyfile.in") 
     set(CMAKE_PROJECT_NAME "ALPSCore reference") # to provide name for the documentation 
     include(UseDoxygen)
     unset(CMAKE_PROJECT_NAME)
@@ -91,5 +91,5 @@ gen_cfg_main()
 # Create the main *.hpp config file
 gen_main_hpp_config()
 # create module file for lmod manager 
-configure_file("${CMAKE_SOURCE_DIR}/common/misc/alpscore.lmod.in" "${CMAKE_BINARY_DIR}/alpscore.lmod")
+configure_file("${PROJECT_SOURCE_DIR}/common/misc/alpscore.lmod.in" "${PROJECT_BINARY_DIR}/alpscore.lmod")
 

@@ -35,7 +35,7 @@ endfunction()
 # enable testing with gtest - fetch it if needed
 if (NOT tests_are_already_enabled) 
     if (ALPS_GLOBAL_BUILD)
-        set(gtest_root "${CMAKE_SOURCE_DIR}/common/deps/gtest-1.7.0")
+        set(gtest_root "${PROJECT_SOURCE_DIR}/common/deps/gtest-1.7.0")
     else(ALPS_GLOBAL_BUILD)
         set(gtest_root "${PROJECT_SOURCE_DIR}/../common/deps/gtest-1.7.0")
     endif(ALPS_GLOBAL_BUILD)
@@ -105,7 +105,7 @@ function(alps_add_gtest test)
             "Usage: ${usage_help_}")
     endif()
 
-    set(sources_ ${test} ${arg_SRCS})
+    set(sources_ ${test}.cpp ${arg_SRCS})
 
     alps_build_gtest_(NOMAIN ${arg_NOMAIN} TARGET ${test} SRCS ${sources_})
     

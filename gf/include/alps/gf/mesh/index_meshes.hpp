@@ -256,3 +256,4 @@ namespace alps {namespace gf {
   typedef real_space_index_mesh::index_type real_space_index;
   typedef index_mesh::index_type index;
 }}
+

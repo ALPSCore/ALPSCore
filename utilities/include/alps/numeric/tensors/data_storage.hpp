@@ -34,11 +34,11 @@ namespace alps {
         template<typename T2, typename C2>
         data_storage(const data_storage<T2, C2> & storage) : data_(storage.size()) {
           std::copy(storage.data(), storage.data() + storage.size(), data());
-        };
+        }
         template<typename T2, typename C2>
         data_storage(data_storage<T2, C2> && storage) : data_(storage.size()) {
           std::copy(storage.data(), storage.data() + storage.size(), data());
-        };
+        }
 
         /// Copy constructor
         data_storage(const data_storage<T, Cont>& rhs) : data_(rhs.data_) {};
@@ -51,12 +51,12 @@ namespace alps {
           }
           std::copy(rhs.data(), rhs.data() + rhs.size(), data());
           return *this;
-        };
+        }
         /// Move assignment
         data_storage<T, Cont>& operator=(data_storage<T, Cont>&& rhs) {
           data_ = std::move(rhs.data_);
           return *this;
-        };
+        }
         /**
          * General tensor assignment
          *
@@ -71,7 +71,7 @@ namespace alps {
           }
           std::copy(rhs.data(), rhs.data() + rhs.size(), data());
           return *this;
-        };
+        }
         /// Create data_dtorage from the view object by copying data into underlying container
         template<typename T2>
         data_storage(const data_view<T2> & view)  : data_(view.size()) {
@@ -82,7 +82,7 @@ namespace alps {
         template<typename T2>
         data_storage(data_view<T2> && view) noexcept  : data_(view.size()){
           std::copy(view.data(), view.data() + view.size(), data());
-        };
+        }
         /// Create data storage from raw buffer by data copying
         data_storage(const T *data, size_t size) : data_(size) {
           std::copy(data, data + size, this->data());
@@ -95,14 +95,14 @@ namespace alps {
         /// @return reference to the data at point i
         inline T& data(size_t i) {
           return data_[i];
-        };
+        }
         /// @return const-reference to the data at point i
-        inline const T& data(size_t i) const {return data_[i];};
+        inline const T& data(size_t i) const {return data_[i];}
         /// bracket operators
-        inline const T& operator()(size_t i) const {return data_[i];};
+        inline const T& operator()(size_t i) const {return data_[i];}
         inline T& operator()(size_t i) {
           return data_[i];
-        };
+        }
         /// @return data size
         size_t size() const {return data_.size();}
         /// @return const-reference to stored vector
@@ -131,7 +131,7 @@ namespace alps {
         template<typename T2>
         bool operator==(const data_view<T2>& r) const {
           return r == *this;
-        };
+        }
       };
     }
     template<typename T>

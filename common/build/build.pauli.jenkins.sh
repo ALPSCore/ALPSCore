@@ -25,24 +25,24 @@ function setup_environment() {
     _COMPILER_MODULE="${COMPILER/_//}"
 
     case $COMPILER in
-        aocc_3.1.0)
-            module add ${_COMPILER_MODULE} hdf5/${_COMPILER_MODULE}/1.10.7 boost/${_COMPILER_MODULE}/1.76.0
+        gcc_10.3.0)
+            module add ${_COMPILER_MODULE} hdf5/1.10.7 boost/1.76.0
             export CC=$(which gcc)
             export CXX=$(which g++)
             ;;
-        gcc_10.3.0)
-            module add ${_COMPILER_MODULE} hdf5/${_COMPILER_MODULE}/1.10.7 boost/${_COMPILER_MODULE}/1.76.0
-            export CC=$(which gcc)
-            export CXX=$(which g++)
+        aocc_3.1.0)
+            module add ${_COMPILER_MODULE} hdf5/1.10.7 boost/1.77.0
+            export CC=$(which clang)
+            export CXX=$(which clang++)
             ;;
         intel_2021.3.0)
-            module add ${_COMPILER_MODULE} hdf5/${_COMPILER_MODULE}/1.10.7 boost/${_COMPILER_MODULE}/1.75.0
+            module add ${_COMPILER_MODULE} hdf5/1.10.7 boost/1.75.0
             export CC=$(which icc)
             export CXX=$(which icpc)
             ;;
         *)
             echo "Unsupported compiler passed via COMPILER='$COMPILER'; valid values are:" 2>&1
-            echo "aocc_3.1.0 gcc_10.3.0 intel_2021.3.0"
+            echo "gcc_10.3.0 aocc_3.1.0 intel_2021.3.0"
             exit 1
             ;;
 

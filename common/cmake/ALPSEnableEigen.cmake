@@ -107,7 +107,7 @@ function(add_eigen)
   message(STATUS "eigen requested")
 
   if (NOT ALPS_EIGEN_UNPACK_DIR)
-    set(ALPS_EIGEN_UNPACK_DIR "${CMAKE_BINARY_DIR}/eigen")
+    set(ALPS_EIGEN_UNPACK_DIR "${PROJECT_BINARY_DIR}/eigen")
   endif()
   if (NOT ALPS_EIGEN_TGZ_FILE)
     set(ALPS_EIGEN_TGZ_FILE "${ALPS_EIGEN_UNPACK_DIR}/eigen.tgz")
