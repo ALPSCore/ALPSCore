@@ -739,7 +739,7 @@ namespace alps {
           using detail::operator<<;
           os<<G.meshes();
           for(int i=0;i<G.mesh1().extent();++i){
-            os<<(G.mesh1().points()[i])<<" ";
+            os<<(G.mesh1().points().data()[i])<<" ";
             size_t points = G.data().size()/G.data().shape()[0];
             for(size_t j = 0; j< points; ++j) {
               detail::print_no_complex<value_type>(os, G.data().data()[j + G.data().index(i)]);

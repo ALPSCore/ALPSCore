@@ -7,6 +7,7 @@
 #include "gtest/gtest.h"
 #include "alps/gf/piecewise_polynomial.hpp"
 #include <alps/testing/unique_file.hpp>
+#include <alps/numeric/tensors.hpp>
 
 TEST(PiecewisePolynomial, Orthogonalization) {
     typedef double Scalar;
@@ -14,7 +15,7 @@ TEST(PiecewisePolynomial, Orthogonalization) {
     typedef alps::gf::piecewise_polynomial<Scalar> pp_type;
 
     std::vector<double> section_edges(n_section+1);
-    boost::multi_array<Scalar,3> coeff(boost::extents[n_basis][n_section][k+1]);
+    alps::numerics::tensor<Scalar,3> coeff(n_basis,n_section,k+1);
 
     for (int s = 0; s < n_section + 1; ++s) {
         section_edges[s] = s*2.0/n_section - 1.0;
@@ -26,8 +27,8 @@ TEST(PiecewisePolynomial, Orthogonalization) {
 
     // x^0, x^1, x^2, ...
     for (int n = 0; n < n_basis; ++ n) {
-        boost::multi_array<Scalar,2> coeff(boost::extents[n_section][k+1]);
-        std::fill(coeff.origin(), coeff.origin()+coeff.num_elements(), 0.0);
+        alps::numerics::tensor<Scalar,2> coeff(n_section,k+1);
+        coeff.set_zero();
 
         for (int s = 0; s < n_section; ++s) {
             double rtmp = 1.0;
@@ -39,7 +40,7 @@ TEST(PiecewisePolynomial, Orthogonalization) {
                     rtmp /= l;
                     rtmp *= n + 1 - l;
                 }
-                coeff[s][l] = rtmp * std::pow(section_edges[s], n-l);
+                coeff(s,l) = rtmp * std::pow(section_edges[s], n-l);
             }
         }
 
@@ -96,8 +97,8 @@ TEST(PiecewisePolynomial, SaveLoad) {
     section_edges[0] = -1.0;
     section_edges[1] =  0.0;
     section_edges[2] =  1.0;
-    boost::multi_array<Scalar,2> coeff(boost::extents[n_section][k+1]);
-    std::fill(coeff.origin(), coeff.origin()+coeff.num_elements(), 0.0);
+    alps::numerics::tensor<Scalar,2> coeff(n_section,k+1);
+    coeff.set_zero();
 
     pp_type p(n_section, section_edges, coeff), p2;
     {
@@ -125,8 +126,8 @@ TEST(PiecewisePolynomial, SaveLoadStream) {
     section_edges[0] = -1.0;
     section_edges[1] =  0.0;
     section_edges[2] =  1.0;
-    boost::multi_array<Scalar,2> coeff(boost::extents[n_section][k+1]);
-    std::fill(coeff.origin(), coeff.origin()+coeff.num_elements(), 0.0);
+    alps::numerics::tensor<Scalar,2> coeff(n_section,k+1);
+    coeff.set_zero();
 
     pp_type p(n_section, section_edges, coeff), p2;
     {
@@ -152,8 +153,8 @@ TEST(PiecewisePolynomial, Copy) {
     section_edges[0] = -1.0;
     section_edges[1] =  0.0;
     section_edges[2] =  1.0;
-    boost::multi_array<Scalar,2> coeff(boost::extents[n_section][k+1]);
-    std::fill(coeff.origin(), coeff.origin()+coeff.num_elements(), 0.0);
+    alps::numerics::tensor<Scalar,2> coeff(n_section,k+1);
+    coeff.set_zero();
 
     pp_type p(n_section, section_edges, coeff), p2;
     EXPECT_NO_THROW({p2 = p;});

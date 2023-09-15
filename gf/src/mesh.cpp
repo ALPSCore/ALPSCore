@@ -26,7 +26,7 @@ std::ostream &operator<<(std::ostream &os, const momentum_realspace_index_mesh &
   os << "# "<<M.kind()<<" mesh: N: "<<M.extent()<<" dimension: "<<M.dimension()<<" points: ";
   for(int i=0;i<M.extent();++i){
     os<<"(";
-    for(int d=0;d<M.dimension()-1;++d){ os<<M.points()[i][d]<<","; } os<<M.points()[i][M.dimension()-1]<<") ";
+    for(int d=0;d<M.dimension()-1;++d){ os<<M.points()(i,d)<<","; } os<<M.points()(i,M.dimension()-1)<<") ";
   }
   os<<std::endl;
   return os;
@@ -60,14 +60,14 @@ std::ostream &operator<<(std::ostream &os, const chebyshev_mesh &M){
 
   namespace detail {
   // print 1D boost multiarray --- a 2D-point of a mesh
-  std::ostream& operator<<(std::ostream& s, const boost::multi_array<double, 1>& data)
+  std::ostream& operator<<(std::ostream& s, const alps::numerics::tensor<double, 1>& data)
   {
-    typedef boost::multi_array<double, 1> data_type;
-    typedef data_type::const_iterator iterator_type;
+    typedef alps::numerics::tensor<double, 1> data_type;
     s << "";
-    iterator_type it=data.begin();
-    if (data.end()!=it) s << *(it++);
-    for (; it!=data.end(); ++it) {
+    const double * it =data.data();
+    const double * end = data.data() + data.size();
+    if (end!=it) s << *(it++);
+    for (; it!=end; ++it) {
       s << " " << *it;
     }
     s << " "; // << std::endl;

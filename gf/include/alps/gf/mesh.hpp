@@ -8,8 +8,7 @@
 #include <cassert>
 #include <array>
 #include <type_traits>
-#include <boost/multi_array.hpp>
-#include <boost/operators.hpp>
+#include <alps/numeric/tensors.hpp>
 
 #include <alps/hdf5.hpp>
 
@@ -32,7 +31,7 @@ namespace alps {namespace gf {
   namespace detail {
     /// Print a 2D double boost::multi_array (for printing 2D meshes)
     /** @todo FIXME: Use a proper mesh-specific method instead, see operator<<(momentum_realspace_index_mesh) */
-    std::ostream& operator<<(std::ostream& s, const boost::multi_array<double, 1>& data);
+    std::ostream& operator<<(std::ostream& s, const alps::numerics::tensor<double, 1>& data);
 
   }
 }}
