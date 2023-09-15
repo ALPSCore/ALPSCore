@@ -21,7 +21,7 @@
 
 #include <vector>
 #include <complex>
-#include <exception> /* for std::uncaught_exception() */
+#include <exception> /* for std::uncaught_exceptions() */
 #include <functional> /* for std::plus */
 #include <algorithm> /* for std::max */
 
@@ -29,6 +29,12 @@
 
 #include <stdexcept>
 #include <typeinfo>
+
+#if __cpp_lib_uncaught_exceptions >= 201411L
+  #define EXCEPTION_CATCH std::uncaught_exceptions()>0
+#else 
+  #define EXCEPTION_CATCH std::uncaught_exception()
+#endif
 
 
 namespace alps {
@@ -245,7 +251,7 @@ namespace alps {
             {
                 if (!initialized_) return; // we are not in control, don't mess up other's logic.
                 if (finalized()) return; // MPI is finalized --- don't touch it.
-                if (abort_on_exception_ && std::uncaught_exception()) {
+                if (abort_on_exception_ && (EXCEPTION_CATCH)) {
                     this->abort(255); // FIXME: make the return code configurable?
                 }
                 MPI_Finalize();
