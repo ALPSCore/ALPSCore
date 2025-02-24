@@ -26,6 +26,7 @@ function(UseGtest gtest_root)
             
     # export gtest variables
     set (GTEST_ROOT ${gtest_root} PARENT_SCOPE)
+    set (GTEST_INCLUDE_DIRS ${gtest_root}/include PARENT_SCOPE)
     set (GTEST_INCLUDE_DIR ${gtest_root}/include PARENT_SCOPE)
     set (GTEST_MAIN_LIBRARIES gtest_main PARENT_SCOPE)
     set (GTEST_MAIN_LIBRARY gtest_main PARENT_SCOPE)
@@ -42,7 +43,6 @@ if (NOT tests_are_already_enabled)
 
     UseGtest(${gtest_root})
     unset(gtest_root)
-    find_package(GTest)
     # set (LINK_TEST  ${GTEST_MAIN_LIBRARIES}) 
     include_directories(SYSTEM ${GTEST_INCLUDE_DIRS})
     set(tests_are_already_enabled TRUE)

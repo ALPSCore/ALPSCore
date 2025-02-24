@@ -1,0 +1,64 @@
+name: ALPSCore CI/CD
+
+on: [push, pull_request]
+
+jobs:
+  linux-build:
+    name: Build ALPS on ${{ matrix.plat.os }}
+    runs-on: ${{ matrix.plat.os }}
+    strategy:
+      matrix:
+        # macos-13 is an intel runner, macos-14 is apple silicon
+        plat: 
+        - { os: ubuntu-22.04, comp_pack: "gcc-10 g++-10", c_compiler: gcc, cxx_compiler: g++, c_version: 10}
+        - { os: ubuntu-22.04, comp_pack: "gcc-11 g++-11", c_compiler: gcc, cxx_compiler: g++, c_version: 11}
+        - { os: ubuntu-22.04, comp_pack: "gcc-12 g++-12", c_compiler: gcc, cxx_compiler: g++, c_version: 12}
+        - { os: ubuntu-24.04, comp_pack: "gcc-13 g++-13", c_compiler: gcc, cxx_compiler: g++, c_version: 13}
+        - { os: ubuntu-24.04, comp_pack: "gcc-14 g++-14", c_compiler: gcc, cxx_compiler: g++, c_version: 14}
+        - { os: ubuntu-22.04, comp_pack: "clang-13", c_compiler: clang, cxx_compiler: clang++, c_version: 13}
+        - { os: ubuntu-22.04, comp_pack: "clang-14", c_compiler: clang, cxx_compiler: clang++, c_version: 14}
+        - { os: ubuntu-22.04, comp_pack: "clang-15", c_compiler: clang, cxx_compiler: clang++, c_version: 15}
+        - { os: ubuntu-24.04, comp_pack: "clang-16", c_compiler: clang, cxx_compiler: clang++, c_version: 16}
+        - { os: ubuntu-24.04, comp_pack: "clang-17", c_compiler: clang, cxx_compiler: clang++, c_version: 17}
+        - { os: ubuntu-24.04, comp_pack: "clang-18", c_compiler: clang, cxx_compiler: clang++, c_version: 18}
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt install ${{ matrix.plat.comp_pack }}
+          sudo apt install liblapack-dev libblas-dev libopenmpi-dev libhdf5-serial-dev libboost-all-dev
+      - name: Build ALPSCore
+        env:
+          CC:  ${{ matrix.plat.c_compiler }}-${{ matrix.plat.c_version }}
+          CXX: ${{ matrix.plat.cxx_compiler }}-${{ matrix.plat.c_version }}
+        run: |
+          cmake -S $GITHUB_WORKSPACE -B build
+          cmake --build build -j 2
+          cmake --build build -j 2 -t test
+
+  macos-build:
+    name: Build ALPS on ${{ matrix.plat.os }}
+    runs-on: ${{ matrix.plat.os }}
+    strategy:
+      matrix:
+        # macos-13 is an intel runner, macos-14 is apple silicon
+        plat: 
+        - { os: macos-14, c_compiler: gcc, cxx_compiler: g++, c_version: 14}
+        - { os: macos-15, c_compiler: gcc, cxx_compiler: g++, c_version: 14}
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          brew install openmpi hdf5 boost
+      - name: Build ALPS
+        env:
+          CC:  ${{ matrix.plat.c_compiler }}-${{ matrix.plat.c_version }}
+          CXX: ${{ matrix.plat.cxx_compiler }}-${{ matrix.plat.c_version }}
+        run: |
+          cmake -S $GITHUB_WORKSPACE -B build
+          cmake --build build -j 2
+          cmake --build build -j 2 -t test
+
