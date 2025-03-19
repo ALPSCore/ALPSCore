@@ -1,4 +1,4 @@
-![Build Status](http://pauli.physics.lsa.umich.edu:8080/job/public_projects/job/alpscore.old/job/master/badge/icon)
+[![ALPSCore CI/CD](https://github.com/ALPSCore/ALPSCore/actions/workflows/alpscore.yml/badge.svg?branch=master)](https://github.com/ALPSCore/ALPSCore/actions/workflows/alpscore.yml)
 
 The ALPSCore project, based on the ALPS (Algorithms and Libraries for Physics Simulations) project, provides generic algorithms and utilities for physics problems. It strives to increase software reuse in the physics community.
 
