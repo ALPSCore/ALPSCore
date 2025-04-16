@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.10)
 project(ising_mc CXX)
 
 # Not strictly necessary, but will create executables that are
