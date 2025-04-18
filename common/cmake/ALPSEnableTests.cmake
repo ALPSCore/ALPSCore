@@ -36,9 +36,9 @@ endfunction()
 # enable testing with gtest - fetch it if needed
 if (NOT tests_are_already_enabled) 
     if (ALPS_GLOBAL_BUILD)
-        set(gtest_root "${PROJECT_SOURCE_DIR}/common/deps/gtest-1.7.0")
+        set(gtest_root "${PROJECT_SOURCE_DIR}/common/deps/gtest-1.16.0")
     else(ALPS_GLOBAL_BUILD)
-        set(gtest_root "${PROJECT_SOURCE_DIR}/../common/deps/gtest-1.7.0")
+        set(gtest_root "${PROJECT_SOURCE_DIR}/../common/deps/gtest-1.16.0")
     endif(ALPS_GLOBAL_BUILD)
 
     UseGtest(${gtest_root})
