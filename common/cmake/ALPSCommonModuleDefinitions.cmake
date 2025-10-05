@@ -14,9 +14,9 @@ set(CMAKE_DISABLE_SOURCE_CHANGES ON)
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
 # Ignore special meaning of PackageName_ROOT variables (since CMake 3.12)
-#if (NOT CMAKE_VERSION VERSION_LESS 3.12)
-#  cmake_policy(SET CMP0074 OLD)
-#endif()
+if (NOT CMAKE_VERSION VERSION_LESS 3.12)
+  cmake_policy(SET CMP0074 OLD)
+endif()
 
 # RPATH fix
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
@@ -123,7 +123,6 @@ macro(add_boost) # usage: add_boost(component1 component2...)
   if (ALPS_BUILD_SHARED)
     set(Boost_USE_STATIC_LIBS        OFF)
   endif()
-  cmake_policy(SET CMP0167 NEW)
   find_package (Boost 1.56.0 COMPONENTS ${ARGV} REQUIRED)
   # Remember Boost version
   set(ALPSCore_BOOST_VERSION ${Boost_MAJOR_VERSION})

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.1)
 project(iniparser C)
 
 add_library(libiniparser OBJECT src/dictionary.c src/iniparser.c)

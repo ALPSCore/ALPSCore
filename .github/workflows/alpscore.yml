@@ -45,14 +45,14 @@ jobs:
       matrix:
         # macos-13 is an intel runner, macos-14 is apple silicon
         plat: 
-        #- { os: macos-14, c_compiler: gcc, cxx_compiler: g++, c_version: 14}
+        - { os: macos-14, c_compiler: gcc, cxx_compiler: g++, c_version: 14}
         - { os: macos-15, c_compiler: gcc, cxx_compiler: g++, c_version: 14}
 
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
         run: |
-          brew install cmake openmpi hdf5 boost eigen
+          brew install openmpi hdf5 boost eigen
       - name: Build ALPS
         env:
           CC:  ${{ matrix.plat.c_compiler }}-${{ matrix.plat.c_version }}

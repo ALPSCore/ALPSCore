@@ -2,7 +2,7 @@
 # alps-hdf5 cmake configuration script.
 #
 
-cmake_minimum_required (VERSION 3.10)
+cmake_minimum_required (VERSION 3.1)
 
 # define project name
 project (alps-hdf5 CXX)

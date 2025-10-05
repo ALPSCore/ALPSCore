@@ -2,7 +2,7 @@
 # alps-accumulators cmake configuration script.
 #
 
-cmake_minimum_required (VERSION 3.10)
+cmake_minimum_required (VERSION 3.1)
 
 # project name
 project (alps-accumulators CXX)
