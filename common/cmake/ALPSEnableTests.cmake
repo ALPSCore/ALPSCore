@@ -7,7 +7,6 @@ option(TestXMLOutput "Output tests to xml" OFF)
 
 # Find gtest or otherwise fetch it into the build_dir/gtest
 function(UseGtest gtest_root)  
-    #set (gtest_root ${ALPS_ROOT_DIR}/../common/deps/gtest-1.7.0)
     message(STATUS "gtest source specified at ${gtest_root}")
     find_path(gtest_root NAMES "include/gtest/gtest.h" HINTS ${gtest_root})
 
@@ -36,9 +35,9 @@ endfunction()
 # enable testing with gtest - fetch it if needed
 if (NOT tests_are_already_enabled) 
     if (ALPS_GLOBAL_BUILD)
-        set(gtest_root "${PROJECT_SOURCE_DIR}/common/deps/gtest-1.7.0")
+        set(gtest_root "${PROJECT_SOURCE_DIR}/common/deps/googletest-1.17.0")
     else(ALPS_GLOBAL_BUILD)
-        set(gtest_root "${PROJECT_SOURCE_DIR}/../common/deps/gtest-1.7.0")
+        set(gtest_root "${PROJECT_SOURCE_DIR}/../common/deps/googletest-1.17.0")
     endif(ALPS_GLOBAL_BUILD)
 
     UseGtest(${gtest_root})
