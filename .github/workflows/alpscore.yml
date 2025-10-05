@@ -52,7 +52,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install dependencies
         run: |
-          brew install openmpi hdf5 boost eigen
+          brew install cmake openmpi hdf5 boost eigen
       - name: Build ALPS
         env:
           CC:  ${{ matrix.plat.c_compiler }}-${{ matrix.plat.c_version }}
