@@ -108,7 +108,7 @@ TEST(TensorTest, TestCopyAssignments) {
   ASSERT_EQ(T2(0,0), -15.0);
 }
 
-tensor_view<double, 2> make_tensor(int N, int ii, int x) {
+tensor<double, 2> make_tensor(int N, int ii, int x) {
   tensor<double, 3> T(N, N, N);
   for(size_t i = 0; i< N; ++i) {
     for (size_t j = 0; j < N; ++j) {
@@ -117,9 +117,8 @@ tensor_view<double, 2> make_tensor(int N, int ii, int x) {
       }
     }
   }
-  tensor_view<double, 2> view = T(ii);
-  T *= 1.0;
-  return std::move(view);
+  tensor<double, 2> out = T(ii);
+  return out;
 }
 
 TEST(TensorTest, TestMoveAssignments2) {
