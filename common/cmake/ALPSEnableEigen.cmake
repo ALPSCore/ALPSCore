@@ -147,7 +147,10 @@ function(add_eigen)
  unless you explicitly set CMake variable ALPS_INSTALL_EIGEN to FALSE.")
   
   if (NOT ALPS_INSTALL_EIGEN)
-    find_package(Eigen3 ${ALPS_EIGEN_MIN_VERSION})
+    find_package(Eigen3 ${ALPS_EIGEN_MIN_VERSION} CONFIG QUIET)
+    if (NOT EIGEN3_FOUND)
+      find_package(Eigen3 ${ALPS_EIGEN_MIN_VERSION})
+    endif()
     if (NOT EIGEN3_FOUND AND NOT DEFINED EIGEN3_VERSION_OK) # CMake 3.3+ would use Eigen3_FOUND
       message(FATAL_ERROR
 " 
