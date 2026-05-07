@@ -58,7 +58,7 @@ jobs:
           CC:  ${{ matrix.plat.c_compiler }}-${{ matrix.plat.c_version }}
           CXX: ${{ matrix.plat.cxx_compiler }}-${{ matrix.plat.c_version }}
         run: |
-          cmake -S $GITHUB_WORKSPACE -B build
+          cmake -S $GITHUB_WORKSPACE -B build -DALPS_INSTALL_EIGEN=true
           cmake --build build -j 2
           cmake --build build -j 2 -t test
 
