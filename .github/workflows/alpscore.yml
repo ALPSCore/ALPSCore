@@ -61,7 +61,7 @@ jobs:
           EIGEN3_PREFIX="$(brew --prefix eigen)"
           cmake -S "$GITHUB_WORKSPACE" -B build \
             -DCMAKE_PREFIX_PATH="$EIGEN3_PREFIX" \
-            -DEigen3_DIR="$EIGEN3_PREFIX/share/eigen3/cmake"
+            -DEIGEN3_INCLUDE_DIR="$EIGEN3_PREFIX/include/eigen3"
           cmake --build build -j 2
           cmake --build build -j 2 -t test
 

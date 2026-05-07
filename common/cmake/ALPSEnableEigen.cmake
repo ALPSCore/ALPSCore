@@ -151,6 +151,11 @@ function(add_eigen)
     if (NOT EIGEN3_FOUND)
       find_package(Eigen3 ${ALPS_EIGEN_MIN_VERSION})
     endif()
+    # CONFIG mode sets Eigen3_VERSION (mixed case); MODULE mode sets EIGEN3_VERSION (uppercase).
+    # Normalize to EIGEN3_VERSION for the rest of the script.
+    if (EIGEN3_FOUND AND NOT EIGEN3_VERSION AND Eigen3_VERSION)
+      set(EIGEN3_VERSION ${Eigen3_VERSION})
+    endif()
     if (NOT EIGEN3_FOUND AND NOT DEFINED EIGEN3_VERSION_OK) # CMake 3.3+ would use Eigen3_FOUND
       message(FATAL_ERROR
 " 
