@@ -58,7 +58,7 @@ jobs:
           CC:  ${{ matrix.plat.c_compiler }}-${{ matrix.plat.c_version }}
           CXX: ${{ matrix.plat.cxx_compiler }}-${{ matrix.plat.c_version }}
         run: |
-          cmake -S $GITHUB_WORKSPACE -B build
+          EIGEN3_INCLUDE_DIR="$(brew --prefix eigen)/include/eigen3"
+          cmake -S $GITHUB_WORKSPACE -B build -DEIGEN3_INCLUDE_DIR="$EIGEN3_INCLUDE_DIR"
           cmake --build build -j 2
           cmake --build build -j 2 -t test
-
