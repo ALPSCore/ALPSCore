@@ -124,8 +124,8 @@ TEST(TensorTest, TestMoveAssignments2) {
   };
   tensor<double, 2> T1(N, N);
   tensor<double, 2> T2(N, N);
-  T1 = move_tensor(N, 0, 2);
-  T2 = move_tensor(N, 1, 3);
+  T1 = move_tensor(T, N, 0, 2);
+  T2 = move_tensor(T, N, 1, 3);
   for (size_t j = 0; j < N; ++j) {
     for (size_t k = 0; k < N; ++k) {
       ASSERT_EQ(T1(j,k), 0*2*2 + j*2 + k );
