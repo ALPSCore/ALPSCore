@@ -121,8 +121,7 @@ REGISTER_TYPED_TEST_CASE_P(MpiReduceScalarTest,
 // Now test with std::plus
 // Note: char/signed char/unsigned char are excluded because MPI_CHAR is not
 // valid for arithmetic reductions per MPI-3.1 standard (Table 5.2), and
-// OpenMPI 4.1+ enforces this.  Deprecated MPI C++ binding types (bool,
-// complex) are also excluded for portability.
+// OpenMPI 4.1+ enforces this.
 
 typedef ::testing::Types<Proxy<signed short int,      std::plus>,
                          Proxy<signed int,            std::plus>,
@@ -135,6 +134,15 @@ typedef ::testing::Types<Proxy<signed short int,      std::plus>,
                          Proxy<float,                 std::plus>,
                          Proxy<double,                std::plus>,
                          Proxy<long double,           std::plus>
+#ifdef ALPS_MPI_HAS_MPI_CXX_BOOL
+                         ,Proxy<bool,                  std::plus>
+#endif
+#ifdef ALPS_MPI_HAS_MPI_CXX_FLOAT_COMPLEX
+                         ,Proxy<std::complex<float>,   std::plus>
+#endif
+#ifdef ALPS_MPI_HAS_MPI_CXX_DOUBLE_COMPLEX
+                         ,Proxy<std::complex<double>,  std::plus>
+#endif
                         > MyPlusTestTypes;
 
 INSTANTIATE_TYPED_TEST_CASE_P(MyPlus, MpiReduceScalarTest, MyPlusTestTypes);
@@ -154,6 +162,15 @@ typedef ::testing::Types<Proxy<signed short int,      alps::mpi::maximum>,
                          Proxy<float,                 alps::mpi::maximum>,
                          Proxy<double,                alps::mpi::maximum>,
                          Proxy<long double,           alps::mpi::maximum>
+#ifdef ALPS_MPI_HAS_MPI_CXX_BOOL
+                         ,Proxy<bool,                 alps::mpi::maximum>
+#endif
+#ifdef ALPS_MPI_HAS_MPI_CXX_FLOAT_COMPLEX
+                         ,Proxy<std::complex<float>,  alps::mpi::maximum>
+#endif
+#ifdef ALPS_MPI_HAS_MPI_CXX_DOUBLE_COMPLEX
+                         ,Proxy<std::complex<double>, alps::mpi::maximum>
+#endif
                         > MyMaxTestTypes;
 
 INSTANTIATE_TYPED_TEST_CASE_P(MyMax, MpiReduceScalarTest, MyMaxTestTypes);
