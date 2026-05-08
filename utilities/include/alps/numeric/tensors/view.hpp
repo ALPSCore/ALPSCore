@@ -7,6 +7,7 @@
 #ifndef ALPSCORE_GF_VIEW_H
 #define ALPSCORE_GF_VIEW_H
 
+#include <cassert>
 
 #include "data_storage.hpp"
 

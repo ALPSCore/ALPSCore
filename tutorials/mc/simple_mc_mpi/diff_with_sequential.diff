@@ -2,7 +2,7 @@ diff -Bb -u -r ../simple_mc/CMakeLists.txt ./CMakeLists.txt
 --- ../simple_mc/CMakeLists.txt	2017-11-06 10:24:45.705674940 -0500
 +++ ./CMakeLists.txt	2017-11-06 10:24:45.705674940 -0500
 @@ -1,5 +1,5 @@
- cmake_minimum_required(VERSION 3.0)
+ cmake_minimum_required(VERSION 3.10)
 -project(simple_mc CXX)
 +project(simple_mc_mpi CXX)
  

@@ -1,5 +1,5 @@
 project(Tutorial_manypoints C CXX)
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.10)
 
 find_package(ALPSCore 2.0 REQUIRED)
 

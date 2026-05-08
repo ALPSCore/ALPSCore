@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.10)
 project(ising2_mc CXX)
 
 add_executable(${PROJECT_NAME} main.cpp ising.cpp)

@@ -7,6 +7,8 @@
 #include <alps/accumulators/mpi.hpp>
 #include <alps/hdf5.hpp>
 
+#include <cassert>
+
 #ifdef ALPS_HAVE_MPI
 
     namespace alps {
