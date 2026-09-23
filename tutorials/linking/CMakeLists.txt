@@ -3,7 +3,7 @@
 # Several additional options are possible (or even recommended), 
 # this tutorial only illustrates the minimal options
 
-# we need at least cmake version 3.10
+# we need at least cmake version 3.16
 cmake_minimum_required(VERSION 3.16)
 
 # the project is called 'linking', and it is a C++ project

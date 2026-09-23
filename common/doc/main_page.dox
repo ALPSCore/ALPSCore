@@ -18,13 +18,15 @@
  *
  * 2. Prerequisites:
  *
- *    + C++ compiler: g++ >= 4.2 OR Intel >= 10.0 OR Clang >= 3.2
+ *    + C++ compiler: g++ >= 4.8.1 OR Intel >= 15.0 OR Clang >= 3.2 for the
+ *      libraries; building the tests (Testing=ON, the default) needs C++17
+ *      support (otherwise configure with -DTesting=OFF)
  *
  *    + CMake >= 3.16
  *
- *    + HDF5 library >=1.8
+ *    + HDF5 library >= 1.10.2
  *
- *    + Boost >= 1.56.0
+ *    + Boost >= 1.70.0
  *
  * 3. Building:
  *

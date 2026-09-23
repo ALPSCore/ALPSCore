@@ -4,7 +4,10 @@ Prerequisites
 
 To install ALPSCore, the following is needed:
 
- 1. C++ compiler: g++ >= 4.8.1 OR Intel >= 15.0 OR Clang >= 3.2
+ 1. C++ compiler: g++ >= 4.8.1 OR Intel >= 15.0 OR Clang >= 3.2 for the libraries.
+    Building the tests (`Testing=ON`, the default) needs a compiler with C++17
+    support, because the bundled GoogleTest requires C++17; with an older
+    compiler, configure with `-DTesting=OFF`.
  2. CMake >= 3.16, including CMake 4.x
  3. HDF5 library >= 1.10.2 (earlier releases are rejected at configure time; HDF5 1.10.0 had a [known problem](https://github.com/ALPSCore/ALPSCore/wiki/Known-problems-and-workarounds#some-hdf5-related-tests-fail); modern releases such as 1.14.x work fine)
  4. Boost >= 1.70.0 (1.70 introduced `BoostConfig.cmake`, required for CMake 4.x)
