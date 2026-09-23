@@ -8,6 +8,7 @@
 #define ALPSCORE_GF_TENSOR_H
 
 
+#include <algorithm>
 #include <array>
 #include <iostream>
 #include <numeric>

@@ -15,6 +15,7 @@
 #include "gtest/gtest.h"
 #include "dataset.hpp"
 
+#include <algorithm>
 #include <iostream>
 
 template <typename Acc>

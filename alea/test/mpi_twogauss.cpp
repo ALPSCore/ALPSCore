@@ -14,6 +14,7 @@
 #include "gtest/gtest.h"
 #include "dataset.hpp"
 
+#include <algorithm>
 #include <iostream>
 
 TEST(reducer, setup)

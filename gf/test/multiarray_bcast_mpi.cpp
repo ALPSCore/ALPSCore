@@ -9,6 +9,7 @@
 #include "gtest/gtest.h"
 #include "mpi_guard.hpp"
 #include <alps/utilities/gtest_par_xml_output.hpp>
+#include <algorithm>
 
 #define ARRAY_EXTENTS std::array<size_t, 4>{{2,3,5,7}}
 

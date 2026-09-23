@@ -10,6 +10,7 @@
 #endif
 #include <alps/gf/mesh/index.hpp>
 #include <alps/gf/mesh/mesh_base.hpp>
+#include <algorithm>
 
 namespace alps {namespace gf {
 

@@ -9,6 +9,8 @@
 
 #include <alps/dictionary.hpp>
 
+#include <algorithm>
+
 #ifdef ALPS_HAVE_ALPS_HDF5
 #include <alps/hdf5/map.hpp>
 #endif

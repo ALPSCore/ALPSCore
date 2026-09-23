@@ -18,6 +18,7 @@
 
 #include <gtest/gtest.h>
 
+#include <algorithm>
 #include <fstream>
 
 /// Helper class to make `argc` & `argv` from argument strings

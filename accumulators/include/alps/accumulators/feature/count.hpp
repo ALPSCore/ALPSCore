@@ -15,6 +15,7 @@
 
 #include <boost/cstdint.hpp>
 
+#include <algorithm>
 #include <stdexcept>
 #include <type_traits>
 

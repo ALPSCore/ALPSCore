@@ -12,6 +12,8 @@
 #include <boost/preprocessor/tuple/to_seq.hpp>
 #include <boost/preprocessor/seq/for_each.hpp>
 
+#include <algorithm>
+
 #define ALPS_ACCUMULATOR_VALUE_TYPES_SEQ BOOST_PP_TUPLE_TO_SEQ(ALPS_ACCUMULATOR_VALUE_TYPES_SIZE, (ALPS_ACCUMULATOR_VALUE_TYPES))
 
 // DEBUG: to force boost assertion to be an exception, to work nicely with google test

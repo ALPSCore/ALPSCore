@@ -5,6 +5,7 @@
  */
 
 #include <gtest/gtest.h>
+#include <algorithm>
 #include <complex>
 
 #include "alps/numeric/tensors/tensor_base.hpp"

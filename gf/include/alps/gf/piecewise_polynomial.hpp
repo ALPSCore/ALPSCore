@@ -7,6 +7,7 @@
 #ifndef ALPSCORE_PIEACEWISE_POLYNOMIAL_HPP
 #define ALPSCORE_PIEACEWISE_POLYNOMIAL_HPP
 
+#include <algorithm>
 #include <complex>
 #include <cmath>
 #include <type_traits>

@@ -12,6 +12,7 @@
 // #include <alps/multi_array.hpp>
 
 #include <boost/multi_array.hpp>
+#include <algorithm>
 
 namespace alps {
     namespace hdf5 {

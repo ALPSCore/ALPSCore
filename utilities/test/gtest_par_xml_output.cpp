@@ -5,6 +5,7 @@
  */
 #include "alps/utilities/gtest_par_xml_output.hpp"
 #include "gtest/gtest.h"
+#include <algorithm>
 
 TEST(gtest_par_xml_output, main)
 {

@@ -15,6 +15,7 @@
 #include <alps/alea/internal/pooling.hpp>
 
 #include <boost/math/distributions/fisher_f.hpp>
+#include <algorithm>
 
 namespace alps { namespace alea {
     class t2_result;
