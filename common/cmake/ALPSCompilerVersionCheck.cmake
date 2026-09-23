@@ -68,6 +68,13 @@ mark_as_advanced(ALPS_CXX_STD)
 
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# Compile ALPSCore with exactly the requested standard (not just "at least"):
+# compile features alone let the compiler use its newer default.
+if (NOT ALPS_CXX_STD STREQUAL "custom")
+  string(REGEX REPLACE "^c[+][+]" "" CMAKE_CXX_STANDARD ${ALPS_CXX_STD})
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+endif()
+
 set(ALPS_CXX_FLAGS "")
 set(ALPS_CXX_FEATURES "")
 # Downstream projects need the same CMake version as ALPSCore itself (the
