@@ -14,8 +14,10 @@ if [ -n "$ALPS_BOOST_VERSION" ]; then
   boost_url=https://sourceforge.net/projects/boost/files/boost/${ALPS_BOOST_VERSION//_/.}/boost_${ALPS_BOOST_VERSION}.tar.gz/download
   wget -S -O $boost_tgz $boost_url
   tar -C $download_dir -xzf $boost_tgz
-  boost_cmake_params="-DBoost_NO_SYSTEM_PATHS=true -DBoost_NO_BOOST_CMAKE=true -DBOOST_ROOT=$download_dir/boost_${ALPS_BOOST_VERSION}"
-  no_boost_libs=true
+  # Install headers and BoostConfig.cmake (the source tree has no config package)
+  boost_prefix=$download_dir/install
+  (cd $download_dir/boost_${ALPS_BOOST_VERSION} && ./bootstrap.sh && ./b2 --prefix=$boost_prefix --with-filesystem -d0 install)
+  boost_cmake_params="-DBoost_ROOT=$boost_prefix"
 fi
 
 # FIXME: A hack to suppress warnings in MPI headers

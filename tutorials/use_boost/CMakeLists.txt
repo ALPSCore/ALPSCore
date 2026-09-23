@@ -25,12 +25,10 @@ target_link_libraries(use_boost_header ${ALPSCore_LIBRARIES})
 # Let's ask for "filesystem" package (which itself depends on "system")
 
 message("ALPSCore used Boost version ${ALPSCore_BOOST_VERSION}")
-find_package(Boost ${ALPSCore_BOOST_VERSION} EXACT REQUIRED filesystem system)
-
-message("Found Boost libraries: ${Boost_LIBRARIES}")
+find_package(Boost ${ALPSCore_BOOST_VERSION} REQUIRED CONFIG COMPONENTS filesystem)
 
 # Our executable "use_boost_fs" is made from a single source file "use_boost_fs.cpp"
 add_executable(use_boost_fs use_boost_fs.cpp)
 
-# ...and it depends on Boost libraries and ALPSCore
-target_link_libraries(use_boost_fs ${ALPSCore_LIBRARIES} ${Boost_LIBRARIES})
+# Link against the imported Boost::filesystem target (brings in Boost::system automatically)
+target_link_libraries(use_boost_fs ${ALPSCore_LIBRARIES} Boost::filesystem)

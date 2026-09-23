@@ -1,6 +1,6 @@
 language: cpp
 sudo: required
-dist: trusty
+dist: jammy  # Boost 1.74, HDF5 1.10.7 (trusty is too old)
 
 compiler:
   - gcc
@@ -8,12 +8,9 @@ compiler:
 
 addons:
   apt:
-    sources:
-      # Boost 1.58
-      - sourceline: ppa:kzemek/boost
     packages:
-      - libboost1.58-dev
-      - libboost-filesystem1.58-dev # for `use_boost` tutorial
+      - libboost-dev
+      - libboost-filesystem-dev # for `use_boost` tutorial
       - openmpi-bin
       - openmpi-common
       - openmpi-doc
@@ -35,14 +32,13 @@ env:
   - ENABLE_MPI=OFF ALPS_CXX_STD=c++11
   - ENABLE_MPI=ON ALPS_CC=mpicc ALPS_CXX=mpic++ ALPS_CXX_STD=c++14
   - ENABLE_MPI=OFF ALPS_CXX_STD=c++14
-  - ALPS_BOOST_VERSION=1_56_0 ENABLE_MPI=ON ALPS_CC=mpicc ALPS_CXX=mpic++ ALPS_CXX_STD=c++11
-  - ALPS_BOOST_VERSION=1_67_0 ENABLE_MPI=ON ALPS_CC=mpicc ALPS_CXX=mpic++ ALPS_CXX_STD=c++11
-  - ALPS_BOOST_VERSION=1_67_0 ENABLE_MPI=ON ALPS_CC=mpicc ALPS_CXX=mpic++ ALPS_CXX_STD=c++14
+  - ALPS_BOOST_VERSION=1_91_0 ENABLE_MPI=ON ALPS_CC=mpicc ALPS_CXX=mpic++ ALPS_CXX_STD=c++11
+  - ALPS_BOOST_VERSION=1_91_0 ENABLE_MPI=ON ALPS_CC=mpicc ALPS_CXX=mpic++ ALPS_CXX_STD=c++14
 
 matrix:
   include:
     - os: osx
-      env: ENABLE_MPI=OFF ALPS_CXX_STD=c++11 ALPS_BOOST_VERSION=1_67_0 
+      env: ENABLE_MPI=OFF ALPS_CXX_STD=c++11 ALPS_BOOST_VERSION=1_91_0
 
 before_script:
   - ./common/build/build_prereq.travis.sh

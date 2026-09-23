@@ -2,7 +2,6 @@
 # all modules of ALPSCore
 
 # This script expects the following environment variables
-# BOOST_ROOT - location for boost distribution
 # GTEST_ROOT - location for gtest sources/binaries
 # HDF5_ROOT - location for the HDF5 distribution
 

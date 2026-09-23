@@ -5,23 +5,25 @@ Prerequisites
 To install ALPSCore, the following is needed:
 
  1. C++ compiler: g++ >= 4.8.1 OR Intel >= 15.0 OR Clang >= 3.2
- 2. CMake >= 3.1 (*NOTE*: CMake 3.6.0 on Mac has a [known problem](https://github.com/ALPSCore/ALPSCore/wiki/Known-problems-and-workarounds))
- 3. HDF5 library 1.8.x (*NOTE*: HDF5 1.10 has a [known problem](https://github.com/ALPSCore/ALPSCore/wiki/Known-problems-and-workarounds#some-hdf5-related-tests-fail))
- 4. Boost >= 1.56.0
- 5. Eigen 3.3.4 (can be requested to be downloaded automatically)
+ 2. CMake >= 3.10, including CMake 4.x (*NOTE*: CMake 3.6.0 on Mac has a [known problem](https://github.com/ALPSCore/ALPSCore/wiki/Known-problems-and-workarounds))
+ 3. HDF5 library >= 1.10.2 (earlier releases are rejected at configure time; HDF5 1.10.0 had a [known problem](https://github.com/ALPSCore/ALPSCore/wiki/Known-problems-and-workarounds#some-hdf5-related-tests-fail); modern releases such as 1.14.x work fine)
+ 4. Boost >= 1.70.0 (1.70 introduced `BoostConfig.cmake`, required for CMake 4.x)
+ 5. Eigen 3.3.4 or later (can be requested to be downloaded automatically)
 
 Optional requirements:
 
  6. An MPI library and headers for compiling multi-cpu versions of the libraries.
  7. Doxygen for creating low-level documentation.
 
+**Important:** All ALPSCore libraries and every project that links against them must be compiled with the same C++ standard for ABI compatibility. Do not mix C++03 and C++11 code. See the [wiki](https://github.com/ALPSCore/ALPSCore/wiki/Choice-of-CXX-standard) for details.
+
 
 Installing pre-packaged ALPSCore
 --------------------------------
 
- 1. MacOS via [macports](http://macports.org)
-
-        $ sudo port install alpscore
+ 1. MacOS via [macports](http://macports.org):
+    *Note: the `alpscore` port may not be available in all macports versions.
+    If `sudo port install alpscore` fails, use the manual source installation below.*
 
  2. Linux:
 
@@ -89,12 +91,6 @@ The ALPSCore library uses CMake as its build system.
    file in the directory [common/build](https://github.com/ALPSCore/ALPSCore/tree/master/common/build).
    This outlines some of the common options used by our automatic build system.
 
-   **NOTE:** You _must_ compile the ALPSCore libraries and all your codes which
-   depend on the ALPScore libraries with the same C++ standard for ABI
-   compatibility. At the very least, do not mix C++03 and C++11 code.  More
-   detailed information about setting C++ standard version is available on
-   [the wiki](https://github.com/ALPSCore/ALPSCore/wiki/Choice-of-CXX-standard).
-
    For advanced users: If you do not wish to install all ALPSCore components,
    please refer to the wiki page
    [Selecting ALPSCore components](https://github.com/ALPSCore/ALPSCore/wiki/Selecting-ALPSCore-components).
@@ -103,36 +99,67 @@ The ALPSCore library uses CMake as its build system.
 
        $ make
 
-   on multicore machines with enough memory you can also run
+   On multicore machines you can speed up compilation with parallel jobs:
 
-       $ make -j njobs
-
-   with `njobs` the number of parallel jobs to run the compilation in parallel.
+       $ make -j$(nproc)            # Linux
+       $ make -j$(sysctl -n hw.logicalcpu)  # macOS
 
 4. Run the tests:
 
        $ make test
 
+   *Note for macOS users with OpenMPI:* a small number of MPI-related tests
+   (e.g. `gf_new_test_mpi`, `mesh_test_mpi`) may be reported as failed due to
+   a segfault inside `PMIx_Finalize` at process exit. All test assertions pass;
+   this is a [known OpenMPI 5.x bug on macOS](https://github.com/open-mpi/ompi/issues/12273)
+   and does not affect library functionality.
+
 5. and install ALPSCore:
 
        $ make install
 
-   The ALPScore will be installed in the directory specified in step 3
+   The ALPSCore will be installed in the directory specified in step 2
    (``/where/to/install/ALPSCore`` in this example).
 
 ### Troubleshooting ###
 
-1. If your build generation seems to pick up the wrong Boost library,
-   the following may help (note the mixed-case `Boost_` in some of the arguments!):
+1. **Boost not found.**
+   ALPSCore only uses Boost headers and relies on Boost's own
+   `BoostConfig.cmake` (available since Boost 1.70). If CMake cannot find
+   Boost, point it to the Boost installation prefix (the directory containing
+   `include/` and `lib/`) via `Boost_ROOT` or `CMAKE_PREFIX_PATH`:
 
-       $ cmake .. -DBOOST_ROOT=/path/to/boost \
-                  -DBoost_NO_SYSTEM_PATHS=ON \
-                  -DBoost_NO_BOOST_CMAKE=ON
+       $ cmake .. -DBoost_ROOT=/path/to/boost ...
+       # or equivalently:
+       $ cmake .. -DCMAKE_PREFIX_PATH=/path/to/boost ...
 
-2. To point CMake to the correct location of HDF5 library, set environment variable
+   On macports the config file is under `/opt/local/libexec/boost/<version>`:
+
+       $ cmake .. -DBoost_ROOT=/opt/local/libexec/boost/1.81 ...
+
+   On HPC systems using environment modules (e.g. OpenHPC/Lmod), Boost is often
+   installed with the cmake config files in a version-specific subdirectory that
+   `Boost_ROOT` may not find automatically. In that case, point `Boost_DIR`
+   directly at the directory containing `BoostConfig.cmake`:
+
+       $ cmake .. -DBoost_DIR=/path/to/boost/lib/cmake/Boost-<version> ...
+
+   For example, with OpenHPC and GCC 12.2.0:
+
+       $ cmake .. -DBoost_DIR=/opt/ohpc/pub/libs/gcc/12.2.0/boost/1.81.0/lib/cmake/Boost-1.81.0 ...
+
+2. **Eigen3 not found.** If CMake cannot locate Eigen3 automatically, pass its
+   include directory explicitly:
+
+       $ cmake .. -DEIGEN3_INCLUDE_DIR=/path/to/eigen3/include/eigen3 ...
+
+   On systems using environment modules, the path is typically
+   `$EIGEN3_ROOT/include` or `$EIGEN3_INC`.
+
+3. To point CMake to the correct location of HDF5 library, set environment variable
    `HDF5_ROOT=/path/to/hdf5` prior to CMake invocation.
 
-3. If your CMake run fails with a message `In source builds are disabled.  Please use a separate build directory`,
+4. If your CMake run fails with a message `In source builds are disabled.  Please use a separate build directory`,
    first make sure that you are *not* indeed attempting to build in the source
    directory. The error may be a lasting effect of a previous attempt at an
    in-source build, see
@@ -141,16 +168,23 @@ The ALPSCore library uses CMake as its build system.
    You should remove CMake-generated files from the source directory and redo
    the build. For example, this way (from the build directory):
 
-        $ mv ../CMakeLists.txt ../save_CMakeLists.txt
-        $ rm -rf ../CMake*
-        $ mv ../save_CMakeLists.txt ../CMakeLists.txt
+        $ rm -rf ../CMakeCache.txt ../CMakeFiles
 
-4. On most high performance computers with non-standard environments, e.g.
+5. On most high performance computers with non-standard environments, e.g.
    crays/blue genes, you will get the best results by using the wrapper
    compilers and enabling static linking (see ALPS_BUILD_TYPE in
    [CMake variables](https://github.com/ALPSCore/ALPSCore/wiki/CMake-and-environment-variables-affecting-ALPSCore-build).
 
-5. See also a page listing [known problems](https://github.com/ALPSCore/ALPSCore/wiki/Known-problems-and-workarounds).
+6. **MPI compiler mismatch warning.** If CMake prints a warning like
+   *"MPI compiler doesn't match the C++ compiler"*, ALPSCore is compiling with
+   your C++ compiler and only taking MPI include/link flags from the MPI
+   wrapper. This is often fine (e.g. Apple Clang with a Clang-built OpenMPI),
+   but if the MPI library was built with a different compiler or ABI you may
+   see link or runtime failures. In that case build with the MPI wrapper:
+
+       $ cmake .. -DCMAKE_CXX_COMPILER=mpic++ -DCMAKE_C_COMPILER=mpicc ...
+
+7. See also a page listing [known problems](https://github.com/ALPSCore/ALPSCore/wiki/Known-problems-and-workarounds).
 
 
 Build your project with ALPSCore
