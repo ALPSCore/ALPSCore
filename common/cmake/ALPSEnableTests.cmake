@@ -13,6 +13,28 @@ function(UseGtest gtest_root)
 
     message(STATUS "gtest is in ${gtest_root}")
     if (NOT TARGET ${gtest_root})
+        # GoogleTest >= 1.17 requires C++17. Its targets declare
+        # `target_compile_features(... PUBLIC cxx_std_17)`, so the gtest
+        # libraries and every test executable linking them are compiled as
+        # C++17 (or newer), while the ALPSCore libraries keep the standard
+        # selected by ALPS_CXX_STD. Fail early with a clear message if the
+        # compiler cannot do C++17.
+        if (CMAKE_CXX_COMPILE_FEATURES AND NOT "cxx_std_17" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
+            message(FATAL_ERROR
+                "The ALPSCore tests use GoogleTest ${ALPS_GTEST_VERSION}, which requires C++17, "
+                "but the C++ compiler ${CMAKE_CXX_COMPILER} (${CMAKE_CXX_COMPILER_ID} "
+                "${CMAKE_CXX_COMPILER_VERSION}) does not support C++17. "
+                "Use a newer compiler or configure with -DTesting=OFF.")
+        endif()
+        # ALPSCore only uses GoogleTest to build its own tests: do not install
+        # gtest/gmock headers, libraries or CMake package files into the
+        # ALPSCore prefix (they would shadow the GoogleTest of downstream
+        # projects), and do not build gmock, which ALPSCore does not use.
+        # These are normal variables local to this function (honored by
+        # option() under policy CMP0077), so they neither modify the cache
+        # nor leak into the calling project.
+        set(INSTALL_GTEST OFF)
+        set(BUILD_GMOCK OFF)
         # Hack to suppress all warnings in gtest
         set(save_cxx_flags_ ${CMAKE_CXX_FLAGS})
         set(save_c_flags_ ${CMAKE_C_FLAGS})
@@ -35,10 +57,12 @@ endfunction()
 
 # enable testing with gtest - fetch it if needed
 if (NOT tests_are_already_enabled) 
+    # version of the GoogleTest copy bundled in common/deps
+    set(ALPS_GTEST_VERSION "1.18.0")
     if (ALPS_GLOBAL_BUILD)
-        set(gtest_root "${PROJECT_SOURCE_DIR}/common/deps/gtest-1.16.0")
+        set(gtest_root "${PROJECT_SOURCE_DIR}/common/deps/gtest-${ALPS_GTEST_VERSION}")
     else(ALPS_GLOBAL_BUILD)
-        set(gtest_root "${PROJECT_SOURCE_DIR}/../common/deps/gtest-1.16.0")
+        set(gtest_root "${PROJECT_SOURCE_DIR}/../common/deps/gtest-${ALPS_GTEST_VERSION}")
     endif(ALPS_GLOBAL_BUILD)
 
     UseGtest(${gtest_root})
