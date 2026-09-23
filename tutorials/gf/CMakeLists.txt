@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.16)
 # the project is called 'gf', and it is a C++ project
 project(gf CXX)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 
 # the project relies on the ALPSCore package. If ALPSCore is not found
 # automatically, specify its location using:
