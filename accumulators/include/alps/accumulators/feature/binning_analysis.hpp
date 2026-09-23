@@ -29,6 +29,7 @@
 
 #include <boost/utility.hpp>
 
+#include <iomanip>
 #include <limits>
 #include <stdexcept>
 #include <algorithm> // for std::min

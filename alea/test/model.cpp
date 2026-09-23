@@ -76,13 +76,6 @@ void print_t2(std::ostream &out, const alps::alea::t2_result &res)
     out << "T2 RESULT:"
         << "\n\ta (size) = " << res.dist().degrees_of_freedom1()
         << "\n\tb (dof)  = " << res.dist().degrees_of_freedom2()
-        << "\n\tFab   1% = " << quantile(res.dist(), 0.01)
-        << "\n\tFab   5% = " << quantile(res.dist(), 0.05)
-        << "\n\tFab  25% = " << quantile(res.dist(), 0.25)
-        << "\n\tFab  50% = " << quantile(res.dist(), 0.50)
-        << "\n\tFab  75% = " << quantile(res.dist(), 0.75)
-        << "\n\tFab  95% = " << quantile(res.dist(), 0.95)
-        << "\n\tFab  99% = " << quantile(res.dist(), 0.99)
         << "\n\tf-score  = " << res.score()
         << "\n\tp-values = " << res.pvalue_lower() << " " << res.pvalue_upper()
         << std::endl;

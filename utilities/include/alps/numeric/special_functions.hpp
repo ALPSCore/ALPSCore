@@ -11,7 +11,6 @@
 
 #include <cmath>
 #include <boost/accumulators/numeric/functional/vector.hpp>
-#include <boost/math/special_functions.hpp>
 
 
 namespace alps {

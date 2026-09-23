@@ -60,9 +60,9 @@ namespace alps {
         // IMPLEMENT_ALPS_VECTOR_FUNCTION(std,sinh)
         // IMPLEMENT_ALPS_VECTOR_FUNCTION(std,cosh)
         // IMPLEMENT_ALPS_VECTOR_FUNCTION(std,tanh)
-        IMPLEMENT_ALPS_VECTOR_FUNCTION(boost::math,asinh)
-        IMPLEMENT_ALPS_VECTOR_FUNCTION(boost::math,acosh)
-        IMPLEMENT_ALPS_VECTOR_FUNCTION(boost::math,atanh)
+        IMPLEMENT_ALPS_VECTOR_FUNCTION(std,asinh)
+        IMPLEMENT_ALPS_VECTOR_FUNCTION(std,acosh)
+        IMPLEMENT_ALPS_VECTOR_FUNCTION(std,atanh)
 
         #undef IMPLEMENT_ALPS_VECTOR_FUNCTION
 
