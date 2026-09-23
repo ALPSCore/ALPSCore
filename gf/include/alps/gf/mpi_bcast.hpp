@@ -12,6 +12,7 @@
 #define ALPS_GF_MPI_BCAST_HPP_c030bec39d4b43b9a24a16b5805f542d
 
 #include <alps/utilities/mpi.hpp>
+#include <algorithm>
 #include <iostream>
 namespace alps {
     namespace gf {

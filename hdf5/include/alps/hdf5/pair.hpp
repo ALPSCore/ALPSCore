@@ -11,6 +11,7 @@
 #include <alps/utilities/cast.hpp>
 #include <alps/utilities/remove_cvr.hpp>
 
+#include <algorithm>
 #include <utility>
 
 namespace alps {

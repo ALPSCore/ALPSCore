@@ -10,6 +10,7 @@
 #include <alps/gf/mesh.hpp>
 
 #include <alps/testing/near.hpp>
+#include <algorithm>
 
 
 using namespace alps::gf;

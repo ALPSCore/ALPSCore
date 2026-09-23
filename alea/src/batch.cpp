@@ -11,6 +11,7 @@
 #include <alps/alea/internal/util.hpp>
 #include <alps/alea/internal/format.hpp>
 
+#include <algorithm>
 #include <numeric>
 
 namespace alps { namespace alea {

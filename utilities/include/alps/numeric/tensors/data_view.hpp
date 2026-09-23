@@ -9,6 +9,7 @@
 
 
 
+#include <algorithm>
 #include <vector>
 #include <array>
 #include "data_storage.hpp"

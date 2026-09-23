@@ -12,6 +12,7 @@
 
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
+#include <algorithm>
 #include <locale> // FIXME: needed only for boolean conversions
 
 namespace alps {
@@ -64,7 +65,7 @@ namespace alps {
                     result_type result;
                     sit_type it1=in.begin();
                     while (it1!=in.end()) {
-                        sit_type it2=find(it1, in.end(), ',');
+                        sit_type it2=std::find(it1, in.end(), ',');
                         optional_el_type elem=parse_string<T>::apply(std::string(it1,it2));
                         if (!elem) return result;
                         result_vec.push_back(*elem);

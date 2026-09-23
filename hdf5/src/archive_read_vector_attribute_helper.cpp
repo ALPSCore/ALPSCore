@@ -4,6 +4,7 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
+#include <algorithm>
 #include <iostream>
 #include <vector>
 

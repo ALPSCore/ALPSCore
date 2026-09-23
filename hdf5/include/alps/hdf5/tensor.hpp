@@ -10,6 +10,7 @@
 #include <alps/hdf5/archive.hpp>
 #include <alps/numeric/tensors/tensor_base.hpp>
 #include <alps/type_traits/is_complex.hpp>
+#include <algorithm>
 
 
 namespace alps {

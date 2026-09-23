@@ -7,6 +7,7 @@
 #ifndef ALPSCORE_GF_TENSORBASE_H
 #define ALPSCORE_GF_TENSORBASE_H
 
+#include <algorithm>
 #include <vector>
 
 namespace alps {

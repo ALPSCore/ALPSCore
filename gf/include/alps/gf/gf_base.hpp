@@ -8,6 +8,7 @@
 #define ALPSCORE_GF_H
 
 
+#include <algorithm>
 #include <tuple>
 #include <vector>
 

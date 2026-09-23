@@ -11,6 +11,7 @@
 #ifndef ALPS_ACCUMULATORS_TESTS_ACCUMULATOR_GENERATOR_HPP_INCLUDED
 #define ALPS_ACCUMULATORS_TESTS_ACCUMULATOR_GENERATOR_HPP_INCLUDED
 
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <numeric>

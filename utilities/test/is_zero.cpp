@@ -6,6 +6,7 @@
 
 #include <gtest/gtest.h>
 #include "alps/numeric/is_zero.hpp"
+#include <algorithm>
 
 template <typename T>
 struct FloatingPointZeroTest : public ::testing::Test {
