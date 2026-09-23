@@ -6,7 +6,7 @@ To install ALPSCore, the following is needed:
 
  1. C++ compiler: g++ >= 4.8.1 OR Intel >= 15.0 OR Clang >= 3.2
  2. CMake >= 3.10, including CMake 4.x (*NOTE*: CMake 3.6.0 on Mac has a [known problem](https://github.com/ALPSCore/ALPSCore/wiki/Known-problems-and-workarounds))
- 3. HDF5 library >= 1.8.x (*NOTE*: HDF5 1.10.0 had a [known problem](https://github.com/ALPSCore/ALPSCore/wiki/Known-problems-and-workarounds#some-hdf5-related-tests-fail); modern releases including 1.10.1+ and 1.14.x work fine)
+ 3. HDF5 library >= 1.10.2 (earlier releases are rejected at configure time; HDF5 1.10.0 had a [known problem](https://github.com/ALPSCore/ALPSCore/wiki/Known-problems-and-workarounds#some-hdf5-related-tests-fail); modern releases such as 1.14.x work fine)
  4. Boost >= 1.70.0 (1.70 introduced `BoostConfig.cmake`, required for CMake 4.x)
  5. Eigen 3.3.4 or later (can be requested to be downloaded automatically)
 
@@ -168,9 +168,7 @@ The ALPSCore library uses CMake as its build system.
    You should remove CMake-generated files from the source directory and redo
    the build. For example, this way (from the build directory):
 
-        $ mv ../CMakeLists.txt ../save_CMakeLists.txt
-        $ find .. -maxdepth 1 -name 'CMake*' -exec rm -rf {} +
-        $ mv ../save_CMakeLists.txt ../CMakeLists.txt
+        $ rm -rf ../CMakeCache.txt ../CMakeFiles
 
 5. On most high performance computers with non-standard environments, e.g.
    crays/blue genes, you will get the best results by using the wrapper

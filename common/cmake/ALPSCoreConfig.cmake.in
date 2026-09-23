@@ -85,22 +85,13 @@ function(alpscore_config_main_)
     set(ALPSCore_BOOST_VERSION @ALPSCore_BOOST_VERSION@)
     set(ALPSCore_BOOST_VERSION ${ALPSCore_BOOST_VERSION} PARENT_SCOPE)
 
-    if(TARGET Boost::headers)
-      message(STATUS "Note: Boost already found before ALPSCore; "
-        "make sure it is the same version (${ALPSCore_BOOST_VERSION}).")
-    else()
-      set(alps_Boost_DIR_ @ALPSCore_Boost_DIR@)
-      if(alps_Boost_DIR_)
-        if(NOT Boost_DIR OR Boost_DIR STREQUAL alps_Boost_DIR_)
-          set(Boost_DIR ${alps_Boost_DIR_} PARENT_SCOPE)
-          message(STATUS "ALPSCore hinting Boost location: Boost_DIR=${alps_Boost_DIR_}")
-        else()
-          message(WARNING "Boost_DIR='${Boost_DIR}' differs from ALPSCore's '${alps_Boost_DIR_}'. "
-            "Ensure you use Boost ${ALPSCore_BOOST_VERSION}.")
-        endif()
-      endif()
+    # Boost itself is found by the component config files (they need Boost::headers)
+    set(alps_Boost_DIR_ @ALPSCore_Boost_DIR@)
+    if(alps_Boost_DIR_ AND Boost_DIR AND NOT Boost_DIR STREQUAL alps_Boost_DIR_)
+      message(WARNING "Boost_DIR='${Boost_DIR}' differs from ALPSCore's '${alps_Boost_DIR_}'. "
+        "Ensure you use Boost ${ALPSCore_BOOST_VERSION}.")
     endif()
-    
+
     set(ALPSCore_LIBRARIES ${ALPSCore_LIBRARIES} PARENT_SCOPE)
     set(ALPSCore_COMPONENTS ${ALPSCore_FIND_COMPONENTS} PARENT_SCOPE)
 endfunction(alpscore_config_main_)

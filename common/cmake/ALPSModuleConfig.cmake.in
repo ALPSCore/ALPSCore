@@ -10,6 +10,13 @@ foreach(dep_ @DEPENDS@)
 endforeach()
 unset(dep_)
 
+# The exported targets link to Boost::headers; make sure it is defined.
+# Prefer the Boost that @PROJECT_NAME@ was built with.
+if (NOT TARGET Boost::headers)
+  include(CMakeFindDependencyMacro)
+  find_dependency(Boost @ALPSCore_BOOST_VERSION@ CONFIG HINTS "@ALPSCore_Boost_DIR@")
+endif()
+
 include(${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@.cmake)
 
 set(@PROJECT_NAME@_HAS_MPI @ALPS_HAVE_MPI@)

@@ -1,6 +1,6 @@
 language: cpp
 sudo: required
-dist: trusty
+dist: jammy  # Boost 1.74, HDF5 1.10.7 (trusty is too old)
 
 compiler:
   - gcc

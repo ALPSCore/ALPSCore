@@ -117,12 +117,9 @@ endmacro(alps_add_module)
 
 macro(add_boost)
   # Use config-file mode (BoostConfig.cmake, available since Boost 1.70).
-  # CMP0167 NEW makes CMake prefer the Boost-provided config over the legacy
+  # CONFIG is explicit so that CMake < 3.30 does not fall back to the legacy
   # FindBoost.cmake module; CMake 4.0+ removed FindBoost.cmake entirely.
-  if(POLICY CMP0167)
-    cmake_policy(SET CMP0167 NEW)
-  endif()
-  find_package(Boost 1.70.0 REQUIRED)
+  find_package(Boost 1.70.0 REQUIRED CONFIG)
   # Remember Boost version and config-file location for downstream projects
   set(ALPSCore_BOOST_VERSION ${Boost_VERSION_STRING} CACHE INTERNAL "Version of Boost used by ALPSCore")
   set(ALPSCore_Boost_DIR ${Boost_DIR} CACHE INTERNAL "Boost_DIR as seen by ALPSCore")
