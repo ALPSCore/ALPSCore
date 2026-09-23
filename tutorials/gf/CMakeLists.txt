@@ -2,7 +2,7 @@
 # in project that uses ALPSCore
 
 # we need at least cmake version 3.10
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.16)
 
 # the project is called 'gf', and it is a C++ project
 project(gf CXX)
