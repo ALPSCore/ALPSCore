@@ -126,8 +126,8 @@ The ALPSCore library uses CMake as its build system.
 1. **Boost not found.**
    ALPSCore only uses Boost headers and relies on Boost's own
    `BoostConfig.cmake` (available since Boost 1.70). If CMake cannot find
-   Boost, point it to the directory that contains `BoostConfig.cmake` via
-   `Boost_ROOT` or `CMAKE_PREFIX_PATH`:
+   Boost, point it to the Boost installation prefix (the directory containing
+   `include/` and `lib/`) via `Boost_ROOT` or `CMAKE_PREFIX_PATH`:
 
        $ cmake .. -DBoost_ROOT=/path/to/boost ...
        # or equivalently:
@@ -176,9 +176,13 @@ The ALPSCore library uses CMake as its build system.
    [CMake variables](https://github.com/ALPSCore/ALPSCore/wiki/CMake-and-environment-variables-affecting-ALPSCore-build).
 
 6. **MPI compiler mismatch warning.** If CMake prints a warning like
-   *"MPI compiler doesn't match the C++ compiler"*, this is usually harmless:
-   ALPSCore uses the system C++ compiler and extracts MPI include/link flags
-   separately. The build will succeed and MPI functionality will work correctly.
+   *"MPI compiler doesn't match the C++ compiler"*, ALPSCore is compiling with
+   your C++ compiler and only taking MPI include/link flags from the MPI
+   wrapper. This is often fine (e.g. Apple Clang with a Clang-built OpenMPI),
+   but if the MPI library was built with a different compiler or ABI you may
+   see link or runtime failures. In that case build with the MPI wrapper:
+
+       $ cmake .. -DCMAKE_CXX_COMPILER=mpic++ -DCMAKE_C_COMPILER=mpicc ...
 
 7. See also a page listing [known problems](https://github.com/ALPSCore/ALPSCore/wiki/Known-problems-and-workarounds).
 

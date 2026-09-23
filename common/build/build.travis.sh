@@ -18,7 +18,6 @@ if [ -n "$ALPS_BOOST_VERSION" ]; then
   boost_prefix=$download_dir/install
   (cd $download_dir/boost_${ALPS_BOOST_VERSION} && ./bootstrap.sh && ./b2 --prefix=$boost_prefix --with-filesystem -d0 install)
   boost_cmake_params="-DBoost_ROOT=$boost_prefix"
-  no_boost_libs=true
 fi
 
 # FIXME: A hack to suppress warnings in MPI headers
