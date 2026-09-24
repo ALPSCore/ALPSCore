@@ -70,7 +70,10 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(ALPS_CXX_FLAGS "")
 set(ALPS_CXX_FEATURES "")
-set(ALPS_CMAKE_MINIMUM_VERSION 3.16)
+# Downstream projects need the same CMake version as ALPSCore itself (the
+# cmake_minimum_required() of the top-level CMakeLists.txt, which includes
+# this file).
+set(ALPS_CMAKE_MINIMUM_VERSION ${CMAKE_MINIMUM_REQUIRED_VERSION})
 
 if (ALPS_CXX_STD STREQUAL "custom")
 
