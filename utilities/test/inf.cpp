@@ -5,8 +5,7 @@
  */
 
 #include <vector>
-// #include <cmath>
-#include <boost/math/special_functions/fpclassify.hpp> /* for portable isinf() */
+#include <cmath>
 
 #include <gtest/gtest.h>
 
@@ -30,28 +29,25 @@ struct InfinityTest : public ::testing::Test {
     }
 
     void ScalarTest() {
-        // using std::isinf;
         scalar_type inf=alps::numeric::inf<scalar_type>(scalar_);
-        EXPECT_TRUE((boost::math::isinf)(inf));
+        EXPECT_TRUE(std::isinf(inf));
     }
         
     void VectorTest() {
-        // using std::isinf;
         vector_type inf=alps::numeric::inf<vector_type>(vector_);
         ASSERT_EQ(vector_.size(), inf.size());
         for (size_t i=0; i<inf.size(); ++i) {
-            EXPECT_TRUE((boost::math::isinf)(inf[i]));
+            EXPECT_TRUE(std::isinf(inf[i]));
         }
     }
     
     void VectorVectorTest() {
-        // using std::isinf;
         vector_vector_type inf=alps::numeric::inf<vector_vector_type>(vector_vector_);
         ASSERT_EQ(vector_vector_.size(), inf.size());
         for (size_t i=0; i<inf.size(); ++i) {
             ASSERT_EQ(vector_vector_[i].size(), inf[i].size());
             for (size_t j=0; j<inf[i].size(); ++j) {
-                EXPECT_TRUE((boost::math::isinf)(inf[i][j]));
+                EXPECT_TRUE(std::isinf(inf[i][j]));
             }
         }
     }

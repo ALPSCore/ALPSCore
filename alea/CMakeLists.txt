@@ -22,6 +22,7 @@ add_this_package(
         autocorr
         batch
         covariance
+        fisher_f
         galois
         mean
         model

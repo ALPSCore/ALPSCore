@@ -1,6 +1,6 @@
 #  Try to find ALPSCore.
 #  Affected by the following variables:
-#  ALPS_FORCE_CXX_STD=C++11|C++14|custom    - Override the request for the C++capabilities
+#  ALPS_FORCE_CXX_STD=C++14|C++17|C++20|custom - Override the request for the C++capabilities
 #                                               for the dependent targets.
 #  ALPS_FORCE_NO_COMPILER_CHECK             - If true, override complier mismatch check.
 #
@@ -21,12 +21,10 @@
 function(alpscore_config_main_)
     unset(cxx_features)
     if (DEFINED ALPS_FORCE_CXX_STD)
-      if (ALPS_FORCE_CXX_STD MATCHES "^[Cc][+][+]11$")
-        set(cxx_features "cxx_auto_type;cxx_constexpr")
-        message(STATUS "ALPSCore will request C++11 features")
-      elseif (ALPS_FORCE_CXX_STD MATCHES "^[Cc][+][+]14$")
-        set(cxx_features "cxx_decltype_auto")
-        message(STATUS "ALPSCore will request C++14 features")
+      if (ALPS_FORCE_CXX_STD MATCHES "^[Cc][+][+](14|17|20)$")
+        string(REGEX REPLACE "^[Cc][+][+]" "" std_num_ ${ALPS_FORCE_CXX_STD})
+        set(cxx_features "cxx_std_${std_num_}")
+        message(STATUS "ALPSCore will request C++${std_num_} features")
       elseif (ALPS_FORCE_CXX_STD MATCHES "^custom$")
         set(cxx_features "")
         message("Caution: ALPSCore is forced to not request any specific C++ features from the compiler")

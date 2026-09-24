@@ -32,15 +32,15 @@ if (DEFINED CMAKE_SKIP_COMPILER_VERSION_TEST)
 else()
   if ((DEFINED CMAKE_CXX_COMPILER_ID) AND (DEFINED CMAKE_CXX_COMPILER_VERSION))
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-      if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "4.2") #we can probably support older versions but nobody has any left to test
+      if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "5.0") # first version with full C++14 support
         message(FATAL_ERROR "Insufficient gcc version")
       endif()
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
-      if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "10.0")
+      if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "17.0")
         message(FATAL_ERROR "Insufficient Intel compiler version")
       endif()
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-      if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.2")
+      if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.4")
         message(FATAL_ERROR "Insufficient Clang compiler version")
       endif()
     endif()
@@ -51,19 +51,19 @@ endif()
 
 unset(ALPS_CXX_STD) # ensure the var is read from cache, if any
 if (DEFINED ALPS_CXX_STD)
-  if (ALPS_CXX_STD MATCHES "^[cC][+][+](03|98)$")
+  if (ALPS_CXX_STD MATCHES "^[cC][+][+](03|98|11)$")
     unset(ALPS_CXX_STD CACHE)
-    message(FATAL_ERROR "ALPSCore cannot be compiled with C++98/C++03; at least C++11 is required")
+    message(FATAL_ERROR "ALPSCore cannot be compiled with C++98/C++03/C++11; at least C++14 is required")
   endif()
-  if (NOT ALPS_CXX_STD MATCHES "^[cC][+][+](11|14|17|20)|custom$")
-    message(FATAL_ERROR "Invalid value of ALPS_CXX_STD='${ALPS_CXX_STD}'. Only 'c++11', 'c++14', 'c++17', 'c++20' and 'custom' are supported.")
+  if (NOT ALPS_CXX_STD MATCHES "^([cC][+][+](14|17|20)|custom)$")
+    message(FATAL_ERROR "Invalid value of ALPS_CXX_STD='${ALPS_CXX_STD}'. Only 'c++14', 'c++17', 'c++20' and 'custom' are supported.")
   endif()
   string(TOLOWER ${ALPS_CXX_STD} ALPS_CXX_STD)
 else()
-  set(ALPS_CXX_STD "c++11")
+  set(ALPS_CXX_STD "c++14")
 endif()
 set(ALPS_CXX_STD ${ALPS_CXX_STD} CACHE STRING "C++ standard used to compile ALPSCore" FORCE)
-set_property(CACHE ALPS_CXX_STD PROPERTY STRINGS "c++11" "c++14" "c++17" "c++20" "custom")
+set_property(CACHE ALPS_CXX_STD PROPERTY STRINGS "c++14" "c++17" "c++20" "custom")
 mark_as_advanced(ALPS_CXX_STD)
 
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -82,29 +82,19 @@ if (ALPS_CXX_STD STREQUAL "custom")
 
 else()
 
+  string(REGEX REPLACE "^c[+][+]" "" alps_cxx_std_num_ ${ALPS_CXX_STD})
+  message(STATUS "ALPSCore will use C++${alps_cxx_std_num_}")
+
+  # Compile ALPSCore with exactly the requested standard (not just "at least"):
+  # the compile feature alone lets the compiler use its newer default.
+  set(CMAKE_CXX_STANDARD ${alps_cxx_std_num_})
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
   # Does CMake know how to use C++XX for this compiler?
   if (CMAKE_CXX_COMPILE_FEATURES)
-    if (ALPS_CXX_STD STREQUAL "c++11")
-      set(ALPS_CXX_FEATURES "cxx_std_11")
-      message(STATUS "ALPSCore will use C++11")
-    endif()
-
-    if (ALPS_CXX_STD STREQUAL "c++14")
-      set(ALPS_CXX_FEATURES "cxx_std_14")
-      message(STATUS "ALPSCore will use C++14")
-    endif()
-
-    if (ALPS_CXX_STD STREQUAL "c++17")
-      set(ALPS_CXX_FEATURES "cxx_std_17")
-      message(STATUS "ALPSCore will use C++17")
-    endif()
-    
-    if (ALPS_CXX_STD STREQUAL "c++20")
-      set(ALPS_CXX_FEATURES "cxx_std_20")
-      message(STATUS "ALPSCore will use C++20")
-    endif()
+    # Downstream projects need at least this standard
+    set(ALPS_CXX_FEATURES "cxx_std_${alps_cxx_std_num_}")
   else()
-    
     message(WARNING "This version of CMake does not know how to activate ${ALPS_CXX_STD} features "
       "for your compiler ${CMAKE_CXX_COMPILER} (id: ${CMAKE_CXX_COMPILER_ID} version: ${CMAKE_CXX_COMPILER_VERSION}). "
       "We will try to guess.")
@@ -117,7 +107,6 @@ else()
         "You may try to use a newer version of CMake, or set ALPS_CXX_STD=custom and pass the required "
         "compiler flags via CMAKE_CXX_FLAGS.")
     endif()
-
   endif()
 
 endif()

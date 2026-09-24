@@ -4,7 +4,7 @@ Prerequisites
 
 To install ALPSCore, the following is needed:
 
- 1. C++ compiler: g++ >= 4.8.1 OR Intel >= 15.0 OR Clang >= 3.2 for the libraries.
+ 1. C++14 compiler for the libraries: g++ >= 5 OR Intel >= 17.0 OR Clang >= 3.4.
     Building the tests (`Testing=ON`, the default) needs a compiler with C++17
     support, because the bundled GoogleTest requires C++17; with an older
     compiler, configure with `-DTesting=OFF`.
@@ -17,7 +17,7 @@ Optional requirements:
 
  6. An MPI library and headers for compiling multi-cpu versions of the libraries.
 
-**Important:** All ALPSCore libraries and every project that links against them must be compiled with the same C++ standard for ABI compatibility. Do not mix C++03 and C++11 code. See the [wiki](https://github.com/ALPSCore/ALPSCore/wiki/Choice-of-CXX-standard) for details.
+**Important:** All ALPSCore libraries and every project that links against them must be compiled with the same C++ standard for ABI compatibility. ALPSCore is compiled as C++14 by default; select another standard with `-DALPS_CXX_STD=c++17` (or `c++20`). See the [wiki](https://github.com/ALPSCore/ALPSCore/wiki/Choice-of-CXX-standard) for details.
 
 
 Installing pre-packaged ALPSCore

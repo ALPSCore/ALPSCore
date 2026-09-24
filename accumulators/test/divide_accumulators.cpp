@@ -7,6 +7,7 @@
 #include <alps/config.hpp>
 #include <alps/accumulators.hpp>
 #include "gtest/gtest.h"
+#include <cmath>
 
 void test_divide_accumulators_scalar(alps::accumulators::accumulator_set & measurements, std::string name) {
 	std::string name1 = name + "_1_scalar";
@@ -25,8 +26,8 @@ void test_divide_accumulators_scalar(alps::accumulators::accumulator_set & measu
     double div_mean2 = results[name1].mean<double>() / results[name2].mean<double>();
     std::cout << div_mean << " == " << div_mean2 << std::endl;
 
-    ASSERT_EQ(boost::math::isnan(div_mean), false);
-    ASSERT_EQ(boost::math::isinf(div_mean), false);
+    ASSERT_EQ(std::isnan(div_mean), false);
+    ASSERT_EQ(std::isinf(div_mean), false);
     ASSERT_NEAR(div_mean, div_mean2, 5e-4);
 }
 

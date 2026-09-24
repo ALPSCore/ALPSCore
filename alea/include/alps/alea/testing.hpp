@@ -10,11 +10,11 @@
 #include <alps/alea/util.hpp>
 #include <alps/alea/variance.hpp>
 #include <alps/alea/covariance.hpp>
+#include <alps/alea/fisher_f.hpp>
 
 #include <alps/alea/internal/joined.hpp>
 #include <alps/alea/internal/pooling.hpp>
 
-#include <boost/math/distributions/fisher_f.hpp>
 #include <algorithm>
 
 namespace alps { namespace alea {
@@ -38,7 +38,7 @@ namespace alps { namespace alea {
 class t2_result
 {
 public:
-    typedef boost::math::fisher_f_distribution<double> dist_type;
+    typedef fisher_f_distribution dist_type;
 
 public:
     /** Initializes t2 test */
@@ -55,10 +55,10 @@ public:
     bool has_plower() const { return dist_.degrees_of_freedom1() > 3; }
 
     /** p-value in favour of the lower alternate Hypothesis */
-    double pvalue_lower() const { return has_plower() ? cdf(dist_, score_) : 1; }
+    double pvalue_lower() const { return has_plower() ? dist_.cdf(score_) : 1; }
 
     /** p-value in favour of the upper alternate Hypothesis */
-    double pvalue_upper() const { return cdf(complement(dist_, score_)); }
+    double pvalue_upper() const { return dist_.ccdf(score_); }
 
     /** lowest p-value */
     double pvalue() const { return std::min(pvalue_lower(), pvalue_upper()); }
