@@ -90,3 +90,12 @@ TEST(fisher_f, edge_cases)
     EXPECT_TRUE(std::isnan(fisher_f_distribution(3, 0).cdf(1)));
     EXPECT_TRUE(std::isnan(fisher_f_distribution(-1, 5).ccdf(1)));
 }
+
+TEST(fisher_f, no_convergence_is_nan)
+{
+    // Right at the mean with this many degrees of freedom, the continued
+    // fraction does not converge; this must be reported, not clamped away.
+    fisher_f_distribution dist(1e14, 1e14);
+    EXPECT_TRUE(std::isnan(dist.cdf(1)));
+    EXPECT_TRUE(std::isnan(dist.ccdf(1)));
+}

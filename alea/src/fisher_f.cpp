@@ -76,6 +76,8 @@ double beta_inc(double a, double b, double x, double y, double log_x, double log
     double result = x < (a + 1) / (a + b + 2)
         ? (front == 0 ? 0 : front * beta_cf(a, b, x) / a)
         : (front == 0 ? 1 : 1 - front * beta_cf(b, a, y) / b);
+    if (std::isnan(result))
+        return result;   // continued fraction did not converge
     return std::fmin(std::fmax(result, 0.), 1.);
 }
 
