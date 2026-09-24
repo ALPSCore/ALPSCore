@@ -1,6 +1,6 @@
 ### gftools cmake configuration
 
-cmake_minimum_required (VERSION 3.10)
+cmake_minimum_required(VERSION 3.16)
 
 # gftools use only CXX compiler 
 project (alps-gf CXX)

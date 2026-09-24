@@ -1,8 +1,8 @@
 # This is a minimal CMake file that illustrates how to use GF component
 # in project that uses ALPSCore
 
-# we need at least cmake version 3.10
-cmake_minimum_required(VERSION 3.10)
+# we need at least cmake version 3.16
+cmake_minimum_required(VERSION 3.16)
 
 # the project is called 'gf', and it is a C++ project
 project(gf CXX)
