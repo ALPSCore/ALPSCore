@@ -16,11 +16,6 @@ if (CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
 endif()
 
 
-gen_documentation()
-if (DocumentationOnly)
-  return()
-endif()
-
 # A gentle reminder for a developer that uses -DCMAKE_BUILD_TYPE=Debug
 # (does not really try to analyze compilation flags)
 string(TOUPPER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE)

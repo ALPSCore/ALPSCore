@@ -17,12 +17,6 @@ if (CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   include(ALPSEnableMPI)
 endif()
 
-gen_documentation()
-
-if (DocumentationOnly)
-  return()
-endif()
-
 # The `EXTRA` is a workaround against a misfeature in CMake 3.1
 #  not allowing $<TARGET_OBJECTS:tgt> in `target_sources()`
 add_this_package(params dict_value dictionary iniparser_interface EXTRA $<TARGET_OBJECTS:libiniparser>)

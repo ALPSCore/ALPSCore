@@ -17,12 +17,6 @@ if (CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   include(ALPSEnableMPI)
 endif()
 
-gen_documentation()
-
-if (DocumentationOnly)
-  return()
-endif()
-
 include(CheckIncludeFile)
 
 add_this_package(

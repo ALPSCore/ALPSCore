@@ -63,7 +63,6 @@ cmake \
   -DGTEST_ROOT="${GTEST_ROOT}" \
   -DENABLE_MPI=TRUE \
   -DTestXMLOutput=TRUE \
-  -DDocumentation=OFF \
   "${cmake_flags[@]}" \
   ${ROOTDIR}
 

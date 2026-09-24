@@ -17,11 +17,6 @@ if (CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
 endif()
 
 
-gen_documentation()
-if (DocumentationOnly)
-  return()
-endif ()
-
 add_this_package(mcbase api stop_callback)
 
 add_boost()
