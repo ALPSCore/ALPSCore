@@ -193,8 +193,9 @@ The ALPSCore library uses CMake as its build system.
 Build your project with ALPSCore
 --------------------------------
 
-To use ALPSCore, your project must utilize CMake build system. Add the
-following lines to your project's ``CMakeLists.txt``:
+To use ALPSCore, your project must utilize CMake build system, version 3.16 or
+newer: with an older CMake, `find_package(ALPSCore)` reports the package as not
+found. Add the following lines to your project's ``CMakeLists.txt``:
 
         # Not strictly necessary, but will create executables that are
         # aware of ALPSCore location
