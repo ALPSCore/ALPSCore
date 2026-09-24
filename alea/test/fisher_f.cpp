@@ -7,6 +7,7 @@
 
 #include "gtest/gtest.h"
 
+#include <algorithm>
 #include <cmath>
 #include <limits>
 
@@ -22,22 +23,48 @@ static const double reference[][5] = {
     {3, 100, 0.05, 0.014864882720599607, 0.9851351172794004},
     {7, 50, 12, 0.99999999274021389, 7.2597861147641365e-09},
     {20, 1000, 1.1, 0.65713157722744875, 0.34286842277255125},
+    {5.5, 17.25, 0.8, 0.42571130035119681, 0.57428869964880325},
+    {1.4217500000000001, 1.0270999999999999, 1758938688932100, 0.9999999899329578, 1.0067042170390192e-08},
+    {0.76127299999999998, 0.97565599999999997, 4.1425378079875538e-16, 8.6213322622465496e-07, 0.99999913786677375},
+    {12, 100000, 4, 0.99999686289237122, 3.1371076287823469e-06},
     {50, 200000, 1, 0.52659159250677434, 0.4734084074932256},
     {1, 2e+06, 30, 0.99999995679018883, 4.320981114086151e-08},
-    {5.5, 17.25, 0.8, 0.42571130035119681, 0.57428869964880325},
+    {100000000, 100000000, 1.0001, 0.69145365940259818, 0.30854634059740177},
+    {3, 500000000, 1.5, 0.78770971123500266, 0.21229028876499736},
+    {800000000, 40, 0.90000000000000002, 0.28993750555193187, 0.71006249444806813},
 };
 
-// Relative accuracy is better than 1e-12 for moderate degrees of freedom, degrading to
-// ~1e-9 for d2 ~ 1e6 (cancellation between large lgamma values).
+// Documented relative accuracy (see fisher_f.hpp), by largest degree of freedom
+static double tolerance(double d1, double d2)
+{
+    double dmax = std::max(d1, d2);
+    return dmax <= 1e3 ? 1e-12 : dmax <= 1e6 ? 1e-9 : 1e-6;
+}
+
 TEST(fisher_f, reference)
 {
     for (const auto &r : reference) {
         fisher_f_distribution dist(r[0], r[1]);
-        EXPECT_NEAR(dist.cdf(r[2]), r[3], 1e-8 * r[3])
+        double tol = tolerance(r[0], r[1]);
+        EXPECT_NEAR(dist.cdf(r[2]), r[3], tol * r[3])
             << "d1=" << r[0] << " d2=" << r[1] << " f=" << r[2];
-        EXPECT_NEAR(dist.ccdf(r[2]), r[4], 1e-8 * r[4])
+        EXPECT_NEAR(dist.ccdf(r[2]), r[4], tol * r[4])
             << "d1=" << r[0] << " d2=" << r[1] << " f=" << r[2];
     }
+}
+
+TEST(fisher_f, no_overflow)
+{
+    // Distribution is concentrated at f = 1 for huge degrees of freedom
+    for (double d : {1e20, 1e200, 1e308}) {
+        fisher_f_distribution dist(d, d);
+        EXPECT_EQ(dist.cdf(2), 1) << "d=" << d;
+        EXPECT_EQ(dist.ccdf(2), 0) << "d=" << d;
+        EXPECT_EQ(dist.cdf(0.5), 0) << "d=" << d;
+    }
+    // f d1 overflows, but the result must still be finite and sensible
+    fisher_f_distribution dist(1e10, 5);
+    EXPECT_NEAR(dist.cdf(1e300), 1, 1e-12);
 }
 
 TEST(fisher_f, edge_cases)
