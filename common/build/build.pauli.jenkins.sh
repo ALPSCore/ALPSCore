@@ -72,7 +72,6 @@ function run_cmake() {
           -DCMAKE_BUILD_TYPE=Release \
           -DENABLE_MPI=${ENABLE_MPI} \
           -DTestXMLOutput=TRUE \
-          -DDocumentation=OFF \
           "$BASE_DIR"
 }
 

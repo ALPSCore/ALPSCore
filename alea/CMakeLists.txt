@@ -18,12 +18,6 @@ if (CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   include(ALPSEnableEigen)
 endif()
 
-gen_documentation()
-
-if (DocumentationOnly)
-  return()
-endif()
-
 add_this_package(
         autocorr
         batch

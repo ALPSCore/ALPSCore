@@ -23,7 +23,7 @@ int main(int argc, char** argv)
     // Sample data to write
     // We are going to use different data types to show that the library can
     // handle them. For a full list of type supported consult the reference
-    // documentation (Doxygen).
+    // documentation (the header files).
     double sDoubleSample = 6.28;
     int sIntSample = 500;
     std::complex<double> sComplexSample(1.0, -1.0);
@@ -60,7 +60,7 @@ int main(int argc, char** argv)
     // Declare variables for reading the data
     // We need a placeholder to load the data. The type does not need to match
     // the original as long as it can be converted. E.g. int -> double,
-    // real -> complex. Consult the reference documentation (Doxygen) for
+    // real -> complex. Consult the reference documentation (the header files) for
     // a full list of supported conversions.
     double sDoubleValue;
     int sIntValue;

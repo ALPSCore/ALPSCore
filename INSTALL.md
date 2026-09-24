@@ -16,7 +16,6 @@ To install ALPSCore, the following is needed:
 Optional requirements:
 
  6. An MPI library and headers for compiling multi-cpu versions of the libraries.
- 7. Doxygen for creating low-level documentation.
 
 **Important:** All ALPSCore libraries and every project that links against them must be compiled with the same C++ standard for ABI compatibility. Do not mix C++03 and C++11 code. See the [wiki](https://github.com/ALPSCore/ALPSCore/wiki/Choice-of-CXX-standard) for details.
 
