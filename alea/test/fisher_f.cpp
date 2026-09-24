@@ -65,6 +65,14 @@ TEST(fisher_f, no_overflow)
     // f d1 overflows, but the result must still be finite and sensible
     fisher_f_distribution dist(1e10, 5);
     EXPECT_NEAR(dist.cdf(1e300), 1, 1e-12);
+
+    // d1/d2 overflows although f d1/d2 is finite; Boost.Math: cdf ~ 0
+    fisher_f_distribution tiny_d2(1, 1e-309);
+    EXPECT_NEAR(tiny_d2.cdf(0.1), 0, 1e-12);
+    EXPECT_NEAR(tiny_d2.ccdf(0.1), 1, 1e-12);
+    fisher_f_distribution tiny_d1(1e-305, 3);
+    EXPECT_NEAR(tiny_d1.cdf(1e5), 1, 1e-12);
+    EXPECT_NEAR(tiny_d1.ccdf(1e5), 0, 1e-12);
 }
 
 TEST(fisher_f, edge_cases)

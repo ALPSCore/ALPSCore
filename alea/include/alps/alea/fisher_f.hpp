@@ -15,9 +15,10 @@ namespace alps { namespace alea {
  * and its complement, both accurate in their respective small tails.
  *
  * Relative accuracy (compared to Boost.Math) is about 1e-13 for degrees of
- * freedom up to 1e3, 1e-10 up to 1e6, and 1e-7 up to 1e9.  Arbitrarily large
- * parameters do not overflow; NaN is returned if the underlying continued
- * fraction fails to converge.
+ * freedom between 0.5 and 1e3, 1e-10 up to 1e6, and 1e-7 up to 1e9; for
+ * degrees of freedom far below 1, only an absolute accuracy of ~1e-13 holds.
+ * Extreme parameters do not overflow; NaN is returned if the underlying
+ * continued fraction fails to converge.
  */
 class fisher_f_distribution
 {

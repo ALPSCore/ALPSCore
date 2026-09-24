@@ -66,35 +66,41 @@ double log_beta(double a, double b)
 }
 
 // Regularized incomplete beta function I_x(a, b), with y = 1 - x and the
-// logarithms of x and y passed separately to avoid cancellation.
+// logarithms of x and y passed separately to avoid cancellation (x or y may
+// underflow to zero while their logarithms are still finite).
 double beta_inc(double a, double b, double x, double y, double log_x, double log_y)
 {
-    if (x <= 0) return 0;
-    if (y <= 0) return 1;
+    if (std::isinf(log_x)) return 0;
+    if (std::isinf(log_y)) return 1;
     double front = std::exp(a * log_x + b * log_y - log_beta(a, b));
-    if (x < (a + 1) / (a + b + 2))
-        return front == 0 ? 0 : front * beta_cf(a, b, x) / a;
-    return front == 0 ? 1 : 1 - front * beta_cf(b, a, y) / b;
+    double result = x < (a + 1) / (a + b + 2)
+        ? (front == 0 ? 0 : front * beta_cf(a, b, x) / a)
+        : (front == 0 ? 1 : 1 - front * beta_cf(b, a, y) / b);
+    return std::fmin(std::fmax(result, 0.), 1.);
 }
 
-// P(F <= f) or P(F > f) for f > 0, using the ratio q = f d1/d2 so that
-// nothing overflows: x = q/(1 + q), y = 1/(1 + q).
+// P(F <= f) or P(F > f) for f > 0, in terms of q = f d1/d2:
+// x = q/(1 + q), y = 1/(1 + q).
 double f_tail(double d1, double d2, double f, bool upper)
 {
     double q = d1 / d2 * f;
-    if (std::isinf(q))
-        return upper ? 0 : 1;
+    double log_q = std::isnormal(q) ? std::log(q)
+                   // d1/d2 over- or underflowed: rescale in log space
+                   : std::log(d1) - std::log(d2) + std::log(f);
     double x, y, log_x, log_y;
-    if (q > 1) {
-        x = 1 / (1 + 1 / q);
-        y = 1 / (1 + q);
-        log_x = -std::log1p(1 / q);
-        log_y = -std::log(q) + log_x;
+    if (log_q > 0) {
+        double inv_q = std::isnormal(q) ? 1 / q : std::exp(-log_q);
+        x = 1 / (1 + inv_q);
+        y = inv_q / (1 + inv_q);
+        log_x = -std::log1p(inv_q);
+        log_y = -log_q + log_x;
     } else {
+        if (!std::isnormal(q))
+            q = std::exp(log_q);
         x = q / (1 + q);
         y = 1 / (1 + q);
         log_y = -std::log1p(q);
-        log_x = std::log(q) + log_y;
+        log_x = log_q + log_y;
     }
     return upper ? beta_inc(d2 / 2, d1 / 2, y, x, log_y, log_x)
                  : beta_inc(d1 / 2, d2 / 2, x, y, log_x, log_y);
