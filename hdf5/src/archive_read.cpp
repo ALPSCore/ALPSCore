@@ -80,9 +80,17 @@ namespace alps {
                     detail::check_error(H5Aread(attribute_id, native_id, &raw[0]));
                     value = cast< T >(raw);
                 } else if (H5Tget_class(native_id) == H5T_STRING) {
-                    char * raw;
+                    detail::space_type space_id(H5Aget_space(attribute_id));
+                    char * raw = NULL;
                     detail::check_error(H5Aread(attribute_id, native_id, &raw));
-                    value = cast< T >(std::string(raw));
+                    try {
+                        value = cast< T >(std::string(raw));
+                    } catch (...) {
+                        // Do not let cleanup replace the original exception.
+                        H5Dvlen_reclaim(type_id, space_id, H5P_DEFAULT, &raw);
+                        throw;
+                    }
+                    detail::check_error(H5Dvlen_reclaim(type_id, space_id, H5P_DEFAULT, &raw));
                 } else if(detail::hdf5_read_scalar_attribute_helper(value, attribute_id, native_id)) {
                 } else throw wrong_type("invalid type" + ALPS_STACKTRACE);
             }
