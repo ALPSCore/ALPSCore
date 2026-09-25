@@ -83,6 +83,7 @@ namespace alps {
                     char * raw;
                     detail::check_error(H5Aread(attribute_id, native_id, &raw));
                     value = cast< T >(std::string(raw));
+                    detail::check_error(H5Dvlen_reclaim(type_id, detail::space_type(H5Aget_space(attribute_id)), H5P_DEFAULT, &raw));
                 } else if(detail::hdf5_read_scalar_attribute_helper(value, attribute_id, native_id)) {
                 } else throw wrong_type("invalid type" + ALPS_STACKTRACE);
             }
